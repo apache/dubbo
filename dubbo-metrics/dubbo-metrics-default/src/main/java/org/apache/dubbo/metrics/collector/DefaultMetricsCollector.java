@@ -147,7 +147,7 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
             List<MetricSample> samples = new ArrayList<>();
             this.getCount(MetricsEvent.Type.APPLICATION_INFO).filter(e -> !e.isEmpty())
                 .ifPresent(map -> map.forEach((k, v) ->
-                    samples.add(new CounterMetricSample<>(APPLICATION_METRIC_INFO.getName(),
+                    samples.add(new CounterMetricSample<>(APPLICATION_METRIC_INFO.getNameByType(""),
                         APPLICATION_METRIC_INFO.getDescription(),
                         k.getTags(), APPLICATION, v)))
                 );

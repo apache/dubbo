@@ -108,7 +108,7 @@ class MetricsFilterTest {
 
         filter.invoke(invoker, invocation);
         Map<String, MetricSample> metricsMap = getMetricsMap();
-        metricsMap.remove(MetricsKey.APPLICATION_METRIC_INFO.getName());
+        metricsMap.remove(MetricsKey.APPLICATION_METRIC_INFO.getNameByType(""));
         Assertions.assertTrue(metricsMap.isEmpty());
     }
 
@@ -292,14 +292,14 @@ class MetricsFilterTest {
             }
         }
         Map<String, MetricSample> metricsMap = getMetricsMap();
-        Assertions.assertFalse(metricsMap.containsKey(metricsKey.getName()));
+        Assertions.assertFalse(metricsMap.containsKey(metricsKey.getNameByType("")));
 
         MetricSample sample = metricsMap.get(targetKey);
 
         Assertions.assertSame(((CounterMetricSample<?>) sample).getValue().longValue(), count);
 
 
-        Assertions.assertFalse(metricsMap.containsKey(metricsKey.getName()));
+        Assertions.assertFalse(metricsMap.containsKey(metricsKey.getNameByType("")));
         Map<String, String> tags = sample.getTags();
 
         Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), INTERFACE_NAME);

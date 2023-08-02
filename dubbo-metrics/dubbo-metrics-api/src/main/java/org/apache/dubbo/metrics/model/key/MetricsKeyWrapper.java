@@ -85,12 +85,12 @@ public class MetricsKeyWrapper {
 
     public String targetKey() {
         if (placeType == null) {
-            return metricsKey.getName();
+            return metricsKey.getNameByType("");
         }
         try {
-            return String.format(metricsKey.getName(), getType());
+            return metricsKey.getNameByType(getType());
         } catch (Exception ignore) {
-            return metricsKey.getName();
+            return metricsKey.getNameByType("");
         }
     }
 

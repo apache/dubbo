@@ -60,7 +60,7 @@ public class ApplicationMetric implements Metric {
         tags.put(TAG_HOSTNAME, getLocalHostName());
         tags.put(TAG_APPLICATION_NAME, getApplicationName());
         tags.put(TAG_APPLICATION_VERSION_KEY, version);
-        tags.put(MetricsKey.METADATA_GIT_COMMITID_METRIC.getName(), commitId);
+        tags.put(MetricsKey.METADATA_GIT_COMMITID_METRIC.getNameByType(""), commitId);
         return tags;
     }
 

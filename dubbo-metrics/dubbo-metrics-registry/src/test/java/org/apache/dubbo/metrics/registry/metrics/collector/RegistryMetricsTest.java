@@ -74,9 +74,9 @@ public class RegistryMetricsTest {
         }
         List<MetricSample> samples = collector.collect();
 
-        GaugeMetricSample<?> succeedRequests = getSample(MetricsKey.REGISTER_METRIC_REQUESTS_SUCCEED.getName(), samples);
-        GaugeMetricSample<?> failedRequests = getSample(MetricsKey.REGISTER_METRIC_REQUESTS_FAILED.getName(), samples);
-        GaugeMetricSample<?> totalRequests = getSample(MetricsKey.REGISTER_METRIC_REQUESTS.getName(), samples);
+        GaugeMetricSample<?> succeedRequests = getSample(MetricsKey.REGISTER_METRIC_REQUESTS_SUCCEED.getNameByType(""), samples);
+        GaugeMetricSample<?> failedRequests = getSample(MetricsKey.REGISTER_METRIC_REQUESTS_FAILED.getNameByType(""), samples);
+        GaugeMetricSample<?> totalRequests = getSample(MetricsKey.REGISTER_METRIC_REQUESTS.getNameByType(""), samples);
 
         Assertions.assertEquals(5L, succeedRequests.applyAsLong());
         Assertions.assertEquals(5L, failedRequests.applyAsLong());
@@ -221,9 +221,9 @@ public class RegistryMetricsTest {
         }
         List<MetricSample> samples = collector.collect();
 
-        GaugeMetricSample<?> succeedRequests = getSample(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED.getName(), samples);
-        GaugeMetricSample<?> failedRequests = getSample(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_FAILED.getName(), samples);
-        GaugeMetricSample<?> totalRequests = getSample(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS.getName(), samples);
+        GaugeMetricSample<?> succeedRequests = getSample(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED.getNameByType(""), samples);
+        GaugeMetricSample<?> failedRequests = getSample(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_FAILED.getNameByType(""), samples);
+        GaugeMetricSample<?> totalRequests = getSample(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS.getNameByType(""), samples);
 
         Assertions.assertEquals(5L, succeedRequests.applyAsLong());
         Assertions.assertEquals(5L, failedRequests.applyAsLong());
@@ -244,9 +244,9 @@ public class RegistryMetricsTest {
         }
         List<MetricSample> samples = collector.collect();
 
-        GaugeMetricSample<?> succeedRequests = getSample(MetricsKey.SUBSCRIBE_METRIC_NUM_SUCCEED.getName(), samples);
-        GaugeMetricSample<?> failedRequests = getSample(MetricsKey.SUBSCRIBE_METRIC_NUM_FAILED.getName(), samples);
-        GaugeMetricSample<?> totalRequests = getSample(MetricsKey.SUBSCRIBE_METRIC_NUM.getName(), samples);
+        GaugeMetricSample<?> succeedRequests = getSample(MetricsKey.SUBSCRIBE_METRIC_NUM_SUCCEED.getNameByType(""), samples);
+        GaugeMetricSample<?> failedRequests = getSample(MetricsKey.SUBSCRIBE_METRIC_NUM_FAILED.getNameByType(""), samples);
+        GaugeMetricSample<?> totalRequests = getSample(MetricsKey.SUBSCRIBE_METRIC_NUM.getNameByType(""), samples);
 
         Assertions.assertEquals(5L, succeedRequests.applyAsLong());
         Assertions.assertEquals(5L, failedRequests.applyAsLong());

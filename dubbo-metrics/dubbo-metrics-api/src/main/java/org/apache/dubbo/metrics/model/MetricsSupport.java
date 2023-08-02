@@ -68,7 +68,7 @@ public class MetricsSupport {
         tags.put(TAG_APPLICATION_NAME, applicationModel.getApplicationName());
         tags.put(TAG_APPLICATION_MODULE, applicationModel.getInternalId());
         tags.put(TAG_APPLICATION_VERSION_KEY, version);
-        tags.put(MetricsKey.METADATA_GIT_COMMITID_METRIC.getName(), commitId);
+        tags.put(MetricsKey.METADATA_GIT_COMMITID_METRIC.getNameByType(""), commitId);
         return tags;
     }
 
