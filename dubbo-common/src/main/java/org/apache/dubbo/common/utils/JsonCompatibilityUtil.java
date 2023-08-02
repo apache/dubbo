@@ -22,11 +22,11 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import java.lang.reflect.*;
 import java.util.*;
 
-public class JsonCompatibilityUtils {
+public class JsonCompatibilityUtil {
 
-    private static final Logger logger = LoggerFactory.getLogger(JsonCompatibilityUtils.class);
+    private static final Logger logger = LoggerFactory.getLogger(JsonCompatibilityUtil.class);
 
-    private static final Set<String> unsupportedClasses = new HashSet<>(Arrays.asList("byte", "Byte"));
+    private static final Set<String> unsupportedClasses = new HashSet<>(Arrays.asList("java.util.Optional", "java.util.Calendar", "java.util.Iterator", "java.io.InputStream", "java.io.OutputStream"));
 
 
     /**
@@ -67,10 +67,8 @@ public class JsonCompatibilityUtils {
         for (Type type : typeList) {
             result = checkType(type);
             if (!result) {
-                logger.info(String.format("Type of [%s] is not support !", method.getDeclaringClass().getName()));
                 return false;
             }
-            logger.info(String.format("Type of [%s] is support.", type.getTypeName()));
         }
 
         return true;
@@ -108,7 +106,12 @@ public class JsonCompatibilityUtils {
 
         boolean result;
 
+        if (classType instanceof TypeVariable) {
+            return true;
+        }
+
         if (classType instanceof ParameterizedType) {
+
             Type[] types = ((ParameterizedType) classType).getActualTypeArguments();
             List<Type> typeList = new ArrayList<>(Arrays.asList(types));
             classType = ((ParameterizedType) classType).getRawType();
@@ -123,11 +126,10 @@ public class JsonCompatibilityUtils {
             Type componentType = ((GenericArrayType) classType).getGenericComponentType();
             result = checkType(componentType);
             return result;
-        } else if (classType instanceof Class<?>) {
+        } else if (classType instanceof Class<?> ) {
             Class<?> clazz = (Class<?>) classType;
 
             String className = clazz.getName();
-            logger.info("Current type is " + className);
 
             if (clazz.isArray()) {
                 Type componentType = clazz.getComponentType();
@@ -147,6 +149,13 @@ public class JsonCompatibilityUtils {
                 if (Modifier.isAbstract(clazz.getModifiers())) {
                     return false;
                 }
+                if (clazz.isEnum()) {
+                    return true;
+                }
+                // deal with case of record
+//                if (clazz.isRecord()) {
+//                    return false;
+//                }
                 // deal with field one by one
                 for (Field field : clazz.getDeclaredFields()) {
                     Type type = field.getGenericType();
@@ -160,15 +169,6 @@ public class JsonCompatibilityUtils {
         }
 
         return true;
-
-        // if (Modifier.isAbstract(clazz.getModifiers())) {
-        //     return false;
-        // }
-        // Type type = clazz.getGenericSuperclass();
-        // if (type instanceof ParameterizedType) {
-        //     return false;
-        // }
-        // return true;
     }
 
 }
