@@ -133,7 +133,9 @@ public enum MetricsKey {
     private String nameSuffix;
     private String description;
 
-
+    public final String getName() {
+        return "dubbo." + nameSuffix;
+    }
 
     public final String getNameByType(String type) {
         return "dubbo." + type + nameSuffix;
@@ -142,7 +144,6 @@ public enum MetricsKey {
     public final String getDescription() {
         return this.description;
     }
-
 
 
     MetricsKey(String nameSuffix, String description) {

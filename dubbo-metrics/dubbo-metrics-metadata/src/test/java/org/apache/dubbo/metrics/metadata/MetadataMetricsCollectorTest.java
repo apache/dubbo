@@ -275,9 +275,9 @@ class MetadataMetricsCollectorTest {
 
         List<MetricSample> samples = collector.collect();
 
-        GaugeMetricSample<?> totalNum = getSample(MetricsKey.METADATA_PUSH_METRIC_NUM.getNameByType(""), samples);
-        GaugeMetricSample<?> succeedNum = getSample(MetricsKey.METADATA_PUSH_METRIC_NUM_SUCCEED.getNameByType(""), samples);
-        GaugeMetricSample<?> failedNum = getSample(MetricsKey.METADATA_PUSH_METRIC_NUM_FAILED.getNameByType(""), samples);
+        GaugeMetricSample<?> totalNum = getSample(MetricsKey.METADATA_PUSH_METRIC_NUM.getName(), samples);
+        GaugeMetricSample<?> succeedNum = getSample(MetricsKey.METADATA_PUSH_METRIC_NUM_SUCCEED.getName(), samples);
+        GaugeMetricSample<?> failedNum = getSample(MetricsKey.METADATA_PUSH_METRIC_NUM_FAILED.getName(), samples);
 
         Assertions.assertEquals(10,totalNum.applyAsLong());
         Assertions.assertEquals(5,succeedNum.applyAsLong());
@@ -298,9 +298,9 @@ class MetadataMetricsCollectorTest {
 
         List<MetricSample> samples = collector.collect();
 
-        GaugeMetricSample<?> totalNum = getSample(MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM.getNameByType(""), samples);
-        GaugeMetricSample<?> succeedNum = getSample(MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED.getNameByType(""), samples);
-        GaugeMetricSample<?> failedNum = getSample(MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM_FAILED.getNameByType(""), samples);
+        GaugeMetricSample<?> totalNum = getSample(MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM.getName(), samples);
+        GaugeMetricSample<?> succeedNum = getSample(MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED.getName(), samples);
+        GaugeMetricSample<?> failedNum = getSample(MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM_FAILED.getName(), samples);
 
         Assertions.assertEquals(10,totalNum.applyAsLong());
         Assertions.assertEquals(5,succeedNum.applyAsLong());

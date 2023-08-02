@@ -35,7 +35,7 @@ public class GaugeMetricSample<T> extends MetricSample {
     private final ToDoubleFunction<T> apply;
 
     public GaugeMetricSample(MetricsKey metricsKey, Map<String, String> tags, MetricsCategory category, T value, ToDoubleFunction<T> apply) {
-        this(metricsKey.getNameByType(""), metricsKey.getDescription(), tags, category, null, value, apply);
+        this(metricsKey.getName(), metricsKey.getDescription(), tags, category, null, value, apply);
     }
 
     public GaugeMetricSample(MetricsKeyWrapper metricsKeyWrapper, Map<String, String> tags, MetricsCategory category, T value, ToDoubleFunction<T> apply) {

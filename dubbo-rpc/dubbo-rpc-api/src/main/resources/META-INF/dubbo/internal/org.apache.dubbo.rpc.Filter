@@ -15,3 +15,4 @@ tps=org.apache.dubbo.rpc.filter.TpsLimitFilter
 profiler-server=org.apache.dubbo.rpc.filter.ProfilerServerFilter
 adaptiveLoadBalance=org.apache.dubbo.rpc.filter.AdaptiveLoadBalanceFilter
 active-limit=org.apache.dubbo.rpc.filter.ActiveLimitFilter
+rpc-exception=org.apache.dubbo.rpc.filter.RpcExceptionFilter

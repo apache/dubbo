@@ -29,7 +29,6 @@ import org.apache.dubbo.metrics.data.MethodStatComposite;
 import org.apache.dubbo.metrics.data.RtStatComposite;
 import org.apache.dubbo.metrics.event.DefaultSubDispatcher;
 import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.event.RequestBeforeEvent;
 import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
@@ -138,7 +137,7 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
 
     @Override
     public boolean isSupport(MetricsEvent event) {
-        return event instanceof RequestEvent || event instanceof RequestBeforeEvent;
+        return event instanceof RequestEvent;
     }
 
     public SimpleMetricsCountSampler<String, MetricsEvent.Type, ApplicationMetric> applicationSampler = new SimpleMetricsCountSampler<String, MetricsEvent.Type, ApplicationMetric>() {
@@ -147,7 +146,7 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
             List<MetricSample> samples = new ArrayList<>();
             this.getCount(MetricsEvent.Type.APPLICATION_INFO).filter(e -> !e.isEmpty())
                 .ifPresent(map -> map.forEach((k, v) ->
-                    samples.add(new CounterMetricSample<>(APPLICATION_METRIC_INFO.getNameByType(""),
+                    samples.add(new CounterMetricSample<>(APPLICATION_METRIC_INFO.getName(),
                         APPLICATION_METRIC_INFO.getDescription(),
                         k.getTags(), APPLICATION, v)))
                 );
