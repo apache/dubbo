@@ -37,60 +37,97 @@ public interface Service {
     List<String> testList();
 
     int testInt();
-    int[] testIntarr();
+
+    int[] testIntArr();
+
     Integer testInteger();
+
     Integer[] testIntegerArr();
+
     List<Integer> testIntegerList();
 
     short testShort();
+
     short[] testShortArr();
+
     Short testSShort();
+
     Short[] testSShortArr();
+
     List<Short> testShortList();
 
     byte testByte();
+
     byte[] testByteArr();
+
     Byte testBByte();
+
     Byte[] testBByteArr();
+
     ArrayList<Byte> testByteList();
 
     float testFloat();
+
     float[] testFloatArr();
+
     Float testFFloat();
+
     Float[] testFloatArray();
+
     List<Float> testFloatList();
 
     boolean testBoolean();
+
     boolean[] testBooleanArr();
+
     Boolean testBBoolean();
+
     Boolean[] testBooleanArray();
+
     List<Boolean> testBooleanList();
 
     char testChar();
+
     char[] testCharArr();
+
     Character testCharacter();
+
     Character[] testCharacterArr();
+
     List<Character> testCharacterList();
+
     List<Character[]> testCharacterListArr();
 
     String testString();
+
     String[] testStringArr();
+
     List<String> testStringList();
+
     List<String[]> testStringListArr();
+
     String testNull();
 
     Date testDate();
+
     Calendar testCalendar();
+
     LocalTime testLocalTime();
+
     LocalDate testLocalDate();
+
     LocalDateTime testLocalDateTime();
+
     ZonedDateTime testZoneDateTime();
 
     Map<Integer, String> testMap();
+
     Set<Integer> testSet();
 
     Optional<Integer> testOptionalEmpty();
+
     Optional<Integer> testOptionalInteger();
+
     Optional<String> testOptionalString();
 
     Color testEnum();

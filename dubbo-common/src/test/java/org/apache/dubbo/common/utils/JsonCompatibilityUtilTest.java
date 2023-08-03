@@ -44,7 +44,7 @@ public class JsonCompatibilityUtilTest {
         List<String> res = JsonCompatibilityUtil.getUnsupportedMethods(service);
         assert res != null;
         logger.info(res.toString());
-        assert(res.size() != 0);
+        assert (res.size() != 0);
     }
 
     @Test
@@ -54,8 +54,8 @@ public class JsonCompatibilityUtilTest {
     }
 
     @Test
-    public void testIntarr() throws NoSuchMethodException {
-        boolean res = JsonCompatibilityUtil.checkMethodCompatibility(service.getDeclaredMethod("testIntarr"));
+    public void testIntArr() throws NoSuchMethodException {
+        boolean res = JsonCompatibilityUtil.checkMethodCompatibility(service.getDeclaredMethod("testIntArr"));
         assertTrue(res);
     }
 
