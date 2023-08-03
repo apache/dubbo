@@ -198,8 +198,9 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
             for (Method serviceMethod : serviceMethods) {
                 if (overrides(serviceMethod, declaredServiceMethod)) {
                     serviceMethodsMap.put(serviceMethod, declaredServiceMethod);
-                    // once method match ,break for decrease loop  times
-                    break;
+                    // override method count > 1
+//                    // once method match ,break for decrease loop  times
+//                    break;
                 }
             }
         }
