@@ -27,54 +27,54 @@ public enum MetricsKey {
     CONFIGCENTER_METRIC_TOTAL("configcenter.total", "Config Changed Total"),
 
     // provider metrics key
-    METRIC_REQUESTS(".requests.total", "Total Requests"),
-    METRIC_REQUESTS_SUCCEED(".requests.succeed.total", "Total Succeed Requests"),
-    METRIC_REQUEST_BUSINESS_FAILED(".requests.business.failed.total", "Total Failed Business Requests"),
+    METRIC_REQUESTS("requests.total", "Total Requests"),
+    METRIC_REQUESTS_SUCCEED("requests.succeed.total", "Total Succeed Requests"),
+    METRIC_REQUEST_BUSINESS_FAILED("requests.business.failed.total", "Total Failed Business Requests"),
 
-    METRIC_REQUESTS_PROCESSING(".requests.processing.total", "Processing Requests"),
-    METRIC_REQUESTS_TIMEOUT(".requests.timeout.total", "Total Timeout Failed Requests"),
-    METRIC_REQUESTS_LIMIT(".requests.limit.total", "Total Limit Failed Requests"),
-    METRIC_REQUESTS_FAILED(".requests.unknown.failed.total", "Total Unknown Failed Requests"),
-    METRIC_REQUESTS_TOTAL_FAILED(".requests.failed.total", "Total Failed Requests"),
-    METRIC_REQUESTS_NETWORK_FAILED(".requests.failed.network.total", "Total network Failed Requests"),
-    METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED(".requests.failed.service.unavailable.total", "Total Service Unavailable Failed Requests"),
-    METRIC_REQUESTS_CODEC_FAILED(".requests.failed.codec.total", "Total Codec Failed Requests"),
+    METRIC_REQUESTS_PROCESSING("requests.processing.total", "Processing Requests"),
+    METRIC_REQUESTS_TIMEOUT("requests.timeout.total", "Total Timeout Failed Requests"),
+    METRIC_REQUESTS_LIMIT("requests.limit.total", "Total Limit Failed Requests"),
+    METRIC_REQUESTS_FAILED("requests.unknown.failed.total", "Total Unknown Failed Requests"),
+    METRIC_REQUESTS_TOTAL_FAILED("requests.failed.total", "Total Failed Requests"),
+    METRIC_REQUESTS_NETWORK_FAILED("requests.failed.network.total", "Total network Failed Requests"),
+    METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED("requests.failed.service.unavailable.total", "Total Service Unavailable Failed Requests"),
+    METRIC_REQUESTS_CODEC_FAILED("requests.failed.codec.total", "Total Codec Failed Requests"),
 
-    METRIC_REQUESTS_TOTAL_AGG(".requests.total.aggregate", "Aggregated Total Requests"),
-    METRIC_REQUESTS_SUCCEED_AGG(".requests.succeed.aggregate", "Aggregated Succeed Requests"),
-    METRIC_REQUESTS_FAILED_AGG(".requests.failed.aggregate", "Aggregated Failed Requests"),
-    METRIC_REQUEST_BUSINESS_FAILED_AGG(".requests.business.failed.aggregate", "Aggregated Business Failed Requests"),
-    METRIC_REQUESTS_TIMEOUT_AGG(".requests.timeout.failed.aggregate", "Aggregated timeout Failed Requests"),
-    METRIC_REQUESTS_LIMIT_AGG(".requests.limit.aggregate", "Aggregated limit Requests"),
-    METRIC_REQUESTS_TOTAL_FAILED_AGG(".requests.failed.total.aggregate", "Aggregated failed total Requests"),
-    METRIC_REQUESTS_NETWORK_FAILED_AGG(".requests.failed.network.total.aggregate", "Aggregated failed network total Requests"),
-    METRIC_REQUESTS_CODEC_FAILED_AGG(".requests.failed.codec.total.aggregate", "Aggregated failed codec total Requests"),
-    METRIC_REQUESTS_TOTAL_SERVICE_UNAVAILABLE_FAILED_AGG(".requests.failed.service.unavailable.total.aggregate", "Aggregated failed codec total Requests"),
+    METRIC_REQUESTS_TOTAL_AGG("requests.total.aggregate", "Aggregated Total Requests"),
+    METRIC_REQUESTS_SUCCEED_AGG("requests.succeed.aggregate", "Aggregated Succeed Requests"),
+    METRIC_REQUESTS_FAILED_AGG("requests.failed.aggregate", "Aggregated Failed Requests"),
+    METRIC_REQUEST_BUSINESS_FAILED_AGG("requests.business.failed.aggregate", "Aggregated Business Failed Requests"),
+    METRIC_REQUESTS_TIMEOUT_AGG("requests.timeout.failed.aggregate", "Aggregated timeout Failed Requests"),
+    METRIC_REQUESTS_LIMIT_AGG("requests.limit.aggregate", "Aggregated limit Requests"),
+    METRIC_REQUESTS_TOTAL_FAILED_AGG("requests.failed.total.aggregate", "Aggregated failed total Requests"),
+    METRIC_REQUESTS_NETWORK_FAILED_AGG("requests.failed.network.total.aggregate", "Aggregated failed network total Requests"),
+    METRIC_REQUESTS_CODEC_FAILED_AGG("requests.failed.codec.total.aggregate", "Aggregated failed codec total Requests"),
+    METRIC_REQUESTS_TOTAL_SERVICE_UNAVAILABLE_FAILED_AGG("requests.failed.service.unavailable.total.aggregate", "Aggregated failed codec total Requests"),
 
-    METRIC_QPS(".qps.total", "Query Per Seconds"),
-    METRIC_RT_LAST(".rt.milliseconds.last", "Last Response Time"),
-    METRIC_RT_MIN(".rt.milliseconds.min", "Min Response Time"),
-    METRIC_RT_MAX(".rt.milliseconds.max", "Max Response Time"),
-    METRIC_RT_SUM(".rt.milliseconds.sum", "Sum Response Time"),
-    METRIC_RT_AVG(".rt.milliseconds.avg", "Average Response Time"),
-    METRIC_RT_P99(".rt.milliseconds.p99", "Response Time P99"),
-    METRIC_RT_P95(".rt.milliseconds.p95", "Response Time P95"),
-    METRIC_RT_P90(".rt.milliseconds.p90", "Response Time P90"),
-    METRIC_RT_P50(".rt.milliseconds.p50", "Response Time P50"),
-    METRIC_RT_MIN_AGG(".rt.milliseconds.min.aggregate", "Aggregated Min Response"),
-    METRIC_RT_MAX_AGG(".rt.milliseconds.max.aggregate", "Aggregated Max Response"),
-    METRIC_RT_AVG_AGG(".rt.milliseconds.avg.aggregate", "Aggregated Avg Response"),
+    METRIC_QPS("qps.total", "Query Per Seconds"),
+    METRIC_RT_LAST("rt.milliseconds.last", "Last Response Time"),
+    METRIC_RT_MIN("rt.milliseconds.min", "Min Response Time"),
+    METRIC_RT_MAX("rt.milliseconds.max", "Max Response Time"),
+    METRIC_RT_SUM("rt.milliseconds.sum", "Sum Response Time"),
+    METRIC_RT_AVG("rt.milliseconds.avg", "Average Response Time"),
+    METRIC_RT_P99("rt.milliseconds.p99", "Response Time P99"),
+    METRIC_RT_P95("rt.milliseconds.p95", "Response Time P95"),
+    METRIC_RT_P90("rt.milliseconds.p90", "Response Time P90"),
+    METRIC_RT_P50("rt.milliseconds.p50", "Response Time P50"),
+    METRIC_RT_MIN_AGG("rt.milliseconds.min.aggregate", "Aggregated Min Response"),
+    METRIC_RT_MAX_AGG("rt.milliseconds.max.aggregate", "Aggregated Max Response"),
+    METRIC_RT_AVG_AGG("rt.milliseconds.avg.aggregate", "Aggregated Avg Response"),
 
     // register metrics key
     REGISTER_METRIC_REQUESTS("registry.register.requests.total", "Total Register Requests"),
     REGISTER_METRIC_REQUESTS_SUCCEED("registry.register.requests.succeed.total", "Succeed Register Requests"),
     REGISTER_METRIC_REQUESTS_FAILED("registry.register.requests.failed.total", "Failed Register Requests"),
-    METRIC_RT_HISTOGRAM(".rt.milliseconds.histogram", "Response Time Histogram"),
+    METRIC_RT_HISTOGRAM("rt.milliseconds.histogram", "Response Time Histogram"),
 
 
-    GENERIC_METRIC_REQUESTS(".requests.total", "Total %s Requests"),
-    GENERIC_METRIC_REQUESTS_SUCCEED(".requests.succeed.total", "Succeed %s Requests"),
-    GENERIC_METRIC_REQUESTS_FAILED(".requests.failed.total", "Failed %s Requests"),
+    GENERIC_METRIC_REQUESTS("requests.total", "Total %s Requests"),
+    GENERIC_METRIC_REQUESTS_SUCCEED("requests.succeed.total", "Succeed %s Requests"),
+    GENERIC_METRIC_REQUESTS_FAILED("requests.failed.total", "Failed %s Requests"),
 
     // subscribe metrics key
     SUBSCRIBE_METRIC_NUM("registry.subscribe.num.total", "Total Subscribe Num"),
@@ -109,9 +109,9 @@ public enum MetricsKey {
     METADATA_SUBSCRIBE_METRIC_NUM_FAILED("metadata.subscribe.num.failed.total", "Failed Metadata Subscribe Num"),
 
     // register service metrics key
-    SERVICE_REGISTER_METRIC_REQUESTS("registry.register.service.total", "Total Service-Level Register Requests"),
-    SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED("registry.register.service.succeed.total", "Succeed Service-Level Register Requests"),
-    SERVICE_REGISTER_METRIC_REQUESTS_FAILED("registry.register.service.failed.total", "Failed Service-Level Register Requests"),
+    SERVICE_REGISTER_METRIC_REQUESTS("registry.total", "Total Service-Level Register Requests"),
+    SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED("registry.succeed.total", "Succeed Service-Level Register Requests"),
+    SERVICE_REGISTER_METRIC_REQUESTS_FAILED("registry.failed.total", "Failed Service-Level Register Requests"),
 
     // subscribe metrics key
     SERVICE_SUBSCRIBE_METRIC_NUM("registry.subscribe.service.num.total", "Total Service-Level Subscribe Num"),
@@ -129,7 +129,6 @@ public enum MetricsKey {
     INVOKER_NO_AVAILABLE_COUNT("consumer.invoker.no.available.count", "Request Throw No Invoker Available Exception Count"),
     ;
 
-    private String namePrefix;
     private String nameSuffix;
     private String description;
 
@@ -138,7 +137,7 @@ public enum MetricsKey {
     }
 
     public final String getNameByType(String type) {
-        return "dubbo." + type + nameSuffix;
+        return "dubbo." + type + "." + nameSuffix;
     }
 
     public final String getDescription() {
