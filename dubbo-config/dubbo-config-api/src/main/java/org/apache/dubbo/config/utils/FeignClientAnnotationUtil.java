@@ -54,9 +54,6 @@ public class FeignClientAnnotationUtil {
             return;
         }
 
-        // append old value
-        serviceName = paramtetersMap.containsKey(PROVIDED_BY) ? paramtetersMap.get(PROVIDED_BY) + "," + serviceName : serviceName;
-
         // cover old value
         paramtetersMap.put(PROVIDED_BY, serviceName);
 
