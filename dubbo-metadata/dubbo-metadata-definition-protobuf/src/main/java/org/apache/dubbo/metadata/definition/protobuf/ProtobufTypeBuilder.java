@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata.definition.protobuf;
 
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -37,6 +38,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Activate(onClass = "com.google.protobuf.GeneratedMessageV3")
 public class ProtobufTypeBuilder implements TypeBuilder, Prioritized {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private static final Pattern MAP_PATTERN = Pattern.compile("^java\\.util\\.Map<(\\S+), (\\S+)>$");
@@ -258,11 +260,7 @@ public class ProtobufTypeBuilder implements TypeBuilder, Prioritized {
         // Enum property has two setting method.
         // skip setXXXValue(int value)
         // parse setXXX(SomeEnum value)
-        if (methodName.endsWith("Value") && types[0] == int.class) {
-            return false;
-        }
-
-        return true;
+        return !methodName.endsWith("Value") || types[0] != int.class;
     }
 
 
@@ -289,11 +287,7 @@ public class ProtobufTypeBuilder implements TypeBuilder, Prioritized {
         }
 
         // if field name end with List, should skip
-        if (!List.class.isAssignableFrom(type)) {
-            return false;
-        }
-
-        return true;
+        return List.class.isAssignableFrom(type);
     }
 
     /**
@@ -307,10 +301,6 @@ public class ProtobufTypeBuilder implements TypeBuilder, Prioritized {
     private boolean isMapPropertySettingMethod(Method methodTemp) {
         String methodName = methodTemp.getName();
         Class[] parameters = methodTemp.getParameterTypes();
-        if (methodName.startsWith("putAll") && parameters.length == 1 && Map.class.isAssignableFrom(parameters[0])) {
-            return true;
-        }
-
-        return false;
+        return methodName.startsWith("putAll") && parameters.length == 1 && Map.class.isAssignableFrom(parameters[0]);
     }
 }

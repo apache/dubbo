@@ -21,19 +21,37 @@ import org.apache.dubbo.metrics.collector.CombMetricsCollector;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 
+/**
+ * App-level listener type, in most cases, can use the static method
+ * to produce an anonymous listener for general monitoring
+ */
 public class MetricsApplicationListener extends AbstractMetricsKeyListener {
 
     public MetricsApplicationListener(MetricsKey metricsKey) {
         super(metricsKey);
     }
 
-    public static AbstractMetricsKeyListener onPostEventBuild(MetricsKey metricsKey, CombMetricsCollector collector) {
+    /**
+     * Perform auto-increment on the monitored key,
+     * Can use a custom listener instead of this generic operation
+     *
+     * @param metricsKey Monitor key
+     * @param collector  Corresponding collector
+     */
+    public static AbstractMetricsKeyListener onPostEventBuild(MetricsKey metricsKey, CombMetricsCollector<?> collector) {
         return AbstractMetricsKeyListener.onEvent(metricsKey,
-                event -> collector.increment(metricsKey)
+            event -> collector.increment(metricsKey)
         );
     }
 
-    public static AbstractMetricsKeyListener onFinishEventBuild(MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector collector) {
+    /**
+     * To end the monitoring normally, in addition to increasing the number of corresponding indicators,
+     * use the introspection method to calculate the relevant rt indicators
+     *
+     * @param metricsKey Monitor key
+     * @param collector  Corresponding collector
+     */
+    public static AbstractMetricsKeyListener onFinishEventBuild(MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector<?> collector) {
         return AbstractMetricsKeyListener.onFinish(metricsKey,
                 event -> {
                     collector.increment(metricsKey);
@@ -42,7 +60,10 @@ public class MetricsApplicationListener extends AbstractMetricsKeyListener {
         );
     }
 
-    public static AbstractMetricsKeyListener onErrorEventBuild(MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector collector) {
+    /**
+     * Similar to onFinishEventBuild
+     */
+    public static AbstractMetricsKeyListener onErrorEventBuild(MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector<?> collector) {
         return AbstractMetricsKeyListener.onError(metricsKey,
                 event -> {
                     collector.increment(metricsKey);
