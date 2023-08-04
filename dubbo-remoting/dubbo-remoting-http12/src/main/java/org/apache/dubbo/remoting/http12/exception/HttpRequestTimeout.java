@@ -16,12 +16,14 @@
  */
 package org.apache.dubbo.remoting.http12.exception;
 
+import org.apache.dubbo.remoting.http12.HttpStatus;
+
 public class HttpRequestTimeout extends HttpStatusException {
 
     private final String side;
 
     private HttpRequestTimeout(String side) {
-        super(408);
+        super(HttpStatus.REQUEST_TIMEOUT.getCode());
         this.side = side;
     }
 
