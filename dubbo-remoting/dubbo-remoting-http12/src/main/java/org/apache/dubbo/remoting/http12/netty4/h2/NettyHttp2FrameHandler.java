@@ -21,6 +21,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http2.Http2ResetFrame;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.remoting.http12.HttpStatus;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
@@ -67,7 +68,7 @@ public class NettyHttp2FrameHandler extends ChannelDuplexHandler {
         if (LOGGER.isWarnEnabled()) {
             LOGGER.warn(PROTOCOL_FAILED_RESPONSE, "", "", "Exception in processing triple message", cause);
         }
-        int statusCode = 500;
+        int statusCode = HttpStatus.INTERNAL_SERVER_ERROR.getCode();
         if (cause instanceof HttpStatusException) {
             statusCode = ((HttpStatusException) cause).getStatusCode();
         }

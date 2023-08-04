@@ -21,20 +21,23 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.http12.HttpHeaderNames;
+import org.apache.dubbo.remoting.http12.HttpHeaders;
+import org.apache.dubbo.remoting.http12.exception.UnsupportedMediaTypeException;
 import org.apache.dubbo.remoting.http12.h1.Http1Request;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerChannelObserver;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerTransportListener;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerTransportListenerFactory;
-import org.apache.dubbo.remoting.http12.message.JsonCodec;
+import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.util.List;
 import java.util.concurrent.Executor;
 
 public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Http1Request> {
 
     private Http1ServerTransportListenerFactory http1ServerTransportListenerFactory;
-
-    private Http1ServerTransportListener http1TransportListener;
 
     private final FrameworkModel frameworkModel;
 
@@ -65,7 +68,7 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
 
     protected void channelRead0(ChannelHandlerContext ctx, Http1Request http1Request) {
         //process h1 request
-        initTransportListenerIfNecessary(ctx);
+        Http1ServerTransportListener http1TransportListener = initTransportListenerIfNecessary(ctx, http1Request);
         executor.execute(() -> {
             try {
                 http1TransportListener.onMetadata(http1Request);
@@ -76,13 +79,32 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
         });
     }
 
-    private void initTransportListenerIfNecessary(ChannelHandlerContext ctx) {
-        if (http1TransportListener == null) {
-            Http1ServerTransportListenerFactory http1ServerTransportListenerFactory = this.http1ServerTransportListenerFactory;
-            Assert.notNull(http1ServerTransportListenerFactory, "http1ServerTransportListenerFactory must be not null.");
-            http1TransportListener = http1ServerTransportListenerFactory.newInstance(new NettyHttp1Channel(ctx.channel()), url, frameworkModel);
+    private Http1ServerTransportListener initTransportListenerIfNecessary(ChannelHandlerContext ctx, Http1Request http1Request) {
+        //each h1 request create http1TransportListener instance
+        Http1ServerTransportListenerFactory http1ServerTransportListenerFactory = this.http1ServerTransportListenerFactory;
+        Assert.notNull(http1ServerTransportListenerFactory, "http1ServerTransportListenerFactory must be not null.");
+        Http1ServerTransportListener http1TransportListener = http1ServerTransportListenerFactory.newInstance(new NettyHttp1Channel(ctx.channel()), url, frameworkModel);
+
+        HttpHeaders headers = http1Request.headers();
+        String contentType = headers.getFirst(HttpHeaderNames.CONTENT_TYPE.getName());
+        if (!StringUtils.hasText(contentType)) {
+            throw new UnsupportedMediaTypeException(contentType);
+        }
+        HttpMessageCodec codec = findSuitableCodec(contentType, frameworkModel.getExtensionLoader(HttpMessageCodec.class).getActivateExtensions());
+        if (codec == null) {
+            throw new UnsupportedMediaTypeException(contentType);
         }
         this.errorResponseObserver = new Http1ServerChannelObserver(new NettyHttp1Channel(ctx.channel()));
-        this.errorResponseObserver.setHttpMessageCodec(JsonCodec.INSTANCE);
+        this.errorResponseObserver.setHttpMessageCodec(codec);
+        return http1TransportListener;
+    }
+
+    private static HttpMessageCodec findSuitableCodec(String contentType, List<HttpMessageCodec> candidates) {
+        for (HttpMessageCodec codec : candidates) {
+            if (codec.support(contentType)) {
+                return codec;
+            }
+        }
+        return null;
     }
 }
