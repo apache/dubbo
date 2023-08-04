@@ -1551,6 +1551,13 @@
                                         META-INF/dubbo/internal/org.apache.dubbo.common.json.JsonUtil
                                     </resource>
                                 </transformer>
+
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.config.CommonConfigPostProcessor
+                                    </resource>
+                                </transformer>
                             </transformers>
                             <filters>
                                 <filter>
