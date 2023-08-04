@@ -14,25 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.utils;
+package org.apache.dubbo.config.processor;
 
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.AnnotationUtils;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.ConfigPostProcessor;
+import org.apache.dubbo.config.ReferenceConfig;
 
 import java.lang.annotation.Annotation;
-import java.util.Map;
 
-import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
+/**
+ *  parsing @FeignClient service name attribute to replace reference config provided by
+ */
 
-public class FeignClientAnnotationUtil {
-    /**
-     * append parameters from interface class metadata
-     * such as FeignClient service as dubbo providedBy
-     *
-     * @param paramtetersMap
-     */
-    public static void appendParametersFromInterfaceClassMetadata(Class<?> interfaceClass, Map<String, String> paramtetersMap) {
+@Activate
+public class FeignClientAnnotationConfigPostProcessor implements ConfigPostProcessor {
+
+    @Override
+    public void postProcessReferConfig(ReferenceConfig referenceConfig) {
+        appendParametersFromInterfaceClassMetadata(referenceConfig.getInterfaceClass(), referenceConfig);
+    }
+
+
+    public static void appendParametersFromInterfaceClassMetadata(Class<?> interfaceClass, ReferenceConfig referenceConfig) {
 
         if (interfaceClass == null) {
             return;
@@ -54,8 +60,8 @@ public class FeignClientAnnotationUtil {
             return;
         }
 
-        // cover old value
-        paramtetersMap.put(PROVIDED_BY, serviceName);
+        referenceConfig.setProvidedBy(serviceName);
+
 
     }
 }
