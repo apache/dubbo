@@ -14,31 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.processor;
+package org.apache.dubbo.rpc.protocol.rest.config;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.AnnotationUtils;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.ConfigPostProcessor;
-import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.CommonConfigPostProcessor;
+import org.apache.dubbo.config.ReferenceConfigBase;
 
 import java.lang.annotation.Annotation;
 
 /**
- *  parsing @FeignClient service name attribute to replace reference config provided by
+ * parsing @FeignClient service name attribute to replace reference config provided by
  */
 
 @Activate
-public class FeignClientAnnotationConfigPostProcessor implements ConfigPostProcessor {
+public class FeignClientAnnotationConfigPostProcessor implements CommonConfigPostProcessor {
 
     @Override
-    public void postProcessReferConfig(ReferenceConfig referenceConfig) {
+    public void postProcessReferConfig(ReferenceConfigBase referenceConfig) {
         appendParametersFromInterfaceClassMetadata(referenceConfig.getInterfaceClass(), referenceConfig);
     }
 
 
-    public static void appendParametersFromInterfaceClassMetadata(Class<?> interfaceClass, ReferenceConfig referenceConfig) {
+    public static void appendParametersFromInterfaceClassMetadata(Class<?> interfaceClass, ReferenceConfigBase referenceConfig) {
 
         if (interfaceClass == null) {
             return;
