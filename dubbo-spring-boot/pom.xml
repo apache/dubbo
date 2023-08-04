@@ -37,6 +37,7 @@
         <module>dubbo-spring-boot-compatible</module>
         <module>dubbo-spring-boot-starter</module>
         <module>dubbo-spring-boot-starters</module>
+        <module>dubbo-spring-boot-interceptor</module>
     </modules>
 
     <properties>

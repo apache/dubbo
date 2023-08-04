@@ -60,6 +60,17 @@ public class GsonUtils {
         }
     }
 
+    public static String toJson(Object obj) throws RuntimeException {
+        if (!isSupportGson()) {
+            throw new RuntimeException("Gson is not supported. Please import Gson in JVM env.");
+        }
+        try {
+            return getGson().toJson(obj);
+        } catch (JsonSyntaxException ex) {
+            throw new RuntimeException(String.format("Generic serialization [%s] Json syntax exception thrown when parsing (object:%s ) error:%s", GENERIC_SERIALIZATION_GSON, obj, ex.getMessage()));
+        }
+    }
+
     private static Gson getGson() {
         if (gsonCache == null || !(gsonCache instanceof Gson)) {
             synchronized (GsonUtils.class) {

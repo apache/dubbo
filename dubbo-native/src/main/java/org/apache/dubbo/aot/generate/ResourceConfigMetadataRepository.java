@@ -17,6 +17,9 @@
 package org.apache.dubbo.aot.generate;
 
 
+import org.apache.dubbo.aot.api.ResourceBundleDescriber;
+import org.apache.dubbo.aot.api.ResourcePatternDescriber;
+
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;

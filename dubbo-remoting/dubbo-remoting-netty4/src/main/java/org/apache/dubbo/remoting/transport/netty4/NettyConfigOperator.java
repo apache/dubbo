@@ -24,17 +24,21 @@ import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Codec;
 import org.apache.dubbo.remoting.Codec2;
 import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.remoting.api.ProtocolDetector;
 import org.apache.dubbo.remoting.api.pu.ChannelHandlerPretender;
 import org.apache.dubbo.remoting.api.pu.ChannelOperator;
 import org.apache.dubbo.remoting.api.pu.DefaultCodec;
 import org.apache.dubbo.remoting.transport.codec.CodecAdapter;
 
+import java.util.Collection;
 import java.util.List;
 
 public class NettyConfigOperator implements ChannelOperator {
 
     private final Channel channel;
     private ChannelHandler handler;
+
+    private ProtocolDetector.Result detectResult;
 
     public NettyConfigOperator(NettyChannel channel, ChannelHandler handler) {
         this.channel = channel;
@@ -52,14 +56,14 @@ public class NettyConfigOperator implements ChannelOperator {
         }
         if (url.getOrDefaultFrameworkModel().getExtensionLoader(Codec2.class).hasExtension(codecName)) {
             codec2 = url.getOrDefaultFrameworkModel().getExtensionLoader(Codec2.class).getExtension(codecName);
-        } else if(url.getOrDefaultFrameworkModel().getExtensionLoader(Codec.class).hasExtension(codecName)){
+        } else if (url.getOrDefaultFrameworkModel().getExtensionLoader(Codec.class).hasExtension(codecName)) {
             codec2 = new CodecAdapter(url.getOrDefaultFrameworkModel().getExtensionLoader(Codec.class)
                 .getExtension(codecName));
-        }else {
+        } else {
             codec2 = url.getOrDefaultFrameworkModel().getExtensionLoader(Codec2.class).getExtension("default");
         }
 
-        if (!(codec2 instanceof DefaultCodec)){
+        if (!(codec2 instanceof DefaultCodec)) {
             ((NettyChannel) channel).setCodec(codec2);
             NettyCodecAdapter codec = new NettyCodecAdapter(codec2, channel.getUrl(), handler);
             ((NettyChannel) channel).getNioChannel().pipeline().addLast(
@@ -69,26 +73,53 @@ public class NettyConfigOperator implements ChannelOperator {
             );
         }
 
-        for (ChannelHandler handler: handlerList) {
+        for (ChannelHandler handler : handlerList) {
             if (handler instanceof ChannelHandlerPretender) {
                 Object realHandler = ((ChannelHandlerPretender) handler).getRealHandler();
-                if(realHandler instanceof io.netty.channel.ChannelHandler) {
-                    ((NettyChannel) channel).getNioChannel().pipeline().addLast(
-                        (io.netty.channel.ChannelHandler) realHandler
-                    );
-                }
+                addRealHandler(realHandler);
             }
         }
 
         // todo distinguish between client and server channel
-        if( isClientSide(channel)){
+        if (isClientSide(channel)) {
             //todo config client channel handler
-        }else {
+        } else {
             NettyServerHandler sh = new NettyServerHandler(channel.getUrl(), handler);
             ((NettyChannel) channel).getNioChannel().pipeline().addLast(
                 sh
             );
         }
+    }
+
+    private void addRealHandler(Object realHandler) {
+        if (realHandler instanceof Collection) {
+            Collection realHandlers = (Collection) realHandler;
+
+            for (Object handler : realHandlers) {
+                addChannelHandler(handler);
+            }
+        } else {
+            addChannelHandler(realHandler);
+        }
+
+
+    }
+
+
+    private void addChannelHandler(Object channelHandler) {
+        if (!(channelHandler instanceof io.netty.channel.ChannelHandler)) {
+            return;
+        }
+        ((NettyChannel) channel).getNioChannel().pipeline().addLast((io.netty.channel.ChannelHandler) channelHandler);
+    }
+
+    public void setDetectResult(ProtocolDetector.Result detectResult) {
+        this.detectResult = detectResult;
+    }
+
+    @Override
+    public ProtocolDetector.Result detectResult() {
+        return detectResult;
     }
 
     private boolean isClientSide(Channel channel) {

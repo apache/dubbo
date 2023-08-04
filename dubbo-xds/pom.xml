@@ -119,6 +119,14 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- Override the maven-javadoc-plugin configuration that depends on the pass -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 

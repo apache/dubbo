@@ -465,7 +465,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
         }
         checkStubAndLocal(interfaceClass);
-        ConfigValidationUtils.checkMock(interfaceClass, this);
         ConfigValidationUtils.validateServiceConfig(this);
         postProcessConfig();
     }
@@ -514,7 +513,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         providerModel.setDestroyRunner(getDestroyRunner());
         repository.registerProvider(providerModel);
 
-        List<URL> registryURLs = ConfigValidationUtils.loadRegistries(this, true);
+        List<URL> registryURLs = !Boolean.FALSE.equals(isRegister()) ?
+            ConfigValidationUtils.loadRegistries(this, true) : Collections.emptyList();
 
         MetricsEventBus.post(RegistryEvent.toRsEvent(getApplicationModel(), getUniqueServiceName(), protocols.size() * registryURLs.size()),            () -> {
                 for (ProtocolConfig protocolConfig : protocols) {
@@ -547,6 +547,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         processServiceExecutor(url);
 
+        if (CollectionUtils.isEmpty(registryURLs)) {
+            registerType = RegisterTypeEnum.NEVER_REGISTER;
+        }
         exportUrl(url, registryURLs, registerType);
     }
 

@@ -59,7 +59,6 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
         restResponseFilters = new ArrayList<>(url.getOrDefaultFrameworkModel().getExtensionLoader(RestResponseFilter.class).getActivateExtensions());
     }
 
-
     @Override
     public void handle(NettyRequestFacade requestFacade, NettyHttpResponse nettyHttpResponse) throws IOException {
 
