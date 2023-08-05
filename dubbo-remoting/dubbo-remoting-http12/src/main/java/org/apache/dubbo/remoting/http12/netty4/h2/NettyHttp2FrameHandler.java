@@ -35,9 +35,12 @@ public class NettyHttp2FrameHandler extends ChannelDuplexHandler {
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(
         NettyHttp2FrameHandler.class);
 
+    private final H2StreamChannel h2StreamChannel;
+
     private final Http2TransportListener transportListener;
 
-    public NettyHttp2FrameHandler(Http2TransportListener transportListener) {
+    public NettyHttp2FrameHandler(H2StreamChannel h2StreamChannel, Http2TransportListener transportListener) {
+        this.h2StreamChannel = h2StreamChannel;
         this.transportListener = transportListener;
     }
 
@@ -72,7 +75,6 @@ public class NettyHttp2FrameHandler extends ChannelDuplexHandler {
         if (cause instanceof HttpStatusException) {
             statusCode = ((HttpStatusException) cause).getStatusCode();
         }
-        H2StreamChannel h2StreamChannel = transportListener.getHttpChannel();
         h2StreamChannel.writeResetFrame(statusCode);
     }
 
