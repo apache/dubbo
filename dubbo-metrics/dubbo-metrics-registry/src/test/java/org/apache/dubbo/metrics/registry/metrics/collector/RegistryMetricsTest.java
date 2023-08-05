@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.metrics.registry.metrics.collector;
 
+import com.google.common.collect.Lists;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.context.ConfigManager;
@@ -28,7 +29,6 @@ import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -289,19 +289,20 @@ public class RegistryMetricsTest {
     }
 
     RegistryEvent registerEvent() {
-        RegistryEvent event = RegistryEvent.toRegisterEvent(applicationModel);
+        RegistryEvent event = RegistryEvent.toRegisterEvent(applicationModel, Lists.newArrayList("reg1"));
         event.setAvailable(true);
         return event;
     }
 
     RegistryEvent rsEvent() {
-        RegistryEvent event = RegistryEvent.toRsEvent(applicationModel, "TestServiceInterface1", 1);
+        List<String> rcNames = Lists.newArrayList("demo1");
+        RegistryEvent event = RegistryEvent.toRsEvent(applicationModel, "TestServiceInterface1", 1, rcNames);
         event.setAvailable(true);
         return event;
     }
 
     RegistryEvent subscribeEvent() {
-        RegistryEvent event = RegistryEvent.toSubscribeEvent(applicationModel);
+        RegistryEvent event = RegistryEvent.toSubscribeEvent(applicationModel, "registryClusterName_test");
         event.setAvailable(true);
         return event;
     }

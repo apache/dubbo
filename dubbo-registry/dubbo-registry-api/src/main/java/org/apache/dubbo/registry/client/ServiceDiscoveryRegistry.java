@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -33,6 +34,7 @@ import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedLi
 import org.apache.dubbo.registry.support.FailbackRegistry;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -110,7 +112,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      */
     protected ServiceDiscovery createServiceDiscovery(URL registryURL) {
         return getServiceDiscovery(registryURL.addParameter(INTERFACE_KEY, ServiceDiscovery.class.getName())
-            .removeParameter(REGISTRY_TYPE_KEY));
+                .removeParameter(REGISTRY_TYPE_KEY));
     }
 
     /**
@@ -278,11 +280,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     @Override
     public boolean isAvailable() {
-        if (serviceDiscovery instanceof NopServiceDiscovery) {
-            // NopServiceDiscovery is designed for compatibility, check availability is meaningless, just return true
-            return true;
-        }
-        return !serviceDiscovery.isDestroy() && !serviceDiscovery.getServices().isEmpty();
+        //serviceDiscovery isAvailable has a default method, which can be used as a reference when implementing
+        return serviceDiscovery.isAvailable();
     }
 
     @Override
@@ -331,7 +330,9 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                 serviceInstancesChangedListener.addListenerAndNotify(url, listener);
                 ServiceInstancesChangedListener finalServiceInstancesChangedListener = serviceInstancesChangedListener;
 
-                MetricsEventBus.post(RegistryEvent.toSsEvent(url.getApplicationModel(), serviceKey),
+                String serviceDiscoveryName = url.getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY, url.getProtocol());
+
+                MetricsEventBus.post(RegistryEvent.toSsEvent(url.getApplicationModel(), serviceKey, Collections.singletonList(serviceDiscoveryName)),
                     () -> {
                         serviceDiscovery.addServiceInstancesChangedListener(finalServiceInstancesChangedListener);
                         return null;

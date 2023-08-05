@@ -28,7 +28,7 @@ public abstract class AbstractMetricsListener<E extends MetricsEvent> implements
     private final Map<Integer, Boolean> eventMatchCache = new ConcurrentHashMap<>();
 
     /**
-     * Whether to support the general determination of event points depends on the event type
+     * Only interested in events of the current listener's generic parameter type
      */
     public boolean isSupport(MetricsEvent event) {
         Boolean eventMatch = eventMatchCache.get(System.identityHashCode(event.getClass()));
