@@ -339,12 +339,21 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             }
 
             String[] parts = path.split("/");
-            if (parts.length != 3) {
+            String serviceName;
+            String originalMethodName;
+            if (parts.length == 3) {
+                serviceName = parts[1];
+                originalMethodName = parts[2];
+            } else if (parts.length == 4) {
+                if (LOGGER.isWarnEnabled()) {
+                    LOGGER.warn(String.format("context-path: [%s] will be ignored in the triple protocol, please remove this configuration.", parts[1]));
+                }
+                serviceName = parts[2];
+                originalMethodName = parts[3];
+            } else {
                 responseErr(TriRpcStatus.UNIMPLEMENTED.withDescription("Bad path format:" + path));
                 return;
             }
-            String serviceName = parts[1];
-            String originalMethodName = parts[2];
 
             Invoker<?> invoker = getInvoker(headers, serviceName);
             if (invoker == null) {
