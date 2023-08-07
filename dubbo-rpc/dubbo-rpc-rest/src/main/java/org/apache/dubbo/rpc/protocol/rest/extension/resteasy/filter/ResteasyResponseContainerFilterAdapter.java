@@ -24,7 +24,6 @@ import org.apache.dubbo.rpc.protocol.rest.filter.RestResponseFilter;
 import org.apache.dubbo.rpc.protocol.rest.filter.context.RestFilterContext;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
-import org.jboss.resteasy.specimpl.BuiltResponse;
 import org.jboss.resteasy.spi.HttpResponse;
 
 import javax.ws.rs.container.ContainerResponseFilter;
@@ -50,16 +49,18 @@ public class ResteasyResponseContainerFilterAdapter implements RestResponseFilte
         // response filter entity first
 
 
-        // empty jaxrsResponse
-        BuiltResponse jaxrsResponse = new BuiltResponse();
+        // build jaxrsResponse from rest netty response
+        DubboBuiltResponse dubboBuiltResponse = new DubboBuiltResponse(response.getResponseBody(), response.getStatus(), response.getEntityClass());
         // NettyHttpResponse wrapper
         HttpResponse httpResponse = new ResteasyNettyHttpResponse(response);
-        DubboContainerResponseContextImpl containerResponseContext = createContainerResponseContext(requestFacade, httpResponse, jaxrsResponse, containerRequestFilters.toArray(new ContainerResponseFilter[0]));
+        DubboContainerResponseContextImpl containerResponseContext = createContainerResponseContext(requestFacade, httpResponse, dubboBuiltResponse, containerRequestFilters.toArray(new ContainerResponseFilter[0]));
         containerResponseContext.filter();
-        if (jaxrsResponse.getEntity() != null) {
+
+        // user reset entity
+        if (dubboBuiltResponse.hasEntity() && dubboBuiltResponse.isResetEntity()) {
             // clean  output stream data
             restOutputStream(response);
-            writeResteasyResponse(url, requestFacade, response, jaxrsResponse);
+            writeResteasyResponse(url, requestFacade, response, dubboBuiltResponse);
         }
         addResponseHeaders(response, httpResponse.getOutputHeaders());
 
