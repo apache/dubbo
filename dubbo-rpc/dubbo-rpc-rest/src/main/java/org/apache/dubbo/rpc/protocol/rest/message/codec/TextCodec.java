@@ -24,6 +24,7 @@ import org.apache.dubbo.rpc.protocol.rest.message.MediaTypeMatcher;
 import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 
 import java.io.OutputStream;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -33,7 +34,7 @@ import java.nio.charset.StandardCharsets;
 public class TextCodec implements HttpMessageCodec<byte[], OutputStream> {
 
     @Override
-    public Object decode(byte[] body, Class<?> targetType) throws Exception {
+    public Object decode(byte[] body, Class<?> targetType, Type type) throws Exception {
         return DataParseUtils.stringTypeConvert(targetType, new String(body, StandardCharsets.UTF_8));
     }
 

@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.common.serialize.fastjson2;
 
+import com.alibaba.fastjson2.reader.ObjectReaderCreator;
+import com.alibaba.fastjson2.writer.ObjectWriterCreator;
+import org.apache.dubbo.common.aot.NativeDetector;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeClassLoaderListener;
 
@@ -31,10 +34,11 @@ public class Fastjson2CreatorManager implements ScopeClassLoaderListener<Framewo
     /**
      * An empty classLoader used when classLoader is system classLoader. Prevent the NPE.
      */
-    private static final ClassLoader SYSTEM_CLASSLOADER_KEY = new ClassLoader() {};
+    private static final ClassLoader SYSTEM_CLASSLOADER_KEY = new ClassLoader() {
+    };
 
-    private final Map<ClassLoader, ObjectReaderCreatorASM> readerMap = new ConcurrentHashMap<>();
-    private final Map<ClassLoader, ObjectWriterCreatorASM> writerMap = new ConcurrentHashMap<>();
+    private final Map<ClassLoader, ObjectReaderCreator> readerMap = new ConcurrentHashMap<>();
+    private final Map<ClassLoader, ObjectWriterCreator> writerMap = new ConcurrentHashMap<>();
 
     public Fastjson2CreatorManager(FrameworkModel frameworkModel) {
         frameworkModel.addClassLoaderListener(this);
@@ -44,8 +48,13 @@ public class Fastjson2CreatorManager implements ScopeClassLoaderListener<Framewo
         if (classLoader == null) {
             classLoader = SYSTEM_CLASSLOADER_KEY;
         }
-        JSONFactory.setContextReaderCreator(readerMap.computeIfAbsent(classLoader, ObjectReaderCreatorASM::new));
-        JSONFactory.setContextWriterCreator(writerMap.computeIfAbsent(classLoader, ObjectWriterCreatorASM::new));
+        if (NativeDetector.inNativeImage()) {
+            JSONFactory.setContextReaderCreator(readerMap.putIfAbsent(classLoader, ObjectReaderCreator.INSTANCE));
+            JSONFactory.setContextWriterCreator(writerMap.putIfAbsent(classLoader, ObjectWriterCreator.INSTANCE));
+        } else {
+            JSONFactory.setContextReaderCreator(readerMap.computeIfAbsent(classLoader, ObjectReaderCreatorASM::new));
+            JSONFactory.setContextWriterCreator(writerMap.computeIfAbsent(classLoader, ObjectWriterCreatorASM::new));
+        }
     }
 
     @Override

@@ -19,6 +19,8 @@ package org.apache.dubbo.common.logger.jcl;
 import org.apache.dubbo.common.logger.Logger;
 
 import org.apache.commons.logging.Log;
+import org.slf4j.helpers.FormattingTuple;
+import org.slf4j.helpers.MessageFormatter;
 
 /**
  * Adaptor to commons logging, depends on commons-logging.jar. For more information about commons logging, pls. refer to
@@ -38,6 +40,12 @@ public class JclLogger implements Logger {
     }
 
     @Override
+    public void trace(String msg, Object... arguments) {
+        FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
+        logger.trace(ft.getMessage(), ft.getThrowable());
+    }
+
+    @Override
     public void trace(Throwable e) {
         logger.trace(e);
     }
@@ -50,6 +58,12 @@ public class JclLogger implements Logger {
     @Override
     public void debug(String msg) {
         logger.debug(msg);
+    }
+
+    @Override
+    public void debug(String msg, Object... arguments) {
+        FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
+        logger.debug(ft.getMessage(), ft.getThrowable());
     }
 
     @Override
@@ -68,6 +82,12 @@ public class JclLogger implements Logger {
     }
 
     @Override
+    public void info(String msg, Object... arguments) {
+        FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
+        logger.info(ft.getMessage(), ft.getThrowable());
+    }
+
+    @Override
     public void info(Throwable e) {
         logger.info(e);
     }
@@ -83,6 +103,12 @@ public class JclLogger implements Logger {
     }
 
     @Override
+    public void warn(String msg, Object... arguments) {
+        FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
+        logger.warn(ft.getMessage(), ft.getThrowable());
+    }
+
+    @Override
     public void warn(Throwable e) {
         logger.warn(e);
     }
@@ -95,6 +121,12 @@ public class JclLogger implements Logger {
     @Override
     public void error(String msg) {
         logger.error(msg);
+    }
+
+    @Override
+    public void error(String msg, Object... arguments) {
+        FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
+        logger.error(ft.getMessage(), ft.getThrowable());
     }
 
     @Override

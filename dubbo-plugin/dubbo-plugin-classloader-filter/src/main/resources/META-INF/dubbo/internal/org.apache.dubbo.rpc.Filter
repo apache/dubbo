@@ -1,0 +1,2 @@
+classloader=org.apache.dubbo.rpc.filter.ClassLoaderFilter
+classloader-callback=org.apache.dubbo.rpc.filter.ClassLoaderCallbackFilter

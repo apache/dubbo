@@ -22,4 +22,9 @@ public interface ExceptionHandler<E extends Throwable> {
 
     Object result(E exception);
 
+    default int status() {
+        return 200;
+    }
+
+
 }

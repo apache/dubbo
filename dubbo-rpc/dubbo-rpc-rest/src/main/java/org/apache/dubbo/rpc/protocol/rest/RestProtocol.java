@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc.protocol.rest;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
+import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
+import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
 import org.apache.dubbo.remoting.http.RestClient;
 import org.apache.dubbo.remoting.http.factory.RestClientFactory;
 import org.apache.dubbo.rpc.Exporter;
@@ -30,7 +32,11 @@ import org.apache.dubbo.rpc.protocol.AbstractExporter;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreBuildIntercept;
 import org.apache.dubbo.rpc.protocol.rest.annotation.metadata.MetadataResolver;
+import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
+import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployerManager;
 
+
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -38,17 +44,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_SERVER;
-import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
 import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.PATH_SEPARATOR;
 
 public class RestProtocol extends AbstractProtocol {
 
     private static final int DEFAULT_PORT = 80;
-    private static final String DEFAULT_SERVER = Constants.NETTY_HTTP;
-
-    private final RestServerFactory serverFactory = new RestServerFactory();
 
     private final ConcurrentMap<String, ReferenceCountedClient<? extends RestClient>> clients = new ConcurrentHashMap<>();
 
@@ -58,7 +61,7 @@ public class RestProtocol extends AbstractProtocol {
 
     public RestProtocol(FrameworkModel frameworkModel) {
         this.clientFactory = frameworkModel.getExtensionLoader(RestClientFactory.class).getAdaptiveExtension();
-        this.httpConnectionPreBuildIntercepts = frameworkModel.getExtensionLoader(HttpConnectionPreBuildIntercept.class).getSupportedExtensionInstances();
+        this.httpConnectionPreBuildIntercepts = new LinkedHashSet<>(frameworkModel.getExtensionLoader(HttpConnectionPreBuildIntercept.class).getActivateExtensions());
     }
 
 
@@ -88,26 +91,22 @@ public class RestProtocol extends AbstractProtocol {
                 url, getContextPath(url));
 
 
-        // TODO add Extension filter
-        // create rest server
-        RestProtocolServer server = (RestProtocolServer) ConcurrentHashMapUtils.computeIfAbsent(
-            (ConcurrentMap<? super String, ? super RestProtocolServer>) serverMap,
-            getAddr(url), restServer -> {
-                RestProtocolServer s = serverFactory.createServer(url.getParameter(SERVER_KEY, DEFAULT_SERVER));
-                s.setAddress(url.getAddress());
-                s.start(url);
-                return s;
-            });
+        // deploy service
+        URL newURL = ServiceDeployerManager.deploy(url, serviceRestMetadata, invoker);
+
+        // create server
+        PortUnificationExchanger.bind(newURL, new DefaultPuHandler());
+
+        ServiceDeployer serviceDeployer = (ServiceDeployer) newURL.getAttribute(REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY);
 
 
-        server.deploy(serviceRestMetadata, invoker);
-
+        URL finalUrl = newURL;
         exporter = new AbstractExporter<T>(invoker) {
             @Override
             public void afterUnExport() {
-                destroyInternal(url);
+                destroyInternal(finalUrl);
                 exporterMap.remove(uri);
-                server.undeploy(serviceRestMetadata);
+                serviceDeployer.undeploy(serviceRestMetadata);
             }
         };
         exporterMap.put(uri, exporter);
@@ -165,6 +164,10 @@ public class RestProtocol extends AbstractProtocol {
         if (logger.isInfoEnabled()) {
             logger.info("Destroying protocol [" + this.getClass().getSimpleName() + "] ...");
         }
+
+        PortUnificationExchanger.close();
+        ServiceDeployerManager.close();
+
         super.destroy();
 
         for (Map.Entry<String, ProtocolServer> entry : serverMap.entrySet()) {

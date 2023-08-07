@@ -64,7 +64,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REFER_INVOKER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNSUPPORTED;
@@ -114,7 +113,6 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         super(serviceType, url);
         moduleModel = getModuleModel(url.getScopeModel());
         consumerConfigurationListener = getConsumerConfigurationListener(moduleModel);
-
     }
 
     @Override
@@ -132,7 +130,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         }
 
         ApplicationModel applicationModel = url.getApplicationModel();
-        MetricsEventBus.post(RegistryEvent.toSubscribeEvent(applicationModel),() ->
+        MetricsEventBus.post(RegistryEvent.toSubscribeEvent(applicationModel), () ->
             {
                 super.subscribe(url);
                 return null;
@@ -504,7 +502,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
 
         // FIXME, kept for mock
         if (providerUrl.hasParameter(MOCK_KEY) || providerUrl.getAnyMethodParameter(MOCK_KEY) != null) {
-            providerUrl = providerUrl.removeParameter(TAG_KEY);
+            providerUrl = providerUrl.removeParameter(MOCK_KEY);
         }
 
         if ((providerUrl.getPath() == null || providerUrl.getPath()
