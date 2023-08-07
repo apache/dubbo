@@ -20,18 +20,17 @@ import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
 /**
- * 2019/12/30
- * it will be instead of CommonConfigPostProcessor
+ * it  will be call when reference or service config refresh
  */
-@Deprecated
-@SPI(scope = ExtensionScope.MODULE)
-public interface ConfigPostProcessor extends CommonConfigPostProcessor {
 
-    default void postProcessReferConfig(ReferenceConfig referenceConfig) {
+@SPI(scope = ExtensionScope.MODULE)
+public interface CommonConfigPostProcessor {
+
+    default void postProcessReferConfig(ReferenceConfigBase referenceConfig) {
 
     }
 
-    default void postProcessServiceConfig(ServiceConfig serviceConfig) {
+    default void postProcessServiceConfig(ServiceConfigBase serviceConfig) {
 
     }
 }
