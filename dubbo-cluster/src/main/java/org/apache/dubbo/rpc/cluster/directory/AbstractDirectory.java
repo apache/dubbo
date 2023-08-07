@@ -352,7 +352,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                 }
             }, reconnectTaskPeriod, TimeUnit.MILLISECONDS);
         }
-        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
     }
 
     /**
@@ -366,7 +366,11 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         if (invokersInitialized) {
             refreshInvokerInternal();
         }
-        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
+    }
+
+    protected Map<String, String> getDirectoryMeta() {
+        return Collections.emptyMap();
     }
 
     private synchronized void refreshInvokerInternal() {
@@ -395,7 +399,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             removeValidInvoker(invoker);
             logger.info("Disable service address: " + invoker.getUrl() + ".");
         }
-        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
     }
 
     @Override
@@ -408,7 +412,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
             }
         }
-        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
     }
 
     protected final void refreshRouter(BitList<Invoker<T>> newlyInvokers, Runnable switchAction) {
@@ -465,7 +469,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         refreshInvokerInternal();
         this.invokersInitialized = true;
 
-        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
     }
 
     protected void destroyInvokers() {
@@ -480,7 +484,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         synchronized (this.validInvokers) {
             result = this.validInvokers.add(invoker);
         }
-        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
         return result;
     }
 
@@ -489,7 +493,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         synchronized (this.validInvokers) {
             result = this.validInvokers.remove(invoker);
         }
-        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
         return result;
     }
 
@@ -519,18 +523,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     }
 
     private Map<String, Integer> groupByServiceKey(Collection<Invoker<T>> invokers) {
-
-        Map<String, Integer> serviceNumMap = new HashMap<>();
-        for (Invoker<T> invoker : invokers) {
-            if (invoker.getClass().getSimpleName().contains("Mockito")) {
-                return serviceNumMap;
-            }
-        }
-        if (invokers.size() > 0) {
-            serviceNumMap = invokers.stream().filter(invoker -> invoker.getInterface() != null).collect(Collectors.groupingBy(invoker -> invoker.getInterface().getName(), Collectors.reducing(0, e -> 1, Integer::sum)));
-        }
-
-        return serviceNumMap;
+        return Collections.singletonMap(getConsumerUrl().getServiceKey(), invokers.size());
     }
 
     @Override

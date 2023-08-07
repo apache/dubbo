@@ -27,9 +27,12 @@ import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.SingleRouterChain;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_SITE_SELECTION;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 
 /**
  * StaticDirectory
@@ -125,4 +128,8 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
         return invokers;
     }
 
+    @Override
+    protected Map<String, String> getDirectoryMeta() {
+        return Collections.singletonMap(REGISTRY_KEY, "static");
+    }
 }
