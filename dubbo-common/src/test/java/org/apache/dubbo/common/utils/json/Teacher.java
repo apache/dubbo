@@ -14,24 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config;
+package org.apache.dubbo.common.utils.json;
 
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
+import java.io.Serializable;
 
-/**
- * 2019/12/30
- * it will be instead of CommonConfigPostProcessor
- */
-@Deprecated
-@SPI(scope = ExtensionScope.MODULE)
-public interface ConfigPostProcessor extends CommonConfigPostProcessor {
+public class Teacher implements Serializable {
+    private String name;
+    private Integer age;
 
-    default void postProcessReferConfig(ReferenceConfig referenceConfig) {
-
+    public String getName() {
+        return name;
     }
 
-    default void postProcessServiceConfig(ServiceConfig serviceConfig) {
+    public void setName(String name) {
+        this.name = name;
+    }
 
+    public Integer getAge() {
+        return age;
+    }
+
+    public void setAge(Integer age) {
+        this.age = age;
+    }
+
+    public Teacher(String name, Integer age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    @Override
+    public String toString() {
+        return "Teacher{" +
+                "name='" + name + '\'' +
+                ", age=" + age +
+                '}';
     }
 }

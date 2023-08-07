@@ -14,24 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config;
+package org.apache.dubbo.common.utils.json;
 
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
+public abstract class AbstractObject {
 
-/**
- * 2019/12/30
- * it will be instead of CommonConfigPostProcessor
- */
-@Deprecated
-@SPI(scope = ExtensionScope.MODULE)
-public interface ConfigPostProcessor extends CommonConfigPostProcessor {
-
-    default void postProcessReferConfig(ReferenceConfig referenceConfig) {
-
-    }
-
-    default void postProcessServiceConfig(ServiceConfig serviceConfig) {
-
-    }
+    public abstract String sayHello();
 }

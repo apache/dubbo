@@ -14,24 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config;
+package org.apache.dubbo.common.utils.json;
 
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
+public enum Color {
+    RED("红色", 1), GREEN("绿色", 2), BLANK("白色", 3), YELLO("黄色", 4);
 
-/**
- * 2019/12/30
- * it will be instead of CommonConfigPostProcessor
- */
-@Deprecated
-@SPI(scope = ExtensionScope.MODULE)
-public interface ConfigPostProcessor extends CommonConfigPostProcessor {
+    private String name;
+    private int index;
 
-    default void postProcessReferConfig(ReferenceConfig referenceConfig) {
-
+    private Color(String name, int index) {
+        this.name = name;
+        this.index = index;
     }
 
-    default void postProcessServiceConfig(ServiceConfig serviceConfig) {
+    public static String getName(int index) {
+        for (Color c : Color.values()) {
+            if (c.getIndex() == index) {
+                return c.name;
+            }
+        }
+        return null;
+    }
 
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+    public int getIndex() {
+        return index;
+    }
+    public void setIndex(int index) {
+        this.index = index;
     }
 }
