@@ -231,12 +231,12 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
         maps.add(environmentConfiguration.getProperties());
         maps.add(appExternalConfiguration.getProperties());
         maps.add(externalConfiguration.getProperties());
+        maps.add(propertiesConfiguration.getProperties());
         maps.add(appConfiguration.getProperties());
         if (config != null) {
             ConfigConfigurationAdapter configurationAdapter = new ConfigConfigurationAdapter(config, prefix);
             maps.add(configurationAdapter.getProperties());
         }
-        maps.add(propertiesConfiguration.getProperties());
         return maps;
     }
 
