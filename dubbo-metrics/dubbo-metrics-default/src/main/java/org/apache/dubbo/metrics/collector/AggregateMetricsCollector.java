@@ -24,7 +24,7 @@ import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.aggregate.TimeWindowAggregator;
 import org.apache.dubbo.metrics.aggregate.TimeWindowCounter;
-import org.apache.dubbo.metrics.aggregate.TimeWindowQuantile;
+import org.HdrHistogram.ConcurrentDoubleHistogram;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.metrics.model.MethodMetric;
@@ -60,7 +60,7 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
     private int timeWindowSeconds = DEFAULT_TIME_WINDOW_SECONDS;
     private int qpsTimeWindowMillSeconds = DEFAULT_QPS_TIME_WINDOW_MILL_SECONDS;
     private final Map<MetricsKeyWrapper, ConcurrentHashMap<MethodMetric, TimeWindowCounter>> methodTypeCounter = new ConcurrentHashMap<>();
-    private final ConcurrentMap<MethodMetric, TimeWindowQuantile> rt = new ConcurrentHashMap<>();
+    private final ConcurrentMap<MethodMetric, ConcurrentDoubleHistogram> rt = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<MethodMetric, TimeWindowCounter> qps = new ConcurrentHashMap<>();
     private final ApplicationModel applicationModel;
     private static final Integer DEFAULT_COMPRESSION = 100;
@@ -159,8 +159,8 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
         MethodMetric metric = new MethodMetric(applicationModel, event.getAttachmentValue(MetricsConstants.INVOCATION));
         long responseTime = event.getTimePair().calc();
         if (enableRt) {
-            TimeWindowQuantile quantile = ConcurrentHashMapUtils.computeIfAbsent(rt, metric,
-                k -> new TimeWindowQuantile(DEFAULT_COMPRESSION, bucketNum, timeWindowSeconds));
+            ConcurrentDoubleHistogram quantile = ConcurrentHashMapUtils.computeIfAbsent(rt, metric,
+                k -> new ConcurrentDoubleHistogram(DEFAULT_COMPRESSION, bucketNum, timeWindowSeconds));
             quantile.add(responseTime);
         }
 
