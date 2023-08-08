@@ -168,6 +168,11 @@
                 <artifactId>dubbo-bom</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-all-shaded</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <!-- filter -->
             <dependency>
