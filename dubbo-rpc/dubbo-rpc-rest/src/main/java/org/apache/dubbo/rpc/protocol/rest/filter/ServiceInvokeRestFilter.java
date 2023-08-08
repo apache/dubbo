@@ -106,6 +106,9 @@ public class ServiceInvokeRestFilter implements RestRequestFilter {
         // execute business  method invoke
         Result result = invoker.invoke(rpcInvocation);
 
+        // set raw response
+        nettyHttpResponse.setResponseBody(result.getValue());
+
         if (result.hasException()) {
             Throwable exception = result.getException();
             logger.error("", exception.getMessage(), "", "dubbo rest protocol provider Invoker invoke error", exception);
@@ -150,7 +153,8 @@ public class ServiceInvokeRestFilter implements RestRequestFilter {
 
     public static void writeResult(NettyHttpResponse nettyHttpResponse, URL url, Object value, Class<?> returnType, MediaType mediaType) throws Exception {
         MessageCodecResultPair booleanMediaTypePair = HttpMessageCodecManager.httpMessageEncode(nettyHttpResponse.getOutputStream(), value, url, mediaType, returnType);
-
+        // reset raw response result
+        nettyHttpResponse.setResponseBody(value);
         nettyHttpResponse.addOutputHeaders(RestHeaderEnum.CONTENT_TYPE.getHeader(), booleanMediaTypePair.getMediaType().value);
     }
 
