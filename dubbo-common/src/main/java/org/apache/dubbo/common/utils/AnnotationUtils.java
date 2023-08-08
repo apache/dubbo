@@ -133,6 +133,39 @@ public interface AnnotationUtils {
     }
 
     /**
+     * Get the attribute from the specified {@link Annotation annotation}
+     *
+     * @param annotation     the specified {@link Annotation annotation}
+     * @param attributeNames the multiply attribute name arrays
+     * @param <T>            the type of attribute
+     * @return the attribute value
+     * @throws IllegalArgumentException If the attribute name can't be found
+     */
+    static <T> T getAttribute(Annotation annotation, String... attributeNames) throws IllegalArgumentException {
+        if (attributeNames == null || attributeNames.length == 0) {
+            return null;
+        }
+
+        for (String attributeName : attributeNames) {
+            T attribute = getAttribute(annotation, attributeName);
+
+            if (attribute == null) {
+                continue;
+            }
+
+            //  exclude string attribute  default is empty
+            if ((attribute instanceof String) && ((String) attribute).length() == 0) {
+                continue;
+            }
+
+            return attribute;
+        }
+
+        return null;
+
+    }
+
+    /**
      * Get the {@link Annotation} from the specified {@link AnnotatedElement the annotated element} and
      * {@link Annotation annotation} class name
      *

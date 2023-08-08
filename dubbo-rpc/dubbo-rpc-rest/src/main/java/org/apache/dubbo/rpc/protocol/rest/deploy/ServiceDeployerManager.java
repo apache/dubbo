@@ -34,7 +34,7 @@ public class ServiceDeployerManager {
     private static final ConcurrentMap<String, ServiceDeployer> serviceDeployers = new ConcurrentHashMap<>();
 
 
-    public static URL deploy(final URL currentURL, ServiceRestMetadata serviceRestMetadata, Invoker invoker) {
+    public static URL deploy(URL currentURL, ServiceRestMetadata serviceRestMetadata, Invoker invoker) {
 
         AtomicBoolean isNewCreate = new AtomicBoolean();
 
@@ -50,7 +50,12 @@ public class ServiceDeployerManager {
         newServiceDeployer.deploy(serviceRestMetadata, invoker);
 
         // register exception mapper
-        newServiceDeployer.registerExceptionMapper(currentURL);
+        newServiceDeployer.registerExtension(currentURL);
+
+        // passing ServiceDeployer to  PortUnificationServer through URL
+        // add attribute for server build
+
+        currentURL = currentURL.putAttribute(REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY, newServiceDeployer);
 
         // not new URL
         if (!isNewCreate.get()) {
@@ -63,11 +68,6 @@ public class ServiceDeployerManager {
         if (REST_SERVER.contains(tmp.getParameter(SERVER_KEY))) {
             tmp = tmp.addParameter(SERVER_KEY, PORT_UNIFICATION_NETTY4_SERVER);
         }
-
-        // passing ServiceDeployer to  PortUnificationServer through URL
-        // add attribute for server build
-
-        tmp = tmp.putAttribute(REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY, newServiceDeployer);
 
 
         return tmp;
