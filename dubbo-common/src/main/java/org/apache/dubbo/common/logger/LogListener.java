@@ -15,20 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.model;
+package org.apache.dubbo.common.logger;
 
 /**
- * Metric category.
+ * Log Listener, can registered to an {@link ListenableLogger}.
  */
-public enum MetricsCategory {
-    RT,
-    QPS,
-    REQUESTS,
-    APPLICATION,
-    CONFIGCENTER,
-    REGISTRY,
-    METADATA,
-    THREAD_POOL,
-    ERROR_CODE,
-    NETTY,
+public interface LogListener {
+
+    void onMessage(String code, String msg);
+
 }

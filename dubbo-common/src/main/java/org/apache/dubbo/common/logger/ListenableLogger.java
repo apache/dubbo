@@ -15,20 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.model;
+package org.apache.dubbo.common.logger;
 
 /**
- * Metric category.
+ *  Loggers that can register to listen to log messages.
  */
-public enum MetricsCategory {
-    RT,
-    QPS,
-    REQUESTS,
-    APPLICATION,
-    CONFIGCENTER,
-    REGISTRY,
-    METADATA,
-    THREAD_POOL,
-    ERROR_CODE,
-    NETTY,
+public interface ListenableLogger extends ErrorTypeAwareLogger{
+
+    /**
+     * Register a listener to this logger，and get notified when a log happens.
+     *
+     * @param listener log listener
+     */
+    void registerListen(LogListener listener);
+
 }
