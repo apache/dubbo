@@ -18,6 +18,7 @@ package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.qos.api.BaseCommand;
 import org.apache.dubbo.qos.api.CommandContext;
@@ -29,14 +30,20 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 
 public class BaseOffline implements BaseCommand {
     private static final Logger logger = LoggerFactory.getLogger(BaseOffline.class);
     public FrameworkServiceRepository serviceRepository;
+    private ExecutorService executorService;
 
     public BaseOffline(FrameworkModel frameworkModel) {
         this.serviceRepository = frameworkModel.getServiceRepository();
+        this.executorService = frameworkModel.getBeanFactory().getBean(FrameworkExecutorRepository.class).getSharedExecutor();
     }
 
     @Override
@@ -63,18 +70,28 @@ public class BaseOffline implements BaseCommand {
     public boolean offline(String servicePattern) {
         boolean hasService = false;
 
-        Collection<ProviderModel> providerModelList = serviceRepository.allProviderModels();
-        for (ProviderModel providerModel : providerModelList) {
-            ServiceMetadata metadata = providerModel.getServiceMetadata();
-            if (metadata.getServiceKey().matches(servicePattern) || metadata.getDisplayServiceKey().matches(servicePattern)) {
-                hasService = true;
-                List<ProviderModel.RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
-                for (ProviderModel.RegisterStatedURL statedURL : statedUrls) {
-                    if (statedURL.isRegistered()) {
-                        doUnexport(statedURL);
+        try {
+            List<CompletableFuture<Void>> futures = new LinkedList<>();
+            Collection<ProviderModel> providerModelList = serviceRepository.allProviderModels();
+            for (ProviderModel providerModel : providerModelList) {
+                ServiceMetadata metadata = providerModel.getServiceMetadata();
+                if (metadata.getServiceKey().matches(servicePattern) || metadata.getDisplayServiceKey().matches(servicePattern)) {
+                    hasService = true;
+                    List<ProviderModel.RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
+                    for (ProviderModel.RegisterStatedURL statedURL : statedUrls) {
+                        if (statedURL.isRegistered()) {
+                            futures.add(CompletableFuture.runAsync(() -> {
+                                doUnexport(statedURL);
+                            }, executorService));
+                        }
                     }
                 }
             }
+            for (CompletableFuture<Void> future : futures) {
+                future.get();
+            }
+        } catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException(e);
         }
 
         return hasService;
