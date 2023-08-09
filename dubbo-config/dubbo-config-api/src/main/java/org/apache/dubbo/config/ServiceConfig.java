@@ -760,8 +760,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             // export to remote if the config is not local (export to local only when config is local)
             if (!SCOPE_LOCAL.equalsIgnoreCase(scope)) {
                 // export to extra protocol is used in remote export
-                URL newURl = appendExtraProtocols(url);
-                String extProtocol = newURl.getParameter(EXT_PROTOCOL, "");
+                String extProtocol = url.getParameter(EXT_PROTOCOL, "");
                 List<String> protocols = new ArrayList<>();
 
                 if (StringUtils.isNotBlank(extProtocol)) {
@@ -798,27 +797,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
         }
         this.urls.add(url);
-    }
-
-    /**
-     * Automatically add 'rest' as extra protocol for triple.
-     * <p>
-     * FIXME, remove this step when triple fully supports http unary request
-     *
-     * @param url url to export
-     * @return url with extra protocols
-     */
-    private URL appendExtraProtocols(URL url) {
-        String ext = url.getParameter(EXT_PROTOCOL, "");
-        if (StringUtils.isEmpty(ext)
-            && url.getProtocol().equals(TRIPLE)
-            && !url.getServiceInterface().equals(MetadataService.class.getName())) {
-            String restProtocol = "rest";
-            if (this.getExtensionLoader(Protocol.class).hasExtension(restProtocol)) {
-                url = url.addParameter(EXT_PROTOCOL, restProtocol);
-            }
-        }
-        return url;
     }
 
     private URL exportRemote(URL url, List<URL> registryURLs, RegisterTypeEnum registerType) {
