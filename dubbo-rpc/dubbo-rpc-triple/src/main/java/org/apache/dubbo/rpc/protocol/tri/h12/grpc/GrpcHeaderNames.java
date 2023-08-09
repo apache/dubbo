@@ -14,8 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.h2;
+package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
 
-public interface Http2TransportListener extends CancelableTransportListener<Http2Header, Http2InputMessage> {
-    
+public enum GrpcHeaderNames {
+
+    GRPC_STATUS("grpc-status"),
+    GRPC_MESSAGE("grpc-message"),
+    GRPC_ENCODING("grpc-encoding"),
+    GRPC_TIMEOUT("grpc-timeout"),
+    ;
+
+    private final String name;
+
+    GrpcHeaderNames(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
 }
