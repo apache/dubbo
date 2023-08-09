@@ -29,4 +29,5 @@ public enum MetricsCategory {
     REGISTRY,
     METADATA,
     THREAD_POOL,
+    NETTY,
 }
