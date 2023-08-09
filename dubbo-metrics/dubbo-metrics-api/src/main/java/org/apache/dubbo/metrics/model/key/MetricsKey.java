@@ -124,6 +124,9 @@ public enum MetricsKey {
     // consumer metrics key
     INVOKER_NO_AVAILABLE_COUNT("dubbo.consumer.invoker.no.available.count", "Request Throw No Invoker Available Exception Count"),
 
+    // count the number of occurrences of each error code
+    ERROR_CODE_COUNT("dubbo.error.code.count","The Count Of Occurrences for Each Error Code"),
+
     // netty metrics key
     NETTY_ALLOCATOR_HEAP_MEMORY_USED("netty.allocator.memory.used", "Netty Allocator Memory Used"),
     NETTY_ALLOCATOR_DIRECT_MEMORY_USED("netty.allocator.direct.memory.used", "Netty Allocator Direct Memory Used"),
