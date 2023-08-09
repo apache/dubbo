@@ -693,15 +693,20 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
 
         ConsumerConfigurationListener(ModuleModel moduleModel) {
             super(moduleModel);
-            this.initWith(moduleModel.getApplicationModel().getApplicationName() + CONFIGURATORS_SUFFIX);
         }
 
-        void addNotifyListener(RegistryDirectory listener) {
+        synchronized void addNotifyListener(RegistryDirectory listener) {
+            if (listeners.size() == 0) {
+                this.initWith(moduleModel.getApplicationModel().getApplicationName() + CONFIGURATORS_SUFFIX);
+            }
             this.listeners.add(listener);
         }
 
-        void removeNotifyListener(RegistryDirectory listener) {
+        synchronized void removeNotifyListener(RegistryDirectory listener) {
             this.listeners.remove(listener);
+            if (listeners.size() == 0) {
+                this.stopListen(moduleModel.getApplicationModel().getApplicationName() + CONFIGURATORS_SUFFIX);
+            }
         }
 
         @Override
