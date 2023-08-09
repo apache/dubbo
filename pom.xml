@@ -141,7 +141,7 @@
     </properties>
 
     <modules>
-<!--        <module>dubbo-annotation-processor</module>-->
+        <module>dubbo-annotation-processor</module>
         <module>dubbo-common</module>
         <module>dubbo-container</module>
         <module>dubbo-compiler</module>
@@ -185,12 +185,12 @@
 
     <dependencies>
 
-<!--        <dependency>-->
-<!--            <groupId>org.apache.dubbo</groupId>-->
-<!--            <artifactId>dubbo-annotation-processor</artifactId>-->
-<!--            <version>${dubbo_annotation_processor_version}</version>-->
-<!--            <optional>true</optional>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-annotation-processor</artifactId>
+            <version>${dubbo_annotation_processor_version}</version>
+            <optional>true</optional>
+        </dependency>
 
         <!--JUnit Jupiter Engine to depend on the JUnit5 engine and JUnit 5 API -->
         <dependency>
