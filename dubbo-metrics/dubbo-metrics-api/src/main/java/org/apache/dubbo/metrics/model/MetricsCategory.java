@@ -30,4 +30,5 @@ public enum MetricsCategory {
     METADATA,
     THREAD_POOL,
     ERROR_CODE,
+    NETTY,
 }

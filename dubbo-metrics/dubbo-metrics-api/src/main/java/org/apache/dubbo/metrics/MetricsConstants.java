@@ -22,8 +22,8 @@ public interface MetricsConstants {
     String INVOCATION = "metric_filter_invocation";
     String METHOD_METRICS = "metric_filter_method_metrics";
     String INVOCATION_METRICS_COUNTER = "metric_filter_invocation_counter";
-
     String INVOCATION_SIDE = "metric_filter_side";
+    String INVOCATION_REQUEST_ERROR  = "metric_request_error";
 
     String ATTACHMENT_KEY_SERVICE = "serviceKey";
     String ATTACHMENT_KEY_SIZE = "size";
@@ -31,5 +31,7 @@ public interface MetricsConstants {
     String ATTACHMENT_DIRECTORY_MAP = "dirNum";
 
     int SELF_INCREMENT_SIZE = 1;
+
+    String NETTY_METRICS_MAP = "nettyMetricsMap";
 
 }
