@@ -159,9 +159,9 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
         MethodMetric metric = new MethodMetric(applicationModel, event.getAttachmentValue(MetricsConstants.INVOCATION));
         long responseTime = event.getTimePair().calc();
         if (enableRt) {
-            ConcurrentDoubleHistogram quantile = ConcurrentHashMapUtils.computeIfAbsent(rt, metric,
-                k -> new ConcurrentDoubleHistogram(DEFAULT_COMPRESSION, bucketNum, timeWindowSeconds));
-            quantile.add(responseTime);
+            ConcurrentDoubleHistogram concurrentDoubleHistogram = ConcurrentHashMapUtils.computeIfAbsent(rt, metric,
+                k -> new ConcurrentDoubleHistogram(2));
+            concurrentDoubleHistogram.recordValue(responseTime);
         }
 
         if (enableRtPxx) {
