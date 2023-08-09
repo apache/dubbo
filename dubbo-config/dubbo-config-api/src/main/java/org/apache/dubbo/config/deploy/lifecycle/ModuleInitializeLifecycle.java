@@ -25,7 +25,7 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 /**
  * Module initialize lifecycle.
  */
-@Activate(order = -1)
+@Activate(order = -1000)
 public class ModuleInitializeLifecycle implements ApplicationLifecycle{
 
     private DefaultApplicationDeployer defaultApplicationDeployer;

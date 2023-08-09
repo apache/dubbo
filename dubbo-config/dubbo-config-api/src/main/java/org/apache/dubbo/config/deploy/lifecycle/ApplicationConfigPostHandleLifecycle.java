@@ -22,7 +22,7 @@ import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
 /**
  * Application config post-handle lifecycle.
  */
-@Activate(order = -2)
+@Activate(order = -2000)
 public class ApplicationConfigPostHandleLifecycle implements ApplicationLifecycle {
 
     private DefaultApplicationDeployer defaultApplicationDeployer;

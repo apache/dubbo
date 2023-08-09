@@ -28,7 +28,7 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@Activate(order = -1)
+@Activate(order = -1000)
 public class MetrisExportApplicationLifecycle implements ApplicationLifecycle {
 
     private DefaultApplicationDeployer applicationDeployer;

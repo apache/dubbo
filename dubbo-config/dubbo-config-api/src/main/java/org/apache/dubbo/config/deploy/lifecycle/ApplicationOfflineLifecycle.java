@@ -32,7 +32,7 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import java.util.List;
 import java.util.concurrent.Future;
 
-@Activate(order = -1)
+@Activate(order = -1000)
 public class ApplicationOfflineLifecycle implements ApplicationLifecycle {
 
     private DefaultApplicationDeployer applicationDeployer;

@@ -27,7 +27,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 /**
  * Application config pre-handle lifecycle.
  */
-@Activate(order = -4)
+@Activate(order = -4000)
 public class ApplicationConfigPreHandleLifecycle implements ApplicationLifecycle{
 
     private DefaultApplicationDeployer defaultApplicationDeployer;
