@@ -40,21 +40,11 @@ public class MetrisExportApplicationLifecycle implements ApplicationLifecycle {
          this.applicationDeployer = defaultApplicationDeployer;
     }
 
-    /**
-     * If this lifecycle need to initialize.
-     */
     @Override
     public boolean needInitialize() {
         return true;
     }
 
-    /**
-     * What to do when a module changed.
-     *
-     * @param changedModule                  changed module
-     * @param moduleState                    module state
-     * @param hasPreparedApplicationInstance
-     */
     @Override
     public void preModuleChanged(ModuleModel changedModule, DeployState moduleState, AtomicBoolean hasPreparedApplicationInstance) {
         if (!changedModule.isInternal() && moduleState == DeployState.STARTED && !hasPreparedApplicationInstance.get()) {
