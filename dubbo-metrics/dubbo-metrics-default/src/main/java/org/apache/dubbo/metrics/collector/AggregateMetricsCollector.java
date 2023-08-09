@@ -237,13 +237,13 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
     private void collectRT(List<MetricSample> list) {
         rt.forEach((k, v) -> {
             list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_P99.getNameByType(k.getSide()),
-                MetricsKey.METRIC_RT_P99.getDescription(), k.getTags(), RT, v, value -> value.quantile(0.99)));
+                MetricsKey.METRIC_RT_P99.getDescription(), k.getTags(), RT, v, value -> value.getValueAtPercentile(99)));
             list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_P95.getNameByType(k.getSide()),
-                MetricsKey.METRIC_RT_P95.getDescription(), k.getTags(), RT, v, value -> value.quantile(0.95)));
+                MetricsKey.METRIC_RT_P95.getDescription(), k.getTags(), RT, v, value -> value.getValueAtPercentile(95)));
             list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_P90.getNameByType(k.getSide()),
-                MetricsKey.METRIC_RT_P90.getDescription(), k.getTags(), RT, v, value -> value.quantile(0.90)));
+                MetricsKey.METRIC_RT_P90.getDescription(), k.getTags(), RT, v, value -> value.getValueAtPercentile(90)));
             list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_P50.getNameByType(k.getSide()),
-                MetricsKey.METRIC_RT_P50.getDescription(), k.getTags(), RT, v, value -> value.quantile(0.50)));
+                MetricsKey.METRIC_RT_P50.getDescription(), k.getTags(), RT, v, value -> value.getValueAtPercentile(50)));
         });
 
         rtAgr.forEach((k, v) -> {
