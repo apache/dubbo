@@ -157,22 +157,20 @@ public class MetricsApplicationLifecycle implements ApplicationLifecycle {
     }
 
     @Override
-    public void postModuleChanged(ModuleModel changedModule, DeployState moduleState, DeployState newState) {
-        if(DeployState.STARTED.equals(newState) && applicationDeployer.isStarting()){
+    public void postModuleChanged(ModuleModel changedModule, DeployState moduleState, DeployState newState,DeployState oldState) {
+        if(DeployState.STARTED.equals(newState) && DeployState.STARTING.equals(oldState)){
             startMetricsCollector();
+        }
+        if (logger.isInfoEnabled()) {
+            logger.info(applicationDeployer.getIdentifier() + " is ready.");
         }
     }
 
     private void startMetricsCollector() {
-
         DefaultMetricsCollector collector = applicationDeployer.getApplicationModel().getBeanFactory().getBean(DefaultMetricsCollector.class);
-
 
         if (Objects.nonNull(collector) && collector.isThreadpoolCollectEnabled()) {
             collector.registryDefaultSample();
-        }
-        if (logger.isInfoEnabled()) {
-            logger.info(applicationDeployer.getIdentifier() + " is ready.");
         }
     }
 

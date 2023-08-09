@@ -82,7 +82,7 @@ public interface ApplicationLifecycle extends Lifecycle {
      * @param moduleState module state
      * @param newState new application state
      */
-    default void postModuleChanged(ModuleModel changedModule,DeployState moduleState, DeployState newState){}
+    default void postModuleChanged(ModuleModel changedModule,DeployState moduleState, DeployState newState,DeployState oldState){}
 
     /**
      * {@link DefaultApplicationDeployer#refreshServiceInstance()}.

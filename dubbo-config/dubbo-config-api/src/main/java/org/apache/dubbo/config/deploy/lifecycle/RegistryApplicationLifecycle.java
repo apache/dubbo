@@ -145,8 +145,8 @@ public class RegistryApplicationLifecycle implements ApplicationLifecycle {
     }
 
     @Override
-    public void postModuleChanged(ModuleModel changedModule, DeployState moduleState, DeployState newState) {
-        if(!applicationDeployer.isStarting() && newState.equals(DeployState.STARTED)){
+    public void postModuleChanged(ModuleModel changedModule, DeployState moduleState, DeployState newState,DeployState oldState) {
+        if(DeployState.STARTING.equals(oldState) && DeployState.STARTED.equals(newState)){
             refreshMetadata();
         }
     }
@@ -158,6 +158,7 @@ public class RegistryApplicationLifecycle implements ApplicationLifecycle {
             }
         } catch (Exception e) {
             logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
+            throw e;
         }
     }
 

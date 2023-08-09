@@ -171,8 +171,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
             lifecycleManager.initialize();
 
-            initModuleDeployers();
-
             initialized = true;
 
             if (logger.isInfoEnabled()) {
@@ -185,14 +183,14 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         dubboShutdownHook.register();
     }
 
-    private void initModuleDeployers() {
-        // make sure created default module
-        applicationModel.getDefaultModule();
-        // deployer initialize
-        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
-            moduleModel.getDeployer().initialize();
-        }
-    }
+//    private void initModuleDeployers() {
+//        // make sure created default module
+//        applicationModel.getDefaultModule();
+//        // deployer initialize
+//        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
+//            moduleModel.getDeployer().initialize();
+//        }
+//    }
 
     //happens-before configcenter load
     private void loadApplicationConfigs() {
@@ -450,20 +448,17 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
             lifecycleManager.preModuleChanged(moduleModel,moduleState,hasPreparedApplicationInstance);
             DeployState newState = calculateState();
+            DeployState oldState = getState();
             switch (newState) {
                 case STARTED:
-                    if (!isStarting()) {
-                        break;
+                    if (oldState == DeployState.STARTING) {
+                        setStarted();
+                        try {
+                            lifecycleManager.postModuleChanged(moduleModel, moduleState, newState,oldState);
+                        } finally {
+                            completeStartFuture(true);
+                        }
                     }
-                    try {
-                        lifecycleManager.postModuleChanged(moduleModel, moduleState, newState);
-                    }finally {
-                        completeStartFuture(true);
-                    }
-                    if (logger.isInfoEnabled()) {
-                        logger.info(getIdentifier() + " is ready.");
-                    }
-                    setStarted();
                     break;
                 case STARTING:
                     onStarting();
@@ -492,8 +487,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     // setPending();
                     break;
             }
-            if(newState != DeployState.STARTED){
-                lifecycleManager.postModuleChanged(moduleModel, moduleState, newState);
+            if(!(newState == DeployState.STARTED && oldState == DeployState.STARTING)){
+                lifecycleManager.postModuleChanged(moduleModel, moduleState, newState, oldState);
             }
         }
     }

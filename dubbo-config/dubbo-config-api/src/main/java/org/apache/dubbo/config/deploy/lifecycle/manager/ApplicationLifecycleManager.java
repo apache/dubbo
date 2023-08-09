@@ -60,8 +60,8 @@ public class ApplicationLifecycleManager{
         getAll().forEach(applicationLifecycle -> applicationLifecycle.preModuleChanged(changedModule, changedModuleState, hasPreparedApplicationInstance));
     }
 
-    public void postModuleChanged(ModuleModel changedModule, DeployState changedModuleState, DeployState applicationNewState) {
-        getAll().forEach(applicationLifecycle -> applicationLifecycle.postModuleChanged(changedModule, changedModuleState, applicationNewState));
+    public void postModuleChanged(ModuleModel changedModule, DeployState changedModuleState, DeployState applicationNewState,DeployState oldState) {
+        getAll().forEach(applicationLifecycle -> applicationLifecycle.postModuleChanged(changedModule, changedModuleState, applicationNewState, oldState));
     }
 
     public void runRefreshServiceInstance(){
