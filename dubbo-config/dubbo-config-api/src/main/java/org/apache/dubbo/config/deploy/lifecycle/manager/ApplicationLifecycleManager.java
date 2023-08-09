@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.deploy.lifecycle.manager;
 
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
@@ -75,6 +76,11 @@ public class ApplicationLifecycleManager{
 
     protected List<ApplicationLifecycle> loadAll() {
         ExtensionLoader<ApplicationLifecycle> loader = defaultApplicationDeployer.getApplicationModel().getExtensionLoader(ApplicationLifecycle.class);
-        return loader.getActivateExtensions();
+        List<ApplicationLifecycle> lifecycles = loader.getActivateExtensions();
+
+        ScopeBeanFactory beanFactory = defaultApplicationDeployer.getApplicationModel().getBeanFactory();
+        lifecycles.forEach(beanFactory::registerBean);
+
+        return lifecycles;
     }
 }
