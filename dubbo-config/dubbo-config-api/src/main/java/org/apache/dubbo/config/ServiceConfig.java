@@ -38,6 +38,8 @@ import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.ServiceNameMapping;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
+import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -515,9 +517,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         List<URL> registryURLs = !Boolean.FALSE.equals(isRegister()) ?
             ConfigValidationUtils.loadRegistries(this, true) : Collections.emptyList();
 
-//        MetricsEventBus.post(RegistryEvent.toRsEvent(module.getApplicationModel(), getUniqueServiceName(), protocols.size() * registryURLs.size()),
-//            () -> {
-
+        MetricsEventBus.post(RegistryEvent.toRsEvent(getApplicationModel(), getUniqueServiceName(), protocols.size() * registryURLs.size()),            () -> {
                 for (ProtocolConfig protocolConfig : protocols) {
                     String pathKey = URL.buildKey(getContextPath(protocolConfig)
                         .map(p -> p + "/" + path)
@@ -529,9 +529,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                     }
                     doExportUrlsFor1Protocol(protocolConfig, registryURLs, registerType);
                 }
-//                return null;
-//            }
-//        );
+                return null;
+            }
+        );
 
         providerModel.setServiceUrls(urls);
     }
