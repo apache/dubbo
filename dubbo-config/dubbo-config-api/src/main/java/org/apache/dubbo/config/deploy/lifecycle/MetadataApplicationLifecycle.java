@@ -277,7 +277,7 @@ public class MetadataApplicationLifecycle implements ApplicationLifecycle {
 
     @Override
     public void postDestroy(AppPostDestroyEvent postDestroyContext) {
-        destroyMetadataReports();
+        destroyMetadataReports(postDestroyContext.getApplicationModel());
     }
 
     private void destroyMetadataReports(ApplicationModel applicationModel) {
