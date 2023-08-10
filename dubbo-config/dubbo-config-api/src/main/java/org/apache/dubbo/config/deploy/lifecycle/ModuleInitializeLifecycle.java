@@ -18,7 +18,7 @@ package org.apache.dubbo.config.deploy.lifecycle;
 
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
+import org.apache.dubbo.config.deploy.lifecycle.event.AppInitEvent;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
@@ -27,18 +27,6 @@ import org.apache.dubbo.rpc.model.ModuleModel;
  */
 @Activate(order = -1000)
 public class ModuleInitializeLifecycle implements ApplicationLifecycle{
-
-    private DefaultApplicationDeployer defaultApplicationDeployer;
-
-    /**
-     * Set application deployer.
-     *
-     * @param defaultApplicationDeployer The ApplicationDeployer that called this ApplicationLifecycle.
-     */
-    @Override
-    public void setApplicationDeployer(DefaultApplicationDeployer defaultApplicationDeployer) {
-        this.defaultApplicationDeployer = defaultApplicationDeployer;
-    }
 
     /**
      * If this lifecycle need to initialize.
@@ -52,12 +40,11 @@ public class ModuleInitializeLifecycle implements ApplicationLifecycle{
      * {@link ApplicationDeployer#initialize()}
      */
     @Override
-    public void initialize() {
-        initModuleDeployers();
+    public void initialize(AppInitEvent initEvent) {
+        initModuleDeployers(initEvent.getApplicationModel());
     }
 
-    private void initModuleDeployers() {
-        ApplicationModel applicationModel = defaultApplicationDeployer.getApplicationModel();
+    private void initModuleDeployers(ApplicationModel applicationModel) {
         // make sure created default module
         applicationModel.getDefaultModule();
         // deployer initialize

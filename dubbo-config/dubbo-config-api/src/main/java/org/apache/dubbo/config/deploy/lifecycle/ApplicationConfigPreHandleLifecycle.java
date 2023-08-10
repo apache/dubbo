@@ -21,7 +21,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
+import org.apache.dubbo.config.deploy.lifecycle.event.AppInitEvent;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**
@@ -30,12 +30,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 @Activate(order = -4000)
 public class ApplicationConfigPreHandleLifecycle implements ApplicationLifecycle{
 
-    private DefaultApplicationDeployer defaultApplicationDeployer;
-
-    @Override
-    public void setApplicationDeployer(DefaultApplicationDeployer defaultApplicationDeployer) {
-        this.defaultApplicationDeployer = defaultApplicationDeployer;
-    }
 
     @Override
     public boolean needInitialize() {
@@ -43,11 +37,13 @@ public class ApplicationConfigPreHandleLifecycle implements ApplicationLifecycle
     }
 
     @Override
-    public void initialize() {
-        ConfigManager configManager = defaultApplicationDeployer.getApplicationModel().getApplicationConfigManager();
+    public void initialize(AppInitEvent appInitEvent) {
+
+        ApplicationModel applicationModel = appInitEvent.getApplicationModel();
+
+        ConfigManager configManager = appInitEvent.getApplicationModel().getApplicationConfigManager();
         configManager.loadConfigsOfTypeFromProps(ApplicationConfig.class);
 
-        ApplicationModel applicationModel = defaultApplicationDeployer.getApplicationModel();
         // try set model name
         if (StringUtils.isBlank(applicationModel.getModelName())) {
             applicationModel.setModelName(applicationModel.tryGetApplicationName());

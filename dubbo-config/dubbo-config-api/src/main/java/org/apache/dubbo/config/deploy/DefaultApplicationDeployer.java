@@ -16,9 +16,7 @@
  */
 package org.apache.dubbo.config.deploy;
 
-import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.ReferenceCache;
-import org.apache.dubbo.common.deploy.AbstractDeployer;
 import org.apache.dubbo.common.deploy.ApplicationDeployListener;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.deploy.DeployListener;
@@ -29,12 +27,10 @@ import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
-import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.config.deploy.lifecycle.manager.ApplicationLifecycleManager;
-import org.apache.dubbo.config.utils.CompositeReferenceCache;
+import org.apache.dubbo.config.deploy.lifecycle.context.ApplicationContext;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
@@ -44,8 +40,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_START_MODEL;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
@@ -61,30 +55,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private final ConfigManager configManager;
 
-    private final Environment environment;
-
-    private final ReferenceCache referenceCache;
-
-    private final FrameworkExecutorRepository frameworkExecutorRepository;
-
-    private final ExecutorRepository executorRepository;
-
-    private final AtomicBoolean hasPreparedApplicationInstance = new AtomicBoolean(false);
-
-    private volatile boolean hasPreparedInternalModule = false;
-
     private volatile CompletableFuture<Boolean> startFuture;
 
     private final DubboShutdownHook dubboShutdownHook;
-
-    private final ApplicationLifecycleManager lifecycleManager;
-
-    private boolean registered = false;
-
-    /**
-     * Indicate that how many threads are updating service
-     */
-    private final AtomicInteger serviceRefreshState = new AtomicInteger(0);
 
     private final Object stateLock = new Object();
     private final Object startLock = new Object();
@@ -92,24 +65,16 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private final Object internalModuleLock = new Object();
 
     public DefaultApplicationDeployer(ApplicationModel applicationModel) {
-        super(applicationModel);
+        super(new ApplicationContext(applicationModel));
         this.applicationModel = applicationModel;
         configManager = applicationModel.getApplicationConfigManager();
-        environment = applicationModel.modelEnvironment();
-
-        referenceCache = new CompositeReferenceCache(applicationModel);
-        frameworkExecutorRepository = applicationModel.getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
-        executorRepository = ExecutorRepository.getInstance(applicationModel);
         dubboShutdownHook = new DubboShutdownHook(applicationModel);
-
         // load spi listener
         Set<ApplicationDeployListener> deployListeners = applicationModel.getExtensionLoader(ApplicationDeployListener.class)
             .getSupportedExtensionInstances();
         for (ApplicationDeployListener listener : deployListeners) {
             this.addDeployListener(listener);
         }
-
-        lifecycleManager = new ApplicationLifecycleManager(this);
     }
 
     public static ApplicationDeployer get(ScopeModel moduleOrApplicationModel) {
@@ -148,7 +113,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     @Override
     public ReferenceCache getReferenceCache() {
-        return referenceCache;
+        return getModelContext().getReferenceCache();
     }
 
     /**
@@ -156,12 +121,12 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
      */
     @Override
     public void initialize() {
-        if (initialized) {
+        if (getModelContext().initialized()) {
             return;
         }
         // Ensure that the initialization is completed when concurrent calls
         synchronized (startLock) {
-            if (initialized) {
+            if (getModelContext().initialized()) {
                 return;
             }
             onInitialize();
@@ -169,9 +134,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             // register shutdown hook
             registerShutdownHook();
 
-            lifecycleManager.initialize();
+            getModelContext().runInitialize();
 
-            initialized = true;
+            getModelContext().setInitialized(true);
 
             if (logger.isInfoEnabled()) {
                 logger.info(getIdentifier() + " has been initialized!");
@@ -278,7 +243,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private void doStart() {
         startModules();
-        lifecycleManager.start(hasPreparedApplicationInstance);
+        getModelContext().runStart();
 
         // prepare application instance
 //        prepareApplicationInstance();
@@ -320,7 +285,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     @Override
     public void prepareApplicationInstance() {
-        if (hasPreparedApplicationInstance.get()) {
+        if (getModelContext().hasPreparedApplicationInstance()) {
             return;
         }
         if (isRegisterConsumerInstance()) {
@@ -330,11 +295,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     @Override
     public void prepareInternalModule() {
-        if (hasPreparedInternalModule) {
+        if (getModelContext().hasPreparedInternalModule()) {
             return;
         }
         synchronized (internalModuleLock) {
-            if (hasPreparedInternalModule) {
+            if (getModelContext().hasPreparedInternalModule()) {
                 return;
             }
 
@@ -345,7 +310,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 // wait for internal module startup
                 try {
                     future.get(5, TimeUnit.SECONDS);
-                    hasPreparedInternalModule = true;
+                    getModelContext().setHasPreparedInternalModule(true);
                 } catch (Exception e) {
                     logger.warn(CONFIG_FAILED_START_MODEL, "", "", "wait for internal module startup failed: " + e.getMessage(), e);
                 }
@@ -365,17 +330,17 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     @Override
     public void refreshServiceInstance() {
-        lifecycleManager.runRefreshServiceInstance();
+        getModelContext().runRefreshServiceInstance();
     }
 
     @Override
     public void increaseServiceRefreshCount() {
-        serviceRefreshState.incrementAndGet();
+        getModelContext().getServiceRefreshState().incrementAndGet();
     }
 
     @Override
     public void decreaseServiceRefreshCount() {
-        serviceRefreshState.decrementAndGet();
+        getModelContext().getServiceRefreshState().decrementAndGet();
     }
 
     @Override
@@ -391,7 +356,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
             onStopping();
 
-            lifecycleManager.preDestroy();
+            getModelContext().runPreDestroy();
 
             unRegisterShutdownHook();
         }
@@ -405,7 +370,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 return;
             }
             try {
-                lifecycleManager.postDestroy();
+                getModelContext().runPostDestroy();
 
                 executeShutdownCallbacks();
 
@@ -446,7 +411,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             if (!moduleModel.isInternal() && moduleState == DeployState.STARTED) {
                 prepareApplicationInstance();
             }
-            lifecycleManager.preModuleChanged(moduleModel,moduleState,hasPreparedApplicationInstance);
+
+            getModelContext().runPreModuleChanged(moduleModel,moduleState);
             DeployState newState = calculateState();
             DeployState oldState = getState();
             switch (newState) {
@@ -454,7 +420,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     if (oldState == DeployState.STARTING) {
                         setStarted();
                         try {
-                            lifecycleManager.postModuleChanged(moduleModel, moduleState, newState,oldState);
+                            getModelContext().runPostModuleChanged(moduleModel,moduleState,newState,oldState);
                         } finally {
                             completeStartFuture(true);
                         }
@@ -488,7 +454,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     break;
             }
             if(!(newState == DeployState.STARTED && oldState == DeployState.STARTING)){
-                lifecycleManager.postModuleChanged(moduleModel, moduleState, newState, oldState);
+               getModelContext().runPostModuleChanged(moduleModel, moduleState, newState, oldState);
             }
         }
     }
@@ -549,7 +515,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void onInitialize() {
-        for (DeployListener<ApplicationModel> listener : listeners) {
+        for (DeployListener<ApplicationModel> listener : getModelContext().getListeners()) {
             try {
                 listener.onInitialize(applicationModel);
             } catch (Throwable e) {
@@ -562,7 +528,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         if (!isStarting()) {
             return;
         }
-        for (DeployListener<ApplicationModel> listener : listeners) {
+        for (DeployListener<ApplicationModel> listener : getModelContext().getListeners()) {
             try {
                 if (listener instanceof ApplicationDeployListener) {
                     ((ApplicationDeployListener) listener).onModuleStarted(applicationModel);
@@ -639,8 +605,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private void destroyExecutorRepository() {
         // shutdown export/refer executor
-        executorRepository.shutdownServiceExportExecutor();
-        executorRepository.shutdownServiceReferExecutor();
+        getModelContext().getExecutorRepository().shutdownServiceExportExecutor();
+        getModelContext().getExecutorRepository().shutdownServiceReferExecutor();
         ExecutorRepository.getInstance(applicationModel).destroyAll();
     }
 
@@ -648,15 +614,20 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         return configManager.getApplicationOrElseThrow();
     }
 
-    public void setRegistered(boolean registered) {
-        this.registered = registered;
-    }
+//    public void setRegistered(boolean registered) {
+//        this.registered = registered;
+//    }
 
     public boolean isRegistered() {
-        return registered;
+        return getModelContext().registered();
     }
 
     public int getServiceRefreshState() {
-        return serviceRefreshState.get();
+        return getModelContext().getServiceRefreshState().get();
+    }
+
+    @Override
+    protected ApplicationContext getModelContext() {
+        return (ApplicationContext)super.getModelContext();
     }
 }

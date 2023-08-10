@@ -22,8 +22,9 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.MetricsConfig;
-import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
+import org.apache.dubbo.config.deploy.lifecycle.event.AppPreModuleChangeEvent;
 import org.apache.dubbo.metrics.service.MetricsServiceExporter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -31,14 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Activate(order = -1000)
 public class MetrisExportApplicationLifecycle implements ApplicationLifecycle {
 
-    private DefaultApplicationDeployer applicationDeployer;
-
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetrisExportApplicationLifecycle.class);
-
-    @Override
-    public void setApplicationDeployer(DefaultApplicationDeployer defaultApplicationDeployer) {
-         this.applicationDeployer = defaultApplicationDeployer;
-    }
 
     @Override
     public boolean needInitialize() {
@@ -46,18 +40,22 @@ public class MetrisExportApplicationLifecycle implements ApplicationLifecycle {
     }
 
     @Override
-    public void preModuleChanged(ModuleModel changedModule, DeployState moduleState, AtomicBoolean hasPreparedApplicationInstance) {
+    public void preModuleChanged(AppPreModuleChangeEvent preModuleChangeContext) {
+        ModuleModel changedModule = preModuleChangeContext.getChangedModule();
+        DeployState moduleState = preModuleChangeContext.getModuleState();
+        AtomicBoolean hasPreparedApplicationInstance = preModuleChangeContext.getHasPreparedApplicationInstance();
+
         if (!changedModule.isInternal() && moduleState == DeployState.STARTED && !hasPreparedApplicationInstance.get()) {
-            exportMetricsService();
+            exportMetricsService(preModuleChangeContext.getApplicationModel());
         }
     }
 
-    private void exportMetricsService() {
-        boolean exportMetrics = applicationDeployer.getApplicationModel().getApplicationConfigManager().getMetrics()
+    private void exportMetricsService(ApplicationModel applicationModel) {
+        boolean exportMetrics = applicationModel.getApplicationConfigManager().getMetrics()
             .map(MetricsConfig::getExportMetricsService).orElse(true);
         if (exportMetrics) {
             try {
-                MetricsServiceExporter exporter = applicationDeployer.getApplicationModel().getExtension(MetricsApplicationLifecycle.class,MetricsApplicationLifecycle.getName()).getMetricsServiceExporter();
+                MetricsServiceExporter exporter = applicationModel.getExtension(MetricsApplicationLifecycle.class,MetricsApplicationLifecycle.getName()).getMetricsServiceExporter();
                 exporter.export();
             } catch (Exception e) {
                 logger.error(LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION, "", "",

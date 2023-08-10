@@ -24,6 +24,9 @@ import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
+import org.apache.dubbo.config.deploy.lifecycle.event.AppInitEvent;
+import org.apache.dubbo.config.deploy.lifecycle.event.AppPostModuleChangeEvent;
+import org.apache.dubbo.config.deploy.lifecycle.event.AppPreDestroyEvent;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.report.DefaultMetricsReporterFactory;
 import org.apache.dubbo.metrics.report.MetricsReporter;
@@ -31,7 +34,6 @@ import org.apache.dubbo.metrics.report.MetricsReporterFactory;
 import org.apache.dubbo.metrics.service.MetricsServiceExporter;
 import org.apache.dubbo.metrics.utils.MetricsSupportUtil;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -50,17 +52,10 @@ public class MetricsApplicationLifecycle implements ApplicationLifecycle {
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetricsApplicationLifecycle.class);
 
-    private DefaultApplicationDeployer applicationDeployer;
-
     private MetricsServiceExporter metricsServiceExporter;
 
     public static String getName(){
         return NAME;
-    }
-
-    @Override
-    public void setApplicationDeployer(DefaultApplicationDeployer defaultApplicationDeployer) {
-        this.applicationDeployer = defaultApplicationDeployer;
     }
 
     @Override
@@ -72,21 +67,23 @@ public class MetricsApplicationLifecycle implements ApplicationLifecycle {
      * Initialize.
      */
     @Override
-    public void initialize() {
-        initMetricsReporter();
-        initMetricsService();
+    public void initialize(AppInitEvent initContext) {
+        initMetricsReporter(initContext);
+        initMetricsService(initContext.getApplicationModel());
     }
 
-    private void initMetricsReporter() {
+    private void initMetricsReporter(AppInitEvent initEvent) {
+        ApplicationModel applicationModel = initEvent.getApplicationModel();
+
         if (!MetricsSupportUtil.isSupportMetrics()) {
             return;
         }
-        ApplicationModel applicationModel = applicationDeployer.getApplicationModel();
-        DefaultMetricsCollector collector = applicationDeployer.getApplicationModel().getBeanFactory().getBean(DefaultMetricsCollector.class);
-        Optional<MetricsConfig> configOptional = applicationDeployer.getApplicationModel().getApplicationConfigManager().getMetrics();;
+
+        DefaultMetricsCollector collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
+        Optional<MetricsConfig> configOptional = applicationModel.getApplicationConfigManager().getMetrics();;
 
         //If no specific metrics type is configured and there is no Prometheus dependency in the dependencies.
-        MetricsConfig metricsConfig = configOptional.orElse(new MetricsConfig(applicationDeployer.getApplicationModel()));
+        MetricsConfig metricsConfig = configOptional.orElse(new MetricsConfig(applicationModel));
 
         if (StringUtils.isBlank(metricsConfig.getProtocol())) {
             metricsConfig.setProtocol(isSupportPrometheus() ? PROTOCOL_PROMETHEUS : PROTOCOL_DEFAULT);
@@ -121,8 +118,8 @@ public class MetricsApplicationLifecycle implements ApplicationLifecycle {
         }
     }
 
-    private void initMetricsService() {
-        this.metricsServiceExporter = applicationDeployer.getApplicationModel().getExtensionLoader(MetricsServiceExporter.class).getDefaultExtension();
+    private void initMetricsService(ApplicationModel applicationModel) {
+        this.metricsServiceExporter = applicationModel.getExtensionLoader(MetricsServiceExporter.class).getDefaultExtension();
         this.metricsServiceExporter.init();
     }
 
@@ -142,7 +139,7 @@ public class MetricsApplicationLifecycle implements ApplicationLifecycle {
     }
 
     @Override
-    public void preDestroy() {
+    public void preDestroy(AppPreDestroyEvent preDestroyContext) {
         disableMetricsService();
     }
 
@@ -157,17 +154,17 @@ public class MetricsApplicationLifecycle implements ApplicationLifecycle {
     }
 
     @Override
-    public void postModuleChanged(ModuleModel changedModule, DeployState moduleState, DeployState newState,DeployState oldState) {
-        if(DeployState.STARTED.equals(newState) && DeployState.STARTING.equals(oldState)){
-            startMetricsCollector();
+    public void postModuleChanged(AppPostModuleChangeEvent postModuleChangeContext) {
+        if(DeployState.STARTED.equals(postModuleChangeContext.getApplicationNewState()) && DeployState.STARTING.equals(postModuleChangeContext.getApplicationOldState())){
+            startMetricsCollector(postModuleChangeContext.getApplicationModel());
         }
         if (logger.isInfoEnabled()) {
-            logger.info(applicationDeployer.getIdentifier() + " is ready.");
+            logger.info(postModuleChangeContext.getApplicationModel().getDesc() + " is ready.");
         }
     }
 
-    private void startMetricsCollector() {
-        DefaultMetricsCollector collector = applicationDeployer.getApplicationModel().getBeanFactory().getBean(DefaultMetricsCollector.class);
+    private void startMetricsCollector(ApplicationModel applicationModel) {
+        DefaultMetricsCollector collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
 
         if (Objects.nonNull(collector) && collector.isThreadpoolCollectEnabled()) {
             collector.registryDefaultSample();

@@ -22,17 +22,17 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
-import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
+import org.apache.dubbo.config.deploy.lifecycle.event.AppPostDestroyEvent;
+import org.apache.dubbo.config.deploy.lifecycle.event.AppPostModuleChangeEvent;
+import org.apache.dubbo.config.deploy.lifecycle.event.AppPreModuleChangeEvent;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REFRESH_INSTANCE_ERROR;
@@ -48,16 +48,11 @@ public class RegistryApplicationLifecycle implements ApplicationLifecycle {
 
     private final AtomicInteger instanceRefreshScheduleTimes = new AtomicInteger(0);
 
-    private DefaultApplicationDeployer applicationDeployer;
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RegistryApplicationLifecycle.class);
 
     private ScheduledFuture<?> asyncMetadataFuture;
 
-    @Override
-    public void setApplicationDeployer(DefaultApplicationDeployer defaultApplicationDeployer) {
-        this.applicationDeployer = defaultApplicationDeployer;
-    }
 
     @Override
     public boolean needInitialize() {
@@ -68,39 +63,37 @@ public class RegistryApplicationLifecycle implements ApplicationLifecycle {
      * postDestroy.
      */
     @Override
-    public void postDestroy() {
+    public void postDestroy(AppPostDestroyEvent postDestroyContext) {
         destroyRegistries();
     }
 
-    private void destroyRegistries() {
-        RegistryManager.getInstance(applicationDeployer.getApplicationModel()).destroyAll();
+    private void destroyRegistries(ApplicationModel applicationModel) {
+        RegistryManager.getInstance(applicationModel).destroyAll();
     }
 
     /**
      * What to do when a module changed.
-     *
-     * @param changedModule changedModule
-     * @param moduleState   moduleState
      */
     @Override
-    public void preModuleChanged(ModuleModel changedModule, DeployState moduleState, AtomicBoolean hasPreparedApplicationInstance) {
+    public void preModuleChanged(AppPreModuleChangeEvent preModuleChangeContext) {
 
-        if (!changedModule.isInternal() && moduleState == DeployState.STARTED &&
-            !hasPreparedApplicationInstance.get() &&
-            applicationDeployer.isRegisterConsumerInstance() &&
-            hasPreparedApplicationInstance.compareAndSet(false,true)
+        if (!preModuleChangeContext.getChangedModule().isInternal() && preModuleChangeContext.getModuleState() == DeployState.STARTED &&
+            !preModuleChangeContext.getHasPreparedApplicationInstance().get() &&
+            isRegisterConsumerInstance(preModuleChangeContext.getApplicationModel()) &&
+            preModuleChangeContext.getHasPreparedApplicationInstance().compareAndSet(false,true)
         ) {
-            registerServiceInstance();
+            registerServiceInstance(preModuleChangeContext);
         }
     }
 
-    private void registerServiceInstance() {
+    private void registerServiceInstance(AppPreModuleChangeEvent preModuleChangeEvent) {
 
-        ApplicationModel applicationModel = applicationDeployer.getApplicationModel();
+
+        ApplicationModel applicationModel = preModuleChangeEvent.getApplicationModel();
         FrameworkExecutorRepository frameworkExecutorRepository = applicationModel.getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
 
         try {
-            applicationDeployer.setRegistered(true);
+            preModuleChangeEvent.registered().set(true);
             MetricsEventBus.post(RegistryEvent.toRegisterEvent(applicationModel),
                 () -> {
                     ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
@@ -111,7 +104,7 @@ public class RegistryApplicationLifecycle implements ApplicationLifecycle {
             logger.error(CONFIG_REGISTER_INSTANCE_ERROR, "configuration server disconnected", "", "Register instance error.", e);
         }
 
-        if (applicationDeployer.isRegistered()) {
+        if (preModuleChangeEvent.registered().get()) {
             // scheduled task for updating Metadata and ServiceInstance
             asyncMetadataFuture = frameworkExecutorRepository.getSharedScheduledExecutor().scheduleWithFixedDelay(() -> {
 
@@ -121,18 +114,18 @@ public class RegistryApplicationLifecycle implements ApplicationLifecycle {
                 }
 
                 // refresh for 30 times (default for 30s) when deployer is not started, prevent submit too many revision
-                if (instanceRefreshScheduleTimes.incrementAndGet() % 30 != 0 && !applicationDeployer.isStarted()) {
+                if (instanceRefreshScheduleTimes.incrementAndGet() % 30 != 0 && !preModuleChangeEvent.isStarted()) {
                     return;
                 }
 
                 // refresh for 5 times (default for 5s) when services are being updated by other threads, prevent submit too many revision
                 // note: should not always wait here
-                if (applicationDeployer.getServiceRefreshState() != 0 && instanceRefreshScheduleTimes.get() % 5 != 0) {
+                if (preModuleChangeEvent.getServiceRefreshState().get() != 0 && instanceRefreshScheduleTimes.get() % 5 != 0) {
                     return;
                 }
 
                 try {
-                    if (!applicationModel.isDestroyed() && applicationDeployer.isRegistered()) {
+                    if (!applicationModel.isDestroyed() && preModuleChangeEvent.registered().get()) {
                         ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationModel);
                     }
                 } catch (Exception e) {
@@ -145,22 +138,35 @@ public class RegistryApplicationLifecycle implements ApplicationLifecycle {
     }
 
     @Override
-    public void postModuleChanged(ModuleModel changedModule, DeployState moduleState, DeployState newState,DeployState oldState) {
-        if(DeployState.STARTING.equals(oldState) && DeployState.STARTED.equals(newState)){
-            refreshMetadata();
+    public void postModuleChanged(AppPostModuleChangeEvent postModuleChangeContext) {
+        if(DeployState.STARTING.equals(postModuleChangeContext.getApplicationOldState()) && DeployState.STARTED.equals(postModuleChangeContext.getApplicationNewState())){
+            refreshMetadata(postModuleChangeContext);
         }
     }
 
-    private void refreshMetadata(){
+    private void refreshMetadata(AppPostModuleChangeEvent postModuleChangeEvent){
         try {
-            if (applicationDeployer.isRegistered()) {
-                ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationDeployer.getApplicationModel());
+            if (postModuleChangeEvent.registered().get()) {
+                ServiceInstanceMetadataUtils.refreshMetadataAndInstance(postModuleChangeEvent.getApplicationModel());
             }
         } catch (Exception e) {
             logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
             throw e;
         }
     }
+
+    /**
+     * Close registration of instance for pure Consumer process by setting registerConsumer to 'false'
+     * by default is true.
+     */
+    public boolean isRegisterConsumerInstance(ApplicationModel applicationModel) {
+        Boolean registerConsumer = applicationModel.getApplicationConfigManager().getApplicationOrElseThrow().getRegisterConsumer();
+        if (registerConsumer == null) {
+            return true;
+        }
+        return Boolean.TRUE.equals(registerConsumer);
+    }
+
 
     public ScheduledFuture<?> getAsyncMetadataFuture() {
         return asyncMetadataFuture;

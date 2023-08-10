@@ -16,13 +16,17 @@
  */
 package org.apache.dubbo.config.deploy.lifecycle;
 
-import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
+import org.apache.dubbo.config.deploy.lifecycle.context.ApplicationContext;
+import org.apache.dubbo.config.deploy.lifecycle.event.AppInitEvent;
+import org.apache.dubbo.config.deploy.lifecycle.event.AppPostDestroyEvent;
+import org.apache.dubbo.config.deploy.lifecycle.event.AppPostModuleChangeEvent;
+import org.apache.dubbo.config.deploy.lifecycle.event.AppPreDestroyEvent;
+import org.apache.dubbo.config.deploy.lifecycle.event.AppPreModuleChangeEvent;
+import org.apache.dubbo.config.deploy.lifecycle.event.AppServiceRefreshEvent;
+import org.apache.dubbo.config.deploy.lifecycle.event.AppStartEvent;
 import org.apache.dubbo.rpc.model.ModuleModel;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * ApplicationLifecycle.
@@ -31,62 +35,48 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * can implement this interface to define what to do when application status changes.
  * <br>
  * In another word, when methods like
- * {@link DefaultApplicationDeployer#start()},
- * {@link DefaultApplicationDeployer#initialize()},
- * {@link DefaultApplicationDeployer#preDestroy()},
- * {@link DefaultApplicationDeployer#postDestroy()} and
- * {@link DefaultApplicationDeployer#checkState(ModuleModel, DeployState)} etc.
- *  called, all implementations of this interface will also be called.
+ * {@link ApplicationContext#runInitialize()},
+ * {@link ApplicationContext#runStart()},
+ * {@link ApplicationContext#runPreDestroy()},
+ * {@link ApplicationContext#runPostDestroy()} etc.
+ * called, all implementations of this interface will also be called.
  */
 @SPI
 public interface ApplicationLifecycle extends Lifecycle {
 
     /**
-     * Set application deployer.
-     *
-     * @param defaultApplicationDeployer The ApplicationDeployer that called this ApplicationLifecycle.
+     * @see ApplicationContext#runStart()
      */
-    void setApplicationDeployer(DefaultApplicationDeployer defaultApplicationDeployer);
+    default void start(AppStartEvent startContext){}
 
     /**
-     * {@link ApplicationDeployer#start()}
+     * @see ApplicationContext#runInitialize()
      */
-    default void start(AtomicBoolean hasPreparedApplicationInstance){}
+    default void initialize(AppInitEvent initContext){};
 
     /**
-     * {@link  ApplicationDeployer#initialize()}
+     * @see ApplicationContext#runPreDestroy()
      */
-    default void initialize(){};
+    default void preDestroy(AppPreDestroyEvent preDestroyContext) {}
 
     /**
-     * {@link ApplicationDeployer#preDestroy()}
+     * @see ApplicationContext#runPostDestroy()
      */
-    default void preDestroy() {}
+    default void postDestroy(AppPostDestroyEvent postDestroyContext) {}
 
     /**
-     * {@link ApplicationDeployer#postDestroy()}
+     * @see ApplicationContext#runPreModuleChanged(ModuleModel, DeployState)
      */
-    default void postDestroy() {}
+    default void preModuleChanged(AppPreModuleChangeEvent preModuleChangeContext){}
 
     /**
-     * What to do when a module changed.
-     *
-     * @param changedModule changed module
-     * @param moduleState module state
+     * @see ApplicationContext#runPostModuleChanged(ModuleModel, DeployState, DeployState, DeployState)
      */
-    default void preModuleChanged(ModuleModel changedModule, DeployState moduleState, AtomicBoolean hasPreparedApplicationInstance){}
+    default void postModuleChanged(AppPostModuleChangeEvent postModuleChangeContext){}
 
     /**
-     * What to do after a module changed.
-     * @param changedModule changed module
-     * @param moduleState module state
-     * @param newState new application state
+     * @see ApplicationContext#runRefreshServiceInstance()
      */
-    default void postModuleChanged(ModuleModel changedModule,DeployState moduleState, DeployState newState,DeployState oldState){}
-
-    /**
-     * {@link DefaultApplicationDeployer#refreshServiceInstance()}.
-     */
-    default void refreshServiceInstance(){}
+    default void refreshServiceInstance(AppServiceRefreshEvent serviceRefreshContext){}
 
 }

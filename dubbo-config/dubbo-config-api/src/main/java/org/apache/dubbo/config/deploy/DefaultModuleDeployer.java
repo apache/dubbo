@@ -19,7 +19,6 @@ package org.apache.dubbo.config.deploy;
 import org.apache.dubbo.common.config.ReferenceCache;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.constants.RegisterTypeEnum;
-import org.apache.dubbo.common.deploy.AbstractDeployer;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.deploy.DeployListener;
 import org.apache.dubbo.common.deploy.DeployState;
@@ -37,6 +36,7 @@ import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.config.context.ModuleConfigManager;
+import org.apache.dubbo.config.deploy.lifecycle.context.ModuleContext;
 import org.apache.dubbo.config.utils.SimpleReferenceCache;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
@@ -92,7 +92,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
 
     public DefaultModuleDeployer(ModuleModel moduleModel) {
-        super(moduleModel);
+        super(new ModuleContext(moduleModel));
         this.moduleModel = moduleModel;
         configManager = moduleModel.getConfigManager();
         frameworkExecutorRepository = moduleModel.getApplicationModel().getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
@@ -109,12 +109,12 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
     @Override
     public void initialize() throws IllegalStateException {
-        if (initialized) {
+        if (getModelContext().initialized()) {
             return;
         }
         // Ensure that the initialization is completed when concurrent calls
         synchronized (this) {
-            if (initialized) {
+            if (getModelContext().initialized()) {
                 return;
             }
             onInitialize();
@@ -133,7 +133,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                 background = isExportBackground() || isReferBackground();
             }
 
-            initialized = true;
+            getModelContext().setInitialized(true);
             if (logger.isInfoEnabled()) {
                 logger.info(getIdentifier() + " has been initialized!");
             }
@@ -309,7 +309,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     }
 
     private void onInitialize() {
-        for (DeployListener<ModuleModel> listener : listeners) {
+        for (DeployListener<ModuleModel> listener : getModelContext().getListeners()) {
             try {
                 listener.onInitialize(moduleModel);
             } catch (Throwable e) {
@@ -569,6 +569,11 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     public void prepare() {
         applicationDeployer.initialize();
         this.initialize();
+    }
+
+    @Override
+    protected ModuleContext getModelContext(){
+        return (ModuleContext) super.getModelContext();
     }
 
 }

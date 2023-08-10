@@ -27,11 +27,14 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
+import org.apache.dubbo.config.deploy.lifecycle.event.AppInitEvent;
+import org.apache.dubbo.config.deploy.lifecycle.event.AppPostDestroyEvent;
+import org.apache.dubbo.config.deploy.lifecycle.event.AppServiceRefreshEvent;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -59,14 +62,6 @@ public class MetadataApplicationLifecycle implements ApplicationLifecycle {
 
     private static final String NAME = "metadata";
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetadataApplicationLifecycle.class);
-    private DefaultApplicationDeployer applicationDeployer;
-
-
-    @Override
-    public void setApplicationDeployer(DefaultApplicationDeployer defaultApplicationDeployer) {
-        this.applicationDeployer = defaultApplicationDeployer;
-    }
-
 
     @Override
     public boolean needInitialize() {
@@ -74,16 +69,17 @@ public class MetadataApplicationLifecycle implements ApplicationLifecycle {
     }
 
     @Override
-    public void initialize() {
-        startMetadataCenter();
+    public void initialize(AppInitEvent initContext) {
+        startMetadataCenter(initContext);
     }
 
-    private void startMetadataCenter() {
+    private void startMetadataCenter(AppInitEvent initContext) {
 
-        useRegistryAsMetadataCenterIfNecessary();
+        ApplicationModel applicationModel = initContext.getApplicationModel();
+        useRegistryAsMetadataCenterIfNecessary(applicationModel);
 
-        ApplicationConfig applicationConfig = applicationDeployer.getApplicationModel().getCurrentConfig();
-        ConfigManager configManager = applicationDeployer.getApplicationModel().getApplicationConfigManager();
+        ApplicationConfig applicationConfig = initContext.getApplicationModel().getCurrentConfig();
+        ConfigManager configManager = initContext.getApplicationModel().getApplicationConfigManager();
 
         String metadataType = applicationConfig.getMetadataType();
 
@@ -96,7 +92,7 @@ public class MetadataApplicationLifecycle implements ApplicationLifecycle {
             return;
         }
 
-        MetadataReportInstance metadataReportInstance = applicationDeployer.getApplicationModel().getBeanFactory().getBean(MetadataReportInstance.class);
+        MetadataReportInstance metadataReportInstance = initContext.getApplicationModel().getBeanFactory().getBean(MetadataReportInstance.class);
 
         List<MetadataReportConfig> validMetadataReportConfigs = new ArrayList<>(metadataReportConfigs.size());
 
@@ -113,9 +109,9 @@ public class MetadataApplicationLifecycle implements ApplicationLifecycle {
         }
     }
 
-    private void useRegistryAsMetadataCenterIfNecessary() {
+    private void useRegistryAsMetadataCenterIfNecessary(ApplicationModel applicationModel) {
 
-        ConfigManager configManager = applicationDeployer.getApplicationModel().getApplicationConfigManager();
+        ConfigManager configManager = applicationModel.getApplicationConfigManager();
 
         Collection<MetadataReportConfig> originMetadataConfigs = configManager.getMetadataConfigs();
         if (originMetadataConfigs.stream().anyMatch(m -> Objects.nonNull(m.getAddress()))) {
@@ -137,17 +133,17 @@ public class MetadataApplicationLifecycle implements ApplicationLifecycle {
         if (!defaultRegistries.isEmpty()) {
             defaultRegistries
                 .stream()
-                .filter(this::isUsedRegistryAsMetadataCenter)
-                .map(registryConfig -> registryAsMetadataCenter(registryConfig, metadataConfigToOverride))
+                .filter(registry -> isUsedRegistryAsMetadataCenter(applicationModel,registry))
+                .map(registryConfig -> registryAsMetadataCenter(applicationModel, registryConfig, metadataConfigToOverride))
                 .forEach(metadataReportConfig -> {
-                    overrideMetadataReportConfig(metadataConfigToOverride, metadataReportConfig);
+                    overrideMetadataReportConfig(applicationModel, metadataConfigToOverride, metadataReportConfig);
                 });
         }
     }
 
-    private void overrideMetadataReportConfig(MetadataReportConfig metadataConfigToOverride, MetadataReportConfig metadataReportConfig) {
+    private void overrideMetadataReportConfig(ApplicationModel applicationModel,MetadataReportConfig metadataConfigToOverride, MetadataReportConfig metadataReportConfig) {
 
-        ConfigManager configManager = applicationDeployer.getApplicationModel().getApplicationConfigManager();
+        ConfigManager configManager = applicationModel.getApplicationConfigManager();
 
         if (metadataReportConfig.getId() == null) {
             Collection<MetadataReportConfig> metadataReportConfigs = configManager.getMetadataConfigs();
@@ -171,12 +167,13 @@ public class MetadataApplicationLifecycle implements ApplicationLifecycle {
         logger.info("use registry as metadata-center: " + metadataReportConfig);
     }
 
-    private boolean isUsedRegistryAsMetadataCenter(RegistryConfig registryConfig) {
-        return isUsedRegistryAsCenter(registryConfig, registryConfig::getUseAsMetadataCenter, "metadata",
+    private boolean isUsedRegistryAsMetadataCenter(ApplicationModel applicationModel,RegistryConfig registryConfig) {
+        return isUsedRegistryAsCenter(applicationModel,registryConfig, registryConfig::getUseAsMetadataCenter, "metadata",
             MetadataReportFactory.class);
     }
 
-    private boolean isUsedRegistryAsCenter(RegistryConfig registryConfig, Supplier<Boolean> usedRegistryAsCenter,
+    private boolean isUsedRegistryAsCenter(ApplicationModel applicationModel,
+                                           RegistryConfig registryConfig, Supplier<Boolean> usedRegistryAsCenter,
                                            String centerType,
                                            Class<?> extensionClass) {
         final boolean supported;
@@ -186,7 +183,7 @@ public class MetadataApplicationLifecycle implements ApplicationLifecycle {
             supported = configuredValue.booleanValue();
         } else {                       // Or check the extension existence
             String protocol = registryConfig.getProtocol();
-            supported = supportsExtension(extensionClass, protocol);
+            supported = supportsExtension(applicationModel,extensionClass, protocol);
             if (logger.isInfoEnabled()) {
                 logger.info(format("No value is configured in the registry, the %s extension[name : %s] %s as the %s center"
                     , extensionClass.getSimpleName(), protocol, supported ? "supports" : "does not support", centerType));
@@ -208,16 +205,16 @@ public class MetadataApplicationLifecycle implements ApplicationLifecycle {
      * @return if supports, return <code>true</code>, or <code>false</code>
      * @since 2.7.8
      */
-    private boolean supportsExtension(Class<?> extensionClass, String name) {
+    private boolean supportsExtension(ApplicationModel applicationModel,Class<?> extensionClass, String name) {
         if (isNotEmpty(name)) {
-            ExtensionLoader<?> extensionLoader = applicationDeployer.getApplicationModel().getExtensionLoader(extensionClass);
+            ExtensionLoader<?> extensionLoader = applicationModel.getExtensionLoader(extensionClass);
             return extensionLoader.hasExtension(name);
         }
         return false;
     }
 
 
-    private MetadataReportConfig registryAsMetadataCenter(RegistryConfig registryConfig, MetadataReportConfig originMetadataReportConfig) {
+    private MetadataReportConfig registryAsMetadataCenter(ApplicationModel applicationModel,RegistryConfig registryConfig, MetadataReportConfig originMetadataReportConfig) {
 
         MetadataReportConfig metadataReportConfig = originMetadataReportConfig == null ?
             new MetadataReportConfig(registryConfig.getApplicationModel()) : originMetadataReportConfig;
@@ -225,7 +222,7 @@ public class MetadataApplicationLifecycle implements ApplicationLifecycle {
         if (metadataReportConfig.getId() == null) {
             metadataReportConfig.setId(registryConfig.getId());
         }
-        metadataReportConfig.setScopeModel(applicationDeployer.getApplicationModel());
+        metadataReportConfig.setScopeModel(applicationModel);
 
         if (metadataReportConfig.getParameters() == null) {
             metadataReportConfig.setParameters(new HashMap<>());
@@ -279,62 +276,26 @@ public class MetadataApplicationLifecycle implements ApplicationLifecycle {
     }
 
     @Override
-    public void postDestroy() {
+    public void postDestroy(AppPostDestroyEvent postDestroyContext) {
         destroyMetadataReports();
     }
 
-    private void destroyMetadataReports() {
+    private void destroyMetadataReports(ApplicationModel applicationModel) {
         // only destroy MetadataReport of this application
-        List<MetadataReportFactory> metadataReportFactories = applicationDeployer.getApplicationModel().getExtensionLoader(MetadataReportFactory.class).getLoadedExtensionInstances();
+        List<MetadataReportFactory> metadataReportFactories = applicationModel.getExtensionLoader(MetadataReportFactory.class).getLoadedExtensionInstances();
 
         for (MetadataReportFactory metadataReportFactory : metadataReportFactories) {
             metadataReportFactory.destroy();
         }
     }
 
-
-//    @Override
-//    public List<String> dependOnPreModuleChanged() {
-//        return Collections.singletonList("metrics");
-//    }
-
-
-//    public void preModuleChanged(ModuleModel changedModule, DeployState moduleState, AtomicBoolean hasPreparedApplicationInstance) {
-//
-//
-//        if (!changedModule.isInternal()
-//            && moduleState == DeployState.STARTED
-//            && !hasPreparedApplicationInstance.get()
-//            && applicationDeployer.isRegisterConsumerInstance()
-//            && hasPreparedApplicationInstance.compareAndSet(false, true)
-//        ) {
-//
-//        }
-//        exportMetadataService();
-//
-//    private void exportMetadataService() {
-//        if (!applicationDeployer.isStarting()) {
-//            return;
-//        }
-//        for (DeployListener<ApplicationModel> listener : applicationDeployer.getListeners()) {
-//            try {
-//                if (listener instanceof ApplicationDeployListener) {
-//                    ((ApplicationDeployListener) listener).onModuleStarted(applicationDeployer.getApplicationModel());
-//                }
-//            } catch (Throwable e) {
-//                logger.error(CONFIG_FAILED_START_MODEL, "", "", applicationDeployer.getIdentifier() + " an exception occurred when handle starting event", e);
-//            }
-//        }
-//    }
-
-
     @Override
-    public void refreshServiceInstance() {
+    public void refreshServiceInstance(AppServiceRefreshEvent serviceRefreshContext) {
 
-        if (applicationDeployer.isRegistered()) {
+        if (serviceRefreshContext.getRegistered().get()) {
             try {
                 //MetadataLifeManager
-                ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationDeployer.getApplicationModel());
+                ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceRefreshContext.getApplicationModel());
             } catch (Exception e) {
                 logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
             }

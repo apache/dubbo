@@ -33,7 +33,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
+import org.apache.dubbo.config.deploy.lifecycle.event.AppInitEvent;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
@@ -62,21 +62,17 @@ public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ConfigCenterApplicationLifecycle.class);
 
-    private DefaultApplicationDeployer applicationDeployer;
-
     @Override
     public boolean needInitialize() {
         return true;
     }
 
     @Override
-    public void setApplicationDeployer(DefaultApplicationDeployer defaultApplicationDeployer) {
-        this.applicationDeployer = defaultApplicationDeployer;
-    }
+    public void initialize(AppInitEvent initContext) {
 
-    @Override
-    public void initialize() {
-        ConfigManager configManager  = applicationDeployer.getApplicationModel().getApplicationConfigManager();
+        ApplicationModel applicationModel =initContext.getApplicationModel();
+
+        ConfigManager configManager  = applicationModel.getApplicationConfigManager();
 
         // load config centers
         configManager.loadConfigsOfTypeFromProps(ConfigCenterConfig.class);
@@ -87,7 +83,7 @@ public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
         Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
         if (CollectionUtils.isEmpty(configCenters)) {
             ConfigCenterConfig configCenterConfig = new ConfigCenterConfig();
-            configCenterConfig.setScopeModel(applicationDeployer.getApplicationModel());
+            configCenterConfig.setScopeModel(applicationModel);
             configCenterConfig.refresh();
             ConfigValidationUtils.validateConfigCenterConfig(configCenterConfig);
             if (configCenterConfig.isValid()) {
@@ -103,7 +99,7 @@ public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
 
         if (CollectionUtils.isNotEmpty(configCenters)) {
 
-            Environment environment = applicationDeployer.getApplicationModel().modelEnvironment();
+            Environment environment = applicationModel.modelEnvironment();
             CompositeDynamicConfiguration compositeDynamicConfiguration = new CompositeDynamicConfiguration();
 
             for (ConfigCenterConfig configCenter : configCenters) {
@@ -113,13 +109,13 @@ public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
                 environment.updateAppExternalConfigMap(configCenter.getAppExternalConfiguration());
 
                 // Fetch config from remote config center
-                compositeDynamicConfiguration.addConfiguration(prepareEnvironment(configCenter,environment));
+                compositeDynamicConfiguration.addConfiguration(prepareEnvironment(applicationModel,configCenter,environment));
             }
             environment.setDynamicConfiguration(compositeDynamicConfiguration);
         }
     }
 
-    private DynamicConfiguration prepareEnvironment(ConfigCenterConfig configCenter,Environment environment) {
+    private DynamicConfiguration prepareEnvironment(ApplicationModel applicationModel,ConfigCenterConfig configCenter,Environment environment) {
 
         if (configCenter.isValid()) {
             if (!configCenter.checkOrUpdateInitialized(true)) {
@@ -128,7 +124,7 @@ public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
 
             DynamicConfiguration dynamicConfiguration;
             try {
-                dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
+                dynamicConfiguration = getDynamicConfiguration(applicationModel,configCenter.toUrl());
             } catch (Exception e) {
                 if (!configCenter.isCheck()) {
                     logger.warn(CONFIG_FAILED_INIT_CONFIG_CENTER, "", "", "The configuration center failed to initialize", e);
@@ -138,7 +134,6 @@ public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
                     throw new IllegalStateException(e);
                 }
             }
-            ApplicationModel applicationModel = applicationDeployer.getApplicationModel();
 
             if (StringUtils.isNotEmpty(configCenter.getConfigFile())) {
                 String configContent = dynamicConfiguration.getProperties(configCenter.getConfigFile(), configCenter.getGroup());
@@ -185,10 +180,10 @@ public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
      * @return non-null
      * @since 2.7.5
      */
-    private DynamicConfiguration getDynamicConfiguration(URL connectionUrl) {
+    private DynamicConfiguration getDynamicConfiguration(ApplicationModel applicationModel,URL connectionUrl) {
         String protocol = connectionUrl.getProtocol();
 
-        DynamicConfigurationFactory factory = ConfigurationUtils.getDynamicConfigurationFactory(applicationDeployer.getApplicationModel(), protocol);
+        DynamicConfigurationFactory factory = ConfigurationUtils.getDynamicConfigurationFactory(applicationModel, protocol);
         return factory.getDynamicConfiguration(connectionUrl);
     }
 
@@ -197,11 +192,11 @@ public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
      * there's no config center specified explicitly and
      * useAsConfigCenter of registryConfig is null or true
      */
-    private void useRegistryAsConfigCenterIfNecessary() {
-        ConfigManager configManager = applicationDeployer.getApplicationModel().getApplicationConfigManager();
+    private void useRegistryAsConfigCenterIfNecessary(ApplicationModel applicationModel) {
+        ConfigManager configManager = applicationModel.getApplicationConfigManager();
 
         // we use the loading status of DynamicConfiguration to decide whether ConfigCenter has been initiated.
-        if (applicationDeployer.getApplicationModel().modelEnvironment().getDynamicConfiguration().isPresent()) {
+        if (applicationModel.modelEnvironment().getDynamicConfiguration().isPresent()) {
             return;
         }
 
@@ -216,8 +211,8 @@ public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
         if (defaultRegistries.size() > 0) {
             defaultRegistries
                 .stream()
-                .filter(this::isUsedRegistryAsConfigCenter)
-                .map(this::registryAsConfigCenter)
+                .filter(registryConfig -> isUsedRegistryAsConfigCenter(applicationModel,registryConfig))
+                .map(registryConfig -> registryAsConfigCenter(applicationModel,registryConfig))
                 .forEach(configCenter -> {
                     if (configManager.getConfigCenter(configCenter.getId()).isPresent()) {
                         return;
@@ -229,8 +224,8 @@ public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
         }
     }
 
-    private boolean isUsedRegistryAsConfigCenter(RegistryConfig registryConfig) {
-        return isUsedRegistryAsCenter(registryConfig, registryConfig::getUseAsConfigCenter, "config",
+    private boolean isUsedRegistryAsConfigCenter(ApplicationModel applicationModel,RegistryConfig registryConfig) {
+        return isUsedRegistryAsCenter(applicationModel,registryConfig, registryConfig::getUseAsConfigCenter, "config",
             DynamicConfigurationFactory.class);
     }
 
@@ -244,7 +239,8 @@ public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
      * @return
      * @since 2.7.8
      */
-    private boolean isUsedRegistryAsCenter(RegistryConfig registryConfig, Supplier<Boolean> usedRegistryAsCenter,
+    private boolean isUsedRegistryAsCenter(ApplicationModel applicationModel,
+                                           RegistryConfig registryConfig, Supplier<Boolean> usedRegistryAsCenter,
                                            String centerType,
                                            Class<?> extensionClass) {
         final boolean supported;
@@ -254,7 +250,7 @@ public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
             supported = configuredValue.booleanValue();
         } else {                       // Or check the extension existence
             String protocol = registryConfig.getProtocol();
-            supported = supportsExtension(extensionClass, protocol);
+            supported = supportsExtension(applicationModel,extensionClass, protocol);
             if (logger.isInfoEnabled()) {
                 logger.info(format("No value is configured in the registry, the %s extension[name : %s] %s as the %s center"
                     , extensionClass.getSimpleName(), protocol, supported ? "supports" : "does not support", centerType));
@@ -268,7 +264,7 @@ public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
         return supported;
     }
 
-    private ConfigCenterConfig registryAsConfigCenter(RegistryConfig registryConfig) {
+    private ConfigCenterConfig registryAsConfigCenter(ApplicationModel applicationModel,RegistryConfig registryConfig) {
 
         String protocol = registryConfig.getProtocol();
         Integer port = registryConfig.getPort();
@@ -277,7 +273,7 @@ public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
 
         ConfigCenterConfig configCenterConfig = new ConfigCenterConfig();
         configCenterConfig.setId(id);
-        configCenterConfig.setScopeModel(applicationDeployer.getApplicationModel());
+        configCenterConfig.setScopeModel(applicationModel);
 
         if (configCenterConfig.getParameters() == null) {
             configCenterConfig.setParameters(new HashMap<>());
@@ -337,9 +333,9 @@ public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
      * @return if supports, return <code>true</code>, or <code>false</code>
      * @since 2.7.8
      */
-    private boolean supportsExtension(Class<?> extensionClass, String name) {
+    private boolean supportsExtension(ApplicationModel applicationModel,Class<?> extensionClass, String name) {
         if (isNotEmpty(name)) {
-            ExtensionLoader<?> extensionLoader = applicationDeployer.getApplicationModel().getExtensionLoader(extensionClass);
+            ExtensionLoader<?> extensionLoader = applicationModel.getExtensionLoader(extensionClass);
             return extensionLoader.hasExtension(name);
         }
         return false;

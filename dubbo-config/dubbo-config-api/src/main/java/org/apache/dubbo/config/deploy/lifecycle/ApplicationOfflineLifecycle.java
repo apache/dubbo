@@ -17,14 +17,14 @@
 package org.apache.dubbo.config.deploy.lifecycle;
 
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
-import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
+import org.apache.dubbo.config.deploy.lifecycle.event.AppPreDestroyEvent;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
@@ -35,34 +35,21 @@ import java.util.concurrent.Future;
 @Activate(order = -1000)
 public class ApplicationOfflineLifecycle implements ApplicationLifecycle {
 
-    private DefaultApplicationDeployer applicationDeployer;
-
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ApplicationOfflineLifecycle.class);
-
-    /**
-     * Set application deployer.
-     *
-     * @param defaultApplicationDeployer The ApplicationDeployer that called this ApplicationLifecycle.
-     */
-    @Override
-    public void setApplicationDeployer(DefaultApplicationDeployer defaultApplicationDeployer) {
-        this.applicationDeployer = defaultApplicationDeployer;
-    }
 
     @Override
     public boolean needInitialize() {
         return true;
     }
 
-    /**
-     * {@link ApplicationDeployer#preDestroy()}
-     */
     @Override
-    public void preDestroy() {
-        offline();
-        unregisterMetadataServiceInstance();
+    public void preDestroy(AppPreDestroyEvent preDestroyContext) {
+        ApplicationModel applicationModel = preDestroyContext.getApplicationModel();
 
-        RegistryApplicationLifecycle registryApplicationLifecycle = applicationDeployer.getApplicationModel().getBeanFactory().getBean(RegistryApplicationLifecycle.class);
+        offline(applicationModel);
+        unregisterMetadataServiceInstance(preDestroyContext);
+
+        RegistryApplicationLifecycle registryApplicationLifecycle = applicationModel.getBeanFactory().getBean(RegistryApplicationLifecycle.class);
         Future<?> asyncMetadataFuture = null;
 
         if(registryApplicationLifecycle != null){
@@ -73,9 +60,9 @@ public class ApplicationOfflineLifecycle implements ApplicationLifecycle {
         }
     }
 
-    private void offline() {
+    private void offline(ApplicationModel applicationModel) {
         try {
-            for (ModuleModel moduleModel : applicationDeployer.getApplicationModel().getModuleModels()) {
+            for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
                 ModuleServiceRepository serviceRepository = moduleModel.getServiceRepository();
                 List<ProviderModel> exportedServices = serviceRepository.getExportedServices();
                 for (ProviderModel exportedService : exportedServices) {
@@ -100,9 +87,9 @@ public class ApplicationOfflineLifecycle implements ApplicationLifecycle {
         statedURL.setRegistered(false);
     }
 
-    private void unregisterMetadataServiceInstance() {
-        if (applicationDeployer.isRegistered()) {
-            ServiceInstanceMetadataUtils.unregisterMetadataAndInstance(applicationDeployer.getApplicationModel());
+    private void unregisterMetadataServiceInstance(AppPreDestroyEvent preDestroyContextEvent) {
+        if (preDestroyContextEvent.registered().get()) {
+            ServiceInstanceMetadataUtils.unregisterMetadataAndInstance(preDestroyContextEvent.getApplicationModel());
         }
     }
 

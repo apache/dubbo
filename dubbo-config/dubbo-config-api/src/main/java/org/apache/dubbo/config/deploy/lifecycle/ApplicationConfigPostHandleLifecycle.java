@@ -17,7 +17,8 @@
 package org.apache.dubbo.config.deploy.lifecycle;
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
+import org.apache.dubbo.config.deploy.lifecycle.event.AppInitEvent;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**
  * Application config post-handle lifecycle.
@@ -25,24 +26,17 @@ import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
 @Activate(order = -2000)
 public class ApplicationConfigPostHandleLifecycle implements ApplicationLifecycle {
 
-    private DefaultApplicationDeployer defaultApplicationDeployer;
-
-    @Override
-    public void setApplicationDeployer(DefaultApplicationDeployer defaultApplicationDeployer) {
-        this.defaultApplicationDeployer = defaultApplicationDeployer;
-    }
-
     @Override
     public boolean needInitialize() {
         return true;
     }
 
     @Override
-    public void initialize() {
-        loadApplicationConfigs();
+    public void initialize(AppInitEvent appInitEvent) {
+        loadApplicationConfigs(appInitEvent.getApplicationModel());
     }
 
-    private void loadApplicationConfigs() {
-        defaultApplicationDeployer.getApplicationModel().getApplicationConfigManager().loadConfigs();
+    private void loadApplicationConfigs(ApplicationModel applicationModel) {
+        applicationModel.getApplicationConfigManager().loadConfigs();
     }
 }

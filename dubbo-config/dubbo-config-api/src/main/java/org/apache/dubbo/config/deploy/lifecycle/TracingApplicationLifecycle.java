@@ -20,7 +20,8 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.TracingConfig;
-import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
+import org.apache.dubbo.config.deploy.lifecycle.event.AppInitEvent;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.tracing.DubboObservationRegistry;
 import org.apache.dubbo.tracing.utils.ObservationSupportUtil;
 
@@ -29,22 +30,16 @@ import java.util.Optional;
 @Activate
 public class TracingApplicationLifecycle implements ApplicationLifecycle {
 
-    private DefaultApplicationDeployer defaultApplicationDeployer;
-
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(TracingApplicationLifecycle.class);
 
-    @Override
-    public void setApplicationDeployer(DefaultApplicationDeployer defaultApplicationDeployer) {
-        this.defaultApplicationDeployer = defaultApplicationDeployer;
-    }
-
 
     @Override
-    public void initialize() {
-        initObservationRegistry();
+    public void initialize(AppInitEvent initEvent) {
+        initObservationRegistry(initEvent);
     }
 
-    private void initObservationRegistry() {
+    private void initObservationRegistry(AppInitEvent initEvent) {
+        ApplicationModel applicationModel = initEvent.getApplicationModel();
 
         if (!ObservationSupportUtil.isSupportObservation()) {
             if (logger.isDebugEnabled()) {
@@ -59,11 +54,11 @@ public class TracingApplicationLifecycle implements ApplicationLifecycle {
             return;
         }
 
-        Optional<TracingConfig> configManager = defaultApplicationDeployer.getApplicationModel().getApplicationConfigManager().getTracing();
+        Optional<TracingConfig> configManager = applicationModel.getApplicationConfigManager().getTracing();
         boolean needInitialize = configManager.isPresent() && configManager.get().getEnabled();
 
         if (needInitialize) {
-            DubboObservationRegistry dubboObservationRegistry = new DubboObservationRegistry(defaultApplicationDeployer.getApplicationModel(), configManager.get());
+            DubboObservationRegistry dubboObservationRegistry = new DubboObservationRegistry(applicationModel, configManager.get());
             dubboObservationRegistry.initObservationRegistry();
         }
     }
