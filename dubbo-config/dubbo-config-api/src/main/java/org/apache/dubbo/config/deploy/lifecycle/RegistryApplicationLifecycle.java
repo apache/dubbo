@@ -63,8 +63,8 @@ public class RegistryApplicationLifecycle implements ApplicationLifecycle {
      * postDestroy.
      */
     @Override
-    public void postDestroy(AppPostDestroyEvent postDestroyContext) {
-        destroyRegistries();
+    public void postDestroy(AppPostDestroyEvent appPostDestroyEvent) {
+        destroyRegistries(appPostDestroyEvent.getApplicationModel());
     }
 
     private void destroyRegistries(ApplicationModel applicationModel) {
@@ -114,7 +114,7 @@ public class RegistryApplicationLifecycle implements ApplicationLifecycle {
                 }
 
                 // refresh for 30 times (default for 30s) when deployer is not started, prevent submit too many revision
-                if (instanceRefreshScheduleTimes.incrementAndGet() % 30 != 0 && !preModuleChangeEvent.isStarted()) {
+                if (instanceRefreshScheduleTimes.incrementAndGet() % 30 != 0 && ! DeployState.STARTED.equals(preModuleChangeEvent.getModuleState())) {
                     return;
                 }
 

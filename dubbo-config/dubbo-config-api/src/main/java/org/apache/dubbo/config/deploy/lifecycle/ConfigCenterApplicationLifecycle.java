@@ -77,7 +77,7 @@ public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
         // load config centers
         configManager.loadConfigsOfTypeFromProps(ConfigCenterConfig.class);
 
-        useRegistryAsConfigCenterIfNecessary();
+        useRegistryAsConfigCenterIfNecessary(applicationModel);
 
         // check Config Center
         Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
