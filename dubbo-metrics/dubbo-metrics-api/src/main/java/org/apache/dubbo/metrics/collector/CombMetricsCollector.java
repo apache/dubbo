@@ -98,6 +98,11 @@ public abstract class CombMetricsCollector<E extends TimeCounterEvent> extends A
     }
 
     @Override
+    public void init(Invocation invocation, MetricsKeyWrapper wrapper, int size) {
+        this.stats.initMethodKey(wrapper, invocation,size);
+    }
+
+    @Override
     public void onEvent(TimeCounterEvent event) {
         eventMulticaster.publishEvent(event);
     }

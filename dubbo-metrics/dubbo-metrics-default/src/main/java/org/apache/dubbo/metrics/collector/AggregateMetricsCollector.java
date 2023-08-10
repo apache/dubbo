@@ -25,6 +25,7 @@ import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.aggregate.TimeWindowAggregator;
 import org.apache.dubbo.metrics.aggregate.TimeWindowCounter;
 import org.apache.dubbo.metrics.aggregate.TimeWindowQuantile;
+import org.apache.dubbo.metrics.event.RequestInitEvent;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.metrics.model.MethodMetric;
@@ -123,10 +124,55 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
     public void onEvent(RequestEvent event) {
         if (enableQps) {
             MethodMetric metric = calcWindowCounter(event, MetricsKey.METRIC_REQUESTS);
-            TimeWindowCounter qpsCounter = ConcurrentHashMapUtils.computeIfAbsent(qps, metric,
-                methodMetric -> new TimeWindowCounter(bucketNum, qpsTimeWindowMillSeconds));
+            if(event instanceof RequestInitEvent) {
+                onInitMetricRequest(event);
+                onInitQpsRequest(metric);
+                onInitRtRequest(metric);
+                onInitRtAgrRequest(metric);
+                return;
+            }
+            TimeWindowCounter qpsCounter = ConcurrentHashMapUtils.computeIfAbsent(qps, metric, methodMetric -> new TimeWindowCounter(bucketNum, qpsTimeWindowMillSeconds));
             qpsCounter.increment();
         }
+    }
+
+    public void onInitMetricRequest(RequestEvent event){
+        initWindowCounter(event,MetricsKey.METRIC_REQUESTS_TOTAL_AGG);
+        initWindowCounter(event,MetricsKey.METRIC_REQUESTS_SUCCEED_AGG);
+        initWindowCounter(event,MetricsKey.METRIC_REQUESTS_FAILED_AGG);
+        initWindowCounter(event,MetricsKey.METRIC_REQUEST_BUSINESS_FAILED_AGG);
+        initWindowCounter(event,MetricsKey.METRIC_REQUESTS_TIMEOUT_AGG);
+        initWindowCounter(event,MetricsKey.METRIC_REQUESTS_LIMIT_AGG);
+        initWindowCounter(event,MetricsKey.METRIC_REQUESTS_TOTAL_FAILED_AGG);
+        initWindowCounter(event,MetricsKey.METRIC_REQUESTS_NETWORK_FAILED_AGG);
+        initWindowCounter(event,MetricsKey.METRIC_REQUESTS_CODEC_FAILED_AGG);
+        initWindowCounter(event,MetricsKey.METRIC_REQUESTS_TOTAL_SERVICE_UNAVAILABLE_FAILED_AGG);
+    }
+
+    public void onInitQpsRequest(MethodMetric metric){
+        ConcurrentHashMapUtils.computeIfAbsent(qps, metric, methodMetric -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
+    }
+
+    public void onInitRtRequest(MethodMetric metric){
+        ConcurrentHashMapUtils.computeIfAbsent(rt, metric, k -> new TimeWindowQuantile(DEFAULT_COMPRESSION, bucketNum, timeWindowSeconds));
+    }
+
+    public void onInitRtAgrRequest(MethodMetric metric){
+        ConcurrentHashMapUtils.computeIfAbsent(rtAgr, metric, k -> new TimeWindowAggregator(bucketNum, timeWindowSeconds));
+    }
+
+    public void initWindowCounter(RequestEvent event, MetricsKey targetKey){
+
+        MetricsPlaceValue placeType = MetricsPlaceValue.of(event.getAttachmentValue(MetricsConstants.INVOCATION_SIDE), MetricsLevel.SERVICE);
+
+        MetricsKeyWrapper metricsKeyWrapper = new MetricsKeyWrapper(targetKey, placeType);
+
+        MethodMetric metric = new MethodMetric(applicationModel, event.getAttachmentValue(MetricsConstants.INVOCATION));
+
+        ConcurrentMap<MethodMetric, TimeWindowCounter> counter = methodTypeCounter.computeIfAbsent(metricsKeyWrapper, k -> new ConcurrentHashMap<>());
+
+        ConcurrentHashMapUtils.computeIfAbsent(counter, metric, methodMetric -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
+
     }
 
     @Override
