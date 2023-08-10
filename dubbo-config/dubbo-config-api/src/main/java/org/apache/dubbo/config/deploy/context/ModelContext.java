@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.deploy.lifecycle.context;
+package org.apache.dubbo.config.deploy.context;
 
 import org.apache.dubbo.common.deploy.DeployListenable;
 import org.apache.dubbo.common.deploy.DeployListener;

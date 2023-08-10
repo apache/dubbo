@@ -18,7 +18,7 @@ package org.apache.dubbo.config.deploy.lifecycle;
 
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.config.deploy.lifecycle.context.ApplicationContext;
+import org.apache.dubbo.config.deploy.context.ApplicationContext;
 import org.apache.dubbo.config.deploy.lifecycle.event.AppInitEvent;
 import org.apache.dubbo.config.deploy.lifecycle.event.AppPostDestroyEvent;
 import org.apache.dubbo.config.deploy.lifecycle.event.AppPostModuleChangeEvent;

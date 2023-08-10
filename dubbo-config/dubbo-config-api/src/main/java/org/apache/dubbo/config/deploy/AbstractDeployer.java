@@ -21,7 +21,7 @@ import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.deploy.Deployer;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.config.deploy.lifecycle.context.ModelContext;
+import org.apache.dubbo.config.deploy.context.ModelContext;
 import org.apache.dubbo.rpc.model.ScopeModel;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_MONITOR_EXCEPTION;

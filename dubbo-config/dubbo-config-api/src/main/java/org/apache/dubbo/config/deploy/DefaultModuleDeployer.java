@@ -36,7 +36,7 @@ import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.config.context.ModuleConfigManager;
-import org.apache.dubbo.config.deploy.lifecycle.context.ModuleContext;
+import org.apache.dubbo.config.deploy.context.ModuleContext;
 import org.apache.dubbo.config.utils.SimpleReferenceCache;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
