@@ -16,10 +16,6 @@
  */
 package org.apache.dubbo.common.serialize.fastjson2;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.AllowClassNotifyListener;
@@ -30,6 +26,10 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import com.alibaba.fastjson2.filter.ContextAutoTypeBeforeHandler;
 import com.alibaba.fastjson2.util.TypeUtils;
+
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.alibaba.fastjson2.util.TypeUtils.loadClass;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNTRUSTED_SERIALIZE_CLASS;
@@ -115,7 +115,7 @@ public class Fastjson2SecurityManager implements AllowClassNotifyListener {
                     logger.error(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "", msg);
                 }
 
-                return null;
+                throw new IllegalArgumentException(msg);
             }
 
             // 3. try load
