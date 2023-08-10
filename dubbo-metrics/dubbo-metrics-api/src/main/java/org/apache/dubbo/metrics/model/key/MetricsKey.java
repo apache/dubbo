@@ -123,6 +123,21 @@ public enum MetricsKey {
 
     // consumer metrics key
     INVOKER_NO_AVAILABLE_COUNT("dubbo.consumer.invoker.no.available.count", "Request Throw No Invoker Available Exception Count"),
+
+    // count the number of occurrences of each error code
+    ERROR_CODE_COUNT("dubbo.error.code.count","The Count Of Occurrences for Each Error Code"),
+
+    // netty metrics key
+    NETTY_ALLOCATOR_HEAP_MEMORY_USED("netty.allocator.memory.used", "Netty Allocator Memory Used"),
+    NETTY_ALLOCATOR_DIRECT_MEMORY_USED("netty.allocator.direct.memory.used", "Netty Allocator Direct Memory Used"),
+    NETTY_ALLOCATOR_PINNED_DIRECT_MEMORY("netty.allocator.pinned.direct.memory", "Netty Allocator Pinned Direct Memory"),
+    NETTY_ALLOCATOR_PINNED_HEAP_MEMORY("netty.allocator.pinned.heap.memory", "Netty Allocator Pinned Heap Memory"),
+    NETTY_ALLOCATOR_HEAP_ARENAS_NUM("netty.allocator.heap.arenas.num", "Netty Allocator Heap Arenas Num"),
+    NETTY_ALLOCATOR_DIRECT_ARENAS_NUM("netty.allocator.direct.arenas.num", "Netty Allocator Direct Arenas Num"),
+    NETTY_ALLOCATOR_NORMAL_CACHE_SIZE("netty.allocator.normal.cache.size", "Netty Allocator Normal Cache Size"),
+    NETTY_ALLOCATOR_SMALL_CACHE_SIZE("netty.allocator.small.cache.size", "Netty Allocator Small Cache Size"),
+    NETTY_ALLOCATOR_THREAD_LOCAL_CACHES_NUM("netty.allocator.thread.local.caches.num", "Netty Allocator Thread Local Caches Num"),
+    NETTY_ALLOCATOR_CHUNK_SIZE("netty.allocator.chunk.size", "Netty Allocator Chunk Size"),
     ;
 
     private String name;
@@ -134,6 +149,15 @@ public enum MetricsKey {
 
     public final String getNameByType(String type) {
         return String.format(name, type);
+    }
+
+    public static MetricsKey getMetricsByName(String name){
+        for (MetricsKey metricsKey : MetricsKey.values()) {
+            if (metricsKey.getName().equals(name)) {
+                return metricsKey;
+            }
+        }
+        return null;
     }
 
     public final String getDescription() {

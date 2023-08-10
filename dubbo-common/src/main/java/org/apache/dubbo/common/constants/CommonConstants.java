@@ -640,4 +640,5 @@ public interface CommonConstants {
     String SERVICE_DEPLOYER_ATTRIBUTE_KEY = "serviceDeployer";
     String RESTEASY_NETTY_HTTP_REQUEST_ATTRIBUTE_KEY = "resteasyNettyHttpRequest";
 
+    String DUBBO_MANUAL_REGISTER_KEY = "dubbo.application.manual-register";
 }

@@ -5,4 +5,4 @@ compatible=org.apache.dubbo.rpc.filter.CompatibleFilter
 timeout=org.apache.dubbo.rpc.filter.TimeoutFilter
 profiler-server=org.apache.dubbo.rpc.filter.ProfilerServerFilter
 adaptiveLoadBalance=org.apache.dubbo.rpc.filter.AdaptiveLoadBalanceFilter
-
+rpc-exception=org.apache.dubbo.rpc.filter.RpcExceptionFilter

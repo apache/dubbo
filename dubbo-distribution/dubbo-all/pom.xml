@@ -232,6 +232,13 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metrics-netty</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
 
         <!-- tracing -->
         <dependency>
@@ -688,6 +695,7 @@
                                     <include>org.apache.dubbo:dubbo-metrics-registry</include>
                                     <include>org.apache.dubbo:dubbo-metrics-metadata</include>
                                     <include>org.apache.dubbo:dubbo-metrics-config-center</include>
+                                    <include>org.apache.dubbo:dubbo-metrics-netty</include>
                                     <include>org.apache.dubbo:dubbo-metrics-prometheus</include>
                                     <include>org.apache.dubbo:dubbo-tracing</include>
                                     <include>org.apache.dubbo:dubbo-monitor-api</include>
@@ -1549,6 +1557,13 @@
                                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
                                         META-INF/dubbo/internal/org.apache.dubbo.common.json.JsonUtil
+                                    </resource>
+                                </transformer>
+
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.config.CommonConfigPostProcessor
                                     </resource>
                                 </transformer>
                             </transformers>

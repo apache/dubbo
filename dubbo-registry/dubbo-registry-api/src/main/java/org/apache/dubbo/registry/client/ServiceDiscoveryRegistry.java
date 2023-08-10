@@ -110,7 +110,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      */
     protected ServiceDiscovery createServiceDiscovery(URL registryURL) {
         return getServiceDiscovery(registryURL.addParameter(INTERFACE_KEY, ServiceDiscovery.class.getName())
-            .removeParameter(REGISTRY_TYPE_KEY));
+                .removeParameter(REGISTRY_TYPE_KEY));
     }
 
     /**
@@ -278,11 +278,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     @Override
     public boolean isAvailable() {
-        if (serviceDiscovery instanceof NopServiceDiscovery) {
-            // NopServiceDiscovery is designed for compatibility, check availability is meaningless, just return true
-            return true;
-        }
-        return !serviceDiscovery.isDestroy() && !serviceDiscovery.getServices().isEmpty();
+        //serviceDiscovery isAvailable has a default method, which can be used as a reference when implementing
+        return serviceDiscovery.isAvailable();
     }
 
     @Override
