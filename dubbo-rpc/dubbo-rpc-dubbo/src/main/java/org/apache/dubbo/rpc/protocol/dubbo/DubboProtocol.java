@@ -265,6 +265,12 @@ public class DubboProtocol extends AbstractProtocol {
         int port = channel.getLocalAddress().getPort();
         String path = (String) inv.getObjectAttachmentWithoutConvert(PATH_KEY);
 
+        // if the environment variable DUBBO_PORT_TO_REGISTRY is added
+        String dubboPortToRegistry = ConfigUtils.getSystemProperty(org.apache.dubbo.config.Constants.DUBBO_PORT_TO_REGISTRY);
+        if(StringUtils.isNotEmpty(dubboPortToRegistry)) {
+            port = Integer.valueOf(dubboPortToRegistry);
+        }
+        
         //if it's stub service on client side(after enable stubevent, usually is set up onconnect or ondisconnect method)
         isStubServiceInvoke = Boolean.TRUE.toString().equals(inv.getObjectAttachmentWithoutConvert(STUB_EVENT_KEY));
         if (isStubServiceInvoke) {
