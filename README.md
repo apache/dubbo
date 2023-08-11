@@ -25,11 +25,13 @@ Visit [the official web site](https://dubbo.apache.org/) for more information.
 
 ## Getting started
 Following the instructions below to learn how to:
-* [Programming with lightweight RPC API](#lightweight-rpc)
-* [Start a microservice application with Spring Boot](#microservice-solution)
+* Programming with lightweight RPC API
+* Start a microservice application with Spring Boot
 
 ### Programming with lightweight RPC API
-Dubbo3 supports building RPC services with only a few lines of code while depends on only a lightweight sdk (<10MB). [5 minutes step-by-step guide](https://dubbo.apache.org/zh-cn/overview/quickstart/rpc/java).
+[5 minutes step-by-step guide](https://dubbo.apache.org/zh-cn/overview/quickstart/rpc/java)
+
+Dubbo3 supports building RPC services with only a few lines of code while depends on only a lightweight sdk (<10MB). 
 
 ```xml
 <dependency>
@@ -58,7 +60,9 @@ curl \
 ```
 
 ### Start a microservice application with Spring Boot
-It's highly recommend to start your microservice application with the Spring Boot Starter provided by Dubbo. [5 minutes step-by-step guide](https://dubbo.apache.org/zh-cn/overview/quickstart/microservice).
+[5 minutes step-by-step guide](https://dubbo.apache.org/zh-cn/overview/quickstart/microservice)
+
+It's highly recommend to start your microservice application with the Spring Boot Starter provided by Dubbo. 
 
 `application.yml` configuration file
 ```yaml
