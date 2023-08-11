@@ -614,18 +614,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         return configManager.getApplicationOrElseThrow();
     }
 
-//    public void setRegistered(boolean registered) {
-//        this.registered = registered;
-//    }
-
-    public boolean isRegistered() {
-        return getModelContext().registered();
-    }
-
-    public int getServiceRefreshState() {
-        return getModelContext().getServiceRefreshState().get();
-    }
-
     @Override
     protected ApplicationContext getModelContext() {
         return (ApplicationContext)super.getModelContext();
