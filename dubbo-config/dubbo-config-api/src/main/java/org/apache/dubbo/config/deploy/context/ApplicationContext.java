@@ -64,8 +64,6 @@ public class ApplicationContext extends AbstractModelContext<ApplicationModel> {
 
     private final Environment environment;
 
-    private DeployState applicationCurrentState;
-
     protected List<DeployListener<ApplicationModel>> listeners = new CopyOnWriteArrayList<>();
 
     public ApplicationContext(ApplicationModel applicationModel) {
@@ -75,22 +73,6 @@ public class ApplicationContext extends AbstractModelContext<ApplicationModel> {
         this.frameworkExecutorRepository =  applicationModel.getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
         this.executorRepository = ExecutorRepository.getInstance(applicationModel);
         this.lifecycleManager = new ApplicationLifecycleManager(this);
-    }
-
-
-    @Override
-    public List<DeployListener<ApplicationModel>> getListeners() {
-        return listeners;
-    }
-
-    @Override
-    public DeployState getCurrentState() {
-        return applicationCurrentState;
-    }
-
-    @Override
-    public void setModelState(DeployState newState) {
-        this.applicationCurrentState = newState;
     }
 
     public boolean hasPreparedInternalModule() {
