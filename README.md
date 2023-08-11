@@ -37,11 +37,17 @@ Dubbo supports building RPC services with only a few lines of code while dependi
 ### Start a microservice application with Spring Boot
 [5 minutes step-by-step guide](https://dubbo.apache.org/zh-cn/overview/quickstart/microservice)
 
-It's highly recommended to start your microservice application with the Spring Boot Starter provided by Dubbo. Add `dubbo-spring-boot-starter` and optionally a bunch of useful spring boot starters ready to enable features like service discovery, observability, tracing, etc.
+It's highly recommended to start your microservice application with the Spring Boot Starter `dubbo-spring-boot-starter` provided by Dubbo. With only a single dependency and yaml file, and optionally a bunch of other useful spring boot starters, you can enable all of the Dubo features like service discovery, observability, tracing, etc.
 
 Next, learn how to [deploy](), [monitor](), and [manage]() your Dubbo application and cluster.
 
-## Features
+### Rlease guide
+* 3.3  jdk
+* 3.2  jdk
+* 3.1  jdk
+* 2.7.23  jdk
+
+## More Features
 Get more details by visiting [the official website](https://cn.dubbo.apache.org/zh-cn/overview/tasks/) to get your hands dirty with some well-designed tasks.
 
 * gRPC compatible and http-friendly RPC protocol
@@ -55,6 +61,8 @@ Get more details by visiting [the official website](https://cn.dubbo.apache.org/
 * Kubernetes and Service mesh
 
 ## Contributing
+Add developer's guide, how to build from source.
+
 See [CONTRIBUTING](https://github.com/apache/dubbo/blob/master/CONTRIBUTING.md) for details on submitting patches and the contribution workflow.
 
 ## Contact
