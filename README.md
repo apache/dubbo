@@ -11,17 +11,17 @@
 [![Gitter](https://badges.gitter.im/alibaba/dubbo.svg)](https://gitter.im/alibaba/dubbo?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 Apache Dubbo is an easy-to-use Web and RPC framework that provides multiple
-language implementations(Java, [Go](https://github.com/apache/dubbo-go), [Rust](https://github.com/apache/dubbo-rust), [Node.js](https://github.com/apache/dubbo-js), [Web](https://github.com/apache/dubbo-js)) for rpc, service discovery, traffic management,
+language implementations(Java, [Go](https://github.com/apache/dubbo-go), [Rust](https://github.com/apache/dubbo-rust), [Node.js](https://github.com/apache/dubbo-js), [Web](https://github.com/apache/dubbo-js)) for communication, service discovery, traffic management,
 observability, security, tools, and best practices for building enterprise-ready microservices.
 
-Visit [the official web site](https://dubbo.apache.org/) for more information.
+Visit [the official website](https://dubbo.apache.org/) for more information.
 
 ## Architecture
 ![Architecture](https://dubbo.apache.org/imgs/architecture.png)
 
 * **RPC protocol:** [Triple (gRPC compatible and http-friendly)](https://dubbo.apache.org/zh-cn/overview/reference/protocols/triple-spec/), TCP, REST and more.
 * **Service Discovery:** Nacos, Zookeeper, Kubernetes, etc.
-* **More features:** traffic routing, configuration, observability, tracing, deploy to kubernetes, service mesh, etc.
+* **More features:** traffic routing, configuration, observability, tracing, deploy to Kubernetes, service mesh, etc.
 
 ## Getting started
 Following the instructions below to learn how to:
@@ -101,10 +101,10 @@ Add `dubbo-spring-boot-starter` and and optionally a bunch of useful spring boot
 Next, learn how to [deploy](), [monitor](), and [manage]() your Dubbo application and cluster.
 
 ## Features
-Get more details by visiting [the official web site](https://cn.dubbo.apache.org/zh-cn/overview/tasks/) to get your hands dirty with some well-designed tasks.
+Get more details by visiting [the official website](https://cn.dubbo.apache.org/zh-cn/overview/tasks/) to get your hands dirty with some well-designed tasks.
 
-* gRPC compatible and http friendly rpc protocol
-* IDL and non-IDL programming api
+* gRPC compatible and http-friendly RPC protocol
+* IDL and non-IDL programming API
 * Traffic routing
 * Service discovery
 * Observability
@@ -117,11 +117,11 @@ Get more details by visiting [the official web site](https://cn.dubbo.apache.org
 See [CONTRIBUTING](https://github.com/apache/dubbo/blob/master/CONTRIBUTING.md) for details on submitting patches and the contribution workflow.
 
 ## Contact
-* Wechat: apachedubbo
+* WeChat: apachedubbo
 * DingTalk group: 37290003945
 * Mailing list: [guide](https://cn.dubbo.apache.org/zh-cn/contact/)
 * Twitter: [@ApacheDubbo](https://twitter.com/ApacheDubbo)
 * Security issues: please mail to [us](mailto:security@dubbo.apache.org) privately.
 
 ## License
-Apache Dubbo is licenced under the Apache License Version 2.0. See the [LICENSE](https://github.com/apache/dubbo/blob/master/LICENSE) file for details.
+Apache Dubbo is licensed under the Apache License Version 2.0. See the [LICENSE](https://github.com/apache/dubbo/blob/master/LICENSE) file for details.
