@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * 应用上下文属性状态聚合 & 子context组装
+ * The attribute aggregate of deployers.
  */
 public class ApplicationContext extends AbstractModelContext<ApplicationModel> {
 
