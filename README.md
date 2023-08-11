@@ -19,38 +19,37 @@ Visit [the official website](https://dubbo.apache.org/) for more information.
 ## Architecture
 ![Architecture](https://dubbo.apache.org/imgs/architecture.png)
 
-* **RPC protocol:** [Triple (gRPC compatible and http-friendly)](https://dubbo.apache.org/zh-cn/overview/reference/protocols/triple-spec/), TCP, REST and more.
-* **Service Discovery:** Nacos, Zookeeper, Kubernetes, etc.
-* **More features:** traffic routing, configuration, observability, tracing, deploy to Kubernetes, service mesh, etc.
+* **[RPC protocol]():** triple, tcp, rest and more.
+* **[Service Discovery]():** Nacos, Zookeeper, Kubernetes, etc.
+* **[More features]():** traffic routing, configuration, observability, tracing, deploying to Kubernetes, service mesh, etc.
 
 ## Getting started
 Following the instructions below to learn how to:
 * Programming with lightweight RPC API
 * Start a microservice application with Spring Boot
 
-### Programming with lightweight RPC API
+### Lightweight RPC API
 [5 minutes step-by-step guide](https://dubbo.apache.org/zh-cn/overview/quickstart/rpc/java)
 
-Dubbo3 supports building RPC services with only a few lines of code while depends on only a lightweight sdk (<10MB). 
-
-```xml
-<dependency>
-    <groupId>org.apache.dubbo</groupId>
-    <artifactId>dubbo-rpc-core</artifactId>
-    <version>3.3.0-beta.1</version>
-</dependency>
-```
+Dubbo3 supports building RPC services with only a few lines of code while depending only on a lightweight SDK (<10MB). The RPC protocol can be [Triple(fully gRPC compatible and HTTP-friendly)](https://cn.dubbo.apache.org/zh-cn/overview/reference/protocols/triple/), Dubbo2(TCP), REST or any protocol of your choice.
 
 ```java
-private static void main(String[] args) {
+private void startServer() {
     DubboBootstrap.getInstance()
         .service(ServiceBuilder.newBuilder().ref(new GreetingsServiceImpl()).build())
         .start()
         .await();
 }
+
+private void startClient() {
+    DubboBootstrap.getInstance()
+        .service(ReferenceBuilder.newBuilder().interfaceClass(GreetingService.class).url("tri://localhost:50051").build())
+        .start()
+        .await();
+}
 ```
 
-Use curl to test your rpc service works as expected:
+For triple protocol, you can easily use cURL to test the service works as expected:
 
 ```shell
 curl \
