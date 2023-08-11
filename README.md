@@ -31,7 +31,7 @@ Following the instructions below to learn how to:
 ### Lightweight RPC API
 [5 minutes step-by-step guide](https://dubbo.apache.org/zh-cn/overview/quickstart/rpc/java)
 
-Dubbo3 supports building RPC services with only a few lines of code while depending only on a lightweight SDK (<10MB). The RPC protocol can be [Triple(fully gRPC compatible and HTTP-friendly)](https://cn.dubbo.apache.org/zh-cn/overview/reference/protocols/triple/), Dubbo2(TCP), REST or any protocol of your choice.
+Dubbo3 supports building RPC services with only a few lines of code while depending only on a lightweight SDK (<10MB). The protocol on the wire can be [Triple(fully gRPC compatible and HTTP-friendly)](https://cn.dubbo.apache.org/zh-cn/overview/reference/protocols/triple/), Dubbo2(TCP), REST, or any protocol of your choice.
 
 ```java
 private void startServer() {
@@ -61,7 +61,7 @@ curl \
 ### Start a microservice application with Spring Boot
 [5 minutes step-by-step guide](https://dubbo.apache.org/zh-cn/overview/quickstart/microservice)
 
-It's highly recommend to start your microservice application with the Spring Boot Starter provided by Dubbo. 
+It's highly recommended to start your microservice application with the Spring Boot Starter provided by Dubbo. 
 
 `application.yml` configuration file
 ```yaml
@@ -75,7 +75,7 @@ dubbo:
     address: zookeeper://${zookeeper.address:127.0.0.1}:2181
 ```
 
-Add `dubbo-spring-boot-starter` and and optionally a bunch of useful spring boot starters ready to enable features like service discovery, observability, tracing, etc.
+Add `dubbo-spring-boot-starter` and optionally a bunch of useful spring boot starters ready to enable features like service discovery, observability, tracing, etc.
 ```xml
 <dependency>
     <groupId>org.apache.dubbo</groupId>
