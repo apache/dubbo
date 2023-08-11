@@ -42,6 +42,7 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
 
     public AbstractDeployer(ModelContext<E> modelContext) {
         this.modelContext = modelContext;
+        this.scopeModel = modelContext.getModel();
     }
 
     @Override

@@ -148,15 +148,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         dubboShutdownHook.register();
     }
 
-//    private void initModuleDeployers() {
-//        // make sure created default module
-//        applicationModel.getDefaultModule();
-//        // deployer initialize
-//        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
-//            moduleModel.getDeployer().initialize();
-//        }
-//    }
-
     //happens-before configcenter load
     private void loadApplicationConfigs() {
         configManager.loadConfigs();
