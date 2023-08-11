@@ -76,7 +76,7 @@ dubbo.application.owner = bar
 dubbo.registry.address = 10.20.153.10:9090
 ```
 
-There are two Spring Beans will be initialized when Spring `ApplicatonContext` is ready, their Bean types are `ApplicationConfig` and `RegistryConfig`.
+There are two Spring Beans will be initialized when Spring `ApplicationContext` is ready, their Bean types are `ApplicationConfig` and `RegistryConfig`.
 
 
 

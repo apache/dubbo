@@ -183,7 +183,7 @@ If you want to try out the cutting-edge features, you can build with the followi
 ## Recommended Test Environment
 To avoid intermittent test failures (i.e., flaky tests), it is recommended to have a machine or virtual machine with the following specifications:
 
-* Minumum of 2CPUs.
+* Minimum of 2CPUs.
 * Minimum of 2Gb of RAM.
 
 ## Contact
@@ -242,4 +242,4 @@ Please report security vulnerabilities to [us](mailto:security@dubbo.apache.org)
 
 ## License
 
-Apache Dubbo software is licenced under the Apache License Version 2.0. See the [LICENSE](https://github.com/apache/dubbo/blob/master/LICENSE) file for details.
+Apache Dubbo software is licensed under the Apache License Version 2.0. See the [LICENSE](https://github.com/apache/dubbo/blob/master/LICENSE) file for details.
