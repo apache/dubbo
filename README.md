@@ -24,7 +24,7 @@ Visit [the official website](https://dubbo.apache.org/) for more information.
 * **[Microservice solution]():** traffic routing, configuration, observability, tracing, deploying to Kubernetes, service mesh, etc.
 
 ## Getting started
-Following the instructions below to learn how to:
+Follow the instructions below to learn how to:
 * Programming with lightweight RPC API
 * Start a microservice application with Spring Boot
 
