@@ -33,69 +33,11 @@ Following the instructions below to learn how to:
 
 Dubbo supports building RPC services with only a few lines of code while depending only on a lightweight SDK (<10MB). The protocol on the wire can be [Triple(fully gRPC compatible and HTTP-friendly)](https://cn.dubbo.apache.org/zh-cn/overview/reference/protocols/triple/), Dubbo2(TCP), REST, or any protocol of your choice.
 
-```java
-private void startServer() {
-    DubboBootstrap.getInstance()
-        .service(ServiceBuilder.newBuilder().ref(new GreetingsServiceImpl()).build())
-        .start()
-        .await();
-}
-
-private void startClient() {
-    DubboBootstrap.getInstance()
-        .service(ReferenceBuilder.newBuilder().interfaceClass(GreetingService.class).url("tri://localhost:50051").build())
-        .start()
-        .await();
-}
-```
-
-For triple protocol, you can easily use cURL to test the service works as expected:
-
-```shell
-curl \
-    --header "Content-Type: application/json" \
-    --data '[{"name": "Dubbo"}]' \
-    http://localhost:50052/org.apache.dubbo.samples.tri.unary.Greeter/greet/
-```
 
 ### Start a microservice application with Spring Boot
 [5 minutes step-by-step guide](https://dubbo.apache.org/zh-cn/overview/quickstart/microservice)
 
-It's highly recommended to start your microservice application with the Spring Boot Starter provided by Dubbo. 
-
-`application.yml` configuration file
-```yaml
-dubbo:
-  application:
-    name: dubbo-demo-provider
-  protocol:
-    name: tri
-    port: -1
-  registry:
-    address: zookeeper://${zookeeper.address:127.0.0.1}:2181
-```
-
-Add `dubbo-spring-boot-starter` and optionally a bunch of useful spring boot starters ready to enable features like service discovery, observability, tracing, etc.
-```xml
-<dependency>
-    <groupId>org.apache.dubbo</groupId>
-    <artifactId>dubbo-spring-boot-starter</artifactId>
-</dependency>
-```
-
-```xml
-<dependency>
-    <groupId>org.apache.dubbo</groupId>
-    <artifactId>dubbo-spring-boot-zookeeper-starter</artifactId>
-</dependency>
-```
-
-```xml
-<dependency>
-    <groupId>org.apache.dubbo</groupId>
-    <artifactId>dubbo-spring-boot-observability-starter</artifactId>
-</dependency>
-```
+It's highly recommended to start your microservice application with the Spring Boot Starter provided by Dubbo. Add `dubbo-spring-boot-starter` and optionally a bunch of useful spring boot starters ready to enable features like service discovery, observability, tracing, etc.
 
 Next, learn how to [deploy](), [monitor](), and [manage]() your Dubbo application and cluster.
 
