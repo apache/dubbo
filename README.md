@@ -41,7 +41,7 @@ It's highly recommended to start your microservice application with the Spring B
 
 Next, learn how to [deploy](), [monitor](), and [manage]() your Dubbo application and cluster.
 
-### Rlease guide
+### Which Dubbo version should I use?
 * 3.3  jdk
 * 3.2  jdk
 * 3.1  jdk
