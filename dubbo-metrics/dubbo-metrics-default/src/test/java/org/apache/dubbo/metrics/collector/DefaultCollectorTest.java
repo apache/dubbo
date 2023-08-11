@@ -20,6 +20,7 @@ package org.apache.dubbo.metrics.collector;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.TestMetricsInvoker;
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.metrics.event.RequestBeforeEvent;
@@ -89,7 +90,7 @@ class DefaultCollectorTest {
         config.setName("MockMetrics");
 
         applicationModel.getApplicationConfigManager().setApplication(config);
-        metricsDispatcher = applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
+        metricsDispatcher = applicationModel.getBeanFactory().getOrRegisterBean(MetricsConstants.METRICS_DISPATCHER_NAME,MetricsDispatcher.class);
         defaultCollector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
         defaultCollector.setCollectEnabled(true);
 
@@ -130,7 +131,7 @@ class DefaultCollectorTest {
     @Test
     void testRequestEventNoRt() {
 
-        applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
+        applicationModel.getBeanFactory().getOrRegisterBean(MetricsConstants.METRICS_DISPATCHER_NAME,MetricsDispatcher.class);
         DefaultMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
         collector.setCollectEnabled(true);
 

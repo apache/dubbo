@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.cluster.support;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
@@ -67,7 +68,7 @@ class FailoverClusterInvokerTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        ApplicationModel.defaultModel().getBeanFactory().registerBean(MetricsDispatcher.class);
+        ApplicationModel.defaultModel().getBeanFactory().registerBean(MetricsConstants.METRICS_DISPATCHER_NAME,MetricsDispatcher.class);
         dic = mock(Directory.class);
 
         given(dic.getUrl()).willReturn(url);

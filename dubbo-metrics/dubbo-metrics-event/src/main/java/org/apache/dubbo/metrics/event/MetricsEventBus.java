@@ -35,7 +35,7 @@ public class MetricsEventBus {
         if (event.getSource() == null) {
             return;
         }
-        MetricsDispatcher dispatcher = event.getMetricsDispatcher();
+        MetricsEventMulticaster dispatcher = event.getMetricsEventMulticaster();
         Optional.ofNullable(dispatcher).ifPresent(d -> d.publishEvent(event));
     }
 
@@ -89,26 +89,27 @@ public class MetricsEventBus {
      * eventSaveRunner saves the event, so that the calculation rt is introverted
      */
     public static void before(MetricsEvent event) {
-        MetricsDispatcher dispatcher = validate(event);
+        MetricsEventMulticaster dispatcher = validate(event);
+
         if (dispatcher == null) return;
         dispatcher.publishEvent(event);
     }
 
     public static void after(MetricsEvent event, Object result) {
-        MetricsDispatcher dispatcher = validate(event);
+        MetricsEventMulticaster dispatcher = validate(event);
         if (dispatcher == null) return;
         event.customAfterPost(result);
         dispatcher.publishFinishEvent((TimeCounterEvent) event);
     }
 
     public static void error(MetricsEvent event) {
-        MetricsDispatcher dispatcher = validate(event);
+        MetricsEventMulticaster dispatcher = validate(event);
         if (dispatcher == null) return;
         dispatcher.publishErrorEvent((TimeCounterEvent) event);
     }
 
-    private static MetricsDispatcher validate(MetricsEvent event) {
-        MetricsDispatcher dispatcher = event.getMetricsDispatcher();
+    private static MetricsEventMulticaster validate(MetricsEvent event) {
+        MetricsEventMulticaster dispatcher = event.getMetricsEventMulticaster();
         if (dispatcher == null) {
             return null;
         }

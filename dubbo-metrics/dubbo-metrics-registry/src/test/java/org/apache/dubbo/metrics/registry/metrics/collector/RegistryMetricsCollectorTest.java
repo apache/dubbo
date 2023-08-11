@@ -18,6 +18,7 @@
 package org.apache.dubbo.metrics.registry.metrics.collector;
 
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.model.TimePair;
@@ -61,7 +62,7 @@ class RegistryMetricsCollectorTest {
         config.setName("MockMetrics");
 
         applicationModel.getApplicationConfigManager().setApplication(config);
-        applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
+        applicationModel.getBeanFactory().getOrRegisterBean(MetricsConstants.METRICS_DISPATCHER_NAME,MetricsDispatcher.class);
         collector = applicationModel.getBeanFactory().getOrRegisterBean(RegistryMetricsCollector.class);
         collector.setCollectEnabled(true);
     }

@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster.router.file;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
@@ -61,7 +62,7 @@ class FileRouterEngineTest {
 
     @BeforeAll
     public static void setUpBeforeClass() throws Exception {
-        ApplicationModel.defaultModel().getBeanFactory().registerBean(MetricsDispatcher.class);
+        ApplicationModel.defaultModel().getBeanFactory().registerBean(MetricsConstants.METRICS_DISPATCHER_NAME,MetricsDispatcher.class);
         System.setProperty(ENABLE_CONNECTIVITY_VALIDATION, "false");
     }
 

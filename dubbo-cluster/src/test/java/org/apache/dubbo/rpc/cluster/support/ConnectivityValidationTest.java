@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.cluster.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -72,7 +73,7 @@ class ConnectivityValidationTest {
 
     @BeforeEach
     public void setup() {
-        ApplicationModel.defaultModel().getBeanFactory().registerBean(MetricsDispatcher.class);
+        ApplicationModel.defaultModel().getBeanFactory().registerBean(MetricsConstants.METRICS_DISPATCHER_NAME,MetricsDispatcher.class);
         invoker1 = Mockito.mock(Invoker.class);
         invoker2 = Mockito.mock(Invoker.class);
         invoker3 = Mockito.mock(Invoker.class);

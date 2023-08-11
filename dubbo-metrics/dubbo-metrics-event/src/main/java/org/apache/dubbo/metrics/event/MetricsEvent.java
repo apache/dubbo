@@ -18,8 +18,8 @@
 package org.apache.dubbo.metrics.event;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
-import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.key.TypeWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -32,13 +32,13 @@ import java.util.Map;
 public abstract class MetricsEvent {
 
     /**
-     * Metric object. (eg. {@link MethodMetric})
+     * Metric object. (eg. MethodMetric)
      */
     protected transient final ApplicationModel source;
     private boolean available = true;
     private final TypeWrapper typeWrapper;
     private final String appName;
-    private final MetricsDispatcher metricsDispatcher;
+    private final MetricsEventMulticaster MetricsEventMulticaster;
 
     private final Map<String, Object> attachment = new IdentityHashMap<>(8);
 
@@ -46,7 +46,7 @@ public abstract class MetricsEvent {
         this(source, null, null, typeWrapper);
     }
 
-    public MetricsEvent(ApplicationModel source, String appName, MetricsDispatcher metricsDispatcher, TypeWrapper typeWrapper) {
+    public MetricsEvent(ApplicationModel source, String appName, MetricsEventMulticaster MetricsEventMulticaster, TypeWrapper typeWrapper) {
         this.typeWrapper = typeWrapper;
         if (source == null) {
             this.source = ApplicationModel.defaultModel();
@@ -55,20 +55,20 @@ public abstract class MetricsEvent {
         } else {
             this.source = source;
         }
-        if (metricsDispatcher == null) {
+        if (MetricsEventMulticaster == null) {
             if (this.source.isDestroyed()) {
-                this.metricsDispatcher = null;
+                this.MetricsEventMulticaster = null;
             } else {
                 ScopeBeanFactory beanFactory = this.source.getBeanFactory();
                 if (beanFactory.isDestroyed()) {
-                    this.metricsDispatcher = null;
+                    this.MetricsEventMulticaster = null;
                 } else {
-                    MetricsDispatcher dispatcher = beanFactory.getBean(MetricsDispatcher.class);
-                    this.metricsDispatcher = dispatcher;
+                    MetricsEventMulticaster dispatcher = beanFactory.getBean(MetricsConstants.METRICS_DISPATCHER_NAME,MetricsEventMulticaster.class);
+                    this.MetricsEventMulticaster = dispatcher;
                 }
             }
         } else {
-            this.metricsDispatcher = metricsDispatcher;
+            this.MetricsEventMulticaster = MetricsEventMulticaster;
         }
         if (appName == null) {
             this.appName = this.source.tryGetApplicationName();
@@ -106,8 +106,8 @@ public abstract class MetricsEvent {
         return source;
     }
 
-    public MetricsDispatcher getMetricsDispatcher() {
-        return metricsDispatcher;
+    public MetricsEventMulticaster getMetricsEventMulticaster() {
+        return MetricsEventMulticaster;
     }
 
     public String appName() {
