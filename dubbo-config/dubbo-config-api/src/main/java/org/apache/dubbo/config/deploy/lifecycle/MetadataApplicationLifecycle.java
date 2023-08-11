@@ -55,7 +55,7 @@ import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 
 /**
- * Metadata Package Life Manager
+ * Metadata lifecycle
  */
 @Activate
 public class MetadataApplicationLifecycle implements ApplicationLifecycle {

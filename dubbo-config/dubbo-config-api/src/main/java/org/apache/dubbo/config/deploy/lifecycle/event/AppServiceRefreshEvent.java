@@ -21,6 +21,9 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * @see org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycle#refreshServiceInstance(AppServiceRefreshEvent)
+ */
 public class AppServiceRefreshEvent extends AbstractApplicationEvent {
 
     private final AtomicBoolean registered;

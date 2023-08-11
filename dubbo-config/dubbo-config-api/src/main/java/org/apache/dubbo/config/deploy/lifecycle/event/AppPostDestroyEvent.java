@@ -19,6 +19,9 @@ package org.apache.dubbo.config.deploy.lifecycle.event;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+/**
+ * @see org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycle#postDestroy(AppPostDestroyEvent) 
+ */
 public class AppPostDestroyEvent extends AbstractApplicationEvent{
 
     public AppPostDestroyEvent(ApplicationModel applicationModel, DeployState currentApplicationState) {

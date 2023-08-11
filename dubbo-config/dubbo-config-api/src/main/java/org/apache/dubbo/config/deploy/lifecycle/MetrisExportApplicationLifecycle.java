@@ -29,6 +29,9 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Metrics export lifecycle.
+ */
 @Activate(order = -1000)
 public class MetrisExportApplicationLifecycle implements ApplicationLifecycle {
 

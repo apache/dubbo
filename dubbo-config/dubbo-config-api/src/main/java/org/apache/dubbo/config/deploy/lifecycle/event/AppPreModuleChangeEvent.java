@@ -23,6 +23,9 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * @see org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycle#preModuleChanged(AppPreModuleChangeEvent) 
+ */
 public class AppPreModuleChangeEvent extends AbstractApplicationEvent{
 
     private final ModuleModel changedModule;

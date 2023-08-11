@@ -21,6 +21,9 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * @see org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycle#preDestroy(AppPreDestroyEvent) 
+ */
 public class AppPreDestroyEvent extends AbstractApplicationEvent{
 
    private final AtomicBoolean registered;

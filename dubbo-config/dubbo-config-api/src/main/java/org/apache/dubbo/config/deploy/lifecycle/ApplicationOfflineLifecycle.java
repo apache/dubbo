@@ -32,6 +32,9 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import java.util.List;
 import java.util.concurrent.Future;
 
+/**
+ * Application offline lifecycle.
+ */
 @Activate(order = -1000)
 public class ApplicationOfflineLifecycle implements ApplicationLifecycle {
 

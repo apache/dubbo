@@ -41,7 +41,7 @@ import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_METADATA_PUBLI
 import static org.apache.dubbo.metadata.MetadataConstants.METADATA_PUBLISH_DELAY_KEY;
 
 /**
- * Registry Package Life Manager.
+ * Registry lifecycle.
  */
 @Activate
 public class RegistryApplicationLifecycle implements ApplicationLifecycle {

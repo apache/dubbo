@@ -27,6 +27,9 @@ import org.apache.dubbo.tracing.utils.ObservationSupportUtil;
 
 import java.util.Optional;
 
+/**
+ * Tracing lifecycle
+ */
 @Activate
 public class TracingApplicationLifecycle implements ApplicationLifecycle {
 
