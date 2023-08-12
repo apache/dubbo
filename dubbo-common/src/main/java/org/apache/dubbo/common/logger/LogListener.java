@@ -15,24 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics;
+package org.apache.dubbo.common.logger;
 
-public interface MetricsConstants {
+/**
+ * Log Listener, can registered to an {@link ListenableLogger}.
+ */
+public interface LogListener {
 
-    String INVOCATION = "metric_filter_invocation";
-    String METHOD_METRICS = "metric_filter_method_metrics";
-    String INVOCATION_METRICS_COUNTER = "metric_filter_invocation_counter";
-    String INVOCATION_SIDE = "metric_filter_side";
-    String INVOCATION_REQUEST_ERROR  = "metric_request_error";
-
-    String ATTACHMENT_KEY_SERVICE = "serviceKey";
-    String ATTACHMENT_KEY_SIZE = "size";
-    String ATTACHMENT_KEY_LAST_NUM_MAP = "lastNumMap";
-    String ATTACHMENT_DIRECTORY_MAP = "dirNum";
-    String METRICS_DISPATCHER_NAME = "MetricsDispatcher";
-
-    int SELF_INCREMENT_SIZE = 1;
-
-    String NETTY_METRICS_MAP = "nettyMetricsMap";
+    void onMessage(String code, String msg);
 
 }
