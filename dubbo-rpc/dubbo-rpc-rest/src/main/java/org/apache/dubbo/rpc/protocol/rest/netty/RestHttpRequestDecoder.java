@@ -61,7 +61,7 @@ public class RestHttpRequestDecoder extends MessageToMessageDecoder<io.netty.han
         boolean keepAlive = HttpHeaders.isKeepAlive(request);
 
         NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(ctx, keepAlive);
-        NettyRequestFacade requestFacade = new NettyRequestFacade(request, ctx);
+        NettyRequestFacade requestFacade = new NettyRequestFacade(request, ctx,serviceDeployer);
 
         executor.execute(() -> {
 

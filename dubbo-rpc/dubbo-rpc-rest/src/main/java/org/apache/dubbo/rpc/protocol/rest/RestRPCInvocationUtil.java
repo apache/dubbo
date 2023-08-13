@@ -23,7 +23,6 @@ import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.PathMatcher;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.rest.annotation.ParamParserManager;
 import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider.ProviderParseContext;
@@ -37,9 +36,6 @@ import org.apache.dubbo.rpc.protocol.rest.util.HttpHeaderUtil;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
-
-import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_DEPLOYER_ATTRIBUTE_KEY;
-
 
 public class RestRPCInvocationUtil {
 
@@ -136,13 +132,8 @@ public class RestRPCInvocationUtil {
      * @param pathMatcher
      * @return
      */
-    public static InvokerAndRestMethodMetadataPair getRestMethodMetadataAndInvokerPair(PathMatcher pathMatcher) {
+    public static InvokerAndRestMethodMetadataPair getRestMethodMetadataAndInvokerPair(PathMatcher pathMatcher, ServiceDeployer serviceDeployer) {
 
-        ServiceDeployer serviceDeployer = (ServiceDeployer) RpcContext.getServiceContext().getObjectAttachment(SERVICE_DEPLOYER_ATTRIBUTE_KEY);
-
-        if (serviceDeployer == null) {
-            return null;
-        }
         return serviceDeployer.getPathAndInvokerMapper().getRestMethodMetadata(pathMatcher);
     }
 
@@ -158,7 +149,7 @@ public class RestRPCInvocationUtil {
 
         PathMatcher pathMather = createPathMatcher(request);
 
-        return getRestMethodMetadataAndInvokerPair(pathMather);
+        return getRestMethodMetadataAndInvokerPair(pathMather, request.getServiceDeployer());
     }
 
 
@@ -173,20 +164,20 @@ public class RestRPCInvocationUtil {
 
         PathMatcher pathMatcher = createPathMatcher(request);
 
-        return getInvoker(pathMatcher);
+        return getInvoker(pathMatcher, request.getServiceDeployer());
     }
 
 
     /**
      * get invoker by service method
-     *
+     * <p>
      * compare method`s name,param types
      *
      * @param serviceMethod
      * @return
      */
 
-    public static Invoker getInvokerByServiceInvokeMethod(Method serviceMethod) {
+    public static Invoker getInvokerByServiceInvokeMethod(Method serviceMethod, ServiceDeployer serviceDeployer) {
 
         if (serviceMethod == null) {
             return null;
@@ -194,7 +185,7 @@ public class RestRPCInvocationUtil {
 
         PathMatcher pathMatcher = PathMatcher.getInvokeCreatePathMatcher(serviceMethod);
 
-        InvokerAndRestMethodMetadataPair pair = getRestMethodMetadataAndInvokerPair(pathMatcher);
+        InvokerAndRestMethodMetadataPair pair = getRestMethodMetadataAndInvokerPair(pathMatcher, serviceDeployer);
 
         if (pair == null) {
             return null;
@@ -209,8 +200,8 @@ public class RestRPCInvocationUtil {
      * @param pathMatcher
      * @return
      */
-    public static Invoker getInvoker(PathMatcher pathMatcher) {
-        InvokerAndRestMethodMetadataPair pair = getRestMethodMetadataAndInvokerPair(pathMatcher);
+    public static Invoker getInvoker(PathMatcher pathMatcher, ServiceDeployer serviceDeployer) {
+        InvokerAndRestMethodMetadataPair pair = getRestMethodMetadataAndInvokerPair(pathMatcher, serviceDeployer);
 
         if (pair == null) {
             return null;
