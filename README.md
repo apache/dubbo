@@ -25,10 +25,8 @@ Visit [the official website](https://dubbo.apache.org/) for more information.
 
 ## Getting started
 Follow the instructions below to learn how to:
-* Programming with lightweight RPC API
-* Building a microservice application with Spring Boot
 
-### Lightweight RPC API
+### Programming with lightweight RPC API
 [5 minutes step-by-step guide](https://dubbo.apache.org/zh-cn/overview/quickstart/rpc/java)
 
 Dubbo supports building RPC services with only a few lines of code while depending only on a lightweight SDK (<10MB). The protocol on the wire can be [Triple](https://cn.dubbo.apache.org/zh-cn/overview/reference/protocols/triple/)(fully gRPC compatible and HTTP-friendly), Dubbo2(TCP), REST, or any protocol of your choice.
