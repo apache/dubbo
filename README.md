@@ -48,8 +48,8 @@ Next, learn how to [deploy](https://cn.dubbo.apache.org/zh-cn/overview/tasks/dep
 
 | **Dubbo2** | **JDK** | **Dependencies** | **Description** |
 | --- | --- | --- | --- |
-| 2.7.23 <br/> EOL | 1.8 | [dependency list](https://github.com/apache/dubbo/blob/dubbo-2.7.23/dubbo-dependencies-bom/pom.xml#L92) |  |
-| 2.6.x, 2.5.x <br/> EOL | 1.6 ～ 1.7 |  |  |
+| 2.7.23 <br/> EOL | 1.8 | [dependency list](https://github.com/apache/dubbo/blob/dubbo-2.7.23/dubbo-dependencies-bom/pom.xml#L92) |
+| 2.6.x, 2.5.x <br/> EOL | 1.6 ～ 1.7 |  |
 
 
 ## More Features
