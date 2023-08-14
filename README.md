@@ -40,16 +40,16 @@ It's highly recommended to start your microservice application with the Spring B
 Next, learn how to [deploy](https://cn.dubbo.apache.org/zh-cn/overview/tasks/deploy/), [monitor](https://cn.dubbo.apache.org/zh-cn/overview/tasks/observability/), and [manage the traffic](https://cn.dubbo.apache.org/zh-cn/overview/tasks/traffic-management/) of your Dubbo application and cluster.
 
 ## Which Dubbo version should I use?
-| **Dubbo3** | **JDK** | **Dependencies ** | **Description** |
+| **Dubbo3** | **JDK** | **Dependencies** | **Description** |
 | --- | --- | --- | --- |
-| 3.3.0-beta | 1.8 ～ 17 | [dependency list](https://github.com/apache/dubbo/blob/3.3/dubbo-dependencies-bom/pom.xml#L94) |  |
-| 3.2.5 | 1.8 ～ 17 | [dependency list](https://github.com/apache/dubbo/blob/dubbo-3.2.5/dubbo-dependencies-bom/pom.xml#L94) |  |
-| 3.1.11 | 1.8 ～ 11 | [dependency list](https://github.com/apache/dubbo/blob/dubbo-3.2.11/dubbo-dependencies-bom/pom.xml#L94) |  |
+| 3.3.0-beta| 1.8 ～ 17 | [dependency list](https://github.com/apache/dubbo/blob/3.3/dubbo-dependencies-bom/pom.xml#L94)  | **Unstable version** <br/> - Triple - gRPC and cURL compatible.<br/>  - Rest-style programming support.<br/>  - Spring Boot Starters.|
+| 3.2.5 | 1.8 ～ 17 | [dependency list](https://github.com/apache/dubbo/blob/dubbo-3.2.5/dubbo-dependencies-bom/pom.xml#L94) | **Stable version (active)** <br/> - Out-of-box metrics and tracing support.<br/> - Threadpool Isolation<br/> - 30% performance<br/> - Native Image|
+| 3.1.11 | 1.8 ～ 11 | [dependency list](https://github.com/apache/dubbo/blob/dubbo-3.2.11/dubbo-dependencies-bom/pom.xml#L94) | **Stable version (not active)** |
 
 | **Dubbo2** | **JDK** | **Dependencies** | **Description** |
 | --- | --- | --- | --- |
-| 2.7.23 | 1.8 | [dependency list](https://github.com/apache/dubbo/blob/dubbo-2.7.23/dubbo-dependencies-bom/pom.xml#L92) |  |
-| 2.6.x, 2.5.x | 1.6 ～ 1.7 |  |  |
+| 2.7.23 <br/> EOL | 1.8 | [dependency list](https://github.com/apache/dubbo/blob/dubbo-2.7.23/dubbo-dependencies-bom/pom.xml#L92) |  |
+| 2.6.x, 2.5.x <br/> EOL | 1.6 ～ 1.7 |  |  |
 
 
 ## More Features
