@@ -18,12 +18,22 @@ package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.remoting.http.HttpBinder;
 
+import java.io.IOException;
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
 /**
  * Only the server that implements servlet container
  * could support something like @Context injection of servlet objects.
  *
  */
 public class RestServerFactory {
+
+    private static final String HTTP_BINDER_SPI_LOCATION = "META-INF/dubbo/internal/com.alibaba.dubbo.remoting.http.HttpBinder";
 
     private HttpBinder httpBinder;
 
@@ -32,13 +42,31 @@ public class RestServerFactory {
     }
 
     public RestProtocolServer createServer(String name) {
-        // TODO move names to Constants
-        if ("servlet".equalsIgnoreCase(name) || "jetty".equalsIgnoreCase(name) || "tomcat".equalsIgnoreCase(name)) {
-            return new DubboHttpProtocolServer(httpBinder);
-        } else if ("netty".equalsIgnoreCase(name)) {
-            return new NettyRestProtocolServer();
-        } else {
-            throw new IllegalArgumentException("Unrecognized server name: " + name);
+        ClassLoader classLoader = this.getClass().getClassLoader();
+
+        try {
+            Enumeration<URL> urls = classLoader.getResources(HTTP_BINDER_SPI_LOCATION);
+            Set<String> result = new HashSet<>();
+            while (urls.hasMoreElements()) {
+                URL url = urls.nextElement();
+                Properties properties = new Properties();
+                properties.load(url.openStream());
+                for (Map.Entry<?, ?> entry : properties.entrySet()) {
+                    String httpBinderName = ((String) entry.getKey()).trim();
+                    result.add(httpBinderName);
+                }
+            }
+            if(result.contains(name)){
+                return new DubboHttpProtocolServer(httpBinder);
+            } else if("netty".equalsIgnoreCase(name)){
+                return new NettyRestProtocolServer();
+            } else {
+                throw new IllegalArgumentException("Unrecognized server name: " + name);
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+
     }
 }
