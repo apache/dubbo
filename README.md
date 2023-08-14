@@ -19,22 +19,22 @@ Visit [the official website](https://dubbo.apache.org/) for more information.
 ## Architecture
 ![Architecture](https://dubbo.apache.org/imgs/architecture.png)
 
-* **[RPC protocol]():** triple, tcp, rest and more.
-* **[Service Discovery]():** Nacos, Zookeeper, Kubernetes, etc.
-* **[Microservice solution]():** traffic routing, configuration, observability, tracing, deploying to Kubernetes, service mesh, etc.
+* **[RPC protocol](https://cn.dubbo.apache.org/zh-cn/overview/core-features/protocols/):** triple, tcp, rest and more.
+* **[Service Discovery](https://cn.dubbo.apache.org/zh-cn/overview/core-features/service-discovery/):** Nacos, Zookeeper, Kubernetes, etc.
+* **[Microservice solution](https://cn.dubbo.apache.org/zh-cn/overview/core-features/):** traffic routing, configuration, observability, tracing, deploying to Kubernetes, service mesh, etc.
 
 ## Getting started
 Follow the instructions below to learn how to:
 * Programming with lightweight RPC API
-* Start a microservice application with Spring Boot
+* Building a microservice application with Spring Boot
 
 ### Lightweight RPC API
 [5 minutes step-by-step guide](https://dubbo.apache.org/zh-cn/overview/quickstart/rpc/java)
 
-Dubbo supports building RPC services with only a few lines of code while depending only on a lightweight SDK (<10MB). The protocol on the wire can be [Triple(fully gRPC compatible and HTTP-friendly)](https://cn.dubbo.apache.org/zh-cn/overview/reference/protocols/triple/), Dubbo2(TCP), REST, or any protocol of your choice.
+Dubbo supports building RPC services with only a few lines of code while depending only on a lightweight SDK (<10MB). The protocol on the wire can be [Triple](https://cn.dubbo.apache.org/zh-cn/overview/reference/protocols/triple/)(fully gRPC compatible and HTTP-friendly), Dubbo2(TCP), REST, or any protocol of your choice.
 
 
-### Start a microservice application with Spring Boot
+### Building a microservice application with Spring Boot
 [5 minutes step-by-step guide](https://dubbo.apache.org/zh-cn/overview/quickstart/microservice)
 
 It's highly recommended to start your microservice application with the Spring Boot Starter `dubbo-spring-boot-starter` provided by Dubbo. With only a single dependency and yaml file, and optionally a bunch of other useful spring boot starters, you can enable all of the Dubo features like service discovery, observability, tracing, etc.
@@ -42,23 +42,30 @@ It's highly recommended to start your microservice application with the Spring B
 Next, learn how to [deploy](), [monitor](), and [manage]() your Dubbo application and cluster.
 
 ### Which Dubbo version should I use?
-* 3.3  jdk
-* 3.2  jdk
-* 3.1  jdk
-* 2.7.23  jdk
+| **dubbo3** | **jdk** | **组件版本** | **说明** |
+| --- | --- | --- | --- |
+| 3.3.0 | 1.8 ～ 17 | dependencies list |  |
+| 3.2. | 1.8 ～ 17 | dependencies list |  |
+| 3.1. | 1.8 ～ 11 | dependencies list |  |
+
+| **dubbo2** | **jdk** | **组件版本** | **说明** |
+| --- | --- | --- | --- |
+| 2.7.23 | 1.8 | dependencies list |  |
+| 2.6.x, 2.5.x | 1.6 ～ 1.7 | dependencies list |  |
+
 
 ## More Features
 Get more details by visiting [the official website](https://cn.dubbo.apache.org/zh-cn/overview/tasks/) to get your hands dirty with some well-designed tasks.
 
-* gRPC compatible and http-friendly RPC protocol
-* IDL and non-IDL programming API
-* Traffic routing
-* Service discovery
-* Observability
-* Extensibility
-* Security
-* Visualized console and control plane
-* Kubernetes and Service mesh
+* [Launch a Dubbo project](https://cn.dubbo.apache.org/zh-cn/overview/tasks/develop/template/)
+* [RPC protocols](https://cn.dubbo.apache.org/zh-cn/overview/core-features/protocols/)
+* [Traffic routing](https://cn.dubbo.apache.org/zh-cn/overview/core-features/traffic/)
+* [Service discovery](https://cn.dubbo.apache.org/zh-cn/overview/core-features/service-discovery/)
+* [Observability](https://cn.dubbo.apache.org/zh-cn/overview/core-features/observability/)
+* [Extensibility](https://cn.dubbo.apache.org/zh-cn/overview/core-features/extensibility/)
+* [Security](https://cn.dubbo.apache.org/zh-cn/overview/core-features/security/)
+* [Visualized console and control plane](https://cn.dubbo.apache.org/zh-cn/overview/reference/admin/)
+* [Kubernetes and Service mesh](https://cn.dubbo.apache.org/zh-cn/overview/core-features/service-mesh/)
 
 ## Contributing
 Add developer's guide, how to build from source.
