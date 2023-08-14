@@ -45,12 +45,13 @@ github:
       foo: bar
   labels:
     - java
+    - rpc
     - microservices
     - framework
     - restful
     - distributed-systems
-    - rpc
     - dubbo
     - service-mesh
     - http
     - grpc
+    - web
