@@ -40,16 +40,16 @@ It's highly recommended to start your microservice application with the Spring B
 Next, learn how to [deploy](https://cn.dubbo.apache.org/zh-cn/overview/tasks/deploy/), [monitor](https://cn.dubbo.apache.org/zh-cn/overview/tasks/observability/), and [manage the traffic](https://cn.dubbo.apache.org/zh-cn/overview/tasks/traffic-management/) of your Dubbo application and cluster.
 
 ## Which Dubbo version should I use?
-| **dubbo3** | **jdk** | **组件版本** | **说明** |
+| **Dubbo3** | **JDK** | **Dependencies ** | **Description** |
 | --- | --- | --- | --- |
-| 3.3.0 | 1.8 ～ 17 | dependencies list |  |
-| 3.2. | 1.8 ～ 17 | dependencies list |  |
-| 3.1. | 1.8 ～ 11 | dependencies list |  |
+| 3.3.0-beta | 1.8 ～ 17 | [dependency list](https://github.com/apache/dubbo/blob/3.3/dubbo-dependencies-bom/pom.xml#L94) |  |
+| 3.2.5 | 1.8 ～ 17 | [dependency list](https://github.com/apache/dubbo/blob/dubbo-3.2.5/dubbo-dependencies-bom/pom.xml#L94) |  |
+| 3.1.11 | 1.8 ～ 11 | [dependency list](https://github.com/apache/dubbo/blob/dubbo-3.2.11/dubbo-dependencies-bom/pom.xml#L94) |  |
 
-| **dubbo2** | **jdk** | **组件版本** | **说明** |
+| **Dubbo2** | **JDK** | **Dependencies** | **Description** |
 | --- | --- | --- | --- |
-| 2.7.23 | 1.8 | dependencies list |  |
-| 2.6.x, 2.5.x | 1.6 ～ 1.7 | dependencies list |  |
+| 2.7.23 | 1.8 | [dependency list](https://github.com/apache/dubbo/blob/dubbo-2.7.23/dubbo-dependencies-bom/pom.xml#L92) |  |
+| 2.6.x, 2.5.x | 1.6 ～ 1.7 |  |  |
 
 
 ## More Features
@@ -57,7 +57,7 @@ Get more details by visiting [the official website](https://cn.dubbo.apache.org/
 
 * [Launch a Dubbo project](https://cn.dubbo.apache.org/zh-cn/overview/tasks/develop/template/)
 * [RPC protocols](https://cn.dubbo.apache.org/zh-cn/overview/core-features/protocols/)
-* [Traffic routing](https://cn.dubbo.apache.org/zh-cn/overview/core-features/traffic/)
+* [Traffic management](https://cn.dubbo.apache.org/zh-cn/overview/core-features/traffic/)
 * [Service discovery](https://cn.dubbo.apache.org/zh-cn/overview/core-features/service-discovery/)
 * [Observability](https://cn.dubbo.apache.org/zh-cn/overview/core-features/observability/)
 * [Extensibility](https://cn.dubbo.apache.org/zh-cn/overview/core-features/extensibility/)
