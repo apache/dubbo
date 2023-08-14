@@ -43,6 +43,10 @@ public class ObservationSupportUtil {
                 && isClassPresent("brave.Tracing");
     }
 
+    public static boolean isSupportBraveURLSender() {
+        return isClassPresent("zipkin2.reporter.urlconnection.URLConnectionSender");
+    }
+
     private static boolean isClassPresent(String className) {
         return ClassUtils.isPresent(className, ObservationSupportUtil.class.getClassLoader());
     }
