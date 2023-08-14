@@ -73,7 +73,7 @@ public class DubboDefaultPropertiesEnvironmentPostProcessor implements Environme
         Map<String, Object> defaultProperties = new HashMap<>();
         setDubboApplicationNameProperty(environment, defaultProperties);
         setDubboConfigMultipleProperty(defaultProperties);
-        setDubboApplicationQosEnableProperty(defaultProperties);
+        //setDubboApplicationQosEnableProperty(defaultProperties);
         //setAllowBeanDefinitionOverriding(defaultProperties);
         return defaultProperties;
     }
