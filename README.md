@@ -39,6 +39,19 @@ It's highly recommended to start your microservice application with the Spring B
 
 Next, learn how to [deploy](https://cn.dubbo.apache.org/zh-cn/overview/tasks/deploy/), [monitor](https://cn.dubbo.apache.org/zh-cn/overview/tasks/observability/), and [manage the traffic](https://cn.dubbo.apache.org/zh-cn/overview/tasks/traffic-management/) of your Dubbo application and cluster.
 
+## More Features
+Get more details by visiting the links below to get your hands dirty with some well-designed tasks on our website.
+
+* [Launch a Dubbo project](https://cn.dubbo.apache.org/zh-cn/overview/tasks/develop/template/)
+* [RPC protocols](https://cn.dubbo.apache.org/zh-cn/overview/core-features/protocols/)
+* [Traffic management](https://cn.dubbo.apache.org/zh-cn/overview/core-features/traffic/)
+* [Service discovery](https://cn.dubbo.apache.org/zh-cn/overview/core-features/service-discovery/)
+* [Observability](https://cn.dubbo.apache.org/zh-cn/overview/core-features/observability/)
+* [Extensibility](https://cn.dubbo.apache.org/zh-cn/overview/core-features/extensibility/)
+* [Security](https://cn.dubbo.apache.org/zh-cn/overview/core-features/security/)
+* [Visualized console and control plane](https://cn.dubbo.apache.org/zh-cn/overview/reference/admin/)
+* [Kubernetes and Service mesh](https://cn.dubbo.apache.org/zh-cn/overview/core-features/service-mesh/)
+
 ## Which Dubbo version should I use?
 | **Dubbo3** | **JDK** | **Dependencies** | **Description** |
 | --- | --- | --- | --- |
@@ -51,23 +64,7 @@ Next, learn how to [deploy](https://cn.dubbo.apache.org/zh-cn/overview/tasks/dep
 | 2.7.23 | 1.8 | [dependency list](https://github.com/apache/dubbo/blob/dubbo-2.7.23/dubbo-dependencies-bom/pom.xml#L92) | EOL |
 | 2.6.x, 2.5.x | 1.6 ～ 1.7 |  | EOL |
 
-
-## More Features
-Get more details by visiting [the official website](https://cn.dubbo.apache.org/zh-cn/overview/tasks/) to get your hands dirty with some well-designed tasks.
-
-* [Launch a Dubbo project](https://cn.dubbo.apache.org/zh-cn/overview/tasks/develop/template/)
-* [RPC protocols](https://cn.dubbo.apache.org/zh-cn/overview/core-features/protocols/)
-* [Traffic management](https://cn.dubbo.apache.org/zh-cn/overview/core-features/traffic/)
-* [Service discovery](https://cn.dubbo.apache.org/zh-cn/overview/core-features/service-discovery/)
-* [Observability](https://cn.dubbo.apache.org/zh-cn/overview/core-features/observability/)
-* [Extensibility](https://cn.dubbo.apache.org/zh-cn/overview/core-features/extensibility/)
-* [Security](https://cn.dubbo.apache.org/zh-cn/overview/core-features/security/)
-* [Visualized console and control plane](https://cn.dubbo.apache.org/zh-cn/overview/reference/admin/)
-* [Kubernetes and Service mesh](https://cn.dubbo.apache.org/zh-cn/overview/core-features/service-mesh/)
-
 ## Contributing
-Add developer's guide, how to build from source.
-
 See [CONTRIBUTING](https://github.com/apache/dubbo/blob/master/CONTRIBUTING.md) for details on submitting patches and the contribution workflow.
 
 ## Contact
