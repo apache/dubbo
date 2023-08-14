@@ -41,7 +41,7 @@ It's highly recommended to start your microservice application with the Spring B
 
 Next, learn how to [deploy](https://cn.dubbo.apache.org/zh-cn/overview/tasks/deploy/), [monitor](https://cn.dubbo.apache.org/zh-cn/overview/tasks/observability/), and [manage the traffic](https://cn.dubbo.apache.org/zh-cn/overview/tasks/traffic-management/) of your Dubbo application and cluster.
 
-### Which Dubbo version should I use?
+## Which Dubbo version should I use?
 | **dubbo3** | **jdk** | **组件版本** | **说明** |
 | --- | --- | --- | --- |
 | 3.3.0 | 1.8 ～ 17 | dependencies list |  |
