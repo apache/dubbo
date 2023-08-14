@@ -54,6 +54,10 @@ public class NettyHttpResponse implements HttpResponse {
     private boolean committed;
     private boolean keepAlive;
     private HttpMethod method;
+    // raw response body
+    private Object responseBody;
+    // raw response class
+    private Class<?> entityClass;
 
     public NettyHttpResponse(final ChannelHandlerContext ctx, final boolean keepAlive) {
         this(ctx, keepAlive, null);
@@ -105,6 +109,7 @@ public class NettyHttpResponse implements HttpResponse {
     @Override
     public void sendError(int status, String message) throws IOException {
         setStatus(status);
+        setResponseBody(message);
         if (message != null) {
             getOutputStream().write(message.getBytes(StandardCharsets.UTF_8));
         }
@@ -210,5 +215,22 @@ public class NettyHttpResponse implements HttpResponse {
             }
         }
 
+    }
+
+    public Object getResponseBody() {
+        return responseBody;
+    }
+
+    public void setResponseBody(Object responseBody) {
+
+        this.responseBody = responseBody;
+
+        if (responseBody != null) {
+            this.entityClass = responseBody.getClass();
+        }
+    }
+
+    public Class<?> getEntityClass() {
+        return entityClass;
     }
 }

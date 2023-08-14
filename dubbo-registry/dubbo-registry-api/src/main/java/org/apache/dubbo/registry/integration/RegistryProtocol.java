@@ -1016,11 +1016,22 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         public synchronized void unregister() {
             if (registered.compareAndSet(true, false)) {
                 Registry registry = RegistryProtocol.this.getRegistry(getRegistryUrl(originInvoker));
-                try {
-                    registry.unregister(registerUrl);
-                } catch (Throwable t) {
-                    logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", t.getMessage(), t);
+
+                ProviderModel providerModel = frameworkModel.getServiceRepository()
+                    .lookupExportedService(getRegisterUrl().getServiceKey());
+
+                List<ProviderModel.RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
+                if (statedUrls.stream()
+                    .filter(u -> u.getRegistryUrl().equals(getRegisterUrl())
+                        && u.getProviderUrl().getProtocol().equals(getRegisterUrl().getProtocol()))
+                    .anyMatch(ProviderModel.RegisterStatedURL::isRegistered)) {
+                    try {
+                        registry.unregister(registerUrl);
+                    } catch (Throwable t) {
+                        logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", t.getMessage(), t);
+                    }
                 }
+
                 try {
                     if (subscribeUrl != null) {
                         Map<URL, Set<NotifyListener>> overrideListeners = getProviderConfigurationListener(subscribeUrl).getOverrideListeners();
