@@ -66,6 +66,11 @@ public final class DefaultSubDispatcher extends SimpleMetricsEventMulticaster {
                         event ->
                         {
                             MetricsPlaceValue dynamicPlaceType = MetricsPlaceValue.of(event.getAttachmentValue(MetricsConstants.INVOCATION_SIDE), MetricsLevel.METHOD);
+                            if(event instanceof RequestInitEvent) {
+                                MetricsSupport.init(key, dynamicPlaceType,  collector, event);
+                                MetricsSupport.init(MetricsKey.METRIC_REQUESTS_PROCESSING, dynamicPlaceType, collector, event);
+                                return;
+                            }
                             MetricsSupport.increment(key, dynamicPlaceType, (MethodMetricsCollector) collector, event);
                             MetricsSupport.increment(MetricsKey.METRIC_REQUESTS_PROCESSING, dynamicPlaceType, (MethodMetricsCollector) collector, event);
                         })),

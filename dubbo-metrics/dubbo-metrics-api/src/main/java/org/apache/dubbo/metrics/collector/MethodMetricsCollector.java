@@ -30,5 +30,7 @@ public interface MethodMetricsCollector<E extends TimeCounterEvent> extends Metr
     void increment(MethodMetric methodMetric, MetricsKeyWrapper wrapper, int size);
 
     void addMethodRt(Invocation invocation, String registryOpType, Long responseTime);
+
+    void init(Invocation invocation, MetricsKeyWrapper wrapper, int size);
 }
 
