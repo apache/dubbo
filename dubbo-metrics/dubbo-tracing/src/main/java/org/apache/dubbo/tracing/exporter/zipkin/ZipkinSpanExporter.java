@@ -18,43 +18,26 @@ package org.apache.dubbo.tracing.exporter.zipkin;
 
 import org.apache.dubbo.config.nested.ExporterConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.tracing.exporter.TraceExporter;
 
-import brave.handler.SpanHandler;
-import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
 import zipkin2.Span;
 import zipkin2.codec.BytesEncoder;
 import zipkin2.codec.SpanBytesEncoder;
 
-public class ZipkinExporter implements TraceExporter {
+/**
+ * Zipkin span exporter for OTel.
+ */
+public class ZipkinSpanExporter {
 
-    private final ApplicationModel applicationModel;
-    private final ExporterConfig.ZipkinConfig zipkinConfig;
-
-    public ZipkinExporter(ApplicationModel applicationModel, ExporterConfig.ZipkinConfig zipkinConfig) {
-        this.applicationModel = applicationModel;
-        this.zipkinConfig = zipkinConfig;
-    }
-
-    @Override
-    public SpanExporter getSpanExporter() {
-        BytesEncoder<Span> encoder = getSpanBytesEncoder();
-        return ZipkinSpanExporter.builder()
-                .setEncoder(encoder)
+    public static io.opentelemetry.sdk.trace.export.SpanExporter getSpanExporter(ApplicationModel applicationModel, ExporterConfig.ZipkinConfig zipkinConfig) {
+        return io.opentelemetry.exporter.zipkin.ZipkinSpanExporter.builder()
+                .setEncoder(getSpanBytesEncoder(applicationModel))
                 .setEndpoint(zipkinConfig.getEndpoint())
                 .setReadTimeout(zipkinConfig.getReadTimeout())
                 .build();
     }
 
-    @Override
-    public SpanHandler getSpanHandler() {
-        // TODO SpanHandler of Brave impl
-        return null;
-    }
-
-    private BytesEncoder<Span> getSpanBytesEncoder() {
-        BytesEncoder<Span> encoder = applicationModel.getBeanFactory().getBean(BytesEncoder.class);
+    private static BytesEncoder<Span> getSpanBytesEncoder(ApplicationModel applicationModel) {
+        BytesEncoder<zipkin2.Span> encoder = applicationModel.getBeanFactory().getBean(BytesEncoder.class);
         return encoder == null ? SpanBytesEncoder.JSON_V2 : encoder;
     }
 }
