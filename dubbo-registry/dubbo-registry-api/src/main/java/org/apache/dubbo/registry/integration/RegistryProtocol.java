@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.integration;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -29,6 +30,8 @@ import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
+import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
@@ -61,9 +64,11 @@ import org.apache.dubbo.rpc.protocol.InvokerWrapper;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -224,7 +229,16 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         ApplicationDeployer deployer = registeredProviderUrl.getOrDefaultApplicationModel().getDeployer();
         try {
             deployer.increaseServiceRefreshCount();
-            registry.register(registeredProviderUrl);
+            String registryName = Optional.ofNullable(registry.getUrl())
+                .map(u -> u.getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY,
+                    UrlUtils.isServiceDiscoveryURL(u) ? u.getParameter(REGISTRY_KEY) : u.getProtocol()))
+                .filter(StringUtils::isNotEmpty)
+                .orElse("unknown");
+            MetricsEventBus.post(RegistryEvent.toRsEvent(registeredProviderUrl.getApplicationModel(), registeredProviderUrl.getServiceKey(), 1, Collections.singletonList(registryName)),
+                () -> {
+                    registry.register(registeredProviderUrl);
+                    return null;
+                });
         } finally {
             deployer.decreaseServiceRefreshCount();
         }
@@ -1002,11 +1016,22 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         public synchronized void unregister() {
             if (registered.compareAndSet(true, false)) {
                 Registry registry = RegistryProtocol.this.getRegistry(getRegistryUrl(originInvoker));
-                try {
-                    registry.unregister(registerUrl);
-                } catch (Throwable t) {
-                    logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", t.getMessage(), t);
+
+                ProviderModel providerModel = frameworkModel.getServiceRepository()
+                    .lookupExportedService(getRegisterUrl().getServiceKey());
+
+                List<ProviderModel.RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
+                if (statedUrls.stream()
+                    .filter(u -> u.getRegistryUrl().equals(getRegisterUrl())
+                        && u.getProviderUrl().getProtocol().equals(getRegisterUrl().getProtocol()))
+                    .anyMatch(ProviderModel.RegisterStatedURL::isRegistered)) {
+                    try {
+                        registry.unregister(registerUrl);
+                    } catch (Throwable t) {
+                        logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", t.getMessage(), t);
+                    }
                 }
+
                 try {
                     if (subscribeUrl != null) {
                         Map<URL, Set<NotifyListener>> overrideListeners = getProviderConfigurationListener(subscribeUrl).getOverrideListeners();

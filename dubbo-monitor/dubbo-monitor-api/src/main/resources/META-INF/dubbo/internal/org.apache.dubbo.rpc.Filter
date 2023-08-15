@@ -1,1 +1,2 @@
 monitor=org.apache.dubbo.monitor.support.MonitorFilter
+callback-consumer-context=org.apache.dubbo.monitor.support.CallbackConsumerContextFilter

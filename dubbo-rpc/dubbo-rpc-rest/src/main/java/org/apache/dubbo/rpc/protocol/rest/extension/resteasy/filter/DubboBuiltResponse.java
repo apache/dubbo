@@ -14,26 +14,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.pu;
+package org.apache.dubbo.rpc.protocol.rest.extension.resteasy.filter;
 
-import org.apache.dubbo.remoting.api.ProtocolDetector;
-import org.apache.dubbo.remoting.buffer.ChannelBuffer;
+import org.jboss.resteasy.specimpl.BuiltResponse;
 
-public class QosHTTP1Detector implements ProtocolDetector {
-    private static boolean isHttp(int magic) {
-        return magic == 'G' || magic == 'P';
+/**
+ * wrapper resteasy  BuiltResponse
+ */
+public class DubboBuiltResponse extends BuiltResponse {
+
+    // user reset entity
+    private boolean resetEntity;
+
+    public DubboBuiltResponse(Object entity, int status, Class<?> entityClass) {
+
+        this.entity = entity;
+        this.entityClass = entityClass;
+        this.status = status;
     }
 
+
     @Override
-    public Result detect(ChannelBuffer in) {
-        if (in.readableBytes() < 2) {
-            return Result.NEED_MORE_DATA;
+    public void setEntity(Object entity) {
+        if (entity == null) {
+            return;
         }
-        final int magic = in.getByte(in.readerIndex());
-        // h2 starts with "PR"
-        if (isHttp(magic) && in.getByte(in.readerIndex()+1) != 'R' ){
-            return Result.RECOGNIZED;
+
+        if (entity.equals(this.entity)) {
+            return;
         }
-        return Result.UNRECOGNIZED;
+        //  reset entity true
+        this.resetEntity = true;
+        super.setEntity(entity);
+    }
+
+    public boolean isResetEntity() {
+        return resetEntity;
     }
 }

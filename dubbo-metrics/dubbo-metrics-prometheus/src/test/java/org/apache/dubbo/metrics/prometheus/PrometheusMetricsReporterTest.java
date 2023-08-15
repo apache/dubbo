@@ -80,7 +80,7 @@ class PrometheusMetricsReporterTest {
         Double d2 = prometheusRegistry.getPrometheusRegistry().getSampleValue("jvm_gc_memory_promoted_bytes_total",
             new String[]{"application_name"}, new String[]{name});
         Assertions.assertNull(d1);
-        Assertions.assertNotNull(d2);
+        Assertions.assertNull(d2);
     }
 
     @Test
