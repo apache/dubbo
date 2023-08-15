@@ -43,7 +43,11 @@ public class MetricsEventBus {
             return;
         }
         MetricsDispatcher dispatcher = event.getMetricsDispatcher();
-        Optional.ofNullable(dispatcher).ifPresent(d -> d.publishEvent(event));
+        Optional.ofNullable(dispatcher).ifPresent(d -> {
+            tryInvoke(() -> {
+                d.publishEvent(event);
+            });
+        });
     }
 
     /**
@@ -117,20 +121,26 @@ public class MetricsEventBus {
     public static void before(MetricsEvent event) {
         MetricsDispatcher dispatcher = validate(event);
         if (dispatcher == null) return;
-        dispatcher.publishEvent(event);
+        tryInvoke(() -> {
+            dispatcher.publishEvent(event);
+        });
     }
 
     public static void after(MetricsEvent event, Object result) {
         MetricsDispatcher dispatcher = validate(event);
         if (dispatcher == null) return;
-        event.customAfterPost(result);
-        dispatcher.publishFinishEvent((TimeCounterEvent) event);
+        tryInvoke(() -> {
+            event.customAfterPost(result);
+            dispatcher.publishFinishEvent((TimeCounterEvent) event);
+        });
     }
 
     public static void error(MetricsEvent event) {
         MetricsDispatcher dispatcher = validate(event);
         if (dispatcher == null) return;
-        dispatcher.publishErrorEvent((TimeCounterEvent) event);
+        tryInvoke(() -> {
+            dispatcher.publishErrorEvent((TimeCounterEvent) event);
+        });
     }
 
     private static MetricsDispatcher validate(MetricsEvent event) {
