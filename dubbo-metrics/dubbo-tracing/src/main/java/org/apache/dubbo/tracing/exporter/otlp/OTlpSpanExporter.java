@@ -18,9 +18,7 @@ package org.apache.dubbo.tracing.exporter.otlp;
 
 import org.apache.dubbo.config.nested.ExporterConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.tracing.exporter.TraceExporter;
 
-import brave.handler.SpanHandler;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
@@ -28,18 +26,12 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 import java.util.Map;
 
-public class OTlpExporter implements TraceExporter {
+/**
+ * OTlp span exporter for OTel.
+ */
+public class OTlpSpanExporter {
 
-    private final ApplicationModel applicationModel;
-    private final ExporterConfig.OtlpConfig otlpConfig;
-
-    public OTlpExporter(ApplicationModel applicationModel, ExporterConfig.OtlpConfig otlpConfig) {
-        this.applicationModel = applicationModel;
-        this.otlpConfig = otlpConfig;
-    }
-
-    @Override
-    public SpanExporter getSpanExporter() {
+    public static SpanExporter getSpanExporter(ApplicationModel applicationModel, ExporterConfig.OtlpConfig otlpConfig) {
         OtlpGrpcSpanExporter externalOTlpGrpcSpanExporter = applicationModel.getBeanFactory().getBean(OtlpGrpcSpanExporter.class);
         if (externalOTlpGrpcSpanExporter != null) {
             return externalOTlpGrpcSpanExporter;
@@ -56,11 +48,5 @@ public class OTlpExporter implements TraceExporter {
             builder.addHeader(entry.getKey(), entry.getValue());
         }
         return builder.build();
-    }
-
-    @Override
-    public SpanHandler getSpanHandler() {
-        // OTlp is only belong to OTel.
-        return null;
     }
 }
