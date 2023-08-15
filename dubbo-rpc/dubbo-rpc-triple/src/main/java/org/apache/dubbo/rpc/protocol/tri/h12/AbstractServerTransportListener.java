@@ -18,7 +18,10 @@ package org.apache.dubbo.rpc.protocol.tri.h12;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
@@ -36,21 +39,34 @@ import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.PathResolver;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
+import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 import org.apache.dubbo.rpc.service.ServiceDescriptorInternalCache;
 import org.apache.dubbo.rpc.stub.StubSuppliers;
 
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Executor;
+import java.util.function.Supplier;
+
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_PARSE;
 
 public abstract class AbstractServerTransportListener<HEADER extends RequestMetadata, MESSAGE extends HttpInputMessage> implements HttpTransportListener<HEADER, MESSAGE> {
+
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(AbstractServerTransportListener.class);
 
     private final PathResolver pathResolver;
 
@@ -265,13 +281,13 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         inv.setTargetServiceUniqueName(url.getServiceKey());
         inv.setReturnTypes(methodDescriptor.getReturnTypes());
         //TODO header to attachment
-//        Map<String, String> headers = getHttpMetadata().headers().toSingleValueMap();
-//        Map<String, Object> requestMetadata = headersToMap(headers, () -> {
-//            return Optional.ofNullable(headers.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader()))
-//                .map(CharSequence::toString)
-//                .orElse(null);
-//        });
-//        inv.setObjectAttachments(StreamUtils.toAttachments(requestMetadata));
+        Map<String, String> headers = getHttpMetadata().headers().toSingleValueMap();
+        Map<String, Object> requestMetadata = headersToMap(headers, () -> {
+            return Optional.ofNullable(headers.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader()))
+                .map(CharSequence::toString)
+                .orElse(null);
+        });
+        inv.setObjectAttachments(StreamUtils.toAttachments(requestMetadata));
 
         inv.put("tri.remote.address", httpChannel.remoteAddress());
         //customizer RpcInvocation
@@ -383,4 +399,48 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         return this.listeningDecoder;
     }
 
+    protected Map<String, Object> headersToMap(Map<String, String> trailers, Supplier<Object> convertUpperHeaderSupplier) {
+        if (trailers == null) {
+            return Collections.emptyMap();
+        }
+        Map<String, Object> attachments = new HashMap<>(trailers.size());
+        for (Map.Entry<String, String> header : trailers.entrySet()) {
+            String key = header.getKey().toString();
+            if (key.endsWith(TripleConstant.HEADER_BIN_SUFFIX)
+                && key.length() > TripleConstant.HEADER_BIN_SUFFIX.length()) {
+                try {
+                    String realKey = key.substring(0,
+                        key.length() - TripleConstant.HEADER_BIN_SUFFIX.length());
+                    byte[] value = StreamUtils.decodeASCIIByte(header.getValue());
+                    attachments.put(realKey, value);
+                } catch (Exception e) {
+                    LOGGER.error(PROTOCOL_FAILED_PARSE, "", "", "Failed to parse response attachment key=" + key, e);
+                }
+            } else {
+                attachments.put(key, header.getValue().toString());
+            }
+        }
+
+        // try converting upper key
+        Object obj = convertUpperHeaderSupplier.get();
+        if (obj == null) {
+            return attachments;
+        }
+        if (obj instanceof String) {
+            String json = TriRpcStatus.decodeMessage((String) obj);
+            Map<String, String> map = JsonUtils.toJavaObject(json, Map.class);
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                Object val = attachments.remove(entry.getKey());
+                if (val != null) {
+                    attachments.put(entry.getValue(), val);
+                }
+            }
+        } else {
+            // If convertUpperHeaderSupplier does not return String, just fail...
+            // Internal invocation, use INTERNAL_ERROR instead.
+
+            LOGGER.error(INTERNAL_ERROR, "wrong internal invocation", "", "Triple convertNoLowerCaseHeader error, obj is not String");
+        }
+        return attachments;
+    }
 }
