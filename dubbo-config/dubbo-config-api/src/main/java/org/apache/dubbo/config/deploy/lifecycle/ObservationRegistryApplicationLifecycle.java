@@ -20,7 +20,7 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.TracingConfig;
-import org.apache.dubbo.config.deploy.lifecycle.event.AppInitEvent;
+import org.apache.dubbo.config.deploy.context.ApplicationContext;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.tracing.DubboObservationRegistry;
 import org.apache.dubbo.tracing.utils.ObservationSupportUtil;
@@ -30,19 +30,18 @@ import java.util.Optional;
 /**
  * Tracing lifecycle
  */
-@Activate
-public class TracingApplicationLifecycle implements ApplicationLifecycle {
+@Activate(order = -800)
+public class ObservationRegistryApplicationLifecycle implements ApplicationLifecycle {
 
-    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(TracingApplicationLifecycle.class);
-
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ObservationRegistryApplicationLifecycle.class);
 
     @Override
-    public void initialize(AppInitEvent initEvent) {
-        initObservationRegistry(initEvent);
+    public void initialize(ApplicationContext applicationContext) {
+        initObservationRegistry(applicationContext);
     }
 
-    private void initObservationRegistry(AppInitEvent initEvent) {
-        ApplicationModel applicationModel = initEvent.getApplicationModel();
+    private void initObservationRegistry(ApplicationContext applicationContext) {
+        ApplicationModel applicationModel = applicationContext.getModel();
 
         if (!ObservationSupportUtil.isSupportObservation()) {
             if (logger.isDebugEnabled()) {
@@ -67,7 +66,7 @@ public class TracingApplicationLifecycle implements ApplicationLifecycle {
     }
 
     @Override
-    public boolean needInitialize() {
+    public boolean needInitialize(ApplicationContext context) {
         return true;
     }
 }

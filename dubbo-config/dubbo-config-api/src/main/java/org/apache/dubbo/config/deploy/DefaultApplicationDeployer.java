@@ -87,8 +87,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     @Override
-    public ApplicationModel getApplicationModel() {
-        return applicationModel;
+    public ApplicationModel getApplicationModel(){
+            return applicationModel;
     }
 
     private <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
@@ -276,7 +276,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     @Override
     public void prepareApplicationInstance() {
-        if (getModelContext().hasPreparedApplicationInstance()) {
+        if (getModelContext().isHasPreparedApplicationInstance()) {
             return;
         }
         if (isRegisterConsumerInstance()) {

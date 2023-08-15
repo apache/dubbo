@@ -23,11 +23,17 @@ import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.util.List;
 
-public interface ModelContext<T extends ScopeModel> extends DeployListenable<T> {
+/**
+ * The internal lifecycle attribute aggregate of {@link ScopeModel}.
+ * It acts as context of model lifecycle, and provides a way to trigger a model life-changing process
+ *
+ * @param <M> the type of scope model implement
+ */
+public interface ModelContext<M extends ScopeModel> extends DeployListenable<M> {
 
-    T getModel();
+    M getModel();
 
-    List<DeployListener<T>> getListeners();
+    List<DeployListener<M>> getListeners();
 
     DeployState getCurrentState();
 
@@ -41,5 +47,12 @@ public interface ModelContext<T extends ScopeModel> extends DeployListenable<T> 
 
     void setInitialized(boolean initialized);
 
+    void runStart();
+
+    void runInitialize();
+
+    void runPreDestroy();
+
+    void runPostDestroy();
 }
 

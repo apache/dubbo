@@ -21,7 +21,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.config.deploy.lifecycle.event.AppInitEvent;
+import org.apache.dubbo.config.deploy.context.ApplicationContext;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**
@@ -32,16 +32,16 @@ public class ApplicationConfigPreHandleLifecycle implements ApplicationLifecycle
 
 
     @Override
-    public boolean needInitialize() {
+    public boolean needInitialize(ApplicationContext context) {
         return true;
     }
 
     @Override
-    public void initialize(AppInitEvent appInitEvent) {
+    public void initialize(ApplicationContext applicationContext) {
 
-        ApplicationModel applicationModel = appInitEvent.getApplicationModel();
+        ApplicationModel applicationModel = applicationContext.getModel();
 
-        ConfigManager configManager = appInitEvent.getApplicationModel().getApplicationConfigManager();
+        ConfigManager configManager = applicationContext.getModel().getApplicationConfigManager();
         configManager.loadConfigsOfTypeFromProps(ApplicationConfig.class);
 
         // try set model name

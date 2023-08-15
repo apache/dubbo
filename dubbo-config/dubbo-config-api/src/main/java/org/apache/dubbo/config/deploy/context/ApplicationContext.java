@@ -22,13 +22,7 @@ import org.apache.dubbo.common.deploy.DeployListener;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
-import org.apache.dubbo.config.deploy.lifecycle.event.AppInitEvent;
-import org.apache.dubbo.config.deploy.lifecycle.event.AppPostDestroyEvent;
-import org.apache.dubbo.config.deploy.lifecycle.event.AppPostModuleChangeEvent;
-import org.apache.dubbo.config.deploy.lifecycle.event.AppPreDestroyEvent;
-import org.apache.dubbo.config.deploy.lifecycle.event.AppPreModuleChangeEvent;
-import org.apache.dubbo.config.deploy.lifecycle.event.AppServiceRefreshEvent;
-import org.apache.dubbo.config.deploy.lifecycle.event.AppStartEvent;
+import org.apache.dubbo.config.deploy.lifecycle.manager.ApplicationLifecycleManager;
 import org.apache.dubbo.config.utils.CompositeReferenceCache;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -39,7 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * The attribute aggregate of deployers.
+ * The lifecycle attribute aggregate of application.
  */
 public class ApplicationContext extends AbstractModelContext<ApplicationModel> {
 
@@ -75,6 +69,26 @@ public class ApplicationContext extends AbstractModelContext<ApplicationModel> {
         this.lifecycleManager = new ApplicationLifecycleManager(this);
     }
 
+    @Override
+    public void runStart(){
+        lifecycleManager.start();
+    }
+
+    @Override
+    public void runInitialize(){
+        lifecycleManager.initialize();
+    }
+
+    @Override
+    public void runPreDestroy(){
+        lifecycleManager.preDestroy();
+    }
+
+    @Override
+    public void runPostDestroy(){
+        lifecycleManager.postDestroy();
+    }
+
     public boolean hasPreparedInternalModule() {
         return hasPreparedInternalModule;
     }
@@ -83,8 +97,16 @@ public class ApplicationContext extends AbstractModelContext<ApplicationModel> {
         this.hasPreparedInternalModule = hasPreparedInternalModule;
     }
 
-    public boolean hasPreparedApplicationInstance() {
+    public boolean isHasPreparedApplicationInstance() {
         return hasPreparedApplicationInstance.get();
+    }
+
+    public boolean isHasPreparedInternalModule() {
+        return hasPreparedInternalModule;
+    }
+
+    public AtomicBoolean getHasPreparedApplicationInstance() {
+        return hasPreparedApplicationInstance;
     }
 
     public void setRegistered(boolean registered){
@@ -93,6 +115,10 @@ public class ApplicationContext extends AbstractModelContext<ApplicationModel> {
 
     public boolean registered() {
         return registered.get();
+    }
+
+    public AtomicBoolean getRegistered(){
+        return registered;
     }
 
     public ReferenceCache getReferenceCache() {
@@ -107,32 +133,17 @@ public class ApplicationContext extends AbstractModelContext<ApplicationModel> {
         return executorRepository;
     }
 
-    public void runStart(){
-        lifecycleManager.start(new AppStartEvent(getModel(),getCurrentState()));
-    }
-
-    public void runInitialize(){
-        lifecycleManager.initialize(new AppInitEvent(getModel(),getCurrentState()));
-    }
-
-    public void runPostDestroy(){
-        lifecycleManager.postDestroy(new AppPostDestroyEvent(getModel(),getCurrentState()));
-    }
-
     public void runRefreshServiceInstance(){
-        lifecycleManager.runRefreshServiceInstance(new AppServiceRefreshEvent(getModel(),getCurrentState(),registered));
+        lifecycleManager.runRefreshServiceInstance();
     }
 
-    public void runPreDestroy(){
-        lifecycleManager.preDestroy(new AppPreDestroyEvent(getModel(),getCurrentState(),registered));
-    }
 
     public void runPreModuleChanged(ModuleModel changedModule, DeployState newState){
-        lifecycleManager.preModuleChanged(new AppPreModuleChangeEvent(getModel(),getCurrentState(),changedModule,newState,hasPreparedApplicationInstance,registered,serviceRefreshState));
+        lifecycleManager.preModuleChanged(changedModule, newState);
     }
 
     public void runPostModuleChanged(ModuleModel changedModule,DeployState moduleNewState,DeployState applicationNewState,DeployState applicationOldState){
-        lifecycleManager.postModuleChanged(new AppPostModuleChangeEvent(getModel(),changedModule,moduleNewState,applicationNewState,applicationOldState,registered));
+        lifecycleManager.postModuleChanged(changedModule, moduleNewState, applicationNewState, applicationOldState);
     }
 
 }

@@ -17,34 +17,41 @@
 package org.apache.dubbo.config.deploy.lifecycle;
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
 import org.apache.dubbo.config.deploy.context.ApplicationContext;
-import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
-
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REFRESH_INSTANCE_ERROR;
+import org.apache.dubbo.metrics.service.MetricsServiceExporter;
 
 /**
- * Metadata lifecycle
+ * Metrics lifecycle.
  */
-@Activate
-public class MetadataApplicationLifecycle implements ApplicationLifecycle {
-
-    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetadataApplicationLifecycle.class);
+@Activate(order = -2000)
+public class MetricsDisableApplicationLifecycle implements ApplicationLifecycle {
 
     @Override
     public boolean needInitialize(ApplicationContext context) {
-        return true;
+        return isSupportMetrics();
+    }
+
+    public boolean isSupportMetrics() {
+        return isClassPresent("io.micrometer.core.instrument.MeterRegistry");
+    }
+
+    private boolean isClassPresent(String className) {
+        return ClassUtils.isPresent(className, DefaultApplicationDeployer.class.getClassLoader());
     }
 
     @Override
-    public void refreshServiceInstance(ApplicationContext applicationContext) {
-        if (applicationContext.getRegistered().get()) {
+    public void preDestroy(ApplicationContext applicationContext) {
+        disableMetricsService(applicationContext.getModel().getBeanFactory().getBean(MetricsServiceExporter.class));
+    }
+
+    private void disableMetricsService(MetricsServiceExporter metricsServiceExporter) {
+        if (metricsServiceExporter != null) {
             try {
-                //MetadataLifeManager
-                ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationContext.getModel());
-            } catch (Exception e) {
-                logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
+                metricsServiceExporter.unexport();
+            } catch (Exception ignored) {
+                // ignored
             }
         }
     }

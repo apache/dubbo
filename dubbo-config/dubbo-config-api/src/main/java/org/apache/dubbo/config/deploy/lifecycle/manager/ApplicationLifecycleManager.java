@@ -14,19 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.deploy.context;
+package org.apache.dubbo.config.deploy.lifecycle.manager;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.config.deploy.context.ApplicationContext;
 import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycle;
-import org.apache.dubbo.config.deploy.lifecycle.event.AppInitEvent;
-import org.apache.dubbo.config.deploy.lifecycle.event.AppPostDestroyEvent;
-import org.apache.dubbo.config.deploy.lifecycle.event.AppPostModuleChangeEvent;
-import org.apache.dubbo.config.deploy.lifecycle.event.AppPreDestroyEvent;
-import org.apache.dubbo.config.deploy.lifecycle.event.AppPreModuleChangeEvent;
-import org.apache.dubbo.config.deploy.lifecycle.event.AppServiceRefreshEvent;
-import org.apache.dubbo.config.deploy.lifecycle.event.AppStartEvent;
-
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.List;
 
@@ -34,7 +29,7 @@ import java.util.List;
 /**
  * Application Life Manager Loader
  */
-public class ApplicationLifecycleManager{
+public class ApplicationLifecycleManager implements LifecycleManager{
 
     private final List<ApplicationLifecycle> sequences;
 
@@ -45,38 +40,41 @@ public class ApplicationLifecycleManager{
         sequences = loadAll();
     }
 
-    public void start(AppStartEvent appStartEvent){
-        getAll().forEach(applicationLifecycle -> applicationLifecycle.start(appStartEvent));
+    @Override
+    public void start(){
+        getAll().forEach(applicationLifecycle -> applicationLifecycle.start(applicationContext));
     }
 
-    public void initialize(AppInitEvent appInitEvent) {
-        getAll().forEach(applicationLifecycle-> applicationLifecycle.initialize(appInitEvent));
+    @Override
+    public void initialize() {
+        getAll().forEach(applicationLifecycle-> applicationLifecycle.initialize(applicationContext));
     }
 
-    public void preDestroy(AppPreDestroyEvent appPreDestroyEvent) {
-        getAll().forEach(applicationLifecycle-> applicationLifecycle.preDestroy(appPreDestroyEvent));
+    @Override
+    public void preDestroy() {
+        getAll().forEach(applicationLifecycle-> applicationLifecycle.preDestroy(applicationContext));
     }
 
-    public void postDestroy(AppPostDestroyEvent appPostDestroyEvent) {
-        getAll().forEach(applicationLifecycle-> applicationLifecycle.postDestroy(appPostDestroyEvent));
+    @Override
+    public void postDestroy() {
+        getAll().forEach(applicationLifecycle-> applicationLifecycle.postDestroy(applicationContext));
     }
 
-    public void preModuleChanged(AppPreModuleChangeEvent preModuleChangeEvent) {
-        getAll().forEach(applicationLifecycle -> applicationLifecycle.preModuleChanged(preModuleChangeEvent));
+    public void preModuleChanged(ModuleModel changedModule, DeployState moduleNewState) {
+        getAll().forEach(applicationLifecycle -> applicationLifecycle.preModuleChanged(applicationContext,changedModule,moduleNewState));
     }
 
-    public void postModuleChanged(AppPostModuleChangeEvent postModuleChangeEvent) {
-        getAll().forEach(applicationLifecycle -> applicationLifecycle.postModuleChanged(postModuleChangeEvent));
+    public void postModuleChanged(ModuleModel changedModule, DeployState moduleNewState,DeployState applicationOldState,DeployState applicationNewState) {
+        getAll().forEach(applicationLifecycle -> applicationLifecycle.postModuleChanged(applicationContext,changedModule,moduleNewState,applicationOldState,applicationNewState));
     }
 
-    public void runRefreshServiceInstance(AppServiceRefreshEvent serviceRefreshEvent){
-        getAll().forEach(applicationLifecycle -> applicationLifecycle.refreshServiceInstance(serviceRefreshEvent));
+    public void runRefreshServiceInstance(){
+        getAll().forEach(applicationLifecycle -> applicationLifecycle.refreshServiceInstance(applicationContext));
     }
 
     public List<ApplicationLifecycle> getAll(){
         return this.sequences;
     }
-
 
     protected List<ApplicationLifecycle> loadAll() {
         ExtensionLoader<ApplicationLifecycle> loader = applicationContext.getModel().getExtensionLoader(ApplicationLifecycle.class);

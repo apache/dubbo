@@ -23,11 +23,11 @@ import org.apache.dubbo.rpc.model.ScopeModel;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public abstract class AbstractModelContext<T extends ScopeModel> implements ModelContext<T> {
+public abstract class AbstractModelContext<M extends ScopeModel> implements ModelContext<M> {
 
-    private final T scopeModel;
+    private final M scopeModel;
 
-    private final List<DeployListener<T>> listeners;
+    private final List<DeployListener<M>> listeners;
 
     private DeployState modelState;
 
@@ -35,7 +35,7 @@ public abstract class AbstractModelContext<T extends ScopeModel> implements Mode
 
     private Throwable lastError;
 
-    public AbstractModelContext(T scopeModel) {
+    public AbstractModelContext(M scopeModel) {
         this.modelState = DeployState.PENDING;
         this.scopeModel = scopeModel;
         this.listeners = new CopyOnWriteArrayList<>();
@@ -43,17 +43,17 @@ public abstract class AbstractModelContext<T extends ScopeModel> implements Mode
     }
 
     @Override
-    public T getModel() {
+    public M getModel() {
         return scopeModel;
     }
 
     @Override
-    public void addDeployListener(DeployListener<T> listener) {
+    public void addDeployListener(DeployListener<M> listener) {
         this.listeners.add(listener);
     }
 
     @Override
-    public void removeDeployListener(DeployListener<T> listener) {
+    public void removeDeployListener(DeployListener<M> listener) {
         this.listeners.remove(listener);
     }
 
@@ -68,7 +68,7 @@ public abstract class AbstractModelContext<T extends ScopeModel> implements Mode
     }
 
     @Override
-    public List<DeployListener<T>> getListeners() {
+    public List<DeployListener<M>> getListeners() {
         return listeners;
     }
 

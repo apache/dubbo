@@ -16,13 +16,37 @@
  */
 package org.apache.dubbo.config.deploy.lifecycle;
 
+import org.apache.dubbo.config.deploy.context.ModelContext;
+
+import org.apache.dubbo.rpc.model.ScopeModel;
+
 /**
- * Lifecycle.
+ * Lifecycle. The abstraction of dubbo model lifecycle operations.
  */
-public interface Lifecycle {
+public interface Lifecycle<M extends ScopeModel,T extends ModelContext<M>>{
 
     /**
      * If this lifecycle need to initialize.
      */
-    boolean needInitialize();
+    boolean needInitialize(T context);
+
+    /**
+     * @see ModelContext#runStart()
+     */
+    default void start(T context){}
+
+    /**
+     * @see ModelContext#runInitialize()
+     */
+    default void initialize(T context){};
+
+    /**
+     * @see ModelContext#runPreDestroy()
+     */
+    default void preDestroy(T context) {}
+
+    /**
+     * @see ModelContext#runPostDestroy()
+     */
+    default void postDestroy(T context) {}
 }

@@ -14,26 +14,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.deploy.lifecycle.event;
+package org.apache.dubbo.config.deploy.lifecycle;
 
-import org.apache.dubbo.common.deploy.DeployState;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.config.deploy.context.ApplicationContext;
+
+import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * @see org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycle#refreshServiceInstance(AppServiceRefreshEvent)
+ * Application deregister lifecycle.
  */
-public class AppServiceRefreshEvent extends AbstractApplicationEvent {
+@Activate(order = -2000)
+public class DeregisterApplicationLifecycle implements ApplicationLifecycle {
 
-    private final AtomicBoolean registered;
 
-    public AppServiceRefreshEvent(ApplicationModel applicationModel, DeployState applicationCurrentState,AtomicBoolean registered) {
-        super(applicationModel,applicationCurrentState);
-        this.registered = registered;
+    @Override
+    public boolean needInitialize(ApplicationContext context) {
+        return true;
     }
 
-    public AtomicBoolean getRegistered() {
-        return registered;
+    /**
+     * postDestroy.
+     */
+    @Override
+    public void postDestroy(ApplicationContext applicationContext) {
+        destroyRegistries(applicationContext.getModel());
     }
+
+
+    private void destroyRegistries(ApplicationModel applicationModel) {
+        RegistryManager.getInstance(applicationModel).destroyAll();
+    }
+
+
 }

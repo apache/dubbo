@@ -19,13 +19,7 @@ package org.apache.dubbo.config.deploy.lifecycle;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.config.deploy.context.ApplicationContext;
-import org.apache.dubbo.config.deploy.lifecycle.event.AppInitEvent;
-import org.apache.dubbo.config.deploy.lifecycle.event.AppPostDestroyEvent;
-import org.apache.dubbo.config.deploy.lifecycle.event.AppPostModuleChangeEvent;
-import org.apache.dubbo.config.deploy.lifecycle.event.AppPreDestroyEvent;
-import org.apache.dubbo.config.deploy.lifecycle.event.AppPreModuleChangeEvent;
-import org.apache.dubbo.config.deploy.lifecycle.event.AppServiceRefreshEvent;
-import org.apache.dubbo.config.deploy.lifecycle.event.AppStartEvent;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 /**
@@ -34,7 +28,8 @@ import org.apache.dubbo.rpc.model.ModuleModel;
  * Used in an application Lifecycle managing procedure, and dubbo packages
  * can implement this interface to define what to do when application status changes.
  * <br>
- * In another word, when methods like
+ * <br>
+ * In other words, when methods like
  * {@link ApplicationContext#runInitialize()},
  * {@link ApplicationContext#runStart()},
  * {@link ApplicationContext#runPreDestroy()},
@@ -42,41 +37,20 @@ import org.apache.dubbo.rpc.model.ModuleModel;
  * called, all implementations of this interface will also be called.
  */
 @SPI
-public interface ApplicationLifecycle extends Lifecycle {
-
-    /**
-     * @see ApplicationContext#runStart()
-     */
-    default void start(AppStartEvent startContext){}
-
-    /**
-     * @see ApplicationContext#runInitialize()
-     */
-    default void initialize(AppInitEvent initContext){};
-
-    /**
-     * @see ApplicationContext#runPreDestroy()
-     */
-    default void preDestroy(AppPreDestroyEvent preDestroyContext) {}
-
-    /**
-     * @see ApplicationContext#runPostDestroy()
-     */
-    default void postDestroy(AppPostDestroyEvent postDestroyContext) {}
+public interface ApplicationLifecycle extends Lifecycle<ApplicationModel,ApplicationContext> {
 
     /**
      * @see ApplicationContext#runPreModuleChanged(ModuleModel, DeployState)
      */
-    default void preModuleChanged(AppPreModuleChangeEvent preModuleChangeContext){}
+    default void preModuleChanged(ApplicationContext applicationContext,ModuleModel changedModule,DeployState moduleState){}
 
     /**
      * @see ApplicationContext#runPostModuleChanged(ModuleModel, DeployState, DeployState, DeployState)
      */
-    default void postModuleChanged(AppPostModuleChangeEvent postModuleChangeContext){}
+    default void postModuleChanged(ApplicationContext applicationContext,ModuleModel changedModule,DeployState moduleNewState,DeployState applicationOldState,DeployState applicationNewState){}
 
     /**
      * @see ApplicationContext#runRefreshServiceInstance()
      */
-    default void refreshServiceInstance(AppServiceRefreshEvent serviceRefreshContext){}
-
+    default void refreshServiceInstance(ApplicationContext applicationContext){}
 }

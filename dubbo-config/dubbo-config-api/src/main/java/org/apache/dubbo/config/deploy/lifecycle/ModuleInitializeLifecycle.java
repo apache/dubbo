@@ -18,7 +18,7 @@ package org.apache.dubbo.config.deploy.lifecycle;
 
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.config.deploy.lifecycle.event.AppInitEvent;
+import org.apache.dubbo.config.deploy.context.ApplicationContext;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
@@ -32,7 +32,7 @@ public class ModuleInitializeLifecycle implements ApplicationLifecycle{
      * If this lifecycle need to initialize.
      */
     @Override
-    public boolean needInitialize() {
+    public boolean needInitialize(ApplicationContext context) {
         return true;
     }
 
@@ -40,8 +40,8 @@ public class ModuleInitializeLifecycle implements ApplicationLifecycle{
      * {@link ApplicationDeployer#initialize()}
      */
     @Override
-    public void initialize(AppInitEvent initEvent) {
-        initModuleDeployers(initEvent.getApplicationModel());
+    public void initialize(ApplicationContext applicationContext) {
+        initModuleDeployers(applicationContext.getModel());
     }
 
     private void initModuleDeployers(ApplicationModel applicationModel) {

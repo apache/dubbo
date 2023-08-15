@@ -18,8 +18,25 @@ package org.apache.dubbo.config.deploy.context;
 
 import org.apache.dubbo.rpc.model.ModuleModel;
 
+/**
+ * The lifecycle aggregate of module.
+ */
 public class ModuleContext extends AbstractModelContext<ModuleModel> {
     public ModuleContext(ModuleModel scopeModel) {
         super(scopeModel);
     }
+
+    // TODO
+
+    @Override
+    public void runStart() {}
+
+    @Override
+    public void runInitialize() {}
+
+    @Override
+    public void runPreDestroy() {}
+
+    @Override
+    public void runPostDestroy() {}
 }

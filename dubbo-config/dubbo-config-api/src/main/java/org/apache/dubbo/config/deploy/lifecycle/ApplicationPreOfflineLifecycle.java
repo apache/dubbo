@@ -20,7 +20,7 @@ import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.config.deploy.lifecycle.event.AppPreDestroyEvent;
+import org.apache.dubbo.config.deploy.context.ApplicationContext;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
@@ -30,37 +30,26 @@ import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 
 import java.util.List;
-import java.util.concurrent.Future;
 
 /**
  * Application offline lifecycle.
  */
-@Activate(order = -1000)
-public class ApplicationOfflineLifecycle implements ApplicationLifecycle {
+@Activate(order = -3000)
+public class ApplicationPreOfflineLifecycle implements ApplicationLifecycle {
 
-    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ApplicationOfflineLifecycle.class);
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ApplicationPreOfflineLifecycle.class);
 
     @Override
-    public boolean needInitialize() {
+    public boolean needInitialize(ApplicationContext context) {
         return true;
     }
 
     @Override
-    public void preDestroy(AppPreDestroyEvent preDestroyContext) {
-        ApplicationModel applicationModel = preDestroyContext.getApplicationModel();
+    public void preDestroy(ApplicationContext context) {
+        ApplicationModel applicationModel = context.getModel();
 
         offline(applicationModel);
-        unregisterMetadataServiceInstance(preDestroyContext);
-
-        RegistryApplicationLifecycle registryApplicationLifecycle = applicationModel.getBeanFactory().getBean(RegistryApplicationLifecycle.class);
-        Future<?> asyncMetadataFuture = null;
-
-        if(registryApplicationLifecycle != null){
-            asyncMetadataFuture =  registryApplicationLifecycle.getAsyncMetadataFuture();
-        }
-        if (asyncMetadataFuture != null) {
-            asyncMetadataFuture.cancel(true);
-        }
+        unregisterMetadataServiceInstance(context);
     }
 
     private void offline(ApplicationModel applicationModel) {
@@ -90,9 +79,9 @@ public class ApplicationOfflineLifecycle implements ApplicationLifecycle {
         statedURL.setRegistered(false);
     }
 
-    private void unregisterMetadataServiceInstance(AppPreDestroyEvent preDestroyContextEvent) {
-        if (preDestroyContextEvent.registered().get()) {
-            ServiceInstanceMetadataUtils.unregisterMetadataAndInstance(preDestroyContextEvent.getApplicationModel());
+    private void unregisterMetadataServiceInstance(ApplicationContext applicationContext) {
+        if (applicationContext.registered()) {
+            ServiceInstanceMetadataUtils.unregisterMetadataAndInstance(applicationContext.getModel());
         }
     }
 

@@ -1,1 +1,2 @@
 metadata=org.apache.dubbo.registry.client.metadata.MetadataServiceNameMapping
+deregister=org.apache.dubbo.config.deploy.lifecycle.DeregisterApplicationLifecycle

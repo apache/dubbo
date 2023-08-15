@@ -22,7 +22,7 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.MetricsConfig;
-import org.apache.dubbo.config.deploy.lifecycle.event.AppPreModuleChangeEvent;
+import org.apache.dubbo.config.deploy.context.ApplicationContext;
 import org.apache.dubbo.metrics.service.MetricsServiceExporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -32,24 +32,22 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Metrics export lifecycle.
  */
-@Activate(order = -1000)
-public class MetrisExportApplicationLifecycle implements ApplicationLifecycle {
+@Activate(order = -3000)
+public class MetricsExportApplicationLifecycle implements ApplicationLifecycle {
 
-    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetrisExportApplicationLifecycle.class);
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetricsExportApplicationLifecycle.class);
 
     @Override
-    public boolean needInitialize() {
+    public boolean needInitialize(ApplicationContext context) {
         return true;
     }
 
     @Override
-    public void preModuleChanged(AppPreModuleChangeEvent preModuleChangeContext) {
-        ModuleModel changedModule = preModuleChangeContext.getChangedModule();
-        DeployState moduleState = preModuleChangeContext.getModuleState();
-        AtomicBoolean hasPreparedApplicationInstance = preModuleChangeContext.getHasPreparedApplicationInstance();
+    public void preModuleChanged(ApplicationContext applicationContext, ModuleModel changedModule, DeployState moduleState) {
+        AtomicBoolean hasPreparedApplicationInstance = applicationContext.getHasPreparedApplicationInstance();
 
         if (!changedModule.isInternal() && moduleState == DeployState.STARTED && !hasPreparedApplicationInstance.get()) {
-            exportMetricsService(preModuleChangeContext.getApplicationModel());
+            exportMetricsService(applicationContext.getModel());
         }
     }
 
@@ -58,7 +56,11 @@ public class MetrisExportApplicationLifecycle implements ApplicationLifecycle {
             .map(MetricsConfig::getExportMetricsService).orElse(true);
         if (exportMetrics) {
             try {
-                MetricsServiceExporter exporter = applicationModel.getExtension(MetricsApplicationLifecycle.class,MetricsApplicationLifecycle.getName()).getMetricsServiceExporter();
+                MetricsServiceExporter exporter = applicationModel.getBeanFactory().getBean(MetricsServiceExporter.class);
+                if(exporter == null){
+                    exporter =  applicationModel.getExtensionLoader(MetricsServiceExporter.class).getDefaultExtension();
+                    applicationModel.getBeanFactory().registerBean(exporter);
+                }
                 exporter.export();
             } catch (Exception e) {
                 logger.error(LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION, "", "",

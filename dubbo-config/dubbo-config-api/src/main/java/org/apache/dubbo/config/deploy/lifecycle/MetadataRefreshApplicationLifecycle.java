@@ -16,36 +16,43 @@
  */
 package org.apache.dubbo.config.deploy.lifecycle;
 
+import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.deploy.context.ApplicationContext;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REFRESH_INSTANCE_ERROR;
 
-/**
- * Metadata lifecycle
- */
-@Activate
-public class MetadataApplicationLifecycle implements ApplicationLifecycle {
+@Activate(order= -1000)
+public class MetadataRefreshApplicationLifecycle implements ApplicationLifecycle{
 
-    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetadataApplicationLifecycle.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetadataRefreshApplicationLifecycle.class);
 
     @Override
     public boolean needInitialize(ApplicationContext context) {
         return true;
     }
 
+
     @Override
-    public void refreshServiceInstance(ApplicationContext applicationContext) {
-        if (applicationContext.getRegistered().get()) {
-            try {
-                //MetadataLifeManager
+    public void postModuleChanged(ApplicationContext applicationContext, ModuleModel changedModule, DeployState moduleNewState, DeployState applicationOldState, DeployState applicationNewState) {
+        if(DeployState.STARTING.equals(applicationOldState) && DeployState.STARTED.equals(applicationNewState)){
+            refreshMetadata(applicationContext);
+        }
+    }
+
+
+    private void refreshMetadata(ApplicationContext applicationContext){
+        try {
+            if (applicationContext.registered()) {
                 ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationContext.getModel());
-            } catch (Exception e) {
-                logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
             }
+        } catch (Exception e) {
+            logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
+            throw e;
         }
     }
 }

@@ -1,2 +1,5 @@
-metrics=org.apache.dubbo.config.deploy.lifecycle.MetricsApplicationLifecycle
-metrisexport=org.apache.dubbo.config.deploy.lifecycle.MetrisExportApplicationLifecycle
+metrics-export=org.apache.dubbo.config.deploy.lifecycle.MetricsExportApplicationLifecycle
+collectors-start=org.apache.dubbo.config.deploy.lifecycle.MetricsCollectorStartLifecycle
+metrics-disable=org.apache.dubbo.config.deploy.lifecycle.MetricsDisableApplicationLifecycle
+metrics-initialize=org.apache.dubbo.config.deploy.lifecycle.MetricsInitializeLifecycle
+module-started-event=org.apache.dubbo.config.deploy.lifecycle.ModuleStartedEventApplicationLifecycle
