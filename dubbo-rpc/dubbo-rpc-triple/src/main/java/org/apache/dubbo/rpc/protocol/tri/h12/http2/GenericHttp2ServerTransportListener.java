@@ -23,6 +23,7 @@ import org.apache.dubbo.remoting.http12.BiStreamServerCallListener;
 import org.apache.dubbo.remoting.http12.ServerCallListener;
 import org.apache.dubbo.remoting.http12.ServerStreamServerCallListener;
 import org.apache.dubbo.remoting.http12.UnaryServerCallListener;
+import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.h2.DefaultHttp2StreamingDecoder;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
@@ -93,6 +94,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
 
     @Override
     public void cancelByRemote(long errorCode) {
+        this.serverChannelObserver.cancel(new HttpStatusException((int) errorCode));
         this.serverCallListener.onCancel(errorCode);
     }
 
