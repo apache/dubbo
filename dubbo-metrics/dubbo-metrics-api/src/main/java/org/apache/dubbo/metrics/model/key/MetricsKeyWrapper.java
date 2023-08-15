@@ -18,11 +18,8 @@
 package org.apache.dubbo.metrics.model.key;
 
 import io.micrometer.common.lang.Nullable;
-import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -88,7 +85,7 @@ public class MetricsKeyWrapper {
             return metricsKey.getName();
         }
         try {
-            return String.format(metricsKey.getName(), getType());
+            return metricsKey.getNameByType(getType());
         } catch (Exception ignore) {
             return metricsKey.getName();
         }
@@ -103,19 +100,6 @@ public class MetricsKeyWrapper {
         } catch (Exception ignore) {
             return metricsKey.getDescription();
         }
-    }
-
-    public Map<String, String> tagName(ApplicationModel applicationModel, String key) {
-        MetricsLevel level = getLevel();
-        switch (level) {
-            case APP:
-                return MetricsSupport.applicationTags(applicationModel);
-            case SERVICE:
-                return MetricsSupport.serviceTags(applicationModel, key);
-            case METHOD:
-                return MetricsSupport.methodTags(applicationModel, key);
-        }
-        return MetricsSupport.applicationTags(applicationModel);
     }
 
     public static MetricsKeyWrapper wrapper(MetricsKey metricsKey) {

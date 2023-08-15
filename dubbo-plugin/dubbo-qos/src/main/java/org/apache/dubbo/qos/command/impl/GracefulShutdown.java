@@ -37,11 +37,11 @@ public class GracefulShutdown implements BaseCommand {
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        offline.execute(commandContext, new String[0]);
         for (org.apache.dubbo.rpc.GracefulShutdown gracefulShutdown :
             org.apache.dubbo.rpc.GracefulShutdown.getGracefulShutdowns(frameworkModel)) {
             gracefulShutdown.readonly();
         }
+        offline.execute(commandContext, new String[0]);
         return "OK";
     }
 }

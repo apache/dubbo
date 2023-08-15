@@ -40,6 +40,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.sort;
 import static java.util.Collections.unmodifiableMap;
 import static org.apache.dubbo.common.function.ThrowableFunction.execute;
+import static org.apache.dubbo.common.utils.AnnotationUtils.isAnnotationPresent;
 import static org.apache.dubbo.common.utils.AnnotationUtils.isAnyAnnotationPresent;
 import static org.apache.dubbo.common.utils.ClassUtils.forName;
 import static org.apache.dubbo.common.utils.ClassUtils.getAllInterfaces;
@@ -197,8 +198,9 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
             for (Method serviceMethod : serviceMethods) {
                 if (overrides(serviceMethod, declaredServiceMethod)) {
                     serviceMethodsMap.put(serviceMethod, declaredServiceMethod);
-                    // once method match ,break for decrease loop  times
-                    break;
+                    // override method count > 1
+//                    // once method match ,break for decrease loop  times
+//                    break;
                 }
             }
         }
@@ -420,5 +422,17 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
             .getSupportedExtensionInstances();
 
         return supportedExtensionInstances;
+    }
+
+    public static boolean isServiceMethodAnnotationPresent(Class<?> serviceImpl, String annotationClass) {
+        List<Method> allMethods = getAllMethods(serviceImpl, excludedDeclaredClass(Object.class));
+
+        for (Method method : allMethods) {
+            if (isAnnotationPresent(method, annotationClass)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
