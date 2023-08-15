@@ -182,7 +182,7 @@ public class DubboDeployApplicationListener implements ApplicationListener<Appli
 
     @Override
     public int getOrder() {
-        return HIGHEST_PRECEDENCE;
+        return HIGHEST_PRECEDENCE + 200;
     }
 
 }
