@@ -22,9 +22,6 @@ import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpInputMessage;
 import org.apache.dubbo.remoting.http12.RequestMetadata;
-import org.apache.dubbo.remoting.http12.ServerCallListener;
-import org.apache.dubbo.remoting.http12.ServerStreamServerCallListener;
-import org.apache.dubbo.remoting.http12.UnaryServerCallListener;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerChannelObserver;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerStreamChannelObserver;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerTransportListener;
@@ -37,6 +34,9 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.h12.AbstractServerTransportListener;
+import org.apache.dubbo.rpc.protocol.tri.h12.ServerCallListener;
+import org.apache.dubbo.rpc.protocol.tri.h12.ServerStreamServerCallListener;
+import org.apache.dubbo.rpc.protocol.tri.h12.UnaryServerCallListener;
 
 public class DefaultHttp11ServerTransportListener extends AbstractServerTransportListener<RequestMetadata, HttpInputMessage> implements Http1ServerTransportListener {
 

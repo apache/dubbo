@@ -19,10 +19,6 @@ package org.apache.dubbo.rpc.protocol.tri.h12.http2;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
-import org.apache.dubbo.remoting.http12.BiStreamServerCallListener;
-import org.apache.dubbo.remoting.http12.ServerCallListener;
-import org.apache.dubbo.remoting.http12.ServerStreamServerCallListener;
-import org.apache.dubbo.remoting.http12.UnaryServerCallListener;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.h2.DefaultHttp2StreamingDecoder;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
@@ -42,6 +38,10 @@ import org.apache.dubbo.rpc.executor.ExecutorSupport;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.h12.AbstractServerTransportListener;
+import org.apache.dubbo.rpc.protocol.tri.h12.BiStreamServerCallListener;
+import org.apache.dubbo.rpc.protocol.tri.h12.ServerCallListener;
+import org.apache.dubbo.rpc.protocol.tri.h12.ServerStreamServerCallListener;
+import org.apache.dubbo.rpc.protocol.tri.h12.UnaryServerCallListener;
 
 import java.util.concurrent.Executor;
 
@@ -58,7 +58,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     public GenericHttp2ServerTransportListener(H2StreamChannel h2StreamChannel, URL url, FrameworkModel frameworkModel) {
         super(frameworkModel, h2StreamChannel);
         this.h2StreamChannel = h2StreamChannel;
-        this.serverChannelObserver = new Http2ServerChannelObserver(h2StreamChannel);
+        this.serverChannelObserver = new Http2ServerStreamObserver(frameworkModel, h2StreamChannel);
         this.serverChannelObserver.setHttpMessageCodec(JsonCodec.INSTANCE);
         this.executorSupport = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel()).getExecutorSupport(url);
     }
@@ -70,8 +70,8 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     }
 
     private ServerCallListener startListener(RpcInvocation invocation,
-                                               MethodDescriptor methodDescriptor,
-                                               Invoker<?> invoker) {
+                                             MethodDescriptor methodDescriptor,
+                                             Invoker<?> invoker) {
         Http2ServerChannelObserver responseObserver = getServerChannelObserver();
         CancellationContext cancellationContext = RpcContext.getCancellationContext();
         responseObserver.setCancellationContext(cancellationContext);

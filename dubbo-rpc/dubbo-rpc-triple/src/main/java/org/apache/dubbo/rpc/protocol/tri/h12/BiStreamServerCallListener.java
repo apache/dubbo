@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.remoting.http12;
+package org.apache.dubbo.rpc.protocol.tri.h12;
 
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.remoting.http12.FlowControlStreamObserver;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
