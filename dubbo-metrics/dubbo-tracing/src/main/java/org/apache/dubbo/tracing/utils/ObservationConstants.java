@@ -14,24 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.tracing.exporter;
 
-import brave.handler.SpanHandler;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
+package org.apache.dubbo.tracing.utils;
 
-public interface TraceExporter {
+public class ObservationConstants {
 
-    /**
-     * for otel
-     *
-     * @return
-     */
-    SpanExporter getSpanExporter();
-
-    /**
-     * for brave
-     *
-     * @return
-     */
-    SpanHandler getSpanHandler();
+    public static final String DEFAULT_APPLICATION_NAME = "dubbo-application";
 }
