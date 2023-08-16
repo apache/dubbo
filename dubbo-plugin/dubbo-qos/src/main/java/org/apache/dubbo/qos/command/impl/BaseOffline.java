@@ -19,6 +19,7 @@ package org.apache.dubbo.qos.command.impl;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ArrayUtils;
+import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.qos.api.BaseCommand;
 import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.registry.Registry;
@@ -68,7 +69,7 @@ public class BaseOffline implements BaseCommand {
     public boolean offline(String servicePattern) {
         boolean hasService = false;
 
-        ExecutorService executorService = Executors.newFixedThreadPool(Math.min(Runtime.getRuntime().availableProcessors(), 4));
+        ExecutorService executorService = Executors.newFixedThreadPool(Math.min(Runtime.getRuntime().availableProcessors(), 4), new NamedThreadFactory("Dubbo-Offline"));
         try {
             List<CompletableFuture<Void>> futures = new LinkedList<>();
             Collection<ProviderModel> providerModelList = serviceRepository.allProviderModels();
