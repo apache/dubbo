@@ -25,7 +25,7 @@ import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REFRESH_INSTANCE_ERROR;
 
 /**
- * Metadata lifecycle
+ * Metadata application lifecycle
  */
 @Activate
 public class MetadataApplicationLifecycle implements ApplicationLifecycle {
@@ -41,7 +41,6 @@ public class MetadataApplicationLifecycle implements ApplicationLifecycle {
     public void refreshServiceInstance(ApplicationContext applicationContext) {
         if (applicationContext.getRegistered().get()) {
             try {
-                //MetadataLifeManager
                 ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationContext.getModel());
             } catch (Exception e) {
                 logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
