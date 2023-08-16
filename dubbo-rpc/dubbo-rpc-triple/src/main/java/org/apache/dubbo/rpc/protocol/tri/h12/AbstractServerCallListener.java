@@ -20,11 +20,17 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.http12.exception.HttpRequestTimeout;
+import org.apache.dubbo.remoting.http12.h2.Http2CancelableStreamObserver;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
+import org.apache.dubbo.rpc.protocol.tri.call.AbstractServerCall;
 
+import java.net.InetSocketAddress;
+
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_TIMEOUT_SERVER;
 
 public abstract class AbstractServerCallListener implements ServerCallListener {
@@ -46,6 +52,18 @@ public abstract class AbstractServerCallListener implements ServerCallListener {
     }
 
     public void invoke() {
+        if (responseObserver instanceof Http2CancelableStreamObserver) {
+            RpcContext.restoreCancellationContext(((Http2CancelableStreamObserver<Object>) responseObserver).getCancellationContext());
+        }
+        InetSocketAddress remoteAddress = (InetSocketAddress) invocation.getAttributes()
+            .remove(AbstractServerCall.REMOTE_ADDRESS_KEY);
+        RpcContext.getServiceContext().setRemoteAddress(remoteAddress);
+        String remoteApp = (String) invocation.getAttributes()
+            .remove(TripleHeaderEnum.CONSUMER_APP_NAME_KEY);
+        if (null != remoteApp) {
+            RpcContext.getServiceContext().setRemoteApplicationName(remoteApp);
+            invocation.setAttachmentIfAbsent(REMOTE_APPLICATION_KEY, remoteApp);
+        }
         try {
             final long stInMillis = System.currentTimeMillis();
             final Result response = invoker.invoke(invocation);
