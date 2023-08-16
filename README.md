@@ -29,7 +29,7 @@ Follow the instructions below to learn how to:
 ### Programming with lightweight RPC API
 [5 minutes step-by-step guide](https://dubbo.apache.org/zh-cn/overview/quickstart/rpc/java)
 
-Dubbo supports building RPC services with only a few lines of code while depending only on a lightweight SDK (<10MB). The protocol on the wire can be [Triple](https://cn.dubbo.apache.org/zh-cn/overview/reference/protocols/triple/)(fully gRPC compatible and HTTP-friendly), Dubbo2(TCP), REST, or any protocol of your choice.
+Dubbo supports building RPC services with only a few lines of code while depending only on a lightweight SDK (<10MB). The protocol on the wire can be [Triple](https://dubbo.apache.org/zh-cn/overview/reference/protocols/triple/)(fully gRPC compatible and HTTP-friendly), Dubbo2(TCP), REST, or any protocol of your choice.
 
 
 ### Building a microservice application with Spring Boot
@@ -37,20 +37,20 @@ Dubbo supports building RPC services with only a few lines of code while dependi
 
 It's highly recommended to start your microservice application with the Spring Boot Starter `dubbo-spring-boot-starter` provided by Dubbo. With only a single dependency and yaml file, and optionally a bunch of other useful spring boot starters, you can enable all of the Dubo features like service discovery, observability, tracing, etc.
 
-Next, learn how to [deploy](https://cn.dubbo.apache.org/zh-cn/overview/tasks/deploy/), [monitor](https://cn.dubbo.apache.org/zh-cn/overview/tasks/observability/), and [manage the traffic](https://cn.dubbo.apache.org/zh-cn/overview/tasks/traffic-management/) of your Dubbo application and cluster.
+Next, learn how to [deploy](https://dubbo.apache.org/zh-cn/overview/tasks/deploy/), [monitor](https://dubbo.apache.org/zh-cn/overview/tasks/observability/), and [manage the traffic](https://dubbo.apache.org/zh-cn/overview/tasks/traffic-management/) of your Dubbo application and cluster.
 
 ## More Features
 Get more details by visiting the links below to get your hands dirty with some well-designed tasks on our website.
 
-* [Launch a Dubbo project](https://cn.dubbo.apache.org/zh-cn/overview/tasks/develop/template/)
-* [RPC protocols](https://cn.dubbo.apache.org/zh-cn/overview/core-features/protocols/)
-* [Traffic management](https://cn.dubbo.apache.org/zh-cn/overview/core-features/traffic/)
-* [Service discovery](https://cn.dubbo.apache.org/zh-cn/overview/core-features/service-discovery/)
-* [Observability](https://cn.dubbo.apache.org/zh-cn/overview/core-features/observability/)
-* [Extensibility](https://cn.dubbo.apache.org/zh-cn/overview/core-features/extensibility/)
-* [Security](https://cn.dubbo.apache.org/zh-cn/overview/core-features/security/)
-* [Visualized console and control plane](https://cn.dubbo.apache.org/zh-cn/overview/reference/admin/)
-* [Kubernetes and Service mesh](https://cn.dubbo.apache.org/zh-cn/overview/core-features/service-mesh/)
+* [Launch a Dubbo project](https://dubbo.apache.org/zh-cn/overview/tasks/develop/template/)
+* [RPC protocols](https://dubbo.apache.org/zh-cn/overview/core-features/protocols/)
+* [Traffic management](https://dubbo.apache.org/zh-cn/overview/core-features/traffic/)
+* [Service discovery](https://dubbo.apache.org/zh-cn/overview/core-features/service-discovery/)
+* [Observability](https://dubbo.apache.org/zh-cn/overview/core-features/observability/)
+* [Extensibility](https://dubbo.apache.org/zh-cn/overview/core-features/extensibility/)
+* [Security](https://dubbo.apache.org/zh-cn/overview/core-features/security/)
+* [Visualized console and control plane](https://dubbo.apache.org/zh-cn/overview/reference/admin/)
+* [Kubernetes and Service mesh](https://dubbo.apache.org/zh-cn/overview/core-features/service-mesh/)
 
 ## Which Dubbo version should I use?
 | **Dubbo3** | **JDK** | **Dependencies** | **Description** |
@@ -70,7 +70,7 @@ See [CONTRIBUTING](https://github.com/apache/dubbo/blob/master/CONTRIBUTING.md) 
 ## Contact
 * WeChat: apachedubbo
 * DingTalk group: 37290003945
-* Mailing list: [guide](https://cn.dubbo.apache.org/zh-cn/contact/)
+* Mailing list: [guide](https://dubbo.apache.org/zh-cn/contact/)
 * Twitter: [@ApacheDubbo](https://twitter.com/ApacheDubbo)
 * Security issues: please mail to [us](mailto:security@dubbo.apache.org) privately.
 
