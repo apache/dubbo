@@ -63,7 +63,7 @@ class StaticDirectoryTest {
 
 
         List<Invoker<String>> filteredInvokers = router.route(invokers.clone(), URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation(), false, new Holder<>());
-        ApplicationModel.defaultModel().getBeanFactory().registerBean(MetricsConstants.METRICS_DISPATCHER_NAME,MetricsDispatcher.class);
+        ApplicationModel.defaultModel().getBeanFactory().registerBean(MetricsDispatcher.class);
         StaticDirectory<String> staticDirectory = new StaticDirectory<>(filteredInvokers);
         boolean isAvailable = staticDirectory.isAvailable();
         Assertions.assertTrue(isAvailable);

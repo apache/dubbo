@@ -67,7 +67,7 @@ class ScopeClusterInvokerTest {
 
     @BeforeEach
     void beforeMonth() {
-        ApplicationModel.defaultModel().getBeanFactory().registerBean(MetricsConstants.METRICS_DISPATCHER_NAME,MetricsDispatcher.class);
+        ApplicationModel.defaultModel().getBeanFactory().registerBean(MetricsDispatcher.class);
     }
 
     @AfterEach

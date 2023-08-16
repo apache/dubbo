@@ -73,7 +73,7 @@ class ConnectivityValidationTest {
 
     @BeforeEach
     public void setup() {
-        ApplicationModel.defaultModel().getBeanFactory().registerBean(MetricsConstants.METRICS_DISPATCHER_NAME,MetricsDispatcher.class);
+        ApplicationModel.defaultModel().getBeanFactory().registerBean(MetricsDispatcher.class);
         invoker1 = Mockito.mock(Invoker.class);
         invoker2 = Mockito.mock(Invoker.class);
         invoker3 = Mockito.mock(Invoker.class);

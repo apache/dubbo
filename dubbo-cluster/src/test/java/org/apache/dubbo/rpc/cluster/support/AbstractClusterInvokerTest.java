@@ -107,7 +107,7 @@ class AbstractClusterInvokerTest {
     @SuppressWarnings({"unchecked"})
     @BeforeEach
     public void setUp() throws Exception {
-        ApplicationModel.defaultModel().getBeanFactory().registerBean(MetricsConstants.METRICS_DISPATCHER_NAME,MetricsDispatcher.class);
+        ApplicationModel.defaultModel().getBeanFactory().registerBean(MetricsDispatcher.class);
         Map<String, Object> attributes = new HashMap<>();
         attributes.put("application", "abstractClusterInvokerTest");
         url = url.putAttribute(REFER_KEY, attributes);

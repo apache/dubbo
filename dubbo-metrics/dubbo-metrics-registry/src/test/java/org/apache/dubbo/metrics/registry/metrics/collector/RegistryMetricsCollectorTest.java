@@ -62,7 +62,7 @@ class RegistryMetricsCollectorTest {
         config.setName("MockMetrics");
 
         applicationModel.getApplicationConfigManager().setApplication(config);
-        applicationModel.getBeanFactory().getOrRegisterBean(MetricsConstants.METRICS_DISPATCHER_NAME,MetricsDispatcher.class);
+        applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
         collector = applicationModel.getBeanFactory().getOrRegisterBean(RegistryMetricsCollector.class);
         collector.setCollectEnabled(true);
     }

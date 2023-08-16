@@ -63,7 +63,7 @@ public abstract class MetricsEvent {
                 if (beanFactory.isDestroyed()) {
                     this.MetricsEventMulticaster = null;
                 } else {
-                    MetricsEventMulticaster dispatcher = beanFactory.getBean(MetricsConstants.METRICS_DISPATCHER_NAME,MetricsEventMulticaster.class);
+                    MetricsEventMulticaster dispatcher = beanFactory.getBean(MetricsEventMulticaster.class);
                     this.MetricsEventMulticaster = dispatcher;
                 }
             }

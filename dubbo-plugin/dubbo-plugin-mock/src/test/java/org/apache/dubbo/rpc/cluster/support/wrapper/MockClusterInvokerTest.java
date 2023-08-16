@@ -52,7 +52,7 @@ class MockClusterInvokerTest {
 
     @BeforeEach
     public void beforeMethod() {
-        ApplicationModel.defaultModel().getBeanFactory().registerBean(MetricsConstants.METRICS_DISPATCHER_NAME,MetricsDispatcher.class);
+        ApplicationModel.defaultModel().getBeanFactory().registerBean(MetricsDispatcher.class);
         invokers.clear();
     }
 

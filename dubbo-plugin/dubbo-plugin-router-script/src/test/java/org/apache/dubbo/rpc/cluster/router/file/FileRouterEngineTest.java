@@ -62,7 +62,7 @@ class FileRouterEngineTest {
 
     @BeforeAll
     public static void setUpBeforeClass() throws Exception {
-        ApplicationModel.defaultModel().getBeanFactory().registerBean(MetricsConstants.METRICS_DISPATCHER_NAME,MetricsDispatcher.class);
+        ApplicationModel.defaultModel().getBeanFactory().registerBean(MetricsDispatcher.class);
         System.setProperty(ENABLE_CONNECTIVITY_VALIDATION, "false");
     }
 

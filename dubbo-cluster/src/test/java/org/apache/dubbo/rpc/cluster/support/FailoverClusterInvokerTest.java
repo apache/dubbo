@@ -68,7 +68,7 @@ class FailoverClusterInvokerTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        ApplicationModel.defaultModel().getBeanFactory().registerBean(MetricsConstants.METRICS_DISPATCHER_NAME,MetricsDispatcher.class);
+        ApplicationModel.defaultModel().getBeanFactory().registerBean(MetricsDispatcher.class);
         dic = mock(Directory.class);
 
         given(dic.getUrl()).willReturn(url);
