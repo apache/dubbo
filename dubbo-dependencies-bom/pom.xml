@@ -102,7 +102,7 @@
         <httpclient_version>4.5.14</httpclient_version>
         <httpcore_version>4.4.16</httpcore_version>
         <fastjson_version>1.2.83</fastjson_version>
-        <fastjson2_version>2.0.38</fastjson2_version>
+        <fastjson2_version>2.0.39</fastjson2_version>
         <zookeeper_version>3.4.14</zookeeper_version>
         <curator_version>4.3.0</curator_version>
         <curator_test_version>2.12.0</curator_test_version>
