@@ -335,12 +335,12 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
     private void onModuleFailed(String msg, Throwable ex) {
         try {
+            // un-export all services if start failure
+            unexportServices();
+
             setFailed(ex);
             logger.error(CONFIG_FAILED_START_MODEL, "", "", "Model start failed: " + msg, ex);
             applicationDeployer.notifyModuleChanged(moduleModel, DeployState.FAILED);
-
-            // un-export all services if start failure
-            unexportServices();
         } finally {
             completeStartFuture(false);
         }
