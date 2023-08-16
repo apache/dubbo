@@ -14,27 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.tracing.tracer.otel;
+package org.apache.dubbo.tracing.exporter.zipkin;
 
-import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.config.nested.ExporterConfig;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import io.micrometer.tracing.propagation.Propagator;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.propagation.ContextPropagators;
+import brave.handler.SpanHandler;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
+import java.time.Duration;
 
-class OTelPropagatorProviderTest {
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+class ZipkinSpanHandlerTest {
 
     @Test
-    void testOTelPropagatorProvider() {
-        ContextPropagators contextPropagators = mock(ContextPropagators.class);
-        Tracer tracer = mock(Tracer.class);
-        OTelPropagatorProvider.createMicrometerPropagator(contextPropagators, tracer);
-        OTelPropagatorProvider oTelPropagatorProvider = new OTelPropagatorProvider();
-        Propagator propagator = oTelPropagatorProvider.getPropagator();
-        Assert.notNull(propagator, "Propagator don't be null.");
+    void getSpanHandler() {
+        ExporterConfig.ZipkinConfig zipkinConfig = mock(ExporterConfig.ZipkinConfig.class);
+        when(zipkinConfig.getEndpoint()).thenReturn("http://localhost:9411/api/v2/spans");
+        when(zipkinConfig.getConnectTimeout()).thenReturn(Duration.ofSeconds(5));
+
+        SpanHandler spanHandler = ZipkinSpanHandler.getSpanHandler(ApplicationModel.defaultModel(), zipkinConfig);
+        Assertions.assertNotNull(spanHandler);
     }
 }
