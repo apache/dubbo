@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
+import org.apache.dubbo.common.utils.JsonCompatibilityUtil;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
 import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
@@ -37,6 +38,7 @@ import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployerManager;
 
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -47,6 +49,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_SERVER;
+import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.CHECK_JSON_COMPATIBILITY;
 import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.PATH_SEPARATOR;
 
 public class RestProtocol extends AbstractProtocol {
@@ -90,6 +93,12 @@ public class RestProtocol extends AbstractProtocol {
             MetadataResolver.resolveProviderServiceMetadata(url.getServiceModel().getProxyObject().getClass(),
                 url, getContextPath(url));
 
+        // check json compatibility
+        // checkJsonCompatibility(invoker.getInterface());
+        Boolean checkCompatibility = (Boolean) url.getAttribute(CHECK_JSON_COMPATIBILITY);
+        if (checkCompatibility == null || checkCompatibility) {
+            checkJsonCompatibility(invoker.getInterface());
+        }
 
         // deploy service
         URL newURL = ServiceDeployerManager.deploy(url, serviceRestMetadata, invoker);
@@ -111,6 +120,15 @@ public class RestProtocol extends AbstractProtocol {
         };
         exporterMap.put(uri, exporter);
         return exporter;
+    }
+
+    private void checkJsonCompatibility(Class<?> clazz) throws RpcException {
+        boolean compatibility = JsonCompatibilityUtil.checkClassCompatibility(clazz);
+        if (!compatibility) {
+            List<String> unsupportedMethods = JsonCompatibilityUtil.getUnsupportedMethods(clazz);
+            logger.error("Interface %s does not support json serialization, the specific methods are %s", clazz, unsupportedMethods);
+            throw new RpcException(String.format("Interface %s does not support json serialization", clazz));
+        }
     }
 
 

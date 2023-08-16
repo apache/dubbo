@@ -229,6 +229,8 @@ public class ProtocolConfig extends AbstractConfig {
      */
     private String extProtocol;
 
+    private Boolean checkJsonCompatibility;
+
     public ProtocolConfig() {
     }
 
@@ -329,6 +331,14 @@ public class ProtocolConfig extends AbstractConfig {
 
     public void setThreadname(String threadname) {
         this.threadname = threadname;
+    }
+
+    public Boolean getCheckJsonCompatibility() {
+        return checkJsonCompatibility;
+    }
+
+    public void setCheckJsonCompatibility(Boolean checkJsonCompatibility) {
+        this.checkJsonCompatibility = checkJsonCompatibility;
     }
 
     @Parameter(key = THREAD_POOL_EXHAUSTED_LISTENERS_KEY)

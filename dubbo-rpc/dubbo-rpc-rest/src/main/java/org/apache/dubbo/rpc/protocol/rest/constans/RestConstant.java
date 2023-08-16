@@ -57,6 +57,8 @@ public interface RestConstant {
     String IDLE_TIMEOUT_PARAM = "idle.timeout";
     String KEEP_ALIVE_TIMEOUT_PARAM = "keep.alive.timeout";
 
+    String CHECK_JSON_COMPATIBILITY = "checkJsonCompatibility";
+
     int MAX_REQUEST_SIZE = 1024 * 1024 * 10;
     int MAX_INITIAL_LINE_LENGTH = 4096;
     int MAX_HEADER_SIZE = 8192;
