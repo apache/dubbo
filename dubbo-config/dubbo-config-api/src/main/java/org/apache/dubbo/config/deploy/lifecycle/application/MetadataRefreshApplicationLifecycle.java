@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.deploy.lifecycle;
+package org.apache.dubbo.config.deploy.lifecycle.application;
 
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.extension.Activate;
@@ -27,7 +27,7 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REFRESH_INSTANCE_ERROR;
 
 @Activate(order= -1000)
-public class MetadataRefreshApplicationLifecycle implements ApplicationLifecycle{
+public class MetadataRefreshApplicationLifecycle implements ApplicationLifecycle {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetadataRefreshApplicationLifecycle.class);
 

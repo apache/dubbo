@@ -14,42 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.deploy.lifecycle;
+package org.apache.dubbo.config.deploy.lifecycle.application;
 
-import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.config.deploy.context.ApplicationContext;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
 
-/**
- * Module initialize lifecycle.
- */
+import java.util.concurrent.Future;
+
 @Activate(order = -1000)
-public class ModuleInitializeLifecycle implements ApplicationLifecycle{
+public class ApplicationPostOfflineLifecycle implements ApplicationLifecycle {
 
-    /**
-     * If this lifecycle need to initialize.
-     */
     @Override
     public boolean needInitialize(ApplicationContext context) {
         return true;
     }
 
-    /**
-     * {@link ApplicationDeployer#initialize()}
-     */
     @Override
-    public void initialize(ApplicationContext applicationContext) {
-        initModuleDeployers(applicationContext.getModel());
-    }
+    public void preDestroy(ApplicationContext applicationContext) {
+        ApplicationModel applicationModel = applicationContext.getModel();
 
-    private void initModuleDeployers(ApplicationModel applicationModel) {
-        // make sure created default module
-        applicationModel.getDefaultModule();
-        // deployer initialize
-        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
-            moduleModel.getDeployer().initialize();
+        DeregisterApplicationLifecycle deregisterApplicationLifecycle = applicationModel.getBeanFactory().getBean(DeregisterApplicationLifecycle.class);
+        Future<?> asyncMetadataFuture = null;
+
+        if(deregisterApplicationLifecycle != null){
+
+            RegisterApplicationLifecycle registerApplicationLifecycle = applicationModel.getBeanFactory().getBean(RegisterApplicationLifecycle.class);
+            if(registerApplicationLifecycle != null) {
+                asyncMetadataFuture = registerApplicationLifecycle.getAsyncMetadataFuture();
+            }
+        }
+        if (asyncMetadataFuture != null) {
+            asyncMetadataFuture.cancel(true);
         }
     }
 }

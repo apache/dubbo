@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.deploy.lifecycle;
+package org.apache.dubbo.config.deploy.lifecycle.application;
 
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.extension.Activate;
@@ -28,7 +28,7 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import java.util.Objects;
 
 @Activate(order = -2000)
-public class MetricsCollectorStartLifecycle implements ApplicationLifecycle{
+public class MetricsCollectorStartLifecycle implements ApplicationLifecycle {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetricsCollectorStartLifecycle.class);
 

@@ -14,21 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.deploy.lifecycle;
+package org.apache.dubbo.config.deploy.lifecycle.application;
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.ApplicationConfig;
-
-import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.deploy.context.ApplicationContext;
+
+import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+
 /**
- * Application config pre-handle lifecycle.
+ * Application deregister lifecycle.
  */
-@Activate(order = -4000)
-public class ApplicationConfigPreHandleLifecycle implements ApplicationLifecycle{
+@Activate(order = -2000)
+public class DeregisterApplicationLifecycle implements ApplicationLifecycle {
 
 
     @Override
@@ -36,17 +35,18 @@ public class ApplicationConfigPreHandleLifecycle implements ApplicationLifecycle
         return true;
     }
 
+    /**
+     * postDestroy.
+     */
     @Override
-    public void initialize(ApplicationContext applicationContext) {
-
-        ApplicationModel applicationModel = applicationContext.getModel();
-
-        ConfigManager configManager = applicationContext.getModel().getApplicationConfigManager();
-        configManager.loadConfigsOfTypeFromProps(ApplicationConfig.class);
-
-        // try set model name
-        if (StringUtils.isBlank(applicationModel.getModelName())) {
-            applicationModel.setModelName(applicationModel.tryGetApplicationName());
-        }
+    public void postDestroy(ApplicationContext applicationContext) {
+        destroyRegistries(applicationContext.getModel());
     }
+
+
+    private void destroyRegistries(ApplicationModel applicationModel) {
+        RegistryManager.getInstance(applicationModel).destroyAll();
+    }
+
+
 }

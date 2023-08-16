@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.deploy.lifecycle;
+package org.apache.dubbo.config.deploy.lifecycle.application;
 
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.config.deploy.context.ApplicationContext;
+import org.apache.dubbo.config.deploy.lifecycle.Lifecycle;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 

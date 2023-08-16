@@ -1,2 +1,3 @@
-registry=org.apache.dubbo.config.deploy.lifecycle.DeregisterApplicationLifecycle
-applicationoffline=org.apache.dubbo.config.deploy.lifecycle.ApplicationPreOfflineLifecycle
+deregister=org.apache.dubbo.config.deploy.lifecycle.application.DeregisterApplicationLifecycle
+register=org.apache.dubbo.config.deploy.lifecycle.application.RegisterApplicationLifecycle
+application-offline=org.apache.dubbo.config.deploy.lifecycle.application.ApplicationPreOfflineLifecycle

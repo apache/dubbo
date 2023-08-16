@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.deploy.lifecycle;
+package org.apache.dubbo.config.deploy.lifecycle.application;
 
 import org.apache.dubbo.common.deploy.ApplicationDeployListener;
 import org.apache.dubbo.common.deploy.DeployListener;
@@ -31,7 +31,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILE
 
 
 @Activate(order = -2000)
-public class ModuleStartedEventApplicationLifecycle implements ApplicationLifecycle{
+public class ModuleStartedEventApplicationLifecycle implements ApplicationLifecycle {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ModuleStartedEventApplicationLifecycle.class);
 

@@ -1,4 +1,4 @@
-config-pre-handle=org.apache.dubbo.config.deploy.lifecycle.ApplicationConfigPreHandleLifecycle
-config-post-handle=org.apache.dubbo.config.deploy.lifecycle.ApplicationConfigPostHandleLifecycle
-module-initialize=org.apache.dubbo.config.deploy.lifecycle.ModuleInitializeLifecycle
-post-offline=org.apache.dubbo.config.deploy.lifecycle.ApplicationPostOfflineLifecycle
+config-pre-handle=org.apache.dubbo.config.deploy.lifecycle.application.ApplicationConfigPreHandleLifecycle
+config-post-handle=org.apache.dubbo.config.deploy.lifecycle.application.ApplicationConfigPostHandleLifecycle
+module-initialize=org.apache.dubbo.config.deploy.lifecycle.application.ModuleInitializeLifecycle
+post-offline=org.apache.dubbo.config.deploy.lifecycle.application.ApplicationPostOfflineLifecycle

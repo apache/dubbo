@@ -14,39 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.deploy.lifecycle;
+package org.apache.dubbo.config.deploy.lifecycle.application;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.config.deploy.context.ApplicationContext;
-
-import org.apache.dubbo.registry.support.RegistryManager;
+import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.List;
 
-/**
- * Application deregister lifecycle.
- */
-@Activate(order = -2000)
-public class DeregisterApplicationLifecycle implements ApplicationLifecycle {
-
+@Activate(order = -1000)
+public class MetadataDestroyApplicationLifecycle implements ApplicationLifecycle {
 
     @Override
     public boolean needInitialize(ApplicationContext context) {
         return true;
     }
 
-    /**
-     * postDestroy.
-     */
     @Override
     public void postDestroy(ApplicationContext applicationContext) {
-        destroyRegistries(applicationContext.getModel());
+        destroyMetadataReports(applicationContext.getModel());
     }
 
+    private void destroyMetadataReports(ApplicationModel applicationModel) {
+        // only destroy MetadataReport of this application
+        List<MetadataReportFactory> metadataReportFactories = applicationModel.getExtensionLoader(MetadataReportFactory.class).getLoadedExtensionInstances();
 
-    private void destroyRegistries(ApplicationModel applicationModel) {
-        RegistryManager.getInstance(applicationModel).destroyAll();
+        for (MetadataReportFactory metadataReportFactory : metadataReportFactories) {
+            metadataReportFactory.destroy();
+        }
     }
-
 
 }

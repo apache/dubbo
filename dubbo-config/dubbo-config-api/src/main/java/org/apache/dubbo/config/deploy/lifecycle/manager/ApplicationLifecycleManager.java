@@ -20,14 +20,14 @@ import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.deploy.context.ApplicationContext;
-import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycle;
+import org.apache.dubbo.config.deploy.lifecycle.application.ApplicationLifecycle;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.List;
 
 
 /**
- * Application Life Manager Loader
+ * Application lifecycle manager
  */
 public class ApplicationLifecycleManager implements LifecycleManager{
 

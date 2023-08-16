@@ -14,17 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.deploy.lifecycle;
+package org.apache.dubbo.config.deploy.lifecycle.application;
 
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.ApplicationConfig;
+
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.deploy.context.ApplicationContext;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**
- * Application config post-handle lifecycle.
+ * Application config pre-handle lifecycle.
  */
-@Activate(order = -2000)
-public class ApplicationConfigPostHandleLifecycle implements ApplicationLifecycle {
+@Activate(order = -4000)
+public class ApplicationConfigPreHandleLifecycle implements ApplicationLifecycle {
+
 
     @Override
     public boolean needInitialize(ApplicationContext context) {
@@ -33,10 +38,15 @@ public class ApplicationConfigPostHandleLifecycle implements ApplicationLifecycl
 
     @Override
     public void initialize(ApplicationContext applicationContext) {
-        loadApplicationConfigs(applicationContext.getModel());
-    }
 
-    private void loadApplicationConfigs(ApplicationModel applicationModel) {
-        applicationModel.getApplicationConfigManager().loadConfigs();
+        ApplicationModel applicationModel = applicationContext.getModel();
+
+        ConfigManager configManager = applicationContext.getModel().getApplicationConfigManager();
+        configManager.loadConfigsOfTypeFromProps(ApplicationConfig.class);
+
+        // try set model name
+        if (StringUtils.isBlank(applicationModel.getModelName())) {
+            applicationModel.setModelName(applicationModel.tryGetApplicationName());
+        }
     }
 }

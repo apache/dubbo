@@ -14,38 +14,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.deploy.lifecycle;
+package org.apache.dubbo.config.deploy.lifecycle.application;
 
+import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.deploy.context.ApplicationContext;
-import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
-
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REFRESH_INSTANCE_ERROR;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 /**
- * Metadata lifecycle
+ * Module initialize lifecycle.
  */
-@Activate
-public class MetadataApplicationLifecycle implements ApplicationLifecycle {
+@Activate(order = -1000)
+public class ModuleInitializeLifecycle implements ApplicationLifecycle {
 
-    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetadataApplicationLifecycle.class);
-
+    /**
+     * If this lifecycle need to initialize.
+     */
     @Override
     public boolean needInitialize(ApplicationContext context) {
         return true;
     }
 
+    /**
+     * {@link ApplicationDeployer#initialize()}
+     */
     @Override
-    public void refreshServiceInstance(ApplicationContext applicationContext) {
-        if (applicationContext.getRegistered().get()) {
-            try {
-                //MetadataLifeManager
-                ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationContext.getModel());
-            } catch (Exception e) {
-                logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
-            }
+    public void initialize(ApplicationContext applicationContext) {
+        initModuleDeployers(applicationContext.getModel());
+    }
+
+    private void initModuleDeployers(ApplicationModel applicationModel) {
+        // make sure created default module
+        applicationModel.getDefaultModule();
+        // deployer initialize
+        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
+            moduleModel.getDeployer().initialize();
         }
     }
 }

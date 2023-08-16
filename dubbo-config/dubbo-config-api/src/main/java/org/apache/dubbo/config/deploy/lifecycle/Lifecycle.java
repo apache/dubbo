@@ -17,7 +17,6 @@
 package org.apache.dubbo.config.deploy.lifecycle;
 
 import org.apache.dubbo.config.deploy.context.ModelContext;
-
 import org.apache.dubbo.rpc.model.ScopeModel;
 
 /**
@@ -38,7 +37,7 @@ public interface Lifecycle<M extends ScopeModel,T extends ModelContext<M>>{
     /**
      * @see ModelContext#runInitialize()
      */
-    default void initialize(T context){};
+    default void initialize(T context){}
 
     /**
      * @see ModelContext#runPreDestroy()

@@ -14,18 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.deploy.lifecycle.manager;
+package org.apache.dubbo.config.deploy.lifecycle.application;
+
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.config.deploy.context.ApplicationContext;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**
- * Manager of {@link  org.apache.dubbo.config.deploy.lifecycle.Lifecycle} implements
+ * Application config post-handle lifecycle.
  */
-public interface LifecycleManager{
+@Activate(order = -2000)
+public class ApplicationConfigPostHandleLifecycle implements ApplicationLifecycle {
 
-    void start();
+    @Override
+    public boolean needInitialize(ApplicationContext context) {
+        return true;
+    }
 
-    void initialize();
+    @Override
+    public void initialize(ApplicationContext applicationContext) {
+        loadApplicationConfigs(applicationContext.getModel());
+    }
 
-    void preDestroy();
-
-    void postDestroy();
+    private void loadApplicationConfigs(ApplicationModel applicationModel) {
+        applicationModel.getApplicationConfigManager().loadConfigs();
+    }
 }
