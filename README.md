@@ -19,9 +19,9 @@ Visit [the official website](https://dubbo.apache.org/) for more information.
 ## Architecture
 ![Architecture](https://dubbo.apache.org/imgs/architecture.png)
 
-* **[RPC protocol](https://cn.dubbo.apache.org/zh-cn/overview/core-features/protocols/):** triple, tcp, rest and more.
-* **[Service Discovery](https://cn.dubbo.apache.org/zh-cn/overview/core-features/service-discovery/):** Nacos, Zookeeper, Kubernetes, etc.
-* **[Microservice solution](https://cn.dubbo.apache.org/zh-cn/overview/core-features/):** traffic routing, configuration, observability, tracing, deploying to Kubernetes, service mesh, etc.
+* Consumer and provider communicate with each other using RPC protocol like triple, tcp, rest, etc.
+* Consumers automatically trace provider instances registered in registries(Zookeeper, Nacos) and distribute traffic among them by following traffic strategies.
+* Rich features for monitoring and managing the cluster with dynamic configuration, metrics, tracing, security, and visualized console.
 
 ## Getting started
 Follow the instructions below to learn how to:
