@@ -19,6 +19,8 @@ package org.apache.dubbo.config.deploy.lifecycle.manager;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.deploy.context.ApplicationContext;
 import org.apache.dubbo.config.deploy.lifecycle.application.ApplicationLifecycle;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -30,6 +32,8 @@ import java.util.List;
  * Application lifecycle manager
  */
 public class ApplicationLifecycleManager implements LifecycleManager{
+
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ApplicationLifecycleManager.class);
 
     private final List<ApplicationLifecycle> sequences;
 
@@ -81,7 +85,14 @@ public class ApplicationLifecycleManager implements LifecycleManager{
         List<ApplicationLifecycle> lifecycles = loader.getActivateExtensions();
 
         ScopeBeanFactory beanFactory = applicationContext.getModel().getBeanFactory();
-        lifecycles.forEach(beanFactory::registerBean);
+        StringBuilder sequence = new StringBuilder("Loaded lifecycle sequences: [START]-> ");
+
+        lifecycles.forEach(applicationLifecycle -> {
+            beanFactory.registerBean(applicationLifecycle);
+            sequence.append(applicationLifecycle.getClass().getSimpleName()).append("->");
+        });
+        sequence.append(" [END]");
+        logger.info(sequence.toString());
 
         return lifecycles;
     }
