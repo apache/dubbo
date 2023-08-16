@@ -18,8 +18,8 @@ package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
+import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.qos.api.BaseCommand;
 import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.registry.Registry;
@@ -35,15 +35,14 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class BaseOffline implements BaseCommand {
     private static final Logger logger = LoggerFactory.getLogger(BaseOffline.class);
     public FrameworkServiceRepository serviceRepository;
-    private ExecutorService executorService;
 
     public BaseOffline(FrameworkModel frameworkModel) {
         this.serviceRepository = frameworkModel.getServiceRepository();
-        this.executorService = frameworkModel.getBeanFactory().getBean(FrameworkExecutorRepository.class).getSharedExecutor();
     }
 
     @Override
@@ -70,6 +69,7 @@ public class BaseOffline implements BaseCommand {
     public boolean offline(String servicePattern) {
         boolean hasService = false;
 
+        ExecutorService executorService = Executors.newFixedThreadPool(Math.min(Runtime.getRuntime().availableProcessors(), 4), new NamedThreadFactory("Dubbo-Offline"));
         try {
             List<CompletableFuture<Void>> futures = new LinkedList<>();
             Collection<ProviderModel> providerModelList = serviceRepository.allProviderModels();
@@ -92,6 +92,8 @@ public class BaseOffline implements BaseCommand {
             }
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
+        } finally {
+            executorService.shutdown();
         }
 
         return hasService;
