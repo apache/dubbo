@@ -44,9 +44,7 @@ public class MetricsEventBus {
         }
         MetricsDispatcher dispatcher = event.getMetricsDispatcher();
         Optional.ofNullable(dispatcher).ifPresent(d -> {
-            tryInvoke(() -> {
-                d.publishEvent(event);
-            });
+            tryInvoke(() -> d.publishEvent(event));
         });
     }
 
@@ -74,32 +72,22 @@ public class MetricsEventBus {
      */
     public static <T> T post(MetricsEvent event, Supplier<T> targetSupplier, Function<T, Boolean> trFunction) {
         T result;
-        tryInvoke(() -> {
-            before(event);
-        });
+        tryInvoke(() -> before(event));
         if (trFunction == null) {
             try {
                 result = targetSupplier.get();
             } catch (Throwable e) {
-                tryInvoke(() -> {
-                    error(event);
-                });
+                tryInvoke(() -> error(event));
                 throw e;
             }
-            tryInvoke(() -> {
-                after(event, result);
-            });
+            tryInvoke(() -> after(event, result));
         } else {
             // Custom failure status
             result = targetSupplier.get();
             if (trFunction.apply(result)) {
-                tryInvoke(() -> {
-                    after(event, result);
-                });
+                tryInvoke(() -> after(event, result));
             } else {
-                tryInvoke(() -> {
-                    error(event);
-                });
+                tryInvoke(() -> error(event));
             }
         }
         return result;
@@ -109,8 +97,7 @@ public class MetricsEventBus {
         try {
             runnable.run();
         } catch (Throwable e) {
-            logger.warn(COMMON_METRICS_COLLECTOR_EXCEPTION, "" +
-                    "", "", "invoke metric event error" + e.getMessage());
+            logger.warn(COMMON_METRICS_COLLECTOR_EXCEPTION, "", "", "invoke metric event error" + e.getMessage());
         }
     }
 
@@ -121,9 +108,7 @@ public class MetricsEventBus {
     public static void before(MetricsEvent event) {
         MetricsDispatcher dispatcher = validate(event);
         if (dispatcher == null) return;
-        tryInvoke(() -> {
-            dispatcher.publishEvent(event);
-        });
+        tryInvoke(() -> dispatcher.publishEvent(event));
     }
 
     public static void after(MetricsEvent event, Object result) {
@@ -138,9 +123,7 @@ public class MetricsEventBus {
     public static void error(MetricsEvent event) {
         MetricsDispatcher dispatcher = validate(event);
         if (dispatcher == null) return;
-        tryInvoke(() -> {
-            dispatcher.publishErrorEvent((TimeCounterEvent) event);
-        });
+        tryInvoke(() -> dispatcher.publishErrorEvent((TimeCounterEvent) event));
     }
 
     private static MetricsDispatcher validate(MetricsEvent event) {
