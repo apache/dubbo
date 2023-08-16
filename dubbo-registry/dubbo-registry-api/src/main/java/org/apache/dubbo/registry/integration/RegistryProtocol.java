@@ -1021,11 +1021,12 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                 ProviderModel providerModel = frameworkModel.getServiceRepository()
                     .lookupExportedService(getRegisterUrl().getServiceKey());
 
-                List<ProviderModel.RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
-                List<ProviderModel.RegisterStatedURL> statedURLs = statedUrls.stream()
-                    .filter(u -> u.getRegistryUrl().equals(registryUrl)
-                        && u.getProviderUrl().getProtocol().equals(getRegisterUrl().getProtocol()))
-                    .collect(Collectors.toList());
+                List<ProviderModel.RegisterStatedURL> statedURLs =
+                    providerModel.getStatedUrl()
+                        .stream()
+                        .filter(u -> u.getRegistryUrl().equals(registryUrl)
+                            && u.getProviderUrl().getProtocol().equals(getRegisterUrl().getProtocol()))
+                        .collect(Collectors.toList());
                 if (statedURLs.isEmpty() || statedURLs.stream().anyMatch(ProviderModel.RegisterStatedURL::isRegistered)) {
                     try {
                         registry.unregister(registerUrl);
