@@ -41,6 +41,10 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
         this.httpMessageCodec = httpMessageCodec;
     }
 
+    protected HttpMessageCodec getHttpMessageCodec() {
+        return httpMessageCodec;
+    }
+
     @Override
     public void setHeadersCustomizer(HeadersCustomizer headersCustomizer) {
         this.headersCustomizer = headersCustomizer;

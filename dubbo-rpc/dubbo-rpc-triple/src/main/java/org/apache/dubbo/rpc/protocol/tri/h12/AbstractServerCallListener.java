@@ -50,6 +50,9 @@ public abstract class AbstractServerCallListener implements ServerCallListener {
             final long stInMillis = System.currentTimeMillis();
             final Result response = invoker.invoke(invocation);
             response.whenCompleteWithContext((r, t) -> {
+                if (responseObserver instanceof AttachmentHolder) {
+                    ((AttachmentHolder) responseObserver).setResponseAttachments(response.getObjectAttachments());
+                }
                 if (t != null) {
                     responseObserver.onError(t);
                     return;
