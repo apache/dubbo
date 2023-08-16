@@ -1015,14 +1015,15 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         @Override
         public synchronized void unregister() {
             if (registered.compareAndSet(true, false)) {
-                Registry registry = RegistryProtocol.this.getRegistry(getRegistryUrl(originInvoker));
+                URL registryUrl = getRegistryUrl(originInvoker);
+                Registry registry = RegistryProtocol.this.getRegistry(registryUrl);
 
                 ProviderModel providerModel = frameworkModel.getServiceRepository()
                     .lookupExportedService(getRegisterUrl().getServiceKey());
 
                 List<ProviderModel.RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
                 if (statedUrls.stream()
-                    .filter(u -> u.getRegistryUrl().equals(getRegisterUrl())
+                    .filter(u -> u.getRegistryUrl().equals(registryUrl)
                         && u.getProviderUrl().getProtocol().equals(getRegisterUrl().getProtocol()))
                     .anyMatch(ProviderModel.RegisterStatedURL::isRegistered)) {
                     try {
