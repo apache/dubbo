@@ -18,7 +18,6 @@
 package org.apache.dubbo.metrics.metadata;
 
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.MetricsEventBus;

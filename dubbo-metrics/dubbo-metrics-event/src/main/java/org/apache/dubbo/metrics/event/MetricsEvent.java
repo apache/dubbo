@@ -18,7 +18,6 @@
 package org.apache.dubbo.metrics.event;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
-import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
 import org.apache.dubbo.metrics.model.key.TypeWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -38,7 +37,7 @@ public abstract class MetricsEvent {
     private boolean available = true;
     private final TypeWrapper typeWrapper;
     private final String appName;
-    private final MetricsEventMulticaster MetricsEventMulticaster;
+    private final MetricsEventMulticaster metricsEventMulticaster;
 
     private final Map<String, Object> attachment = new IdentityHashMap<>(8);
 
@@ -57,18 +56,18 @@ public abstract class MetricsEvent {
         }
         if (metricsEventMulticaster == null) {
             if (this.source.isDestroyed()) {
-                this.MetricsEventMulticaster = null;
+                this.metricsEventMulticaster = null;
             } else {
                 ScopeBeanFactory beanFactory = this.source.getBeanFactory();
                 if (beanFactory.isDestroyed()) {
-                    this.MetricsEventMulticaster = null;
+                    this.metricsEventMulticaster = null;
                 } else {
                     MetricsEventMulticaster dispatcher = beanFactory.getBean(MetricsEventMulticaster.class);
-                    this.MetricsEventMulticaster = dispatcher;
+                    this.metricsEventMulticaster = dispatcher;
                 }
             }
         } else {
-            this.MetricsEventMulticaster = metricsEventMulticaster;
+            this.metricsEventMulticaster = metricsEventMulticaster;
         }
         if (appName == null) {
             this.appName = this.source.tryGetApplicationName();
@@ -107,7 +106,7 @@ public abstract class MetricsEvent {
     }
 
     public MetricsEventMulticaster getMetricsEventMulticaster() {
-        return MetricsEventMulticaster;
+        return metricsEventMulticaster;
     }
 
     public String appName() {

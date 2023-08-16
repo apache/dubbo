@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.cluster.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;

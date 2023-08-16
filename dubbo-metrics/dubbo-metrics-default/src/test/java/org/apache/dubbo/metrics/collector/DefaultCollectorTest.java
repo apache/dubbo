@@ -89,7 +89,7 @@ class DefaultCollectorTest {
         config.setName("MockMetrics");
 
         applicationModel.getApplicationConfigManager().setApplication(config);
-        metricsDispatcher = applicationModel.getBeanFactory().getOrRegisterBean(MetricsConstants.METRICS_DISPATCHER_NAME,MetricsDispatcher.class);
+        metricsDispatcher = applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
         defaultCollector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
         defaultCollector.setCollectEnabled(true);
 
@@ -131,7 +131,7 @@ class DefaultCollectorTest {
     @Test
     void testRequestEventNoRt() {
 
-        applicationModel.getBeanFactory().getOrRegisterBean(MetricsConstants.METRICS_DISPATCHER_NAME,MetricsDispatcher.class);
+        applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
         DefaultMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
         collector.setCollectEnabled(true);
 

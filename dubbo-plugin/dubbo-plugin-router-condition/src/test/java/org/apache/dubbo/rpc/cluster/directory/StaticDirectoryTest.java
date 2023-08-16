@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.cluster.directory;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.Holder;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
