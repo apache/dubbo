@@ -46,7 +46,7 @@ public abstract class MetricsEvent {
         this(source, null, null, typeWrapper);
     }
 
-    public MetricsEvent(ApplicationModel source, String appName, MetricsEventMulticaster MetricsEventMulticaster, TypeWrapper typeWrapper) {
+    public MetricsEvent(ApplicationModel source, String appName, MetricsEventMulticaster metricsEventMulticaster, TypeWrapper typeWrapper) {
         this.typeWrapper = typeWrapper;
         if (source == null) {
             this.source = ApplicationModel.defaultModel();
@@ -55,7 +55,7 @@ public abstract class MetricsEvent {
         } else {
             this.source = source;
         }
-        if (MetricsEventMulticaster == null) {
+        if (metricsEventMulticaster == null) {
             if (this.source.isDestroyed()) {
                 this.MetricsEventMulticaster = null;
             } else {
@@ -68,7 +68,7 @@ public abstract class MetricsEvent {
                 }
             }
         } else {
-            this.MetricsEventMulticaster = MetricsEventMulticaster;
+            this.MetricsEventMulticaster = metricsEventMulticaster;
         }
         if (appName == null) {
             this.appName = this.source.tryGetApplicationName();
