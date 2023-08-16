@@ -122,7 +122,7 @@ public class Fastjson2SecurityManager implements AllowClassNotifyListener {
             Class<?> localClass = loadClassDirectly(typeName);
             if (localClass != null) {
                 if (status == SerializeCheckStatus.WARN && serializeSecurityManager.getWarnedClasses().add(typeName)) {
-                    logger.error(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "",
+                    logger.warn(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "",
                         "[Serialization Security] Serialized class " + localClass.getName() + " is not in allow list. " +
                             "Current mode is `WARN`, will allow to deserialize it by default. " +
                             "Dubbo will set to `STRICT` mode by default in the future. " +
@@ -152,7 +152,7 @@ public class Fastjson2SecurityManager implements AllowClassNotifyListener {
                     "Current mode is `WARN`, will disallow to deserialize it by default. " +
                     "Please add it into security/serialize.allowlist or follow FAQ to configure it.";
                 if (serializeSecurityManager.getWarnedClasses().add(typeName)) {
-                    logger.error(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "", msg);
+                    logger.warn(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "", msg);
                 }
             }
 

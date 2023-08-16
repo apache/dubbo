@@ -335,6 +335,13 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
     private void onModuleFailed(String msg, Throwable ex) {
         try {
+            try {
+                // un-export all services if start failure
+                unexportServices();
+            } catch (Throwable t) {
+                logger.info("Failed to un-export services after module failed.", t);
+            }
+
             setFailed(ex);
             logger.error(CONFIG_FAILED_START_MODEL, "", "", "Model start failed: " + msg, ex);
             applicationDeployer.notifyModuleChanged(moduleModel, DeployState.FAILED);
@@ -450,8 +457,8 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             try {
                 configManager.removeConfig(sc);
                 sc.unexport();
-            } catch (Exception ignored) {
-                // ignored
+            } catch (Throwable t) {
+                logger.info("Failed to un-export service. Service Key: " + sc.getUniqueServiceName(), t);
             }
         });
         exportedServices.clear();
