@@ -190,7 +190,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     @Override
-    public void unexport() {
+    public synchronized void unexport() {
         if (!exported) {
             return;
         }
