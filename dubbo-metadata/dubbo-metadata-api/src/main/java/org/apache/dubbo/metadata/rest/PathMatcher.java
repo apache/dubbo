@@ -195,7 +195,7 @@ public class PathMatcher {
 
     @Override
     public int hashCode() {
-        return Objects.hash(version, group, port);
+        return Objects.hash(version, group, port, method);
     }
 
     private boolean pathEqual(PathMatcher pathMatcher) {
