@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collections;
@@ -132,7 +133,7 @@ public class StreamUtils {
         try {
             if (v instanceof String || v instanceof Number || v instanceof Boolean) {
                 String str = v.toString();
-                headers.set(key, str);
+                headers.set(key, URLEncoder.encode(str, String.valueOf(StandardCharsets.UTF_8)));
             } else if (v instanceof byte[]) {
                 String str = encodeBase64ASCII((byte[]) v);
                 headers.set(key + TripleConstant.HEADER_BIN_SUFFIX, str);

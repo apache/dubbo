@@ -27,12 +27,16 @@ import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 
 import io.netty.handler.codec.http2.Http2Headers;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DECODE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_PARSE;
 
 public abstract class AbstractH2TransportListener implements H2TransportListener {
@@ -63,7 +67,11 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
                     LOGGER.error(PROTOCOL_FAILED_PARSE, "", "", "Failed to parse response attachment key=" + key, e);
                 }
             } else {
-                attachments.put(key, header.getValue().toString());
+                try {
+                    attachments.put(key, URLDecoder.decode(header.getValue().toString(), String.valueOf(StandardCharsets.UTF_8)));
+                } catch (UnsupportedEncodingException e) {
+                    LOGGER.error(PROTOCOL_FAILED_DECODE, "", "", "Failed decode attachment key=" + key, e);
+                }
             }
         }
 
