@@ -473,7 +473,7 @@ management.health.dubbo.status.extras = load,threadpool
 
 `management.health.dubbo.enabled` is a enabled configuration to turn on or off health checks feature, its' default is `true`.
 
- If you'd like to disable health checks ,  you chould apply `management.health.dubbo.enabled` to be `false`:
+ If you'd like to disable health checks ,  you could apply `management.health.dubbo.enabled` to be `false`:
 
 ```properties
 management.health.dubbo.enabled = false
