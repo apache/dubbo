@@ -37,6 +37,7 @@ import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
+import org.apache.dubbo.config.utils.validator.ServiceConfigValidator;
 import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
@@ -466,7 +467,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
         }
         checkStubAndLocal(interfaceClass);
-        ConfigValidationUtils.validateServiceConfig(this);
+        ServiceConfigValidator.validateServiceConfig(this);
         postProcessConfig();
     }
 

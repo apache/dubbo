@@ -23,6 +23,7 @@ import org.apache.dubbo.config.context.ConfigMode;
 import org.apache.dubbo.config.support.Nested;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
+import org.apache.dubbo.config.utils.validator.ProtocolConfigValidator;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
@@ -131,7 +132,7 @@ class AbstractConfigTest {
         protocolConfig.setCodec("exchange");
         protocolConfig.setName("test");
         protocolConfig.setHost("host");
-        ConfigValidationUtils.validateProtocolConfig(protocolConfig);
+        ProtocolConfigValidator.validateProtocolConfig(protocolConfig);
     }
 
     @Test

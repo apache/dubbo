@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.context;
+package org.apache.dubbo.config.exception;
 
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.config.AbstractConfig;
+public class ConfigValidationException extends RuntimeException {
 
-@SPI
-public interface ConfigValidator<T extends AbstractConfig> {
+    public ConfigValidationException(String message) {
+        super(message);
+    }
 
-    void validate(T config);
-
-    boolean isSupport(Class<?> configClass);
+    public ConfigValidationException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

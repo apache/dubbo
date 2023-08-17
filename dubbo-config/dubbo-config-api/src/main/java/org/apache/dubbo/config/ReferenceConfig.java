@@ -34,6 +34,7 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
+import org.apache.dubbo.config.utils.validator.ReferenceConfigValidator;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -179,7 +180,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     @Override
     protected void postProcessAfterScopeModelChanged(ScopeModel oldScopeModel, ScopeModel newScopeModel) {
         super.postProcessAfterScopeModelChanged(oldScopeModel, newScopeModel);
-
         protocolSPI = this.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         proxyFactory = this.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
     }
@@ -746,7 +746,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
 
         resolveFile();
-        ConfigValidationUtils.validateReferenceConfig(this);
+        ReferenceConfigValidator.validateReferenceConfig(this);
         postProcessConfig();
     }
 

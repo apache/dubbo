@@ -50,6 +50,7 @@ import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.utils.CompositeReferenceCache;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
+import org.apache.dubbo.config.utils.validator.MetadataConfigValidator;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
@@ -326,8 +327,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         MetadataReportInstance metadataReportInstance = applicationModel.getBeanFactory().getBean(MetadataReportInstance.class);
         List<MetadataReportConfig> validMetadataReportConfigs = new ArrayList<>(metadataReportConfigs.size());
         for (MetadataReportConfig metadataReportConfig : metadataReportConfigs) {
-            if (ConfigValidationUtils.isValidMetadataConfig(metadataReportConfig)) {
-                ConfigValidationUtils.validateMetadataConfig(metadataReportConfig);
+            if (MetadataConfigValidator.isValidMetadataConfig(metadataReportConfig)) {
+                MetadataConfigValidator.validateMetadataConfig(metadataReportConfig);
                 validMetadataReportConfigs.add(metadataReportConfig);
             }
         }

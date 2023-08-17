@@ -22,7 +22,7 @@ import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
 import org.apache.dubbo.config.deploy.DefaultModuleDeployer;
 import org.apache.dubbo.config.deploy.FrameworkModelCleaner;
-import org.apache.dubbo.config.utils.DefaultConfigValidator;
+import org.apache.dubbo.config.utils.ConfigValidateFacade;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -38,7 +38,14 @@ public class ConfigScopeModelInitializer implements ScopeModelInitializer {
     @Override
     public void initializeApplicationModel(ApplicationModel applicationModel) {
         ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
-        beanFactory.registerBean(DefaultConfigValidator.class);
+        ConfigValidateFacade configValidateFacade = beanFactory.getBean(ConfigValidateFacade.class);
+        if(configValidateFacade == null){
+            configValidateFacade = ConfigValidateFacade.getInstance();
+        }
+        if(configValidateFacade == null) {
+            configValidateFacade = new ConfigValidateFacade(applicationModel);
+            beanFactory.registerBean(configValidateFacade);
+        }
         // applicationDeployer
         ApplicationDeployer applicationDeployer = beanFactory.registerBean(DefaultApplicationDeployer.class);
         applicationModel.setDeployer(applicationDeployer);

@@ -36,6 +36,7 @@ import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
 import org.apache.dubbo.config.metadata.ExporterDeployListener;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
+import org.apache.dubbo.config.utils.validator.ApplicationConfigValidator;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.registry.RegistryService;
@@ -116,13 +117,13 @@ class DubboBootstrapTest {
 
             writeDubboProperties(SHUTDOWN_WAIT_KEY, "100");
             ApplicationModel.defaultModel().modelEnvironment().getPropertiesConfiguration().refresh();
-            ConfigValidationUtils.validateApplicationConfig(new ApplicationConfig("demo"));
+            ApplicationConfigValidator.validateApplicationConfig(new ApplicationConfig("demo"));
             Assertions.assertEquals("100", System.getProperty(SHUTDOWN_WAIT_KEY));
 
             System.clearProperty(SHUTDOWN_WAIT_KEY);
             writeDubboProperties(SHUTDOWN_WAIT_SECONDS_KEY, "1000");
             ApplicationModel.defaultModel().modelEnvironment().getPropertiesConfiguration().refresh();
-            ConfigValidationUtils.validateApplicationConfig(new ApplicationConfig("demo"));
+            ApplicationConfigValidator.validateApplicationConfig(new ApplicationConfig("demo"));
             Assertions.assertEquals("1000", System.getProperty(SHUTDOWN_WAIT_SECONDS_KEY));
         } finally {
             System.clearProperty("dubbo.application.name");
