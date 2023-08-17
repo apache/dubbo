@@ -23,6 +23,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpContent;
 import org.apache.dubbo.common.utils.IOUtils;
+import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,6 +45,12 @@ public class NettyRequestFacade extends RequestFacade<FullHttpRequest> {
 
     public NettyRequestFacade(Object request, ChannelHandlerContext context) {
         super((FullHttpRequest) request);
+        this.context = context;
+
+    }
+
+    public NettyRequestFacade(Object request, ChannelHandlerContext context, ServiceDeployer serviceDeployer) {
+        super((FullHttpRequest) request, serviceDeployer);
         this.context = context;
 
     }

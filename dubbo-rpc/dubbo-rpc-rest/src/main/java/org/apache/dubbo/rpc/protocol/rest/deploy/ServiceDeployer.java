@@ -144,4 +144,15 @@ public class ServiceDeployer {
     }
 
 
+    public boolean isMethodAllowed(PathMatcher pathMatcher) {
+        return pathAndInvokerMapper.isHttpMethodAllowed(pathMatcher);
+    }
+
+    public boolean hashRestMethod(PathMatcher pathMatcher) {
+        return pathAndInvokerMapper.getRestMethodMetadata(pathMatcher) != null;
+    }
+
+    public String pathHttpMethods(PathMatcher pathMatcher) {
+        return pathAndInvokerMapper.pathHttpMethods(pathMatcher);
+    }
 }

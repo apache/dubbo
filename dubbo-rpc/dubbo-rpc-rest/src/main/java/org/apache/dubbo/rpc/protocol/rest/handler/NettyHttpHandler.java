@@ -38,8 +38,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_DEPLOYER_ATTRIBUTE_KEY;
-
 
 /**
  * netty http request handler
@@ -76,8 +74,6 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
         RpcContext.getServiceContext().setResponse(nettyHttpResponse);
 
         Object nettyHttpRequest = requestFacade.getRequest();
-
-        RpcContext.getServiceContext().setObjectAttachment(SERVICE_DEPLOYER_ATTRIBUTE_KEY, serviceDeployer);
 
 
         try {
