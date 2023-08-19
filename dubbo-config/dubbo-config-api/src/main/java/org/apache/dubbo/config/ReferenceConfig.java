@@ -33,8 +33,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.config.utils.ConfigValidationUtils;
-import org.apache.dubbo.config.utils.validator.ReferenceConfigValidator;
+import org.apache.dubbo.config.util.ConfigValidationUtils;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -54,6 +53,7 @@ import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.stub.StubSuppliers;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
+import org.apache.dubbo.util.MonitorUrlUtil;
 
 import java.beans.Transient;
 import java.util.ArrayList;
@@ -579,7 +579,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         List<URL> us = ConfigValidationUtils.loadRegistries(this, false);
         if (CollectionUtils.isNotEmpty(us)) {
             for (URL u : us) {
-                URL monitorUrl = ConfigValidationUtils.loadMonitor(this, u);
+                URL monitorUrl = MonitorUrlUtil.loadMonitor(this, u);
                 if (monitorUrl != null) {
                     u = u.putAttribute(MONITOR_KEY, monitorUrl);
                 }
@@ -746,7 +746,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
 
         resolveFile();
-        ReferenceConfigValidator.validateReferenceConfig(this);
+        validate();
         postProcessConfig();
     }
 

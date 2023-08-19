@@ -20,7 +20,9 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
-
+import org.apache.dubbo.config.util.ConfigValidationUtils;
+import org.apache.dubbo.config.validator.ApplicationConfigValidator;
+import org.apache.dubbo.config.validator.MetadataConfigValidator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -29,9 +31,12 @@ import org.mockito.Mockito;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CLASS_NOT_FOUND;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -45,7 +50,7 @@ class ConfigValidationUtilsTest {
         MetadataReportConfig config = new MetadataReportConfig();
         config.setAddress("protocol://ip:host");
         try {
-            ConfigValidationUtils.validateMetadataConfig(config);
+            MetadataConfigValidator.validateMetadataConfig(config);
         } catch (Exception e) {
             Assertions.fail("valid config expected.");
         }
@@ -53,7 +58,7 @@ class ConfigValidationUtilsTest {
         config.setAddress("ip:host");
         config.setProtocol("protocol");
         try {
-            ConfigValidationUtils.validateMetadataConfig(config);
+            MetadataConfigValidator.validateMetadataConfig(config);
         } catch (Exception e) {
             Assertions.fail("valid config expected.");
         }
@@ -61,17 +66,18 @@ class ConfigValidationUtilsTest {
         config.setAddress("ip:host");
         config.setProtocol(null);
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            ConfigValidationUtils.validateMetadataConfig(config);
+            MetadataConfigValidator.validateMetadataConfig(config);
         });
     }
 
     @Test
     void testValidateApplicationConfig() throws Exception {
-        try (MockedStatic<ConfigValidationUtils> mockedStatic = Mockito.mockStatic(ConfigValidationUtils.class);) {
-            mockedStatic.when(() -> ConfigValidationUtils.validateApplicationConfig(any())).thenCallRealMethod();
+        try (MockedStatic<ApplicationConfigValidator> mockedStatic = Mockito.mockStatic(ApplicationConfigValidator.class);
+             MockedStatic<ConfigValidationUtils> configValidationUtilsMockedStatic =  Mockito.mockStatic(ConfigValidationUtils.class);) {
+            mockedStatic.when(() -> ApplicationConfigValidator.validateApplicationConfig(any())).thenCallRealMethod();
             ApplicationConfig config = new ApplicationConfig();
             Assertions.assertThrows(IllegalStateException.class, () -> {
-                ConfigValidationUtils.validateApplicationConfig(config);
+                ApplicationConfigValidator.validateApplicationConfig(config);
             });
 
             config.setName("testName");
@@ -83,14 +89,19 @@ class ConfigValidationUtilsTest {
             map.put("k1", "v1");
             map.put("k2", "v2");
             config.setParameters(map);
-            ConfigValidationUtils.validateApplicationConfig(config);
-            mockedStatic.verify(() -> {
+            ApplicationConfigValidator.validateApplicationConfig(config);
+
+            configValidationUtilsMockedStatic.when(()-> ConfigValidationUtils.checkName(anyString(),anyString())).thenCallRealMethod();
+            configValidationUtilsMockedStatic.when(()-> ConfigValidationUtils.checkMultiName(anyString(),anyString())).thenCallRealMethod();
+            configValidationUtilsMockedStatic.when(()-> ConfigValidationUtils.checkParameterName(any())).thenCallRealMethod();
+            configValidationUtilsMockedStatic.when(()-> ConfigValidationUtils.checkProperty(anyString(),anyString(),anyInt(),any(Pattern.class))).thenCallRealMethod();
+            configValidationUtilsMockedStatic.verify(() -> {
                 ConfigValidationUtils.checkName(any(), any());
             }, times(4));
-            mockedStatic.verify(() -> {
+            configValidationUtilsMockedStatic.verify(() -> {
                 ConfigValidationUtils.checkMultiName(any(), any());
             }, times(1));
-            mockedStatic.verify(() -> {
+            configValidationUtilsMockedStatic.verify(() -> {
                 ConfigValidationUtils.checkParameterName(any());
             }, times(1));
         }
@@ -98,13 +109,13 @@ class ConfigValidationUtilsTest {
 
     @Test
     void testCheckQosInApplicationConfig() throws Exception {
-        ConfigValidationUtils mock = Mockito.mock(ConfigValidationUtils.class);
+        ApplicationConfigValidator mock = Mockito.mock(ApplicationConfigValidator.class);
         ErrorTypeAwareLogger loggerMock = Mockito.mock(ErrorTypeAwareLogger.class);
         injectField(mock.getClass().getDeclaredField("logger"), loggerMock);
         ApplicationConfig config = new ApplicationConfig();
         config.setName("testName");
         config.setQosEnable(false);
-        mock.validateApplicationConfig(config);
+        ApplicationConfigValidator.validateApplicationConfig(config);
         verify(loggerMock, never()).warn(any(), any(Throwable.class));
 
         config.setQosEnable(true);

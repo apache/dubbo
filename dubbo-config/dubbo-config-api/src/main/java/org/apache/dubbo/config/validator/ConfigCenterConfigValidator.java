@@ -1,10 +1,11 @@
-package org.apache.dubbo.config.utils.validator;
+package org.apache.dubbo.config.validator;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.context.ConfigValidator;
-import org.apache.dubbo.config.utils.ConfigValidationUtils;
+import org.apache.dubbo.config.util.ConfigValidationUtils;
 
+//TODO: Move to configcenter-api
 @Activate
 public class ConfigCenterConfigValidator implements ConfigValidator<ConfigCenterConfig> {
 
@@ -21,6 +22,6 @@ public class ConfigCenterConfigValidator implements ConfigValidator<ConfigCenter
 
     @Override
     public boolean isSupport(Class<?> configClass) {
-        return ConfigCenterConfig.class.isAssignableFrom(configClass);
+        return ConfigCenterConfig.class.equals(configClass);
     }
 }

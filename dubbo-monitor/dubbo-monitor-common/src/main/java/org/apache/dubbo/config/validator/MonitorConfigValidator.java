@@ -1,11 +1,12 @@
-package org.apache.dubbo.config.utils.validator;
+package org.apache.dubbo.config.validator;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.context.ConfigValidator;
-import org.apache.dubbo.config.utils.ConfigValidationUtils;
+import org.apache.dubbo.config.util.ConfigValidationUtils;
+
 
 @Activate
 public class MonitorConfigValidator implements ConfigValidator<MonitorConfig> {

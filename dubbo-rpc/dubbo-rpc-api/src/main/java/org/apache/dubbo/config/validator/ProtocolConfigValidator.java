@@ -1,4 +1,4 @@
-package org.apache.dubbo.config.utils.validator;
+package org.apache.dubbo.config.validator;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.serialize.Serialization;
@@ -6,7 +6,7 @@ import org.apache.dubbo.common.status.StatusChecker;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.context.ConfigValidator;
-import org.apache.dubbo.config.utils.ConfigValidationUtils;
+import org.apache.dubbo.config.util.ConfigValidationUtils;
 import org.apache.dubbo.remoting.Codec2;
 import org.apache.dubbo.remoting.Dispatcher;
 import org.apache.dubbo.remoting.Transporter;
@@ -16,14 +16,14 @@ import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
-import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
-import static org.apache.dubbo.remoting.Constants.CODEC_KEY;
-import static org.apache.dubbo.remoting.Constants.DISPATCHER_KEY;
-import static org.apache.dubbo.remoting.Constants.EXCHANGER_KEY;
-import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
-import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
-import static org.apache.dubbo.remoting.Constants.TELNET_KEY;
-import static org.apache.dubbo.remoting.Constants.TRANSPORTER_KEY;
+import static org.apache.dubbo.remoting.RemotingConstants.CLIENT_KEY;
+import static org.apache.dubbo.remoting.RemotingConstants.CODEC_KEY;
+import static org.apache.dubbo.remoting.RemotingConstants.DISPATCHER_KEY;
+import static org.apache.dubbo.remoting.RemotingConstants.EXCHANGER_KEY;
+import static org.apache.dubbo.remoting.RemotingConstants.SERIALIZATION_KEY;
+import static org.apache.dubbo.remoting.RemotingConstants.SERVER_KEY;
+import static org.apache.dubbo.remoting.RemotingConstants.TELNET_KEY;
+import static org.apache.dubbo.remoting.RemotingConstants.TRANSPORTER_KEY;
 
 @Activate
 public class ProtocolConfigValidator implements ConfigValidator<ProtocolConfig> {
@@ -60,6 +60,6 @@ public class ProtocolConfigValidator implements ConfigValidator<ProtocolConfig> 
 
     @Override
     public boolean isSupport(Class<?> configClass) {
-        return ProtocolConfig.class.isAssignableFrom(configClass);
+        return ProtocolConfig.class.equals(configClass);
     }
 }

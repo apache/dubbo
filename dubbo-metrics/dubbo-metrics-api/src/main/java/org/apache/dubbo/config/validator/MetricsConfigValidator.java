@@ -1,4 +1,4 @@
-package org.apache.dubbo.config.utils.validator;
+package org.apache.dubbo.config.validator;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.config.MetricsConfig;

@@ -1,11 +1,11 @@
-package org.apache.dubbo.config.utils.validator;
+package org.apache.dubbo.config.validator;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.context.ConfigValidator;
-import org.apache.dubbo.config.utils.ConfigValidationUtils;
+import org.apache.dubbo.config.util.ConfigValidationUtils;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.Cluster;
@@ -35,7 +35,7 @@ public class InterfaceConfigValidator implements ConfigValidator<AbstractInterfa
 
         List<MethodConfig> methods = config.getMethods();
         if (CollectionUtils.isNotEmpty(methods)) {
-            methods.forEach(MethodConfigValidator::validateMethodConfig);
+            methods.forEach(MethodConfig::validate);
         }
     }
 
@@ -46,6 +46,6 @@ public class InterfaceConfigValidator implements ConfigValidator<AbstractInterfa
 
     @Override
     public boolean isSupport(Class<?> configClass) {
-        return false;
+        return AbstractInterfaceConfig.class.equals(configClass);
     }
 }

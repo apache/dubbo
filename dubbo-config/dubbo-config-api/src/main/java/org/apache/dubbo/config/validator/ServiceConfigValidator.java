@@ -1,4 +1,4 @@
-package org.apache.dubbo.config.utils.validator;
+package org.apache.dubbo.config.validator;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.config.ProtocolConfig;
@@ -6,7 +6,7 @@ import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.context.ConfigValidator;
-import org.apache.dubbo.config.utils.ConfigValidationUtils;
+import org.apache.dubbo.config.util.ConfigValidationUtils;
 import org.apache.dubbo.rpc.ExporterListener;
 
 import java.util.List;
@@ -38,7 +38,7 @@ public class ServiceConfigValidator implements ConfigValidator<ServiceConfig<?>>
         List<RegistryConfig> registries = config.getRegistries();
         if (registries != null) {
             for (RegistryConfig registry : registries) {
-                RegistryConfigValidator.validateRegistryConfig(registry);
+                registry.validate();
             }
         }
 
@@ -57,6 +57,6 @@ public class ServiceConfigValidator implements ConfigValidator<ServiceConfig<?>>
 
     @Override
     public boolean isSupport(Class<?> configClass) {
-        return ServiceConfig.class.isAssignableFrom(configClass);
+        return ServiceConfig.class.equals(configClass);
     }
 }

@@ -1,11 +1,11 @@
-package org.apache.dubbo.config.utils.validator;
+package org.apache.dubbo.config.validator;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.status.StatusChecker;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.context.ConfigValidator;
-import org.apache.dubbo.config.utils.ConfigValidationUtils;
+import org.apache.dubbo.config.util.ConfigValidationUtils;
 import org.apache.dubbo.remoting.Transporter;
 import org.apache.dubbo.remoting.exchange.Exchanger;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
@@ -13,9 +13,9 @@ import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.config.Constants.CONTEXTPATH_KEY;
 import static org.apache.dubbo.config.Constants.STATUS_KEY;
-import static org.apache.dubbo.remoting.Constants.EXCHANGER_KEY;
-import static org.apache.dubbo.remoting.Constants.TELNET_KEY;
-import static org.apache.dubbo.remoting.Constants.TRANSPORTER_KEY;
+import static org.apache.dubbo.remoting.RemotingConstants.EXCHANGER_KEY;
+import static org.apache.dubbo.remoting.RemotingConstants.TELNET_KEY;
+import static org.apache.dubbo.remoting.RemotingConstants.TRANSPORTER_KEY;
 
 @Activate
 public class ProviderConfigValidator implements ConfigValidator<ProviderConfig> {
@@ -36,6 +36,6 @@ public class ProviderConfigValidator implements ConfigValidator<ProviderConfig> 
 
     @Override
     public boolean isSupport(Class<?> configClass) {
-        return ProviderConfig.class.isAssignableFrom(configClass);
+        return ProviderConfig.class.equals(configClass);
     }
 }

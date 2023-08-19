@@ -1,4 +1,4 @@
-package org.apache.dubbo.config.utils.validator;
+package org.apache.dubbo.config.validator;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.config.SslConfig;
@@ -18,6 +18,6 @@ public class SslConfigValidator implements ConfigValidator<SslConfig> {
 
     @Override
     public boolean isSupport(Class<?> configClass) {
-        return SslConfig.class.isAssignableFrom(configClass);
+        return SslConfig.class.equals(configClass);
     }
 }

@@ -172,6 +172,10 @@ public abstract class AbstractConfig implements Serializable {
         appendParameters0(parameters, config, prefix, false);
     }
 
+    public void validate(){
+        ConfigValidateFacade.getInstance().validate(this);
+    }
+
     private static void appendParameters0(Map<String, String> parameters, Object config, String prefix, boolean asParameters) {
         if (config == null) {
             return;

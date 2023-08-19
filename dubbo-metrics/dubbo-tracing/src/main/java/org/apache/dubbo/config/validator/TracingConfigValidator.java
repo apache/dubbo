@@ -1,4 +1,4 @@
-package org.apache.dubbo.config.utils.validator;
+package org.apache.dubbo.config.validator;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.config.TracingConfig;
@@ -20,6 +20,6 @@ public class TracingConfigValidator implements ConfigValidator<TracingConfig> {
 
     @Override
     public boolean isSupport(Class<?> configClass) {
-        return false;
+        return TracingConfig.class.equals(configClass);
     }
 }

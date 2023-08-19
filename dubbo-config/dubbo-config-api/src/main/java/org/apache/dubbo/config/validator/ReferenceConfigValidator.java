@@ -1,11 +1,11 @@
-package org.apache.dubbo.config.utils.validator;
+package org.apache.dubbo.config.validator;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.context.ConfigValidator;
-import org.apache.dubbo.config.utils.ConfigValidationUtils;
+import org.apache.dubbo.config.util.ConfigValidationUtils;
 import org.apache.dubbo.rpc.InvokerListener;
 
 import java.util.List;
@@ -34,18 +34,18 @@ public class ReferenceConfigValidator implements ConfigValidator<ReferenceConfig
         List<RegistryConfig> registries = config.getRegistries();
         if (registries != null) {
             for (RegistryConfig registry : registries) {
-                RegistryConfigValidator.validateRegistryConfig(registry);
+                registry.validate();
             }
         }
 
         ConsumerConfig consumerConfig = config.getConsumer();
         if (consumerConfig != null) {
-            ConsumerConfigValidator.validateConsumerConfig(consumerConfig);
+            consumerConfig.validate();
         }
     }
 
     @Override
     public boolean isSupport(Class<?> configClass) {
-        return ReferenceConfig.class.isAssignableFrom(configClass);
+        return ReferenceConfig.class.equals(configClass);
     }
 }

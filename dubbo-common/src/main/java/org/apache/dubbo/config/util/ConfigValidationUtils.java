@@ -14,27 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.utils;
+package org.apache.dubbo.config.util;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.constants.RegisterConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.ConfigUtils;
-import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
-import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.monitor.MonitorFactory;
-import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
@@ -52,25 +48,11 @@ import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.*;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_PARAMETER_FORMAT_ERROR;
-import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTER_MODE_ALL;
-import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTER_MODE_INSTANCE;
-import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTER_MODE_INTERFACE;
-import static org.apache.dubbo.common.constants.RegistryConstants.DUBBO_REGISTER_MODE_DEFAULT_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER_MODE_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
-import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.*;
+import static org.apache.dubbo.remoting.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
-import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.config.Constants.IGNORE_CHECK_KEYS;
 import static org.apache.dubbo.config.Constants.REGISTER_KEY;
-import static org.apache.dubbo.monitor.Constants.LOGSTAT_PROTOCOL;
-import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
-import static org.apache.dubbo.registry.Constants.SUBSCRIBE_KEY;
-
-import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 public class ConfigValidationUtils {
     public static final String IPV6_START_MARK = "[";
@@ -145,7 +127,7 @@ public class ConfigValidationUtils {
                         if (provider && url.getParameter(REGISTER_KEY, true)) {
                             registryList.add(url);
                         }
-                        if (!provider && url.getParameter(SUBSCRIBE_KEY, true)) {
+                        if (!provider && url.getParameter(RegisterConstants.SUBSCRIBE_KEY, true)) {
                             registryList.add(url);
                         }
                     }
@@ -216,58 +198,6 @@ public class ConfigValidationUtils {
         return registryList.stream().noneMatch(
             url -> registryType.equals(url.getProtocol()) && registryURL.getBackupAddress().equals(url.getBackupAddress())
         );
-    }
-
-    public static URL loadMonitor(AbstractInterfaceConfig interfaceConfig, URL registryURL) {
-        Map<String, String> map = new HashMap<String, String>();
-        map.put(INTERFACE_KEY, MonitorService.class.getName());
-        AbstractInterfaceConfig.appendRuntimeParameters(map);
-        //set ip
-        String hostToRegistry = ConfigUtils.getSystemProperty(DUBBO_IP_TO_REGISTRY);
-        if (StringUtils.isEmpty(hostToRegistry)) {
-            hostToRegistry = NetUtils.getLocalHost();
-        } else if (NetUtils.isInvalidLocalHost(hostToRegistry)) {
-            throw new IllegalArgumentException("Specified invalid registry ip from property:" +
-                DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
-        }
-        map.put(REGISTER_IP_KEY, hostToRegistry);
-
-        MonitorConfig monitor = interfaceConfig.getMonitor();
-        ApplicationConfig application = interfaceConfig.getApplication();
-        AbstractConfig.appendParameters(map, monitor);
-        AbstractConfig.appendParameters(map, application);
-        String address = null;
-        String sysAddress = System.getProperty(DUBBO_MONITOR_ADDRESS);
-        if (sysAddress != null && sysAddress.length() > 0) {
-            address = sysAddress;
-        } else if (monitor != null) {
-            address = monitor.getAddress();
-        }
-        String protocol = monitor == null ? null : monitor.getProtocol();
-        if (monitor != null &&
-            (REGISTRY_PROTOCOL.equals(protocol) || SERVICE_REGISTRY_PROTOCOL.equals(protocol))
-            && registryURL != null) {
-            return URLBuilder.from(registryURL)
-                .setProtocol(DUBBO_PROTOCOL)
-                .addParameter(PROTOCOL_KEY, protocol)
-                .putAttribute(REFER_KEY, map)
-                .build();
-        } else if (ConfigUtils.isNotEmpty(address) || ConfigUtils.isNotEmpty(protocol)) {
-            if (!map.containsKey(PROTOCOL_KEY)) {
-                if (interfaceConfig.getScopeModel().getExtensionLoader(MonitorFactory.class).hasExtension(LOGSTAT_PROTOCOL)) {
-                    map.put(PROTOCOL_KEY, LOGSTAT_PROTOCOL);
-                } else if (ConfigUtils.isNotEmpty(protocol)) {
-                    map.put(PROTOCOL_KEY, protocol);
-                } else {
-                    map.put(PROTOCOL_KEY, DUBBO_PROTOCOL);
-                }
-            }
-            if (ConfigUtils.isEmpty(address)) {
-                address = LOCALHOST_VALUE;
-            }
-            return UrlUtils.parseURL(address, map);
-        }
-        return null;
     }
 
     public static void validateConfigCenterConfig(ConfigCenterConfig config) {

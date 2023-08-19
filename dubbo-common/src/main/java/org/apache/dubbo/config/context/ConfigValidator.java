@@ -19,6 +19,10 @@ package org.apache.dubbo.config.context;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.config.AbstractConfig;
 
+/**
+ * ConfigValidator. Allows provide an optional validation logic for a {@link AbstractConfig} impl.
+ * @param <T> type of {@link AbstractConfig} implement
+ */
 @SPI
 public interface ConfigValidator<T extends AbstractConfig> {
 

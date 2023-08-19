@@ -1,4 +1,4 @@
-package org.apache.dubbo.config.utils.validator;
+package org.apache.dubbo.config.validator;
 
 import org.apache.dubbo.common.config.PropertiesConfiguration;
 import org.apache.dubbo.common.extension.Activate;
@@ -7,7 +7,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.context.ConfigValidator;
-import org.apache.dubbo.config.utils.ConfigValidationUtils;
+import org.apache.dubbo.config.util.ConfigValidationUtils;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
@@ -23,7 +23,7 @@ import static org.apache.dubbo.config.Constants.OWNER;
 @Activate
 public class ApplicationConfigValidator implements ConfigValidator<ApplicationConfig> {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ApplicationConfigValidator.class);
+    private static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ApplicationConfigValidator.class);
 
     public static void validateApplicationConfig(ApplicationConfig config) {
         if (config == null) {
@@ -74,6 +74,6 @@ public class ApplicationConfigValidator implements ConfigValidator<ApplicationCo
 
     @Override
     public boolean isSupport(Class<?> configClass) {
-        return ApplicationConfig.class.isAssignableFrom(configClass);
+        return ApplicationConfig.class.equals(configClass);
     }
 }

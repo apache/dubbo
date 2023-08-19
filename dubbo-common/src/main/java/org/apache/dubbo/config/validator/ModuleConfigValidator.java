@@ -1,9 +1,9 @@
-package org.apache.dubbo.config.utils.validator;
+package org.apache.dubbo.config.validator;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.context.ConfigValidator;
-import org.apache.dubbo.config.utils.ConfigValidationUtils;
+import org.apache.dubbo.config.util.ConfigValidationUtils;
 
 import static org.apache.dubbo.config.Constants.NAME;
 import static org.apache.dubbo.config.Constants.ORGANIZATION;
@@ -27,6 +27,6 @@ public class ModuleConfigValidator implements ConfigValidator<ModuleConfig> {
 
     @Override
     public boolean isSupport(Class<?> configClass) {
-        return ModuleConfig.class.isAssignableFrom(configClass);
+        return ModuleConfig.class.equals(configClass);
     }
 }

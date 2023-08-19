@@ -1,4 +1,4 @@
-package org.apache.dubbo.config.utils.validator;
+package org.apache.dubbo.config.validator;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.config.MetadataReportConfig;
@@ -9,7 +9,7 @@ import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 @Activate
 public class MetadataConfigValidator implements ConfigValidator<MetadataReportConfig> {
 
-   @Override
+    @Override
     public void validate(MetadataReportConfig config) {
        validateMetadataConfig(config);
     }
@@ -40,10 +40,8 @@ public class MetadataConfigValidator implements ConfigValidator<MetadataReportCo
         return !isEmpty(metadataReportConfig.getAddress());
     }
 
-
-
     @Override
     public boolean isSupport(Class<?> configClass) {
-        return MetadataReportConfig.class.isAssignableFrom(configClass);
+        return MetadataReportConfig.class.equals(configClass);
     }
 }

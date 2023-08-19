@@ -1,9 +1,9 @@
-package org.apache.dubbo.config.utils.validator;
+package org.apache.dubbo.config.validator;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.context.ConfigValidator;
-import org.apache.dubbo.config.utils.ConfigValidationUtils;
+import org.apache.dubbo.config.util.ConfigValidationUtils;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 
 import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
@@ -41,6 +41,6 @@ public class MethodConfigValidator implements ConfigValidator<MethodConfig> {
 
     @Override
     public boolean isSupport(Class<?> configClass) {
-        return MethodConfig.class.isAssignableFrom(configClass);
+        return MethodConfig.class.equals(configClass);
     }
 }

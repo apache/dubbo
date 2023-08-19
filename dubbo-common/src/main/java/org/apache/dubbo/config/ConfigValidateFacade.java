@@ -14,60 +14,59 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.utils;
+package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.context.ConfigValidator;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-@SuppressWarnings({"rawtypes","unchecked"})
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class ConfigValidateFacade implements ConfigValidator {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ConfigValidateFacade.class);
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(ConfigValidateFacade.class);
 
-    private static AtomicReference<ConfigValidateFacade> instance = new AtomicReference<>();
+    private static final AtomicReference<ConfigValidateFacade> INSTANCE = new AtomicReference<>();
 
     private final List<ConfigValidator> validators;
 
-    public ConfigValidateFacade(ScopeModel scopeModel) {
-            ExtensionLoader<ConfigValidator> extensionLoader = scopeModel.getExtensionLoader(ConfigValidator.class);
-            this.validators = extensionLoader.getActivateExtensions();
-            this.validators.forEach(scopeModel.getBeanFactory()::registerBean);
-            instance.set(this);
+    private ConfigValidateFacade(ScopeModel scopeModel) {
+        ExtensionLoader<ConfigValidator> extensionLoader = scopeModel.getExtensionLoader(ConfigValidator.class);
+        this.validators = extensionLoader.getActivateExtensions();
+        this.validators.forEach(scopeModel.getBeanFactory()::registerBean);
+    }
+
+    public static ConfigValidateFacade getInstance() {
+        INSTANCE.compareAndSet(null, new ConfigValidateFacade(FrameworkModel.defaultModel()));
+        return INSTANCE.get();
     }
 
     @Override
     public void validate(AbstractConfig config) {
-        if(config == null){
+        if (config == null) {
             return;
         }
-        AtomicBoolean validated = new AtomicBoolean(false);
-        validators.forEach(
-            configValidator ->  {
-                if(configValidator.isSupport(config.getClass())){
-                    configValidator.validate(config);
-                    validated.set(true);
-                }
-        });
-        if(!validated.get()){
-           logger.warn("No supported ConfigValidator found for config:"+config.getClass().getSimpleName());
+        boolean validated = false;
+        for (ConfigValidator validator : validators) {
+            if (validator.isSupport(config.getClass())) {
+                validator.validate(config);
+                validated = true;
+                break;
+            }
+        }
+        if (!validated) {
+            LOGGER.warn("Config validate failed. No supported ConfigValidator found for config:" + config.getClass().getSimpleName());
         }
     }
 
     @Override
     public boolean isSupport(Class configClass) {
         return true;
-    }
-
-    public static ConfigValidateFacade getInstance(){
-        return instance.get();
     }
 
 }
