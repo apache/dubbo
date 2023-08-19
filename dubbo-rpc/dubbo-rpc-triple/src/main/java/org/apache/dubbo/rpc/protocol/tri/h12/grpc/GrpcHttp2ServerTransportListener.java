@@ -95,7 +95,7 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
         Http2Header httpMetadata = getHttpMetadata();
         String path = httpMetadata.path();
         boolean hasStub = getPathResolver().hasNativeStub(httpMetadata.path());
-        if (!hasStub) {
+        if (hasStub) {
             return super.newListeningDecoder();
         }
         String[] parts = path.split("/");
