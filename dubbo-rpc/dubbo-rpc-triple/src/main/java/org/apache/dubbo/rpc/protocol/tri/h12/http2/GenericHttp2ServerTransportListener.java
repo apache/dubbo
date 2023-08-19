@@ -162,7 +162,9 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     }
 
     private void initializeServerCallListener() {
-        this.serverCallListener = startListener(getRpcInvocation(), getMethodDescriptor(), getInvoker());
+        if (serverCallListener == null) {
+            this.serverCallListener = startListener(getRpcInvocation(), getMethodDescriptor(), getInvoker());
+        }
     }
 
     private UnaryServerCallListener startUnary(RpcInvocation invocation,
@@ -177,5 +179,9 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
 
     private BiStreamServerCallListener startBiStreaming(RpcInvocation invocation, Invoker<?> invoker, Http2ServerChannelObserver responseObserver) {
         return new BiStreamServerCallListener(invocation, invoker, responseObserver);
+    }
+
+    public ServerCallListener getServerCallListener() {
+        return serverCallListener;
     }
 }

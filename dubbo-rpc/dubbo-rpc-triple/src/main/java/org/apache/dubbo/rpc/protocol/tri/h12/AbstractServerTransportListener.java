@@ -404,6 +404,10 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         return rpcInvocation;
     }
 
+    public void setRpcInvocation(RpcInvocation rpcInvocation) {
+        this.rpcInvocation = rpcInvocation;
+    }
+
     protected MethodMetadata getMethodMetadata() {
         return methodMetadata;
     }

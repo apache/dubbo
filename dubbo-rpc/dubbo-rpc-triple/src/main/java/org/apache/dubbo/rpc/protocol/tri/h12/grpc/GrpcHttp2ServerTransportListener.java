@@ -101,6 +101,14 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
         String[] parts = path.split("/");
         String originalMethodName = parts[2];
         GrpcRawMessageDecoder grpcRawMessageDecoder = new GrpcRawMessageDecoder();
+        grpcRawMessageDecoder.setHttpMessageCodec(getHttpMessageCodec());
+        grpcRawMessageDecoder.setListener(new ListeningDecoder.Listener() {
+            @Override
+            public void onMessage(Object message) {
+                getServerCallListener().onMessage(message);
+            }
+        });
+        getServerChannelObserver().setStreamingDecoder(grpcRawMessageDecoder);
         //lazy determine md. compatible low version.
         grpcRawMessageDecoder.setRawMessageListener(new Consumer<byte[]>() {
             @Override
@@ -122,9 +130,11 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
                 if (methodDescriptor == null) {
                     throw new UnimplementedException("method:" + originalMethodName);
                 }
+                setMethodDescriptor(methodDescriptor);
                 MethodMetadata methodMetadata = MethodMetadata.fromMethodDescriptor(methodDescriptor);
                 setMethodMetadata(methodMetadata);
-                buildRpcInvocation(getInvoker(), getServiceDescriptor(), methodDescriptor);
+                RpcInvocation rpcInvocation = buildRpcInvocation(getInvoker(), getServiceDescriptor(), methodDescriptor);
+                setRpcInvocation(rpcInvocation);
                 ListeningDecoder listeningDecoder = GrpcHttp2ServerTransportListener.super.newListeningDecoder(getHttpMessageCodec(), methodMetadata.getActualRequestTypes());
                 //replace this decoder
                 setListeningDecoder(listeningDecoder);
