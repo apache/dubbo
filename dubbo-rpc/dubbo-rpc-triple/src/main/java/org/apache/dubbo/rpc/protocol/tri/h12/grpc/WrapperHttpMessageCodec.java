@@ -88,7 +88,11 @@ public class WrapperHttpMessageCodec implements HttpMessageCodec {
 
     @Override
     public Object decode(InputStream inputStream, Class<?> targetType) throws DecodeException {
-        return this.decode(inputStream, new Class[]{targetType})[0];
+        Object[] decode = this.decode(inputStream, new Class[]{targetType});
+        if (decode == null || decode.length == 0) {
+            return null;
+        }
+        return decode[0];
     }
 
     @Override

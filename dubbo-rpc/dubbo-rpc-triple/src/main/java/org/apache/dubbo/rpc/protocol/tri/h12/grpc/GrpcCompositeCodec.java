@@ -74,6 +74,9 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
     }
 
     private boolean isProtobuf(Class<?> targetType) {
+        if (targetType == null) {
+            return false;
+        }
         return Message.class.isAssignableFrom(targetType);
     }
 
