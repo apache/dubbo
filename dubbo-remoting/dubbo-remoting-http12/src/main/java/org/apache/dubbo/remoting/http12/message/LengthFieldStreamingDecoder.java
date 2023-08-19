@@ -37,7 +37,7 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
 
     private final CompositeInputStream accumulate = new CompositeInputStream();
 
-    private final Class<?>[] targetTypes;
+    private Class<?>[] targetTypes;
 
     private HttpMessageCodec httpMessageCodec;
 
@@ -48,6 +48,10 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
     private final int lengthFieldLength;
 
     private int requiredLength;
+
+    public LengthFieldStreamingDecoder() {
+        this(0, 4, null);
+    }
 
     public LengthFieldStreamingDecoder(Class<?>[] targetTypes) {
         this(4, targetTypes);
@@ -66,6 +70,10 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
 
     public void setHttpMessageCodec(HttpMessageCodec httpMessageCodec) {
         this.httpMessageCodec = httpMessageCodec;
+    }
+
+    public void setTargetTypes(Class<?>[] targetTypes) {
+        this.targetTypes = targetTypes;
     }
 
     @Override

@@ -25,18 +25,24 @@ import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
 import org.apache.dubbo.remoting.http12.h2.Http2TransportListener;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
+import org.apache.dubbo.remoting.http12.message.ListeningDecoder;
+import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.protocol.tri.TripleCustomerProtocolWapper;
 import org.apache.dubbo.rpc.protocol.tri.call.AbstractServerCall;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.h12.http2.GenericHttp2ServerTransportListener;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_PARSE;
 
@@ -83,6 +89,50 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
         grpcStreamingDecoder.setHttpMessageCodec(codec);
         return grpcStreamingDecoder;
     }
+
+    @Override
+    protected ListeningDecoder newListeningDecoder() {
+        Http2Header httpMetadata = getHttpMetadata();
+        String path = httpMetadata.path();
+        boolean hasStub = getPathResolver().hasNativeStub(httpMetadata.path());
+        if (!hasStub) {
+            return super.newListeningDecoder();
+        }
+        String[] parts = path.split("/");
+        String originalMethodName = parts[2];
+        GrpcRawMessageDecoder grpcRawMessageDecoder = new GrpcRawMessageDecoder();
+        //lazy determine md. compatible low version.
+        grpcRawMessageDecoder.setRawMessageListener(new Consumer<byte[]>() {
+            @Override
+            public void accept(byte[] data) {
+                List<MethodDescriptor> methodDescriptors = getServiceDescriptor().getMethods(originalMethodName);
+                final TripleCustomerProtocolWapper.TripleRequestWrapper request;
+                request = TripleCustomerProtocolWapper.TripleRequestWrapper.parseFrom(data);
+                final String[] paramTypes = request.getArgTypes()
+                    .toArray(new String[request.getArgs().size()]);
+                // wrapper mode the method can overload so maybe list
+                MethodDescriptor methodDescriptor = null;
+                for (MethodDescriptor descriptor : methodDescriptors) {
+                    // params type is array
+                    if (Arrays.equals(descriptor.getCompatibleParamSignatures(), paramTypes)) {
+                        methodDescriptor = descriptor;
+                        break;
+                    }
+                }
+                if (methodDescriptor == null) {
+                    throw new UnimplementedException("method:" + originalMethodName);
+                }
+                MethodMetadata methodMetadata = MethodMetadata.fromMethodDescriptor(methodDescriptor);
+                setMethodMetadata(methodMetadata);
+                buildRpcInvocation(getInvoker(), getServiceDescriptor(), methodDescriptor);
+                ListeningDecoder listeningDecoder = GrpcHttp2ServerTransportListener.super.newListeningDecoder(getHttpMessageCodec(), methodMetadata.getActualRequestTypes());
+                //replace this decoder
+                setListeningDecoder(listeningDecoder);
+            }
+        });
+        return grpcRawMessageDecoder;
+    }
+
 
     @Override
     protected void onMetadataCompletion(Http2Header metadata) {

@@ -153,10 +153,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
             throw new UnimplementedException(serviceName);
         }
         this.serviceDescriptor = findServiceDescriptor(invoker, serviceName, hasStub);
-        this.methodDescriptor = findMethodDescriptor(serviceDescriptor, originalMethodName, hasStub);
-        this.methodMetadata = MethodMetadata.fromMethodDescriptor(methodDescriptor);
-        this.rpcInvocation = buildRpcInvocation(invoker, serviceDescriptor, methodDescriptor);
-        this.listeningDecoder = newListeningDecoder(this.httpMessageCodec, this.methodMetadata.getActualRequestTypes());
+        this.listeningDecoder = newListeningDecoder();
         onMetadataCompletion(metadata);
     }
 
@@ -211,6 +208,17 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         throw new HttpStatusException(HttpStatus.INTERNAL_SERVER_ERROR.getCode(), throwable);
     }
 
+    protected ListeningDecoder newListeningDecoder() {
+        String path = httpMetadata.path();
+        String[] parts = path.split("/");
+        String originalMethodName = parts[2];
+        boolean hasStub = pathResolver.hasNativeStub(path);
+        this.methodDescriptor = findMethodDescriptor(serviceDescriptor, originalMethodName, hasStub);
+        this.methodMetadata = MethodMetadata.fromMethodDescriptor(methodDescriptor);
+        this.rpcInvocation = buildRpcInvocation(invoker, serviceDescriptor, methodDescriptor);
+        return newListeningDecoder(getHttpMessageCodec(), getMethodMetadata().getActualRequestTypes());
+    }
+
     protected abstract ListeningDecoder newListeningDecoder(HttpMessageCodec codec, Class<?>[] actualRequestTypes);
 
 
@@ -262,9 +270,6 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
             result = serviceDescriptor.getMethods(originalMethodName).get(0);
         } else {
             result = findReflectionMethodDescriptor(serviceDescriptor, originalMethodName);
-        }
-        if (result == null) {
-            throw new UnimplementedException("method:" + originalMethodName);
         }
         return result;
     }
@@ -383,6 +388,18 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         return methodDescriptor;
     }
 
+    public void setServiceDescriptor(ServiceDescriptor serviceDescriptor) {
+        this.serviceDescriptor = serviceDescriptor;
+    }
+
+    public void setMethodDescriptor(MethodDescriptor methodDescriptor) {
+        this.methodDescriptor = methodDescriptor;
+    }
+
+    public void setMethodMetadata(MethodMetadata methodMetadata) {
+        this.methodMetadata = methodMetadata;
+    }
+
     protected RpcInvocation getRpcInvocation() {
         return rpcInvocation;
     }
@@ -399,13 +416,21 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         return this.listeningDecoder;
     }
 
-    protected Map<String, Object> headersToMap(Map<String, String> trailers, Supplier<Object> convertUpperHeaderSupplier) {
-        if (trailers == null) {
+    public void setListeningDecoder(ListeningDecoder listeningDecoder) {
+        this.listeningDecoder = listeningDecoder;
+    }
+
+    public PathResolver getPathResolver() {
+        return pathResolver;
+    }
+
+    protected Map<String, Object> headersToMap(Map<String, String> headers, Supplier<Object> convertUpperHeaderSupplier) {
+        if (headers == null) {
             return Collections.emptyMap();
         }
-        Map<String, Object> attachments = new HashMap<>(trailers.size());
-        for (Map.Entry<String, String> header : trailers.entrySet()) {
-            String key = header.getKey().toString();
+        Map<String, Object> attachments = new HashMap<>(headers.size());
+        for (Map.Entry<String, String> header : headers.entrySet()) {
+            String key = header.getKey();
             if (key.endsWith(TripleConstant.HEADER_BIN_SUFFIX)
                 && key.length() > TripleConstant.HEADER_BIN_SUFFIX.length()) {
                 try {
@@ -417,7 +442,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
                     LOGGER.error(PROTOCOL_FAILED_PARSE, "", "", "Failed to parse response attachment key=" + key, e);
                 }
             } else {
-                attachments.put(key, header.getValue().toString());
+                attachments.put(key, header.getValue());
             }
         }
 
