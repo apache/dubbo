@@ -180,7 +180,7 @@ public class PathMatcher {
      * @return
      */
     private boolean httpMethodMatch(PathMatcher that) {
-        return !that.needCompareHttpMethod || !this.needCompareHttpMethod ? true : Objects.equals(this.httpMethod, that.httpMethod);
+        return (!that.needCompareHttpMethod && !this.needCompareHttpMethod) || Objects.equals(this.httpMethod, that.httpMethod);
     }
 
     private boolean serviceMethodEqual(PathMatcher thatPathMatcher, PathMatcher thisPathMatcher) {

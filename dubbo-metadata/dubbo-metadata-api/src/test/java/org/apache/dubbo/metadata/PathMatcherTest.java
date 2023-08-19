@@ -21,6 +21,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static org.apache.dubbo.metadata.rest.PathMatcher.getInvokeCreatePathMatcher;
 
 public class PathMatcherTest {
 
@@ -86,17 +90,36 @@ public class PathMatcherTest {
 
 
         //  equal
-        PathMatcher pathMatherMetaHashCode = PathMatcher.getInvokeCreatePathMatcher(hashCode);
+        PathMatcher pathMatherMetaHashCode = getInvokeCreatePathMatcher(hashCode);
         PathMatcher pathMatherMetaHashCodes = new PathMatcher(hashCode);
         Assertions.assertEquals(pathMatherMetaHashCode, pathMatherMetaHashCodes);
 
 
-        PathMatcher pathMatherMetaEquals = PathMatcher.getInvokeCreatePathMatcher(equals);
-        PathMatcher pathMatherMetaEqual = PathMatcher.getInvokeCreatePathMatcher(equals);
+        PathMatcher pathMatherMetaEquals = getInvokeCreatePathMatcher(equals);
+        PathMatcher pathMatherMetaEqual = getInvokeCreatePathMatcher(equals);
         Assertions.assertEquals(pathMatherMetaEqual, pathMatherMetaEquals);
 
 
         Assertions.assertNotEquals(pathMatherMetaHashCode, pathMatherMetaEquals);
+    }
+
+    @Test
+    void testHttpMethodMatch() {
+        Map<PathMatcher, String> pathToServiceMapContainPathVariable = new ConcurrentHashMap<>();
+        // default needCompareHttpMethod is true
+        PathMatcher pathMatcher = new PathMatcher("/a/b/c");
+        pathMatcher.setHttpMethod("GET");
+
+        PathMatcher pathMatcher1 = new PathMatcher("/a/b/c");
+        pathMatcher1.setHttpMethod("POST");
+
+        pathToServiceMapContainPathVariable.put(pathMatcher, "get");
+        pathToServiceMapContainPathVariable.put(pathMatcher1, "post");
+
+        // created by getInvokeCreatePathMatcher ,  needCompareHttpMethod is false
+        PathMatcher pathMatcher2 = getInvokeCreatePathMatcher("/a/b/c", null, null, null, "POST");
+
+        Assertions.assertEquals(pathToServiceMapContainPathVariable.get(pathMatcher2), "post");
     }
 
 
