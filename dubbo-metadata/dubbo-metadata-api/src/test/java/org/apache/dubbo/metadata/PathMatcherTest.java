@@ -24,7 +24,6 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.dubbo.metadata.rest.PathMatcher.getInvokeCreatePathMatcher;
 
 public class PathMatcherTest {
 
@@ -90,13 +89,13 @@ public class PathMatcherTest {
 
 
         //  equal
-        PathMatcher pathMatherMetaHashCode = getInvokeCreatePathMatcher(hashCode);
+        PathMatcher pathMatherMetaHashCode = PathMatcher.getInvokeCreatePathMatcher(hashCode);
         PathMatcher pathMatherMetaHashCodes = new PathMatcher(hashCode);
         Assertions.assertEquals(pathMatherMetaHashCode, pathMatherMetaHashCodes);
 
 
-        PathMatcher pathMatherMetaEquals = getInvokeCreatePathMatcher(equals);
-        PathMatcher pathMatherMetaEqual = getInvokeCreatePathMatcher(equals);
+        PathMatcher pathMatherMetaEquals = PathMatcher.getInvokeCreatePathMatcher(equals);
+        PathMatcher pathMatherMetaEqual = PathMatcher.getInvokeCreatePathMatcher(equals);
         Assertions.assertEquals(pathMatherMetaEqual, pathMatherMetaEquals);
 
 
@@ -117,7 +116,7 @@ public class PathMatcherTest {
         pathToServiceMapContainPathVariable.put(pathMatcher1, "post");
 
         // created by getInvokeCreatePathMatcher ,  needCompareHttpMethod is false
-        PathMatcher pathMatcher2 = getInvokeCreatePathMatcher("/a/b/c", null, null, null, "POST");
+        PathMatcher pathMatcher2 = PathMatcher.getInvokeCreatePathMatcher("/a/b/c", null, null, null, "POST");
 
         Assertions.assertEquals(pathToServiceMapContainPathVariable.get(pathMatcher2), "post");
     }
