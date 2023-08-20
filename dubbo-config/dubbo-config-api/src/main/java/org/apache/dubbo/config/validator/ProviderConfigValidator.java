@@ -13,9 +13,9 @@ import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.config.Constants.CONTEXTPATH_KEY;
 import static org.apache.dubbo.config.Constants.STATUS_KEY;
-import static org.apache.dubbo.remoting.RemotingConstants.EXCHANGER_KEY;
-import static org.apache.dubbo.remoting.RemotingConstants.TELNET_KEY;
-import static org.apache.dubbo.remoting.RemotingConstants.TRANSPORTER_KEY;
+import static org.apache.dubbo.remoting.Constants.EXCHANGER_KEY;
+import static org.apache.dubbo.remoting.Constants.TELNET_KEY;
+import static org.apache.dubbo.remoting.Constants.TRANSPORTER_KEY;
 
 @Activate
 public class ProviderConfigValidator implements ConfigValidator<ProviderConfig> {

@@ -19,7 +19,6 @@ package org.apache.dubbo.config.util;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.constants.RegisterConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
@@ -31,6 +30,7 @@ import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.registry.Constants;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
@@ -46,10 +46,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.common.constants.CommonConstants.*;
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SERVICE_CLASS_NAME;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PREFIX;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_PARAMETER_FORMAT_ERROR;
 import static org.apache.dubbo.common.constants.RegistryConstants.*;
-import static org.apache.dubbo.remoting.RemotingConstants.BACKUP_KEY;
+import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.config.Constants.IGNORE_CHECK_KEYS;
 import static org.apache.dubbo.config.Constants.REGISTER_KEY;
@@ -127,7 +133,7 @@ public class ConfigValidationUtils {
                         if (provider && url.getParameter(REGISTER_KEY, true)) {
                             registryList.add(url);
                         }
-                        if (!provider && url.getParameter(RegisterConstants.SUBSCRIBE_KEY, true)) {
+                        if (!provider && url.getParameter(Constants.SUBSCRIBE_KEY, true)) {
                             registryList.add(url);
                         }
                     }

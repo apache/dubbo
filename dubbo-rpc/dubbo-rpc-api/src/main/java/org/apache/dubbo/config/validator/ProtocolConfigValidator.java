@@ -16,14 +16,14 @@ import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
-import static org.apache.dubbo.remoting.RemotingConstants.CLIENT_KEY;
-import static org.apache.dubbo.remoting.RemotingConstants.CODEC_KEY;
-import static org.apache.dubbo.remoting.RemotingConstants.DISPATCHER_KEY;
-import static org.apache.dubbo.remoting.RemotingConstants.EXCHANGER_KEY;
-import static org.apache.dubbo.remoting.RemotingConstants.SERIALIZATION_KEY;
-import static org.apache.dubbo.remoting.RemotingConstants.SERVER_KEY;
-import static org.apache.dubbo.remoting.RemotingConstants.TELNET_KEY;
-import static org.apache.dubbo.remoting.RemotingConstants.TRANSPORTER_KEY;
+import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
+import static org.apache.dubbo.remoting.Constants.CODEC_KEY;
+import static org.apache.dubbo.remoting.Constants.DISPATCHER_KEY;
+import static org.apache.dubbo.remoting.Constants.EXCHANGER_KEY;
+import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
+import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
+import static org.apache.dubbo.remoting.Constants.TELNET_KEY;
+import static org.apache.dubbo.remoting.Constants.TRANSPORTER_KEY;
 
 @Activate
 public class ProtocolConfigValidator implements ConfigValidator<ProtocolConfig> {

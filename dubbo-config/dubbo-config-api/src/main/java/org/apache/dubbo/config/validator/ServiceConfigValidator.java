@@ -19,11 +19,6 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 @Activate
 public class ServiceConfigValidator implements ConfigValidator<ServiceConfig<?>> {
 
-    @Override
-    public void validate(ServiceConfig<?> config) {
-        validateServiceConfig(config);
-    }
-
     public static void validateServiceConfig(ServiceConfig<?> config) {
 
         ConfigValidationUtils.checkKey(VERSION_KEY, config.getVersion());
@@ -45,15 +40,21 @@ public class ServiceConfigValidator implements ConfigValidator<ServiceConfig<?>>
         List<ProtocolConfig> protocols = config.getProtocols();
         if (protocols != null) {
             for (ProtocolConfig protocol : protocols) {
-                ProtocolConfigValidator.validateProtocolConfig(protocol);
+                protocol.validate();
             }
         }
 
         ProviderConfig providerConfig = config.getProvider();
         if (providerConfig != null) {
-           ProviderConfigValidator.validateProviderConfig(providerConfig);
+            providerConfig.validate();
         }
     }
+
+    @Override
+    public void validate(ServiceConfig<?> config) {
+        validateServiceConfig(config);
+    }
+
 
     @Override
     public boolean isSupport(Class<?> configClass) {

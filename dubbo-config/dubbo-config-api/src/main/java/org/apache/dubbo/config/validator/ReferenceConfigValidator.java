@@ -12,7 +12,6 @@ import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.config.utils.ConfigValidationUtils.checkMultiExtension;
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 
 @Activate
@@ -24,7 +23,7 @@ public class ReferenceConfigValidator implements ConfigValidator<ReferenceConfig
     }
 
     public static void validateReferenceConfig(ReferenceConfig<?> config) {
-        checkMultiExtension(config.getScopeModel(), InvokerListener.class, "listener", config.getListener());
+        ConfigValidationUtils.checkMultiExtension(config.getScopeModel(), InvokerListener.class, "listener", config.getListener());
         ConfigValidationUtils.checkKey(VERSION_KEY, config.getVersion());
         ConfigValidationUtils.checkKey(GROUP_KEY, config.getGroup());
         ConfigValidationUtils.checkName(CLIENT_KEY, config.getClient());

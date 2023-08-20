@@ -36,8 +36,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.config.utils.ConfigValidationUtils;
-import org.apache.dubbo.config.utils.validator.ServiceConfigValidator;
+import org.apache.dubbo.config.util.ConfigValidationUtils;
 import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
@@ -54,6 +53,7 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.service.GenericService;
+import org.apache.dubbo.util.MonitorUrlUtil;
 
 import java.beans.Transient;
 import java.lang.reflect.Method;
@@ -467,7 +467,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
         }
         checkStubAndLocal(interfaceClass);
-        ServiceConfigValidator.validateServiceConfig(this);
+        validate();
         postProcessConfig();
     }
 
@@ -798,7 +798,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 }
 
                 url = url.addParameterIfAbsent(DYNAMIC_KEY, registryURL.getParameter(DYNAMIC_KEY));
-                URL monitorUrl = ConfigValidationUtils.loadMonitor(this, registryURL);
+                URL monitorUrl = MonitorUrlUtil.loadMonitor(this, registryURL);
                 if (monitorUrl != null) {
                     url = url.putAttribute(MONITOR_KEY, monitorUrl);
                 }
