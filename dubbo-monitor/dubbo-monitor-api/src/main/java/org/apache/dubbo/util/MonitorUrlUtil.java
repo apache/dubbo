@@ -2,8 +2,6 @@ package org.apache.dubbo.util;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
-import org.apache.dubbo.common.constants.ClusterConstants;
-import org.apache.dubbo.common.constants.RegisterConstants;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -16,6 +14,7 @@ import org.apache.dubbo.monitor.Constants;
 import org.apache.dubbo.monitor.MonitorFactory;
 import org.apache.dubbo.monitor.MonitorService;
 
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,6 +26,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
 import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
+import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 public class MonitorUrlUtil {
 
@@ -42,7 +43,7 @@ public class MonitorUrlUtil {
             throw new IllegalArgumentException("Specified invalid registry ip from property:" +
                 DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
         }
-        map.put(RegisterConstants.REGISTER_IP_KEY, hostToRegistry);
+        map.put(REGISTER_IP_KEY, hostToRegistry);
 
         MonitorConfig monitor = interfaceConfig.getMonitor();
         ApplicationConfig application = interfaceConfig.getApplication();
@@ -62,7 +63,7 @@ public class MonitorUrlUtil {
             return URLBuilder.from(registryURL)
                 .setProtocol(DUBBO_PROTOCOL)
                 .addParameter(PROTOCOL_KEY, protocol)
-                .putAttribute(ClusterConstants.REFER_KEY, map)
+                .putAttribute(REFER_KEY, map)
                 .build();
 
         } else if (ConfigUtils.isNotEmpty(address) || ConfigUtils.isNotEmpty(protocol)) {

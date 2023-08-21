@@ -49,8 +49,7 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.utils.CompositeReferenceCache;
-import org.apache.dubbo.config.utils.ConfigValidationUtils;
-import org.apache.dubbo.config.utils.validator.MetadataConfigValidator;
+import org.apache.dubbo.config.validator.MetadataConfigValidator;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
@@ -282,7 +281,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             ConfigCenterConfig configCenterConfig = new ConfigCenterConfig();
             configCenterConfig.setScopeModel(applicationModel);
             configCenterConfig.refresh();
-            ConfigValidationUtils.validateConfigCenterConfig(configCenterConfig);
+            configCenterConfig.validate();
             if (configCenterConfig.isValid()) {
                 configManager.addConfigCenter(configCenterConfig);
                 configCenters = configManager.getConfigCenters();
@@ -290,7 +289,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         } else {
             for (ConfigCenterConfig configCenterConfig : configCenters) {
                 configCenterConfig.refresh();
-                ConfigValidationUtils.validateConfigCenterConfig(configCenterConfig);
+                configCenterConfig.validate();
             }
         }
 

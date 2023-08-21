@@ -23,6 +23,7 @@ import org.apache.dubbo.config.context.ConfigValidator;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -37,13 +38,22 @@ public class ConfigValidateFacade implements ConfigValidator {
 
     private ConfigValidateFacade(ScopeModel scopeModel) {
         ExtensionLoader<ConfigValidator> extensionLoader = scopeModel.getExtensionLoader(ConfigValidator.class);
-        this.validators = extensionLoader.getActivateExtensions();
-        this.validators.forEach(scopeModel.getBeanFactory()::registerBean);
+        if(extensionLoader != null) {
+            this.validators = extensionLoader.getActivateExtensions();
+            scopeModel.getBeanFactory().registerBean(this);
+            this.validators.forEach(scopeModel.getBeanFactory()::registerBean);
+        }else {
+            this.validators = Collections.emptyList();
+        }
     }
 
     public static ConfigValidateFacade getInstance() {
-        INSTANCE.compareAndSet(null, new ConfigValidateFacade(FrameworkModel.defaultModel()));
+        INSTANCE.compareAndSet(null, new ConfigValidateFacade(FrameworkModel.defaultModel().defaultApplication()));
         return INSTANCE.get();
+    }
+
+    public List<ConfigValidator> getValidators() {
+        return validators;
     }
 
     @Override
@@ -60,7 +70,7 @@ public class ConfigValidateFacade implements ConfigValidator {
             }
         }
         if (!validated) {
-            LOGGER.warn("Config validate failed. No supported ConfigValidator found for config:" + config.getClass().getSimpleName());
+            LOGGER.warn("Config validate failed. No supported ConfigValidator found for config: " + config.getClass().getSimpleName());
         }
     }
 
