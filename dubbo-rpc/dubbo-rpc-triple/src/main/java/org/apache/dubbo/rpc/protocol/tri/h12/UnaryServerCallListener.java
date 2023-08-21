@@ -59,6 +59,9 @@ public class UnaryServerCallListener extends AbstractServerCallListener {
             if (exceptionCode == TriRpcStatus.UNKNOWN.code.code) {
                 exceptionCode = RpcException.BIZ_EXCEPTION;
             }
+            if (responseObserver instanceof ServerCallToObserverAdapter) {
+                ((ServerCallToObserverAdapter<Object>) responseObserver).setExceptionCode(exceptionCode);
+            }
             onReturn(t);
         } else {
             super.onResponseException(t);
