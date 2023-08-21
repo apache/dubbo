@@ -34,7 +34,7 @@ import org.apache.dubbo.remoting.http12.exception.IllegalPathException;
 import org.apache.dubbo.remoting.http12.exception.UnimplementedException;
 import org.apache.dubbo.remoting.http12.exception.UnsupportedMediaTypeException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
-import org.apache.dubbo.remoting.http12.message.ListeningDecoder;
+import org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.PathResolver;
@@ -72,6 +72,8 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
 
     private final FrameworkModel frameworkModel;
 
+    private final URL url;
+
     private final HttpChannel httpChannel;
 
     private HttpMessageCodec httpMessageCodec;
@@ -86,14 +88,17 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
 
     private MethodMetadata methodMetadata;
 
-    private ListeningDecoder listeningDecoder;
-
     private HEADER httpMetadata;
 
     private Executor executor;
 
-    public AbstractServerTransportListener(FrameworkModel frameworkModel, HttpChannel httpChannel) {
+    private boolean hasStub;
+
+    private HttpMessageListener httpMessageListener;
+
+    public AbstractServerTransportListener(FrameworkModel frameworkModel, URL url, HttpChannel httpChannel) {
         this.frameworkModel = frameworkModel;
+        this.url = url;
         this.httpChannel = httpChannel;
         this.pathResolver = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
     }
@@ -134,11 +139,6 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         if (contentType == null) {
             throw new UnsupportedMediaTypeException("'" + HttpHeaderNames.CONTENT_TYPE.getName() + "' must be not null.");
         }
-        HttpMessageCodec httpMessageCodec = determineHttpMessageCodec(contentType);
-        if (httpMessageCodec == null) {
-            throw new UnsupportedMediaTypeException(contentType);
-        }
-        this.httpMessageCodec = httpMessageCodec;
 
         //2. check service
         String[] parts = path.split("/");
@@ -146,16 +146,22 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
             throw new IllegalPathException(path);
         }
         String serviceName = parts[1];
-        String originalMethodName = parts[2];
-        boolean hasStub = pathResolver.hasNativeStub(path);
+        this.hasStub = pathResolver.hasNativeStub(path);
         this.invoker = getInvoker(metadata, serviceName);
         if (invoker == null) {
             throw new UnimplementedException(serviceName);
         }
+        HttpMessageCodec httpMessageCodec = determineHttpMessageCodec(contentType);
+        if (httpMessageCodec == null) {
+            throw new UnsupportedMediaTypeException(contentType);
+        }
+        this.httpMessageCodec = httpMessageCodec;
         this.serviceDescriptor = findServiceDescriptor(invoker, serviceName, hasStub);
-        this.listeningDecoder = newListeningDecoder();
+        setHttpMessageListener(newHttpMessageListener());
         onMetadataCompletion(metadata);
     }
+
+    protected abstract HttpMessageListener newHttpMessageListener();
 
     @Override
     public void onData(MESSAGE message) {
@@ -172,7 +178,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         //decode message
         onPrepareData(message);
         InputStream body = message.getBody();
-        this.listeningDecoder.decode(body);
+        httpMessageListener.onMessage(body);
         onDataCompletion(message);
     }
 
@@ -208,20 +214,6 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         throw new HttpStatusException(HttpStatus.INTERNAL_SERVER_ERROR.getCode(), throwable);
     }
 
-    protected ListeningDecoder newListeningDecoder() {
-        String path = httpMetadata.path();
-        String[] parts = path.split("/");
-        String originalMethodName = parts[2];
-        boolean hasStub = pathResolver.hasNativeStub(path);
-        this.methodDescriptor = findMethodDescriptor(serviceDescriptor, originalMethodName, hasStub);
-        this.methodMetadata = MethodMetadata.fromMethodDescriptor(methodDescriptor);
-        this.rpcInvocation = buildRpcInvocation(invoker, serviceDescriptor, methodDescriptor);
-        return newListeningDecoder(getHttpMessageCodec(), getMethodMetadata().getActualRequestTypes());
-    }
-
-    protected abstract ListeningDecoder newListeningDecoder(HttpMessageCodec codec, Class<?>[] actualRequestTypes);
-
-
     private Invoker<?> getInvoker(HEADER metadata, String serviceName) {
         HttpHeaders headers = metadata.headers();
         final String version =
@@ -243,9 +235,9 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
 
 
     protected HttpMessageCodec determineHttpMessageCodec(String contentType) {
-        for (HttpMessageCodec httpMessageCodec : frameworkModel.getExtensionLoader(HttpMessageCodec.class).getActivateExtensions()) {
-            if (httpMessageCodec.support(contentType)) {
-                return httpMessageCodec;
+        for (HttpMessageCodecFactory httpMessageCodecFactory : frameworkModel.getExtensionLoader(HttpMessageCodecFactory.class).getActivateExtensions()) {
+            if (httpMessageCodecFactory.support(contentType)) {
+                return httpMessageCodecFactory.createCodec(invoker.getUrl(), frameworkModel);
             }
         }
         return null;
@@ -264,7 +256,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         return result;
     }
 
-    private static MethodDescriptor findMethodDescriptor(ServiceDescriptor serviceDescriptor, String originalMethodName, boolean hasStub) throws UnimplementedException {
+    protected static MethodDescriptor findMethodDescriptor(ServiceDescriptor serviceDescriptor, String originalMethodName, boolean hasStub) throws UnimplementedException {
         MethodDescriptor result;
         if (hasStub) {
             result = serviceDescriptor.getMethods(originalMethodName).get(0);
@@ -300,7 +292,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         return inv;
     }
 
-    private static ServiceDescriptor getStubServiceDescriptor(URL url, String serviceName) {
+    protected static ServiceDescriptor getStubServiceDescriptor(URL url, String serviceName) {
         ServiceDescriptor serviceDescriptor;
         if (url.getServiceModel() != null) {
             serviceDescriptor = url
@@ -312,7 +304,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         return serviceDescriptor;
     }
 
-    private static ServiceDescriptor getReflectionServiceDescriptor(URL url) {
+    protected static ServiceDescriptor getReflectionServiceDescriptor(URL url) {
         ProviderModel providerModel = (ProviderModel) url.getServiceModel();
         if (providerModel == null || providerModel.getServiceModel() == null) {
             return null;
@@ -320,16 +312,16 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         return providerModel.getServiceModel();
     }
 
-    private static boolean isEcho(String methodName) {
+    protected static boolean isEcho(String methodName) {
         return CommonConstants.$ECHO.equals(methodName);
     }
 
-    private static boolean isGeneric(String methodName) {
+    protected static boolean isGeneric(String methodName) {
         return CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(
             methodName);
     }
 
-    private static MethodDescriptor findReflectionMethodDescriptor(ServiceDescriptor serviceDescriptor, String methodName) {
+    protected static MethodDescriptor findReflectionMethodDescriptor(ServiceDescriptor serviceDescriptor, String methodName) {
         MethodDescriptor methodDescriptor = null;
         if (isGeneric(methodName)) {
             // There should be one and only one
@@ -416,16 +408,24 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         return httpMessageCodec;
     }
 
-    protected ListeningDecoder getListeningDecoder() {
-        return this.listeningDecoder;
+    protected void setHttpMessageListener(HttpMessageListener httpMessageListener) {
+        this.httpMessageListener = httpMessageListener;
     }
 
-    public void setListeningDecoder(ListeningDecoder listeningDecoder) {
-        this.listeningDecoder = listeningDecoder;
+    protected HttpMessageListener getHttpMessageListener() {
+        return httpMessageListener;
     }
 
-    public PathResolver getPathResolver() {
+    protected PathResolver getPathResolver() {
         return pathResolver;
+    }
+
+    protected final URL getUrl() {
+        return url;
+    }
+
+    public boolean isHasStub() {
+        return hasStub;
     }
 
     protected Map<String, Object> headersToMap(Map<String, String> headers, Supplier<Object> convertUpperHeaderSupplier) {

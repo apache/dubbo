@@ -29,11 +29,14 @@ import org.apache.dubbo.remoting.http12.message.DefaultListeningDecoder;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.ListeningDecoder;
 import org.apache.dubbo.remoting.http12.message.MediaType;
+import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.h12.AbstractServerTransportListener;
+import org.apache.dubbo.rpc.protocol.tri.h12.DefaultHttpMessageListener;
+import org.apache.dubbo.rpc.protocol.tri.h12.HttpMessageListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.ServerCallListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.ServerStreamServerCallListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.UnaryServerCallListener;
@@ -45,7 +48,7 @@ public class DefaultHttp11ServerTransportListener extends AbstractServerTranspor
     private final URL url;
 
     public DefaultHttp11ServerTransportListener(HttpChannel httpChannel, URL url, FrameworkModel frameworkModel) {
-        super(frameworkModel, httpChannel);
+        super(frameworkModel, url, httpChannel);
         this.url = url;
         this.httpChannel = httpChannel;
     }
@@ -61,7 +64,7 @@ public class DefaultHttp11ServerTransportListener extends AbstractServerTranspor
             case SERVER_STREAM:
                 Http1ServerChannelObserver serverStreamChannelObserver = new Http1ServerStreamChannelObserver(httpChannel);
                 serverStreamChannelObserver.setHttpMessageCodec(getHttpMessageCodec());
-                serverStreamChannelObserver.setHeadersCustomizer((headers)->headers.set(HttpHeaderNames.CONTENT_TYPE.getName(), MediaType.TEXT_EVENT_STREAM_VALUE.getName()));
+                serverStreamChannelObserver.setHeadersCustomizer((headers) -> headers.set(HttpHeaderNames.CONTENT_TYPE.getName(), MediaType.TEXT_EVENT_STREAM_VALUE.getName()));
                 return new AutoCompleteServerStreamServerCallListener(invocation, invoker, serverStreamChannelObserver);
             default:
                 throw new UnsupportedOperationException("HTTP1.x only support unary and server-stream");
@@ -69,7 +72,22 @@ public class DefaultHttp11ServerTransportListener extends AbstractServerTranspor
     }
 
     @Override
-    protected ListeningDecoder newListeningDecoder(HttpMessageCodec codec, Class<?>[] actualRequestTypes) {
+    protected HttpMessageListener newHttpMessageListener() {
+        RequestMetadata httpMetadata = getHttpMetadata();
+        String path = httpMetadata.path();
+        String[] parts = path.split("/");
+        String originalMethodName = parts[2];
+        boolean hasStub = getPathResolver().hasNativeStub(path);
+        MethodDescriptor methodDescriptor = findMethodDescriptor(getServiceDescriptor(), originalMethodName, hasStub);
+        MethodMetadata methodMetadata = MethodMetadata.fromMethodDescriptor(methodDescriptor);
+        RpcInvocation rpcInvocation = buildRpcInvocation(getInvoker(), getServiceDescriptor(), methodDescriptor);
+        setRpcInvocation(rpcInvocation);
+        HttpMessageCodec httpMessageCodec = getHttpMessageCodec();
+        ListeningDecoder listeningDecoder = newListeningDecoder(httpMessageCodec, methodMetadata.getActualRequestTypes());
+        return new DefaultHttpMessageListener(listeningDecoder);
+    }
+
+    private ListeningDecoder newListeningDecoder(HttpMessageCodec codec, Class<?>[] actualRequestTypes) {
         DefaultListeningDecoder defaultListeningDecoder = new DefaultListeningDecoder(codec, actualRequestTypes);
         ServerCallListener serverCallListener = startListener(getRpcInvocation(), getMethodDescriptor(), getInvoker());
         defaultListeningDecoder.setListener(serverCallListener::onMessage);

@@ -1256,6 +1256,12 @@
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory
+                                    </resource>
+                                </transformer>
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
                                         META-INF/dubbo/internal/org.apache.dubbo.remoting.http12.h2.Http2ServerTransportListenerFactory
                                     </resource>
                                 </transformer>

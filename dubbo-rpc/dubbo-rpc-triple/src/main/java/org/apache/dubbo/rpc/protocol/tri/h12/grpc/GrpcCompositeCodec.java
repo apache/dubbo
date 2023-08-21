@@ -36,13 +36,17 @@ import java.io.OutputStream;
 @Activate
 public class GrpcCompositeCodec implements HttpMessageCodec {
 
-    public static final GrpcCompositeCodec INSTANCE = new GrpcCompositeCodec();
-
     private static final MediaType MEDIA_TYPE = new MediaType("application", "grpc");
 
-    private final ProtobufHttpMessageCodec protobufHttpMessageCodec = new ProtobufHttpMessageCodec();
+    private final ProtobufHttpMessageCodec protobufHttpMessageCodec;
 
-    private final WrapperHttpMessageCodec wrapperHttpMessageCodec = new WrapperHttpMessageCodec();
+    private final WrapperHttpMessageCodec wrapperHttpMessageCodec;
+
+    public GrpcCompositeCodec(ProtobufHttpMessageCodec protobufHttpMessageCodec,
+                              WrapperHttpMessageCodec wrapperHttpMessageCodec) {
+        this.protobufHttpMessageCodec = protobufHttpMessageCodec;
+        this.wrapperHttpMessageCodec = wrapperHttpMessageCodec;
+    }
 
     @Override
     public void encode(OutputStream outputStream, Object data) throws EncodeException {

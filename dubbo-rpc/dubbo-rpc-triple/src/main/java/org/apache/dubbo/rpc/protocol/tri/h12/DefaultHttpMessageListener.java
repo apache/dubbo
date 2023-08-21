@@ -14,24 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
+package org.apache.dubbo.rpc.protocol.tri.h12;
 
-import java.io.IOException;
+import org.apache.dubbo.remoting.http12.message.ListeningDecoder;
+
 import java.io.InputStream;
-import java.util.function.Consumer;
 
-public class GrpcRawMessageDecoder extends GrpcStreamingDecoder {
+public class DefaultHttpMessageListener implements HttpMessageListener {
 
-    private Consumer<byte[]> rawMessageListener = bytes -> {};
+    private ListeningDecoder listeningDecoder;
 
-    public void setRawMessageListener(Consumer<byte[]> rawMessageListener) {
-        this.rawMessageListener = rawMessageListener;
+    public DefaultHttpMessageListener() {
+
+    }
+
+    public DefaultHttpMessageListener(ListeningDecoder listeningDecoder) {
+        this.listeningDecoder = listeningDecoder;
+    }
+
+    public void setListeningDecoder(ListeningDecoder listeningDecoder) {
+        this.listeningDecoder = listeningDecoder;
     }
 
     @Override
-    protected byte[] readRawMessage(InputStream inputStream, int length) throws IOException {
-        byte[] rawMessage = super.readRawMessage(inputStream, length);
-        this.rawMessageListener.accept(rawMessage);
-        return rawMessage;
+    public void onMessage(InputStream inputStream) {
+        listeningDecoder.decode(inputStream);
     }
 }

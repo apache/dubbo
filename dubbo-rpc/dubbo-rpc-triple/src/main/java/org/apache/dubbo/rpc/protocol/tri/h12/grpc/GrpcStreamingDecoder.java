@@ -32,14 +32,8 @@ public class GrpcStreamingDecoder extends LengthFieldStreamingDecoder {
 
     private DeCompressor deCompressor = DeCompressor.NONE;
 
-    public GrpcStreamingDecoder(Class<?>[] targetTypes) {
-        super(1, 4, targetTypes);
-        this.setHttpMessageCodec(GrpcCompositeCodec.INSTANCE);
-    }
-
     public GrpcStreamingDecoder() {
-        super(1, 4, null);
-        this.setHttpMessageCodec(GrpcCompositeCodec.INSTANCE);
+        super(1, 4);
     }
 
     public void setDeCompressor(DeCompressor deCompressor) {

@@ -44,8 +44,14 @@ public class WrapperHttpMessageCodec implements HttpMessageCodec {
 
     private final Map<String, Serialization> serializations;
 
+    private String serializeType = DEFAULT_SERIALIZE_TYPE;
+
     public WrapperHttpMessageCodec() {
         this.serializations = initSerializations();
+    }
+
+    public void setSerializeType(String serializeType) {
+        this.serializeType = serializeType;
     }
 
     private Map<String, Serialization> initSerializations() {
@@ -63,13 +69,13 @@ public class WrapperHttpMessageCodec implements HttpMessageCodec {
     public void encode(OutputStream outputStream, Object data) throws EncodeException {
         try {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            Serialization serialization = serializations.get(DEFAULT_SERIALIZE_TYPE);
+            Serialization serialization = serializations.get(serializeType);
             ObjectOutput serialize = serialization.serialize(null, bos);
             serialize.writeObject(data);
             serialize.flushBuffer();
             String type = data == null ? null : data.getClass().getName();
             byte[] encoded = TripleCustomerProtocolWapper.TripleResponseWrapper.Builder.newBuilder()
-                .setSerializeType(DEFAULT_SERIALIZE_TYPE)
+                .setSerializeType(serializeType)
                 .setType(type)
                 .setData(bos.toByteArray())
                 .build()
@@ -107,6 +113,7 @@ public class WrapperHttpMessageCodec implements HttpMessageCodec {
             TripleCustomerProtocolWapper.TripleRequestWrapper wrapper = TripleCustomerProtocolWapper.TripleRequestWrapper.parseFrom(
                 bos.toByteArray());
             String wrapperSerializeType = convertHessianFromWrapper(wrapper.getSerializeType());
+            setSerializeType(wrapperSerializeType);
             Serialization serialization = serializations.get(wrapperSerializeType);
             Object[] ret = new Object[wrapper.getArgs().size()];
             for (int i = 0; i < wrapper.getArgs().size(); i++) {

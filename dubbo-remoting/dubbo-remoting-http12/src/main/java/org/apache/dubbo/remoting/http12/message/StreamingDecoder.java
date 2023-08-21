@@ -16,8 +16,55 @@
  */
 package org.apache.dubbo.remoting.http12.message;
 
-public interface StreamingDecoder extends ListeningDecoder {
+import org.apache.dubbo.remoting.http12.exception.DecodeException;
+
+import java.io.InputStream;
+
+public interface StreamingDecoder {
 
     void request(int numMessages);
 
+    void decode(InputStream inputStream) throws DecodeException;
+
+    void close();
+
+    void setFragmentListener(FragmentListener listener);
+
+    interface FragmentListener {
+
+        /**
+         * @param rawMessage raw message
+         */
+        void onFragmentMessage(InputStream rawMessage);
+
+        /**
+         * @param rawMessage raw message
+         */
+        default void onFragmentMessage(InputStream dataHeader, InputStream rawMessage){
+            onFragmentMessage(rawMessage);
+        }
+
+        default void onClose() {
+
+        }
+    }
+
+    class DefaultFragmentListener implements FragmentListener {
+
+        private final ListeningDecoder listeningDecoder;
+
+        public DefaultFragmentListener(ListeningDecoder listeningDecoder) {
+            this.listeningDecoder = listeningDecoder;
+        }
+
+        @Override
+        public void onFragmentMessage(InputStream rawMessage) {
+            listeningDecoder.decode(rawMessage);
+        }
+
+        @Override
+        public void onClose() {
+            this.listeningDecoder.close();
+        }
+    }
 }
