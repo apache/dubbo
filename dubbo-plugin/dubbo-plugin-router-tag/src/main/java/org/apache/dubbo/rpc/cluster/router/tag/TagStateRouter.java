@@ -331,7 +331,6 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
         String[] selectors = StringUtils.split(tagSelector, TAG_SEPERATOR);
         for (int i = selectors.length; i > 0; i--) {
             String selectorTmp = StringUtils.join(selectors, TAG_SEPERATOR, 0, i);
-            System.out.println(selectorTmp);
             Set<String> addresses = tagAddresses.get(selectorTmp);
             if (CollectionUtils.isNotEmpty(addresses)) {
                 return addresses;
