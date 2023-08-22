@@ -53,6 +53,7 @@ public class MD5Utils {
      * @param input
      */
     public String getMd5(String input) {
+        input = (input == null ? "" : input);
         byte[] md5;
         // MessageDigest instance is NOT thread-safe
         synchronized (mdInst) {
@@ -69,6 +70,16 @@ public class MD5Utils {
             str[k++] = hexDigits[byte0 & 0xf];
         }
         return new String(str);
+    }
+
+    /**
+     *Md5 salt encryption: getMd5(getMd5(str) + getMd5(salt))
+     *@ param input string
+     *Param salt
+     *@ return Encrypted string
+     */
+    public String getMd5BySalt(String input, String salt) {
+        return getMd5(getMd5(input) + getMd5(salt));
     }
 
 }
