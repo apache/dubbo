@@ -327,7 +327,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         List<MetadataReportConfig> validMetadataReportConfigs = new ArrayList<>(metadataReportConfigs.size());
         for (MetadataReportConfig metadataReportConfig : metadataReportConfigs) {
             if (MetadataConfigValidator.isValidMetadataConfig(metadataReportConfig)) {
-                MetadataConfigValidator.validateMetadataConfig(metadataReportConfig);
+                metadataReportConfig.validate();
                 validMetadataReportConfigs.add(metadataReportConfig);
             }
         }

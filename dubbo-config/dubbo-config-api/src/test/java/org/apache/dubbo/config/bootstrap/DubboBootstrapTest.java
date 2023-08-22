@@ -109,7 +109,7 @@ class DubboBootstrapTest {
     }
 
     @Test
-    void compatibleApplication0Shutdown() {
+    void compatibleApplicationShutdown() {
         try {
             System.clearProperty(SHUTDOWN_WAIT_KEY);
             System.clearProperty(SHUTDOWN_WAIT_SECONDS_KEY);
