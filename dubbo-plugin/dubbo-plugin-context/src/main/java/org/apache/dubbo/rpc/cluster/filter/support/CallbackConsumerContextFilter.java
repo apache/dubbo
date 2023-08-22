@@ -14,11 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.monitor.support;
+package org.apache.dubbo.rpc.cluster.filter.support;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.Filter;
-import org.apache.dubbo.rpc.cluster.filter.support.ConsumerContextFilter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CALLBACK;
@@ -30,7 +29,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.CALLBACK;
  */
 @Activate(group = CALLBACK, order = Integer.MIN_VALUE)
 public class CallbackConsumerContextFilter extends ConsumerContextFilter implements Filter {
-    
+
     public CallbackConsumerContextFilter(ApplicationModel applicationModel) {
         super(applicationModel);
     }
