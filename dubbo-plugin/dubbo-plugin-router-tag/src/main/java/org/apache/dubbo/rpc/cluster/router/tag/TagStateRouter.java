@@ -36,6 +36,7 @@ import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRouterRule;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRuleParser;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -52,6 +53,7 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
     public static final String NAME = "TAG_ROUTER";
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(TagStateRouter.class);
     private static final String RULE_SUFFIX = ".tag-router";
+    public static final char TAG_SEPERATOR = '|';
 
     private volatile TagRouterRule tagRouterRule;
     private String application;
@@ -106,7 +108,8 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
 
         // if we are requesting for a Provider with a specific tag
         if (StringUtils.isNotEmpty(tag)) {
-            Set<String> addresses = tagRouterRuleCopy.getTagnameToAddresses().get(tag);
+            Map<String, Set<String>> tagnameToAddresses = tagRouterRuleCopy.getTagnameToAddresses();
+            Set<String> addresses = selectAddressByTagLevel(tagnameToAddresses, tag, isForceUseTag(invocation));
             // filter by dynamic tag group first
             if (addresses != null) { // null means tag not set
                 result = filterInvoker(invokers, invoker -> addressMatches(invoker.getUrl(), addresses));
@@ -306,4 +309,35 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
     public void setTagRouterRule(TagRouterRule tagRouterRule) {
         this.tagRouterRule = tagRouterRule;
     }
+
+    /**
+     * select addresses by tag with level
+     * <p>
+     * example:
+     * selector=beta|team1|partner1
+     * step1.select tagAddresses with selector=beta|team1|partner1, if result is empty, then run step2
+     * step2.select tagAddresses with selector=beta|team1, if result is empty, then run step3
+     * step3.select tagAddresses with selector=beta, if result is empty, result is null
+     * </p>
+     *
+     * @param tagAddresses
+     * @param tagSelector  eg: beta|team1|partner1
+     * @return
+     */
+    public static Set<String> selectAddressByTagLevel(Map<String, Set<String>> tagAddresses, String tagSelector, boolean isForce) {
+        if (isForce || StringUtils.isNotContains(tagSelector, TAG_SEPERATOR)) {
+            return tagAddresses.get(tagSelector);
+        }
+        String[] selectors = StringUtils.split(tagSelector, TAG_SEPERATOR);
+        for (int i = selectors.length; i > 0; i--) {
+            String selectorTmp = StringUtils.join(selectors, TAG_SEPERATOR, 0, i);
+            System.out.println(selectorTmp);
+            Set<String> addresses = tagAddresses.get(selectorTmp);
+            if (CollectionUtils.isNotEmpty(addresses)) {
+                return addresses;
+            }
+        }
+        return null;
+    }
+
 }
