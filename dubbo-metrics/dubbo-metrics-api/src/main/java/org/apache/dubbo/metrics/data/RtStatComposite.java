@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.metrics.data;
 
-import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.Metric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
@@ -89,20 +88,7 @@ public class RtStatComposite extends AbstractMetricsExport {
         return singleRtStats;
     }
 
-    public void calcApplicationRt(String registryOpType, Long responseTime) {
-        ApplicationMetric key = new ApplicationMetric(getApplicationModel());
-        for (LongContainer container : rtStats.get(registryOpType)) {
-            Number current = (Number) container.get(key);
-            if (current == null) {
-                container.putIfAbsent(key, container.getInitFunc().apply(key));
-                current = (Number) container.get(key);
-            }
-            container.getConsumerFunc().accept(responseTime, current);
-        }
-    }
-
-    public void calcServiceKeyRt(String serviceKey, String registryOpType, Long responseTime) {
-        ServiceKeyMetric key = new ServiceKeyMetric(getApplicationModel(), serviceKey);
+    public void calcServiceKeyRt(String registryOpType, Long responseTime, Metric key) {
         for (LongContainer container : rtStats.get(registryOpType)) {
             Number current = (Number) container.get(key);
             if (current == null) {

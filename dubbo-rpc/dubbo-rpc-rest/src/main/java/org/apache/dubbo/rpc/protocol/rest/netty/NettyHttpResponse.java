@@ -27,7 +27,9 @@ import io.netty.handler.codec.http.HttpHeaders.Names;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.LastHttpContent;
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.rest.media.MediaType;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
 
 
@@ -54,16 +56,19 @@ public class NettyHttpResponse implements HttpResponse {
     private boolean committed;
     private boolean keepAlive;
     private HttpMethod method;
+    // raw response body
+    private Object responseBody;
+    // raw response class
+    private Class<?> entityClass;
 
-    public NettyHttpResponse(final ChannelHandlerContext ctx, final boolean keepAlive) {
-        this(ctx, keepAlive, null);
+    public NettyHttpResponse(final ChannelHandlerContext ctx, final boolean keepAlive, URL url) {
+        this(ctx, keepAlive, null, url);
     }
 
-    public NettyHttpResponse(final ChannelHandlerContext ctx, final boolean keepAlive, final HttpMethod method) {
+    public NettyHttpResponse(final ChannelHandlerContext ctx, final boolean keepAlive,  HttpMethod method, URL url) {
         outputHeaders = new HashMap<>();
         this.method = method;
-        // TODO chunk size to config
-        os = new ChunkOutputStream(this, ctx, 1000);
+        os = new ChunkOutputStream(this, ctx, url.getParameter(Constants.PAYLOAD_KEY, Constants.DEFAULT_PAYLOAD));
         this.ctx = ctx;
         this.keepAlive = keepAlive;
     }
@@ -105,6 +110,7 @@ public class NettyHttpResponse implements HttpResponse {
     @Override
     public void sendError(int status, String message) throws IOException {
         setStatus(status);
+        setResponseBody(message);
         if (message != null) {
             getOutputStream().write(message.getBytes(StandardCharsets.UTF_8));
         }
@@ -210,5 +216,22 @@ public class NettyHttpResponse implements HttpResponse {
             }
         }
 
+    }
+
+    public Object getResponseBody() {
+        return responseBody;
+    }
+
+    public void setResponseBody(Object responseBody) {
+
+        this.responseBody = responseBody;
+
+        if (responseBody != null) {
+            this.entityClass = responseBody.getClass();
+        }
+    }
+
+    public Class<?> getEntityClass() {
+        return entityClass;
     }
 }
