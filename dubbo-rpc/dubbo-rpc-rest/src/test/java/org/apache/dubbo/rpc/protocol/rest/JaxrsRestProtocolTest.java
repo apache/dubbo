@@ -773,6 +773,27 @@ class JaxrsRestProtocolTest {
 
     }
 
+    @Test
+    void testPathMatcher(){
+        DemoService server = new DemoServiceImpl();
+
+        URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+        URL nettyUrl = url.addParameter(SERVER_KEY, "netty")
+            .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.support.LoggingFilter");
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+
+        Assertions.assertEquals(demoService.getRequest(),"GET");
+        Assertions.assertEquals(demoService.postRequest(),"POST");
+        Assertions.assertEquals(demoService.putRequest(),"PUT");
+        Assertions.assertEquals(demoService.deleteRequest(),"DELETE");
+        Assertions.assertEquals(demoService.patchRequest(),"PATCH");
+
+        exporter.unexport();
+    }
+
     private URL registerProvider(URL url, Object impl, Class<?> interfaceClass) {
         ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
         ProviderModel providerModel = new ProviderModel(

@@ -184,4 +184,28 @@ public class DemoServiceImpl implements DemoService {
         return userMap;
     }
 
+    @Override
+    public String getRequest() {
+        return "GET";
+    }
+
+    @Override
+    public String postRequest() {
+        return "POST";
+    }
+
+    @Override
+    public String putRequest() {
+        return "PUT";
+    }
+
+    @Override
+    public String deleteRequest() {
+        return "DELETE";
+    }
+
+    @Override
+    public String patchRequest() {
+        return "PATCH";
+    }
 }

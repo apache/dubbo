@@ -19,14 +19,7 @@ package org.apache.dubbo.rpc.protocol.rest;
 
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import java.util.List;
@@ -149,4 +142,22 @@ public interface DemoService {
     @Path("/map")
     Map<User, User> userMap(Map<User,User> userMap);
 
+    @GET
+    @Path("/testRequestType")
+    String getRequest();
+
+    @POST
+    @Path("/testRequestType")
+    String postRequest();
+
+    @PUT
+    @Path("/testRequestType")
+    String putRequest();
+    @DELETE
+    @Path("/testRequestType")
+    String deleteRequest();
+
+    @PATCH
+    @Path("/testRequestType")
+    String patchRequest();
 }
