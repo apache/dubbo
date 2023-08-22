@@ -20,7 +20,6 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
-import org.apache.dubbo.config.util.ConfigValidationUtils;
 import org.apache.dubbo.config.validator.ApplicationConfigValidator;
 import org.apache.dubbo.config.validator.MetadataConfigValidator;
 import org.junit.jupiter.api.Assertions;

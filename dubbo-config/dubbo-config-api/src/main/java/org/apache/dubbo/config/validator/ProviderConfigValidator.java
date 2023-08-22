@@ -21,7 +21,7 @@ import org.apache.dubbo.common.status.StatusChecker;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.context.ConfigValidator;
-import org.apache.dubbo.config.util.ConfigValidationUtils;
+import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.remoting.Transporter;
 import org.apache.dubbo.remoting.exchange.Exchanger;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;

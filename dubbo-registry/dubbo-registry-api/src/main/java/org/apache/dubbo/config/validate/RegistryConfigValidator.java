@@ -19,7 +19,7 @@ package org.apache.dubbo.config.validate;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.context.ConfigValidator;
-import org.apache.dubbo.config.util.ConfigValidationUtils;
+import org.apache.dubbo.config.utils.ConfigValidationUtils;
 
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;

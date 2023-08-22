@@ -19,7 +19,7 @@ package org.apache.dubbo.config.validator;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.context.ConfigValidator;
-import org.apache.dubbo.config.util.ConfigValidationUtils;
+import org.apache.dubbo.config.utils.ConfigValidationUtils;
 
 import static org.apache.dubbo.config.Constants.NAME;
 import static org.apache.dubbo.config.Constants.ORGANIZATION;
