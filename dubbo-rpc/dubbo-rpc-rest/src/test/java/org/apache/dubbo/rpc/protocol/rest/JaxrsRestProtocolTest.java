@@ -22,6 +22,11 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.rest.PathMatcher;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
+import org.apache.dubbo.remoting.http.RequestTemplate;
+import org.apache.dubbo.remoting.http.RestClient;
+import org.apache.dubbo.remoting.http.RestResult;
+import org.apache.dubbo.remoting.http.config.HttpClientConfig;
+import org.apache.dubbo.remoting.http.restclient.HttpClientRestClient;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -65,6 +70,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
 import static org.apache.dubbo.rpc.protocol.rest.Constants.EXTENSION_KEY;
@@ -775,21 +781,44 @@ class JaxrsRestProtocolTest {
 
     @Test
     void testPathMatcher(){
-        DemoService server = new DemoServiceImpl();
+        int availablePort = NetUtils.getAvailablePort();
 
-        URL url = this.registerProvider(exportUrl, server, DemoService.class);
+        URL url = URL.valueOf("rest://127.0.0.1:" + availablePort + "/?interface=org.apache.dubbo.rpc.protocol.rest.DemoService");
 
-        URL nettyUrl = url.addParameter(SERVER_KEY, "netty")
-            .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.support.LoggingFilter");
-        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+        DemoServiceImpl server = new DemoServiceImpl();
 
-        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+        url = this.registerProvider(url, server, DemoService.class);
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, url));
 
-        Assertions.assertEquals(demoService.getRequest(),"GET");
-        Assertions.assertEquals(demoService.postRequest(),"POST");
-        Assertions.assertEquals(demoService.putRequest(),"PUT");
-        Assertions.assertEquals(demoService.deleteRequest(),"DELETE");
-        Assertions.assertEquals(demoService.patchRequest(),"PATCH");
+        RequestTemplate requestTemplate = new RequestTemplate(null, "PATCH", "localhost:" + availablePort);
+        requestTemplate.path("/demoService/testRequestType");
+        requestTemplate.addHeader("Accept","*/*");
+
+        RestClient restClient = new HttpClientRestClient(new HttpClientConfig());
+        CompletableFuture<RestResult> completableFuture = restClient.send(requestTemplate);
+
+        String resultStr = null;
+        try {
+            RestResult restResult = completableFuture.get();
+            resultStr = new String(restResult.getBody());
+        }catch (Exception ignore){}
+
+        Assertions.assertEquals(resultStr,"service require request method is : [DELETE, POST, GET, PUT], but current request method is: PATCH");
+
+        requestTemplate = new RequestTemplate(null, "POST", "localhost:" + availablePort);
+        requestTemplate.path("/demoService/testRequestType");
+        requestTemplate.addHeader("Accept","*/*");
+
+        restClient = new HttpClientRestClient(new HttpClientConfig());
+        CompletableFuture<RestResult> completableFuture1 = restClient.send(requestTemplate);
+
+        String resultStr1 = null;
+        try {
+            RestResult restResult = completableFuture1.get();
+            resultStr1 = new String(restResult.getBody());
+        }catch (Exception ignore){}
+
+        Assertions.assertEquals(resultStr1,"POST");
 
         exporter.unexport();
     }

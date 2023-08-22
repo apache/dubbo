@@ -157,7 +157,4 @@ public interface DemoService {
     @Path("/testRequestType")
     String deleteRequest();
 
-    @PATCH
-    @Path("/testRequestType")
-    String patchRequest();
 }

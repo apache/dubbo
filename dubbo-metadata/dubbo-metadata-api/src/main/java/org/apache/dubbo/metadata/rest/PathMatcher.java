@@ -174,13 +174,13 @@ public class PathMatcher {
     }
 
     /**
-     * it is needed to compare http method when one of needCompareHttpMethod is true,and don`t compare when both needCompareHttpMethod are false
+     * needCompareHttpMethod is not compared when one of them is false, and needCompareHttpMethod is compared when both are true
      *
      * @param that
      * @return
      */
     private boolean httpMethodMatch(PathMatcher that) {
-        return (!that.needCompareHttpMethod && !this.needCompareHttpMethod) || Objects.equals(this.httpMethod, that.httpMethod);
+        return !that.needCompareHttpMethod || !this.needCompareHttpMethod ? true : Objects.equals(this.httpMethod, that.httpMethod);
     }
 
     private boolean serviceMethodEqual(PathMatcher thatPathMatcher, PathMatcher thisPathMatcher) {
@@ -195,7 +195,7 @@ public class PathMatcher {
 
     @Override
     public int hashCode() {
-        return Objects.hash(version, group, port, httpMethod);
+        return Objects.hash(version, group, port);
     }
 
     private boolean pathEqual(PathMatcher pathMatcher) {

@@ -204,8 +204,4 @@ public class DemoServiceImpl implements DemoService {
         return "DELETE";
     }
 
-    @Override
-    public String patchRequest() {
-        return "PATCH";
-    }
 }
