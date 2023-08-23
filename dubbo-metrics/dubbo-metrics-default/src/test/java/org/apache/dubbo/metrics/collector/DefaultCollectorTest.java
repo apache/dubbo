@@ -152,6 +152,10 @@ class DefaultCollectorTest {
         // push finish rt +1
         List<MetricSample> metricSamples = collector.collect();
         //num(total+success+processing) + rt(5) = 8
+        if(metricSamples.size() > 8){
+            System.out.println("Too many metrics sample:");
+            metricSamples.forEach(metricSample -> System.out.println(metricSample.getName()));
+        }
         Assertions.assertEquals(8, metricSamples.size());
         List<String> metricsNames = metricSamples.stream().map(MetricSample::getName).collect(Collectors.toList());
         // No error will contain total+success+processing
