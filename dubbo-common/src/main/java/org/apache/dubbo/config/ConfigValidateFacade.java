@@ -17,7 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.context.ConfigValidator;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class ConfigValidateFacade implements ConfigValidator {
 
-    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(ConfigValidateFacade.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConfigValidateFacade.class);
 
     private static final AtomicReference<ConfigValidateFacade> INSTANCE = new AtomicReference<>();
 
