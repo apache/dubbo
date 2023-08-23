@@ -50,8 +50,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.REST_SERVICE_DEP
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_SERVER;
 import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.JSON_CHECK_LEVEL;
-import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.JSON_CHECK_LEVEL_LOG;
-import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.JSON_CHECK_LEVEL_STARTUP_ERROR;
+import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.JSON_CHECK_LEVEL_STRICT;
+import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.JSON_CHECK_LEVEL_WARN;
 import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.PATH_SEPARATOR;
 
 public class RestProtocol extends AbstractProtocol {
@@ -124,16 +124,16 @@ public class RestProtocol extends AbstractProtocol {
 
     private void checkJsonCompatibility(Class<?> clazz, String jsonCheckLevel) throws RpcException {
 
-        if (JSON_CHECK_LEVEL_LOG.equals(jsonCheckLevel)) {
+        if (jsonCheckLevel == null || JSON_CHECK_LEVEL_WARN.equals(jsonCheckLevel)) {
             boolean compatibility = JsonCompatibilityUtil.checkClassCompatibility(clazz);
             if (!compatibility) {
                 List<String> unsupportedMethods = JsonCompatibilityUtil.getUnsupportedMethods(clazz);
                 assert unsupportedMethods != null;
-                logger.warn("Interface {} does not support json serialization, the specific methods are {}.", clazz.getName(), unsupportedMethods.toString());
+                logger.warn("", "", "", String.format("Interface %s does not support json serialization, the specific methods are %s.", clazz.getName(), unsupportedMethods));
             } else {
                 logger.info("Check json compatibility complete, all methods can be serialized using json.");
             }
-        } else if (jsonCheckLevel == null || JSON_CHECK_LEVEL_STARTUP_ERROR.equals(jsonCheckLevel)) {
+        } else if (JSON_CHECK_LEVEL_STRICT.equals(jsonCheckLevel)) {
             boolean compatibility = JsonCompatibilityUtil.checkClassCompatibility(clazz);
             if (!compatibility) {
                 List<String> unsupportedMethods = JsonCompatibilityUtil.getUnsupportedMethods(clazz);

@@ -58,9 +58,9 @@ public interface RestConstant {
     String KEEP_ALIVE_TIMEOUT_PARAM = "keep.alive.timeout";
 
     String JSON_CHECK_LEVEL = "jsonCheckLevel";
-    String JSON_CHECK_LEVEL_LOG = "log";
-    String JSON_CHECK_LEVEL_STARTUP_ERROR = "startup_error";
-    String JSON_CHECK_LEVEL_IGNORE = "ignore";
+    String JSON_CHECK_LEVEL_DISABLED = "disable";
+    String JSON_CHECK_LEVEL_WARN = "warn";
+    String JSON_CHECK_LEVEL_STRICT = "strict";
 
     int MAX_REQUEST_SIZE = 1024 * 1024 * 10;
     int MAX_INITIAL_LINE_LENGTH = 4096;
