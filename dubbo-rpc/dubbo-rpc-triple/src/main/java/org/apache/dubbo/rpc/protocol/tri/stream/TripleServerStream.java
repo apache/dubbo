@@ -66,7 +66,7 @@ import java.net.SocketAddress;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -90,7 +90,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
 
     public TripleServerStream(Http2StreamChannel channel,
                               FrameworkModel frameworkModel,
-                              Executor executor,
+                              ExecutorService executor,
                               PathResolver pathResolver,
                               String acceptEncoding,
                               List<HeaderFilter> filters,
