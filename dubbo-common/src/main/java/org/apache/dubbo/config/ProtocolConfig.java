@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.JSON_CHECK_LEVEL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_POOL_EXHAUSTED_LISTENERS_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
@@ -229,7 +230,7 @@ public class ProtocolConfig extends AbstractConfig {
      */
     private String extProtocol;
 
-    private Boolean checkJsonCompatibility;
+    private String jsonCheckLevel;
 
     public ProtocolConfig() {
     }
@@ -333,12 +334,13 @@ public class ProtocolConfig extends AbstractConfig {
         this.threadname = threadname;
     }
 
-    public Boolean getCheckJsonCompatibility() {
-        return checkJsonCompatibility;
+    @Parameter(key = JSON_CHECK_LEVEL_KEY)
+    public String getJsonCheckLevel() {
+        return jsonCheckLevel;
     }
 
-    public void setCheckJsonCompatibility(Boolean checkJsonCompatibility) {
-        this.checkJsonCompatibility = checkJsonCompatibility;
+    public void setJsonCheckLevel(String jsonCheckLevel) {
+        this.jsonCheckLevel = jsonCheckLevel;
     }
 
     @Parameter(key = THREAD_POOL_EXHAUSTED_LISTENERS_KEY)

@@ -126,6 +126,8 @@ public interface CommonConstants {
 
     String THREAD_POOL_EXHAUSTED_LISTENERS_KEY = "thread-pool-exhausted-listeners";
 
+    String JSON_CHECK_LEVEL_KEY = "jsonCheckLevel";
+
     String THREADS_KEY = "threads";
 
     String QUEUES_KEY = "queues";

@@ -49,7 +49,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_SERVER;
-import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.CHECK_JSON_COMPATIBILITY;
+import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.JSON_CHECK_LEVEL;
+import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.JSON_CHECK_LEVEL_LOG;
+import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.JSON_CHECK_LEVEL_STARTUP_ERROR;
 import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.PATH_SEPARATOR;
 
 public class RestProtocol extends AbstractProtocol {
@@ -94,11 +96,9 @@ public class RestProtocol extends AbstractProtocol {
                 url, getContextPath(url));
 
         // check json compatibility
-        // checkJsonCompatibility(invoker.getInterface());
-        Boolean checkCompatibility = (Boolean) url.getAttribute(CHECK_JSON_COMPATIBILITY);
-        if (checkCompatibility == null || checkCompatibility) {
-            checkJsonCompatibility(invoker.getInterface());
-        }
+        String jsonCheckLevel = url.getUrlParam().getParameter(JSON_CHECK_LEVEL);
+        checkJsonCompatibility(invoker.getInterface(), jsonCheckLevel);
+
 
         // deploy service
         URL newURL = ServiceDeployerManager.deploy(url, serviceRestMetadata, invoker);
@@ -122,12 +122,26 @@ public class RestProtocol extends AbstractProtocol {
         return exporter;
     }
 
-    private void checkJsonCompatibility(Class<?> clazz) throws RpcException {
-        boolean compatibility = JsonCompatibilityUtil.checkClassCompatibility(clazz);
-        if (!compatibility) {
-            List<String> unsupportedMethods = JsonCompatibilityUtil.getUnsupportedMethods(clazz);
-            logger.error("Interface {} does not support json serialization, the specific methods are {}", clazz, unsupportedMethods);
-            throw new RpcException(String.format("Interface %s does not support json serialization", clazz));
+    private void checkJsonCompatibility(Class<?> clazz, String jsonCheckLevel) throws RpcException {
+
+        if (JSON_CHECK_LEVEL_LOG.equals(jsonCheckLevel)) {
+            boolean compatibility = JsonCompatibilityUtil.checkClassCompatibility(clazz);
+            if (!compatibility) {
+                List<String> unsupportedMethods = JsonCompatibilityUtil.getUnsupportedMethods(clazz);
+                logger.error("Interface {} does not support json serialization, the specific methods are {}.", clazz, unsupportedMethods);
+            } else {
+                logger.info("Check json compatibility complete, all methods can be serialized using json.");
+            }
+        } else if (jsonCheckLevel == null || JSON_CHECK_LEVEL_STARTUP_ERROR.equals(jsonCheckLevel)) {
+            boolean compatibility = JsonCompatibilityUtil.checkClassCompatibility(clazz);
+            if (!compatibility) {
+                List<String> unsupportedMethods = JsonCompatibilityUtil.getUnsupportedMethods(clazz);
+                throw new RpcException(String.format("Interface %s does not support json serialization, the specific methods are %s.", clazz, unsupportedMethods));
+            } else {
+                logger.info("Check json compatibility complete, all methods can be serialized using json.");
+            }
+        } else {
+            logger.info("Ignore json compatibility check.");
         }
     }
 
