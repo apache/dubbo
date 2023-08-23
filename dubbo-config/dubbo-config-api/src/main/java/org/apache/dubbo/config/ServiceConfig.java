@@ -38,8 +38,6 @@ import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.ServiceNameMapping;
-import org.apache.dubbo.metrics.event.MetricsEventBus;
-import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -194,7 +192,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     @Override
-    public void unexport() {
+    public synchronized void unexport() {
         if (!exported) {
             return;
         }
@@ -518,21 +516,17 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         List<URL> registryURLs = !Boolean.FALSE.equals(isRegister()) ?
             ConfigValidationUtils.loadRegistries(this, true) : Collections.emptyList();
 
-        MetricsEventBus.post(RegistryEvent.toRsEvent(getApplicationModel(), getUniqueServiceName(), protocols.size() * registryURLs.size()),            () -> {
-                for (ProtocolConfig protocolConfig : protocols) {
-                    String pathKey = URL.buildKey(getContextPath(protocolConfig)
-                        .map(p -> p + "/" + path)
-                        .orElse(path), group, version);
-                    // stub service will use generated service name
-                    if (!serverService) {
-                        // In case user specified path, registerImmediately service one more time to map it to path.
-                        repository.registerService(pathKey, interfaceClass);
-                    }
-                    doExportUrlsFor1Protocol(protocolConfig, registryURLs, registerType);
-                }
-                return null;
+        for (ProtocolConfig protocolConfig : protocols) {
+            String pathKey = URL.buildKey(getContextPath(protocolConfig)
+                .map(p -> p + "/" + path)
+                .orElse(path), group, version);
+            // stub service will use generated service name
+            if (!serverService) {
+                // In case user specified path, register service one more time to map it to path.
+                repository.registerService(pathKey, interfaceClass);
             }
-        );
+            doExportUrlsFor1Protocol(protocolConfig, registryURLs, registerType);
+        }
 
         providerModel.setServiceUrls(urls);
     }

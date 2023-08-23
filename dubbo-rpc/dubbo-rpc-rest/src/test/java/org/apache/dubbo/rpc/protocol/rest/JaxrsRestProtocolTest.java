@@ -63,6 +63,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
@@ -743,6 +744,35 @@ class JaxrsRestProtocolTest {
 
 
         exporter.unexport();
+    }
+
+    @Test
+    void testBody() {
+
+
+        Assertions.assertThrowsExactly(RpcException.class, () -> {
+            DemoService server = new DemoServiceImpl();
+
+            URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+            URL nettyUrl = url.addParameter(org.apache.dubbo.remoting.Constants.PAYLOAD_KEY,  1024);
+
+            Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+
+            DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+
+            List<User> users = new ArrayList<>();
+            for (int i = 0; i < 10000; i++) {
+                users.add(User.getInstance());
+
+            }
+
+            demoService.list(users);
+
+            exporter.unexport();
+        });
+
     }
 
     private URL registerProvider(URL url, Object impl, Class<?> interfaceClass) {

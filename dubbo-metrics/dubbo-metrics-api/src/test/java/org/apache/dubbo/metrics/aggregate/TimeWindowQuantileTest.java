@@ -18,6 +18,7 @@
 package org.apache.dubbo.metrics.aggregate;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ExecutorService;
@@ -37,6 +38,7 @@ class TimeWindowQuantileTest {
     }
 
     @Test
+    @RepeatedTest(100)
     void testMulti() {
 
         ExecutorService executorService = Executors.newFixedThreadPool(200);
@@ -51,12 +53,14 @@ class TimeWindowQuantileTest {
                     quantile.add(finalI));
             }
             index++;
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+//            try {
+//                Thread.sleep(1);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
         }
+
+        executorService.shutdown();
     }
 
 }

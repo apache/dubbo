@@ -41,6 +41,7 @@ import static org.apache.dubbo.metadata.rest.RestMetadataConstants.SPRING_MVC.AN
 import static org.apache.dubbo.metadata.rest.RestMetadataConstants.SPRING_MVC.CONTROLLER_ANNOTATION_CLASS;
 import static org.apache.dubbo.metadata.rest.RestMetadataConstants.SPRING_MVC.FEIGN_CLIENT_CLASS;
 import static org.apache.dubbo.metadata.rest.RestMetadataConstants.SPRING_MVC.REQUEST_MAPPING_ANNOTATION_CLASS;
+import static org.apache.dubbo.metadata.rest.RestMetadataConstants.SPRING_MVC.REQUEST_MAPPING_ANNOTATION_CLASS_NAME;
 
 /**
  * {@link ServiceRestMetadataResolver}
@@ -61,7 +62,8 @@ public class SpringMvcServiceRestMetadataResolver extends AbstractServiceRestMet
         // class @Controller or @RequestMapping
         return isAnnotationPresent(serviceType, CONTROLLER_ANNOTATION_CLASS)
             || isAnnotationPresent(serviceType, FEIGN_CLIENT_CLASS)
-            || isAnnotationPresent(serviceType, REQUEST_MAPPING_ANNOTATION_CLASS);
+            || isAnnotationPresent(serviceType, REQUEST_MAPPING_ANNOTATION_CLASS)// method @RequestMapping
+            || isServiceMethodAnnotationPresent(serviceType, REQUEST_MAPPING_ANNOTATION_CLASS_NAME);
     }
 
     @Override

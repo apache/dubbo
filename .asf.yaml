@@ -25,6 +25,7 @@ notifications:
 
 github:
   homepage: https://dubbo.apache.org/
+  description: "The java implementation of Apache Dubbo. An RPC and microservice framework."
   features:
     # Enable wiki for documentation
     wiki: true
@@ -44,9 +45,13 @@ github:
       foo: bar
   labels:
     - java
+    - rpc
     - microservices
     - framework
     - restful
     - distributed-systems
-    - rpc
     - dubbo
+    - service-mesh
+    - http
+    - grpc
+    - web

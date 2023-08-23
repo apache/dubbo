@@ -14,9 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.cluster.filter.support;
 
-package org.apache.dubbo.metrics.model.key;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.Filter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
-public enum MetricsLevel {
-    APP, SERVICE, METHOD, CONFIG, REGISTRY
+import static org.apache.dubbo.common.constants.CommonConstants.CALLBACK;
+
+/**
+ * CallbackConsumerContextFilter set current RpcContext with invoker,invocation, local host, remote host and port
+ * for consumer callback invoker.It does it to make the requires info available to execution thread's RpcContext.
+ * @see ConsumerContextFilter
+ */
+@Activate(group = CALLBACK, order = Integer.MIN_VALUE)
+public class CallbackConsumerContextFilter extends ConsumerContextFilter implements Filter {
+
+    public CallbackConsumerContextFilter(ApplicationModel applicationModel) {
+        super(applicationModel);
+    }
 }

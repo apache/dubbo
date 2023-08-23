@@ -23,6 +23,7 @@ import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.key.TypeWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
@@ -40,7 +41,7 @@ public abstract class MetricsEvent {
     private final String appName;
     private final MetricsDispatcher metricsDispatcher;
 
-    private final Map<String, Object> attachment = new IdentityHashMap<>(8);
+    private final Map<String, Object> attachments = new IdentityHashMap<>(8);
 
     public MetricsEvent(ApplicationModel source, TypeWrapper typeWrapper) {
         this(source, null, null, typeWrapper);
@@ -82,11 +83,19 @@ public abstract class MetricsEvent {
         if (key == null) {
             throw new MetricsNeverHappenException("Attachment key is null");
         }
-        return (T) attachment.get(key);
+        return (T) attachments.get(key);
+    }
+
+    public Map<String, Object> getAttachments() {
+        return Collections.unmodifiableMap(attachments);
     }
 
     public void putAttachment(String key, Object value) {
-        attachment.put(key, value);
+        attachments.put(key, value);
+    }
+
+    public void putAttachments(Map<String, String> attachments) {
+        this.attachments.putAll(attachments);
     }
 
     public void setAvailable(boolean available) {
