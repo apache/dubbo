@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.executor;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 public class DefaultExecutorSupport implements ExecutorSupport {
     private final ExecutorRepository executorRepository;
@@ -30,7 +30,8 @@ public class DefaultExecutorSupport implements ExecutorSupport {
         this.executorRepository = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel());
     }
 
-    public Executor getExecutor(Object data) {
+    @Override
+    public ExecutorService getExecutor(Object data) {
         return executorRepository.getExecutor(url);
     }
 

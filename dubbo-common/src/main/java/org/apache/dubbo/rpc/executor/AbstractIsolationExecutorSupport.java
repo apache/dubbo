@@ -23,7 +23,7 @@ import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 
 import java.util.List;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 public abstract class AbstractIsolationExecutorSupport implements ExecutorSupport {
     private final URL url;
@@ -36,7 +36,8 @@ public abstract class AbstractIsolationExecutorSupport implements ExecutorSuppor
         this.frameworkServiceRepository = url.getOrDefaultFrameworkModel().getServiceRepository();
     }
 
-    public Executor getExecutor(Object data) {
+    @Override
+    public ExecutorService getExecutor(Object data) {
 
         ProviderModel providerModel = getProviderModel(data);
         if (providerModel == null) {

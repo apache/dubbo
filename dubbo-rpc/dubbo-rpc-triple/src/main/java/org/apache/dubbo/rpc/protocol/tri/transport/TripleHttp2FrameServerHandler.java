@@ -37,7 +37,7 @@ import io.netty.util.ReferenceCountUtil;
 import io.netty.util.ReferenceCounted;
 
 import java.util.List;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_RESPONSE;
 
@@ -109,7 +109,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     }
 
     public void onHeadersRead(ChannelHandlerContext ctx, Http2HeadersFrame msg) throws Exception {
-        Executor executor = executorSupport.getExecutor(msg.headers());
+        ExecutorService executor = executorSupport.getExecutor(msg.headers());
         tripleServerStream.setExecutor(executor);
         tripleServerStream.transportObserver.onHeader(msg.headers(), msg.isEndStream());
     }

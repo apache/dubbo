@@ -19,6 +19,7 @@ package org.apache.dubbo.common.threadpool.serial;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -41,7 +42,7 @@ public final class SerializingExecutor implements Executor, Runnable {
      */
     private final AtomicBoolean atomicBoolean = new AtomicBoolean();
 
-    private final Executor executor;
+    private final ExecutorService executor;
 
     private final Queue<Runnable> runQueue = new ConcurrentLinkedQueue<>();
 
@@ -50,7 +51,7 @@ public final class SerializingExecutor implements Executor, Runnable {
      *
      * @param executor Executor in which tasks should be run. Must not be null.
      */
-    public SerializingExecutor(Executor executor) {
+    public SerializingExecutor(ExecutorService executor) {
         this.executor = executor;
     }
 
@@ -68,8 +69,10 @@ public final class SerializingExecutor implements Executor, Runnable {
         if (atomicBoolean.compareAndSet(false, true)) {
             boolean success = false;
             try {
-                executor.execute(this);
-                success = true;
+                if (!executor.isShutdown()) {
+                    executor.execute(this);
+                    success = true;
+                }
             } finally {
                 // It is possible that at this point that there are still tasks in
                 // the queue, it would be nice to keep trying but the error may not

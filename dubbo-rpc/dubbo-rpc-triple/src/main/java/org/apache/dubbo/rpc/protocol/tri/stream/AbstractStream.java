@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 /**
  * An abstract stream implementation.
@@ -34,12 +35,12 @@ public abstract class AbstractStream implements Stream {
 
     private static final boolean HAS_PROTOBUF = hasProtobuf();
 
-    public AbstractStream(Executor executor, FrameworkModel frameworkModel) {
+    public AbstractStream(ExecutorService executor, FrameworkModel frameworkModel) {
         this.executor = new SerializingExecutor(executor);
         this.frameworkModel = frameworkModel;
     }
 
-    public void setExecutor(Executor executor) {
+    public void setExecutor(ExecutorService executor) {
         this.executor = new SerializingExecutor(executor);
     }
 

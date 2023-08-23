@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.rpc.executor;
 
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 public class Mock2ExecutorSupport implements ExecutorSupport {
     @Override
-    public Executor getExecutor(Object data) {
+    public ExecutorService getExecutor(Object data) {
         return null;
     }
 }
