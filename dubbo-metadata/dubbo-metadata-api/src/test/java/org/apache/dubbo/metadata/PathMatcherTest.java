@@ -117,7 +117,8 @@ public class PathMatcherTest {
 
         // created by getInvokeCreatePathMatcher ,  needCompareHttpMethod is false
         PathMatcher pathMatcher2 = PathMatcher.getInvokeCreatePathMatcher("/a/b/c", null, null, null, "POST");
-
+        // set compare http method is true since (#12482)
+        pathMatcher2.compareHttpMethod(true);
         Assertions.assertEquals(pathToServiceMapContainPathVariable.get(pathMatcher2), "post");
     }
 
