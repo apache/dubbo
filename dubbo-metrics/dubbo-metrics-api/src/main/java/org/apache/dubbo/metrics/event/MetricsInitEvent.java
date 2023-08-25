@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.metrics.event;
 import org.apache.dubbo.metrics.MetricsConstants;
-import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.key.MetricsLevel;
@@ -26,25 +25,21 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
 import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUESTS;
-import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUESTS_SUCCEED;
-import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUEST_BUSINESS_FAILED;
-
-public class RequestInitEvent extends RequestEvent {
+public class MetricsInitEvent extends MetricsEvent {
 
 
-    public RequestInitEvent(ApplicationModel applicationModel, String appName, MetricsDispatcher metricsDispatcher, DefaultMetricsCollector collector, TypeWrapper TYPE_WRAPPER) {
-        super(applicationModel, appName, metricsDispatcher, collector, TYPE_WRAPPER);
+    public MetricsInitEvent(ApplicationModel source,TypeWrapper typeWrapper) {
+        super(source,typeWrapper);
     }
 
-    public static RequestInitEvent toRequestInitEvent(ApplicationModel applicationModel, Invocation invocation) {
-
-        RequestInitEvent requestEvent = new RequestInitEvent(applicationModel, null,null,null,new TypeWrapper(MetricsLevel.SERVICE, METRIC_REQUESTS, METRIC_REQUESTS_SUCCEED, METRIC_REQUEST_BUSINESS_FAILED));
-        requestEvent.putAttachment(MetricsConstants.INVOCATION, invocation);
+    public static MetricsInitEvent toMetricsInitEvent(ApplicationModel applicationModel, Invocation invocation) {
         MethodMetric methodMetric = new MethodMetric(applicationModel, invocation);
-        requestEvent.putAttachment(MetricsConstants.METHOD_METRICS, methodMetric);
-        requestEvent.putAttachment(ATTACHMENT_KEY_SERVICE, MetricsSupport.getInterfaceName(invocation));
-        requestEvent.putAttachment(MetricsConstants.INVOCATION_SIDE, MetricsSupport.getSide(invocation));
-        return requestEvent;
+        MetricsInitEvent initEvent = new MetricsInitEvent(applicationModel, new TypeWrapper(MetricsLevel.SERVICE, METRIC_REQUESTS));
+        initEvent.putAttachment(MetricsConstants.INVOCATION, invocation);
+        initEvent.putAttachment(MetricsConstants.METHOD_METRICS, methodMetric);
+        initEvent.putAttachment(ATTACHMENT_KEY_SERVICE, MetricsSupport.getInterfaceName(invocation));
+        initEvent.putAttachment(MetricsConstants.INVOCATION_SIDE, MetricsSupport.getSide(invocation));
+        return initEvent;
     }
 
 

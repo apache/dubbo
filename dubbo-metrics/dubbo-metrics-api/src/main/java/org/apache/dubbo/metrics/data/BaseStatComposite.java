@@ -112,8 +112,8 @@ public abstract class BaseStatComposite implements MetricsExport {
         methodStatComposite.incrementMethodKey(metricsKeyWrapper, methodMetric, size);
     }
 
-    public void initMethodKey(MetricsKeyWrapper metricsKeyWrapper, Invocation invocation, int size) {
-        methodStatComposite.initMethodKey(metricsKeyWrapper, invocation,size);
+    public void initMethodKey(MetricsKeyWrapper metricsKeyWrapper, Invocation invocation) {
+        methodStatComposite.initMethodKey(metricsKeyWrapper, invocation);
     }
 
     @Override

@@ -29,6 +29,7 @@ import org.apache.dubbo.metrics.data.MethodStatComposite;
 import org.apache.dubbo.metrics.data.RtStatComposite;
 import org.apache.dubbo.metrics.event.DefaultSubDispatcher;
 import org.apache.dubbo.metrics.event.MetricsEvent;
+import org.apache.dubbo.metrics.event.MetricsInitEvent;
 import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
@@ -138,6 +139,13 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
     @Override
     public boolean isSupport(MetricsEvent event) {
         return event instanceof RequestEvent;
+    }
+
+    @Override
+    public void init(MetricsEvent event) {
+        if(event instanceof MetricsInitEvent) {
+            getEventMulticaster().publishEvent(event);
+        }
     }
 
     public SimpleMetricsCountSampler<String, MetricsEvent.Type, ApplicationMetric> applicationSampler = new SimpleMetricsCountSampler<String, MetricsEvent.Type, ApplicationMetric>() {

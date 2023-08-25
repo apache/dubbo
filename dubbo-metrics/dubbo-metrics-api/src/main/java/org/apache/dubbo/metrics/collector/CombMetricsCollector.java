@@ -87,8 +87,8 @@ public abstract class CombMetricsCollector<E extends TimeCounterEvent> extends A
 
 
     @Override
-    public void init(Invocation invocation, MetricsKeyWrapper wrapper, int size) {
-        this.stats.initMethodKey(wrapper, invocation,size);
+    public void init(Invocation invocation, MetricsKeyWrapper wrapper) {
+        this.stats.initMethodKey(wrapper, invocation);
     }
 
     protected List<MetricSample> export(MetricsCategory category) {

@@ -55,11 +55,11 @@ public class MethodStatComposite extends AbstractMetricsExport {
         metricsKeyWrappers.forEach(appKey -> methodNumStats.put(appKey, new ConcurrentHashMap<>()));
     }
 
-    public void initMethodKey(MetricsKeyWrapper wrapper, Invocation invocation, int size) {
+    public void initMethodKey(MetricsKeyWrapper wrapper, Invocation invocation) {
         if (!methodNumStats.containsKey(wrapper)) {
             return;
         }
-        methodNumStats.get(wrapper).computeIfAbsent(new MethodMetric(getApplicationModel(), invocation), k -> new AtomicLong(0L)).set(size);
+        methodNumStats.get(wrapper).computeIfAbsent(new MethodMetric(getApplicationModel(), invocation), k -> new AtomicLong(0L));
     }
 
     public void incrementMethodKey(MetricsKeyWrapper wrapper, MethodMetric methodMetric, int size) {

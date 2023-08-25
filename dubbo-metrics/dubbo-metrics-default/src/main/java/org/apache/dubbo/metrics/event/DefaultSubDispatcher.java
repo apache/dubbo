@@ -31,7 +31,12 @@ import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 
 import static org.apache.dubbo.metrics.DefaultConstants.METRIC_THROWABLE;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUESTS;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUESTS_PROCESSING;
 import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUESTS_SUCCEED;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUESTS_TOTAL_FAILED;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUEST_BUSINESS_FAILED;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 public final class DefaultSubDispatcher extends SimpleMetricsEventMulticaster {
@@ -56,6 +61,27 @@ public final class DefaultSubDispatcher extends SimpleMetricsEventMulticaster {
                 MetricsSupport.increment(METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED, dynamicPlaceType, (MethodMetricsCollector) collector, event);
             }
         });
+
+        super.addListener(new MetricsListener<MetricsInitEvent>() {
+            @Override
+            public boolean isSupport(MetricsEvent event) {
+                return event instanceof MetricsInitEvent;
+            }
+
+            @Override
+            public void onEvent(MetricsInitEvent event) { }
+
+            @Override
+            public void init(MetricsEvent event) {
+                MetricsPlaceValue dynamicPlaceType = MetricsPlaceValue.of(event.getAttachmentValue(MetricsConstants.INVOCATION_SIDE), MetricsLevel.METHOD);
+                MetricsSupport.init(METRIC_REQUESTS, dynamicPlaceType, (MethodMetricsCollector) collector, event);
+                MetricsSupport.init(METRIC_REQUESTS_PROCESSING, dynamicPlaceType, (MethodMetricsCollector) collector, event);
+                MetricsSupport.init(METRIC_REQUESTS_SUCCEED, dynamicPlaceType, (MethodMetricsCollector) collector, event);
+                MetricsSupport.init(METRIC_REQUESTS_TOTAL_FAILED, dynamicPlaceType, (MethodMetricsCollector) collector, event);
+                MetricsSupport.init(METRIC_REQUEST_BUSINESS_FAILED, dynamicPlaceType, (MethodMetricsCollector) collector, event);
+                MetricsSupport.init(METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD), (MethodMetricsCollector) collector, event);
+            }
+        });
     }
 
 
@@ -66,15 +92,10 @@ public final class DefaultSubDispatcher extends SimpleMetricsEventMulticaster {
                         event ->
                         {
                             MetricsPlaceValue dynamicPlaceType = MetricsPlaceValue.of(event.getAttachmentValue(MetricsConstants.INVOCATION_SIDE), MetricsLevel.METHOD);
-                            if(event instanceof RequestInitEvent) {
-                                MetricsSupport.init(key, dynamicPlaceType,  collector, event);
-                                MetricsSupport.init(MetricsKey.METRIC_REQUESTS_PROCESSING, dynamicPlaceType, collector, event);
-                                return;
-                            }
                             MetricsSupport.increment(key, dynamicPlaceType, (MethodMetricsCollector) collector, event);
                             MetricsSupport.increment(MetricsKey.METRIC_REQUESTS_PROCESSING, dynamicPlaceType, (MethodMetricsCollector) collector, event);
                         })),
-                new MetricsCat(MetricsKey.METRIC_REQUESTS_SUCCEED, (key, placeType, collector) -> AbstractMetricsKeyListener.onFinish(key,
+                new MetricsCat(METRIC_REQUESTS_SUCCEED, (key, placeType, collector) -> AbstractMetricsKeyListener.onFinish(key,
                         event ->
                         {
                             MetricsPlaceValue dynamicPlaceType = MetricsPlaceValue.of(event.getAttachmentValue(MetricsConstants.INVOCATION_SIDE), MetricsLevel.METHOD);
