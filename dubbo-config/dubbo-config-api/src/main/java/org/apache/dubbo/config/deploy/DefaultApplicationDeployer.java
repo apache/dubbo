@@ -30,6 +30,22 @@ import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.utils.CompositeReferenceCache;
+import org.apache.dubbo.config.utils.ConfigValidationUtils;
+import org.apache.dubbo.metadata.report.MetadataReportFactory;
+import org.apache.dubbo.metadata.report.MetadataReportInstance;
+import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
+import org.apache.dubbo.metrics.report.DefaultMetricsReporterFactory;
+import org.apache.dubbo.metrics.report.MetricsReporter;
+import org.apache.dubbo.metrics.report.MetricsReporterFactory;
+import org.apache.dubbo.metrics.service.MetricsServiceExporter;
+import org.apache.dubbo.metrics.utils.MetricsSupportUtil;
+import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.registry.RegistryFactory;
+import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
+import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.config.deploy.context.ApplicationContext;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -65,7 +81,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private final Object internalModuleLock = new Object();
 
     public DefaultApplicationDeployer(ApplicationModel applicationModel) {
-        super(new ApplicationContext(applicationModel));
+        super(applicationModel);
         this.applicationModel = applicationModel;
         configManager = applicationModel.getApplicationConfigManager();
         dubboShutdownHook = new DubboShutdownHook(applicationModel);
@@ -286,11 +302,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     @Override
     public void prepareInternalModule() {
-        if (getModelContext().hasPreparedInternalModule()) {
+        if (hasPreparedInternalModule) {
             return;
         }
         synchronized (internalModuleLock) {
-            if (getModelContext().hasPreparedInternalModule()) {
+            if (hasPreparedInternalModule) {
                 return;
             }
 
@@ -317,6 +333,129 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
         }
         return false;
+    }
+
+    private DynamicConfiguration prepareEnvironment(ConfigCenterConfig configCenter) {
+        if (configCenter.isValid()) {
+            if (!configCenter.checkOrUpdateInitialized(true)) {
+                return null;
+            }
+
+            DynamicConfiguration dynamicConfiguration;
+            try {
+                dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
+            } catch (Exception e) {
+                if (!configCenter.isCheck()) {
+                    logger.warn(CONFIG_FAILED_INIT_CONFIG_CENTER, "", "", "The configuration center failed to initialize", e);
+                    configCenter.setInitialized(false);
+                    return null;
+                } else {
+                    throw new IllegalStateException(e);
+                }
+            }
+            ApplicationModel applicationModel = getApplicationModel();
+
+            if (StringUtils.isNotEmpty(configCenter.getConfigFile())) {
+                String configContent = dynamicConfiguration.getProperties(configCenter.getConfigFile(), configCenter.getGroup());
+                if (StringUtils.isNotEmpty(configContent)) {
+                    logger.info(String.format("Got global remote configuration from config center with key-%s and group-%s: \n %s", configCenter.getConfigFile(), configCenter.getGroup(), configContent));
+                }
+                String appGroup = getApplication().getName();
+                String appConfigContent = null;
+                String appConfigFile = null;
+                if (isNotEmpty(appGroup)) {
+                    appConfigFile = isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile();
+                    appConfigContent = dynamicConfiguration.getProperties(appConfigFile, appGroup);
+                    if (StringUtils.isNotEmpty(appConfigContent)) {
+                        logger.info(String.format("Got application specific remote configuration from config center with key %s and group %s: \n %s", appConfigFile, appGroup, appConfigContent));
+                    }
+                }
+                try {
+                    Map<String, String> configMap = parseProperties(configContent);
+                    Map<String, String> appConfigMap = parseProperties(appConfigContent);
+
+                    environment.updateExternalConfigMap(configMap);
+                    environment.updateAppExternalConfigMap(appConfigMap);
+
+                    // Add metrics
+                    MetricsEventBus.publish(ConfigCenterEvent.toChangeEvent(applicationModel, configCenter.getConfigFile(), configCenter.getGroup(),
+                            configCenter.getProtocol(), ConfigChangeType.ADDED.name(), configMap.size()));
+                    if (isNotEmpty(appGroup)) {
+                        MetricsEventBus.publish(ConfigCenterEvent.toChangeEvent(applicationModel, appConfigFile, appGroup,
+                                configCenter.getProtocol(), ConfigChangeType.ADDED.name(), appConfigMap.size()));
+                    }
+                } catch (IOException e) {
+                    throw new IllegalStateException("Failed to parse configurations from Config Center.", e);
+                }
+            }
+            return dynamicConfiguration;
+        }
+        return null;
+    }
+
+    /**
+     * Get the instance of {@link DynamicConfiguration} by the specified connection {@link URL} of config-center
+     *
+     * @param connectionURL of config-center
+     * @return non-null
+     * @since 2.7.5
+     */
+    private DynamicConfiguration getDynamicConfiguration(URL connectionURL) {
+        String protocol = connectionURL.getProtocol();
+
+        DynamicConfigurationFactory factory = ConfigurationUtils.getDynamicConfigurationFactory(applicationModel, protocol);
+        return factory.getDynamicConfiguration(connectionURL);
+    }
+
+    private volatile boolean registered;
+
+    private final AtomicInteger instanceRefreshScheduleTimes = new AtomicInteger(0);
+
+    /**
+     * Indicate that how many threads are updating service
+     */
+    private final AtomicInteger serviceRefreshState = new AtomicInteger(0);
+
+    private void registerServiceInstance() {
+        try {
+            registered = true;
+
+                        ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
+
+        } catch (Exception e) {
+            logger.error(CONFIG_REGISTER_INSTANCE_ERROR, "configuration server disconnected", "", "Register instance error.", e);
+        }
+        if (registered) {
+            // scheduled task for updating Metadata and ServiceInstance
+            asyncMetadataFuture = frameworkExecutorRepository.getSharedScheduledExecutor().scheduleWithFixedDelay(() -> {
+
+                // ignore refresh metadata on stopping
+                if (applicationModel.isDestroyed()) {
+                    return;
+                }
+
+                // refresh for 30 times (default for 30s) when deployer is not started, prevent submit too many revision
+                if (instanceRefreshScheduleTimes.incrementAndGet() % 30 != 0 && !isStarted()) {
+                    return;
+                }
+
+                // refresh for 5 times (default for 5s) when services are being updated by other threads, prevent submit too many revision
+                // note: should not always wait here
+                if (serviceRefreshState.get() != 0 && instanceRefreshScheduleTimes.get() % 5 != 0) {
+                    return;
+                }
+
+                try {
+                    if (!applicationModel.isDestroyed() && registered) {
+                        ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationModel);
+                    }
+                } catch (Exception e) {
+                    if (!applicationModel.isDestroyed()) {
+                        logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
+                    }
+                }
+            }, 0, ConfigurationUtils.get(applicationModel, METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY), TimeUnit.MILLISECONDS);
+        }
     }
 
     @Override

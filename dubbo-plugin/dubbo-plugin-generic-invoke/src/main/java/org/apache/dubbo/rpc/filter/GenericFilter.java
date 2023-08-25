@@ -208,6 +208,9 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
 
     private Object[] getGsonGenericArgs(final Object[] args, Type[] types) {
         return IntStream.range(0, args.length).mapToObj(i -> {
+            if (args[i] == null) {
+                return null;
+            }
             if (!(args[i] instanceof String)) {
                 throw new RpcException("When using GSON to deserialize generic dubbo request arguments, the arguments must be of type String");
             }
