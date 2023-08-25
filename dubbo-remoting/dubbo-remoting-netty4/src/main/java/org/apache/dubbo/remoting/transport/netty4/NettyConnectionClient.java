@@ -126,8 +126,8 @@ public class NettyConnectionClient extends AbstractConnectionClient {
 
 //                pipeline.addLast("logging", new LoggingHandler(LogLevel.INFO)); //for debug
 
-                int idleTimeout = UrlUtils.getIdleTimeout(getUrl());
-                pipeline.addLast("client-idle-handler", new IdleStateHandler(idleTimeout, 0, 0, MILLISECONDS));
+                int heartbeat = UrlUtils.getHeartbeat(getUrl());
+                pipeline.addLast("client-idle-handler", new IdleStateHandler(heartbeat, 0, 0, MILLISECONDS));
 
                 pipeline.addLast("connectionHandler", connectionHandler);
 

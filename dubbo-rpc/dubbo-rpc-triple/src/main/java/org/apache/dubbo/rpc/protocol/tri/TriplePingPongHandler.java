@@ -16,63 +16,57 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http2.DefaultHttp2PingFrame;
-import io.netty.handler.timeout.IdleState;
+import io.netty.handler.codec.http2.Http2PingFrame;
 import io.netty.handler.timeout.IdleStateEvent;
 
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-public class TripleWritePingHandler extends ChannelDuplexHandler {
+public class TriplePingPongHandler extends ChannelDuplexHandler {
 
-    private final long writePingIntervalInMs;
+    private final long pingAckTimeout;
 
-    private ScheduledFuture<?> scheduledFuture;
+    private ScheduledFuture<?> pingAckTimeoutFuture;
 
-    public TripleWritePingHandler(long writePingIntervalInMs) {
-        this.writePingIntervalInMs = writePingIntervalInMs;
+    public TriplePingPongHandler(long pingAckTimeout) {
+        this.pingAckTimeout = pingAckTimeout;
     }
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        super.channelActive(ctx);
-        scheduledFuture = ctx.executor().scheduleWithFixedDelay(new WritePingTask(ctx.channel()), writePingIntervalInMs, writePingIntervalInMs, TimeUnit.MILLISECONDS);
-    }
-
-    @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        super.channelInactive(ctx);
-        if (scheduledFuture == null) {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        if (!(msg instanceof Http2PingFrame) || pingAckTimeoutFuture == null) {
+            super.channelRead(ctx, msg);
             return;
         }
-        scheduledFuture.cancel(true);
+        //cancel task when read anything, include http2 ping ack
+        pingAckTimeoutFuture.cancel(true);
+        pingAckTimeoutFuture = null;
     }
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (!(evt instanceof IdleStateEvent)
-                || !IdleState.READER_IDLE.equals(((IdleStateEvent) evt).state())) {
+        if (!(evt instanceof IdleStateEvent)) {
             ctx.fireUserEventTriggered(evt);
             return;
         }
-        //idle timeout(3 * heartbeat)
-        ctx.close();
+        ctx.writeAndFlush(new DefaultHttp2PingFrame(0));
+        pingAckTimeoutFuture = ctx.executor().schedule(new CloseChannelTask(ctx), pingAckTimeout, TimeUnit.MILLISECONDS);
     }
 
-    private static class WritePingTask implements Runnable {
+    private static class CloseChannelTask implements Runnable {
 
-        private final Channel channel;
+        private final ChannelHandlerContext ctx;
 
-        public WritePingTask(Channel channel) {
-            this.channel = channel;
+        public CloseChannelTask(ChannelHandlerContext ctx) {
+            this.ctx = ctx;
         }
 
         @Override
         public void run() {
-            channel.writeAndFlush(new DefaultHttp2PingFrame(0));
+            ctx.close();
         }
     }
 
