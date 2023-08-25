@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.deploy.context.ApplicationContext;
 import org.apache.dubbo.config.deploy.lifecycle.application.ApplicationLifecycle;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.List;
@@ -31,48 +32,44 @@ import java.util.List;
 /**
  * Application lifecycle manager
  */
-public class ApplicationLifecycleManager implements LifecycleManager{
+public class ApplicationLifecycleManager{
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ApplicationLifecycleManager.class);
 
     private final List<ApplicationLifecycle> sequences;
 
-    private final ApplicationContext applicationContext;
+    private final ApplicationModel applicationModel;
 
-    public ApplicationLifecycleManager(ApplicationContext applicationContext) {
-        this.applicationContext = applicationContext;
+    public ApplicationLifecycleManager(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
         sequences = loadAll();
     }
 
-    @Override
-    public void start(){
+    public void start(ApplicationContext applicationContext){
         getAll().forEach(applicationLifecycle -> applicationLifecycle.start(applicationContext));
     }
 
-    @Override
-    public void initialize() {
+    public void initialize(ApplicationContext applicationContext) {
         getAll().forEach(applicationLifecycle-> applicationLifecycle.initialize(applicationContext));
     }
 
-    @Override
-    public void preDestroy() {
+    public void preDestroy(ApplicationContext applicationContext) {
         getAll().forEach(applicationLifecycle-> applicationLifecycle.preDestroy(applicationContext));
     }
 
-    @Override
-    public void postDestroy() {
+    public void postDestroy(ApplicationContext applicationContext) {
         getAll().forEach(applicationLifecycle-> applicationLifecycle.postDestroy(applicationContext));
     }
 
-    public void preModuleChanged(ModuleModel changedModule, DeployState moduleNewState) {
+    public void preModuleChanged(ApplicationContext applicationContext,ModuleModel changedModule, DeployState moduleNewState) {
         getAll().forEach(applicationLifecycle -> applicationLifecycle.preModuleChanged(applicationContext,changedModule,moduleNewState));
     }
 
-    public void postModuleChanged(ModuleModel changedModule, DeployState moduleNewState,DeployState applicationOldState,DeployState applicationNewState) {
+    public void postModuleChanged(ApplicationContext applicationContext,ModuleModel changedModule, DeployState moduleNewState,DeployState applicationOldState,DeployState applicationNewState) {
         getAll().forEach(applicationLifecycle -> applicationLifecycle.postModuleChanged(applicationContext,changedModule,moduleNewState,applicationOldState,applicationNewState));
     }
 
-    public void runRefreshServiceInstance(){
+    public void runRefreshServiceInstance(ApplicationContext applicationContext){
         getAll().forEach(applicationLifecycle -> applicationLifecycle.refreshServiceInstance(applicationContext));
     }
 
@@ -81,10 +78,10 @@ public class ApplicationLifecycleManager implements LifecycleManager{
     }
 
     protected List<ApplicationLifecycle> loadAll() {
-        ExtensionLoader<ApplicationLifecycle> loader = applicationContext.getModel().getExtensionLoader(ApplicationLifecycle.class);
+        ExtensionLoader<ApplicationLifecycle> loader = applicationModel.getExtensionLoader(ApplicationLifecycle.class);
         List<ApplicationLifecycle> lifecycles = loader.getActivateExtensions();
 
-        ScopeBeanFactory beanFactory = applicationContext.getModel().getBeanFactory();
+        ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
         StringBuilder sequence = new StringBuilder("Loaded lifecycle sequences: [START]-> ");
 
         lifecycles.forEach(applicationLifecycle -> {

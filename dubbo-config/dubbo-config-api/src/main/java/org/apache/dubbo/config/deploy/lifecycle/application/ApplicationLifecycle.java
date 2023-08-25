@@ -20,7 +20,6 @@ import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.config.deploy.context.ApplicationContext;
 import org.apache.dubbo.config.deploy.lifecycle.Lifecycle;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 /**
@@ -29,29 +28,22 @@ import org.apache.dubbo.rpc.model.ModuleModel;
  * Used in an application Lifecycle managing procedure, and dubbo packages
  * can implement this interface to define what to do when application status changes.
  * <br>
- * <br>
- * In other words, when methods like
- * {@link ApplicationContext#runInitialize()},
- * {@link ApplicationContext#runStart()},
- * {@link ApplicationContext#runPreDestroy()},
- * {@link ApplicationContext#runPostDestroy()} etc.
- * called, all implementations of this interface will also be called.
  */
 @SPI
-public interface ApplicationLifecycle extends Lifecycle<ApplicationModel,ApplicationContext> {
+public interface ApplicationLifecycle extends Lifecycle<ApplicationContext> {
 
     /**
-     * @see ApplicationContext#runPreModuleChanged(ModuleModel, DeployState)
+     * @see org.apache.dubbo.config.deploy.lifecycle.manager.ApplicationLifecycleManager#preModuleChanged(ApplicationContext, ModuleModel, DeployState)
      */
     default void preModuleChanged(ApplicationContext applicationContext,ModuleModel changedModule,DeployState moduleState){}
 
     /**
-     * @see ApplicationContext#runPostModuleChanged(ModuleModel, DeployState, DeployState, DeployState)
+     * @see org.apache.dubbo.config.deploy.lifecycle.manager.ApplicationLifecycleManager#postModuleChanged(ApplicationContext, ModuleModel, DeployState, DeployState, DeployState)
      */
     default void postModuleChanged(ApplicationContext applicationContext,ModuleModel changedModule,DeployState moduleNewState,DeployState applicationOldState,DeployState applicationNewState){}
 
     /**
-     * @see ApplicationContext#runRefreshServiceInstance()
+     * @see org.apache.dubbo.config.deploy.lifecycle.manager.ApplicationLifecycleManager#runRefreshServiceInstance(ApplicationContext)
      */
     default void refreshServiceInstance(ApplicationContext applicationContext){}
 }

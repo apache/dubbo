@@ -17,7 +17,6 @@
 package org.apache.dubbo.config.deploy.lifecycle.application;
 
 import org.apache.dubbo.common.deploy.ApplicationDeployListener;
-import org.apache.dubbo.common.deploy.DeployListener;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -60,15 +59,15 @@ public class ModuleStartedEventApplicationLifecycle implements ApplicationLifecy
         if (!applicationContext.getCurrentState().equals(DeployState.STARTING)) {
             return;
         }
-        for (DeployListener<ApplicationModel> listener : applicationContext.getListeners()) {
-            try {
-                if (listener instanceof ApplicationDeployListener) {
-                    ((ApplicationDeployListener) listener).onModuleStarted(applicationContext.getModel());
+        applicationContext.getModel().getBeanFactory().getBeansOfType(ApplicationDeployListener.class).forEach(
+            applicationDeployListener -> {
+                try {
+                    applicationDeployListener.onModuleStarted(applicationContext.getModel());
+                } catch (Throwable e) {
+                    logger.error(CONFIG_FAILED_START_MODEL, "", "", applicationContext.getModel().getDesc() + " an exception occurred when handle starting event", e);
                 }
-            } catch (Throwable e) {
-                logger.error(CONFIG_FAILED_START_MODEL, "", "", applicationContext.getModel().getDesc() + " an exception occurred when handle starting event", e);
             }
-        }
+        );
     }
 
     /**

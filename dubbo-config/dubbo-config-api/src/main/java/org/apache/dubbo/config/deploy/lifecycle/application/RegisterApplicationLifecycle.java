@@ -23,8 +23,6 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.config.deploy.context.ApplicationContext;
-import org.apache.dubbo.metrics.event.MetricsEventBus;
-import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -70,12 +68,7 @@ public class RegisterApplicationLifecycle implements ApplicationLifecycle {
 
         try {
             applicationContext.getRegistered().set(true);
-            MetricsEventBus.post(RegistryEvent.toRegisterEvent(applicationModel),
-                () -> {
-                    ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
-                    return null;
-                }
-            );
+            ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
         } catch (Exception e) {
             logger.error(CONFIG_REGISTER_INSTANCE_ERROR, "configuration server disconnected", "", "Register instance error.", e);
         }

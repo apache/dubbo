@@ -21,8 +21,12 @@ import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.deploy.Deployer;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.config.deploy.context.ModelContext;
 import org.apache.dubbo.rpc.model.ScopeModel;
+
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_MONITOR_EXCEPTION;
 import static org.apache.dubbo.common.deploy.DeployState.FAILED;
@@ -36,76 +40,77 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractDeployer.class);
 
+    protected AtomicReference<DeployState> state = new AtomicReference<>(PENDING);
+
+    protected AtomicReference<Throwable> lastError;
+
+    protected AtomicBoolean initialized = new AtomicBoolean(false);
+
+    protected List<DeployListener<E>> listeners = new CopyOnWriteArrayList<>();
     private E scopeModel;
 
-    private ModelContext<E> modelContext;
-
-    public AbstractDeployer(ModelContext<E> modelContext) {
-        this.modelContext = modelContext;
-        this.scopeModel = modelContext.getModel();
+    public AbstractDeployer(E scopeModel) {
+        this.scopeModel = scopeModel;
     }
 
     @Override
     public boolean isPending() {
-        return getState() == PENDING;
+        return state.get().equals(PENDING);
     }
 
     @Override
     public boolean isRunning() {
-        return getState() == STARTING || getState() == STARTED;
+        return state.get().equals(STARTING) || state.get().equals(STARTED);
     }
 
     @Override
     public boolean isStarted() {
-        return getState() == STARTED;
+        return state.get().equals(STARTED);
     }
 
     @Override
     public boolean isStarting() {
-        return getState() == STARTING;
+        return state.get().equals(STARTING);
     }
 
     @Override
     public boolean isStopping() {
-        return getState() == STOPPING;
+        return state.get().equals(STOPPING);
     }
 
     @Override
     public boolean isStopped() {
-        return getState() == STOPPED;
+        return state.get().equals(STOPPED);
     }
 
     @Override
     public boolean isFailed() {
-        return getState() == FAILED;
+        return state.get().equals(FAILED);
     }
 
     @Override
     public DeployState getState() {
-        return modelContext.getCurrentState();
+        return state.get();
     }
 
     @Override
     public void addDeployListener(DeployListener<E> listener) {
-        modelContext.addDeployListener(listener);
+        scopeModel.getBeanFactory().registerBean(listener);
+        listeners.add(listener);
     }
 
     @Override
     public void removeDeployListener(DeployListener<E> listener) {
-        modelContext.removeDeployListener(listener);
-    }
-
-    public void setState(DeployState state){
-        this.modelContext.setModelState(state);
+        listeners.remove(listener);
     }
 
     public void setPending() {
-        setState(PENDING);
+        this.state.set(PENDING);
     }
 
     protected void setStarting() {
-       setState(STARTING);
-        for (DeployListener<E> listener : modelContext.getListeners()) {
+        this.state.set(STARTING);
+        for (DeployListener<E> listener : listeners) {
             try {
                 listener.onStarting(scopeModel);
             } catch (Throwable e) {
@@ -115,8 +120,8 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
     }
 
     protected void setStarted() {
-        setState(STARTED);
-        for (DeployListener<E> listener : modelContext.getListeners()) {
+        this.state.set(STARTED);
+        for (DeployListener<E> listener : listeners) {
             try {
                 listener.onStarted(scopeModel);
             } catch (Throwable e) {
@@ -126,8 +131,8 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
     }
 
     protected void setStopping() {
-        setState(STOPPING);
-        for (DeployListener<E> listener : modelContext.getListeners()) {
+        this.state.set(STOPPING);
+        for (DeployListener<E> listener : listeners) {
             try {
                 listener.onStopping(scopeModel);
             } catch (Throwable e) {
@@ -137,8 +142,8 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
     }
 
     protected void setStopped() {
-        setState(STOPPED);
-        for (DeployListener<E> listener : modelContext.getListeners()) {
+        this.state.set(STOPPED);
+        for (DeployListener<E> listener : listeners) {
             try {
                 listener.onStopped(scopeModel);
             } catch (Throwable e) {
@@ -148,9 +153,9 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
     }
 
     protected void setFailed(Throwable error) {
-        setState(FAILED);
-        this.modelContext.setLastError(error);
-        for (DeployListener<E> listener :  modelContext.getListeners()) {
+        this.state.set(FAILED);
+        this.lastError.set(error);
+        for (DeployListener<E> listener : listeners) {
             try {
                 listener.onFailure(scopeModel, error);
             } catch (Throwable e) {
@@ -159,20 +164,28 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
         }
     }
 
-    protected ModelContext<E> getModelContext(){
-        return this.modelContext;
-    }
-
     @Override
     public Throwable getError() {
-        return this.modelContext.getLastError();
+        return lastError.get();
     }
 
     public boolean isInitialized() {
-        return modelContext.initialized();
+        return initialized.get();
     }
 
-    public String getIdentifier() {
+    protected String getIdentifier() {
         return scopeModel.getDesc();
+    }
+
+    public AtomicBoolean getInitialized() {
+        return initialized;
+    }
+
+    public AtomicReference<Throwable> getErrorRef() {
+        return lastError;
+    }
+
+    public AtomicReference<DeployState> getStateRef(){
+        return state;
     }
 }
