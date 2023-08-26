@@ -46,7 +46,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
-import static org.apache.dubbo.metrics.DefaultConstants.INIT_METHOD_KEYS;
+import static org.apache.dubbo.metrics.DefaultConstants.INIT_AGG_METHOD_KEYS;
 import static org.apache.dubbo.metrics.DefaultConstants.METRIC_THROWABLE;
 import static org.apache.dubbo.metrics.model.MetricsCategory.QPS;
 import static org.apache.dubbo.metrics.model.MetricsCategory.REQUESTS;
@@ -265,7 +265,7 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
 
 
     @Override
-    public void init(MetricsEvent event) {
+    public void initMetrics(MetricsEvent event) {
         MethodMetric metric = new MethodMetric(applicationModel, event.getAttachmentValue(MetricsConstants.INVOCATION));
         initMethodMetric(event);
         initQpsMetric(metric);
@@ -274,7 +274,7 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
     }
 
     public void initMethodMetric(MetricsEvent event){
-        INIT_METHOD_KEYS.stream().forEach(key->initWindowCounter(event,key));
+        INIT_AGG_METHOD_KEYS.stream().forEach(key->initWindowCounter(event,key));
     }
 
     public void initQpsMetric(MethodMetric metric){

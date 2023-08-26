@@ -71,17 +71,27 @@ public interface DefaultConstants {
         new MetricsKeyWrapper(METRIC_REQUESTS_CODEC_FAILED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD))
         );
 
-    List<MetricsKey> INIT_METHOD_KEYS = Arrays.asList(
-        MetricsKey.METRIC_REQUESTS_TOTAL_AGG,
-        MetricsKey.METRIC_REQUESTS_SUCCEED_AGG,
-        MetricsKey.METRIC_REQUESTS_FAILED_AGG,
-        MetricsKey.METRIC_REQUEST_BUSINESS_FAILED_AGG,
-        MetricsKey.METRIC_REQUESTS_TIMEOUT_AGG,
-        MetricsKey.METRIC_REQUESTS_LIMIT_AGG,
-        MetricsKey.METRIC_REQUESTS_TOTAL_FAILED_AGG,
-        MetricsKey.METRIC_REQUESTS_NETWORK_FAILED_AGG,
-        MetricsKey.METRIC_REQUESTS_CODEC_FAILED_AGG,
-        MetricsKey.METRIC_REQUESTS_TOTAL_SERVICE_UNAVAILABLE_FAILED_AGG
+    List<MetricsKey> INIT_AGG_METHOD_KEYS = Arrays.asList(
+                    MetricsKey.METRIC_REQUESTS_TOTAL_AGG,
+                    MetricsKey.METRIC_REQUESTS_SUCCEED_AGG,
+                    MetricsKey.METRIC_REQUESTS_FAILED_AGG,
+                    MetricsKey.METRIC_REQUEST_BUSINESS_FAILED_AGG,
+                    MetricsKey.METRIC_REQUESTS_TIMEOUT_AGG,
+                    MetricsKey.METRIC_REQUESTS_LIMIT_AGG,
+                    MetricsKey.METRIC_REQUESTS_TOTAL_FAILED_AGG,
+                    MetricsKey.METRIC_REQUESTS_NETWORK_FAILED_AGG,
+                    MetricsKey.METRIC_REQUESTS_CODEC_FAILED_AGG,
+                    MetricsKey.METRIC_REQUESTS_TOTAL_SERVICE_UNAVAILABLE_FAILED_AGG
     );
+
+    List<MetricsKey> INIT_DEFAULT_METHOD_KEYS = Arrays.asList(
+        MetricsKey.METRIC_REQUESTS,
+        MetricsKey.METRIC_REQUESTS_PROCESSING,
+        MetricsKey.METRIC_REQUESTS_FAILED_AGG,
+        MetricsKey.METRIC_REQUESTS_SUCCEED,
+        MetricsKey.METRIC_REQUESTS_TOTAL_FAILED,
+        MetricsKey.METRIC_REQUEST_BUSINESS_FAILED
+    );
+
 
 }

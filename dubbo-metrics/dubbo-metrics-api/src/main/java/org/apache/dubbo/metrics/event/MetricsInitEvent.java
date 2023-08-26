@@ -25,7 +25,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
 import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUESTS;
-public class MetricsInitEvent extends MetricsEvent {
+public class MetricsInitEvent extends TimeCounterEvent {
 
 
     public MetricsInitEvent(ApplicationModel source,TypeWrapper typeWrapper) {

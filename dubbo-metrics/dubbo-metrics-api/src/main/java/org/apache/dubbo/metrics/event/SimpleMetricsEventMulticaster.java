@@ -43,12 +43,7 @@ public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
         if (event instanceof EmptyEvent) {
             return;
         }
-        if (event instanceof MetricsInitEvent) {
-            for (MetricsListener listener : listeners) {
-                listener.init(event);
-            }
-            return;
-        }
+
         if (validateIfApplicationConfigExist(event)) return;
         for (MetricsListener listener : listeners) {
             if (listener.isSupport(event)) {

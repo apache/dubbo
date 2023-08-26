@@ -224,7 +224,7 @@ public class MetricsSupport {
 
 
     public static void init(MetricsKey metricsKey, MetricsPlaceValue placeType, MethodMetricsCollector<TimeCounterEvent> collector, MetricsEvent event) {
-        collector.increment(event.getAttachmentValue(METHOD_METRICS), new MetricsKeyWrapper(metricsKey, placeType), 0);
+        collector.init(event.getAttachmentValue(INVOCATION), new MetricsKeyWrapper(metricsKey, placeType));
     }
 
     /**

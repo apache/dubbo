@@ -20,6 +20,7 @@ package org.apache.dubbo.metrics.collector;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metrics.DefaultConstants;
+import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.collector.sample.MetricsCountSampleConfigurer;
 import org.apache.dubbo.metrics.collector.sample.MetricsSampler;
 import org.apache.dubbo.metrics.collector.sample.SimpleMetricsCountSampler;
@@ -31,8 +32,10 @@ import org.apache.dubbo.metrics.event.DefaultSubDispatcher;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.MetricsInitEvent;
 import org.apache.dubbo.metrics.event.RequestEvent;
+import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
+import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
@@ -42,8 +45,10 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.apache.dubbo.metrics.DefaultConstants.INIT_DEFAULT_METHOD_KEYS;
 import static org.apache.dubbo.metrics.model.MetricsCategory.APPLICATION;
 import static org.apache.dubbo.metrics.model.key.MetricsKey.APPLICATION_METRIC_INFO;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED;
 
 /**
  * Default implementation of {@link MetricsCollector}
@@ -138,14 +143,24 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
 
     @Override
     public boolean isSupport(MetricsEvent event) {
-        return event instanceof RequestEvent;
+        return event instanceof RequestEvent || event instanceof MetricsInitEvent;
     }
 
     @Override
-    public void init(MetricsEvent event) {
-        if(event instanceof MetricsInitEvent) {
-            getEventMulticaster().publishEvent(event);
+    public void onEvent(TimeCounterEvent event) {
+        if(event instanceof MetricsInitEvent){
+            List<MetricsCollector> collectors = applicationModel.getBeanFactory().getBeansOfType(MetricsCollector.class);
+            collectors.stream().forEach(collector->collector.initMetrics(event));
+            return;
         }
+        super.onEvent(event);
+    }
+
+    @Override
+    public void initMetrics(MetricsEvent event) {
+        MetricsPlaceValue dynamicPlaceType = MetricsPlaceValue.of(event.getAttachmentValue(MetricsConstants.INVOCATION_SIDE), MetricsLevel.METHOD);
+        INIT_DEFAULT_METHOD_KEYS.stream().forEach(key->MetricsSupport.init(key, dynamicPlaceType, (MethodMetricsCollector) this, event));
+        MetricsSupport.init(METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD), (MethodMetricsCollector) this, event);
     }
 
     public SimpleMetricsCountSampler<String, MetricsEvent.Type, ApplicationMetric> applicationSampler = new SimpleMetricsCountSampler<String, MetricsEvent.Type, ApplicationMetric>() {
