@@ -41,6 +41,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
+
+import static org.apache.dubbo.metrics.DefaultConstants.INIT_AGG_METHOD_KEYS;
+import static org.apache.dubbo.metrics.DefaultConstants.INIT_DEFAULT_METHOD_KEYS;
 import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUESTS;
 import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUESTS_PROCESSING;
 
@@ -106,11 +109,9 @@ class InitServiceMetricsTest {
     @Test
     void testMetricsInitEvent() {
 
-        defaultCollector =  applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
-
         List<MetricSample> metricSamples = defaultCollector.collect();
-
-        Assertions.assertEquals(6, metricSamples.size());
+        //INIT_DEFAULT_METHOD_KEYS.size() = 6
+        Assertions.assertEquals(INIT_DEFAULT_METHOD_KEYS.size(), metricSamples.size());
         List<String> metricsNames = metricSamples.stream().map(MetricSample::getName).collect(Collectors.toList());
 
         String REQUESTS = new MetricsKeyWrapper(METRIC_REQUESTS, MetricsPlaceValue.of(side, MetricsLevel.SERVICE)).targetKey();
@@ -133,8 +134,8 @@ class InitServiceMetricsTest {
 
 
         List<MetricSample> samples = aggregateMetricsCollector.collect();
-
-        Assertions.assertEquals(18, samples.size());
+        //INIT_AGG_METHOD_KEYS.size(10) + qps(1) + rt(4) +rtAgr(3)= 18
+        Assertions.assertEquals(INIT_AGG_METHOD_KEYS.size()+ 1+ 4+ 3, samples.size());
 
         for (MetricSample metricSample : samples) {
             if (metricSample instanceof GaugeMetricSample) {
