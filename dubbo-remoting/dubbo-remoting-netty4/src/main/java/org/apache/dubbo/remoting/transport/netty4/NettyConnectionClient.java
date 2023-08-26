@@ -133,7 +133,7 @@ public class NettyConnectionClient extends AbstractConnectionClient {
 
                 NettyConfigOperator operator = new NettyConfigOperator(nettyChannel, getChannelHandler());
                 protocol.configClientPipeline(getUrl(), operator, nettySslContextOperator);
-                ch.closeFuture().addListener(channelFuture -> close());
+                ch.closeFuture().addListener(channelFuture -> doClose());
                 // TODO support Socks5
             }
         });
