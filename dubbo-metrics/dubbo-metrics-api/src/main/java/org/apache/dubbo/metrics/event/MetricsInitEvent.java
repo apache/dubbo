@@ -25,8 +25,10 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
 import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUESTS;
+
 public class MetricsInitEvent extends TimeCounterEvent {
 
+    private static final TypeWrapper METRIC_EVENT = new TypeWrapper(MetricsLevel.SERVICE, METRIC_REQUESTS);
 
     public MetricsInitEvent(ApplicationModel source,TypeWrapper typeWrapper) {
         super(source,typeWrapper);
@@ -34,7 +36,7 @@ public class MetricsInitEvent extends TimeCounterEvent {
 
     public static MetricsInitEvent toMetricsInitEvent(ApplicationModel applicationModel, Invocation invocation) {
         MethodMetric methodMetric = new MethodMetric(applicationModel, invocation);
-        MetricsInitEvent initEvent = new MetricsInitEvent(applicationModel, new TypeWrapper(MetricsLevel.SERVICE, METRIC_REQUESTS));
+        MetricsInitEvent initEvent = new MetricsInitEvent(applicationModel, METRIC_EVENT);
         initEvent.putAttachment(MetricsConstants.INVOCATION, invocation);
         initEvent.putAttachment(MetricsConstants.METHOD_METRICS, methodMetric);
         initEvent.putAttachment(ATTACHMENT_KEY_SERVICE, MetricsSupport.getInterfaceName(invocation));

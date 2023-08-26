@@ -44,6 +44,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.metrics.DefaultConstants.INIT_DEFAULT_METHOD_KEYS;
 import static org.apache.dubbo.metrics.model.MetricsCategory.APPLICATION;
@@ -63,6 +64,11 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
     private String applicationName;
     private final ApplicationModel applicationModel;
     private final List<MetricsSampler> samplers = new ArrayList<>();
+
+    private final List<MetricsCollector> collectors = new ArrayList<>();
+
+    private final AtomicBoolean initialized = new AtomicBoolean();
+
 
     public DefaultMetricsCollector(ApplicationModel applicationModel) {
         super(new BaseStatComposite(applicationModel) {
@@ -149,7 +155,9 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
     @Override
     public void onEvent(TimeCounterEvent event) {
         if(event instanceof MetricsInitEvent){
-            List<MetricsCollector> collectors = applicationModel.getBeanFactory().getBeansOfType(MetricsCollector.class);
+            if(initialized.compareAndSet(false,true)) {
+                collectors.addAll(applicationModel.getBeanFactory().getBeansOfType(MetricsCollector.class));
+            }
             collectors.stream().forEach(collector->collector.initMetrics(event));
             return;
         }
