@@ -70,7 +70,7 @@ public class ConfigValidateFacade implements ConfigValidator {
             }
         }
         if (!validated) {
-            LOGGER.warn("Config validate failed. No supported ConfigValidator found for config: " + config.getClass().getSimpleName());
+            LOGGER.info("Config validate failed. No supported ConfigValidator found for config: " + config.getClass().getSimpleName()+" This may be caused by you did not imported the relevant module.");
         }
     }
 
