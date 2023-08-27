@@ -45,6 +45,7 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
@@ -91,11 +92,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         dubboShutdownHook = new DubboShutdownHook(applicationModel);
         lifecycleManager = new ApplicationLifecycleManager(applicationModel);
         // load spi listener
-        applicationModel.getExtensionLoader(ApplicationDeployListener.class).getSupportedExtensionInstances()
-            .forEach(applicationDeployListener -> {
-                applicationModel.getBeanFactory().registerBean(applicationDeployListener);
-                addDeployListener(applicationDeployListener);
-         });
+        Set<ApplicationDeployListener> deployListeners = applicationModel.getExtensionLoader(ApplicationDeployListener.class)
+                .getSupportedExtensionInstances();
+        for (ApplicationDeployListener listener : deployListeners) {
+            this.addDeployListener(listener);
+        }
     }
 
     public static ApplicationDeployer get(ScopeModel moduleOrApplicationModel) {
@@ -124,7 +125,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
      * Close registration of instance for pure Consumer process by setting registerConsumer to 'false'
      * by default is true.
      */
-    public boolean isRegisterConsumerInstance() {
+    private boolean isRegisterConsumerInstance() {
         Boolean registerConsumer = getApplication().getRegisterConsumer();
         if (registerConsumer == null) {
             return true;
@@ -427,6 +428,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             DeployState oldState = getState();
             switch (newState) {
                 case STARTED:
+                    //STARTING -> STARTED, notify ApplicationLifecycles
                     if (oldState == DeployState.STARTING) {
                         setStarted();
                         try {
@@ -639,7 +641,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             applicationModel,
             getStateRef(),
             initialized,
-            lastError
+            lastError,
+            listeners
         );
     }
 

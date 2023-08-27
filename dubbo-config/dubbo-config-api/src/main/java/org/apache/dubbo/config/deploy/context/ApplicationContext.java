@@ -18,6 +18,7 @@ package org.apache.dubbo.config.deploy.context;
 
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.ReferenceCache;
+import org.apache.dubbo.common.deploy.DeployListener;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
@@ -26,6 +27,7 @@ import org.apache.dubbo.config.deploy.lifecycle.manager.ApplicationLifecycleMana
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -66,7 +68,9 @@ public class ApplicationContext {
 
     private final AtomicReference<Throwable> lastError;
 
-    public ApplicationContext(ApplicationModel applicationModel, AtomicBoolean hasPreparedApplicationInstance, AtomicBoolean registered, AtomicBoolean hasPreparedInternalModule, ReferenceCache referenceCache, AtomicInteger serviceRefreshState, ApplicationLifecycleManager lifecycleManager, ExecutorRepository executorRepository, FrameworkExecutorRepository frameworkExecutorRepository, Environment environment, ApplicationModel scopeModel, AtomicReference<DeployState> modelState, AtomicBoolean initialized, AtomicReference<Throwable> lastError) {
+    private final List<DeployListener<ApplicationModel>> deployListeners;
+
+    public ApplicationContext(ApplicationModel applicationModel, AtomicBoolean hasPreparedApplicationInstance, AtomicBoolean registered, AtomicBoolean hasPreparedInternalModule, ReferenceCache referenceCache, AtomicInteger serviceRefreshState, ApplicationLifecycleManager lifecycleManager, ExecutorRepository executorRepository, FrameworkExecutorRepository frameworkExecutorRepository, Environment environment, ApplicationModel scopeModel, AtomicReference<DeployState> modelState, AtomicBoolean initialized, AtomicReference<Throwable> lastError,List<DeployListener<ApplicationModel>> deployListeners) {
         this.applicationModel = applicationModel;
         this.hasPreparedApplicationInstance = hasPreparedApplicationInstance;
         this.registered = registered;
@@ -81,6 +85,7 @@ public class ApplicationContext {
         this.modelState = modelState;
         this.initialized = initialized;
         this.lastError = lastError;
+        this.deployListeners = deployListeners;
     }
 
     public ApplicationModel getModel() {
@@ -155,4 +160,7 @@ public class ApplicationContext {
         return executorRepository;
     }
 
+    public List<DeployListener<ApplicationModel>> getDeployListeners() {
+        return deployListeners;
+    }
 }

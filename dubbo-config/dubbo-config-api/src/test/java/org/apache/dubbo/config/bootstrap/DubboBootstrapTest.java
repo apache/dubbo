@@ -21,6 +21,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.deploy.ApplicationDeployListener;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
@@ -42,7 +43,6 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -247,6 +247,8 @@ class DubboBootstrapTest {
         Assertions.assertFalse(bootstrap.isStopped());
 
         ApplicationModel applicationModel = bootstrap.getApplicationModel();
+        DefaultApplicationDeployer applicationDeployer = getApplicationDeployer(applicationModel);
+        Assertions.assertNotNull(ReflectUtils.getFieldValue(applicationDeployer, "asyncMetadataFuture"));
         Assertions.assertTrue(applicationModel.getDefaultModule().getServiceRepository().getExportedServices().size() > 0);
     }
 

@@ -59,10 +59,12 @@ public class ModuleStartedEventApplicationLifecycle implements ApplicationLifecy
         if (!applicationContext.getCurrentState().equals(DeployState.STARTING)) {
             return;
         }
-        applicationContext.getModel().getBeanFactory().getBeansOfType(ApplicationDeployListener.class).forEach(
-            applicationDeployListener -> {
+        applicationContext.getDeployListeners().forEach(
+            deployListener -> {
                 try {
-                    applicationDeployListener.onModuleStarted(applicationContext.getModel());
+                    if(deployListener instanceof ApplicationDeployListener) {
+                        ((ApplicationDeployListener)deployListener).onModuleStarted(applicationContext.getModel());
+                    }
                 } catch (Throwable e) {
                     logger.error(CONFIG_FAILED_START_MODEL, "", "", applicationContext.getModel().getDesc() + " an exception occurred when handle starting event", e);
                 }

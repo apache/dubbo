@@ -167,7 +167,7 @@ public final class DubboBootstrap {
         executorRepository = ExecutorRepository.getInstance(applicationModel);
         applicationDeployer = applicationModel.getDeployer();
         // listen deploy events
-        applicationDeployer.getApplicationModel().getBeanFactory().registerBean(new DeployListenerAdapter<ApplicationModel>() {
+        applicationDeployer.addDeployListener(new DeployListenerAdapter<ApplicationModel>() {
             @Override
             public void onStarted(ApplicationModel scopeModel) {
                 notifyStarted(applicationModel);

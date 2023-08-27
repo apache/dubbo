@@ -856,23 +856,6 @@ public final class StringUtils {
         return sb.toString();
     }
 
-    public static String join(final Object[] array, final char delimiter, final int startIndex, final int endIndex) {
-        if (ArrayUtils.isEmpty(array)) {
-            return EMPTY_STRING;
-        }
-        if (endIndex - startIndex <= 0) {
-            return EMPTY_STRING;
-        }
-        StringBuilder sb = new StringBuilder();
-        for (int i = startIndex; i < endIndex; i++) {
-            if (i > 0) {
-                sb.append(delimiter);
-            }
-            sb.append(array[i]);
-        }
-        return sb.toString();
-    }
-
     /**
      * parse key-value pair.
      *

@@ -227,10 +227,6 @@ class StringUtilsTest {
         assertEquals(StringUtils.join(s), "123");
         assertEquals(StringUtils.join(s, ','), "1,2,3");
         assertEquals(StringUtils.join(s, ","), "1,2,3");
-        assertEquals(StringUtils.join(s, ',', 0, 1), "1");
-        assertEquals(StringUtils.join(s, ',', 0, 2), "1,2");
-        assertEquals(StringUtils.join(s, ',', 0, 3), "1,2,3");
-        assertEquals("", StringUtils.join(s, ',', 2, 0), "1,2");
     }
 
     @Test
