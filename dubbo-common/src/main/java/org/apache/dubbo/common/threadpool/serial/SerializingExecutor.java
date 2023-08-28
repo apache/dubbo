@@ -26,7 +26,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadlocal.InternalThreadLocalMap;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_ERROR_RUN_THREAD_TASK;
-import static org.apache.dubbo.common.utils.ExecutorUtil.isTerminated;
+import static org.apache.dubbo.common.utils.ExecutorUtil.isShutdown;
 
 /**
  * Executor ensuring that all {@link Runnable} tasks submitted are executed in order
@@ -69,7 +69,7 @@ public final class SerializingExecutor implements Executor, Runnable {
         if (atomicBoolean.compareAndSet(false, true)) {
             boolean success = false;
             try {
-                if (!isTerminated(executor)) {
+                if (!isShutdown(executor)) {
                     executor.execute(this);
                     success = true;
                 }

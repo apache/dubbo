@@ -44,6 +44,13 @@ public class ExecutorUtil {
         return ((ExecutorService) executor).isTerminated();
     }
 
+    public static boolean isShutdown(Executor executor) {
+        if (!(executor instanceof ExecutorService)) {
+            return false;
+        }
+        return ((ExecutorService) executor).isShutdown();
+    }
+
     /**
      * Use the shutdown pattern from:
      * https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html
