@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.metrics.registry.metrics.collector;
 
+import com.google.common.collect.Lists;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.context.ConfigManager;
@@ -24,11 +25,11 @@ import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
+import org.apache.dubbo.metrics.registry.RegistryMetricsConstants;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -221,9 +222,9 @@ public class RegistryMetricsTest {
         }
         List<MetricSample> samples = collector.collect();
 
-        GaugeMetricSample<?> succeedRequests = getSample(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED.getName(), samples);
-        GaugeMetricSample<?> failedRequests = getSample(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_FAILED.getName(), samples);
-        GaugeMetricSample<?> totalRequests = getSample(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS.getName(), samples);
+        GaugeMetricSample<?> succeedRequests = getSample(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED.getNameByType(RegistryMetricsConstants.OP_TYPE_REGISTER_SERVICE.getType()), samples);
+        GaugeMetricSample<?> failedRequests = getSample(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_FAILED.getNameByType(RegistryMetricsConstants.OP_TYPE_REGISTER_SERVICE.getType()), samples);
+        GaugeMetricSample<?> totalRequests = getSample(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS.getNameByType(RegistryMetricsConstants.OP_TYPE_REGISTER_SERVICE.getType()), samples);
 
         Assertions.assertEquals(5L, succeedRequests.applyAsLong());
         Assertions.assertEquals(5L, failedRequests.applyAsLong());
@@ -289,19 +290,20 @@ public class RegistryMetricsTest {
     }
 
     RegistryEvent registerEvent() {
-        RegistryEvent event = RegistryEvent.toRegisterEvent(applicationModel);
+        RegistryEvent event = RegistryEvent.toRegisterEvent(applicationModel, Lists.newArrayList("reg1"));
         event.setAvailable(true);
         return event;
     }
 
     RegistryEvent rsEvent() {
-        RegistryEvent event = RegistryEvent.toRsEvent(applicationModel, "TestServiceInterface1", 1);
+        List<String> rcNames = Lists.newArrayList("demo1");
+        RegistryEvent event = RegistryEvent.toRsEvent(applicationModel, "TestServiceInterface1", 1, rcNames);
         event.setAvailable(true);
         return event;
     }
 
     RegistryEvent subscribeEvent() {
-        RegistryEvent event = RegistryEvent.toSubscribeEvent(applicationModel);
+        RegistryEvent event = RegistryEvent.toSubscribeEvent(applicationModel, "registryClusterName_test");
         event.setAvailable(true);
         return event;
     }

@@ -18,8 +18,10 @@
 package org.apache.dubbo.metrics.data;
 
 import org.apache.dubbo.metrics.collector.MetricsCollector;
+import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
+import org.apache.dubbo.metrics.model.ServiceKeyMetric;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -29,6 +31,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -70,11 +73,11 @@ public abstract class BaseStatComposite implements MetricsExport {
     }
 
     public void calcApplicationRt(String registryOpType, Long responseTime) {
-        rtStatComposite.calcApplicationRt(registryOpType, responseTime);
+        rtStatComposite.calcServiceKeyRt(registryOpType, responseTime, new ApplicationMetric(rtStatComposite.getApplicationModel()));
     }
 
     public void calcServiceKeyRt(String serviceKey, String registryOpType, Long responseTime) {
-        rtStatComposite.calcServiceKeyRt(serviceKey, registryOpType, responseTime);
+        rtStatComposite.calcServiceKeyRt(registryOpType, responseTime, new ServiceKeyMetric(rtStatComposite.getApplicationModel(), serviceKey));
     }
 
     public void calcServiceKeyRt(Invocation invocation, String registryOpType, Long responseTime) {
@@ -89,12 +92,20 @@ public abstract class BaseStatComposite implements MetricsExport {
         serviceStatComposite.setServiceKey(metricsKey, serviceKey, num);
     }
 
+    public void setServiceKey(MetricsKeyWrapper metricsKey, String serviceKey, int num, Map<String, String> extra) {
+        serviceStatComposite.setExtraServiceKey(metricsKey, serviceKey, num, extra);
+    }
+
     public void incrementApp(MetricsKey metricsKey, int size) {
         applicationStatComposite.incrementSize(metricsKey, size);
     }
 
     public void incrementServiceKey(MetricsKeyWrapper metricsKeyWrapper, String attServiceKey, int size) {
         serviceStatComposite.incrementServiceKey(metricsKeyWrapper, attServiceKey, size);
+    }
+
+    public void incrementServiceKey(MetricsKeyWrapper metricsKeyWrapper, String attServiceKey, Map<String, String> extra, int size) {
+        serviceStatComposite.incrementExtraServiceKey(metricsKeyWrapper, attServiceKey, extra, size);
     }
 
     public void incrementMethodKey(MetricsKeyWrapper metricsKeyWrapper, MethodMetric methodMetric, int size) {
@@ -117,5 +128,9 @@ public abstract class BaseStatComposite implements MetricsExport {
 
     public RtStatComposite getRtStatComposite() {
         return rtStatComposite;
+    }
+
+    public void setAppKey(MetricsKey metricsKey, Long num) {
+        applicationStatComposite.setAppKey(metricsKey, num);
     }
 }

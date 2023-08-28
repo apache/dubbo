@@ -18,14 +18,20 @@ package org.apache.dubbo.tracing.tracer.brave;
 
 import org.apache.dubbo.tracing.tracer.PropagatorProvider;
 
+import io.micrometer.tracing.brave.bridge.BravePropagator;
 import io.micrometer.tracing.propagation.Propagator;
 
 
 public class BravePropagatorProvider implements PropagatorProvider {
 
+    private static Propagator propagator;
+
     @Override
     public Propagator getPropagator() {
-        // TODO impl
-        return null;
+        return propagator;
+    }
+
+    protected static void createMicrometerPropagator(brave.Tracing tracing) {
+        propagator = new BravePropagator(tracing);
     }
 }

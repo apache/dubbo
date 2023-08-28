@@ -23,6 +23,7 @@ import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsSupport;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.metrics.model.key.TypeWrapper;
 import org.apache.dubbo.rpc.Invocation;
@@ -39,7 +40,8 @@ import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUEST_BUSIN
  * Request related events
  */
 public class RequestEvent extends TimeCounterEvent {
-    private static final TypeWrapper TYPE_WRAPPER = new TypeWrapper(MetricsLevel.SERVICE, METRIC_REQUESTS, METRIC_REQUESTS_SUCCEED, METRIC_REQUEST_BUSINESS_FAILED);
+    private static final TypeWrapper REQUEST_EVENT = new TypeWrapper(MetricsLevel.SERVICE, METRIC_REQUESTS, METRIC_REQUESTS_SUCCEED, METRIC_REQUEST_BUSINESS_FAILED);
+    private static final TypeWrapper REQUEST_ERROR_EVENT = new TypeWrapper(MetricsLevel.METHOD, MetricsKey.METRIC_REQUESTS);
 
     public RequestEvent(ApplicationModel applicationModel, String appName, MetricsDispatcher metricsDispatcher, DefaultMetricsCollector collector, TypeWrapper TYPE_WRAPPER) {
         super(applicationModel, appName, metricsDispatcher, TYPE_WRAPPER);
@@ -56,7 +58,7 @@ public class RequestEvent extends TimeCounterEvent {
                                               MetricsDispatcher metricsDispatcher, DefaultMetricsCollector collector,
                                               Invocation invocation, String side) {
         MethodMetric methodMetric = new MethodMetric(applicationModel, invocation);
-        RequestEvent requestEvent = new RequestEvent(applicationModel, appName, metricsDispatcher, collector, TYPE_WRAPPER);
+        RequestEvent requestEvent = new RequestEvent(applicationModel, appName, metricsDispatcher, collector, REQUEST_EVENT);
         requestEvent.putAttachment(MetricsConstants.INVOCATION, invocation);
         requestEvent.putAttachment(MetricsConstants.METHOD_METRICS, methodMetric);
         requestEvent.putAttachment(ATTACHMENT_KEY_SERVICE, MetricsSupport.getInterfaceName(invocation));
@@ -73,5 +75,22 @@ public class RequestEvent extends TimeCounterEvent {
             throw new MetricsNeverHappenException("Result type error, postResult:" + postResult.getClass().getName());
         }
         super.putAttachment(METRIC_THROWABLE, ((Result) postResult).getException());
+    }
+
+    /**
+     * Acts on MetricsClusterFilter to monitor exceptions that occur before request execution
+     */
+    public static RequestEvent toRequestErrorEvent(ApplicationModel applicationModel, String appName, MetricsDispatcher metricsDispatcher, Invocation invocation, String side, int code) {
+        RequestEvent event = new RequestEvent(applicationModel, appName, metricsDispatcher, null,  REQUEST_ERROR_EVENT);
+        event.putAttachment(ATTACHMENT_KEY_SERVICE, MetricsSupport.getInterfaceName(invocation));
+        event.putAttachment(MetricsConstants.INVOCATION_SIDE, side);
+        event.putAttachment(MetricsConstants.INVOCATION, invocation);
+        event.putAttachment(MetricsConstants.INVOCATION_REQUEST_ERROR, code);
+        event.putAttachment(MetricsConstants.METHOD_METRICS, new MethodMetric(applicationModel, invocation));
+        return event;
+    }
+
+    public boolean isRequestErrorEvent(){
+        return super.getAttachmentValue(MetricsConstants.INVOCATION_REQUEST_ERROR) != null;
     }
 }

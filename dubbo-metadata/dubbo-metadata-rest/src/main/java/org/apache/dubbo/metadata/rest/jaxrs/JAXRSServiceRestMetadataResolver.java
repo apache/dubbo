@@ -49,7 +49,9 @@ public class JAXRSServiceRestMetadataResolver extends AbstractServiceRestMetadat
 
     @Override
     protected boolean supports0(Class<?> serviceType) {
-        return isAnnotationPresent(serviceType, PATH_ANNOTATION_CLASS_NAME);
+        return isAnnotationPresent(serviceType, PATH_ANNOTATION_CLASS_NAME)
+            // method @Path
+            || isServiceMethodAnnotationPresent(serviceType,PATH_ANNOTATION_CLASS_NAME);
     }
 
     @Override

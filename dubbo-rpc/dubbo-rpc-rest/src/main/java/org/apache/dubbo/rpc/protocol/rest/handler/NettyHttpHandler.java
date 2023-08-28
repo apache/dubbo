@@ -38,8 +38,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_DEPLOYER_ATTRIBUTE_KEY;
-
 
 /**
  * netty http request handler
@@ -76,8 +74,6 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
 
         Object nettyHttpRequest = requestFacade.getRequest();
 
-        RpcContext.getServiceContext().setObjectAttachment(SERVICE_DEPLOYER_ATTRIBUTE_KEY, serviceDeployer);
-
 
         try {
 
@@ -112,7 +108,7 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
 
 
     /**
-     * execute response filters
+     * execute rest filters
      *
      * @param url
      * @param requestFacade
@@ -122,8 +118,8 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
     public void executeFilters(URL url, RequestFacade requestFacade, NettyHttpResponse nettyHttpResponse, ServiceDeployer serviceDeployer, List<RestFilter> restFilters) throws Exception {
         RestFilterContext restFilterContext = new RestFilterContext(url, requestFacade, nettyHttpResponse, serviceDeployer);
 
-        for (RestFilter restResponseFilter : restFilters) {
-            restResponseFilter.filter(restFilterContext);
+        for (RestFilter restFilter : restFilters) {
+            restFilter.filter(restFilterContext);
             if (restFilterContext.complete()) {
                 break;
             }

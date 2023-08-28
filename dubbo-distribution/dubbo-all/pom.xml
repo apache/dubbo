@@ -232,6 +232,13 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metrics-netty</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
 
         <!-- tracing -->
         <dependency>
@@ -695,6 +702,7 @@
                                     <include>org.apache.dubbo:dubbo-metrics-registry</include>
                                     <include>org.apache.dubbo:dubbo-metrics-metadata</include>
                                     <include>org.apache.dubbo:dubbo-metrics-config-center</include>
+                                    <include>org.apache.dubbo:dubbo-metrics-netty</include>
                                     <include>org.apache.dubbo:dubbo-metrics-prometheus</include>
                                     <include>org.apache.dubbo:dubbo-tracing</include>
                                     <include>org.apache.dubbo:dubbo-monitor-api</include>
