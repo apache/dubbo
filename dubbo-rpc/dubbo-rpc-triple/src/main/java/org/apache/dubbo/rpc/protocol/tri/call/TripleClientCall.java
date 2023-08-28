@@ -36,7 +36,7 @@ import io.netty.channel.Channel;
 import io.netty.handler.codec.http2.Http2Exception;
 
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 
 import static io.netty.handler.codec.http2.Http2Error.FLOW_CONTROL_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_RESPONSE;
@@ -46,7 +46,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_STR
 public class TripleClientCall implements ClientCall, ClientStream.Listener {
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(TripleClientCall.class);
     private final AbstractConnectionClient connectionClient;
-    private final ExecutorService executor;
+    private final Executor executor;
     private final FrameworkModel frameworkModel;
     private final TripleWriteQueue writeQueue;
     private RequestMetadata requestMetadata;
@@ -58,7 +58,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     private boolean done;
     private Http2Exception.StreamException streamException;
 
-    public TripleClientCall(AbstractConnectionClient connectionClient, ExecutorService executor,
+    public TripleClientCall(AbstractConnectionClient connectionClient, Executor executor,
                             FrameworkModel frameworkModel, TripleWriteQueue writeQueue) {
         this.connectionClient = connectionClient;
         this.executor = executor;

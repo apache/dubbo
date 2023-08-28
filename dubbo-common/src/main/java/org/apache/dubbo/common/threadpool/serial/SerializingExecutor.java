@@ -19,7 +19,6 @@ package org.apache.dubbo.common.threadpool.serial;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -27,6 +26,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadlocal.InternalThreadLocalMap;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_ERROR_RUN_THREAD_TASK;
+import static org.apache.dubbo.common.utils.ExecutorUtil.isTerminated;
 
 /**
  * Executor ensuring that all {@link Runnable} tasks submitted are executed in order
@@ -42,7 +42,7 @@ public final class SerializingExecutor implements Executor, Runnable {
      */
     private final AtomicBoolean atomicBoolean = new AtomicBoolean();
 
-    private final ExecutorService executor;
+    private final Executor executor;
 
     private final Queue<Runnable> runQueue = new ConcurrentLinkedQueue<>();
 
@@ -51,7 +51,7 @@ public final class SerializingExecutor implements Executor, Runnable {
      *
      * @param executor Executor in which tasks should be run. Must not be null.
      */
-    public SerializingExecutor(ExecutorService executor) {
+    public SerializingExecutor(Executor executor) {
         this.executor = executor;
     }
 
@@ -69,7 +69,7 @@ public final class SerializingExecutor implements Executor, Runnable {
         if (atomicBoolean.compareAndSet(false, true)) {
             boolean success = false;
             try {
-                if (!executor.isShutdown()) {
+                if (!isTerminated(executor)) {
                     executor.execute(this);
                     success = true;
                 }

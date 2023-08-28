@@ -38,12 +38,10 @@ public class ExecutorUtil {
         new NamedThreadFactory("Close-ExecutorService-Timer", true));
 
     public static boolean isTerminated(Executor executor) {
-        if (executor instanceof ExecutorService) {
-            if (((ExecutorService) executor).isTerminated()) {
-                return true;
-            }
+        if (!(executor instanceof ExecutorService)) {
+            return false;
         }
-        return false;
+        return ((ExecutorService) executor).isTerminated();
     }
 
     /**

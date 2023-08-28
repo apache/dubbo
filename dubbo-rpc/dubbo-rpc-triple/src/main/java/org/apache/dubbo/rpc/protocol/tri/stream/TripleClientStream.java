@@ -62,7 +62,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_RESPONSE;
 
@@ -88,7 +88,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
 
     // for test
     TripleClientStream(FrameworkModel frameworkModel,
-                       ExecutorService executor,
+                       Executor executor,
                        TripleWriteQueue writeQueue,
                        ClientStream.Listener listener,
         Http2StreamChannel http2StreamChannel) {
@@ -100,7 +100,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
     }
 
     public TripleClientStream(FrameworkModel frameworkModel,
-                              ExecutorService executor,
+                              Executor executor,
                               Channel parent,
                               ClientStream.Listener listener,
         TripleWriteQueue writeQueue) {

@@ -31,6 +31,7 @@ import org.apache.dubbo.remoting.transport.ChannelHandlerDelegate;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.executor.ExecutorSupport;
 
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
 public class WrappedChannelHandler implements ChannelHandlerDelegate {
@@ -139,8 +140,8 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
      * @return
      */
     public ExecutorService getSharedExecutorService(Object msg) {
-        ExecutorService executor = executorSupport.getExecutor(msg);
-        return executor != null ? executor : getSharedExecutorService();
+        Executor executor = executorSupport.getExecutor(msg);
+        return executor != null ? (ExecutorService) executor : getSharedExecutorService();
     }
 
     /**
