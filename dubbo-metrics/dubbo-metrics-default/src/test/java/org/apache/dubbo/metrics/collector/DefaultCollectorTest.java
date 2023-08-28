@@ -149,8 +149,8 @@ class DefaultCollectorTest {
 
         // push finish rt +1
         List<MetricSample> metricSamples = collector.collect();
-        //num(total+success+processing) + rt(5) = 8
-        Assertions.assertEquals(8, metricSamples.size());
+        //num(total+success+processing) + rt(5) + error code = 8
+        Assertions.assertEquals(9, metricSamples.size());
         List<String> metricsNames = metricSamples.stream().map(MetricSample::getName).collect(Collectors.toList());
         // No error will contain total+success+processing
         String REQUESTS = new MetricsKeyWrapper(METRIC_REQUESTS, MetricsPlaceValue.of(side, MetricsLevel.SERVICE)).targetKey();
@@ -191,8 +191,8 @@ class DefaultCollectorTest {
         long c2 = eventObj.getTimePair().calc();
         metricSamples = collector.collect();
 
-        // num(total+success+error+total_error+processing) + rt(5) = 5
-        Assertions.assertEquals(10, metricSamples.size());
+        // num(total+success+error+total_error+processing) + rt(5) + error code = 11
+        Assertions.assertEquals(11, metricSamples.size());
 
         String TIMEOUT = new MetricsKeyWrapper(METRIC_REQUESTS_TIMEOUT, MetricsPlaceValue.of(side, MetricsLevel.SERVICE)).targetKey();
         String TOTAL_FAILED = new MetricsKeyWrapper(METRIC_REQUESTS_TOTAL_FAILED, MetricsPlaceValue.of(side, MetricsLevel.SERVICE)).targetKey();
