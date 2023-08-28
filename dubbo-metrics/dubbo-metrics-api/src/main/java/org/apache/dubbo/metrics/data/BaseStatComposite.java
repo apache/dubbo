@@ -18,6 +18,7 @@
 package org.apache.dubbo.metrics.data;
 
 import org.apache.dubbo.metrics.collector.MetricsCollector;
+import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
@@ -76,6 +77,10 @@ public abstract class BaseStatComposite implements MetricsExport {
         rtStatComposite.calcServiceKeyRt(serviceKey, registryOpType, responseTime);
     }
 
+    public void calcServiceKeyRt(Invocation invocation, String registryOpType, Long responseTime) {
+        rtStatComposite.calcServiceKeyRt(invocation, registryOpType, responseTime);
+    }
+
     public void calcMethodKeyRt(Invocation invocation, String registryOpType, Long responseTime) {
         rtStatComposite.calcMethodKeyRt(invocation, registryOpType, responseTime);
     }
@@ -92,8 +97,8 @@ public abstract class BaseStatComposite implements MetricsExport {
         serviceStatComposite.incrementServiceKey(metricsKeyWrapper, attServiceKey, size);
     }
 
-    public void incrementMethodKey(MetricsKeyWrapper metricsKeyWrapper, Invocation invocation, int size) {
-        methodStatComposite.incrementMethodKey(metricsKeyWrapper, invocation, size);
+    public void incrementMethodKey(MetricsKeyWrapper metricsKeyWrapper, MethodMetric methodMetric, int size) {
+        methodStatComposite.incrementMethodKey(metricsKeyWrapper, methodMetric, size);
     }
 
     @Override

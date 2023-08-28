@@ -40,6 +40,7 @@ import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 import org.apache.dubbo.rpc.protocol.rest.util.HttpHeaderUtil;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -72,7 +73,7 @@ public class RestInvoker<T> extends AbstractInvoker<T> {
             RequestTemplate requestTemplate = new RequestTemplate(invocation, restMethodMetadata.getRequest().getMethod(), getUrl().getAddress());
 
             HttpConnectionCreateContext httpConnectionCreateContext =
-                creatHttpConnectionCreateContext(invocation, serviceRestMetadata, restMethodMetadata, requestTemplate);
+                createHttpConnectionCreateContext(invocation, serviceRestMetadata, restMethodMetadata, requestTemplate);
 
             // fill real  data
             for (HttpConnectionPreBuildIntercept intercept : httpConnectionPreBuildIntercepts) {
@@ -100,9 +101,10 @@ public class RestInvoker<T> extends AbstractInvoker<T> {
                         } else if (responseCode >= 500) {
                             responseFuture.completeExceptionally(new RemoteServerInternalException(r.getMessage()));
                         } else if (responseCode < 400) {
-                            mediaType = MediaTypeUtil.convertMediaType(restMethodMetadata.getReflectMethod().getReturnType(), r.getContentType());
+                            Method reflectMethod = restMethodMetadata.getReflectMethod();
+                            mediaType = MediaTypeUtil.convertMediaType(reflectMethod.getReturnType(), r.getContentType());
                             Object value = HttpMessageCodecManager.httpMessageDecode(r.getBody(),
-                                restMethodMetadata.getReflectMethod().getReturnType(), mediaType);
+                                reflectMethod.getReturnType(), reflectMethod.getGenericReturnType(), mediaType);
                             appResponse.setValue(value);
                             // resolve response attribute & attachment
                             HttpHeaderUtil.parseResponseHeader(appResponse, r);
@@ -128,7 +130,7 @@ public class RestInvoker<T> extends AbstractInvoker<T> {
      * @param requestTemplate
      * @return
      */
-    private HttpConnectionCreateContext creatHttpConnectionCreateContext(Invocation invocation, ServiceRestMetadata serviceRestMetadata, RestMethodMetadata restMethodMetadata, RequestTemplate requestTemplate) {
+    private HttpConnectionCreateContext createHttpConnectionCreateContext(Invocation invocation, ServiceRestMetadata serviceRestMetadata, RestMethodMetadata restMethodMetadata, RequestTemplate requestTemplate) {
         HttpConnectionCreateContext httpConnectionCreateContext = new HttpConnectionCreateContext();
         httpConnectionCreateContext.setRequestTemplate(requestTemplate);
         httpConnectionCreateContext.setRestMethodMetadata(restMethodMetadata);

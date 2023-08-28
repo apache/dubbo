@@ -67,6 +67,13 @@ public interface Constants {
     long LEAST_HEARTBEAT_DURATION = 1000;
 
     /**
+     * the least reconnect during is 60000 ms.
+     */
+    long LEAST_RECONNECT_DURATION = 60000;
+
+    String LEAST_RECONNECT_DURATION_KEY = "dubbo.application.least-reconnect-duration";
+
+    /**
      * ticks per wheel.
      */
     int TICKS_PER_WHEEL = 128;
@@ -170,4 +177,6 @@ public interface Constants {
 
     List<String> REST_SERVER = Arrays.asList("jetty", "tomcat", "netty");
     String CONTENT_LENGTH_KEY = "content-length";
+    String USE_SECURE_RANDOM_ID = "dubbo.application.use-secure-random-request-id";
+
 }

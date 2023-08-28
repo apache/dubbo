@@ -16,16 +16,16 @@
  */
 package org.apache.dubbo.common.serialize.fastjson2;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Optional;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Optional;
 
 import static org.apache.dubbo.common.serialize.Constants.FASTJSON2_SERIALIZATION_ID;
 
@@ -52,11 +52,11 @@ public class FastJson2Serialization implements Serialization {
     public ObjectOutput serialize(URL url, OutputStream output) throws IOException {
         Fastjson2CreatorManager fastjson2CreatorManager = Optional.ofNullable(url)
             .map(URL::getOrDefaultFrameworkModel)
-            .orElse(FrameworkModel.defaultModel())
+            .orElseGet(FrameworkModel::defaultModel)
             .getBeanFactory().getBean(Fastjson2CreatorManager.class);
         Fastjson2SecurityManager fastjson2SecurityManager = Optional.ofNullable(url)
             .map(URL::getOrDefaultFrameworkModel)
-            .orElse(FrameworkModel.defaultModel())
+            .orElseGet(FrameworkModel::defaultModel)
             .getBeanFactory().getBean(Fastjson2SecurityManager.class);
 
         return new FastJson2ObjectOutput(fastjson2CreatorManager, fastjson2SecurityManager, output);
@@ -66,11 +66,11 @@ public class FastJson2Serialization implements Serialization {
     public ObjectInput deserialize(URL url, InputStream input) throws IOException {
         Fastjson2CreatorManager fastjson2CreatorManager = Optional.ofNullable(url)
             .map(URL::getOrDefaultFrameworkModel)
-            .orElse(FrameworkModel.defaultModel())
+            .orElseGet(FrameworkModel::defaultModel)
             .getBeanFactory().getBean(Fastjson2CreatorManager.class);
         Fastjson2SecurityManager fastjson2SecurityManager = Optional.ofNullable(url)
             .map(URL::getOrDefaultFrameworkModel)
-            .orElse(FrameworkModel.defaultModel())
+            .orElseGet(FrameworkModel::defaultModel)
             .getBeanFactory().getBean(Fastjson2SecurityManager.class);
 
         return new FastJson2ObjectInput(fastjson2CreatorManager, fastjson2SecurityManager, input);

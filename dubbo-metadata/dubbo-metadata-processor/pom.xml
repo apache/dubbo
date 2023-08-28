@@ -34,7 +34,7 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-metadata-api</artifactId>
+            <artifactId>dubbo-metadata-rest</artifactId>
             <version>${project.parent.version}</version>
             <exclusions>
                 <exclusion>
@@ -161,17 +161,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <fork>true</fork>
-                    <proc>none</proc>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>

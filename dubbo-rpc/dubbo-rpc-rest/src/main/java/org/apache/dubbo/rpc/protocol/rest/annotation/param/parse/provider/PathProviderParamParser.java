@@ -40,7 +40,7 @@ public class PathProviderParamParser extends ProviderParamParser {
     }
 
     @Override
-    protected ParamType getParamType() {
+    public ParamType getParamType() {
         return ParamType.PATH;
     }
 }

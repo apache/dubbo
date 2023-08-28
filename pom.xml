@@ -125,7 +125,6 @@
         <maven_flatten_version>1.5.0</maven_flatten_version>
         <maven_enforce_version>3.3.0</maven_enforce_version>
         <maven_antrun_version>3.1.0</maven_antrun_version>
-        <dubbo_annotation_processor_version>1.0.0</dubbo_annotation_processor_version>
         <maven_os_plugin_version>1.7.1</maven_os_plugin_version>
         <maven_protobuf_plugin_version>0.6.1</maven_protobuf_plugin_version>
         <arguments />
@@ -141,7 +140,6 @@
     </properties>
 
     <modules>
-        <module>dubbo-annotation-processor</module>
         <module>dubbo-common</module>
         <module>dubbo-container</module>
         <module>dubbo-compiler</module>
@@ -184,14 +182,6 @@
     </dependencyManagement>
 
     <dependencies>
-
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-annotation-processor</artifactId>
-            <version>${dubbo_annotation_processor_version}</version>
-            <optional>true</optional>
-        </dependency>
-
         <!--JUnit Jupiter Engine to depend on the JUnit5 engine and JUnit 5 API -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -368,6 +358,8 @@
                                         **/org/apache/dubbo/rpc/protocol/tri/TriHttp2RemoteFlowController.java,
                                         **/org/apache/dubbo/metrics/aggregate/DubboMergingDigest.java,
                                         **/org/apache/dubbo/metrics/aggregate/DubboAbstractTDigest.java,
+                                        **/org/apache/dubbo/common/logger/helpers/FormattingTuple.java,
+                                        **/org/apache/dubbo/common/logger/helpers/MessageFormatter.java,
                                         **/istio/v1/auth/**/*,
                                         **/com/google/rpc/*,
                                         **/generated/**/*,
@@ -515,7 +507,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>license-maven-plugin</artifactId>
-                        <version>2.1.0</version>
+                        <version>2.2.0</version>
                         <executions>
                             <execution>
                                 <id>license-check</id>
@@ -536,6 +528,10 @@
                                             License|BSD|3-Clause BSD License|The New BSD License
                                         </licenseMerge>
                                     </licenseMerges>
+                                    <excludes>
+                                        **/org/apache/dubbo/common/logger/helpers/FormattingTuple.java,
+                                        **/org/apache/dubbo/common/logger/helpers/MessageFormatter.java
+                                    </excludes>
                                 </configuration>
                             </execution>
                         </executions>
@@ -720,6 +716,7 @@
                 <version>${maven_compiler_version}</version>
                 <configuration>
                     <compilerArgs>
+                        <compilerArg>-proc:none</compilerArg>
                         <compilerArg>-parameters</compilerArg>
                     </compilerArgs>
                     <fork>true</fork>

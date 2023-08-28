@@ -101,7 +101,8 @@ header:
     - 'dubbo-native/src/main/java/org/apache/dubbo/aot/api/MemberCategory.java'
     - 'dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/aggregate/DubboMergingDigest.java'
     - 'dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/aggregate/DubboAbstractTDigest.java'
-    - 'dubbo-annotation-processor/src/main/java/org/apache/dubbo/annotation/permit/**'
+    - 'dubbo-common/src/main/java/org/apache/dubbo/common/logger/helpers/FormattingTuple.java'
+    - 'dubbo-common/src/main/java/org/apache/dubbo/common/logger/helpers/MessageFormatter.java'
 
   comment: on-failure
 
@@ -200,9 +201,25 @@ dependency:
       license: Apache-2.0
     - name: org.sonatype.plexus:plexus-cipher
       license: Apache-2.0
+    - name: com.alibaba.csp:sentinel-apache-dubbo3-adapter
+      license: Apache-2.0
+    - name: com.alibaba.csp:sentinel-transport-simple-http
+      license: Apache-2.0
+    - name: com.alibaba.csp:sentinel-transport-common
+      license: Apache-2.0
+    - name: com.alibaba.csp:sentinel-datasource-extension
+      license: Apache-2.0
+    - name: com.alibaba.csp:sentinel-core
+      license: Apache-2.0
     - name: com.google.protobuf:protobuf-java
       license: BSD 3-clause
     - name: com.google.protobuf:protobuf-java-util
+      license: BSD 3-clause
+    - name: org.antlr:antlr4
+      license: BSD 3-clause
+    - name: org.antlr:antlr-runtime
+      license: BSD 3-clause
+    - name: org.antlr:ST4
       license: BSD 3-clause
     # multi license
     - name: org.javassist:javassist

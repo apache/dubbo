@@ -281,6 +281,7 @@ public interface CommonConstants {
     String MONITOR_KEY = "monitor";
     String BACKGROUND_KEY = "background";
     String CLUSTER_KEY = "cluster";
+    String MERGEABLE_CLUSTER_NAME = "mergeable";
     String USERNAME_KEY = "username";
     String PASSWORD_KEY = "password";
     String HOST_KEY = "host";
@@ -633,7 +634,11 @@ public interface CommonConstants {
     String DUBBO_PACKABLE_METHOD_FACTORY = "dubbo.application.parameters." + PACKABLE_METHOD_FACTORY_KEY;
 
     String DUBBO_TAG_HEADER = "dubbo-tag";
-  
+
     String REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY = "restServiceDeployerAttributeKey";
 
+    String SERVICE_DEPLOYER_ATTRIBUTE_KEY = "serviceDeployer";
+    String RESTEASY_NETTY_HTTP_REQUEST_ATTRIBUTE_KEY = "resteasyNettyHttpRequest";
+
+    String DUBBO_MANUAL_REGISTER_KEY = "dubbo.application.manual-register";
 }
