@@ -34,7 +34,7 @@ import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
 
 public abstract class CombMetricsCollector<E extends TimeCounterEvent> extends AbstractMetricsListener<E> implements ApplicationMetricsCollector<E>, ServiceMetricsCollector<E>, MethodMetricsCollector<E> {
 
-    private final BaseStatComposite stats;
+    protected final BaseStatComposite stats;
     private MetricsEventMulticaster eventMulticaster;
 
 
@@ -80,6 +80,10 @@ public abstract class CombMetricsCollector<E extends TimeCounterEvent> extends A
         stats.calcMethodKeyRt(invocation, registryOpType, responseTime);
     }
 
+    public void setAppNum(MetricsKey metricsKey,Long num) {
+        stats.setAppKey(metricsKey, num);
+    }
+  
     @Override
     public void increment(MethodMetric methodMetric, MetricsKeyWrapper wrapper, int size) {
         this.stats.incrementMethodKey(wrapper, methodMetric, size);
@@ -107,6 +111,10 @@ public abstract class CombMetricsCollector<E extends TimeCounterEvent> extends A
     @Override
     public void onEventError(TimeCounterEvent event) {
         eventMulticaster.publishErrorEvent(event);
+    }
+
+    protected BaseStatComposite getStats() {
+        return stats;
     }
 }
 

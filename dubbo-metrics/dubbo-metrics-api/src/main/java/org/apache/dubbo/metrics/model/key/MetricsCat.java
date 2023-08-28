@@ -43,7 +43,7 @@ public class MetricsCat {
     }
 
     /**
-     * @param tpFunc   Ternary function, corresponding to finish and error events, because an additional record rt is required, and the type type of metricsKey is required
+     * @param tpFunc   Ternary function, corresponding to finish and error events, because an additional record rt is required, and the type of metricsKey is required
      */
     public MetricsCat(MetricsKey metricsKey, TpFunction<MetricsKey, MetricsPlaceValue, CombMetricsCollector, AbstractMetricsKeyListener> tpFunc) {
         this.eventFunc = collector -> tpFunc.apply(metricsKey, placeType, collector);

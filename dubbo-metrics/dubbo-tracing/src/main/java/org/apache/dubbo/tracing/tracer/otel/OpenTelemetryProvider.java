@@ -18,13 +18,19 @@ package org.apache.dubbo.tracing.tracer.otel;
 
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.lang.Nullable;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.config.nested.BaggageConfig;
+import org.apache.dubbo.config.nested.ExporterConfig;
 import org.apache.dubbo.config.nested.PropagationConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.tracing.exporter.TraceExporterFactory;
+import org.apache.dubbo.tracing.exporter.otlp.OTlpSpanExporter;
+import org.apache.dubbo.tracing.exporter.zipkin.ZipkinSpanExporter;
 import org.apache.dubbo.tracing.tracer.TracerProvider;
+import org.apache.dubbo.tracing.utils.PropagationType;
 
 import io.micrometer.tracing.Tracer;
 import io.micrometer.tracing.otel.bridge.CompositeSpanExporter;
@@ -36,28 +42,17 @@ import io.micrometer.tracing.otel.bridge.OtelTracer;
 import io.micrometer.tracing.otel.bridge.Slf4JBaggageEventListener;
 import io.micrometer.tracing.otel.bridge.Slf4JEventListener;
 import io.micrometer.tracing.otel.propagation.BaggageTextMapPropagator;
-import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
-import io.opentelemetry.context.ContextStorage;
-import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.extension.trace.propagation.B3Propagator;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.sdk.trace.samplers.Sampler;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static org.apache.dubbo.tracing.utils.ObservationConstants.DEFAULT_APPLICATION_NAME;
+
 public class OpenTelemetryProvider implements TracerProvider {
 
-    private static final String DEFAULT_APPLICATION_NAME = "dubbo-application";
+    private final static ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(OpenTelemetryProvider.class);
+
     private final ApplicationModel applicationModel;
     private final TracingConfig tracingConfig;
 
@@ -72,7 +67,7 @@ public class OpenTelemetryProvider implements TracerProvider {
     @Override
     public Tracer getTracer() {
         // [OTel component] SpanExporter is a component that gets called when a span is finished.
-        List<SpanExporter> spanExporters = TraceExporterFactory.getSpanExporters(applicationModel, tracingConfig.getTracingExporter());
+        List<io.opentelemetry.sdk.trace.export.SpanExporter> spanExporters = getSpanExporters();
 
         String applicationName = applicationModel.getApplicationConfigManager().getApplication()
                 .map(ApplicationConfig::getName)
@@ -84,18 +79,18 @@ public class OpenTelemetryProvider implements TracerProvider {
         this.otelCurrentTraceContext = createCurrentTraceContext();
 
         // [OTel component] SdkTracerProvider is an SDK implementation for TracerProvider
-        SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
+        io.opentelemetry.sdk.trace.SdkTracerProvider sdkTracerProvider = io.opentelemetry.sdk.trace.SdkTracerProvider.builder()
                 .setSampler(getSampler())
-                .setResource(Resource.create(Attributes.of(ResourceAttributes.SERVICE_NAME, applicationName)))
-                .addSpanProcessor(BatchSpanProcessor
+                .setResource(io.opentelemetry.sdk.resources.Resource.create(io.opentelemetry.api.common.Attributes.of(io.opentelemetry.semconv.resource.attributes.ResourceAttributes.SERVICE_NAME, applicationName)))
+                .addSpanProcessor(io.opentelemetry.sdk.trace.export.BatchSpanProcessor
                         .builder(new CompositeSpanExporter(spanExporters, null, null, null))
                         .build())
                 .build();
 
-        ContextPropagators otelContextPropagators = createOtelContextPropagators();
+        io.opentelemetry.context.propagation.ContextPropagators otelContextPropagators = createOtelContextPropagators();
 
         // [OTel component] The SDK implementation of OpenTelemetry
-        OpenTelemetrySdk openTelemetrySdk = OpenTelemetrySdk.builder()
+        io.opentelemetry.sdk.OpenTelemetrySdk openTelemetrySdk = io.opentelemetry.sdk.OpenTelemetrySdk.builder()
                 .setTracerProvider(sdkTracerProvider)
                 .setPropagators(otelContextPropagators)
                 .build();
@@ -113,14 +108,31 @@ public class OpenTelemetryProvider implements TracerProvider {
                         Collections.emptyList()));
     }
 
+    private List<io.opentelemetry.sdk.trace.export.SpanExporter> getSpanExporters() {
+        ExporterConfig exporterConfig = tracingConfig.getTracingExporter();
+        ExporterConfig.ZipkinConfig zipkinConfig = exporterConfig.getZipkinConfig();
+        ExporterConfig.OtlpConfig otlpConfig = exporterConfig.getOtlpConfig();
+        List<io.opentelemetry.sdk.trace.export.SpanExporter> res = new ArrayList<>();
+        if (zipkinConfig != null && StringUtils.isNotEmpty(zipkinConfig.getEndpoint())) {
+            LOGGER.info("Create zipkin span exporter.");
+            res.add(ZipkinSpanExporter.getSpanExporter(applicationModel, zipkinConfig));
+        }
+        if (otlpConfig != null && StringUtils.isNotEmpty(otlpConfig.getEndpoint())) {
+            LOGGER.info("Create OTlp span exporter.");
+            res.add(OTlpSpanExporter.getSpanExporter(applicationModel, otlpConfig));
+        }
+
+        return res;
+    }
+
     /**
      * sampler with probability
      *
      * @return sampler
      */
-    private Sampler getSampler() {
-        Sampler rootSampler = Sampler.traceIdRatioBased(tracingConfig.getSampling().getProbability());
-        return Sampler.parentBased(rootSampler);
+    private io.opentelemetry.sdk.trace.samplers.Sampler getSampler() {
+        io.opentelemetry.sdk.trace.samplers.Sampler rootSampler = io.opentelemetry.sdk.trace.samplers.Sampler.traceIdRatioBased(tracingConfig.getSampling().getProbability());
+        return io.opentelemetry.sdk.trace.samplers.Sampler.parentBased(rootSampler);
     }
 
     private List<EventListener> getEventListeners() {
@@ -141,13 +153,13 @@ public class OpenTelemetryProvider implements TracerProvider {
     }
 
     private OtelCurrentTraceContext createCurrentTraceContext() {
-        ContextStorage.addWrapper(new EventPublishingContextWrapper(publisher));
+        io.opentelemetry.context.ContextStorage.addWrapper(new EventPublishingContextWrapper(publisher));
         return new OtelCurrentTraceContext();
     }
 
-    private ContextPropagators createOtelContextPropagators() {
-        return ContextPropagators.create(
-                TextMapPropagator.composite(
+    private io.opentelemetry.context.propagation.ContextPropagators createOtelContextPropagators() {
+        return io.opentelemetry.context.propagation.ContextPropagators.create(
+                io.opentelemetry.context.propagation.TextMapPropagator.composite(
                         PropagatorFactory.getPropagator(tracingConfig.getPropagation(),
                                 tracingConfig.getBaggage(),
                                 otelCurrentTraceContext
@@ -172,41 +184,44 @@ public class OpenTelemetryProvider implements TracerProvider {
 
     static class PropagatorFactory {
 
-        public static TextMapPropagator getPropagator(PropagationConfig propagationConfig,
-                                                      @Nullable BaggageConfig baggageConfig,
-                                                      @Nullable OtelCurrentTraceContext currentTraceContext) {
+        public static io.opentelemetry.context.propagation.TextMapPropagator getPropagator(PropagationConfig propagationConfig,
+                                                                                           @Nullable BaggageConfig baggageConfig,
+                                                                                           @Nullable OtelCurrentTraceContext currentTraceContext) {
             if (baggageConfig == null || !baggageConfig.getEnabled()) {
                 return getPropagatorWithoutBaggage(propagationConfig);
             }
             return getPropagatorWithBaggage(propagationConfig, baggageConfig, currentTraceContext);
         }
 
-        private static TextMapPropagator getPropagatorWithoutBaggage(PropagationConfig propagationConfig) {
+        private static io.opentelemetry.context.propagation.TextMapPropagator getPropagatorWithoutBaggage(PropagationConfig propagationConfig) {
             String type = propagationConfig.getType();
-            if ("B3".equals(type)) {
-                return B3Propagator.injectingSingleHeader();
-            } else if ("W3C".equals(type)) {
-                return W3CTraceContextPropagator.getInstance();
+            PropagationType propagationType = PropagationType.forValue(type);
+
+            if (PropagationType.B3 == propagationType) {
+                return io.opentelemetry.extension.trace.propagation.B3Propagator.injectingSingleHeader();
+            } else if (PropagationType.W3C == propagationType) {
+                return io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator.getInstance();
             }
-            return TextMapPropagator.noop();
+            return io.opentelemetry.context.propagation.TextMapPropagator.noop();
         }
 
-        private static TextMapPropagator getPropagatorWithBaggage(PropagationConfig propagationConfig,
-                                                                  BaggageConfig baggageConfig,
-                                                                  OtelCurrentTraceContext currentTraceContext) {
+        private static io.opentelemetry.context.propagation.TextMapPropagator getPropagatorWithBaggage(PropagationConfig propagationConfig,
+                                                                                                       BaggageConfig baggageConfig,
+                                                                                                       OtelCurrentTraceContext currentTraceContext) {
             String type = propagationConfig.getType();
-            if ("B3".equals(type)) {
+            PropagationType propagationType = PropagationType.forValue(type);
+            if (PropagationType.B3 == propagationType) {
                 List<String> remoteFields = baggageConfig.getRemoteFields();
-                return TextMapPropagator.composite(B3Propagator.injectingSingleHeader(),
+                return io.opentelemetry.context.propagation.TextMapPropagator.composite(io.opentelemetry.extension.trace.propagation.B3Propagator.injectingSingleHeader(),
                         new BaggageTextMapPropagator(remoteFields,
                                 new OtelBaggageManager(currentTraceContext, remoteFields, Collections.emptyList())));
-            } else if ("W3C".equals(type)) {
+            } else if (PropagationType.W3C == propagationType) {
                 List<String> remoteFields = baggageConfig.getRemoteFields();
-                return TextMapPropagator.composite(W3CTraceContextPropagator.getInstance(),
-                        W3CBaggagePropagator.getInstance(), new BaggageTextMapPropagator(remoteFields,
+                return io.opentelemetry.context.propagation.TextMapPropagator.composite(io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator.getInstance(),
+                        io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator.getInstance(), new BaggageTextMapPropagator(remoteFields,
                                 new OtelBaggageManager(currentTraceContext, remoteFields, Collections.emptyList())));
             }
-            return TextMapPropagator.noop();
+            return io.opentelemetry.context.propagation.TextMapPropagator.noop();
         }
     }
 }

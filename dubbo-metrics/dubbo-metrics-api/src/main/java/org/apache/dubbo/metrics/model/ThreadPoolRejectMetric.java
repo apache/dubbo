@@ -30,6 +30,7 @@ import static org.apache.dubbo.common.constants.MetricsConstants.TAG_HOSTNAME;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_IP;
 
 public class ThreadPoolRejectMetric implements Metric{
+
     private String applicationName;
 
     private String threadPoolName;
@@ -69,6 +70,7 @@ public class ThreadPoolRejectMetric implements Metric{
         return Objects.hash(applicationName, threadPoolName);
     }
 
+    @Override
     public Map<String, String> getTags() {
         Map<String, String> tags = new HashMap<>();
         tags.put(TAG_IP, getLocalHost());

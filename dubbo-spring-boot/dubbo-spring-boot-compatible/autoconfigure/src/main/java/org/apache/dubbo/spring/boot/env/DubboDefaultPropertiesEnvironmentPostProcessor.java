@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_APPLICATION_NAME_PROPERTY;
-import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_APPLICATION_QOS_ENABLE_PROPERTY;
 import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_CONFIG_MULTIPLE_PROPERTY;
 import static org.apache.dubbo.spring.boot.util.DubboUtils.SPRING_APPLICATION_NAME_PROPERTY;
 
@@ -73,8 +72,6 @@ public class DubboDefaultPropertiesEnvironmentPostProcessor implements Environme
         Map<String, Object> defaultProperties = new HashMap<>();
         setDubboApplicationNameProperty(environment, defaultProperties);
         setDubboConfigMultipleProperty(defaultProperties);
-        setDubboApplicationQosEnableProperty(defaultProperties);
-        //setAllowBeanDefinitionOverriding(defaultProperties);
         return defaultProperties;
     }
 
@@ -90,9 +87,7 @@ public class DubboDefaultPropertiesEnvironmentPostProcessor implements Environme
         defaultProperties.put(DUBBO_CONFIG_MULTIPLE_PROPERTY, Boolean.TRUE.toString());
     }
 
-    private void setDubboApplicationQosEnableProperty(Map<String, Object> defaultProperties) {
-        defaultProperties.put(DUBBO_APPLICATION_QOS_ENABLE_PROPERTY, Boolean.TRUE.toString());
-    }
+
 
     /**
      * Set {@link #ALLOW_BEAN_DEFINITION_OVERRIDING_PROPERTY "spring.main.allow-bean-definition-overriding"} to be
