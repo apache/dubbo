@@ -44,6 +44,10 @@ public class WrapperHttpMessageCodec implements HttpMessageCodec {
 
     private final Map<String, Serialization> serializations;
 
+    private Class<?>[] encodeTypes;
+
+    private Class<?>[] decodeTypes;
+
     private String serializeType = DEFAULT_SERIALIZE_TYPE;
 
     public WrapperHttpMessageCodec() {
@@ -52,6 +56,14 @@ public class WrapperHttpMessageCodec implements HttpMessageCodec {
 
     public void setSerializeType(String serializeType) {
         this.serializeType = serializeType;
+    }
+
+    public void setEncodeTypes(Class<?>[] encodeTypes) {
+        this.encodeTypes = encodeTypes;
+    }
+
+    public void setDecodeTypes(Class<?>[] decodeTypes) {
+        this.decodeTypes = decodeTypes;
     }
 
     private Map<String, Serialization> initSerializations() {
@@ -73,10 +85,9 @@ public class WrapperHttpMessageCodec implements HttpMessageCodec {
             ObjectOutput serialize = serialization.serialize(null, bos);
             serialize.writeObject(data);
             serialize.flushBuffer();
-            String type = data == null ? null : data.getClass().getName();
             byte[] encoded = TripleCustomerProtocolWapper.TripleResponseWrapper.Builder.newBuilder()
                 .setSerializeType(serializeType)
-                .setType(type)
+                .setType(encodeTypes[0].getName())
                 .setData(bos.toByteArray())
                 .build()
                 .toByteArray();

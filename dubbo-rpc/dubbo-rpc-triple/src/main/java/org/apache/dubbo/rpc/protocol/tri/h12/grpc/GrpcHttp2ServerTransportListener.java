@@ -193,6 +193,9 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
                     setRpcInvocation(buildRpcInvocation(getInvoker(), getServiceDescriptor(), methodDescriptor));
                     //replace decoder
                     HttpMessageListener httpMessageListener = GrpcHttp2ServerTransportListener.super.newHttpMessageListener();
+                    GrpcCompositeCodec grpcCompositeCodec = (GrpcCompositeCodec) getHttpMessageCodec();
+                    grpcCompositeCodec.setEncodeTypes(new Class[]{getMethodMetadata().getActualResponseType()});
+                    grpcCompositeCodec.setDecodeTypes(getMethodMetadata().getActualRequestTypes());
                     setHttpMessageListener(httpMessageListener);
                 }
                 transferToOutputStream(merge, new ByteArrayInputStream(data));

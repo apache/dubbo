@@ -48,6 +48,15 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
         this.wrapperHttpMessageCodec = wrapperHttpMessageCodec;
     }
 
+    public void setEncodeTypes(Class<?>[] encodeTypes) {
+        this.wrapperHttpMessageCodec.setEncodeTypes(encodeTypes);
+    }
+
+    public void setDecodeTypes(Class<?>[] decodeTypes) {
+        this.wrapperHttpMessageCodec.setDecodeTypes(decodeTypes);
+    }
+
+
     @Override
     public void encode(OutputStream outputStream, Object data) throws EncodeException {
         //protobuf
