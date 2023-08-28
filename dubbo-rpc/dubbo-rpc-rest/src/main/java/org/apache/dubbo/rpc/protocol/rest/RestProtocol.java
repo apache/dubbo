@@ -131,7 +131,7 @@ public class RestProtocol extends AbstractProtocol {
                 assert unsupportedMethods != null;
                 logger.warn("", "", "", String.format("Interface %s does not support json serialization, the specific methods are %s.", clazz.getName(), unsupportedMethods));
             } else {
-                logger.info("Check json compatibility complete, all methods can be serialized using json.");
+                logger.debug("Check json compatibility complete, all methods of {} can be serialized using json.", clazz.getName());
             }
         } else if (JSON_CHECK_LEVEL_STRICT.equals(jsonCheckLevel)) {
             boolean compatibility = JsonCompatibilityUtil.checkClassCompatibility(clazz);
@@ -140,10 +140,8 @@ public class RestProtocol extends AbstractProtocol {
                 assert unsupportedMethods != null;
                 throw new RpcException(String.format("Interface %s does not support json serialization, the specific methods are %s.", clazz.getName(), unsupportedMethods));
             } else {
-                logger.info("Check json compatibility complete, all methods can be serialized using json.");
+                logger.debug("Check json compatibility complete, all methods of {} can be serialized using json.", clazz.getName());
             }
-        } else {
-            logger.info("Ignore json compatibility check.");
         }
     }
 

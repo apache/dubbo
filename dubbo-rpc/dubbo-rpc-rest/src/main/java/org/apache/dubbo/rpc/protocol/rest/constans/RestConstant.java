@@ -58,7 +58,7 @@ public interface RestConstant {
     String KEEP_ALIVE_TIMEOUT_PARAM = "keep.alive.timeout";
 
     String JSON_CHECK_LEVEL = "jsonCheckLevel";
-    String JSON_CHECK_LEVEL_DISABLED = "disable";
+    String JSON_CHECK_LEVEL_DISABLED = "disabled";
     String JSON_CHECK_LEVEL_WARN = "warn";
     String JSON_CHECK_LEVEL_STRICT = "strict";
 

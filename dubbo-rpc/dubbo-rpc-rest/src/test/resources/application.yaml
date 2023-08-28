@@ -1,0 +1,9 @@
+dubbo:
+  application:
+    name: dubbo-rest-demo-provider
+  protocol:
+    name: rest
+    port: 8090
+    serialization: fastjson2
+  registry:
+    address: zookeeper://${zookeeper.address:127.0.0.1}:2180
