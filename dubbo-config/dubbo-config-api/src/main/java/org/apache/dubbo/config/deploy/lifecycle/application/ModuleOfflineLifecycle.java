@@ -15,9 +15,9 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import java.util.List;
 
 /**
- * This lifecycle will execute module offline operations when a module pre destroys.
+ * This lifecycle will execute module offline operations when a module pre-destroys.
  */
-@Activate(order = 1000)
+@Activate(order= -900)
 public class ModuleOfflineLifecycle implements ApplicationLifecycle{
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ModuleOfflineLifecycle.class);

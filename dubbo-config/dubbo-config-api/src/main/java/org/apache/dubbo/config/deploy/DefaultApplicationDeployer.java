@@ -273,12 +273,14 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     @Override
     public void prepareApplicationInstance() {
-        if (hasPreparedApplicationInstance.get()) {
-            return;
-        }
-        if (isRegisterConsumerInstance()) {
-            exportMetadataService();
-        }
+        //Migrated to ApplicationPrepareLifecycle
+
+//        if (hasPreparedApplicationInstance.get()) {
+//            return;
+//        }
+//        if (isRegisterConsumerInstance()) {
+//            exportMetadataService();
+//        }
     }
 
     @Override
@@ -419,54 +421,49 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     @Override
     public void checkState(ModuleModel moduleModel, DeployState moduleState) {
         synchronized (stateLock) {
-            if (!moduleModel.isInternal() && moduleState == DeployState.STARTED) {
-                prepareApplicationInstance();
-            }
 
             runPreModuleChanged(moduleModel,moduleState);
-            DeployState newState = calculateState();
+
             DeployState oldState = getState();
-            switch (newState) {
-                case STARTED:
-                    //STARTING -> STARTED, notify ApplicationLifecycles
-                    if (oldState == DeployState.STARTING) {
-                        setStarted();
-                        try {
-                            runPostModuleChanged(moduleModel,moduleState,newState,oldState);
-                        } finally {
-                            completeStartFuture(true);
+            DeployState newState = calculateState();
+
+            if(newState == DeployState.STARTED && oldState == DeployState.STARTING){
+                setStarted();
+                try {
+                    runPostModuleChanged(moduleModel, moduleState, newState, oldState);
+                } finally {
+                    completeStartFuture(true);
+                }
+            }else {
+                switch (newState) {
+                    case STARTING:
+                        onStarting();
+                        break;
+                    case STOPPING:
+                        onStopping();
+                        break;
+                    case STOPPED:
+                        onStopped();
+                        break;
+                    case FAILED:
+                        Throwable error = null;
+                        ModuleModel errorModule = null;
+                        for (ModuleModel module : applicationModel.getModuleModels()) {
+                            ModuleDeployer deployer = module.getDeployer();
+                            if (deployer.isFailed() && deployer.getError() != null) {
+                                error = deployer.getError();
+                                errorModule = module;
+                                break;
+                            }
                         }
-                    }
-                    break;
-                case STARTING:
-                    onStarting();
-                    break;
-                case STOPPING:
-                    onStopping();
-                    break;
-                case STOPPED:
-                    onStopped();
-                    break;
-                case FAILED:
-                    Throwable error = null;
-                    ModuleModel errorModule = null;
-                    for (ModuleModel module : applicationModel.getModuleModels()) {
-                        ModuleDeployer deployer = module.getDeployer();
-                        if (deployer.isFailed() && deployer.getError() != null) {
-                            error = deployer.getError();
-                            errorModule = module;
-                            break;
-                        }
-                    }
-                    onFailed(getIdentifier() + " found failed module: " + errorModule.getDesc(), error);
-                    break;
-                case PENDING:
-                    // cannot change to pending from other state
-                    // setPending();
-                    break;
-            }
-            if(!(newState == DeployState.STARTED && oldState == DeployState.STARTING)){
-               lifecycleManager.postModuleChanged(newContext(),moduleModel, moduleState, newState, oldState);
+                        onFailed(getIdentifier() + " found failed module: " + errorModule.getDesc(), error);
+                        break;
+                    case PENDING:
+                        // cannot change to pending from other state
+                        // setPending();
+                        break;
+                }
+                runPostModuleChanged(moduleModel, moduleState, newState, oldState);
             }
         }
     }
@@ -532,21 +529,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 listener.onInitialize(applicationModel);
             } catch (Throwable e) {
                 logger.error(CONFIG_FAILED_START_MODEL, "", "", getIdentifier() + " an exception occurred when handle initialize event", e);
-            }
-        }
-    }
-
-    private void exportMetadataService() {
-        if (!isStarting()) {
-            return;
-        }
-        for (DeployListener<ApplicationModel> listener : listeners) {
-            try {
-                if (listener instanceof ApplicationDeployListener) {
-                    ((ApplicationDeployListener) listener).onModuleStarted(applicationModel);
-                }
-            } catch (Throwable e) {
-                logger.error(CONFIG_FAILED_START_MODEL, "", "", getIdentifier() + " an exception occurred when handle starting event", e);
             }
         }
     }
