@@ -86,7 +86,12 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
         responseObserver.setCancellationContext(cancellationContext);
         switch (methodDescriptor.getRpcType()) {
             case UNARY:
-                boolean applyCustomizeException = ReflectionPackableMethod.needWrap(methodDescriptor, getMethodMetadata().getActualRequestTypes(), getMethodMetadata().getActualResponseType());
+                Http2Header httpMetadata = getHttpMetadata();
+                boolean hasStub = getPathResolver().hasNativeStub(httpMetadata.path());
+                boolean applyCustomizeException = false;
+                if (!hasStub) {
+                    applyCustomizeException = ReflectionPackableMethod.needWrap(methodDescriptor, getMethodMetadata().getActualRequestTypes(), getMethodMetadata().getActualResponseType());
+                }
                 UnaryServerCallListener unaryServerCallListener = startUnary(invocation, invoker, responseObserver);
                 unaryServerCallListener.setApplyCustomizeException(applyCustomizeException);
                 return unaryServerCallListener;
