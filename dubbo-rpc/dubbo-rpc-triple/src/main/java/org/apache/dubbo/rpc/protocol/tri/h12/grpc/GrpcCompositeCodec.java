@@ -86,6 +86,14 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
         return wrapperHttpMessageCodec.decode(inputStream, targetType);
     }
 
+    @Override
+    public Object[] decode(InputStream inputStream, Class<?>[] targetTypes) throws DecodeException {
+        if (targetTypes.length > 1) {
+            return wrapperHttpMessageCodec.decode(inputStream, targetTypes);
+        }
+        return HttpMessageCodec.super.decode(inputStream, targetTypes);
+    }
+
     private boolean isProtobuf(Class<?> targetType) {
         if (targetType == null) {
             return false;
