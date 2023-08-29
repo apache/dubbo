@@ -430,6 +430,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             DeployState oldState = getState();
             DeployState newState = calculateState();
 
+            // STARTING -> STARTED
             if(newState == DeployState.STARTED && oldState == DeployState.STARTING){
                 setStarted();
                 try {
@@ -438,6 +439,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     completeStartFuture(true);
                 }
             }else {
+                //other
                 switch (newState) {
                     case STARTING:
                         onStarting();
