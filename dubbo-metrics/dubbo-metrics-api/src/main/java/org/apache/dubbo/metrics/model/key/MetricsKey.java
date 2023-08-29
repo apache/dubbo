@@ -61,9 +61,9 @@ public enum MetricsKey {
     METRIC_RT_P95("rt.milliseconds.p95", "Response Time P95"),
     METRIC_RT_P90("rt.milliseconds.p90", "Response Time P90"),
     METRIC_RT_P50("rt.milliseconds.p50", "Response Time P50"),
-    METRIC_RT_MIN_AGG("rt.milliseconds.min.aggregate", "Aggregated Min Response"),
-    METRIC_RT_MAX_AGG("rt.milliseconds.max.aggregate", "Aggregated Max Response"),
-    METRIC_RT_AVG_AGG("rt.milliseconds.avg.aggregate", "Aggregated Avg Response"),
+    METRIC_RT_MIN_AGG("rt.min.milliseconds.aggregate", "Aggregated Min Response"),
+    METRIC_RT_MAX_AGG("rt.max.milliseconds.aggregate", "Aggregated Max Response"),
+    METRIC_RT_AVG_AGG("rt.avg.milliseconds.aggregate", "Aggregated Avg Response"),
 
     // register metrics key
     REGISTER_METRIC_REQUESTS("registry.register.requests.total", "Total Register Requests"),
@@ -109,9 +109,9 @@ public enum MetricsKey {
     METADATA_SUBSCRIBE_METRIC_NUM_FAILED("metadata.subscribe.num.failed.total", "Failed Metadata Subscribe Num"),
 
     // register service metrics key
-    SERVICE_REGISTER_METRIC_REQUESTS("registry.total", "Total Service-Level Register Requests"),
-    SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED("registry.succeed.total", "Succeed Service-Level Register Requests"),
-    SERVICE_REGISTER_METRIC_REQUESTS_FAILED("registry.failed.total", "Failed Service-Level Register Requests"),
+    SERVICE_REGISTER_METRIC_REQUESTS("service.total", "Total Service-Level Register Requests"),
+    SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED("service.succeed.total", "Succeed Service-Level Register Requests"),
+    SERVICE_REGISTER_METRIC_REQUESTS_FAILED("service.failed.total", "Failed Service-Level Register Requests"),
 
     // subscribe metrics key
     SERVICE_SUBSCRIBE_METRIC_NUM("registry.subscribe.service.num.total", "Total Service-Level Subscribe Num"),
