@@ -33,6 +33,8 @@ public interface CommonConstants {
 
     String CONSUMER = "consumer";
 
+    String CALLBACK = "callback";
+
     String APPLICATION_KEY = "application";
 
     String APPLICATION_VERSION_KEY = "application.version";
@@ -242,6 +244,8 @@ public interface CommonConstants {
     String REMOTE_METADATA_STORAGE_TYPE = "remote";
 
     String INTERFACE_REGISTER_MODE = "interface";
+
+    String INSTANCE_REGISTER_MODE = "instance";
 
     String DEFAULT_REGISTER_MODE = "all";
 
@@ -639,8 +643,7 @@ public interface CommonConstants {
 
     String REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY = "restServiceDeployerAttributeKey";
 
-    String SERVICE_DEPLOYER_ATTRIBUTE_KEY = "serviceDeployer";
-    String RESTEASY_NETTY_HTTP_REQUEST_ATTRIBUTE_KEY = "resteasyNettyHttpRequest";
+    String SERVICE_DEPLOYER_ATTRIBUTE_KEY = "serviceDeployer";    String RESTEASY_NETTY_HTTP_REQUEST_ATTRIBUTE_KEY = "resteasyNettyHttpRequest";
 
     String DUBBO_MANUAL_REGISTER_KEY = "dubbo.application.manual-register";
 }

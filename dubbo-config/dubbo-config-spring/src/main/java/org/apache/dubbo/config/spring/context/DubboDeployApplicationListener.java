@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.context;
 
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.deploy.DeployListenerAdapter;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
@@ -169,6 +170,9 @@ public class DubboDeployApplicationListener implements ApplicationListener<Appli
     private void onContextClosedEvent(ContextClosedEvent event) {
         try {
             Object value = moduleModel.getAttribute(ModelConstants.KEEP_RUNNING_ON_SPRING_CLOSED);
+            if (value == null) {
+                value = ConfigurationUtils.getProperty(moduleModel, ModelConstants.KEEP_RUNNING_ON_SPRING_CLOSED_KEY);
+            }
             boolean keepRunningOnClosed = Boolean.parseBoolean(String.valueOf(value));
             if (!keepRunningOnClosed && !moduleModel.isDestroyed()) {
                 moduleModel.destroy();
@@ -182,7 +186,7 @@ public class DubboDeployApplicationListener implements ApplicationListener<Appli
 
     @Override
     public int getOrder() {
-        return HIGHEST_PRECEDENCE;
+        return LOWEST_PRECEDENCE;
     }
 
 }
