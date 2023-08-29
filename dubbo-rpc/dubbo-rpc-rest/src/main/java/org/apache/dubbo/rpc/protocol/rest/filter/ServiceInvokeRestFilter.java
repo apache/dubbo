@@ -22,6 +22,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.metadata.rest.PathMatcher;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.Invoker;
@@ -72,26 +73,28 @@ public class ServiceInvokeRestFilter implements RestRequestFilter {
                            RequestFacade request,
                            URL url,
                            ServiceDeployer serviceDeployer) throws Exception {
-        //  acquire metadata by request
-        InvokerAndRestMethodMetadataPair restMethodMetadataPair = RestRPCInvocationUtil.getRestMethodMetadataAndInvokerPair(request);
+        PathMatcher pathMatcher = RestRPCInvocationUtil.createPathMatcher(request);
 
         // path NoFound 404
-        if (restMethodMetadataPair == null) {
-            throw new PathNoFoundException("rest service Path no found, current path info:" + RestRPCInvocationUtil.createPathMatcher(request));
+        if (!serviceDeployer.hashRestMethod(pathMatcher)) {
+            throw new PathNoFoundException("rest service Path no found, current path info:" + pathMatcher);
         }
 
-        Invoker invoker = restMethodMetadataPair.getInvoker();
-
-        RestMethodMetadata restMethodMetadata = restMethodMetadataPair.getRestMethodMetadata();
 
         // method disallowed
-        if (!restMethodMetadata.getRequest().methodAllowed(request.getMethod())) {
+        if (!serviceDeployer.isMethodAllowed(pathMatcher)) {
             nettyHttpResponse.sendError(405, "service require request method is : "
-                + restMethodMetadata.getRequest().getMethod()
+                + serviceDeployer.pathHttpMethods(pathMatcher)
                 + ", but current request method is: " + request.getMethod()
             );
             return;
         }
+        // compare http method and  acquire metadata by request
+        InvokerAndRestMethodMetadataPair restMethodMetadataPair = RestRPCInvocationUtil.getRestMethodMetadataAndInvokerPair(pathMatcher.compareHttpMethod(true), serviceDeployer);
+
+        Invoker invoker = restMethodMetadataPair.getInvoker();
+
+        RestMethodMetadata restMethodMetadata = restMethodMetadataPair.getRestMethodMetadata();
 
 
         // content-type  support judge,throw unSupportException

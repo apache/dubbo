@@ -27,7 +27,9 @@ import io.netty.handler.codec.http.HttpHeaders.Names;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.LastHttpContent;
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.rest.media.MediaType;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
 
 
@@ -59,15 +61,14 @@ public class NettyHttpResponse implements HttpResponse {
     // raw response class
     private Class<?> entityClass;
 
-    public NettyHttpResponse(final ChannelHandlerContext ctx, final boolean keepAlive) {
-        this(ctx, keepAlive, null);
+    public NettyHttpResponse(final ChannelHandlerContext ctx, final boolean keepAlive, URL url) {
+        this(ctx, keepAlive, null, url);
     }
 
-    public NettyHttpResponse(final ChannelHandlerContext ctx, final boolean keepAlive, final HttpMethod method) {
+    public NettyHttpResponse(final ChannelHandlerContext ctx, final boolean keepAlive,  HttpMethod method, URL url) {
         outputHeaders = new HashMap<>();
         this.method = method;
-        // TODO chunk size to config
-        os = new ChunkOutputStream(this, ctx, 1000);
+        os = new ChunkOutputStream(this, ctx, url.getParameter(Constants.PAYLOAD_KEY, Constants.DEFAULT_PAYLOAD));
         this.ctx = ctx;
         this.keepAlive = keepAlive;
     }
