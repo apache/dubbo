@@ -1692,6 +1692,11 @@
                 <xsd:documentation><![CDATA[ The protocol context path. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="json-check-level" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The level of json compatibility check. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="register" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The protocol can be register to registry. ]]></xsd:documentation>
