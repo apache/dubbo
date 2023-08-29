@@ -138,7 +138,7 @@ public class RestProtocol extends AbstractProtocol {
             if (!compatibility) {
                 List<String> unsupportedMethods = JsonCompatibilityUtil.getUnsupportedMethods(clazz);
                 assert unsupportedMethods != null;
-                throw new RpcException(String.format("Interface %s does not support json serialization, the specific methods are %s.", clazz.getName(), unsupportedMethods));
+                throw new IllegalStateException(String.format("Interface %s does not support json serialization, the specific methods are %s.", clazz.getName(), unsupportedMethods));
             } else {
                 logger.debug("Check json compatibility complete, all methods of {} can be serialized using json.", clazz.getName());
             }
