@@ -39,7 +39,6 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.deploy.context.ApplicationContext;
 import org.apache.dubbo.config.deploy.lifecycle.manager.ApplicationLifecycleManager;
 import org.apache.dubbo.config.utils.CompositeReferenceCache;
-import org.apache.dubbo.metrics.service.MetricsServiceExporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
@@ -48,7 +47,6 @@ import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -62,19 +60,23 @@ import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationModel> implements ApplicationDeployer {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DefaultApplicationDeployer.class);
+
     private final ApplicationModel applicationModel;
+
     private final ConfigManager configManager;
+
     private final Environment environment;
+
     private final ReferenceCache referenceCache;
+
     private final FrameworkExecutorRepository frameworkExecutorRepository;
     private final ExecutorRepository executorRepository;
+
     private final AtomicBoolean hasPreparedApplicationInstance = new AtomicBoolean(false);
     private final AtomicBoolean hasPreparedInternalModule = new AtomicBoolean(false);
-    private ScheduledFuture<?> asyncMetadataFuture;
     private volatile CompletableFuture<Boolean> startFuture;
     private final DubboShutdownHook dubboShutdownHook;
     private final ApplicationLifecycleManager lifecycleManager;
-    private volatile MetricsServiceExporter metricsServiceExporter;
 
     private final Object stateLock = new Object();
     private final Object startLock = new Object();
@@ -86,6 +88,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         this.applicationModel = applicationModel;
         configManager = applicationModel.getApplicationConfigManager();
         environment = applicationModel.modelEnvironment();
+
         referenceCache = new CompositeReferenceCache(applicationModel);
         frameworkExecutorRepository = applicationModel.getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
         executorRepository = ExecutorRepository.getInstance(applicationModel);
@@ -109,8 +112,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     @Override
-    public ApplicationModel getApplicationModel(){
-            return applicationModel;
+    public ApplicationModel getApplicationModel() {
+        return applicationModel;
     }
 
     private <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
@@ -524,7 +527,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void onInitialize() {
-        for (DeployListener<ApplicationModel> listener :listeners) {
+        for (DeployListener<ApplicationModel> listener : listeners) {
             try {
                 listener.onInitialize(applicationModel);
             } catch (Throwable e) {
@@ -656,9 +659,4 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         lifecycleManager.postModuleChanged(newContext(),changedModule, moduleNewState, applicationNewState, applicationOldState);
     }
 
-    @Override
-    public void addDeployListener(DeployListener<ApplicationModel> listener) {
-        applicationModel.getBeanFactory().registerBean(listener);
-        super.addDeployListener(listener);
-    }
 }
