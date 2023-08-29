@@ -85,7 +85,7 @@ public class JsonCompatibilityCheckTest {
 
         URL newUrl = url.addParameter(JSON_CHECK_LEVEL, JSON_CHECK_LEVEL_STRICT);
 
-        Assertions.assertThrowsExactly(RpcException.class, () -> {
+        Assertions.assertThrowsExactly(IllegalStateException.class, () -> {
             Exporter<RestDemoService> exporter = null;
             try {
                 exporter = protocol.export(proxy.getInvoker(server, RestDemoService.class, newUrl));
