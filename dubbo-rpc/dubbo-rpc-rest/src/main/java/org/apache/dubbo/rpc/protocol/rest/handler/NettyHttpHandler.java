@@ -113,7 +113,7 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
 
 
     /**
-     * execute response filters
+     * execute rest filters
      *
      * @param url
      * @param requestFacade
@@ -123,8 +123,8 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
     public void executeFilters(URL url, RequestFacade requestFacade, NettyHttpResponse nettyHttpResponse, ServiceDeployer serviceDeployer, List<RestFilter> restFilters) throws Exception {
         RestFilterContext restFilterContext = new RestFilterContext(url, requestFacade, nettyHttpResponse, serviceDeployer);
 
-        for (RestFilter restResponseFilter : restFilters) {
-            restResponseFilter.filter(restFilterContext);
+        for (RestFilter restFilter : restFilters) {
+            restFilter.filter(restFilterContext);
             if (restFilterContext.complete()) {
                 break;
             }
