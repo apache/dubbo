@@ -20,23 +20,19 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.context.ConfigValidator;
-import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class ConfigValidateFacade implements ConfigValidator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConfigValidateFacade.class);
 
-    private static final AtomicReference<ConfigValidateFacade> INSTANCE = new AtomicReference<>();
-
     private final List<ConfigValidator> validators;
 
-    private ConfigValidateFacade(ScopeModel scopeModel) {
+    public ConfigValidateFacade(ScopeModel scopeModel) {
         ExtensionLoader<ConfigValidator> extensionLoader = scopeModel.getExtensionLoader(ConfigValidator.class);
         if(extensionLoader != null) {
             this.validators = extensionLoader.getActivateExtensions();
@@ -45,11 +41,6 @@ public class ConfigValidateFacade implements ConfigValidator {
         }else {
             this.validators = Collections.emptyList();
         }
-    }
-
-    public static ConfigValidateFacade getInstance() {
-        INSTANCE.compareAndSet(null, new ConfigValidateFacade(FrameworkModel.defaultModel().defaultApplication()));
-        return INSTANCE.get();
     }
 
     public List<ConfigValidator> getValidators() {
