@@ -29,19 +29,21 @@ public class MonitorConfigValidator implements ConfigValidator<MonitorConfig> {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MonitorConfigValidator.class);
 
-    public static void validateMonitorConfig(MonitorConfig config) {
+    public static boolean validateMonitorConfig(MonitorConfig config) {
         if (config != null) {
             if (!config.isValid()) {
                 logger.info("There's no valid monitor config found, if you want to open monitor statistics for Dubbo, " +
                     "please make sure your monitor is configured properly.");
+                return false;
             }
             ConfigValidationUtils.checkParameterName(config.getParameters());
         }
+        return true;
     }
 
     @Override
-    public void validate(MonitorConfig config) {
-        validateMonitorConfig(config);
+    public boolean validate(MonitorConfig config) {
+        return validateMonitorConfig(config);
     }
 
     @Override

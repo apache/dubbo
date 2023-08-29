@@ -28,8 +28,9 @@ public class SslConfigValidator implements ConfigValidator<SslConfig> {
     }
 
     @Override
-    public void validate(SslConfig config) {
+    public boolean validate(SslConfig config) {
         validateSslConfig(config);
+        return true;
     }
 
     @Override

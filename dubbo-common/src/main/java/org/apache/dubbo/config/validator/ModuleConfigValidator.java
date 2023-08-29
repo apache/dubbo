@@ -29,8 +29,9 @@ import static org.apache.dubbo.config.Constants.OWNER;
 public class ModuleConfigValidator implements ConfigValidator<ModuleConfig> {
 
     @Override
-    public void validate(ModuleConfig config) {
+    public boolean validate(ModuleConfig config) {
         validateModuleConfig(config);
+        return true;
     }
 
     public static void validateModuleConfig(ModuleConfig config) {

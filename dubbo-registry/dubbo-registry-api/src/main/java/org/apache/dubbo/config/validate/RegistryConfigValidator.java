@@ -33,8 +33,9 @@ import static org.apache.dubbo.remoting.Constants.TRANSPORTER_KEY;
 public class RegistryConfigValidator implements ConfigValidator<RegistryConfig> {
 
     @Override
-    public void validate(RegistryConfig config) {
+    public boolean validate(RegistryConfig config) {
         validateRegistryConfig(config);
+        return true;
     }
 
     public static void validateRegistryConfig(RegistryConfig config) {

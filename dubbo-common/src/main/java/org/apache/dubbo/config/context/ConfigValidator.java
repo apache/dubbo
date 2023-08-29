@@ -18,15 +18,24 @@ package org.apache.dubbo.config.context;
 
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.config.AbstractConfig;
+import org.apache.dubbo.config.exception.ConfigValidationException;
 
 /**
- * ConfigValidator. Allows provide an optional validation logic for a {@link AbstractConfig} impl.
+ * ConfigValidator. Allow provides an optional validation logic for a {@link AbstractConfig} impl.
  * @param <T> type of {@link AbstractConfig} implement
  */
 @SPI
 public interface ConfigValidator<T extends AbstractConfig> {
 
-    void validate(T config);
+    /**
+     * Validate a config.
+     * If the config does not pass validation, returns false or throws exception, depends on implementation.
+     *
+     * @param config the config to validate
+     * @return TRUE if pass validation
+     */
+    boolean validate(T config) throws ConfigValidationException;
 
     boolean isSupport(Class<?> configClass);
+
 }

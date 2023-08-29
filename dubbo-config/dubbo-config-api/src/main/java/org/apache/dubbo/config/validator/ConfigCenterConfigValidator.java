@@ -32,8 +32,9 @@ public class ConfigCenterConfigValidator implements ConfigValidator<ConfigCenter
     }
 
     @Override
-    public void validate(ConfigCenterConfig config) {
+    public boolean validate(ConfigCenterConfig config) {
         validateConfigCenterConfig(config);
+        return true;
     }
 
     @Override

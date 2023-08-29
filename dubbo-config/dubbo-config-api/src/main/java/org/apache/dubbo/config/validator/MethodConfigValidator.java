@@ -51,8 +51,9 @@ public class MethodConfigValidator implements ConfigValidator<MethodConfig> {
     }
 
     @Override
-    public void validate(MethodConfig config) {
+    public boolean validate(MethodConfig config) {
         validateMethodConfig(config);
+        return true;
     }
 
     @Override

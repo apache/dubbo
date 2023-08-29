@@ -45,8 +45,9 @@ import static org.apache.dubbo.remoting.Constants.TRANSPORTER_KEY;
 public class ProtocolConfigValidator implements ConfigValidator<ProtocolConfig> {
 
     @Override
-    public void validate(ProtocolConfig config) {
+    public boolean validate(ProtocolConfig config) {
         validateProtocolConfig(config);
+        return true;
     }
 
     public static void validateProtocolConfig(ProtocolConfig config) {

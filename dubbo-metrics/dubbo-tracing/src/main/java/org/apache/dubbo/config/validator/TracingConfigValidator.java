@@ -30,8 +30,9 @@ public class TracingConfigValidator implements ConfigValidator<TracingConfig> {
     }
 
     @Override
-    public void validate(TracingConfig config) {
+    public boolean validate(TracingConfig config) {
         validateTracingConfig(config);
+        return true;
     }
 
     @Override

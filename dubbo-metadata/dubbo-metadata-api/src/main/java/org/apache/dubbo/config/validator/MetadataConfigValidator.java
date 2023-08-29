@@ -26,13 +26,13 @@ import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 public class MetadataConfigValidator implements ConfigValidator<MetadataReportConfig> {
 
     @Override
-    public void validate(MetadataReportConfig config) {
-       validateMetadataConfig(config);
+    public boolean validate(MetadataReportConfig config) {
+       return validateMetadataConfig(config);
     }
 
-    public static void validateMetadataConfig(MetadataReportConfig metadataReportConfig) {
+    public static boolean validateMetadataConfig(MetadataReportConfig metadataReportConfig) {
         if (!isValidMetadataConfig(metadataReportConfig)) {
-            return;
+            return false;
         }
 
         String address = metadataReportConfig.getAddress();
@@ -41,6 +41,7 @@ public class MetadataConfigValidator implements ConfigValidator<MetadataReportCo
         if ((isEmpty(address) || !address.contains("://")) && isEmpty(protocol)) {
             throw new IllegalArgumentException("Please specify valid protocol or address for metadata report " + address);
         }
+        return true;
     }
 
     public static boolean isValidMetadataConfig(MetadataReportConfig metadataReportConfig) {

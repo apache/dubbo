@@ -172,16 +172,12 @@ public abstract class AbstractConfig implements Serializable {
         appendParameters0(parameters, config, prefix, false);
     }
 
-    public void validate() {
+    public boolean validate() {
         if (scopeModel != null) {
-            ConfigValidateFacade configValidateFacade;
-            configValidateFacade = scopeModel.getBeanFactory().getBean(ConfigValidateFacade.class);
-            if (configValidateFacade == null) {
-                configValidateFacade = new ConfigValidateFacade(scopeModel);
-                scopeModel.getBeanFactory().registerBean(configValidateFacade);
-            }
-            configValidateFacade.validate(this);
+            ConfigValidateFacade configValidateFacade = scopeModel.getBeanFactory().getOrRegisterBean(ConfigValidateFacade.class, clz -> new ConfigValidateFacade(scopeModel));
+            return configValidateFacade.validate(this);
         }
+        return false;
     }
 
     private static void appendParameters0(Map<String, String> parameters, Object config, String prefix, boolean asParameters) {

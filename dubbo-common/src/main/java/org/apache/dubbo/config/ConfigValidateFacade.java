@@ -20,6 +20,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.context.ConfigValidator;
+import org.apache.dubbo.config.exception.ConfigValidationException;
 import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.util.Collections;
@@ -47,22 +48,34 @@ public class ConfigValidateFacade implements ConfigValidator {
         return validators;
     }
 
+    /**
+     * Auto choose a appropriate validator to validate config.
+     *
+     * @param config the config to validate
+     * @return TRUE if pass the validation.
+     * FALSE if no ConfigValidator found for this config, or target ConfigValidator returns FALSE.
+     */
     @Override
-    public void validate(AbstractConfig config) {
+    public boolean validate(AbstractConfig config) {
         if (config == null) {
-            return;
+            return false;
         }
         boolean validated = false;
-        for (ConfigValidator validator : validators) {
-            if (validator.isSupport(config.getClass())) {
-                validator.validate(config);
-                validated = true;
-                break;
+        try {
+            for (ConfigValidator validator : validators) {
+                if (validator.isSupport(config.getClass())) {
+                    if(!validator.validate(config)){
+                           return false;
+                    }
+                }
             }
+        }catch (Throwable t){
+            throw new ConfigValidationException(config.getClass().getSimpleName()+" validation failed. ",t);
         }
         if (!validated) {
-            LOGGER.info("Config validate failed. No supported ConfigValidator found for config: " + config.getClass().getSimpleName()+" This may be caused by you did not imported the relevant module.");
+            LOGGER.info(config.getClass().getSimpleName()+" is not validated. This may caused by you did not imported the relevant module.");
         }
+        return false;
     }
 
     @Override

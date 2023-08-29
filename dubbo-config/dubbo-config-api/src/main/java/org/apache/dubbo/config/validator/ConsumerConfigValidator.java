@@ -30,8 +30,9 @@ public class ConsumerConfigValidator implements ConfigValidator<ConsumerConfig> 
     }
 
     @Override
-    public void validate(ConsumerConfig config) {
+    public boolean validate(ConsumerConfig config) {
         validateConsumerConfig(config);
+        return true;
     }
 
     @Override

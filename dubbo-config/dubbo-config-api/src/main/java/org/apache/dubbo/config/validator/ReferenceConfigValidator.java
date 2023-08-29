@@ -34,8 +34,9 @@ import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 public class ReferenceConfigValidator implements ConfigValidator<ReferenceConfig<?>> {
 
     @Override
-    public void validate(ReferenceConfig<?> config) {
+    public boolean validate(ReferenceConfig<?> config) {
         validateReferenceConfig(config);
+        return true;
     }
 
     public static void validateReferenceConfig(ReferenceConfig<?> config) {
@@ -43,8 +44,6 @@ public class ReferenceConfigValidator implements ConfigValidator<ReferenceConfig
         ConfigValidationUtils.checkKey(VERSION_KEY, config.getVersion());
         ConfigValidationUtils.checkKey(GROUP_KEY, config.getGroup());
         ConfigValidationUtils.checkName(CLIENT_KEY, config.getClient());
-
-        InterfaceConfigValidator.validateAbstractInterfaceConfig(config);
 
         List<RegistryConfig> registries = config.getRegistries();
         if (registries != null) {

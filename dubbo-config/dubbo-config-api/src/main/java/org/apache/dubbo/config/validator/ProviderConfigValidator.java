@@ -37,8 +37,9 @@ import static org.apache.dubbo.remoting.Constants.TRANSPORTER_KEY;
 public class ProviderConfigValidator implements ConfigValidator<ProviderConfig> {
 
     @Override
-    public void validate(ProviderConfig config) {
+    public boolean validate(ProviderConfig config) {
         validateProviderConfig(config);
+        return true;
     }
 
     public static void validateProviderConfig(ProviderConfig config) {

@@ -30,8 +30,9 @@ public class MetricsConfigValidator implements ConfigValidator<MetricsConfig> {
     }
 
     @Override
-    public void validate(MetricsConfig config) {
+    public boolean validate(MetricsConfig config) {
         validateMetricsConfig(config);
+        return true;
     }
 
     @Override

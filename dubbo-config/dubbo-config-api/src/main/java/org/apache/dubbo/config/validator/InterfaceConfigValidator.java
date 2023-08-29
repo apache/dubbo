@@ -20,6 +20,7 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.MethodConfig;
+import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.context.ConfigValidator;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.rpc.Filter;
@@ -56,12 +57,13 @@ public class InterfaceConfigValidator implements ConfigValidator<AbstractInterfa
     }
 
     @Override
-    public void validate(AbstractInterfaceConfig config) {
+    public boolean validate(AbstractInterfaceConfig config) {
         validateAbstractInterfaceConfig(config);
+        return true;
     }
 
     @Override
     public boolean isSupport(Class<?> configClass) {
-        return AbstractInterfaceConfig.class.equals(configClass);
+        return ServiceConfig.class.equals(configClass) || ReferenceConfigValidator.class.equals(configClass);
     }
 }

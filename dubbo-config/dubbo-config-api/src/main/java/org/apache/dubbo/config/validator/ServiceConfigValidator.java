@@ -44,8 +44,6 @@ public class ServiceConfigValidator implements ConfigValidator<ServiceConfig<?>>
 
         ConfigValidationUtils.checkMultiExtension(config.getScopeModel(), ExporterListener.class, "listener", config.getListener());
 
-        InterfaceConfigValidator.validateAbstractInterfaceConfig(config);
-
         List<RegistryConfig> registries = config.getRegistries();
         if (registries != null) {
             for (RegistryConfig registry : registries) {
@@ -67,8 +65,9 @@ public class ServiceConfigValidator implements ConfigValidator<ServiceConfig<?>>
     }
 
     @Override
-    public void validate(ServiceConfig<?> config) {
+    public boolean validate(ServiceConfig<?> config) {
         validateServiceConfig(config);
+        return true;
     }
 
 

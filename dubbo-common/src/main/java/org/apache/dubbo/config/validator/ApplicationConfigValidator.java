@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.context.ConfigValidator;
+import org.apache.dubbo.config.exception.ConfigValidationException;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
@@ -47,7 +48,7 @@ public class ApplicationConfigValidator implements ConfigValidator<ApplicationCo
         }
 
         if (!config.isValid()) {
-            throw new IllegalStateException("No application config found or it's not a valid config! " +
+            throw new ConfigValidationException("No application config found or it's not a valid config! " +
                 "Please add <dubbo:application name=\"...\" /> to your spring config.");
         }
 
@@ -84,8 +85,9 @@ public class ApplicationConfigValidator implements ConfigValidator<ApplicationCo
     }
 
     @Override
-    public void validate(ApplicationConfig config) {
+    public boolean validate(ApplicationConfig config) {
         validateApplicationConfig(config);
+        return true;
     }
 
     @Override
