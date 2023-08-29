@@ -433,7 +433,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             if(newState == DeployState.STARTED && oldState == DeployState.STARTING){
                 setStarted();
                 try {
-                    runPostModuleChanged(moduleModel, moduleState, newState, oldState);
+                    runPostModuleChanged(moduleModel, moduleState, oldState, newState);
                 } finally {
                     completeStartFuture(true);
                 }
@@ -466,7 +466,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                         // setPending();
                         break;
                 }
-                runPostModuleChanged(moduleModel, moduleState, newState, oldState);
+                runPostModuleChanged(moduleModel, moduleState, oldState, newState);
             }
         }
     }
@@ -655,8 +655,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         lifecycleManager.preModuleChanged(newContext(),changedModule, newState);
     }
 
-    private void runPostModuleChanged(ModuleModel changedModule,DeployState moduleNewState,DeployState applicationNewState,DeployState applicationOldState){
-        lifecycleManager.postModuleChanged(newContext(),changedModule, moduleNewState, applicationNewState, applicationOldState);
+    private void runPostModuleChanged(ModuleModel changedModule,DeployState moduleNewState,DeployState applicationOldState,DeployState applicationNewState){
+        lifecycleManager.postModuleChanged(newContext(),changedModule, moduleNewState,applicationOldState, applicationNewState);
     }
 
 }
