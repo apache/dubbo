@@ -33,7 +33,7 @@ public class MetadataApplicationLifecycle implements ApplicationLifecycle {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetadataApplicationLifecycle.class);
 
     @Override
-    public boolean needInitialize(ApplicationContext context) {
+    public boolean needInitialize() {
         return true;
     }
 

@@ -85,8 +85,10 @@ public class ApplicationLifecycleManager{
         StringBuilder sequence = new StringBuilder("Loaded lifecycle sequences: [START]-> ");
 
         lifecycles.forEach(applicationLifecycle -> {
-            beanFactory.registerBean(applicationLifecycle);
-            sequence.append(applicationLifecycle.getClass().getSimpleName()).append("->");
+            if(applicationLifecycle.needInitialize()) {
+                beanFactory.registerBean(applicationLifecycle);
+                sequence.append(applicationLifecycle.getClass().getSimpleName()).append("->");
+            }
         });
         sequence.append(" [END]");
         logger.info(sequence.toString());

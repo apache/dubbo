@@ -48,7 +48,7 @@ public class MetricsInitializeLifecycle implements ApplicationLifecycle {
      * If this lifecycle need to initialize.
      */
     @Override
-    public boolean needInitialize(ApplicationContext context) {
+    public boolean needInitialize() {
         return true;
     }
 

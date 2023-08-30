@@ -38,7 +38,7 @@ public class MetricsExportApplicationLifecycle implements ApplicationLifecycle {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetricsExportApplicationLifecycle.class);
 
     @Override
-    public boolean needInitialize(ApplicationContext context) {
+    public boolean needInitialize() {
         return true;
     }
 

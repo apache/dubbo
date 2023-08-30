@@ -35,7 +35,7 @@ public class ModuleStartedEventApplicationLifecycle implements ApplicationLifecy
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ModuleStartedEventApplicationLifecycle.class);
 
     @Override
-    public boolean needInitialize(ApplicationContext context) {
+    public boolean needInitialize() {
         return true;
     }
 

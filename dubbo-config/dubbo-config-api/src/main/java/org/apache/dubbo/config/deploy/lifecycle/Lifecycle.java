@@ -24,7 +24,7 @@ public interface Lifecycle<T>{
     /**
      * If this lifecycle need to initialize.
      */
-    boolean needInitialize(T context);
+    boolean needInitialize();
 
     default void start(T context){}
 

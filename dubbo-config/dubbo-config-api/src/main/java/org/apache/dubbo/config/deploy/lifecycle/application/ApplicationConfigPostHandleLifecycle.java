@@ -27,7 +27,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 public class ApplicationConfigPostHandleLifecycle implements ApplicationLifecycle {
 
     @Override
-    public boolean needInitialize(ApplicationContext context) {
+    public boolean needInitialize() {
         return true;
     }
 

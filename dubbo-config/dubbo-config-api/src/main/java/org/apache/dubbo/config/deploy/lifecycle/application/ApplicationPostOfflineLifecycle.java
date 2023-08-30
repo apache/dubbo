@@ -26,7 +26,7 @@ import java.util.concurrent.Future;
 public class ApplicationPostOfflineLifecycle implements ApplicationLifecycle {
 
     @Override
-    public boolean needInitialize(ApplicationContext context) {
+    public boolean needInitialize() {
         return true;
     }
 

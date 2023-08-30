@@ -39,7 +39,7 @@ public class ModuleOfflineLifecycle implements ApplicationLifecycle{
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ModuleOfflineLifecycle.class);
 
     @Override
-    public boolean needInitialize(ApplicationContext context) {
+    public boolean needInitialize() {
         return true;
     }
 

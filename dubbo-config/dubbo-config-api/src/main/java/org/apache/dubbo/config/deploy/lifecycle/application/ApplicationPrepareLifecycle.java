@@ -35,7 +35,7 @@ public class ApplicationPrepareLifecycle implements ApplicationLifecycle{
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ApplicationPrepareLifecycle.class);
 
     @Override
-    public boolean needInitialize(ApplicationContext context) {
+    public boolean needInitialize() {
         return true;
     }
 

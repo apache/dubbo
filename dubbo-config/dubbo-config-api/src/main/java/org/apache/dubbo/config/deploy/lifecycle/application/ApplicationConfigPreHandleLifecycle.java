@@ -32,7 +32,7 @@ public class ApplicationConfigPreHandleLifecycle implements ApplicationLifecycle
 
 
     @Override
-    public boolean needInitialize(ApplicationContext context) {
+    public boolean needInitialize() {
         return true;
     }
 

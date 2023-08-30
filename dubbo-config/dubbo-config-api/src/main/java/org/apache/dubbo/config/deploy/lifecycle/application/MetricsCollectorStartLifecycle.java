@@ -33,7 +33,7 @@ public class MetricsCollectorStartLifecycle implements ApplicationLifecycle {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetricsCollectorStartLifecycle.class);
 
     @Override
-    public boolean needInitialize(ApplicationContext context) {
+    public boolean needInitialize() {
         return true;
     }
 

@@ -46,7 +46,7 @@ public class RegisterApplicationLifecycle implements ApplicationLifecycle {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RegisterApplicationLifecycle.class);
 
     @Override
-    public boolean needInitialize(ApplicationContext context) {
+    public boolean needInitialize() {
         return true;
     }
 

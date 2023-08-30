@@ -29,7 +29,7 @@ import org.apache.dubbo.metrics.service.MetricsServiceExporter;
 public class MetricsDisableApplicationLifecycle implements ApplicationLifecycle {
 
     @Override
-    public boolean needInitialize(ApplicationContext context) {
+    public boolean needInitialize() {
         return isSupportMetrics();
     }
 

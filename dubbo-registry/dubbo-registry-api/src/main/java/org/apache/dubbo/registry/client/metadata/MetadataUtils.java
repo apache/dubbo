@@ -56,7 +56,7 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
 
 public class MetadataUtils {
     public static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetadataUtils.class);
-
+    //MetadataPublisher SPI??
     public static void publishServiceDefinition(URL url, ServiceDescriptor serviceDescriptor, ApplicationModel applicationModel) {
         if (getMetadataReports(applicationModel).size() == 0) {
             String msg = "Remote Metadata Report Server is not provided or unavailable, will stop registering service definition to remote center!";

@@ -66,7 +66,7 @@ public class ObservationRegistryApplicationLifecycle implements ApplicationLifec
     }
 
     @Override
-    public boolean needInitialize(ApplicationContext context) {
+    public boolean needInitialize() {
         return true;
     }
 }

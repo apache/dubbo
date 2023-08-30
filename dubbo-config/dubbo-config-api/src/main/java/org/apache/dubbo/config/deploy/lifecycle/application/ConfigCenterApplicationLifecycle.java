@@ -63,7 +63,7 @@ public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ConfigCenterApplicationLifecycle.class);
 
     @Override
-    public boolean needInitialize(ApplicationContext context) {
+    public boolean needInitialize() {
         return true;
     }
 

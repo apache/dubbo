@@ -40,7 +40,7 @@ public class ApplicationPreOfflineLifecycle implements ApplicationLifecycle {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ApplicationPreOfflineLifecycle.class);
 
     @Override
-    public boolean needInitialize(ApplicationContext context) {
+    public boolean needInitialize() {
         return true;
     }
 
