@@ -227,8 +227,13 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
 
         if (ref == null) {
-            // ensure start module, compatible with old api usage
-            getScopeModel().getDeployer().start();
+            if (getScopeModel().isLifeCycleManagedExternally()) {
+                // prepare model for reference
+                getScopeModel().getDeployer().prepare();
+            } else {
+                // ensure start module, compatible with old api usage
+                getScopeModel().getDeployer().start();
+            }
 
             init(check);
         }
