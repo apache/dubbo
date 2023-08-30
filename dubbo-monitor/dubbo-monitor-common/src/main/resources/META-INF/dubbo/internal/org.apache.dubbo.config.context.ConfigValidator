@@ -1,1 +1,1 @@
-monitor=
+monitor=org.apache.dubbo.config.validator.MonitorConfigValidator

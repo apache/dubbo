@@ -53,10 +53,11 @@ public class ConfigValidateFacade implements ConfigValidator {
      *
      * @param config the config to validate
      * @return TRUE if pass the validation.
-     * FALSE if no ConfigValidator found for this config, or target ConfigValidator returns FALSE.
+     * FALSE if no ConfigValidator found for this config,
+     * or one of the supported {@link ConfigValidator#validate(AbstractConfig)} returns FALSE.
      */
     @Override
-    public boolean validate(AbstractConfig config) {
+    public boolean validate(AbstractConfig config) throws ConfigValidationException{
         if (config == null) {
             return false;
         }
@@ -64,6 +65,7 @@ public class ConfigValidateFacade implements ConfigValidator {
         try {
             for (ConfigValidator validator : validators) {
                 if (validator.isSupport(config.getClass())) {
+                    validated = true;
                     if(!validator.validate(config)){
                            return false;
                     }
