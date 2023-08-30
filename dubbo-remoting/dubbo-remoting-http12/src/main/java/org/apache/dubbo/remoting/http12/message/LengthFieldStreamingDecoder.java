@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.remoting.http12.message;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.dubbo.remoting.http12.CompositeInputStream;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
