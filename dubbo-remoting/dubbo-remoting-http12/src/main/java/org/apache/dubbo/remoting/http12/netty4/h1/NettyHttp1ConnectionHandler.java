@@ -29,7 +29,7 @@ import org.apache.dubbo.remoting.http12.h1.Http1Request;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerChannelObserver;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerTransportListener;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerTransportListenerFactory;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
+import org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.List;
@@ -90,19 +90,19 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
         if (!StringUtils.hasText(contentType)) {
             throw new UnsupportedMediaTypeException(contentType);
         }
-        HttpMessageCodec codec = findSuitableCodec(contentType, frameworkModel.getExtensionLoader(HttpMessageCodec.class).getActivateExtensions());
-        if (codec == null) {
+        HttpMessageCodecFactory codecFactory = findSuitableCodec(contentType, frameworkModel.getExtensionLoader(HttpMessageCodecFactory.class).getActivateExtensions());
+        if (codecFactory == null) {
             throw new UnsupportedMediaTypeException(contentType);
         }
         this.errorResponseObserver = new Http1ServerChannelObserver(new NettyHttp1Channel(ctx.channel()));
-        this.errorResponseObserver.setHttpMessageCodec(codec);
+        this.errorResponseObserver.setHttpMessageCodec(codecFactory.createCodec(url, frameworkModel));
         return http1TransportListener;
     }
 
-    private static HttpMessageCodec findSuitableCodec(String contentType, List<HttpMessageCodec> candidates) {
-        for (HttpMessageCodec codec : candidates) {
-            if (codec.support(contentType)) {
-                return codec;
+    private static HttpMessageCodecFactory findSuitableCodec(String contentType, List<HttpMessageCodecFactory> candidates) {
+        for (HttpMessageCodecFactory factory : candidates) {
+            if (factory.support(contentType)) {
+                return factory;
             }
         }
         return null;
