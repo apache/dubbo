@@ -46,7 +46,7 @@ public class ConfigValidatorExistTest {
         FrameworkModel frameworkModel = FrameworkModel.defaultModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
 
-        validateFacade = ConfigValidateFacade.getInstance();
+        validateFacade = new ConfigValidateFacade(applicationModel);
         Assertions.assertNotNull(validateFacade);
         Assertions.assertTrue(validateFacade.getValidators().size() >= 7);
 
