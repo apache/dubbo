@@ -845,6 +845,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         exporters.computeIfAbsent(registerType, k -> new CopyOnWriteArrayList<>()).add(exporter);
     }
 
+
     /**
      * always export injvm
      */

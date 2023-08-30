@@ -149,7 +149,7 @@ class DefaultCollectorTest {
 
         // push finish rt +1
         List<MetricSample> metricSamples = collector.collect();
-        //num(total+success+processing) + rt(5) + error code = 8
+        //num(total+success+processing) + rt(5) + error code = 9
         Assertions.assertEquals(9, metricSamples.size());
         List<String> metricsNames = metricSamples.stream().map(MetricSample::getName).collect(Collectors.toList());
         // No error will contain total+success+processing
