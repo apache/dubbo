@@ -21,6 +21,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultHttpContent;
+import org.apache.dubbo.remoting.transport.ExceedPayloadLimitException;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -29,27 +30,32 @@ public class ChunkOutputStream extends OutputStream {
     final ByteBuf buffer;
     final ChannelHandlerContext ctx;
     final NettyHttpResponse response;
+    int chunkSize = 0;
 
-    ChunkOutputStream(final NettyHttpResponse response, final ChannelHandlerContext ctx, final int chunksize) {
+    ChunkOutputStream(final NettyHttpResponse response, final ChannelHandlerContext ctx, final int chunkSize) {
         this.response = response;
-        if (chunksize < 1) {
+        if (chunkSize < 1) {
             throw new IllegalArgumentException();
         }
-        // TODO  buffer pool
-        this.buffer = Unpooled.buffer(0, chunksize);
+        this.buffer = Unpooled.buffer(0, chunkSize);
+        this.chunkSize = chunkSize;
         this.ctx = ctx;
     }
 
     @Override
     public void write(int b) throws IOException {
         if (buffer.maxWritableBytes() < 1) {
-            flush();
+            throwExceedPayloadLimitException(buffer.readableBytes() + 1);
         }
         buffer.writeByte(b);
     }
 
-    public void reset()
-    {
+    private void throwExceedPayloadLimitException(int dataSize) throws ExceedPayloadLimitException {
+        throw new ExceedPayloadLimitException(
+            "Data length too large: " + dataSize + ", max payload: " + chunkSize);
+    }
+
+    public void reset() {
         if (response.isCommitted()) throw new IllegalStateException();
         buffer.clear();
     }
@@ -65,16 +71,10 @@ public class ChunkOutputStream extends OutputStream {
     public void write(byte[] b, int off, int len) throws IOException {
         int dataLengthLeftToWrite = len;
         int dataToWriteOffset = off;
-        int spaceLeftInCurrentChunk;
-        while ((spaceLeftInCurrentChunk = buffer.maxWritableBytes()) < dataLengthLeftToWrite) {
-            buffer.writeBytes(b, dataToWriteOffset, spaceLeftInCurrentChunk);
-            dataToWriteOffset = dataToWriteOffset + spaceLeftInCurrentChunk;
-            dataLengthLeftToWrite = dataLengthLeftToWrite - spaceLeftInCurrentChunk;
-            flush();
+        if (buffer.maxWritableBytes() < dataLengthLeftToWrite) {
+            throwExceedPayloadLimitException(buffer.readableBytes() + len);
         }
-        if (dataLengthLeftToWrite > 0) {
-            buffer.writeBytes(b, dataToWriteOffset, dataLengthLeftToWrite);
-        }
+        buffer.writeBytes(b, dataToWriteOffset, dataLengthLeftToWrite);
     }
 
     @Override

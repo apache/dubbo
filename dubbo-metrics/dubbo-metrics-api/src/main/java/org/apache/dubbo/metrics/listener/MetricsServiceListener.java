@@ -23,6 +23,11 @@ import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 
+/**
+ * Service-level listener type, in most cases, can use the static method
+ * to produce an anonymous listener for general monitoring.
+ * Similar to App-level
+ */
 public class MetricsServiceListener extends AbstractMetricsKeyListener {
 
     public MetricsServiceListener(MetricsKey metricsKey) {

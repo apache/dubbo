@@ -35,7 +35,7 @@ public class ServiceKeyMetric extends ApplicationMetric {
 
     @Override
     public Map<String, String> getTags() {
-        return MetricsSupport.serviceTags(getApplicationModel(), serviceKey);
+        return MetricsSupport.serviceTags(getApplicationModel(), serviceKey, getExtraInfo());
     }
 
     public String getServiceKey() {
@@ -47,16 +47,11 @@ public class ServiceKeyMetric extends ApplicationMetric {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (!(o instanceof ServiceKeyMetric)) {
             return false;
         }
-
         ServiceKeyMetric that = (ServiceKeyMetric) o;
-
-        if (!getApplicationName().equals(that.getApplicationName())) {
-            return false;
-        }
-        return serviceKey.equals(that.serviceKey);
+        return serviceKey.equals(that.serviceKey) && Objects.equals(extraInfo, that.extraInfo);
     }
 
 
@@ -65,7 +60,7 @@ public class ServiceKeyMetric extends ApplicationMetric {
     @Override
     public int hashCode() {
         if (hashCode == 0) {
-            hashCode = Objects.hash(getApplicationName(), serviceKey);
+            hashCode = Objects.hash(getApplicationName(), serviceKey, extraInfo);
         }
         return hashCode;
     }

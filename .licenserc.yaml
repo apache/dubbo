@@ -101,7 +101,6 @@ header:
     - 'dubbo-native/src/main/java/org/apache/dubbo/aot/api/MemberCategory.java'
     - 'dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/aggregate/DubboMergingDigest.java'
     - 'dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/aggregate/DubboAbstractTDigest.java'
-    - 'dubbo-annotation-processor/src/main/java/org/apache/dubbo/annotation/permit/**'
     - 'dubbo-common/src/main/java/org/apache/dubbo/common/logger/helpers/FormattingTuple.java'
     - 'dubbo-common/src/main/java/org/apache/dubbo/common/logger/helpers/MessageFormatter.java'
 
