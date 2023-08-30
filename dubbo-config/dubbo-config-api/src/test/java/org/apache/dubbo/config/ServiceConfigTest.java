@@ -186,8 +186,9 @@ class ServiceConfigTest {
         assertThat(url.getParameters(), hasKey(METHODS_KEY));
         assertThat(url.getParameters().get(METHODS_KEY), containsString("echo"));
         assertThat(url.getParameters(), hasEntry(SIDE_KEY, PROVIDER));
-        // export MetadataService and DemoService in "mockprotocol2" protocol.
-        Mockito.verify(protocolDelegate, times(2)).export(Mockito.any(Invoker.class));
+        // export DemoService in "mockprotocol2" protocol.
+        Mockito.verify(protocolDelegate, times(1)).export(Mockito.any(Invoker.class));
+        // MetadataService will be exported on either dubbo or triple (the only two default acceptable protocol)
     }
 
     @Test
@@ -351,8 +352,8 @@ class ServiceConfigTest {
         assertThat(url.getParameters(), hasKey(METHODS_KEY));
         assertThat(url.getParameters().get(METHODS_KEY), containsString("echo"));
         assertThat(url.getParameters(), hasEntry(SIDE_KEY, PROVIDER));
-        // export MetadataService and DemoService in "mockprotocol2" protocol.
-        Mockito.verify(protocolDelegate, times(2)).export(Mockito.any(Invoker.class));
+        // export DemoService in "mockprotocol2" protocol (MetadataService will be not exported if no registry specified)
+        Mockito.verify(protocolDelegate, times(1)).export(Mockito.any(Invoker.class));
     }
 
     @Test

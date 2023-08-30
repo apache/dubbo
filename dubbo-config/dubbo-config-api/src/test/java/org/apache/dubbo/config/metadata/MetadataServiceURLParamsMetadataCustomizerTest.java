@@ -69,7 +69,7 @@ class MetadataServiceURLParamsMetadataCustomizerTest {
     }
 
     @Test
-    void test() {
+    void test() throws InterruptedException {
         DubboBootstrap providerBootstrap = DubboBootstrap.newInstance();
         ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
         serviceConfig.setInterface(DemoService.class);
@@ -90,8 +90,10 @@ class MetadataServiceURLParamsMetadataCustomizerTest {
 
         ApplicationModel applicationModel = providerBootstrap.getApplicationModel();
         MetadataServiceURLParamsMetadataCustomizer customizer = new MetadataServiceURLParamsMetadataCustomizer();
-        customizer.customize(instance, applicationModel);
 
+        Thread.sleep(5000);// wait for service delay export
+
+        customizer.customize(instance, applicationModel);
         String val = instance.getMetadata().get(METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME);
         Assertions.assertNotNull(val);
 

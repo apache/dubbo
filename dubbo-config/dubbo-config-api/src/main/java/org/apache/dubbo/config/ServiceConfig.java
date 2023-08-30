@@ -76,6 +76,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_IP_TO_BIND;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_ISOLATION;
 import static org.apache.dubbo.common.constants.CommonConstants.EXPORTER_LISTENER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.EXT_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.IS_EXTRA;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
@@ -366,7 +368,17 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 mapServiceName(url, serviceNameMapping, scheduledExecutor);
             }
         });
+
         onExported();
+
+        if (hasRegistrySpecified()) {
+            getScopeModel().getDeployer().getApplicationDeployer().exportMetadataService();
+        }
+    }
+
+    public boolean hasRegistrySpecified() {
+        return CollectionUtils.isNotEmpty(this.getRegistries())
+            || CollectionUtils.isNotEmpty(getScopeModel().getApplicationModel().getApplicationConfigManager().getRegistries());
     }
 
     protected void mapServiceName(URL url, ServiceNameMapping serviceNameMapping, ScheduledExecutorService scheduledExecutor) {
@@ -740,14 +752,13 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             // export to remote if the config is not local (export to local only when config is local)
             if (!SCOPE_LOCAL.equalsIgnoreCase(scope)) {
                 // export to extra protocol is used in remote export
-                String extProtocol = url.getParameter("ext.protocol", "");
+                String extProtocol = url.getParameter(EXT_PROTOCOL, "");
                 List<String> protocols = new ArrayList<>();
 
                 if (StringUtils.isNotBlank(extProtocol)) {
                     // export original url
                     url = URLBuilder.from(url).
                         addParameter(IS_PU_SERVER_KEY, Boolean.TRUE.toString()).
-                        removeParameter("ext.protocol").
                         build();
                 }
 
@@ -765,6 +776,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                     if (StringUtils.isNotBlank(protocol)) {
                         URL localUrl = URLBuilder.from(url).
                             setProtocol(protocol).
+                            addParameter(IS_EXTRA, Boolean.TRUE.toString()).
+                            removeParameter(EXT_PROTOCOL).
                             build();
                         localUrl = exportRemote(localUrl, registryURLs, registerType);
                         if (!isGeneric(generic) && !getScopeModel().isInternal()) {

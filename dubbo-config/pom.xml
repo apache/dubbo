@@ -32,7 +32,6 @@
     <modules>
         <module>dubbo-config-api</module>
         <module>dubbo-config-spring</module>
-        <module>dubbo-config-spring6</module>
     </modules>
 
     <dependencies>
@@ -49,4 +48,18 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>spring6</id>
+            <activation>
+                <jdk>[17,)</jdk>
+            </activation>
+            <modules>
+                <module>dubbo-config-api</module>
+                <module>dubbo-config-spring</module>
+                <module>dubbo-config-spring6</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>
