@@ -362,9 +362,9 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         }
     }
 
-    private void processAnnotatedMethodParameter(Parameter parameter, int parameterIndex, Method serviceMethod,
-                                                 Class<?> serviceType, Class<?> serviceInterfaceClass,
-                                                 RestMethodMetadata metadata) {
+    protected void processAnnotatedMethodParameter(Parameter parameter, int parameterIndex, Method serviceMethod,
+                                                   Class<?> serviceType, Class<?> serviceInterfaceClass,
+                                                   RestMethodMetadata metadata) {
         Annotation[] annotations = parameter.getAnnotations();
 
         if (annotations == null || annotations.length == 0) {

@@ -634,10 +634,15 @@ public interface CommonConstants {
     String DUBBO_PACKABLE_METHOD_FACTORY = "dubbo.application.parameters." + PACKABLE_METHOD_FACTORY_KEY;
 
     String DUBBO_TAG_HEADER = "dubbo-tag";
-  
+
     String REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY = "restServiceDeployerAttributeKey";
 
     String EXT_PROTOCOL = "ext.protocol";
 
     String IS_EXTRA = "isExtra";
+
+    String SERVICE_DEPLOYER_ATTRIBUTE_KEY = "serviceDeployer";
+    String RESTEASY_NETTY_HTTP_REQUEST_ATTRIBUTE_KEY = "resteasyNettyHttpRequest";
+
+    String DUBBO_MANUAL_REGISTER_KEY = "dubbo.application.manual-register";
 }

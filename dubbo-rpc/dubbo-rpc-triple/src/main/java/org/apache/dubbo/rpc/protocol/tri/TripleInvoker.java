@@ -63,7 +63,6 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -135,7 +134,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         final MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(
             invocation.getMethodName(),
             invocation.getParameterTypes());
-        Executor callbackExecutor = isSync(methodDescriptor, invocation) ? new ThreadlessExecutor() : streamExecutor;
+        ExecutorService callbackExecutor = isSync(methodDescriptor, invocation) ? new ThreadlessExecutor() : streamExecutor;
         ClientCall call = new TripleClientCall(connectionClient, callbackExecutor,
             getUrl().getOrDefaultFrameworkModel(), writeQueue);
         AsyncRpcResult result;
@@ -219,7 +218,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     AsyncRpcResult invokeUnary(MethodDescriptor methodDescriptor, Invocation invocation,
-                               ClientCall call, Executor callbackExecutor) {
+                               ClientCall call, ExecutorService callbackExecutor) {
 
         int timeout = RpcUtils.calculateTimeout(getUrl(), invocation, RpcUtils.getMethodName(invocation), 3000);
         if (timeout <= 0) {

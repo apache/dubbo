@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata.rest.springmvc;
 
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.rest.AbstractServiceRestMetadataResolver;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadataResolver;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -38,6 +39,7 @@ import static org.apache.dubbo.common.utils.MethodUtils.findMethod;
 import static org.apache.dubbo.common.utils.PathUtils.buildPath;
 import static org.apache.dubbo.metadata.rest.RestMetadataConstants.SPRING_MVC.ANNOTATED_ELEMENT_UTILS_CLASS;
 import static org.apache.dubbo.metadata.rest.RestMetadataConstants.SPRING_MVC.CONTROLLER_ANNOTATION_CLASS;
+import static org.apache.dubbo.metadata.rest.RestMetadataConstants.SPRING_MVC.FEIGN_CLIENT_CLASS;
 import static org.apache.dubbo.metadata.rest.RestMetadataConstants.SPRING_MVC.REQUEST_MAPPING_ANNOTATION_CLASS;
 
 /**
@@ -45,6 +47,7 @@ import static org.apache.dubbo.metadata.rest.RestMetadataConstants.SPRING_MVC.RE
  *
  * @since 2.7.6
  */
+@Activate(order = 100)
 public class SpringMvcServiceRestMetadataResolver extends AbstractServiceRestMetadataResolver {
 
     private static final int FIRST_ELEMENT_INDEX = 0;
@@ -56,7 +59,9 @@ public class SpringMvcServiceRestMetadataResolver extends AbstractServiceRestMet
     @Override
     protected boolean supports0(Class<?> serviceType) {
         // class @Controller or @RequestMapping
-        return isAnnotationPresent(serviceType, CONTROLLER_ANNOTATION_CLASS) || isAnnotationPresent(serviceType, REQUEST_MAPPING_ANNOTATION_CLASS);
+        return isAnnotationPresent(serviceType, CONTROLLER_ANNOTATION_CLASS)
+            || isAnnotationPresent(serviceType, FEIGN_CLIENT_CLASS)
+            || isAnnotationPresent(serviceType, REQUEST_MAPPING_ANNOTATION_CLASS);
     }
 
     @Override
@@ -82,9 +87,10 @@ public class SpringMvcServiceRestMetadataResolver extends AbstractServiceRestMet
 
     @Override
     protected String resolveRequestPath(Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass) {
-        String requestBasePath = resolveRequestPath(serviceType);
+        String feignClientBasePath = resolveFeignClientBaseRequestPath(serviceType);
+        String requestMappingBasePath = resolveRequestPath(serviceType);
         String requestRelativePath = resolveRequestPath(serviceMethod);
-        return buildPath(requestBasePath, requestRelativePath);
+        return buildPath(feignClientBasePath, buildPath(requestMappingBasePath, requestRelativePath));
     }
 
     @Override
@@ -99,6 +105,18 @@ public class SpringMvcServiceRestMetadataResolver extends AbstractServiceRestMet
         addMediaTypes(serviceMethod, "consumes", consumes);
         addMediaTypes(serviceType, "consumes", consumes);
         addMediaTypes(serviceInterfaceClass, "consumes", consumes);
+    }
+
+    private String resolveFeignClientBaseRequestPath(AnnotatedElement annotatedElement) {
+        Annotation feignClient = findAnnotation(annotatedElement, FEIGN_CLIENT_CLASS);
+
+        String path = getAttribute(feignClient, "path");
+
+        if (path == null) {
+            return "";
+        }
+
+        return path;
     }
 
     private String resolveRequestPath(AnnotatedElement annotatedElement) {

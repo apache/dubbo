@@ -1,0 +1,2 @@
+resteasy=org.apache.dubbo.rpc.protocol.rest.extension.resteasy.filter.ResteasyRequestContainerFilterAdapter
+invoke=org.apache.dubbo.rpc.protocol.rest.filter.ServiceInvokeRestFilter

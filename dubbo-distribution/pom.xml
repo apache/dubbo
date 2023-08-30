@@ -33,6 +33,7 @@
             <id>release</id>
             <modules>
                 <module>dubbo-all</module>
+                <module>dubbo-all-shaded</module>
                 <module>dubbo-apache-release</module>
                 <module>dubbo-bom</module>
                 <module>dubbo-core-spi</module>
@@ -52,6 +53,13 @@
             <id>dubbo-core-spi</id>
             <modules>
                 <module>dubbo-core-spi</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>dubbo-all-shaded</id>
+            <modules>
+                <module>dubbo-all-shaded</module>
+                <module>dubbo-bom</module>
             </modules>
         </profile>
     </profiles>

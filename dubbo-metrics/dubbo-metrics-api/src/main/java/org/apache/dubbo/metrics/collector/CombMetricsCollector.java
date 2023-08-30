@@ -21,6 +21,7 @@ import org.apache.dubbo.metrics.data.BaseStatComposite;
 import org.apache.dubbo.metrics.event.MetricsEventMulticaster;
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.listener.AbstractMetricsListener;
+import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
@@ -60,22 +61,28 @@ public abstract class CombMetricsCollector<E extends TimeCounterEvent> extends A
     }
 
     @Override
-    public void addRt(String registryOpType, Long responseTime) {
+    public void addApplicationRt(String registryOpType, Long responseTime) {
         stats.calcApplicationRt(registryOpType, responseTime);
     }
 
-    public void addRt(String serviceKey, String registryOpType, Long responseTime) {
+    @Override
+    public void addServiceRt(String serviceKey, String registryOpType, Long responseTime) {
         stats.calcServiceKeyRt(serviceKey, registryOpType, responseTime);
     }
 
     @Override
-    public void increment(Invocation invocation, MetricsKeyWrapper wrapper, int size) {
-        this.stats.incrementMethodKey(wrapper, invocation, size);
+    public void addServiceRt(Invocation invocation, String registryOpType, Long responseTime) {
+        stats.calcServiceKeyRt(invocation, registryOpType, responseTime);
     }
 
     @Override
-    public void addRt(Invocation invocation, String registryOpType, Long responseTime) {
+    public void addMethodRt(Invocation invocation, String registryOpType, Long responseTime) {
         stats.calcMethodKeyRt(invocation, registryOpType, responseTime);
+    }
+
+    @Override
+    public void increment(MethodMetric methodMetric, MetricsKeyWrapper wrapper, int size) {
+        this.stats.incrementMethodKey(wrapper, methodMetric, size);
     }
 
     protected List<MetricSample> export(MetricsCategory category) {

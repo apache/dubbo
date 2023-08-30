@@ -1,1 +1,2 @@
 router-snapshot=org.apache.dubbo.rpc.cluster.router.RouterSnapshotFilter
+metricsConsumerFilter=org.apache.dubbo.rpc.cluster.filter.support.MetricsConsumerFilter

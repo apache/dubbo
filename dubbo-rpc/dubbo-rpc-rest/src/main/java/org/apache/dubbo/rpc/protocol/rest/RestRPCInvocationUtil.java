@@ -27,16 +27,19 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.rest.annotation.ParamParserManager;
 import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider.ProviderParseContext;
-import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
+import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 import org.apache.dubbo.rpc.protocol.rest.exception.ParamParseException;
 import org.apache.dubbo.rpc.protocol.rest.pair.InvokerAndRestMethodMetadataPair;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.util.HttpHeaderUtil;
+import org.apache.dubbo.rpc.protocol.rest.util.NoAnnotationBodyParseUtil;
 
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_DEPLOYER_ATTRIBUTE_KEY;
 
 
 public class RestRPCInvocationUtil {
@@ -91,10 +94,15 @@ public class RestRPCInvocationUtil {
         ProviderParseContext parseContext = new ProviderParseContext(request);
         parseContext.setResponse(originResponse);
         parseContext.setRequest(originRequest);
-
+        parseContext.setNoAnnotationMode(restMethodMetadata.currentCodeStyleIsNoAnnotationMode());
         Object[] objects = new Object[restMethodMetadata.getArgInfos().size()];
         parseContext.setArgs(Arrays.asList(objects));
         parseContext.setArgInfos(restMethodMetadata.getArgInfos());
+
+        // parse object arrays body
+        if (restMethodMetadata.currentCodeStyleIsNoAnnotationMode()) {
+            parseContext.setArrayArgs(NoAnnotationBodyParseUtil.doParse(parseContext));
+        }
 
 
         return parseContext;
@@ -136,12 +144,12 @@ public class RestRPCInvocationUtil {
      */
     public static InvokerAndRestMethodMetadataPair getRestMethodMetadataAndInvokerPair(PathMatcher pathMatcher) {
 
-        PathAndInvokerMapper pathAndInvokerMapper = (PathAndInvokerMapper) RpcContext.getServerAttachment().getObjectAttachment(RestConstant.PATH_AND_INVOKER_MAPPER);
+        ServiceDeployer serviceDeployer = (ServiceDeployer) RpcContext.getServiceContext().getObjectAttachment(SERVICE_DEPLOYER_ATTRIBUTE_KEY);
 
-        if (pathAndInvokerMapper == null) {
+        if (serviceDeployer == null) {
             return null;
         }
-        return pathAndInvokerMapper.getRestMethodMetadata(pathMatcher);
+        return serviceDeployer.getPathAndInvokerMapper().getRestMethodMetadata(pathMatcher);
     }
 
     /**
@@ -190,7 +198,9 @@ public class RestRPCInvocationUtil {
             return null;
         }
 
-        InvokerAndRestMethodMetadataPair pair = getRestMethodMetadataAndInvokerPair(PathMatcher.getInvokeCreatePathMatcher(serviceMethod));
+        PathMatcher pathMatcher = PathMatcher.getInvokeCreatePathMatcher(serviceMethod);
+
+        InvokerAndRestMethodMetadataPair pair = getRestMethodMetadataAndInvokerPair(pathMatcher);
 
         if (pair == null) {
             return null;

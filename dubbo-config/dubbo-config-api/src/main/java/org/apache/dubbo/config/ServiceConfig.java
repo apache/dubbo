@@ -61,6 +61,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
@@ -314,7 +315,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 if (shouldDelay()) {
                     // should register if delay export
                     doDelayExport();
-                } else if (Integer.valueOf(-1).equals(getDelay())) {
+                } else if (Integer.valueOf(-1).equals(getDelay()) &&
+                    Boolean.parseBoolean(ConfigurationUtils.getProperty(
+                        getScopeModel(), CommonConstants.DUBBO_MANUAL_REGISTER_KEY, "false"))) {
                     // should not register by default
                     doExport(RegisterTypeEnum.MANUAL_REGISTER);
                 } else {
@@ -528,8 +531,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         List<URL> registryURLs = !Boolean.FALSE.equals(isRegister()) ?
             ConfigValidationUtils.loadRegistries(this, true) : Collections.emptyList();
 
-        MetricsEventBus.post(RegistryEvent.toRsEvent(module.getApplicationModel(), getUniqueServiceName(), protocols.size() * registryURLs.size()),
-            () -> {
+        MetricsEventBus.post(RegistryEvent.toRsEvent(getApplicationModel(), getUniqueServiceName(), protocols.size() * registryURLs.size()),            () -> {
                 for (ProtocolConfig protocolConfig : protocols) {
                     String pathKey = URL.buildKey(getContextPath(protocolConfig)
                         .map(p -> p + "/" + path)
@@ -916,7 +918,16 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     private void postProcessConfig() {
         List<ConfigPostProcessor> configPostProcessors = this.getExtensionLoader(ConfigPostProcessor.class)
             .getActivateExtension(URL.valueOf("configPostProcessor://", getScopeModel()), (String[]) null);
-        configPostProcessors.forEach(component -> component.postProcessServiceConfig(this));
+        List<CommonConfigPostProcessor> commonConfigPostProcessors = this.getExtensionLoader(CommonConfigPostProcessor.class)
+            .getActivateExtension(URL.valueOf("configPostProcessor://"), (String[]) null);
+
+        HashSet<CommonConfigPostProcessor> allConfigPostProcessor = new HashSet<>();
+
+        // merge common and old config
+        allConfigPostProcessor.addAll(commonConfigPostProcessors);
+        allConfigPostProcessor.addAll(configPostProcessors);
+
+        allConfigPostProcessor.forEach(component -> component.postProcessServiceConfig(this));
     }
 
     public void addServiceListener(ServiceListener listener) {
