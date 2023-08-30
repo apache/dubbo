@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
+import org.apache.dubbo.common.utils.JsonCompatibilityUtil;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
 import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
@@ -37,6 +38,7 @@ import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployerManager;
 
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -47,6 +49,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_SERVER;
+import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.JSON_CHECK_LEVEL;
+import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.JSON_CHECK_LEVEL_STRICT;
+import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.JSON_CHECK_LEVEL_WARN;
 import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.PATH_SEPARATOR;
 
 public class RestProtocol extends AbstractProtocol {
@@ -90,6 +95,10 @@ public class RestProtocol extends AbstractProtocol {
             MetadataResolver.resolveProviderServiceMetadata(url.getServiceModel().getProxyObject().getClass(),
                 url, getContextPath(url));
 
+        // check json compatibility
+        String jsonCheckLevel = url.getUrlParam().getParameter(JSON_CHECK_LEVEL);
+        checkJsonCompatibility(invoker.getInterface(), jsonCheckLevel);
+
 
         // deploy service
         URL newURL = ServiceDeployerManager.deploy(url, serviceRestMetadata, invoker);
@@ -111,6 +120,29 @@ public class RestProtocol extends AbstractProtocol {
         };
         exporterMap.put(uri, exporter);
         return exporter;
+    }
+
+    private void checkJsonCompatibility(Class<?> clazz, String jsonCheckLevel) throws RpcException {
+
+        if (jsonCheckLevel == null || JSON_CHECK_LEVEL_WARN.equals(jsonCheckLevel)) {
+            boolean compatibility = JsonCompatibilityUtil.checkClassCompatibility(clazz);
+            if (!compatibility) {
+                List<String> unsupportedMethods = JsonCompatibilityUtil.getUnsupportedMethods(clazz);
+                assert unsupportedMethods != null;
+                logger.warn("", "", "", String.format("Interface %s does not support json serialization, the specific methods are %s.", clazz.getName(), unsupportedMethods));
+            } else {
+                logger.debug("Check json compatibility complete, all methods of {} can be serialized using json.", clazz.getName());
+            }
+        } else if (JSON_CHECK_LEVEL_STRICT.equals(jsonCheckLevel)) {
+            boolean compatibility = JsonCompatibilityUtil.checkClassCompatibility(clazz);
+            if (!compatibility) {
+                List<String> unsupportedMethods = JsonCompatibilityUtil.getUnsupportedMethods(clazz);
+                assert unsupportedMethods != null;
+                throw new IllegalStateException(String.format("Interface %s does not support json serialization, the specific methods are %s.", clazz.getName(), unsupportedMethods));
+            } else {
+                logger.debug("Check json compatibility complete, all methods of {} can be serialized using json.", clazz.getName());
+            }
+        }
     }
 
 
