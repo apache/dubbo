@@ -18,25 +18,43 @@ package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.extension.ExtensionDirector;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.threadpool.manager.DefaultExecutorRepository;
+import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.context.ModuleConfigManager;
+import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.api.ProtocolDetector;
+import org.apache.dubbo.remoting.api.WireProtocol;
+import org.apache.dubbo.remoting.api.pu.AbstractPortUnificationServer;
+import org.apache.dubbo.remoting.api.pu.ChannelOperator;
 import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
 
+import org.apache.dubbo.remoting.api.ssl.ContextOperator;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+
+import java.net.InetSocketAddress;
+import java.util.Collection;
+import java.util.concurrent.Executors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
+import static org.apache.dubbo.common.constants.CommonConstants.EXT_PROTOCOL;
 
 class PortUnificationServerTest {
 
     @Test
     void testBind() throws RemotingException {
         int port = NetUtils.getAvailablePort();
-        URL url = URL.valueOf("empty://127.0.0.1:" + port + "?foo=bar");
+        URL url = URL.valueOf("empty://127.0.0.1:" + port + "?foo=bar&" + EXT_PROTOCOL + "=tri");
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
         applicationConfig.setExecutorManagementMode(EXECUTOR_MANAGEMENT_MODE_DEFAULT);
@@ -52,6 +70,7 @@ class PortUnificationServerTest {
         final NettyPortUnificationServer server = new NettyPortUnificationServer(url, new DefaultPuHandler());
         server.bind();
         Assertions.assertTrue(server.isBound());
+        Assertions.assertEquals(2, server.getProtocols().size());
         server.close();
     }
 }

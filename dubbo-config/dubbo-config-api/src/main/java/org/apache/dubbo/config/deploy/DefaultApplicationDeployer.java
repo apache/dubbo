@@ -183,13 +183,13 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     /**
-     * Close registration of instance for pure Consumer process by setting registerConsumer to 'false'
-     * by default is true.
+     * Enable registration of instance for pure Consumer process by setting registerConsumer to 'true'
+     * by default is false.
      */
     private boolean isRegisterConsumerInstance() {
         Boolean registerConsumer = getApplication().getRegisterConsumer();
         if (registerConsumer == null) {
-            return true;
+            return false;
         }
         return Boolean.TRUE.equals(registerConsumer);
     }
@@ -746,7 +746,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     @Override
-    public void prepareApplicationInstance() {
+    public void prepareApplicationInstance(ModuleModel moduleModel) {
         if (hasPreparedApplicationInstance.get()) {
             return;
         }
@@ -754,13 +754,17 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         // export MetricsService
         exportMetricsService();
 
-        if (isRegisterConsumerInstance()) {
-            exportMetadataService();
+        if (isRegisterConsumerInstance() || moduleModel.getDeployer().hasRegistryInteraction()) {
             if (hasPreparedApplicationInstance.compareAndSet(false, true)) {
                 // register the local ServiceInstance if required
                 registerServiceInstance();
             }
         }
+    }
+
+    @Override
+    public synchronized void exportMetadataService() {
+        doExportMetadataService();
     }
 
     public void prepareInternalModule() {
@@ -1081,7 +1085,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     public void checkState(ModuleModel moduleModel, DeployState moduleState) {
         synchronized (stateLock) {
             if (!moduleModel.isInternal() && moduleState == DeployState.STARTED) {
-                prepareApplicationInstance();
+                prepareApplicationInstance(moduleModel);
             }
             DeployState newState = calculateState();
             switch (newState) {
@@ -1183,8 +1187,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
     }
 
-    private void exportMetadataService() {
-        if (!isStarting()) {
+    private void doExportMetadataService() {
+        if (!isStarting() && !isStarted()) {
             return;
         }
         for (DeployListener<ApplicationModel> listener : listeners) {
