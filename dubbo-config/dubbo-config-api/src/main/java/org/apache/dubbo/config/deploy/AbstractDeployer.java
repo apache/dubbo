@@ -42,7 +42,7 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
 
     protected AtomicReference<DeployState> state = new AtomicReference<>(PENDING);
 
-    protected AtomicReference<Throwable> lastError;
+    protected AtomicReference<Throwable> lastError = new AtomicReference<>();
 
     protected AtomicBoolean initialized = new AtomicBoolean(false);
 
