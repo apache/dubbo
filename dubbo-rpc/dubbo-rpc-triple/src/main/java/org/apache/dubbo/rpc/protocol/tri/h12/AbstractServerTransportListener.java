@@ -36,6 +36,7 @@ import org.apache.dubbo.remoting.http12.exception.UnsupportedMediaTypeException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
+import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.PathResolver;
 import org.apache.dubbo.rpc.RpcInvocation;
@@ -61,6 +62,7 @@ import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
+import static org.apache.dubbo.common.constants.CommonConstants.HEADER_FILTER_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_PARSE;
 
@@ -75,6 +77,8 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
     private final URL url;
 
     private final HttpChannel httpChannel;
+
+    private final List<HeaderFilter> headerFilters;
 
     private HttpMessageCodec httpMessageCodec;
 
@@ -101,6 +105,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         this.url = url;
         this.httpChannel = httpChannel;
         this.pathResolver = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
+        this.headerFilters = frameworkModel.getExtensionLoader(HeaderFilter.class).getActivateExtension(url, HEADER_FILTER_KEY);
     }
 
     protected Executor initializeExecutor(HEADER metadata) {
@@ -277,7 +282,6 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
             new Object[0]);
         inv.setTargetServiceUniqueName(url.getServiceKey());
         inv.setReturnTypes(methodDescriptor.getReturnTypes());
-        //TODO header to attachment
         Map<String, String> headers = getHttpMetadata().headers().toSingleValueMap();
         Map<String, Object> requestMetadata = headersToMap(headers, () -> {
             return Optional.ofNullable(headers.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader()))
@@ -288,7 +292,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
 
         inv.put("tri.remote.address", httpChannel.remoteAddress());
         //customizer RpcInvocation
-        //        headerFilters.forEach(f -> f.invoke(invoker, invocation));
+        headerFilters.forEach(f -> f.invoke(invoker, inv));
         return inv;
     }
 

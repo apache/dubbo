@@ -132,11 +132,11 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
     private void processHeader() throws IOException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream(lengthFieldOffset + lengthFieldLength);
         byte[] offsetData = new byte[lengthFieldOffset];
-        accumulate.read(offsetData);
+        int ignore = accumulate.read(offsetData);
         bos.write(offsetData);
         processOffset(new ByteArrayInputStream(offsetData), lengthFieldOffset);
         byte[] lengthBytes = new byte[lengthFieldLength];
-        accumulate.read(lengthBytes);
+        ignore = accumulate.read(lengthBytes);
         bos.write(lengthBytes);
         requiredLength = bytesToInt(lengthBytes);
         this.dataHeader = new ByteArrayInputStream(bos.toByteArray());
@@ -154,7 +154,7 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
         if (lengthFieldOffset != 0) {
             return;
         }
-        inputStream.read(new byte[lengthFieldOffset]);
+        int ignore = inputStream.read(new byte[lengthFieldOffset]);
     }
 
     private void processBody() throws IOException {
