@@ -19,7 +19,10 @@ package org.apache.dubbo.metrics.collector;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.TestMetricsInvoker;
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.metrics.event.RequestEvent;
@@ -30,6 +33,7 @@ import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
+import org.apache.dubbo.metrics.model.key.TypeWrapper;
 import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -133,6 +137,9 @@ class DefaultCollectorTest {
         DefaultMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
         collector.setCollectEnabled(true);
 
+        ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DefaultCollectorTest.class);
+        logger.warn("0-99","","","Test error code message.");
+
         metricsFilter.invoke(new TestMetricsInvoker(side), invocation);
         try {
             Thread.sleep(50);
@@ -150,7 +157,7 @@ class DefaultCollectorTest {
         // push finish rt +1
         List<MetricSample> metricSamples = collector.collect();
         //num(total+success+processing) + rt(5) + error code = 9
-        Assertions.assertEquals(9, metricSamples.size());
+        Assertions.assertEquals(metricSamples.size(),9);
         List<String> metricsNames = metricSamples.stream().map(MetricSample::getName).collect(Collectors.toList());
         // No error will contain total+success+processing
         String REQUESTS = new MetricsKeyWrapper(METRIC_REQUESTS, MetricsPlaceValue.of(side, MetricsLevel.SERVICE)).targetKey();
