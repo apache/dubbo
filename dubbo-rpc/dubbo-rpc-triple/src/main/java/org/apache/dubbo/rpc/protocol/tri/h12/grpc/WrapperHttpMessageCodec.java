@@ -81,12 +81,12 @@ public class WrapperHttpMessageCodec implements HttpMessageCodec {
     public void encode(OutputStream outputStream, Object data) throws EncodeException {
         try {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            Serialization serialization = serializations.get(convertHessian2To4Wrapper(serializeType));
+            Serialization serialization = serializations.get(convertHessian4To2FromWrapper(serializeType));
             ObjectOutput serialize = serialization.serialize(null, bos);
             serialize.writeObject(data);
             serialize.flushBuffer();
             byte[] encoded = TripleCustomerProtocolWapper.TripleResponseWrapper.Builder.newBuilder()
-                .setSerializeType(serializeType)
+                .setSerializeType(convertHessian2To4Wrapper(serializeType))
                 .setType(encodeTypes[0].getName())
                 .setData(bos.toByteArray())
                 .build()
