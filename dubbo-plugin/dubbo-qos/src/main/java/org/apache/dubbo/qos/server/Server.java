@@ -140,7 +140,9 @@ public class Server {
                 throw lastError;
             }
         }
-        throw lastError;
+        if (lastError != null) {
+            throw lastError;
+        }
     }
 
     /**

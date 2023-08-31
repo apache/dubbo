@@ -159,7 +159,9 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
                 throw new IllegalStateException(e);
             }
         }
-        throw lastError;
+        if (lastError != null) {
+            throw lastError;
+        }
     }
 
     @Override

@@ -126,7 +126,9 @@ public class NettyServer extends AbstractServer {
                 throw new IllegalStateException(e);
             }
         }
-        throw lastError;
+        if (lastError != null) {
+            throw lastError;
+        }
 
     }
 
