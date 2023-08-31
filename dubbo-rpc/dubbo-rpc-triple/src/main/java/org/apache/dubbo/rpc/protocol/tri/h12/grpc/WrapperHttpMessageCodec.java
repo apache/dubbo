@@ -16,15 +16,15 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
 
-import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.serialize.ObjectOutput;
-import org.apache.dubbo.common.serialize.Serialization;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.serialize.MultipleSerialization;
+import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleCustomerProtocolWapper;
 
 import java.io.ByteArrayInputStream;
@@ -32,9 +32,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 public class WrapperHttpMessageCodec implements HttpMessageCodec {
 
@@ -42,7 +39,9 @@ public class WrapperHttpMessageCodec implements HttpMessageCodec {
 
     private static final String DEFAULT_SERIALIZE_TYPE = "fastjson2";
 
-    private final Map<String, Serialization> serializations;
+    private final MultipleSerialization serialization;
+
+    private final URL url;
 
     private Class<?>[] encodeTypes;
 
@@ -50,8 +49,12 @@ public class WrapperHttpMessageCodec implements HttpMessageCodec {
 
     private String serializeType = DEFAULT_SERIALIZE_TYPE;
 
-    public WrapperHttpMessageCodec() {
-        this.serializations = initSerializations();
+    public WrapperHttpMessageCodec(URL url, FrameworkModel frameworkModel) {
+        this.url = url;
+        this.serialization = frameworkModel
+            .getExtensionLoader(MultipleSerialization.class)
+            .getExtension(url.getParameter(Constants.MULTI_SERIALIZATION_KEY,
+                CommonConstants.DEFAULT_KEY));
     }
 
     public void setSerializeType(String serializeType) {
@@ -66,27 +69,13 @@ public class WrapperHttpMessageCodec implements HttpMessageCodec {
         this.decodeTypes = decodeTypes;
     }
 
-    private Map<String, Serialization> initSerializations() {
-        Map<String, Serialization> map = new HashMap<>();
-        ExtensionLoader<Serialization> extensionLoader = FrameworkModel.defaultModel().getExtensionLoader(Serialization.class);
-        Set<String> loadedExtensions = extensionLoader.getLoadedExtensions();
-        for (String name : loadedExtensions) {
-            Serialization serialization = extensionLoader.getExtension(name);
-            map.put(name, serialization);
-        }
-        return map;
-    }
-
     @Override
     public void encode(OutputStream outputStream, Object data) throws EncodeException {
         try {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            Serialization serialization = serializations.get(convertHessian4To2FromWrapper(serializeType));
-            ObjectOutput serialize = serialization.serialize(null, bos);
-            serialize.writeObject(data);
-            serialize.flushBuffer();
+            serialization.serialize(url, serializeType, encodeTypes[0], data, bos);
             byte[] encoded = TripleCustomerProtocolWapper.TripleResponseWrapper.Builder.newBuilder()
-                .setSerializeType(convertHessian2To4Wrapper(serializeType))
+                .setSerializeType(serializeType)
                 .setType(encodeTypes[0].getName())
                 .setData(bos.toByteArray())
                 .build()
@@ -123,15 +112,13 @@ public class WrapperHttpMessageCodec implements HttpMessageCodec {
             }
             TripleCustomerProtocolWapper.TripleRequestWrapper wrapper = TripleCustomerProtocolWapper.TripleRequestWrapper.parseFrom(
                 bos.toByteArray());
-            String wrapperSerializeType = convertHessian4To2FromWrapper(wrapper.getSerializeType());
-            setSerializeType(wrapperSerializeType);
-            Serialization serialization = serializations.get(wrapperSerializeType);
+            setSerializeType(wrapper.getSerializeType());
             Object[] ret = new Object[wrapper.getArgs().size()];
             for (int i = 0; i < wrapper.getArgs().size(); i++) {
-                ByteArrayInputStream bais = new ByteArrayInputStream(
+                ByteArrayInputStream in = new ByteArrayInputStream(
                     wrapper.getArgs().get(i));
                 try {
-                    ret[i] = serialization.deserialize(null, bais).readObject(targetTypes[i]);
+                    ret[i] = this.serialization.deserialize(url, wrapper.getSerializeType(), targetTypes[i], in);
                 } catch (ClassNotFoundException e) {
                     throw new DecodeException(e);
                 }
@@ -145,20 +132,6 @@ public class WrapperHttpMessageCodec implements HttpMessageCodec {
     @Override
     public MediaType contentType() {
         return MEDIA_TYPE;
-    }
-
-    private static String convertHessian4To2FromWrapper(String serializeType) {
-        if (TripleConstant.HESSIAN4.equals(serializeType)) {
-            return TripleConstant.HESSIAN2;
-        }
-        return serializeType;
-    }
-
-    private static String convertHessian2To4Wrapper(String serializeType) {
-        if (TripleConstant.HESSIAN2.equals(serializeType)) {
-            return TripleConstant.HESSIAN4;
-        }
-        return serializeType;
     }
 
     private static void writeLength(OutputStream outputStream, int length) throws IOException {

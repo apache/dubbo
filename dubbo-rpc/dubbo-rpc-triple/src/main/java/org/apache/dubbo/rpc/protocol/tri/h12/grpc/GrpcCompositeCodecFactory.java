@@ -32,7 +32,7 @@ public class GrpcCompositeCodecFactory implements HttpMessageCodecFactory {
     @Override
     public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel) {
         final String serializeName = UrlUtils.serializationOrDefault(url);
-        WrapperHttpMessageCodec wrapperHttpMessageCodec = new WrapperHttpMessageCodec();
+        WrapperHttpMessageCodec wrapperHttpMessageCodec = new WrapperHttpMessageCodec(url, frameworkModel);
         wrapperHttpMessageCodec.setSerializeType(serializeName);
         ProtobufHttpMessageCodec protobufHttpMessageCodec = new ProtobufHttpMessageCodec();
         return new GrpcCompositeCodec(protobufHttpMessageCodec, wrapperHttpMessageCodec);
