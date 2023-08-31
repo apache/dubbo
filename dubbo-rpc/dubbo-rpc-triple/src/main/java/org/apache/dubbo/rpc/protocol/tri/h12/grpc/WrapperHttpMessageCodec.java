@@ -81,7 +81,7 @@ public class WrapperHttpMessageCodec implements HttpMessageCodec {
     public void encode(OutputStream outputStream, Object data) throws EncodeException {
         try {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            Serialization serialization = serializations.get(serializeType);
+            Serialization serialization = serializations.get(convertHessian2To4Wrapper(serializeType));
             ObjectOutput serialize = serialization.serialize(null, bos);
             serialize.writeObject(data);
             serialize.flushBuffer();
@@ -123,7 +123,7 @@ public class WrapperHttpMessageCodec implements HttpMessageCodec {
             }
             TripleCustomerProtocolWapper.TripleRequestWrapper wrapper = TripleCustomerProtocolWapper.TripleRequestWrapper.parseFrom(
                 bos.toByteArray());
-            String wrapperSerializeType = convertHessianFromWrapper(wrapper.getSerializeType());
+            String wrapperSerializeType = convertHessian4To2FromWrapper(wrapper.getSerializeType());
             setSerializeType(wrapperSerializeType);
             Serialization serialization = serializations.get(wrapperSerializeType);
             Object[] ret = new Object[wrapper.getArgs().size()];
@@ -147,9 +147,16 @@ public class WrapperHttpMessageCodec implements HttpMessageCodec {
         return MEDIA_TYPE;
     }
 
-    private static String convertHessianFromWrapper(String serializeType) {
+    private static String convertHessian4To2FromWrapper(String serializeType) {
         if (TripleConstant.HESSIAN4.equals(serializeType)) {
             return TripleConstant.HESSIAN2;
+        }
+        return serializeType;
+    }
+
+    private static String convertHessian2To4Wrapper(String serializeType) {
+        if (TripleConstant.HESSIAN2.equals(serializeType)) {
+            return TripleConstant.HESSIAN4;
         }
         return serializeType;
     }
