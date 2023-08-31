@@ -267,10 +267,16 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
     @Override
     public void initMetrics(MetricsEvent event) {
         MethodMetric metric = new MethodMetric(applicationModel, event.getAttachmentValue(MetricsConstants.INVOCATION));
-        initMethodMetric(event);
-        initQpsMetric(metric);
-        initRtMetric(metric);
-        initRtAgrMetric(metric);
+        if (enableQps) {
+            initMethodMetric(event);
+            initQpsMetric(metric);
+        }
+        if (enableRt) {
+            initRtMetric(metric);
+        }
+        if (enableRtPxx) {
+            initRtAgrMetric(metric);
+        }
     }
 
     public void initMethodMetric(MetricsEvent event){
