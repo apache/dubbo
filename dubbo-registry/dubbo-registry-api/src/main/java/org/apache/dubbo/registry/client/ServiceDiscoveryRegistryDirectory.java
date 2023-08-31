@@ -584,7 +584,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         }
 
         void addNotifyListener(ServiceDiscoveryRegistryDirectory<?> listener) {
-            if (listeners.size() == 0) {
+            if (listeners.isEmpty()) {
                 this.initWith(moduleModel.getApplicationModel().getApplicationName() + CONFIGURATORS_SUFFIX);
             }
             this.listeners.add(listener);
@@ -592,7 +592,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
 
         void removeNotifyListener(ServiceDiscoveryRegistryDirectory<?> listener) {
             this.listeners.remove(listener);
-            if (listeners.size() == 0) {
+            if (listeners.isEmpty()) {
                 this.stopListen(moduleModel.getApplicationModel().getApplicationName() + CONFIGURATORS_SUFFIX);
             }
         }
@@ -693,4 +693,12 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         }
     }
 
+    @Override
+    public String toString() {
+        return "ServiceDiscoveryRegistryDirectory(" +
+            "registry: " + getUrl().getAddress() +
+            ", subscribed key: " + (serviceListener == null || CollectionUtils.isEmpty(serviceListener.getServiceNames())
+            ? getConsumerUrl().getServiceKey() : serviceListener.getServiceNames().toString()) +
+            ")-" + super.toString();
+    }
 }

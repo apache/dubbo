@@ -248,8 +248,8 @@ public class HeaderExchangeClient implements ExchangeClient {
         return Math.max(leastReconnectDuration, tick);
     }
 
-    private boolean shouldReconnect(URL url) {
-        return url.getParameter(Constants.RECONNECT_KEY, true);
+    protected boolean shouldReconnect(URL url) {
+        return !Boolean.FALSE.toString().equalsIgnoreCase(url.getParameter(Constants.RECONNECT_KEY));
     }
 
     @Override
