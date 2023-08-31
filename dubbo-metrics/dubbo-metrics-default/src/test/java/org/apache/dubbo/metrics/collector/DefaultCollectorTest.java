@@ -30,7 +30,6 @@ import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
-import org.apache.dubbo.metrics.model.key.TypeWrapper;
 import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -42,7 +41,6 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -150,8 +148,8 @@ class DefaultCollectorTest {
 
         // push finish rt +1
         List<MetricSample> metricSamples = collector.collect();
-        //num(total+success+processing) + rt(5) = 8
-        Assertions.assertEquals(8, metricSamples.size());
+        //num(total+success+processing) + rt(5) + error code = 9
+        Assertions.assertEquals(9, metricSamples.size());
         List<String> metricsNames = metricSamples.stream().map(MetricSample::getName).collect(Collectors.toList());
         // No error will contain total+success+processing
         String REQUESTS = new MetricsKeyWrapper(METRIC_REQUESTS, MetricsPlaceValue.of(side, MetricsLevel.SERVICE)).targetKey();
@@ -192,8 +190,8 @@ class DefaultCollectorTest {
         long c2 = eventObj.getTimePair().calc();
         metricSamples = collector.collect();
 
-        // num(total+success+error+total_error+processing) + rt(5) = 5
-        Assertions.assertEquals(10, metricSamples.size());
+        // num(total+success+error+total_error+processing) + rt(5) + error code = 11
+        Assertions.assertEquals(11, metricSamples.size());
 
         String TIMEOUT = new MetricsKeyWrapper(METRIC_REQUESTS_TIMEOUT, MetricsPlaceValue.of(side, MetricsLevel.SERVICE)).targetKey();
         String TOTAL_FAILED = new MetricsKeyWrapper(METRIC_REQUESTS_TOTAL_FAILED, MetricsPlaceValue.of(side, MetricsLevel.SERVICE)).targetKey();
