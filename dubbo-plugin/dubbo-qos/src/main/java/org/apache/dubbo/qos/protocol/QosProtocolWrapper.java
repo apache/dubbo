@@ -112,7 +112,6 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
 
             String host = url.getParameter(QOS_HOST);
             int port = url.getParameter(QOS_PORT, QosConstants.DEFAULT_PORT);
-            boolean qosCheck = url.getParameter(QOS_CHECK, false);
             boolean acceptForeignIp = Boolean.parseBoolean(url.getParameter(ACCEPT_FOREIGN_IP, "false"));
             String acceptForeignIpWhitelist = url.getParameter(ACCEPT_FOREIGN_IP_WHITELIST, StringUtils.EMPTY_STRING);
             String anonymousAccessPermissionLevel = url.getParameter(ANONYMOUS_ACCESS_PERMISSION_LEVEL, PermissionLevel.PUBLIC.name());
@@ -129,7 +128,7 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
             server.setAcceptForeignIpWhitelist(acceptForeignIpWhitelist);
             server.setAnonymousAccessPermissionLevel(anonymousAccessPermissionLevel);
             server.setAnonymousAllowCommands(anonymousAllowCommands);
-            server.start(qosCheck);
+            server.start(url);
 
         } catch (Throwable throwable) {
             logger.warn(QOS_FAILED_START_SERVER, "", "", "Fail to start qos server: ", throwable);

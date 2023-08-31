@@ -140,7 +140,9 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
         }
         InetSocketAddress bindAddress = new InetSocketAddress(bindIp, bindPort);
         Throwable lastError = null;
-        for (int i = 0; i < 10; i++) {
+        int retryTimes = getUrl().getParameter(Constants.BIND_RETRY_TIMES, 10);
+        int retryInterval = getUrl().getParameter(Constants.BIND_RETRY_INTERVAL, 3000);
+        for (int i = 0; i < retryTimes; i++) {
             try {
                 ChannelFuture channelFuture = bootstrap.bind(bindAddress);
                 channelFuture.syncUninterruptibly();
@@ -153,7 +155,7 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
                 "Failed to bind " + getClass().getSimpleName()
                     + " on " + bindAddress + ", cause: " + lastError.getMessage() + "will retry 10 times. Current retry times: " + i, lastError);
             try {
-                Thread.sleep(3000);
+                Thread.sleep(retryInterval);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new IllegalStateException(e);
