@@ -24,6 +24,7 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.spring.context.DubboConfigApplicationListener;
 import org.apache.dubbo.config.spring.context.DubboConfigBeanInitializer;
 import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
@@ -392,6 +393,7 @@ public class ReferenceBean<T> implements FactoryBean<T>,
     private Object getCallProxy() throws Exception {
         if (referenceConfig == null) {
             referenceBeanManager.initReferenceBean(this);
+            applicationContext.getBean(DubboConfigApplicationListener.class.getName(), DubboConfigApplicationListener.class).init();
             logger.warn(CONFIG_DUBBO_BEAN_INITIALIZER, "", "",  "ReferenceBean is not ready yet, please make sure to call reference interface method after dubbo is started.");
         }
         //get reference proxy
