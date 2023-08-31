@@ -33,7 +33,7 @@ public abstract class TimeCounterEvent extends MetricsEvent {
         this.timePair = TimePair.start();
     }
 
-    public TimeCounterEvent(ApplicationModel source, String appName, MetricsDispatcher metricsDispatcher, TypeWrapper typeWrapper) {
+    public TimeCounterEvent(ApplicationModel source, String appName,MetricsEventMulticaster metricsDispatcher, TypeWrapper typeWrapper) {
         super(source, appName, metricsDispatcher, typeWrapper);
         this.timePair = TimePair.start();
     }
