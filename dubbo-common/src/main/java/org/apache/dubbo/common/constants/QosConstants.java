@@ -24,6 +24,8 @@ public interface QosConstants {
 
     String QOS_ENABLE = "qos.enable";
 
+    String QOS_CHECK = "qos.check";
+
     String QOS_HOST = "qos.host";
 
     String QOS_PORT = "qos.port";

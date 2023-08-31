@@ -51,6 +51,10 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
             metricCounter.get(metricName));
     }
 
+    protected  void initMetricsCounter(S source, K metricsName){
+        getAtomicCounter(source,metricsName);
+    }
+
     protected abstract void countConfigure(MetricsCountSampleConfigurer<S, K, M> sampleConfigure);
 
     private AtomicLong getAtomicCounter(S source, K metricsName) {
