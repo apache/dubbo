@@ -14,11 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.deploy;
+package org.apache.dubbo.common.deploy;
 
-import org.apache.dubbo.common.deploy.DeployListener;
-import org.apache.dubbo.common.deploy.DeployState;
-import org.apache.dubbo.common.deploy.Deployer;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.model.ScopeModel;
