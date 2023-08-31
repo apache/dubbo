@@ -1,3 +1,4 @@
 protocol-ports=org.apache.dubbo.registry.client.metadata.ProtocolPortsMetadataCustomizer
 instance-metadata=org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataCustomizer
 port=org.apache.dubbo.registry.client.metadata.ServiceInstanceHostPortCustomizer
+metadata-url=org.apache.dubbo.registry.deploy.MetadataServiceURLParamsMetadataCustomizer

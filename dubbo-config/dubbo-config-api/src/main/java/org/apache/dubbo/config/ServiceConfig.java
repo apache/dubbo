@@ -1048,7 +1048,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         return this::unexport;
     }
 
-    void publishServiceDefinition(URL url){
+    private void publishServiceDefinition(URL url){
         MetadataPublisher metadataPublisher = getApplicationModel().getBeanFactory().getBean(MetadataPublisher.class);
         if(metadataPublisher != null){
             metadataPublisher.publishServiceDefinition(url, providerModel.getServiceModel(), getApplicationModel());
