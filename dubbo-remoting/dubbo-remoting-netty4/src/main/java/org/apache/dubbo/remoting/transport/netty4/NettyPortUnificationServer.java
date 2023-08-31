@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -97,14 +98,14 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
         }
     }
 
-    public void bind() {
+    public void bind() throws Throwable {
         if (channel == null) {
             doOpen();
         }
     }
 
     @Override
-    public void doOpen() {
+    public void doOpen() throws Throwable {
         bootstrap = new ServerBootstrap();
 
         bossGroup = NettyEventLoopFactory.eventLoopGroup(1, EVENT_LOOP_BOSS_POOL_NAME);
@@ -138,9 +139,27 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
             bindIp = ANYHOST_VALUE;
         }
         InetSocketAddress bindAddress = new InetSocketAddress(bindIp, bindPort);
-        ChannelFuture channelFuture = bootstrap.bind(bindAddress);
-        channelFuture.syncUninterruptibly();
-        channel = channelFuture.channel();
+        Throwable lastError = null;
+        for (int i = 0; i < 10; i++) {
+            try {
+                ChannelFuture channelFuture = bootstrap.bind(bindAddress);
+                channelFuture.syncUninterruptibly();
+                channel = channelFuture.channel();
+                return;
+            } catch (Throwable t) {
+                lastError = t;
+            }
+            logger.error(LoggerCodeConstants.TRANSPORT_UNEXPECTED_EXCEPTION, "", "",
+                "Failed to bind " + getClass().getSimpleName()
+                    + " on " + bindAddress + ", cause: " + lastError.getMessage() + "will retry 10 times. Current retry times: " + i, lastError);
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException(e);
+            }
+        }
+        throw lastError;
     }
 
     @Override

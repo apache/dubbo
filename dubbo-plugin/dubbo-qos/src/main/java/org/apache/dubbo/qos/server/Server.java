@@ -89,7 +89,7 @@ public class Server {
     /**
      * start server, bind port
      */
-    public void start() throws Throwable {
+    public void start(boolean qosCheck) throws Throwable {
         if (!started.compareAndSet(false, true)) {
             return;
         }
@@ -115,18 +115,32 @@ public class Server {
                 ));
             }
         });
-        try {
-            if (StringUtils.isBlank(host)) {
-                serverBootstrap.bind(port).sync();
-            } else {
-                serverBootstrap.bind(host, port).sync();
-            }
+        Throwable lastError = null;
+        for (int i = 0; i < 10; i++) {
+            try {
+                if (StringUtils.isBlank(host)) {
+                    serverBootstrap.bind(port).sync();
+                } else {
+                    serverBootstrap.bind(host, port).sync();
+                }
 
-            logger.info("qos-server bind localhost:" + port);
-        } catch (Throwable throwable) {
-            logger.error(QOS_FAILED_START_SERVER, "", "", "qos-server can not bind localhost:" + port, throwable);
-            throw throwable;
+                logger.info("qos-server bind localhost:" + port);
+                return;
+            } catch (Throwable throwable) {
+                logger.error(QOS_FAILED_START_SERVER, "", "", "qos-server can not bind localhost:" + port, throwable);
+                lastError = throwable;
+            }
+            if (qosCheck) {
+                // If enable qos check, we will retry 10 times and wait 3 seconds between each retry.
+                logger.error(QOS_FAILED_START_SERVER, "", "", "qos-server can not bind localhost:" + port +
+                    " and will retry 10 times. Current retry times: " + i);
+                Thread.sleep(3000);
+            } else {
+                // If disable qos check, throw exception directly.
+                throw lastError;
+            }
         }
+        throw lastError;
     }
 
     /**
