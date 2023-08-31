@@ -19,7 +19,10 @@ package org.apache.dubbo.metrics.collector;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.TestMetricsInvoker;
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.metrics.event.RequestEvent;
@@ -132,6 +135,9 @@ class DefaultCollectorTest {
         DefaultMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
         collector.setCollectEnabled(true);
 
+        ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DefaultCollectorTest.class);
+        logger.warn("0-99","","","Test error code message.");
+
         metricsFilter.invoke(new TestMetricsInvoker(side), invocation);
         try {
             Thread.sleep(50);
@@ -150,6 +156,7 @@ class DefaultCollectorTest {
         List<MetricSample> metricSamples = collector.collect();
         //num(total+success+processing) + rt(5) + error code = 9
         Assertions.assertEquals(9, metricSamples.size());
+      
         List<String> metricsNames = metricSamples.stream().map(MetricSample::getName).collect(Collectors.toList());
         // No error will contain total+success+processing
         String REQUESTS = new MetricsKeyWrapper(METRIC_REQUESTS, MetricsPlaceValue.of(side, MetricsLevel.SERVICE)).targetKey();

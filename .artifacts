@@ -66,6 +66,7 @@ dubbo-metrics-prometheus
 dubbo-metrics-registry
 dubbo-metrics-config-center
 dubbo-metrics-netty
+dubbo-metrics-event
 dubbo-monitor
 dubbo-monitor-api
 dubbo-monitor-common
