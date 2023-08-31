@@ -199,6 +199,13 @@
         <!-- metrics -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metrics-event</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-metrics-api</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
@@ -698,6 +705,7 @@
                                     <include>org.apache.dubbo:dubbo-metadata-report-nacos</include>
                                     <include>org.apache.dubbo:dubbo-metadata-report-redis</include>
                                     <include>org.apache.dubbo:dubbo-metadata-report-zookeeper</include>
+                                    <include>org.apache.dubbo:dubbo-metrics-event</include>
                                     <include>org.apache.dubbo:dubbo-metrics-api</include>
                                     <include>org.apache.dubbo:dubbo-metrics-default</include>
                                     <include>org.apache.dubbo:dubbo-metrics-registry</include>
