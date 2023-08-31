@@ -32,7 +32,6 @@ public class ThreadRejectMetricsCountSampler extends MetricsNameCountSampler<Str
 
     public ThreadRejectMetricsCountSampler(DefaultMetricsCollector collector) {
         super(collector, THREAD_POOL,MetricsKey.THREAD_POOL_THREAD_REJECT_COUNT);
-        this.initMetricsCounter(name,name);
     }
 
     @Override
