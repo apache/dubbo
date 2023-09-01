@@ -137,6 +137,7 @@ public class Server {
         if (worker != null) {
             worker.shutdownGracefully();
         }
+        started.set(false);
     }
 
     public String getHost() {

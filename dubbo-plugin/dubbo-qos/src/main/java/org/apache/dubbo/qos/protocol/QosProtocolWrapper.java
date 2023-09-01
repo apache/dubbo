@@ -134,6 +134,11 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
 
         } catch (Throwable throwable) {
             logger.warn(QOS_FAILED_START_SERVER, "", "", "Fail to start qos server: ", throwable);
+            try {
+                stopServer();
+            } catch (Throwable stop) {
+                logger.warn(QOS_FAILED_START_SERVER, "", "", "Fail to stop qos server: ", stop);
+            }
             if (qosCheck) {
                 throw new RpcException(throwable);
             }
