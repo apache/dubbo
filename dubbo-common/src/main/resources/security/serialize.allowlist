@@ -83,6 +83,7 @@ java.util.Collections$EmptyList
 java.util.Collections$EmptyMap
 java.util.Collections$SingletonSet
 java.util.Collections$SingletonList
+java.util.Collections$SingletonMap
 java.util.Collections$UnmodifiableCollection
 java.util.Collections$UnmodifiableList
 java.util.Collections$UnmodifiableMap
