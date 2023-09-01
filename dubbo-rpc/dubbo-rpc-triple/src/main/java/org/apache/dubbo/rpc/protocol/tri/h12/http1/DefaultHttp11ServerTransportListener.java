@@ -81,6 +81,8 @@ public class DefaultHttp11ServerTransportListener extends AbstractServerTranspor
         MethodDescriptor methodDescriptor = findMethodDescriptor(getServiceDescriptor(), originalMethodName, hasStub);
         MethodMetadata methodMetadata = MethodMetadata.fromMethodDescriptor(methodDescriptor);
         RpcInvocation rpcInvocation = buildRpcInvocation(getInvoker(), getServiceDescriptor(), methodDescriptor);
+        setMethodDescriptor(methodDescriptor);
+        setMethodMetadata(methodMetadata);
         setRpcInvocation(rpcInvocation);
         HttpMessageCodec httpMessageCodec = getHttpMessageCodec();
         ListeningDecoder listeningDecoder = newListeningDecoder(httpMessageCodec, methodMetadata.getActualRequestTypes());
