@@ -16,14 +16,12 @@
  */
 package org.apache.dubbo.qos.server;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.qos.api.PermissionLevel;
 import org.apache.dubbo.qos.api.QosConfiguration;
 import org.apache.dubbo.qos.server.handler.QosProcessHandler;
-import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import io.netty.bootstrap.ServerBootstrap;
@@ -36,9 +34,6 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_FAILED_START_SERVER;
-import static org.apache.dubbo.common.constants.QosConstants.QOS_CHECK;
 
 /**
  * A server serves for both telnet access and http access
@@ -92,7 +87,7 @@ public class Server {
     /**
      * start server, bind port
      */
-    public void start(URL url) throws Throwable {
+    public void start(boolean qosCheck) throws Throwable {
         if (!started.compareAndSet(false, true)) {
             return;
         }
@@ -118,35 +113,19 @@ public class Server {
                 ));
             }
         });
-        boolean qosCheck = url.getParameter(QOS_CHECK, false);
-        int retryTimes = url.getParameter(Constants.BIND_RETRY_TIMES, 10);
-        int retryInterval = url.getParameter(Constants.BIND_RETRY_INTERVAL, 3000);
-        Throwable lastError = null;
-        for (int i = 0; i < retryTimes; i++) {
-            try {
-                if (StringUtils.isBlank(host)) {
-                    serverBootstrap.bind(port).sync();
-                } else {
-                    serverBootstrap.bind(host, port).sync();
-                }
-
-                logger.info("qos-server bind localhost:" + port);
-                return;
-            } catch (Throwable throwable) {
-                lastError = throwable;
-            }
-            if (qosCheck) {
-                // If enable qos check, we will retry 10 times and wait 3 seconds between each retry.
-                logger.error(QOS_FAILED_START_SERVER, "", "", "qos-server can not bind localhost:" + port +
-                    " and will retry 10 times. Current retry times: " + i);
-                Thread.sleep(retryInterval);
+        try {
+            if (StringUtils.isBlank(host)) {
+                serverBootstrap.bind(port).sync();
             } else {
-                // If disable qos check, throw exception directly.
-                throw lastError;
+                serverBootstrap.bind(host, port).sync();
             }
-        }
-        if (lastError != null) {
-            throw lastError;
+
+            logger.info("qos-server bind localhost:" + port);
+            return;
+        } catch (Throwable throwable) {
+            if (qosCheck) {
+                throw new QosBindException("qos-server can not bind localhost:" + port, throwable);
+            }
         }
     }
 
