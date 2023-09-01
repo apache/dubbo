@@ -20,6 +20,7 @@ import org.apache.dubbo.remoting.http12.CompositeInputStream;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -37,11 +38,7 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
 
     private final CompositeInputStream accumulate = new CompositeInputStream();
 
-    private final Class<?>[] targetTypes;
-
-    private HttpMessageCodec httpMessageCodec;
-
-    private Listener listener;
+    private FragmentListener listener;
 
     private final int lengthFieldOffset;
 
@@ -49,23 +46,20 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
 
     private int requiredLength;
 
-    public LengthFieldStreamingDecoder(Class<?>[] targetTypes) {
-        this(4, targetTypes);
+    private InputStream dataHeader = new ByteArrayInputStream(new byte[0]);
+
+    public LengthFieldStreamingDecoder() {
+        this(4);
     }
 
-    public LengthFieldStreamingDecoder(int lengthFieldLength, Class<?>[] targetTypes) {
-        this(0, lengthFieldLength, targetTypes);
+    public LengthFieldStreamingDecoder(int lengthFieldLength) {
+        this(0, lengthFieldLength);
     }
 
-    public LengthFieldStreamingDecoder(int lengthFieldOffset, int lengthFieldLength, Class<?>[] targetTypes) {
+    public LengthFieldStreamingDecoder(int lengthFieldOffset, int lengthFieldLength) {
         this.lengthFieldOffset = lengthFieldOffset;
         this.lengthFieldLength = lengthFieldLength;
-        this.targetTypes = targetTypes;
         this.requiredLength = lengthFieldOffset + lengthFieldLength;
-    }
-
-    public void setHttpMessageCodec(HttpMessageCodec httpMessageCodec) {
-        this.httpMessageCodec = httpMessageCodec;
     }
 
     @Override
@@ -91,7 +85,7 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
     }
 
     @Override
-    public final void setListener(Listener listener) {
+    public final void setFragmentListener(FragmentListener listener) {
         this.listener = listener;
     }
 
@@ -136,10 +130,16 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
     }
 
     private void processHeader() throws IOException {
-        processOffset(accumulate, lengthFieldOffset);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream(lengthFieldOffset + lengthFieldLength);
+        byte[] offsetData = new byte[lengthFieldOffset];
+        int ignore = accumulate.read(offsetData);
+        bos.write(offsetData);
+        processOffset(new ByteArrayInputStream(offsetData), lengthFieldOffset);
         byte[] lengthBytes = new byte[lengthFieldLength];
-        accumulate.read(lengthBytes);
+        ignore = accumulate.read(lengthBytes);
+        bos.write(lengthBytes);
         requiredLength = bytesToInt(lengthBytes);
+        this.dataHeader = new ByteArrayInputStream(bos.toByteArray());
 
         // Continue reading the frame body.
         state = DecodeState.PAYLOAD;
@@ -154,18 +154,21 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
         if (lengthFieldOffset != 0) {
             return;
         }
-        inputStream.read(new byte[lengthFieldOffset]);
+        int ignore = inputStream.read(new byte[lengthFieldOffset]);
     }
 
     private void processBody() throws IOException {
         byte[] rawMessage = readRawMessage(accumulate, requiredLength);
         InputStream inputStream = new ByteArrayInputStream(rawMessage);
-        Object[] decodeParameters = httpMessageCodec.decode(inputStream, targetTypes);
-        this.listener.onMessage(decodeParameters);
+        invokeListener(inputStream);
 
         // Done with this frame, begin processing the next header.
         state = DecodeState.HEADER;
         requiredLength = lengthFieldOffset + lengthFieldLength;
+    }
+
+    protected void invokeListener(InputStream inputStream) {
+        this.listener.onFragmentMessage(dataHeader, inputStream);
     }
 
     protected byte[] readRawMessage(InputStream inputStream, int length) throws IOException {

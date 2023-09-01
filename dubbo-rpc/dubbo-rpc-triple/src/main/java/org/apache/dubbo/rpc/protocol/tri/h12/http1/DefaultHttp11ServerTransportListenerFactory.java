@@ -14,12 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.h1;
+package org.apache.dubbo.rpc.protocol.tri.h12.http1;
 
-import org.apache.dubbo.remoting.http12.HttpInputMessage;
-import org.apache.dubbo.remoting.http12.HttpTransportListener;
-import org.apache.dubbo.remoting.http12.RequestMetadata;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.http12.HttpChannel;
+import org.apache.dubbo.remoting.http12.h1.Http1ServerTransportListener;
+import org.apache.dubbo.remoting.http12.h1.Http1ServerTransportListenerFactory;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
-public interface Http1ServerTransportListener extends HttpTransportListener<RequestMetadata, HttpInputMessage> {
+public class DefaultHttp11ServerTransportListenerFactory implements Http1ServerTransportListenerFactory {
 
+    public static final Http1ServerTransportListenerFactory INSTANCE = new DefaultHttp11ServerTransportListenerFactory();
+
+    @Override
+    public Http1ServerTransportListener newInstance(HttpChannel httpChannel, URL url, FrameworkModel frameworkModel) {
+        return new DefaultHttp11ServerTransportListener(httpChannel, url, frameworkModel);
+    }
 }

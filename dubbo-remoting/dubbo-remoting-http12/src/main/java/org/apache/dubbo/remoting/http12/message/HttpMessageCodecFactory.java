@@ -14,8 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.h2;
+package org.apache.dubbo.remoting.http12.message;
 
-public interface Http2TransportListener extends CancelableTransportListener<Http2Header, Http2InputMessage> {
-    
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
+/**
+ * for http body codec
+ */
+@SPI(scope = ExtensionScope.FRAMEWORK)
+public interface HttpMessageCodecFactory {
+
+    HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel);
+
+    MediaType contentType();
+
+    default boolean support(String contentType) {
+        MediaType mediaType = this.contentType();
+        return mediaType.getName().startsWith(contentType);
+    }
+
 }

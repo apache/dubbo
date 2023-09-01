@@ -14,8 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.h2;
+package org.apache.dubbo.rpc.protocol.tri.h12;
 
-public interface Http2TransportListener extends CancelableTransportListener<Http2Header, Http2InputMessage> {
-    
+import org.apache.dubbo.rpc.protocol.tri.ServerStreamObserver;
+
+public interface ServerCallToObserverAdapter<T> extends ServerStreamObserver<T> {
+
+    void setExceptionCode(int exceptionCode);
+
 }

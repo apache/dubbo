@@ -14,39 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
 
-package org.apache.dubbo.rpc.protocol.tri.compressor;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
+import org.apache.dubbo.remoting.http12.h2.Http2ServerTransportListenerFactory;
+import org.apache.dubbo.remoting.http12.h2.Http2TransportListener;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import java.io.OutputStream;
+public class GrpcHttp2ServerTransportListenerFactory implements Http2ServerTransportListenerFactory {
 
-/**
- * Default compressor
- * <p>
- * Do not use the spi
- */
-public class Identity implements Compressor, DeCompressor {
-
-    public static final String MESSAGE_ENCODING = "identity";
-
-    public static final Identity IDENTITY = new Identity();
+    public static final String CONTENT_TYPE = "application/grpc";
 
     @Override
-    public String getMessageEncoding() {
-        return MESSAGE_ENCODING;
+    public Http2TransportListener newInstance(H2StreamChannel streamChannel, URL url, FrameworkModel frameworkModel) {
+        return new GrpcHttp2ServerTransportListener(streamChannel, url, frameworkModel);
     }
 
     @Override
-    public byte[] compress(byte[] payloadByteArr) {
-        return payloadByteArr;
-    }
-
-    @Override
-    public OutputStream decorate(OutputStream outputStream) {
-        return outputStream;
-    }
-
-    @Override
-    public byte[] decompress(byte[] payloadByteArr) {
-        return payloadByteArr;
+    public boolean supportContentType(String contentType) {
+        return contentType.startsWith(CONTENT_TYPE);
     }
 }

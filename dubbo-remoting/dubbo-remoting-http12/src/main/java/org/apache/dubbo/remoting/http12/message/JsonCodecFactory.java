@@ -14,8 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.h2;
+package org.apache.dubbo.remoting.http12.message;
 
-public interface Http2TransportListener extends CancelableTransportListener<Http2Header, Http2InputMessage> {
-    
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
+@Activate
+public class JsonCodecFactory implements HttpMessageCodecFactory {
+
+    @Override
+    public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel) {
+        return new JsonCodec();
+    }
+
+    @Override
+    public MediaType contentType() {
+        return MediaType.APPLICATION_JSON_VALUE;
+    }
 }

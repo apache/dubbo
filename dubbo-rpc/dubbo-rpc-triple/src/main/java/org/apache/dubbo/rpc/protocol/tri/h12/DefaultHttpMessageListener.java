@@ -14,8 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.h2;
+package org.apache.dubbo.rpc.protocol.tri.h12;
 
-public interface Http2TransportListener extends CancelableTransportListener<Http2Header, Http2InputMessage> {
-    
+import org.apache.dubbo.remoting.http12.message.ListeningDecoder;
+
+import java.io.InputStream;
+
+public class DefaultHttpMessageListener implements HttpMessageListener {
+
+    private ListeningDecoder listeningDecoder;
+
+    public DefaultHttpMessageListener() {
+
+    }
+
+    public DefaultHttpMessageListener(ListeningDecoder listeningDecoder) {
+        this.listeningDecoder = listeningDecoder;
+    }
+
+    public void setListeningDecoder(ListeningDecoder listeningDecoder) {
+        this.listeningDecoder = listeningDecoder;
+    }
+
+    @Override
+    public void onMessage(InputStream inputStream) {
+        listeningDecoder.decode(inputStream);
+    }
 }

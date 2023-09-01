@@ -14,24 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12;
+package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
 
-public interface ServerCallListener {
+public enum GrpcHeaderNames {
 
-    /**
-     * Callback when a request message is received.
-     *
-     * @param message message received
-     */
-    void onMessage(Object message);
+    GRPC_STATUS("grpc-status"),
+    GRPC_MESSAGE("grpc-message"),
+    GRPC_ENCODING("grpc-encoding"),
+    GRPC_TIMEOUT("grpc-timeout"),
+    ;
 
-    /**
-     * @param code when the call is canceled.
-     */
-    void onCancel(long code);
+    private final String name;
 
-    /**
-     * Request completed.
-     */
-    void onComplete();
+    GrpcHeaderNames(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
 }

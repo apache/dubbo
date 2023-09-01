@@ -14,38 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12;
+
+package org.apache.dubbo.rpc.protocol.tri.h12;
 
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 
-public class UnaryServerCallListener extends AbstractServerCallListener {
+public class ServerStreamServerCallListener extends AbstractServerCallListener {
 
-    public UnaryServerCallListener(RpcInvocation invocation,
-                                   Invoker<?> invoker,
-                                   StreamObserver<Object> responseObserver) {
+    public ServerStreamServerCallListener(RpcInvocation invocation, Invoker<?> invoker,
+                                          StreamObserver<Object> responseObserver) {
         super(invocation, invoker, responseObserver);
     }
 
     @Override
     public void onReturn(Object value) {
-        responseObserver.onNext(value);
-        responseObserver.onCompleted();
     }
 
     @Override
     public void onMessage(Object message) {
         if (message instanceof Object[]) {
-            invocation.setArguments((Object[]) message);
-        } else {
-            invocation.setArguments(new Object[]{message});
+            message = ((Object[]) message)[0];
         }
+        invocation.setArguments(new Object[]{message, responseObserver});
     }
 
     @Override
     public void onCancel(long code) {
-        //ignore
+        responseObserver.onError(new HttpStatusException((int) code));
     }
 
     @Override

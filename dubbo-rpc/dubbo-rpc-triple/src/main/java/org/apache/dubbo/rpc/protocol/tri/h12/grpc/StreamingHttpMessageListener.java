@@ -14,40 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.h2;
+package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
 
-import org.apache.dubbo.remoting.http12.exception.DecodeException;
-import org.apache.dubbo.remoting.http12.message.DefaultListeningDecoder;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
+import org.apache.dubbo.rpc.protocol.tri.h12.HttpMessageListener;
 
 import java.io.InputStream;
 
-public class DefaultHttp2StreamingDecoder implements StreamingDecoder {
+public class StreamingHttpMessageListener implements HttpMessageListener {
 
-    private final DefaultListeningDecoder delegate;
+    private StreamingDecoder streamingDecoder;
 
-    public DefaultHttp2StreamingDecoder(HttpMessageCodec httpMessageCodec, Class<?>[] targetTypes) {
-        this.delegate = new DefaultListeningDecoder(httpMessageCodec, targetTypes);
+    public StreamingHttpMessageListener() {
+    }
+
+    public StreamingHttpMessageListener(StreamingDecoder streamingDecoder) {
+        this.streamingDecoder = streamingDecoder;
     }
 
     @Override
-    public void decode(InputStream inputStream) throws DecodeException {
-        delegate.decode(inputStream);
-    }
-
-    @Override
-    public void close() {
-        delegate.close();
-    }
-
-    @Override
-    public void setListener(Listener listener) {
-        delegate.setListener(listener);
-    }
-
-    @Override
-    public void request(int numMessages) {
-        //no op
+    public void onMessage(InputStream inputStream) {
+        streamingDecoder.decode(inputStream);
     }
 }
