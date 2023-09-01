@@ -161,7 +161,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
             throw new UnsupportedMediaTypeException(contentType);
         }
         this.httpMessageCodec = httpMessageCodec;
-        this.serviceDescriptor = findServiceDescriptor(invoker, serviceName, hasStub);
+        setServiceDescriptor(findServiceDescriptor(invoker, serviceName, hasStub));
         setHttpMessageListener(newHttpMessageListener());
         onMetadataCompletion(metadata);
     }
