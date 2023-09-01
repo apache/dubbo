@@ -130,7 +130,7 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
             server.setAcceptForeignIpWhitelist(acceptForeignIpWhitelist);
             server.setAnonymousAccessPermissionLevel(anonymousAccessPermissionLevel);
             server.setAnonymousAllowCommands(anonymousAllowCommands);
-            server.start(qosCheck);
+            server.start();
 
         } catch (Throwable throwable) {
             logger.warn(QOS_FAILED_START_SERVER, "", "", "Fail to start qos server: ", throwable);

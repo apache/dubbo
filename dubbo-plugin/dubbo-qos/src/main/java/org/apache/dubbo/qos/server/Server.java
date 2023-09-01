@@ -87,7 +87,7 @@ public class Server {
     /**
      * start server, bind port
      */
-    public void start(boolean qosCheck) throws Throwable {
+    public void start() throws Throwable {
         if (!started.compareAndSet(false, true)) {
             return;
         }
@@ -103,13 +103,13 @@ public class Server {
             @Override
             protected void initChannel(Channel ch) throws Exception {
                 ch.pipeline().addLast(new QosProcessHandler(frameworkModel,
-                    QosConfiguration.builder()
-                        .welcome(welcome)
-                        .acceptForeignIp(acceptForeignIp)
-                        .acceptForeignIpWhitelist(acceptForeignIpWhitelist)
-                        .anonymousAccessPermissionLevel(anonymousAccessPermissionLevel)
-                        .anonymousAllowCommands(anonymousAllowCommands)
-                        .build()
+                        QosConfiguration.builder()
+                                .welcome(welcome)
+                                .acceptForeignIp(acceptForeignIp)
+                                .acceptForeignIpWhitelist(acceptForeignIpWhitelist)
+                                .anonymousAccessPermissionLevel(anonymousAccessPermissionLevel)
+                                .anonymousAllowCommands(anonymousAllowCommands)
+                                .build()
                 ));
             }
         });
@@ -121,11 +121,8 @@ public class Server {
             }
 
             logger.info("qos-server bind localhost:" + port);
-            return;
         } catch (Throwable throwable) {
-            if (qosCheck) {
-                throw new QosBindException("qos-server can not bind localhost:" + port, throwable);
-            }
+            throw new QosBindException("qos-server can not bind localhost:" + port, throwable);
         }
     }
 
