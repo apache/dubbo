@@ -133,10 +133,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
         boolean should = PROVIDER_SIDE.equals(side); // Only register the Provider.
 
-        if (!should) {
-            if (logger.isDebugEnabled()) {
-                logger.debug(String.format("The URL[%s] should not be registered.", providerURL));
-            }
+        if (!should && logger.isDebugEnabled()) {
+            logger.debug(String.format("The URL[%s] should not be registered.", providerURL));
         }
 
         if (!acceptable(providerURL)) {
@@ -394,7 +392,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             Lock mappingLock = serviceNameMapping.getMappingLock(event.getServiceKey());
             try {
                 mappingLock.lock();
-                if (CollectionUtils.isEmpty(tempOldApps) && newApps.size() > 0) {
+                if (CollectionUtils.isEmpty(tempOldApps) && !newApps.isEmpty()) {
                     serviceNameMapping.putCachedMapping(ServiceNameMapping.buildMappingKey(url), newApps);
                     subscribeURLs(url, listener, newApps);
                     oldApps = newApps;

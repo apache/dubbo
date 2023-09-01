@@ -222,6 +222,11 @@ public class MetricsSupport {
         collector.increment(event.getAttachmentValue(METHOD_METRICS), new MetricsKeyWrapper(metricsKey, placeType), SELF_INCREMENT_SIZE);
     }
 
+
+    public static void init(MetricsKey metricsKey, MetricsPlaceValue placeType, MethodMetricsCollector<TimeCounterEvent> collector, MetricsEvent event) {
+        collector.init(event.getAttachmentValue(INVOCATION), new MetricsKeyWrapper(metricsKey, placeType));
+    }
+
     /**
      * Dec method num
      */
