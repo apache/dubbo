@@ -18,7 +18,6 @@ package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -105,33 +104,15 @@ public class NettyServer extends AbstractServer {
 
         initServerBootstrap(nettyServerHandler);
 
-        int retryTimes = getUrl().getParameter(Constants.BIND_RETRY_TIMES, 10);
-        int retryInterval = getUrl().getParameter(Constants.BIND_RETRY_INTERVAL, 3000);
         // bind
-        Throwable lastError = null;
-        for (int i = 0; i < retryTimes; i++) {
-            try {
-                ChannelFuture channelFuture = bootstrap.bind(getBindAddress());
-                channelFuture.syncUninterruptibly();
-                channel = channelFuture.channel();
-                return;
-            } catch (Throwable t) {
-                lastError = t;
-            }
-            logger.error(LoggerCodeConstants.TRANSPORT_UNEXPECTED_EXCEPTION, "", "",
-                "Failed to bind " + getClass().getSimpleName()
-                    + " on " + getBindAddress() + ", cause: " + lastError.getMessage() + "will retry 10 times. Current retry times: " + i, lastError);
-            try {
-                Thread.sleep(retryInterval);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new IllegalStateException(e);
-            }
+        try {
+            ChannelFuture channelFuture = bootstrap.bind(getBindAddress());
+            channelFuture.syncUninterruptibly();
+            channel = channelFuture.channel();
+        } catch (Throwable t) {
+            closeBootstrap();
+            throw t;
         }
-        if (lastError != null) {
-            throw lastError;
-        }
-
     }
 
     protected EventLoopGroup createBossGroup() {
@@ -195,6 +176,17 @@ public class NettyServer extends AbstractServer {
         } catch (Throwable e) {
             logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }
+        closeBootstrap();
+        try {
+            if (channels != null) {
+                channels.clear();
+            }
+        } catch (Throwable e) {
+            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
+        }
+    }
+
+    private void closeBootstrap() {
         try {
             if (bootstrap != null) {
                 long timeout = ConfigurationUtils.reCalShutdownTime(serverShutdownTimeoutMills);
@@ -203,13 +195,6 @@ public class NettyServer extends AbstractServer {
                 Future<?> workerGroupShutdownFuture = workerGroup.shutdownGracefully(quietPeriod, timeout, MILLISECONDS);
                 bossGroupShutdownFuture.syncUninterruptibly();
                 workerGroupShutdownFuture.syncUninterruptibly();
-            }
-        } catch (Throwable e) {
-            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
-        }
-        try {
-            if (channels != null) {
-                channels.clear();
             }
         } catch (Throwable e) {
             logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
