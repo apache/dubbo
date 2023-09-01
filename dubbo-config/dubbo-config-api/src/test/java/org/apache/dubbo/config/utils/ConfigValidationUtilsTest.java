@@ -20,6 +20,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
+import org.apache.dubbo.config.exception.ConfigValidationException;
 import org.apache.dubbo.config.validator.ApplicationConfigValidator;
 import org.apache.dubbo.config.validator.MetadataConfigValidator;
 import org.junit.jupiter.api.Assertions;
@@ -49,6 +50,7 @@ class ConfigValidationUtilsTest {
         MetadataReportConfig config = new MetadataReportConfig();
         config.setAddress("protocol://ip:host");
         try {
+            Assertions.assertTrue(config.validate());
             MetadataConfigValidator.validateMetadataConfig(config);
         } catch (Exception e) {
             Assertions.fail("valid config expected.");
@@ -57,15 +59,15 @@ class ConfigValidationUtilsTest {
         config.setAddress("ip:host");
         config.setProtocol("protocol");
         try {
-            MetadataConfigValidator.validateMetadataConfig(config);
+            Assertions.assertTrue(config.validate());
         } catch (Exception e) {
             Assertions.fail("valid config expected.");
         }
 
         config.setAddress("ip:host");
         config.setProtocol(null);
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            MetadataConfigValidator.validateMetadataConfig(config);
+        Assertions.assertThrows(ConfigValidationException.class, () -> {
+            config.validate();
         });
     }
 
@@ -75,8 +77,8 @@ class ConfigValidationUtilsTest {
              MockedStatic<ConfigValidationUtils> configValidationUtilsMockedStatic =  Mockito.mockStatic(ConfigValidationUtils.class);) {
             mockedStatic.when(() -> ApplicationConfigValidator.validateApplicationConfig(any())).thenCallRealMethod();
             ApplicationConfig config = new ApplicationConfig();
-            Assertions.assertThrows(IllegalStateException.class, () -> {
-                ApplicationConfigValidator.validateApplicationConfig(config);
+            Assertions.assertThrows(ConfigValidationException.class, () -> {
+                config.validate();
             });
 
             config.setName("testName");

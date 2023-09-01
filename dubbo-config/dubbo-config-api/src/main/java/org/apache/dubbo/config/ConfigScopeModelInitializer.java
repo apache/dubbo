@@ -37,6 +37,7 @@ public class ConfigScopeModelInitializer implements ScopeModelInitializer {
     @Override
     public void initializeApplicationModel(ApplicationModel applicationModel) {
         ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
+        beanFactory.registerBean(ConfigValidateFacade.class);
         // applicationDeployer
         ApplicationDeployer applicationDeployer = beanFactory.registerBean(DefaultApplicationDeployer.class);
         applicationModel.setDeployer(applicationDeployer);

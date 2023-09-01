@@ -27,7 +27,7 @@ import java.util.Collections;
 import java.util.List;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
-public class ConfigValidateFacade implements ConfigValidator {
+public class ConfigValidateFacade implements ConfigValidator{
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConfigValidateFacade.class);
 
@@ -37,7 +37,6 @@ public class ConfigValidateFacade implements ConfigValidator {
         ExtensionLoader<ConfigValidator> extensionLoader = scopeModel.getExtensionLoader(ConfigValidator.class);
         if(extensionLoader != null) {
             this.validators = extensionLoader.getActivateExtensions();
-            scopeModel.getBeanFactory().registerBean(this);
             this.validators.forEach(scopeModel.getBeanFactory()::registerBean);
         }else {
             this.validators = Collections.emptyList();
