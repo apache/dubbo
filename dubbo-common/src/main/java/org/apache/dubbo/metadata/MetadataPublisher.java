@@ -24,7 +24,7 @@ import org.apache.dubbo.rpc.model.ServiceDescriptor;
 /**
  * Metadata publisher.
  */
-@SPI
+@SPI("default")
 public interface MetadataPublisher {
 
     /**
