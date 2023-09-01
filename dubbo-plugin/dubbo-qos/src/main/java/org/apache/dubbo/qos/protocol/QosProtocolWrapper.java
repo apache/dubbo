@@ -96,7 +96,9 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
         return protocol.getServers();
     }
 
-    private void startQosServer(URL url) {
+    private void startQosServer(URL url) throws RpcException {
+        boolean qosCheck = url.getParameter(QOS_CHECK, false);
+
         try {
             if (!hasStarted.compareAndSet(false, true)) {
                 return;
@@ -112,7 +114,6 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
 
             String host = url.getParameter(QOS_HOST);
             int port = url.getParameter(QOS_PORT, QosConstants.DEFAULT_PORT);
-            boolean qosCheck = url.getParameter(QOS_CHECK, false);
             boolean acceptForeignIp = Boolean.parseBoolean(url.getParameter(ACCEPT_FOREIGN_IP, "false"));
             String acceptForeignIpWhitelist = url.getParameter(ACCEPT_FOREIGN_IP_WHITELIST, StringUtils.EMPTY_STRING);
             String anonymousAccessPermissionLevel = url.getParameter(ANONYMOUS_ACCESS_PERMISSION_LEVEL, PermissionLevel.PUBLIC.name());
@@ -133,9 +134,8 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
 
         } catch (Throwable throwable) {
             logger.warn(QOS_FAILED_START_SERVER, "", "", "Fail to start qos server: ", throwable);
-            boolean qosCheck = url.getParameter(QOS_CHECK, false);
             if (qosCheck) {
-                throw new IllegalStateException("Fail to start qos server: " + throwable.getMessage(), throwable);
+                throw new RpcException(throwable);
             }
         }
     }
