@@ -174,7 +174,7 @@ public abstract class AbstractConfig implements Serializable {
 
     public boolean validate() {
         if(scopeModel.getBeanFactory().isDestroyed()){
-            logger.warn("Configuration validation is not performed because the BeanFactory is destroyed. It's recommended that not to reuse a config used in a destroyed application, or set a new ScopeModel for this config.");
+            logger.warn("Configuration is not validated because the BeanFactory is destroyed. It's recommended that not to reuse a config used in a destroyed application. Please create a new config instance, or set a new ScopeModel for this config.");
             return true;
         }
         if (scopeModel != null ) {
