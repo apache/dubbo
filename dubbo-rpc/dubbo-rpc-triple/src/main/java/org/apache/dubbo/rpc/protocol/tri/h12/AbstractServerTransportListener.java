@@ -118,10 +118,12 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         try {
             this.executor = initializeExecutor(metadata);
         } catch (Throwable throwable) {
+            LOGGER.error("initialize executor fail.", throwable);
             onError(throwable);
             return;
         }
         if (this.executor == null) {
+            LOGGER.error("executor must be not null.");
             onError(new NullPointerException("initializeExecutor return null"));
             return;
         }
@@ -129,6 +131,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
             try {
                 doOnMetadata(metadata);
             } catch (Throwable throwable) {
+                LOGGER.error("server internal error", throwable);
                 onError(throwable);
             }
         });
@@ -174,6 +177,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
             try {
                 doOnData(message);
             } catch (Throwable e) {
+                LOGGER.error("server internal error", e);
                 onError(e);
             }
         });
