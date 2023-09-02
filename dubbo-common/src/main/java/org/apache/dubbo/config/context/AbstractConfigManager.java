@@ -31,7 +31,6 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigKeys;
-import org.apache.dubbo.config.ConfigValidateFacade;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.ModuleConfig;
@@ -586,10 +585,8 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
 
         // validate configs
         Collection<T> configs = this.getConfigs(configType);
-        if (getConfigValidator() != null) {
-            for (T config : configs) {
-               config.validate();
-            }
+        for (T config : configs) {
+            config.validate();
         }
 
         // check required default
@@ -612,12 +609,6 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         return true;
     }
 
-    private ConfigValidator getConfigValidator() {
-        if (configValidator == null) {
-            configValidator = applicationModel.getBeanFactory().getBean(ConfigValidateFacade.class);
-        }
-        return configValidator;
-    }
 
     /**
      * The configuration that does not affect the main process is not necessary.

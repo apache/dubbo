@@ -76,7 +76,7 @@ public class ConfigValidateFacade implements ConfigValidator{
         if (!validated) {
             LOGGER.info(config.getClass().getSimpleName()+" is not validated. This may caused by you did not imported the relevant module.");
         }
-        return false;
+        return validated;
     }
 
     @Override
