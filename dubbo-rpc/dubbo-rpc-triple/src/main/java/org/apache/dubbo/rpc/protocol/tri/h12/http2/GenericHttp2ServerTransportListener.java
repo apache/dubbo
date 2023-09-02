@@ -28,9 +28,9 @@ import org.apache.dubbo.remoting.http12.h2.Http2ServerChannelObserver;
 import org.apache.dubbo.remoting.http12.h2.Http2TransportListener;
 import org.apache.dubbo.remoting.http12.message.DefaultListeningDecoder;
 import org.apache.dubbo.remoting.http12.message.JsonCodec;
-import org.apache.dubbo.remoting.http12.message.LengthFieldStreamingDecoder;
 import org.apache.dubbo.remoting.http12.message.ListeningDecoder;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
+import org.apache.dubbo.remoting.http12.message.NoOpStreamingDecoder;
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
 import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.Invoker;
@@ -116,8 +116,8 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     }
 
     protected StreamingDecoder newStreamingDecoder() {
-        //default lengthFieldLength = 4
-        return new LengthFieldStreamingDecoder();
+        //default no op
+        return new NoOpStreamingDecoder();
     }
 
     protected void doOnMetadata(Http2Header metadata) {
