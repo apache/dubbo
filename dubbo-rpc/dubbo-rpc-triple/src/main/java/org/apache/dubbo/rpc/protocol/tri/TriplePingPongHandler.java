@@ -53,7 +53,10 @@ public class TriplePingPongHandler extends ChannelDuplexHandler {
             return;
         }
         ctx.writeAndFlush(new DefaultHttp2PingFrame(0));
-        pingAckTimeoutFuture = ctx.executor().schedule(new CloseChannelTask(ctx), pingAckTimeout, TimeUnit.MILLISECONDS);
+        if (pingAckTimeoutFuture == null) {
+            pingAckTimeoutFuture = ctx.executor().schedule(new CloseChannelTask(ctx), pingAckTimeout, TimeUnit.MILLISECONDS);
+        }
+        //not null means last ping ack not received
     }
 
     private static class CloseChannelTask implements Runnable {
