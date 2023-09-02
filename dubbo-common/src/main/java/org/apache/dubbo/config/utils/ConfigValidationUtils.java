@@ -28,7 +28,6 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.registry.Constants;
 import org.apache.dubbo.rpc.model.ScopeModel;
@@ -125,7 +124,7 @@ public class ConfigValidationUtils {
                     Map<String, String> map = new HashMap<String, String>();
                     AbstractConfig.appendParameters(map, application);
                     AbstractConfig.appendParameters(map, config);
-                    map.put(PATH_KEY, REGISTRY_SERVICE_CLASS_NAME);
+                    map.put(PATH_KEY,REGISTRY_SERVICE_CLASS_NAME);
                     AbstractInterfaceConfig.appendRuntimeParameters(map);
                     if (!map.containsKey(PROTOCOL_KEY)) {
                         map.put(PROTOCOL_KEY, DUBBO_PROTOCOL);
@@ -213,12 +212,6 @@ public class ConfigValidationUtils {
         return registryList.stream().noneMatch(
             url -> registryType.equals(url.getProtocol()) && registryURL.getBackupAddress().equals(url.getBackupAddress())
         );
-    }
-
-    public static void validateConfigCenterConfig(ConfigCenterConfig config) {
-        if (config != null) {
-            checkParameterName(config.getParameters());
-        }
     }
 
     private static String extractRegistryType(URL url) {
