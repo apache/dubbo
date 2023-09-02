@@ -71,7 +71,7 @@ public class ConfigValidateFacade implements ConfigValidator{
                 }
             }
         }catch (Throwable t){
-            throw new ConfigValidationException(config.getClass().getSimpleName()+" validation failed. ",t);
+            throw new ConfigValidationException(config.getClass().getSimpleName()+" validation failed: "+t.getMessage(),t);
         }
         if (!validated) {
             LOGGER.info(config.getClass().getSimpleName()+" is not validated. This may caused by you did not imported the relevant module.");

@@ -50,8 +50,7 @@ class ConfigValidationUtilsTest {
         MetadataReportConfig config = new MetadataReportConfig();
         config.setAddress("protocol://ip:host");
         try {
-            Assertions.assertTrue(config.validate());
-            MetadataConfigValidator.validateMetadataConfig(config);
+           MetadataConfigValidator.validateMetadataConfig(config);
         } catch (Exception e) {
             Assertions.fail("valid config expected.");
         }
@@ -59,15 +58,15 @@ class ConfigValidationUtilsTest {
         config.setAddress("ip:host");
         config.setProtocol("protocol");
         try {
-            Assertions.assertTrue(config.validate());
+            MetadataConfigValidator.validateMetadataConfig(config);
         } catch (Exception e) {
             Assertions.fail("valid config expected.");
         }
 
         config.setAddress("ip:host");
         config.setProtocol(null);
-        Assertions.assertThrows(ConfigValidationException.class, () -> {
-            config.validate();
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            MetadataConfigValidator.validateMetadataConfig(config);
         });
     }
 
@@ -78,7 +77,7 @@ class ConfigValidationUtilsTest {
             mockedStatic.when(() -> ApplicationConfigValidator.validateApplicationConfig(any())).thenCallRealMethod();
             ApplicationConfig config = new ApplicationConfig();
             Assertions.assertThrows(ConfigValidationException.class, () -> {
-                config.validate();
+                ApplicationConfigValidator.validateApplicationConfig(config);
             });
 
             config.setName("testName");
