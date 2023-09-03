@@ -16,28 +16,46 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.deploy.ApplicationDeployListener;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.context.ConfigValidator;
 import org.apache.dubbo.config.exception.ConfigValidationException;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
-public class ConfigValidateFacade implements ConfigValidator{
+public class ConfigValidateFacade implements ConfigValidator, ApplicationDeployListener {
 
     private static final Logger LOGGER = LoggerFactory.getErrorTypeAwareLogger(ConfigValidateFacade.class);
 
     private final List<ConfigValidator> validators;
 
+    /**
+     * For test
+     */
+    private static boolean enableValidate = true;
+
+    /**
+     * For test
+     */
+    private static final AtomicReference<ConfigValidateFacade> DEFAULT_INSTANCE = new AtomicReference<>();
+
     public ConfigValidateFacade(ScopeModel scopeModel) {
-        ExtensionLoader<ConfigValidator> extensionLoader = scopeModel.getExtensionLoader(ConfigValidator.class);
-        if(extensionLoader != null) {
-            this.validators = extensionLoader.getActivateExtensions();
-            this.validators.forEach(scopeModel.getBeanFactory()::registerBean);
+        if(scopeModel != null) {
+            ExtensionLoader<ConfigValidator> extensionLoader = scopeModel.getExtensionLoader(ConfigValidator.class);
+            if (extensionLoader != null) {
+                this.validators = extensionLoader.getActivateExtensions();
+                this.validators.forEach(scopeModel.getBeanFactory()::registerBean);
+                DEFAULT_INSTANCE.set(this);
+            } else {
+                this.validators = Collections.emptyList();
+            }
         }else {
             this.validators = Collections.emptyList();
         }
@@ -57,7 +75,10 @@ public class ConfigValidateFacade implements ConfigValidator{
      */
     @Override
     public boolean validate(AbstractConfig config) throws ConfigValidationException{
-        if (config == null) {
+        if(!enableValidate){
+            return true;
+        }
+        if (config == null ) {
             return false;
         }
         boolean validated = false;
@@ -84,4 +105,41 @@ public class ConfigValidateFacade implements ConfigValidator{
         return true;
     }
 
+
+    @Override
+    public void onStarting(ApplicationModel scopeModel) {
+        ConfigValidateFacade validateFacade = new ConfigValidateFacade(scopeModel);
+        DEFAULT_INSTANCE.compareAndSet(null,validateFacade);
+        scopeModel.getBeanFactory().registerBean(validateFacade);
+    }
+
+    @Override
+    public void onStarted(ApplicationModel scopeModel) {}
+
+    @Override
+    public void onInitialize(ApplicationModel scopeModel) {}
+
+    @Override
+    public void onStopping(ApplicationModel scopeModel) {}
+
+    @Override
+    public void onStopped(ApplicationModel scopeModel) {}
+
+    @Override
+    public void onFailure(ApplicationModel scopeModel, Throwable cause) {}
+
+
+    /**
+     * For test
+     */
+    public static ConfigValidateFacade getDefaultInstance() {
+        return DEFAULT_INSTANCE.updateAndGet(configValidateFacade -> configValidateFacade == null ? new ConfigValidateFacade(null) : configValidateFacade);
+    }
+
+    /**
+     * For test
+     */
+    public static void setEnableValidate(boolean enable){
+        enableValidate = enable;
+    }
 }
