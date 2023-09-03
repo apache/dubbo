@@ -29,7 +29,7 @@ import java.util.List;
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class ConfigValidateFacade implements ConfigValidator{
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConfigValidateFacade.class);
+    private static final Logger LOGGER = LoggerFactory.getErrorTypeAwareLogger(ConfigValidateFacade.class);
 
     private final List<ConfigValidator> validators;
 
