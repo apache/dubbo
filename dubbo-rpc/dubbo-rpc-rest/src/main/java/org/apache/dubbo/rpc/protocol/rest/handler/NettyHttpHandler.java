@@ -32,7 +32,6 @@ import org.apache.dubbo.rpc.protocol.rest.filter.ServiceInvokeRestFilter;
 import org.apache.dubbo.rpc.protocol.rest.filter.context.RestFilterContext;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.NettyRequestFacade;
-import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -75,11 +74,12 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
 
         Object nettyHttpRequest = requestFacade.getRequest();
 
+        RestFilterContext restFilterContext = new RestFilterContext(url, requestFacade, nettyHttpResponse, serviceDeployer);
 
         try {
 
             // first request filter
-            executeFilters(url, requestFacade, nettyHttpResponse, serviceDeployer, restRequestFilters);
+            executeFilters(restFilterContext, restRequestFilters);
 
         } catch (PathNoFoundException pathNoFoundException) {
             logger.error("", pathNoFoundException.getMessage(), "", "dubbo rest protocol provider path   no found ,raw request is :" + nettyHttpRequest, pathNoFoundException);
@@ -98,7 +98,7 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
 
         // second response filter
         try {
-            executeFilters(url, requestFacade, nettyHttpResponse, serviceDeployer, restResponseFilters);
+            executeFilters(restFilterContext, restResponseFilters);
         } catch (Throwable throwable) {
             logger.error("", throwable.getMessage(), "", "dubbo rest protocol provider error ,and raw request is  " + nettyHttpRequest, throwable);
             nettyHttpResponse.sendError(500, "dubbo rest invoke Internal error, message is " + throwable.getMessage() + " ,and exception type is : " + throwable.getClass()
@@ -111,13 +111,11 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
     /**
      * execute rest filters
      *
-     * @param url
-     * @param requestFacade
-     * @param nettyHttpResponse
+     * @param restFilterContext
+     * @param restFilters
      * @throws Exception
      */
-    public void executeFilters(URL url, RequestFacade requestFacade, NettyHttpResponse nettyHttpResponse, ServiceDeployer serviceDeployer, List<RestFilter> restFilters) throws Exception {
-        RestFilterContext restFilterContext = new RestFilterContext(url, requestFacade, nettyHttpResponse, serviceDeployer);
+    public void executeFilters(RestFilterContext restFilterContext, List<RestFilter> restFilters) throws Exception {
 
         for (RestFilter restFilter : restFilters) {
             restFilter.filter(restFilterContext);

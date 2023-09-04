@@ -53,7 +53,7 @@ public class ResteasyResponseContainerFilterAdapter implements RestResponseFilte
         DubboBuiltResponse dubboBuiltResponse = new DubboBuiltResponse(response.getResponseBody(), response.getStatus(), response.getEntityClass());
         // NettyHttpResponse wrapper
         HttpResponse httpResponse = new ResteasyNettyHttpResponse(response);
-        DubboContainerResponseContextImpl containerResponseContext = createContainerResponseContext(requestFacade, httpResponse, dubboBuiltResponse, containerRequestFilters.toArray(new ContainerResponseFilter[0]));
+        DubboContainerResponseContextImpl containerResponseContext = createContainerResponseContext(restFilterContext.getOriginRequest(),requestFacade, httpResponse, dubboBuiltResponse, containerRequestFilters.toArray(new ContainerResponseFilter[0]));
         containerResponseContext.filter();
 
         // user reset entity

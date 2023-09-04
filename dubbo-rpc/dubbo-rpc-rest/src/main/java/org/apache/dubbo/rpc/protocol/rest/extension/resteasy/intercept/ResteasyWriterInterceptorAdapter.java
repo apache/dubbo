@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.protocol.rest.extension.resteasy.intercept;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
 import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
@@ -40,8 +39,6 @@ import java.io.ByteArrayOutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.List;
-
-import static org.apache.dubbo.common.constants.CommonConstants.RESTEASY_NETTY_HTTP_REQUEST_ATTRIBUTE_KEY;
 
 @Activate(value = "resteasy", onClass = {"javax.ws.rs.ext.WriterInterceptorContext", "org.jboss.resteasy.plugins.server.netty.NettyHttpRequest", "org.jboss.resteasy.plugins.server.netty.NettyHttpResponse"})
 public class ResteasyWriterInterceptorAdapter implements RestResponseInterceptor, ResteasyContext {
@@ -67,7 +64,7 @@ public class ResteasyWriterInterceptorAdapter implements RestResponseInterceptor
             return;
         }
 
-        NettyHttpRequest nettyHttpRequest = (NettyHttpRequest) RpcContext.getServiceContext().getObjectAttachment(RESTEASY_NETTY_HTTP_REQUEST_ATTRIBUTE_KEY);
+        NettyHttpRequest nettyHttpRequest = (NettyHttpRequest) restResponseInterceptor.getOriginRequest();
 
         HttpRequest restRequest = nettyHttpRequest == null ? createNettyHttpRequest(request) : nettyHttpRequest;
 
