@@ -643,7 +643,5 @@ public interface CommonConstants {
 
     String DUBBO_PACKABLE_METHOD_FACTORY = "dubbo.application.parameters." + PACKABLE_METHOD_FACTORY_KEY;
 
-    String RESTEASY_NETTY_HTTP_REQUEST_ATTRIBUTE_KEY = "resteasyNettyHttpRequest";
-
     String DUBBO_MANUAL_REGISTER_KEY = "dubbo.application.manual-register";
 }
