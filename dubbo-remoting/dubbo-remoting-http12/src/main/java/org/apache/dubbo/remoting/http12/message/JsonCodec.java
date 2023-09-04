@@ -17,11 +17,8 @@
 package org.apache.dubbo.remoting.http12.message;
 
 import com.alibaba.fastjson2.JSONObject;
-import com.google.protobuf.Message;
-import com.google.protobuf.util.JsonFormat;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.JsonUtils;
-import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 
@@ -48,11 +45,6 @@ public class JsonCodec implements HttpMessageCodec {
     public void encode(OutputStream outputStream, Object unSerializedBody) throws EncodeException {
         try {
             try {
-                if (unSerializedBody instanceof Message) {
-                    String jsonString = JsonFormat.printer().print((Message) unSerializedBody);
-                    outputStream.write(jsonString.getBytes(StandardCharsets.UTF_8));
-                    return;
-                }
                 String jsonString = JsonUtils.toJson(unSerializedBody);
                 outputStream.write(jsonString.getBytes(StandardCharsets.UTF_8));
             } finally {
@@ -86,11 +78,6 @@ public class JsonCodec implements HttpMessageCodec {
                 StringBuilder builder = new StringBuilder(4096);
                 while ((len = body.read(data)) != -1) {
                     builder.append(new String(data, 0, len));
-                }
-                if (isProtobuf(targetType)) {
-                    Message.Builder newBuilder = (Message.Builder) MethodUtils.findMethod(targetType, "newBuilder").invoke(null);
-                    JsonFormat.parser().ignoringUnknownFields().merge(builder.toString(), newBuilder);
-                    return newBuilder.build();
                 }
                 return JsonUtils.toJavaObject(builder.toString(), targetType);
             } finally {
@@ -136,12 +123,4 @@ public class JsonCodec implements HttpMessageCodec {
             throw new DecodeException(e);
         }
     }
-
-    private boolean isProtobuf(Class<?> targetType) {
-        if (targetType == null) {
-            return false;
-        }
-        return Message.class.isAssignableFrom(targetType);
-    }
-
 }

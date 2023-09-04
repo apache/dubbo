@@ -18,20 +18,27 @@ package org.apache.dubbo.remoting.http12.message;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-@Activate
-public class JsonCodecFactory implements HttpMessageCodecFactory {
-
-    public static final String NAME = "json";
+@Activate(order = -100)
+public class JsonPbCodecFactory implements HttpMessageCodecFactory {
 
     @Override
     public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel) {
-        return new JsonCodec();
+        HttpMessageCodec codec = frameworkModel.getExtensionLoader(HttpMessageCodecFactory.class).getExtension(JsonCodecFactory.NAME).createCodec(url, frameworkModel);
+        JsonPbCodec jsonPbCodec = new JsonPbCodec();
+        jsonPbCodec.setJsonCodec(codec);
+        return jsonPbCodec;
     }
 
     @Override
     public MediaType contentType() {
         return MediaType.APPLICATION_JSON_VALUE;
+    }
+
+    @Override
+    public boolean support(String contentType) {
+        return HttpMessageCodecFactory.super.support(contentType) && ClassUtils.isPresent("com.google.protobuf.Message", getClass().getClassLoader());
     }
 }
