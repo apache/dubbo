@@ -92,6 +92,6 @@ public class ApplicationConfigValidator implements ConfigValidator<ApplicationCo
 
     @Override
     public boolean isSupport(Class<?> configClass) {
-        return ApplicationConfig.class.equals(configClass);
+        return ApplicationConfig.class.isAssignableFrom(configClass);
     }
 }

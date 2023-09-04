@@ -37,6 +37,6 @@ public class TracingConfigValidator implements ConfigValidator<TracingConfig> {
 
     @Override
     public boolean isSupport(Class<?> configClass) {
-        return TracingConfig.class.equals(configClass);
+        return TracingConfig.class.isAssignableFrom(configClass);
     }
 }

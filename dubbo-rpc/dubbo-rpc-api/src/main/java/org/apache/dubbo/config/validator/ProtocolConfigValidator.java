@@ -77,6 +77,6 @@ public class ProtocolConfigValidator implements ConfigValidator<ProtocolConfig> 
 
     @Override
     public boolean isSupport(Class<?> configClass) {
-        return ProtocolConfig.class.equals(configClass);
+        return ProtocolConfig.class.isAssignableFrom(configClass);
     }
 }

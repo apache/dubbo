@@ -59,6 +59,6 @@ public class MetadataConfigValidator implements ConfigValidator<MetadataReportCo
 
     @Override
     public boolean isSupport(Class<?> configClass) {
-        return MetadataReportConfig.class.equals(configClass);
+        return MetadataReportConfig.class.isAssignableFrom(configClass);
     }
 }

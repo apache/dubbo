@@ -35,6 +35,6 @@ public class SslConfigValidator implements ConfigValidator<SslConfig> {
 
     @Override
     public boolean isSupport(Class<?> configClass) {
-        return SslConfig.class.equals(configClass);
+        return SslConfig.class.isAssignableFrom(configClass);
     }
 }

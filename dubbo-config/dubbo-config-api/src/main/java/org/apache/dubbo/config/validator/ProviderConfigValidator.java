@@ -53,6 +53,6 @@ public class ProviderConfigValidator implements ConfigValidator<ProviderConfig> 
 
     @Override
     public boolean isSupport(Class<?> configClass) {
-        return ProviderConfig.class.equals(configClass);
+        return ProviderConfig.class.isAssignableFrom(configClass);
     }
 }

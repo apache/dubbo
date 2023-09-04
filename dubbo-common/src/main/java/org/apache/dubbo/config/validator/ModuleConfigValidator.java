@@ -44,6 +44,6 @@ public class ModuleConfigValidator implements ConfigValidator<ModuleConfig> {
 
     @Override
     public boolean isSupport(Class<?> configClass) {
-        return ModuleConfig.class.equals(configClass);
+        return ModuleConfig.class.isAssignableFrom(configClass);
     }
 }

@@ -37,6 +37,6 @@ public class ConsumerConfigValidator implements ConfigValidator<ConsumerConfig> 
 
     @Override
     public boolean isSupport(Class<?> configClass) {
-        return ConsumerConfig.class.equals(configClass);
+        return ConsumerConfig.class.isAssignableFrom(configClass);
     }
 }
