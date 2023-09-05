@@ -17,7 +17,7 @@
 package org.apache.dubbo.metadata.report;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.deploy.ApplicationDeployListener;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -34,10 +34,14 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_CREATE_INSTANCE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_LOAD_METADATA;
 
-@Activate(value = "default")
-public class DefaultMetadataPublisher implements MetadataPublisher {
+public class DefaultMetadataPublisher implements ApplicationDeployListener , MetadataPublisher {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DefaultMetadataPublisher.class);
+
+    @Override
+    public void onStarting(ApplicationModel scopeModel) {
+        scopeModel.getBeanFactory().registerBean(this);
+    }
 
     @Override
     public void publishServiceDefinition(URL url, ServiceDescriptor serviceDescriptor, ApplicationModel applicationModel) {
@@ -62,13 +66,13 @@ public class DefaultMetadataPublisher implements MetadataPublisher {
                             continue;
                         }
                         metadataReport.storeProviderMetadata(
-                            new MetadataIdentifier(
-                                url.getServiceInterface(),
-                                url.getVersion() == null ? "" : url.getVersion(),
-                                url.getGroup() == null ? "" : url.getGroup(),
-                                PROVIDER_SIDE,
-                                applicationModel.getApplicationName())
-                            , serviceDefinition);
+                                new MetadataIdentifier(
+                                        url.getServiceInterface(),
+                                        url.getVersion() == null ? "" : url.getVersion(),
+                                        url.getGroup() == null ? "" : url.getGroup(),
+                                        PROVIDER_SIDE,
+                                        applicationModel.getApplicationName())
+                                , serviceDefinition);
                     }
                 }
             } else {
@@ -79,13 +83,13 @@ public class DefaultMetadataPublisher implements MetadataPublisher {
                         continue;
                     }
                     metadataReport.storeConsumerMetadata(
-                        new MetadataIdentifier(
-                            url.getServiceInterface(),
-                            url.getVersion() == null ? "" : url.getVersion(),
-                            url.getGroup() == null ? "" : url.getGroup(),
-                            CONSUMER_SIDE,
-                            applicationModel.getApplicationName()),
-                        url.getParameters());
+                            new MetadataIdentifier(
+                                    url.getServiceInterface(),
+                                    url.getVersion() == null ? "" : url.getVersion(),
+                                    url.getGroup() == null ? "" : url.getGroup(),
+                                    CONSUMER_SIDE,
+                                    applicationModel.getApplicationName()),
+                            url.getParameters());
                 }
             }
         } catch (Exception e) {
@@ -94,7 +98,24 @@ public class DefaultMetadataPublisher implements MetadataPublisher {
         }
     }
 
+
     private static Map<String, MetadataReport> getMetadataReports(ApplicationModel applicationModel) {
         return applicationModel.getBeanFactory().getBean(MetadataReportInstance.class).getMetadataReports(false);
     }
+
+    @Override
+    public void onInitialize(ApplicationModel scopeModel) {}
+
+    @Override
+    public void onStarted(ApplicationModel scopeModel) {}
+
+    @Override
+    public void onStopping(ApplicationModel scopeModel) {}
+
+    @Override
+    public void onStopped(ApplicationModel scopeModel) {}
+
+    @Override
+    public void onFailure(ApplicationModel scopeModel, Throwable cause) {}
+
 }
