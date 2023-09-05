@@ -78,7 +78,7 @@ public class ConfigValidateFacade implements ConfigValidator, ApplicationDeployL
         if(!enableValidate){
             return true;
         }
-        if (config == null ) {
+        if (config == null) {
             return false;
         }
         boolean validated = false;
@@ -104,7 +104,6 @@ public class ConfigValidateFacade implements ConfigValidator, ApplicationDeployL
     public boolean isSupport(Class configClass) {
         return true;
     }
-
 
     @Override
     public void onStarting(ApplicationModel scopeModel) {

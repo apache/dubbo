@@ -610,11 +610,11 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         return true;
     }
 
-    private ConfigValidator getConfigValidator() {
+    private ConfigValidateFacade getConfigValidator() {
         if (configValidator == null) {
             configValidator = applicationModel.getBeanFactory().getOrRegisterBean(ConfigValidateFacade.class, clz -> new ConfigValidateFacade(scopeModel));
         }
-        return configValidator;
+        return (ConfigValidateFacade) configValidator;
     }
 
     /**
