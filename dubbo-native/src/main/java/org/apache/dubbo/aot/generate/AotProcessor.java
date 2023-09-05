@@ -62,7 +62,16 @@ public class AotProcessor {
     private static List<TypeDescriber> getTypes() {
         List<TypeDescriber> typeDescribers = new ArrayList<>();
         FrameworkModel.defaultModel().defaultApplication().getExtensionLoader(ReflectionTypeDescriberRegistrar.class).getSupportedExtensionInstances().forEach(reflectionTypeDescriberRegistrar -> {
-            typeDescribers.addAll(reflectionTypeDescriberRegistrar.getTypeDescribers());
+            List<TypeDescriber> describers = new ArrayList<>();
+            try {
+                describers = reflectionTypeDescriberRegistrar.getTypeDescribers();
+            } catch (Throwable e) {
+                // The ReflectionTypeDescriberRegistrar implementation classes are shaded, causing some unused classes to be loaded.
+                // When loading a dependent class may appear that cannot be found, it does not affect.
+                // ignore
+            }
+
+            typeDescribers.addAll(describers);
         });
 
         return typeDescribers;
