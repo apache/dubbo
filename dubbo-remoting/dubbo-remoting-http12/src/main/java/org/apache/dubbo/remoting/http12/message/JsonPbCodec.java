@@ -89,13 +89,30 @@ public class JsonPbCodec implements HttpMessageCodec {
 
     @Override
     public Object[] decode(InputStream dataInputStream, Class<?>[] targetTypes) throws DecodeException {
+        try {
+            if (hasProtobuf(targetTypes)) {
+                //protobuf only support one parameter
+                return new Object[]{decode(dataInputStream, targetTypes[0])};
+            }
+        } catch (Throwable e) {
+            throw new DecodeException(e);
+        }
         return jsonCodec.decode(dataInputStream, targetTypes);
     }
 
-    private boolean isProtobuf(Class<?> targetType) {
+    private static boolean isProtobuf(Class<?> targetType) {
         if (targetType == null) {
             return false;
         }
         return Message.class.isAssignableFrom(targetType);
+    }
+
+    private static boolean hasProtobuf(Class<?>[] classes){
+        for (Class<?> clazz : classes) {
+            if (isProtobuf(clazz)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

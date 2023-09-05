@@ -93,9 +93,6 @@ public class JsonCodec implements HttpMessageCodec {
         List<Object> result = new ArrayList<>();
         try {
             try {
-                if (targetTypes.length == 1) {
-                    return new Object[]{this.decode(dataInputStream, targetTypes[0])};
-                }
                 int len;
                 byte[] data = new byte[4096];
                 StringBuilder builder = new StringBuilder(4096);
