@@ -15,8 +15,24 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.model.key;
+package org.apache.dubbo.metrics.listener;
 
-public enum MetricsLevel {
-    APP, SERVICE, METHOD, CONFIG
+import org.apache.dubbo.metrics.event.MetricsEvent;
+
+
+/**
+ * Metrics Listener.
+ */
+public interface MetricsListener<E extends MetricsEvent> {
+
+
+    boolean isSupport(MetricsEvent event);
+
+    /**
+     * notify event.
+     *
+     * @param event BaseMetricsEvent
+     */
+    void onEvent(E event);
+
 }

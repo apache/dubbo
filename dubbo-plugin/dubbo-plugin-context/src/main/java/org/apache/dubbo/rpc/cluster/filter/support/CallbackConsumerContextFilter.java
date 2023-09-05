@@ -14,32 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.cluster.filter.support;
 
-package org.apache.dubbo.metrics.event;
-
-import org.apache.dubbo.metrics.model.TimePair;
-import org.apache.dubbo.metrics.model.key.TypeWrapper;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CALLBACK;
+
 /**
- * Mark certain types of events, allow automatic recording of start and end times, and provide time pairs
+ * CallbackConsumerContextFilter set current RpcContext with invoker,invocation, local host, remote host and port
+ * for consumer callback invoker.It does it to make the requires info available to execution thread's RpcContext.
+ * @see ConsumerContextFilter
  */
-public abstract class TimeCounterEvent extends MetricsEvent {
+@Activate(group = CALLBACK, order = Integer.MIN_VALUE)
+public class CallbackConsumerContextFilter extends ConsumerContextFilter implements Filter {
 
-    private final TimePair timePair;
-
-    public TimeCounterEvent(ApplicationModel source, TypeWrapper typeWrapper) {
-        super(source, typeWrapper);
-        this.timePair = TimePair.start();
+    public CallbackConsumerContextFilter(ApplicationModel applicationModel) {
+        super(applicationModel);
     }
-
-    public TimeCounterEvent(ApplicationModel source, String appName, MetricsDispatcher metricsDispatcher, TypeWrapper typeWrapper) {
-        super(source, appName, metricsDispatcher, typeWrapper);
-        this.timePair = TimePair.start();
-    }
-
-    public TimePair getTimePair() {
-        return timePair;
-    }
-
 }

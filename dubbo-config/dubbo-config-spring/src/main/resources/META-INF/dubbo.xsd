@@ -520,6 +520,11 @@
                 <xsd:documentation><![CDATA[ Whether to enable qos or not. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="qos-check" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Whether qos should start success or not, will check qosEnable first. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="qos-host" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The qos host to listen. ]]></xsd:documentation>
@@ -1690,6 +1695,11 @@
         <xsd:attribute name="contextpath" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The protocol context path. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="json-check-level" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The level of json compatibility check. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="register" type="xsd:string">

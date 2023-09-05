@@ -463,7 +463,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         if (logger.isInfoEnabled()) {
             logger.info("Referred dubbo service: [" + referenceParameters.get(INTERFACE_KEY) + "]." +
-                    (Boolean.parseBoolean(referenceParameters.get(GENERIC_KEY)) ?
+                    (ProtocolUtils.isGeneric(referenceParameters.get(GENERIC_KEY)) ?
                             " it's GenericService reference" : " it's not GenericService reference"));
         }
 

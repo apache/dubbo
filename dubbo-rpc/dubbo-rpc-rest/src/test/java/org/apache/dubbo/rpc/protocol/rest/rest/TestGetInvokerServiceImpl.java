@@ -31,6 +31,7 @@ public class TestGetInvokerServiceImpl implements TestGetInvokerService {
     @Override
     public String getInvoker() {
         Object request = RpcContext.getServiceContext().getRequest();
+        RequestFacade requestFacade = (RequestFacade) request;
         Invoker invokerByRequest = RestRPCInvocationUtil.getInvokerByRequest((RequestFacade) request);
 
 
@@ -44,9 +45,9 @@ public class TestGetInvokerServiceImpl implements TestGetInvokerService {
 
         }
 
-        Invoker invokerByServiceInvokeMethod = RestRPCInvocationUtil.getInvokerByServiceInvokeMethod(hello);
+        Invoker invokerByServiceInvokeMethod = RestRPCInvocationUtil.getInvokerByServiceInvokeMethod(hello,requestFacade.getServiceDeployer());
 
-        Invoker invoker = RestRPCInvocationUtil.getInvokerByServiceInvokeMethod(hashcode);
+        Invoker invoker = RestRPCInvocationUtil.getInvokerByServiceInvokeMethod(hashcode,requestFacade.getServiceDeployer());
 
 
         Assertions.assertEquals(invokerByRequest, invokerByServiceInvokeMethod);

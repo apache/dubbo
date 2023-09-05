@@ -15,25 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.listener;
+package org.apache.dubbo.rpc.protocol.rest.compatibility;
 
-import org.apache.dubbo.metrics.event.MetricsEvent;
+public class Apple implements Fruit {
 
-
-/**
- * Metrics Listener.
- */
-public interface MetricsListener<E extends MetricsEvent> {
-
-
-    boolean isSupport(MetricsEvent event);
-
-    /**
-     * notify event.
-     *
-     * @param event BaseMetricsEvent
-     */
-    void onEvent(E event);
-
-
+    @Override
+    public String sayName() {
+        return "This is apple";
+    }
 }
