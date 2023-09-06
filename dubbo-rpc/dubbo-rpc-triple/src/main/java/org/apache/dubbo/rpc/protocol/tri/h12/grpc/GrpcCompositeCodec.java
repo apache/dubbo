@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOBUF_MESSAGE_CLASS_NAME;
+
 /**
  * compatible low version.
  * version < 3.3
@@ -64,11 +66,8 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
         try {
             int compressed = 0;
             outputStream.write(compressed);
-            if (data instanceof Message) {
-                int serializedSize = ((Message) data).getSerializedSize();
-                //write length
-                writeLength(outputStream, serializedSize);
-                protobufHttpMessageCodec.encode(outputStream, data);
+            if (isProtobuf(data)) {
+                ProtobufWriter.write(protobufHttpMessageCodec, outputStream, data);
                 return;
             }
             //wrapper
@@ -80,7 +79,7 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
 
     @Override
     public Object decode(InputStream inputStream, Class<?> targetType) throws DecodeException {
-        if (isProtobuf(targetType)) {
+        if (isProtoClass(targetType)) {
             return protobufHttpMessageCodec.decode(inputStream, targetType);
         }
         return wrapperHttpMessageCodec.decode(inputStream, targetType);
@@ -92,13 +91,6 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
             return wrapperHttpMessageCodec.decode(inputStream, targetTypes);
         }
         return HttpMessageCodec.super.decode(inputStream, targetTypes);
-    }
-
-    private boolean isProtobuf(Class<?> targetType) {
-        if (targetType == null) {
-            return false;
-        }
-        return Message.class.isAssignableFrom(targetType);
     }
 
     private static void writeLength(OutputStream outputStream, int length) {
@@ -120,5 +112,41 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
     @Override
     public boolean support(String contentType) {
         return contentType.startsWith(MEDIA_TYPE.getName());
+    }
+
+    private static boolean isProtobuf(Object data) {
+        if (data == null) {
+            return false;
+        }
+        return isProtoClass(data.getClass());
+    }
+
+    private static boolean isProtoClass(Class<?> clazz) {
+        while (clazz != Object.class && clazz != null) {
+            Class<?>[] interfaces = clazz.getInterfaces();
+            if (interfaces.length > 0) {
+                for (Class<?> clazzInterface : interfaces) {
+                    if (PROTOBUF_MESSAGE_CLASS_NAME.equalsIgnoreCase(clazzInterface.getName())) {
+                        return true;
+                    }
+                }
+            }
+            clazz = clazz.getSuperclass();
+        }
+        return false;
+    }
+
+    /**
+     * lazy init protobuf class
+     */
+    private static class ProtobufWriter {
+
+        private static void write(HttpMessageCodec codec, OutputStream outputStream, Object data) {
+            int serializedSize = ((Message) data).getSerializedSize();
+            //write length
+            writeLength(outputStream, serializedSize);
+            codec.encode(outputStream, data);
+        }
+
     }
 }
