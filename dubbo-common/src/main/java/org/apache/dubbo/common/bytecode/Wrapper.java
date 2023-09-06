@@ -158,7 +158,7 @@ public abstract class Wrapper {
             pts.put(fn, ft);
         }
 
-        final ClassPool classPool = new ClassPool(ClassPool.getDefault());
+        final ClassPool classPool = new ClassPool(true);
         classPool.insertClassPath(new LoaderClassPath(cl));
         classPool.insertClassPath(new DubboLoaderClassPath());
 
