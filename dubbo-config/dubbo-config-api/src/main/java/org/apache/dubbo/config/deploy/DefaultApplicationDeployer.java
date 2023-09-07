@@ -863,6 +863,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 String appConfigFile = null;
                 Optional<ApplicationConfig> applicationOptional = getApplication();
                 if (applicationOptional.isPresent()) {
+                    appGroup = applicationOptional.get().getName();
                     if (isNotEmpty(appGroup)) {
                         appConfigFile = isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile();
                         appConfigContent = dynamicConfiguration.getProperties(appConfigFile, appGroup);
