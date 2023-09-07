@@ -21,7 +21,6 @@ dubbo-auth
 dubbo-apache-release
 dubbo-all-shaded
 dubbo-bom
-dubbo-build-tools
 dubbo-cluster
 dubbo-common
 dubbo-compatible
