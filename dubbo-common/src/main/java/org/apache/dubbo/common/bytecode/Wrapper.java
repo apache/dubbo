@@ -158,9 +158,7 @@ public abstract class Wrapper {
             pts.put(fn, ft);
         }
 
-        final ClassPool classPool = new ClassPool(true);
-        classPool.insertClassPath(new LoaderClassPath(cl));
-        classPool.insertClassPath(new DubboLoaderClassPath());
+        final ClassPool classPool = ClassGenerator.getClassPool(cl);
 
         List<String> allMethod = new ArrayList<>();
         try {
