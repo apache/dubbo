@@ -94,6 +94,12 @@ public class MetricsConfig extends AbstractConfig {
 
     private Boolean enableRpc;
 
+    /**
+     * The level of the metrics, the value can be "SERVICE", "METHOD", default is method.
+     */
+    private String rpcLevel;
+
+
     public MetricsConfig() {
     }
 
@@ -122,6 +128,14 @@ public class MetricsConfig extends AbstractConfig {
 
     public Boolean getEnableJvm() {
         return enableJvm;
+    }
+
+    public String getRpcLevel() {
+        return rpcLevel;
+    }
+
+    public void setRpcLevel(String rpcLevel) {
+        this.rpcLevel = rpcLevel;
     }
 
     public void setEnableJvm(Boolean enableJvm) {
