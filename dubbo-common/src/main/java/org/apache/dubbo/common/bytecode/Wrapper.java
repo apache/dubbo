@@ -22,8 +22,6 @@ import org.apache.dubbo.common.utils.ReflectUtils;
 
 import javassist.ClassPool;
 import javassist.CtMethod;
-import javassist.LoaderClassPath;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
