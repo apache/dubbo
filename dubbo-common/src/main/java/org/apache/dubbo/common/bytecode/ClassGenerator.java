@@ -85,7 +85,7 @@ public final class ClassGenerator {
         return ClassGenerator.DC.class.isAssignableFrom(cl);
     }
 
-    public static ClassPool getClassPool(ClassLoader loader) {
+    public static ClassPool getClassPool(final ClassLoader loader) {
         if (loader == null) {
             return ClassPool.getDefault();
         }
