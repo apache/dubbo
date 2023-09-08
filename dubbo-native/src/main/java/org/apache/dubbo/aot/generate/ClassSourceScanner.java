@@ -17,6 +17,7 @@
 package org.apache.dubbo.aot.generate;
 
 
+import io.netty.channel.ChannelHandler;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -170,5 +171,8 @@ public class ClassSourceScanner extends JarScanner {
         return newContentList;
     }
 
+    public List<Class<?>> getNetty4ChannelHandlerSubclasses() {
+        return getClasses().values().stream().filter(c -> ChannelHandler.class.isAssignableFrom(c) && !Modifier.isAbstract(c.getModifiers())).collect(Collectors.toList());
+    }
 
 }
