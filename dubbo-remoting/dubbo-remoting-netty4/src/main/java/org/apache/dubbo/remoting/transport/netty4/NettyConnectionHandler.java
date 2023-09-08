@@ -61,10 +61,6 @@ public class NettyConnectionHandler extends ChannelInboundHandlerAdapter impleme
         if (connectionClient != null) {
             connectionClient.onGoaway(nettyChannel);
         }
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(String.format("Channel %s go away ,schedule reconnect", nettyChannel));
-        }
-        reconnect(nettyChannel);
     }
 
     @Override
