@@ -51,6 +51,7 @@ public class AotProcessor {
             .registerAdaptiveType(new ArrayList<>(ClassSourceScanner.INSTANCE.adaptiveClasses().values()))
             .registerBeanType(ClassSourceScanner.INSTANCE.scopeModelInitializer())
             .registerConfigType(ClassSourceScanner.INSTANCE.configClasses())
+            .registerBeanType(ClassSourceScanner.INSTANCE.getNetty4ChannelHandlerSubclasses()) // actually queryAllPublicMethods is enough
             .registerTypeDescriber(getTypes());
         writer.writeReflectionConfig(reflectRepository);
 
