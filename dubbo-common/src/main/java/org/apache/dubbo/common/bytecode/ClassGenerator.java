@@ -85,20 +85,21 @@ public final class ClassGenerator {
         return ClassGenerator.DC.class.isAssignableFrom(cl);
     }
 
-    public static ClassPool getClassPool(final ClassLoader loader) {
+    public static ClassPool getClassPool(ClassLoader loader) {
         if (loader == null) {
             return ClassPool.getDefault();
         }
-
-        ClassPool pool = POOL_MAP.get(loader);
+        //https://sonarcloud.io/organizations/apache/rules?open=java%3AS2445&rule_key=java%3AS2445&tab=why
+        final ClassLoader currentLoader = loader;
+        ClassPool pool = POOL_MAP.get(currentLoader);
         if (pool == null) {
-            synchronized (loader){
-                pool = POOL_MAP.get(loader);
+            synchronized (currentLoader) {
+                pool = POOL_MAP.get(currentLoader);
                 if (pool == null) {
                     pool = new ClassPool(true);
-                    pool.insertClassPath(new LoaderClassPath(loader));
+                    pool.insertClassPath(new LoaderClassPath(currentLoader));
                     pool.insertClassPath(new DubboLoaderClassPath());
-                    POOL_MAP.put(loader, pool);
+                    POOL_MAP.put(currentLoader, pool);
                 }
             }
         }
