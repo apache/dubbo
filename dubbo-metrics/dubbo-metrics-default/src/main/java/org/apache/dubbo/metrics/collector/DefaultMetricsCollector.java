@@ -60,6 +60,9 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
     private boolean collectEnabled = false;
 
     private volatile boolean threadpoolCollectEnabled = false;
+
+    private volatile boolean metricsInitEnabled = true;
+
     private final ThreadPoolMetricsSampler threadPoolSampler = new ThreadPoolMetricsSampler(this);
     private String applicationName;
     private final ApplicationModel applicationModel;
@@ -123,6 +126,14 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
         this.threadpoolCollectEnabled = threadpoolCollectEnabled;
     }
 
+    public boolean isMetricsInitEnabled() {
+        return metricsInitEnabled;
+    }
+
+    public void setMetricsInitEnabled(boolean metricsInitEnabled) {
+        this.metricsInitEnabled = metricsInitEnabled;
+    }
+
     public void collectApplication() {
         this.setApplicationName(applicationModel.getApplicationName());
         applicationSampler.inc(applicationName, MetricsEvent.Type.APPLICATION_INFO);
@@ -155,6 +166,9 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
     @Override
     public void onEvent(TimeCounterEvent event) {
         if(event instanceof MetricsInitEvent){
+            if (!metricsInitEnabled) {
+                return;
+            }
             if(initialized.compareAndSet(false,true)) {
                 collectors.addAll(applicationModel.getBeanFactory().getBeansOfType(MetricsCollector.class));
             }
