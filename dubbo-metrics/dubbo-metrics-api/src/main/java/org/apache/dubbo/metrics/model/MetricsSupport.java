@@ -59,7 +59,6 @@ import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
 public class MetricsSupport {
 
     private static final String version = Version.getVersion();
-    private static final String commitId = Version.getLastCommitId();
 
     public static Map<String, String> applicationTags(ApplicationModel applicationModel) {
         return applicationTags(applicationModel, null);
