@@ -67,12 +67,9 @@ public class MetricsSupport {
 
     public static Map<String, String> applicationTags(ApplicationModel applicationModel, @Nullable Map<String, String> extraInfo) {
         Map<String, String> tags = new HashMap<>();
-        tags.put(TAG_IP, getLocalHost());
-        tags.put(TAG_HOSTNAME, getLocalHostName());
         tags.put(TAG_APPLICATION_NAME, applicationModel.getApplicationName());
         tags.put(TAG_APPLICATION_MODULE, applicationModel.getInternalId());
         tags.put(TAG_APPLICATION_VERSION_KEY, version);
-        tags.put(MetricsKey.METADATA_GIT_COMMITID_METRIC.getName(), commitId);
         if (CollectionUtils.isNotEmptyMap(extraInfo)) {
             tags.putAll(extraInfo);
         }
