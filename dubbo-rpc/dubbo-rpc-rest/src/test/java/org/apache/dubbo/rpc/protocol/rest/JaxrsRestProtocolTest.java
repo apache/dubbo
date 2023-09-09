@@ -43,6 +43,7 @@ import org.apache.dubbo.rpc.protocol.rest.exception.ResteasyExceptionMapper;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionHandler;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
 
+import org.apache.dubbo.rpc.protocol.rest.filter.TraceRequestAndResponseFilter;
 import org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestService;
 import org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestServiceImpl;
 import org.apache.dubbo.rpc.protocol.rest.rest.HttpMethodService;
@@ -63,6 +64,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
@@ -742,6 +744,55 @@ class JaxrsRestProtocolTest {
 
         exporter.unexport();
     }
+
+    @Test
+    void testBody() {
+
+
+        Assertions.assertThrowsExactly(RpcException.class, () -> {
+            DemoService server = new DemoServiceImpl();
+
+            URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+            URL nettyUrl = url.addParameter(org.apache.dubbo.remoting.Constants.PAYLOAD_KEY, 1024);
+
+            Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+
+            DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+
+            List<User> users = new ArrayList<>();
+            for (int i = 0; i < 10000; i++) {
+                users.add(User.getInstance());
+
+            }
+
+            demoService.list(users);
+
+            exporter.unexport();
+        });
+
+    }
+
+
+    @Test
+    void testRequestAndResponseFilter() {
+        DemoService server = new DemoServiceImpl();
+
+        URL exportUrl = URL.valueOf("rest://127.0.0.1:" + availablePort + "/rest?interface=org.apache.dubbo.rpc.protocol.rest.DemoService&extension="
+            + TraceRequestAndResponseFilter.class.getName());
+
+        URL nettyUrl = this.registerProvider(exportUrl, server, DemoService.class);
+
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+
+
+        Assertions.assertEquals("header-result", demoService.sayHello("hello"));
+        exporter.unexport();
+    }
+
 
     private URL registerProvider(URL url, Object impl, Class<?> interfaceClass) {
         ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);

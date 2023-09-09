@@ -40,6 +40,7 @@ import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_WHITELIST;
 import static org.apache.dubbo.common.constants.QosConstants.ANONYMOUS_ACCESS_ALLOW_COMMANDS;
 import static org.apache.dubbo.common.constants.QosConstants.ANONYMOUS_ACCESS_PERMISSION_LEVEL;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_CHECK;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
@@ -95,7 +96,9 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
         return protocol.getServers();
     }
 
-    private void startQosServer(URL url) {
+    private void startQosServer(URL url) throws RpcException {
+        boolean qosCheck = url.getParameter(QOS_CHECK, false);
+
         try {
             if (!hasStarted.compareAndSet(false, true)) {
                 return;
@@ -131,6 +134,14 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
 
         } catch (Throwable throwable) {
             logger.warn(QOS_FAILED_START_SERVER, "", "", "Fail to start qos server: ", throwable);
+            try {
+                stopServer();
+            } catch (Throwable stop) {
+                logger.warn(QOS_FAILED_START_SERVER, "", "", "Fail to stop qos server: ", stop);
+            }
+            if (qosCheck) {
+                throw new RpcException(throwable);
+            }
         }
     }
 

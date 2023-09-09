@@ -43,6 +43,7 @@ public class ThreadRejectMetricsCountSampler extends SimpleMetricsCountSampler<S
 
     public void addMetricName(String name){
         this.metricNames.add(name);
+        this.initMetricsCounter(name,name);
     }
 
     @Override

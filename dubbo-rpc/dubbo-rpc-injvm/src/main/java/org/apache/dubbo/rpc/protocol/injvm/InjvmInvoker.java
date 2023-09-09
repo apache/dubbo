@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.threadlocal.InternalThreadLocalMap;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.url.component.DubboServiceAddressURL;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -62,6 +63,9 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
 
     private final Map<String, Exporter<?>> exporterMap;
 
+    private volatile Exporter<?> exporter = null;
+    private volatile URL consumerUrl = null;
+
     private final ExecutorRepository executorRepository;
 
     private final ParamDeepCopyUtil paramDeepCopyUtil;
@@ -92,9 +96,11 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
 
     @Override
     public Result doInvoke(Invocation invocation) throws Throwable {
-        Exporter<?> exporter = InjvmProtocol.getExporter(exporterMap, getUrl());
         if (exporter == null) {
-            throw new RpcException("Service [" + key + "] not found.");
+            exporter = InjvmProtocol.getExporter(exporterMap, getUrl());
+            if (exporter == null) {
+                throw new RpcException("Service [" + key + "] not found.");
+            }
         }
         // Solve local exposure, the server opens the token, and the client call fails.
         Invoker<?> invoker = exporter.getInvoker();
@@ -103,8 +109,12 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
         if (serverHasToken) {
             invocation.setAttachment(Constants.TOKEN_KEY, serverURL.getParameter(Constants.TOKEN_KEY));
         }
+        if (consumerUrl == null) {
+            // no need to sync, multi-objects is acceptable and will be gc-ed.
+            consumerUrl = new DubboServiceAddressURL(serverURL.getUrlAddress(), serverURL.getUrlParam(), getUrl(), null);
+        }
 
-        int timeout = RpcUtils.calculateTimeout(getUrl(), invocation, RpcUtils.getMethodName(invocation), DEFAULT_TIMEOUT);
+        int timeout = RpcUtils.calculateTimeout(consumerUrl, invocation, RpcUtils.getMethodName(invocation), DEFAULT_TIMEOUT);
         if (timeout <= 0) {
             return AsyncRpcResult.newDefaultAsyncResult(new RpcException(RpcException.TIMEOUT_TERMINATE,
                 "No time left for making the following call: " + invocation.getServiceName() + "."
@@ -242,7 +252,7 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
                 if (pts != null && args != null && pts.length == args.length) {
                     realArgument = new Object[pts.length];
                     for (int i = 0; i < pts.length; i++) {
-                        realArgument[i] = paramDeepCopyUtil.copy(getUrl(), args[i], pts[i]);
+                        realArgument[i] = paramDeepCopyUtil.copy(consumerUrl, args[i], pts[i]);
                     }
                 }
                 if (realArgument == null) {
@@ -273,7 +283,7 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
                 Class<?> returnType = getReturnType(consumerServiceModel, invocation.getMethodName(), desc);
                 if (returnType != null) {
                     Thread.currentThread().setContextClassLoader(consumerServiceModel.getClassLoader());
-                    value = paramDeepCopyUtil.copy(getUrl(), originValue, returnType);
+                    value = paramDeepCopyUtil.copy(consumerUrl, originValue, returnType);
                 }
             }
             return value;

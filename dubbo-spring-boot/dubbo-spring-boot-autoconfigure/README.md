@@ -48,7 +48,7 @@ If your project failed to resolve the dependency, try to add the following repos
 
 ## Auto Configuration
 
-Since  `2.5.7`  , Dubbo totally supports Annotation-Driven , core Dubbo's components that are registered and initialized in  Spring application context , including exterialized configuration features. However , those features need to trigger in manual configuration , e.g `@DubboComponentScan` , `@EnableDubboConfig` or `@EnableDubbo`.
+Since  `2.5.7`  , Dubbo totally supports Annotation-Driven , core Dubbo's components that are registered and initialized in  Spring application context , including externalized configuration features. However , those features need to trigger in manual configuration , e.g `@DubboComponentScan` , `@EnableDubboConfig` or `@EnableDubbo`.
 
 > If you'd like to learn more , please read [Dubbo Annotation-Driven (Chinese)](http://dubbo.apache.org/zh-cn/blog/dubbo-annotation-driven.html)
 
@@ -181,7 +181,7 @@ The whole Properties Mapping of "Multiple Dubbo Config Bean Bindings" lists belo
 
 There is a  different way to identify Multiple Dubbo Config Bean , the configuration pattern is like this :
 
-`${config-property-prefix}.${config-bean-id}.${property-name} = some value` , let's explain those placehoders : 
+`${config-property-prefix}.${config-bean-id}.${property-name} = some value` , let's explain those placeholders : 
 
 - `${config-property-prefix}` : The The prefix of property name for Multiple Bindings , e.g. `dubbo.protocols`, `dubbo.applications` and so on.
 - `${config-bean-id}` : The bean id of Dubbo's `*Config`
@@ -217,7 +217,7 @@ If you used advanced IDE tools , for instance [Jetbrains IDEA Ultimate](https://
 
 
 
-#### Case 2 - Mutiple Bindings
+#### Case 2 - Multiple Bindings
 
 ![](mconfig-popup-window.png)
 
