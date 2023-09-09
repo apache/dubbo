@@ -43,7 +43,6 @@ public class MetricsFilter implements ScopeModelAware {
     private ApplicationModel applicationModel;
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(MetricsFilter.class);
     private boolean rpcMetricsEnable;
-    private String rpcLevel;
     private String appName;
     private MetricsDispatcher metricsDispatcher;
     private DefaultMetricsCollector defaultMetricsCollector;
@@ -52,7 +51,6 @@ public class MetricsFilter implements ScopeModelAware {
     public void setApplicationModel(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
         this.rpcMetricsEnable = applicationModel.getApplicationConfigManager().getMetrics().map(MetricsConfig::getEnableRpc).orElse(true);
-        this.rpcLevel = applicationModel.getApplicationConfigManager().getMetrics().map(MetricsConfig::getRpcLevel).orElse(MetricsLevel.METHOD.name());
         this.appName = applicationModel.tryGetApplicationName();
         this.metricsDispatcher = applicationModel.getBeanFactory().getBean(MetricsDispatcher.class);
         this.defaultMetricsCollector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
@@ -65,12 +63,8 @@ public class MetricsFilter implements ScopeModelAware {
     public Result invoke(Invoker<?> invoker, Invocation invocation, boolean isProvider) throws RpcException {
         if (rpcMetricsEnable) {
             try {
-                RequestEvent requestEvent = MetricsLevel.SERVICE.name().equals(rpcLevel) ?
-                    RequestEvent.toServiceRequestEvent(applicationModel, appName, metricsDispatcher,
-                    defaultMetricsCollector, invocation, isProvider ? PROVIDER : CONSUMER)
-                    : RequestEvent.toRequestEvent(applicationModel, appName, metricsDispatcher,
+                RequestEvent requestEvent = RequestEvent.toRequestEvent(applicationModel, appName, metricsDispatcher,
                     defaultMetricsCollector, invocation, isProvider ? PROVIDER : CONSUMER);
-
                 MetricsEventBus.before(requestEvent);
                 invocation.put(METRIC_FILTER_EVENT, requestEvent);
             } catch (Throwable t) {

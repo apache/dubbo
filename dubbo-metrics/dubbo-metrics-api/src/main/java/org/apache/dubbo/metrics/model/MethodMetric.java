@@ -17,6 +17,9 @@
 
 package org.apache.dubbo.metrics.model;
 
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.MetricsConfig;
+import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.support.RpcUtils;
@@ -38,10 +41,23 @@ public class MethodMetric extends ServiceKeyMetric {
 
     public MethodMetric(ApplicationModel applicationModel, Invocation invocation) {
         super(applicationModel, MetricsSupport.getInterfaceName(invocation));
-        this.methodName = RpcUtils.getMethodName(invocation);
         this.side = MetricsSupport.getSide(invocation);
         this.group = MetricsSupport.getGroup(invocation);
         this.version = MetricsSupport.getVersion(invocation);
+        if (isServiceLevel(applicationModel)) {
+            this.methodName = "";
+            return;
+        }
+        this.methodName = RpcUtils.getMethodName(invocation);
+    }
+
+
+
+    private static boolean isServiceLevel(ApplicationModel applicationModel) {
+        String rpcLevel = applicationModel.getApplicationConfigManager().getMetrics().map(MetricsConfig::getRpcLevel).orElse(MetricsLevel.METHOD.name());
+        rpcLevel = StringUtils.isBlank(rpcLevel) ? MetricsLevel.METHOD.name() : rpcLevel;
+        boolean isServiceLevel = MetricsLevel.SERVICE.name().equalsIgnoreCase(rpcLevel);
+        return isServiceLevel;
     }
 
     public String getGroup() {
@@ -82,13 +98,13 @@ public class MethodMetric extends ServiceKeyMetric {
     @Override
     public String toString() {
         return "MethodMetric{" +
-                "applicationName='" + getApplicationName() + '\'' +
-                ", side='" + side + '\'' +
-                ", interfaceName='" + getServiceKey() + '\'' +
-                ", methodName='" + methodName + '\'' +
-                ", group='" + group + '\'' +
-                ", version='" + version + '\'' +
-                '}';
+            "applicationName='" + getApplicationName() + '\'' +
+            ", side='" + side + '\'' +
+            ", interfaceName='" + getServiceKey() + '\'' +
+            ", methodName='" + methodName + '\'' +
+            ", group='" + group + '\'' +
+            ", version='" + version + '\'' +
+            '}';
     }
 
     @Override

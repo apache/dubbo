@@ -64,15 +64,7 @@ public class RequestEvent extends TimeCounterEvent {
         return requestEvent;
     }
 
-    public static RequestEvent toServiceRequestEvent(ApplicationModel applicationModel, String appName,
-                                                     MetricsDispatcher metricsDispatcher, DefaultMetricsCollector collector,
-                                                     Invocation invocation, String side) {
-        String serviceName = invocation.getServiceName();
-        ServiceKeyMetric methodMetric = new ServiceKeyMetric(applicationModel, serviceName);
-        RequestEvent requestEvent = getRequestEvent(applicationModel, appName, metricsDispatcher, collector, invocation,
-            side, methodMetric, serviceName);
-        return requestEvent;
-    }
+
 
     private static RequestEvent getRequestEvent(ApplicationModel applicationModel, String appName, MetricsDispatcher metricsDispatcher, DefaultMetricsCollector collector, Invocation invocation, String side, ServiceKeyMetric methodMetric, String serviceKey) {
         RequestEvent requestEvent = new RequestEvent(applicationModel, appName, metricsDispatcher, collector, REQUEST_EVENT);
