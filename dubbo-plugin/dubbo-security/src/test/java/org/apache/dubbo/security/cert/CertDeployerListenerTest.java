@@ -20,6 +20,7 @@ import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.SslConfig;
+import org.apache.dubbo.config.exception.ConfigValidationException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -111,7 +112,7 @@ class CertDeployerListenerTest {
             applicationModel.getApplicationConfigManager().addMetadataReport(new MetadataReportConfig("absent"));
 
             ApplicationDeployer deployer = applicationModel.getDeployer();
-            Assertions.assertThrows(IllegalArgumentException.class, deployer::start);
+            Assertions.assertThrows(ConfigValidationException.class, deployer::start);
             Mockito.verify(reference.get(), Mockito.times(1))
                 .connect(Mockito.any());
             Mockito.verify(reference.get(), Mockito.atLeast(1))

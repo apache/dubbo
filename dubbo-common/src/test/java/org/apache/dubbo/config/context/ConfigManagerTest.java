@@ -19,6 +19,7 @@ package org.apache.dubbo.config.context;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
+import org.apache.dubbo.config.ConfigValidateFacade;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.ModuleConfig;
@@ -64,6 +65,7 @@ class ConfigManagerTest {
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         configManager = applicationModel.getApplicationConfigManager();
         moduleConfigManager = applicationModel.getDefaultModule().getConfigManager();
+        ConfigValidateFacade.setEnableValidate(false);
     }
 
     @Test

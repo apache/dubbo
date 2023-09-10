@@ -1,0 +1,1 @@
+protocol=org.apache.dubbo.config.validator.ProtocolConfigValidator

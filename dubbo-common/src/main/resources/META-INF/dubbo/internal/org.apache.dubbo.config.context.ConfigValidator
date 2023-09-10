@@ -1,0 +1,2 @@
+application=org.apache.dubbo.config.validator.ApplicationConfigValidator
+module=org.apache.dubbo.config.validator.ModuleConfigValidator
