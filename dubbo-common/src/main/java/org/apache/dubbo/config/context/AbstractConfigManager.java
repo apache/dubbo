@@ -31,6 +31,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigKeys;
+import org.apache.dubbo.config.ConfigValidateFacade;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.ModuleConfig;
@@ -585,10 +586,8 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
 
         // validate configs
         Collection<T> configs = this.getConfigs(configType);
-        if (getConfigValidator() != null) {
-            for (T config : configs) {
-                getConfigValidator().validate(config);
-            }
+        for (T config : configs) {
+            getConfigValidator().validate(config);
         }
 
         // check required default
@@ -611,11 +610,11 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         return true;
     }
 
-    private ConfigValidator getConfigValidator() {
+    private ConfigValidateFacade getConfigValidator() {
         if (configValidator == null) {
-            configValidator = applicationModel.getBeanFactory().getBean(ConfigValidator.class);
+            configValidator = applicationModel.getBeanFactory().getOrRegisterBean(ConfigValidateFacade.class, clz -> new ConfigValidateFacade(scopeModel));
         }
-        return configValidator;
+        return (ConfigValidateFacade) configValidator;
     }
 
     /**

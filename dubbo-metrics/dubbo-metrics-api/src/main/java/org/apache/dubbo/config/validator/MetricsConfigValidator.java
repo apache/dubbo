@@ -14,28 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.context;
+package org.apache.dubbo.config.validator;
 
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.config.AbstractConfig;
-import org.apache.dubbo.config.exception.ConfigValidationException;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.config.MetricsConfig;
+import org.apache.dubbo.config.context.ConfigValidator;
 
-/**
- * ConfigValidator. Allow provides an optional validation logic for a {@link AbstractConfig} impl.
- * @param <T> type of {@link AbstractConfig} implement
- */
-@SPI
-public interface ConfigValidator<T extends AbstractConfig> {
+@Activate
+public class MetricsConfigValidator implements ConfigValidator<MetricsConfig> {
 
-    /**
-     * Validate a config.
-     * If the config does not pass validation, returns false or throws exception, depends on implementation.
-     *
-     * @param config the config to validate
-     * @return TRUE if pass validation
-     */
-    boolean validate(T config) throws ConfigValidationException;
+    public static void validateMetricsConfig(MetricsConfig metricsConfig) {
+        //TODO
+        if (metricsConfig == null) {
+        }
+    }
 
-    boolean isSupport(Class<?> configClass);
+    @Override
+    public boolean validate(MetricsConfig config) {
+        validateMetricsConfig(config);
+        return true;
+    }
 
+    @Override
+    public boolean isSupport(Class<?> configClass) {
+        return MetricsConfig.class.isAssignableFrom(configClass);
+    }
 }

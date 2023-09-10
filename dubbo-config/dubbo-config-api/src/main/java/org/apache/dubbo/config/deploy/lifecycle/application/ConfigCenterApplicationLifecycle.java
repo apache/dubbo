@@ -34,7 +34,6 @@ import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.deploy.context.ApplicationContext;
-import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -85,7 +84,7 @@ public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
             ConfigCenterConfig configCenterConfig = new ConfigCenterConfig();
             configCenterConfig.setScopeModel(applicationModel);
             configCenterConfig.refresh();
-            ConfigValidationUtils.validateConfigCenterConfig(configCenterConfig);
+            configCenterConfig.validate();
             if (configCenterConfig.isValid()) {
                 configManager.addConfigCenter(configCenterConfig);
                 configCenters = configManager.getConfigCenters();
@@ -93,7 +92,7 @@ public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
         } else {
             for (ConfigCenterConfig configCenterConfig : configCenters) {
                 configCenterConfig.refresh();
-                ConfigValidationUtils.validateConfigCenterConfig(configCenterConfig);
+                configCenterConfig.validate();
             }
         }
 

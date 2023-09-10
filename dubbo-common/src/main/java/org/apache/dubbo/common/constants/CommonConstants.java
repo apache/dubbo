@@ -337,6 +337,8 @@ public interface CommonConstants {
 
     String REGISTRY_PROTOCOL_LISTENER_KEY = "registry.protocol.listener";
 
+    String REGISTRY_SERVICE_CLASS_NAME = "org.apache.dubbo.registry.RegistryService";
+
     String DUBBO_VERSION_KEY = "dubbo";
 
     String TAG_KEY = "dubbo.tag";

@@ -131,7 +131,7 @@ class AbstractConfigTest {
         protocolConfig.setCodec("exchange");
         protocolConfig.setName("test");
         protocolConfig.setHost("host");
-        ConfigValidationUtils.validateProtocolConfig(protocolConfig);
+        protocolConfig.validate();
     }
 
     @Test
