@@ -24,7 +24,7 @@ public class MetadataPublisherRegister implements ApplicationDeployListener {
 
     @Override
     public void onStarting(ApplicationModel scopeModel) {
-        scopeModel.getBeanFactory().registerBean(new DefaultMetadataPublisher());
+         scopeModel.getBeanFactory().getOrRegisterBean(DefaultMetadataPublisher.class);
     }
 
     @Override
