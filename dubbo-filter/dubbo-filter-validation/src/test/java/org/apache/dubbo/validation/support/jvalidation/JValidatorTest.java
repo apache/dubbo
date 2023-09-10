@@ -23,10 +23,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import javax.validation.ValidationException;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 
 class JValidatorTest {
     @Test
@@ -59,6 +62,7 @@ class JValidatorTest {
         URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
         JValidator jValidator = new JValidator(url);
         jValidator.validate("someMethod2", new Class<?>[]{ValidationParameter.class}, new Object[]{new ValidationParameter("NotBeNull")});
+        System.out.println();
     }
 
     @Test
@@ -72,7 +76,7 @@ class JValidatorTest {
     void testItWithCollectionArg() throws Exception {
         URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
         JValidator jValidator = new JValidator(url);
-        jValidator.validate("someMethod4", new Class<?>[]{List.class}, new Object[]{Arrays.asList("parameter")});
+        jValidator.validate("someMethod4", new Class<?>[]{List.class}, new Object[]{Collections.singletonList("parameter")});
     }
 
     @Test
@@ -83,4 +87,25 @@ class JValidatorTest {
         map.put("key", "value");
         jValidator.validate("someMethod5", new Class<?>[]{Map.class}, new Object[]{map});
     }
+
+    @Test
+    void testItWithPrimitiveArg() {
+        Assertions.assertThrows(ValidationException.class, () -> {
+            URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
+            JValidator jValidator = new JValidator(url);
+            jValidator.validate("someMethod6", new Class<?>[]{String.class}, new Object[]{""});
+        });
+    }
+
+    @Test
+    void testItWithPrimitiveArgWithProvidedMessage() {
+        URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
+        JValidator jValidator = new JValidator(url);
+        try {
+            jValidator.validate("someMethod6", new Class<?>[]{String.class}, new Object[]{""});
+        } catch (Exception e) {
+            assertThat(e.getMessage(), containsString("string must not be blank"));
+        }
+    }
+
 }

@@ -18,6 +18,8 @@ package org.apache.dubbo.validation.support.jvalidation.mock;
 
 import org.apache.dubbo.validation.MethodValidated;
 
+import org.hibernate.validator.constraints.NotBlank;
+
 import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +36,8 @@ public interface JValidatorTestTarget {
     void someMethod4(List<String> strings);
 
     void someMethod5(Map<String, String> map);
+
+    void someMethod6(@NotBlank(message = "string must not be blank") String string);
 
     @interface Test2 {
     }
