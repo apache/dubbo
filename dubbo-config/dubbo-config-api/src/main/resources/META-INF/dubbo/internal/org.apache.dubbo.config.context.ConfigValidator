@@ -1,0 +1,8 @@
+config-center=org.apache.dubbo.config.validator.ConfigCenterConfigValidator
+consumer=org.apache.dubbo.config.validator.ConsumerConfigValidator
+interface=org.apache.dubbo.config.validator.InterfaceConfigValidator
+method=org.apache.dubbo.config.validator.MethodConfigValidator
+provider=org.apache.dubbo.config.validator.ProviderConfigValidator
+reference=org.apache.dubbo.config.validator.ReferenceConfigValidator
+service=org.apache.dubbo.config.validator.ServiceConfigValidator
+

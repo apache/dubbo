@@ -1,0 +1,1 @@
+tracing=org.apache.dubbo.config.validator.TracingConfigValidator

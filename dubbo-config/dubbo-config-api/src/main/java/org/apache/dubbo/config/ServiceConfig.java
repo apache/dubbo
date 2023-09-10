@@ -54,6 +54,7 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.service.GenericService;
+import org.apache.dubbo.util.MonitorUrlUtil;
 
 import java.beans.Transient;
 import java.lang.reflect.Method;
@@ -468,7 +469,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
         }
         checkStubAndLocal(interfaceClass);
-        ConfigValidationUtils.validateServiceConfig(this);
+        validate();
         postProcessConfig();
     }
 
@@ -805,7 +806,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 }
 
                 url = url.addParameterIfAbsent(DYNAMIC_KEY, registryURL.getParameter(DYNAMIC_KEY));
-                URL monitorUrl = ConfigValidationUtils.loadMonitor(this, registryURL);
+                URL monitorUrl = MonitorUrlUtil.loadMonitor(this, registryURL);
                 if (monitorUrl != null) {
                     url = url.putAttribute(MONITOR_KEY, monitorUrl);
                 }

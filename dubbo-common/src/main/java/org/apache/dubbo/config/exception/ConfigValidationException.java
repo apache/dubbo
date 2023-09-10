@@ -14,28 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.context;
-
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.config.AbstractConfig;
-import org.apache.dubbo.config.exception.ConfigValidationException;
+package org.apache.dubbo.config.exception;
 
 /**
- * ConfigValidator. Allow provides an optional validation logic for a {@link AbstractConfig} impl.
- * @param <T> type of {@link AbstractConfig} implement
+ * Config validation exception
  */
-@SPI
-public interface ConfigValidator<T extends AbstractConfig> {
+public class ConfigValidationException extends RuntimeException {
 
-    /**
-     * Validate a config.
-     * If the config does not pass validation, returns false or throws exception, depends on implementation.
-     *
-     * @param config the config to validate
-     * @return TRUE if pass validation
-     */
-    boolean validate(T config) throws ConfigValidationException;
+    public ConfigValidationException(String message) {
+        super(message);
+    }
 
-    boolean isSupport(Class<?> configClass);
+    public ConfigValidationException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
+    public ConfigValidationException(Throwable cause) {
+        super(cause);
+    }
+
+    public ConfigValidationException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
 }

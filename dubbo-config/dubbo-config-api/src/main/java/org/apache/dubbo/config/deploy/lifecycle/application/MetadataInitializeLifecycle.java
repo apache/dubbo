@@ -28,7 +28,6 @@ import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.deploy.context.ApplicationContext;
-import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -91,8 +90,7 @@ public class MetadataInitializeLifecycle implements ApplicationLifecycle {
         List<MetadataReportConfig> validMetadataReportConfigs = new ArrayList<>(metadataReportConfigs.size());
 
         for (MetadataReportConfig metadataReportConfig : metadataReportConfigs) {
-            if (ConfigValidationUtils.isValidMetadataConfig(metadataReportConfig)) {
-                ConfigValidationUtils.validateMetadataConfig(metadataReportConfig);
+            if (metadataReportConfig.validate()) {
                 validMetadataReportConfigs.add(metadataReportConfig);
             }
         }

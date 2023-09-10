@@ -53,6 +53,7 @@ import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.stub.StubSuppliers;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
+import org.apache.dubbo.util.MonitorUrlUtil;
 
 import java.beans.Transient;
 import java.util.ArrayList;
@@ -179,7 +180,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     @Override
     protected void postProcessAfterScopeModelChanged(ScopeModel oldScopeModel, ScopeModel newScopeModel) {
         super.postProcessAfterScopeModelChanged(oldScopeModel, newScopeModel);
-
         protocolSPI = this.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         proxyFactory = this.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
     }
@@ -579,7 +579,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         List<URL> us = ConfigValidationUtils.loadRegistries(this, false);
         if (CollectionUtils.isNotEmpty(us)) {
             for (URL u : us) {
-                URL monitorUrl = ConfigValidationUtils.loadMonitor(this, u);
+                URL monitorUrl = MonitorUrlUtil.loadMonitor(this, u);
                 if (monitorUrl != null) {
                     u = u.putAttribute(MONITOR_KEY, monitorUrl);
                 }
@@ -746,7 +746,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
 
         resolveFile();
-        ConfigValidationUtils.validateReferenceConfig(this);
+        validate();
         postProcessConfig();
     }
 
