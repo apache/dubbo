@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.deploy.lifecycle.application;
 
+import org.apache.dubbo.common.deploy.ApplicationDeployListener;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.config.deploy.context.ApplicationContext;
@@ -27,6 +28,8 @@ import org.apache.dubbo.rpc.model.ModuleModel;
  * <br>
  * Used in an application Lifecycle managing procedure, and dubbo packages
  * can implement this interface to define what to do when application status changes.
+ * <p>
+ * Note: If you want to auto registry some extensions to BeanFactory, use {@link ApplicationDeployListener} instead.
  * <br>
  */
 @SPI
