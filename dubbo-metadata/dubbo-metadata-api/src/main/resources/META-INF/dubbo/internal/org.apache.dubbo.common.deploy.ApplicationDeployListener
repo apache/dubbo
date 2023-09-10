@@ -1,1 +1,1 @@
-metadata-register=org.apache.dubbo.metadata.report.DefaultMetadataPublisher
+metadata-register=org.apache.dubbo.metadata.MetadataPublisherRegister

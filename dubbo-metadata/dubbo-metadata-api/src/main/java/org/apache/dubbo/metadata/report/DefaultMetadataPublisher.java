@@ -17,7 +17,6 @@
 package org.apache.dubbo.metadata.report;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.deploy.ApplicationDeployListener;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -34,15 +33,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_CREATE_INSTANCE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_LOAD_METADATA;
 
-public class DefaultMetadataPublisher implements ApplicationDeployListener , MetadataPublisher {
+public class DefaultMetadataPublisher implements MetadataPublisher {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DefaultMetadataPublisher.class);
-
-    @Override
-    public void onStarting(ApplicationModel scopeModel) {
-        scopeModel.getBeanFactory().registerBean(this);
-    }
-
     @Override
     public void publishServiceDefinition(URL url, ServiceDescriptor serviceDescriptor, ApplicationModel applicationModel) {
         if (getMetadataReports(applicationModel).isEmpty()) {
@@ -103,19 +96,5 @@ public class DefaultMetadataPublisher implements ApplicationDeployListener , Met
         return applicationModel.getBeanFactory().getBean(MetadataReportInstance.class).getMetadataReports(false);
     }
 
-    @Override
-    public void onInitialize(ApplicationModel scopeModel) {}
-
-    @Override
-    public void onStarted(ApplicationModel scopeModel) {}
-
-    @Override
-    public void onStopping(ApplicationModel scopeModel) {}
-
-    @Override
-    public void onStopped(ApplicationModel scopeModel) {}
-
-    @Override
-    public void onFailure(ApplicationModel scopeModel, Throwable cause) {}
 
 }
