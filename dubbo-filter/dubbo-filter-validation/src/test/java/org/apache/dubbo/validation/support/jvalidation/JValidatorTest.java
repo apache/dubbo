@@ -92,7 +92,7 @@ class JValidatorTest {
         Assertions.assertThrows(ValidationException.class, () -> {
             URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
             JValidator jValidator = new JValidator(url);
-            jValidator.validate("someMethod6", new Class<?>[]{String.class}, new Object[]{""});
+            jValidator.validate("someMethod6", new Class<?>[]{String.class}, new Object[]{null});
         });
     }
 
