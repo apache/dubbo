@@ -22,6 +22,8 @@ import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_MONITOR_EXCEPTION;
 import static org.apache.dubbo.common.deploy.DeployState.FAILED;
@@ -31,18 +33,17 @@ import static org.apache.dubbo.common.deploy.DeployState.STARTING;
 import static org.apache.dubbo.common.deploy.DeployState.STOPPED;
 import static org.apache.dubbo.common.deploy.DeployState.STOPPING;
 
-public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer<E> {
+public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer<E>{
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractDeployer.class);
 
-    private volatile DeployState state = PENDING;
+    protected AtomicReference<DeployState> state = new AtomicReference<>(PENDING);
 
-    private volatile Throwable lastError;
+    protected AtomicReference<Throwable> lastError = new AtomicReference<>();
 
-    protected volatile boolean initialized = false;
+    protected AtomicBoolean initialized = new AtomicBoolean(false);
 
     protected List<DeployListener<E>> listeners = new CopyOnWriteArrayList<>();
-
     private E scopeModel;
 
     public AbstractDeployer(E scopeModel) {
@@ -51,46 +52,47 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
 
     @Override
     public boolean isPending() {
-        return state == PENDING;
+        return state.get().equals(PENDING);
     }
 
     @Override
     public boolean isRunning() {
-        return state == STARTING || state == STARTED;
+        return state.get().equals(STARTING) || state.get().equals(STARTED);
     }
 
     @Override
     public boolean isStarted() {
-        return state == STARTED;
+        return state.get().equals(STARTED);
     }
 
     @Override
     public boolean isStarting() {
-        return state == STARTING;
+        return state.get().equals(STARTING);
     }
 
     @Override
     public boolean isStopping() {
-        return state == STOPPING;
+        return state.get().equals(STOPPING);
     }
 
     @Override
     public boolean isStopped() {
-        return state == STOPPED;
+        return state.get().equals(STOPPED);
     }
 
     @Override
     public boolean isFailed() {
-        return state == FAILED;
+        return state.get().equals(FAILED);
     }
 
     @Override
     public DeployState getState() {
-        return state;
+        return state.get();
     }
 
     @Override
     public void addDeployListener(DeployListener<E> listener) {
+        scopeModel.getBeanFactory().registerBean(listener);
         listeners.add(listener);
     }
 
@@ -100,11 +102,11 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
     }
 
     public void setPending() {
-        this.state = PENDING;
+        this.state.set(PENDING);
     }
 
     protected void setStarting() {
-        this.state = STARTING;
+        this.state.set(STARTING);
         for (DeployListener<E> listener : listeners) {
             try {
                 listener.onStarting(scopeModel);
@@ -115,7 +117,7 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
     }
 
     protected void setStarted() {
-        this.state = STARTED;
+        this.state.set(STARTED);
         for (DeployListener<E> listener : listeners) {
             try {
                 listener.onStarted(scopeModel);
@@ -126,7 +128,7 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
     }
 
     protected void setStopping() {
-        this.state = STOPPING;
+        this.state.set(STOPPING);
         for (DeployListener<E> listener : listeners) {
             try {
                 listener.onStopping(scopeModel);
@@ -137,7 +139,7 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
     }
 
     protected void setStopped() {
-        this.state = STOPPED;
+        this.state.set(STOPPED);
         for (DeployListener<E> listener : listeners) {
             try {
                 listener.onStopped(scopeModel);
@@ -148,8 +150,8 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
     }
 
     protected void setFailed(Throwable error) {
-        this.state = FAILED;
-        this.lastError = error;
+        this.state.set(FAILED);
+        this.lastError.set(error);
         for (DeployListener<E> listener : listeners) {
             try {
                 listener.onFailure(scopeModel, error);
@@ -161,14 +163,26 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
 
     @Override
     public Throwable getError() {
-        return lastError;
+        return lastError.get();
     }
 
     public boolean isInitialized() {
-        return initialized;
+        return initialized.get();
     }
 
     protected String getIdentifier() {
         return scopeModel.getDesc();
+    }
+
+    public AtomicBoolean getInitialized() {
+        return initialized;
+    }
+
+    public AtomicReference<Throwable> getErrorRef() {
+        return lastError;
+    }
+
+    public AtomicReference<DeployState> getStateRef(){
+        return state;
     }
 }

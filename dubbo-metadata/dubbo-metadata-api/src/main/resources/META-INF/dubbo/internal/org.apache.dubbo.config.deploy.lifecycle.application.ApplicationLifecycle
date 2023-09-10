@@ -1,0 +1,4 @@
+metadata=org.apache.dubbo.config.deploy.lifecycle.application.MetadataApplicationLifecycle
+metadata-destroy=org.apache.dubbo.config.deploy.lifecycle.application.MetadataDestroyApplicationLifecycle
+metadata-initialize=org.apache.dubbo.config.deploy.lifecycle.application.MetadataInitializeLifecycle
+metadata-refresh=org.apache.dubbo.config.deploy.lifecycle.application.MetadataRefreshApplicationLifecycle

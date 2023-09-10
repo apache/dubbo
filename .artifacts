@@ -31,6 +31,7 @@ dubbo-config-api
 dubbo-config-spring
 dubbo-config-spring6
 dubbo-configcenter
+dubbo-configcenter-api
 dubbo-configcenter-file
 dubbo-configcenter-apollo
 dubbo-configcenter-nacos

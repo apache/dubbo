@@ -21,7 +21,6 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.deploy.ApplicationDeployListener;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
@@ -250,7 +249,6 @@ class DubboBootstrapTest {
 
         ApplicationModel applicationModel = bootstrap.getApplicationModel();
         DefaultApplicationDeployer applicationDeployer = getApplicationDeployer(applicationModel);
-        Assertions.assertNotNull(ReflectUtils.getFieldValue(applicationDeployer, "asyncMetadataFuture"));
         Assertions.assertTrue(applicationModel.getDefaultModule().getServiceRepository().getExportedServices().size() > 0);
     }
 

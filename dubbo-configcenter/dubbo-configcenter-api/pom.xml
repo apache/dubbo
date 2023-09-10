@@ -14,36 +14,30 @@
   See the License for the specific language governing permissions and
   limitations under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-parent</artifactId>
+        <artifactId>dubbo-configcenter</artifactId>
         <version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>dubbo-configcenter</artifactId>
-    <packaging>pom</packaging>
-    <name>${project.artifactId}</name>
-    <description>The service config-center module of the Dubbo project</description>
-    <properties>
-        <skip_maven_deploy>false</skip_maven_deploy>
-    </properties>
 
-    <modules>
-        <module>dubbo-configcenter-api</module>
-        <module>dubbo-configcenter-zookeeper</module>
-        <module>dubbo-configcenter-apollo</module>
-        <module>dubbo-configcenter-nacos</module>
-        <module>dubbo-configcenter-file</module>
-    </modules>
+    <artifactId>dubbo-configcenter-api</artifactId>
+    <packaging>jar</packaging>
+    <name>${project.artifactId}</name>
+    <description>The config-center api</description>
 
     <dependencies>
+
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-test-check</artifactId>
+            <artifactId>dubbo-metrics-config-center</artifactId>
             <version>${project.parent.version}</version>
-            <scope>test</scope>
         </dependency>
+
     </dependencies>
+
 </project>
