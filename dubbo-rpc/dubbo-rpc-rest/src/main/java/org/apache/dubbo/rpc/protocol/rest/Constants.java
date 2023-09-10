@@ -31,10 +31,4 @@ public interface Constants {
 
     String NETTY_HTTP = "netty_http";
 
-    // exception mapper
-    String EXCEPTION_MAPPER_KEY = "exception.mapper";
-
-
-
-
 }

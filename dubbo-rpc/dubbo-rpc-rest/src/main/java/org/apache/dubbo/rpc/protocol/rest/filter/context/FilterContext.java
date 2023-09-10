@@ -35,4 +35,8 @@ public interface FilterContext {
     boolean complete();
 
     void setComplete(boolean complete);
+
+     Object getOriginRequest();
+
+    Object getOriginResponse();
 }

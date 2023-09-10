@@ -101,7 +101,7 @@ check 2.7.5 milestone for details.
 * In consumer side the app cannot catch the exception from provider that is configured serialization="kryo". #4238
 * fix StringUtils#isBlank #4725
 * when the interfaceName of the Reference annotation has duplicated,the exception is puzzled #4160
-* when anonymity  bean is defined in spirng context，dubbo throw npe #
+* when anonymity  bean is defined in spring context，dubbo throw npe #
 * add Thread ContextClassLoader #4712
 * Fix judgment ipv4 address #4729
 * The compilation of static methods should be excluded when generating the proxy. #4647

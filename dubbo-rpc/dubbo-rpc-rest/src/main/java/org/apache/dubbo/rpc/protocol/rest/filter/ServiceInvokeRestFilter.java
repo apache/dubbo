@@ -22,6 +22,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.metadata.rest.PathMatcher;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.Invoker;
@@ -62,7 +63,12 @@ public class ServiceInvokeRestFilter implements RestRequestFilter {
 
         FullHttpRequest nettyHttpRequest = nettyRequestFacade.getRequest();
 
-        doHandler(nettyHttpRequest, restFilterContext.getResponse(), restFilterContext.getRequestFacade(), restFilterContext.getUrl(), restFilterContext.getServiceDeployer());
+        doHandler(nettyHttpRequest,
+            restFilterContext.getResponse(),
+            restFilterContext.getRequestFacade(),
+            restFilterContext.getUrl(),
+            restFilterContext.getOriginRequest(),
+            restFilterContext.getServiceDeployer());
 
     }
 
@@ -71,27 +77,30 @@ public class ServiceInvokeRestFilter implements RestRequestFilter {
                            NettyHttpResponse nettyHttpResponse,
                            RequestFacade request,
                            URL url,
+                           Object originRequest,// resteasy  request
                            ServiceDeployer serviceDeployer) throws Exception {
-        //  acquire metadata by request
-        InvokerAndRestMethodMetadataPair restMethodMetadataPair = RestRPCInvocationUtil.getRestMethodMetadataAndInvokerPair(request);
+        PathMatcher pathMatcher = RestRPCInvocationUtil.createPathMatcher(request);
 
         // path NoFound 404
-        if (restMethodMetadataPair == null) {
-            throw new PathNoFoundException("rest service Path no found, current path info:" + RestRPCInvocationUtil.createPathMatcher(request));
+        if (!serviceDeployer.hashRestMethod(pathMatcher)) {
+            throw new PathNoFoundException("rest service Path no found, current path info:" + pathMatcher);
         }
 
-        Invoker invoker = restMethodMetadataPair.getInvoker();
-
-        RestMethodMetadata restMethodMetadata = restMethodMetadataPair.getRestMethodMetadata();
 
         // method disallowed
-        if (!restMethodMetadata.getRequest().methodAllowed(request.getMethod())) {
+        if (!serviceDeployer.isMethodAllowed(pathMatcher)) {
             nettyHttpResponse.sendError(405, "service require request method is : "
-                + restMethodMetadata.getRequest().getMethod()
+                + serviceDeployer.pathHttpMethods(pathMatcher)
                 + ", but current request method is: " + request.getMethod()
             );
             return;
         }
+        // compare http method and  acquire metadata by request
+        InvokerAndRestMethodMetadataPair restMethodMetadataPair = RestRPCInvocationUtil.getRestMethodMetadataAndInvokerPair(pathMatcher.compareHttpMethod(true), serviceDeployer);
+
+        Invoker invoker = restMethodMetadataPair.getInvoker();
+
+        RestMethodMetadata restMethodMetadata = restMethodMetadataPair.getRestMethodMetadata();
 
 
         // content-type  support judge,throw unSupportException
@@ -127,8 +136,12 @@ public class ServiceInvokeRestFilter implements RestRequestFilter {
         }
 
         try {
+            RestInterceptContext restFilterContext = new RestInterceptContext(url, request, nettyHttpResponse, serviceDeployer, result.getValue(), rpcInvocation);
+            // set filter request
+            restFilterContext.setOriginRequest(originRequest);
+
             // invoke the intercept chain before Result  write to  response
-            executeResponseIntercepts(url, request, nettyHttpResponse, result.getValue(), rpcInvocation, serviceDeployer);
+            executeResponseIntercepts(restFilterContext);
         } catch (Exception exception) {
             logger.error("", exception.getMessage(), "", "dubbo rest protocol execute ResponseIntercepts error", exception);
             throw exception;
@@ -212,17 +225,11 @@ public class ServiceInvokeRestFilter implements RestRequestFilter {
     /**
      * execute response Intercepts
      *
-     * @param url
-     * @param request
-     * @param nettyHttpResponse
-     * @param result
-     * @param rpcInvocation
-     * @param serviceDeployer
+     * @param restFilterContext
      * @throws Exception
      */
-    public void executeResponseIntercepts(URL url, RequestFacade request, NettyHttpResponse nettyHttpResponse, Object result, RpcInvocation rpcInvocation, ServiceDeployer serviceDeployer) throws Exception {
+    public void executeResponseIntercepts(RestInterceptContext restFilterContext) throws Exception {
 
-        RestInterceptContext restFilterContext = new RestInterceptContext(url, request, nettyHttpResponse, serviceDeployer, result, rpcInvocation);
 
         for (RestResponseInterceptor restResponseInterceptor : restResponseInterceptors) {
 

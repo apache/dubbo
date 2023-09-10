@@ -110,11 +110,15 @@ public class PathMatcher {
     }
 
     public static PathMatcher getInvokeCreatePathMatcher(String path, String version, String group, Integer port, String method) {
-        return new PathMatcher(path, version, group, port, method).noNeedHttpMethodCompare();
+        return new PathMatcher(path, version, group, port, method).compareHttpMethod(false);
     }
 
     public static PathMatcher getInvokeCreatePathMatcher(Method serviceMethod) {
         return new PathMatcher(serviceMethod).setNeedCompareServiceMethod(true);
+    }
+
+    public static PathMatcher convertPathMatcher(PathMatcher pathMatcher) {
+        return getInvokeCreatePathMatcher(pathMatcher.path, pathMatcher.version, pathMatcher.group, pathMatcher.port, pathMatcher.httpMethod);
     }
 
     public boolean hasPathVariable() {
@@ -134,8 +138,8 @@ public class PathMatcher {
         return this;
     }
 
-    private PathMatcher noNeedHttpMethodCompare() {
-        this.needCompareHttpMethod = false;
+    public PathMatcher compareHttpMethod(boolean needCompareHttpMethod) {
+        this.needCompareHttpMethod = needCompareHttpMethod;
         return this;
     }
 
@@ -176,7 +180,7 @@ public class PathMatcher {
      * @return
      */
     private boolean httpMethodMatch(PathMatcher that) {
-        return !that.needCompareHttpMethod || !this.needCompareHttpMethod ?  true: Objects.equals(this.httpMethod, that.httpMethod);
+        return !that.needCompareHttpMethod || !this.needCompareHttpMethod ? true : Objects.equals(this.httpMethod, that.httpMethod);
     }
 
     private boolean serviceMethodEqual(PathMatcher thatPathMatcher, PathMatcher thisPathMatcher) {
