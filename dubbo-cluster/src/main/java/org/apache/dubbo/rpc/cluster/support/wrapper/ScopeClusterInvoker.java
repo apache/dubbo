@@ -49,6 +49,7 @@ import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
+import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_CLUSTER;
 import static org.apache.dubbo.rpc.cluster.Constants.PEER_KEY;
 
 /**
@@ -291,7 +292,7 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
                     Invoker<?> invoker = protocolSPI.refer(getInterface(), consumerUrl);
                     List<Invoker<?>> invokers = new ArrayList<>();
                     invokers.add(invoker);
-                    injvmInvoker = Cluster.getCluster(url.getScopeModel(), Cluster.DEFAULT, false).join(new StaticDirectory(url, invokers), true);
+                    injvmInvoker = Cluster.getCluster(url.getScopeModel(), DEFAULT_CLUSTER, false).join(new StaticDirectory(url, invokers), true);
                 }
             }
         }

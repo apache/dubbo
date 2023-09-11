@@ -29,6 +29,7 @@ public class ClusterScopeModelInitializer implements ScopeModelInitializer {
     public void initializeFrameworkModel(FrameworkModel frameworkModel) {
         ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
         beanFactory.registerBean(RouterSnapshotSwitcher.class);
+        beanFactory.registerBean(DefaultClusterInvokerFactory.class);
     }
 
     @Override

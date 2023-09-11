@@ -38,10 +38,7 @@ import org.apache.dubbo.metadata.MetadataPublisher;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
-import org.apache.dubbo.rpc.cluster.Cluster;
-import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
-import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareCluster;
 import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.DubboStub;
@@ -99,6 +96,7 @@ import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
+import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_CLUSTER;
 import static org.apache.dubbo.rpc.cluster.Constants.PEER_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.ZONE_AWARE_CLUSTER_NAME;
@@ -616,6 +614,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void createInvoker() {
+        ClusterInvokerFactory clusterInvokerFactory = getScopeModel().getBeanFactory().getBean(ClusterInvokerFactory.class);
         if (urls.size() == 1) {
             URL curUrl = urls.get(0);
             invoker = protocolSPI.refer(interfaceClass, curUrl);
@@ -624,7 +623,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                     !curUrl.getParameter(UNLOAD_CLUSTER_RELATED, false)) {
                 List<Invoker<?>> invokers = new ArrayList<>();
                 invokers.add(invoker);
-                invoker = Cluster.getCluster(getScopeModel(), Cluster.DEFAULT).join(new StaticDirectory(curUrl, invokers), true);
+                invoker = clusterInvokerFactory.buildWithStaticDirectory(getScopeModel(), DEFAULT_CLUSTER,true,curUrl, invokers, true);
             }
         } else {
             List<Invoker<?>> invokers = new ArrayList<>();
@@ -646,15 +645,15 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 String cluster = registryUrl.getParameter(CLUSTER_KEY, ZONE_AWARE_CLUSTER_NAME);
                 // The invoker wrap sequence would be: ZoneAwareClusterInvoker(StaticDirectory) -> FailoverClusterInvoker
                 // (RegistryDirectory, routing happens here) -> Invoker
-                invoker = Cluster.getCluster(registryUrl.getScopeModel(), cluster, false).join(new StaticDirectory(registryUrl, invokers), false);
+                invoker = clusterInvokerFactory.buildWithStaticDirectory(registryUrl.getScopeModel(), cluster, false, registryUrl, invokers, false);
             } else {
                 // not a registry url, must be direct invoke.
                 if (CollectionUtils.isEmpty(invokers)) {
                     throw new IllegalArgumentException("invokers == null");
                 }
                 URL curUrl = invokers.get(0).getUrl();
-                String cluster = curUrl.getParameter(CLUSTER_KEY, Cluster.DEFAULT);
-                invoker = Cluster.getCluster(getScopeModel(), cluster).join(new StaticDirectory(curUrl, invokers), true);
+                String cluster = curUrl.getParameter(CLUSTER_KEY, DEFAULT_CLUSTER);
+                invoker = clusterInvokerFactory.buildWithStaticDirectory(getScopeModel(), cluster,true, curUrl, invokers, true);
             }
         }
     }
