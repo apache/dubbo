@@ -180,7 +180,7 @@ public class JValidator implements Validator {
                     ctField.getFieldInfo().addAttribute(attribute);
                     ctClass.addField(ctField);
                 }
-                return ctClass.toClass(clazz.getClassLoader(), null);
+                return pool.toClass(ctClass, clazz, clazz.getClassLoader(), clazz.getProtectionDomain());
             } else {
                 return Class.forName(parameterClassName, true, clazz.getClassLoader());
             }
@@ -195,7 +195,10 @@ public class JValidator implements Validator {
 
         Class<?>[] parameterTypes = method.getParameterTypes();
         for (Class<?> parameterType : parameterTypes) {
-            builder.append('_').append(parameterType.getName());
+            // On jdk17, in order to ensure that the parameter class can be generated correctly,
+            // replace "." with "_" to make the package name of the generated parameter class
+            // consistent with the package name of the actual parameter class.
+            builder.append('_').append(parameterType.getName().replace(".", "_"));
         }
 
         return builder.toString();
