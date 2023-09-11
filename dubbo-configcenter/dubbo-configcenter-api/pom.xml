@@ -31,6 +31,12 @@
     <description>The config-center api</description>
 
     <dependencies>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <!--TODO: swap to dubbo-common-->
+            <artifactId>dubbo-config-api</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.apache.dubbo</groupId>
