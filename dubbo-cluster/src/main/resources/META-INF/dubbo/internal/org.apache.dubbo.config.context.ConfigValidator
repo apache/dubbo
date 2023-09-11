@@ -1,0 +1,2 @@
+interface=org.apache.dubbo.config.validator.InterfaceConfigValidator
+method=org.apache.dubbo.config.validator.MethodConfigValidator
