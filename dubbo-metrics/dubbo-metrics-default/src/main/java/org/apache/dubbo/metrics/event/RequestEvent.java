@@ -23,7 +23,6 @@ import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsSupport;
-import org.apache.dubbo.metrics.model.ServiceKeyMetric;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.metrics.model.key.TypeWrapper;
@@ -59,18 +58,10 @@ public class RequestEvent extends TimeCounterEvent {
                                               MetricsDispatcher metricsDispatcher, DefaultMetricsCollector collector,
                                               Invocation invocation, String side) {
         MethodMetric methodMetric = new MethodMetric(applicationModel, invocation);
-        RequestEvent requestEvent = getRequestEvent(applicationModel, appName, metricsDispatcher, collector, invocation,
-            side, methodMetric, MetricsSupport.getInterfaceName(invocation));
-        return requestEvent;
-    }
-
-
-
-    private static RequestEvent getRequestEvent(ApplicationModel applicationModel, String appName, MetricsDispatcher metricsDispatcher, DefaultMetricsCollector collector, Invocation invocation, String side, ServiceKeyMetric methodMetric, String serviceKey) {
         RequestEvent requestEvent = new RequestEvent(applicationModel, appName, metricsDispatcher, collector, REQUEST_EVENT);
         requestEvent.putAttachment(MetricsConstants.INVOCATION, invocation);
         requestEvent.putAttachment(MetricsConstants.METHOD_METRICS, methodMetric);
-        requestEvent.putAttachment(ATTACHMENT_KEY_SERVICE, serviceKey);
+        requestEvent.putAttachment(ATTACHMENT_KEY_SERVICE, MetricsSupport.getInterfaceName(invocation));
         requestEvent.putAttachment(MetricsConstants.INVOCATION_SIDE, side);
         return requestEvent;
     }
@@ -90,7 +81,7 @@ public class RequestEvent extends TimeCounterEvent {
      * Acts on MetricsClusterFilter to monitor exceptions that occur before request execution
      */
     public static RequestEvent toRequestErrorEvent(ApplicationModel applicationModel, String appName, MetricsDispatcher metricsDispatcher, Invocation invocation, String side, int code) {
-        RequestEvent event = new RequestEvent(applicationModel, appName, metricsDispatcher, null, REQUEST_ERROR_EVENT);
+        RequestEvent event = new RequestEvent(applicationModel, appName, metricsDispatcher, null,  REQUEST_ERROR_EVENT);
         event.putAttachment(ATTACHMENT_KEY_SERVICE, MetricsSupport.getInterfaceName(invocation));
         event.putAttachment(MetricsConstants.INVOCATION_SIDE, side);
         event.putAttachment(MetricsConstants.INVOCATION, invocation);
@@ -99,7 +90,7 @@ public class RequestEvent extends TimeCounterEvent {
         return event;
     }
 
-    public boolean isRequestErrorEvent() {
+    public boolean isRequestErrorEvent(){
         return super.getAttachmentValue(MetricsConstants.INVOCATION_REQUEST_ERROR) != null;
     }
 }

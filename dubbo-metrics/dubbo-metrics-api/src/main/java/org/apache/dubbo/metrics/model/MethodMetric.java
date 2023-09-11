@@ -44,13 +44,8 @@ public class MethodMetric extends ServiceKeyMetric {
         this.side = MetricsSupport.getSide(invocation);
         this.group = MetricsSupport.getGroup(invocation);
         this.version = MetricsSupport.getVersion(invocation);
-        if (isServiceLevel(applicationModel)) {
-            this.methodName = "";
-            return;
-        }
-        this.methodName = RpcUtils.getMethodName(invocation);
+        this.methodName = isServiceLevel(applicationModel) ? null : RpcUtils.getMethodName(invocation);
     }
-
 
 
     private static boolean isServiceLevel(ApplicationModel applicationModel) {
@@ -116,6 +111,7 @@ public class MethodMetric extends ServiceKeyMetric {
     }
 
     private volatile int hashCode = 0;
+
     @Override
     public int hashCode() {
         if (hashCode == 0) {
