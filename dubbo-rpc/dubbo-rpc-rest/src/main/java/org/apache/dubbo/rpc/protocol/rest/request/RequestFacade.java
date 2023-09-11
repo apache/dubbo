@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.rest.request;
 
 
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,12 +38,18 @@ public abstract class RequestFacade<T> {
     protected String path;
     protected T request;
     protected byte[] body = new byte[0];
+    protected ServiceDeployer serviceDeployer;
 
     public RequestFacade(T request) {
         this.request = request;
         initHeaders();
         initParameters();
         parseBody();
+    }
+
+    public RequestFacade(T request, ServiceDeployer serviceDeployer) {
+        this(request);
+        this.serviceDeployer = serviceDeployer;
     }
 
     protected void initHeaders() {
@@ -131,5 +138,7 @@ public abstract class RequestFacade<T> {
 
     protected abstract void parseBody();
 
-
+    public ServiceDeployer getServiceDeployer() {
+        return serviceDeployer;
+    }
 }

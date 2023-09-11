@@ -93,7 +93,8 @@ public class HttpClientRestClient implements RestClient {
             future.complete(new RestResult() {
                 @Override
                 public String getContentType() {
-                    return response.getFirstHeader("Content-Type").getValue();
+                    Header header = response.getFirstHeader("Content-Type");
+                    return header == null ? null : header.getValue();
                 }
 
                 @Override

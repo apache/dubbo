@@ -224,10 +224,8 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
                 logger.warn(CLUSTER_NO_VALID_PROVIDER, "provider server or registry center crashed", "",
                     "No provider available after connectivity filter for the service " + getConsumerUrl().getServiceKey()
-                        + " All validInvokers' size: " + validInvokers.size()
                         + " All routed invokers' size: " + routedResult.size()
-                        + " All invokers' size: " + invokers.size()
-                        + " from registry " + getUrl().getAddress()
+                        + " from registry " + this
                         + " on the consumer " + NetUtils.getLocalHost()
                         + " using the dubbo version " + Version.getVersion() + ".");
             }
@@ -350,6 +348,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                 if (!invokersToReconnect.isEmpty()) {
                     checkConnectivity();
                 }
+                MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
             }, reconnectTaskPeriod, TimeUnit.MILLISECONDS);
         }
         MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));

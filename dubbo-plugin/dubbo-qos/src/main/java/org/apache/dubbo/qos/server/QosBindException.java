@@ -14,25 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.dubbo.metrics.listener;
-
-import org.apache.dubbo.metrics.event.MetricsEvent;
-
+package org.apache.dubbo.qos.server;
 
 /**
- * Metrics Listener.
+ * Indicate that if Qos Start failed
  */
-public interface MetricsListener<E extends MetricsEvent> {
-
-
-    boolean isSupport(MetricsEvent event);
-
-    /**
-     * notify event.
-     *
-     * @param event BaseMetricsEvent
-     */
-    void onEvent(E event);
-
+public class QosBindException extends RuntimeException {
+    public QosBindException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }
