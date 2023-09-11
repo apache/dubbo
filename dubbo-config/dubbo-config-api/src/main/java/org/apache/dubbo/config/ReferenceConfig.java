@@ -101,6 +101,7 @@ import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.cluster.Constants.PEER_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.ZONE_AWARE_CLUSTER_NAME;
 
 /**
  * Please avoid using this class for any new application,
@@ -642,7 +643,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             if (registryUrl != null) {
                 // registry url is available
                 // for multi-subscription scenario, use 'zone-aware' policy by default
-                String cluster = registryUrl.getParameter(CLUSTER_KEY, ZoneAwareCluster.NAME);
+                String cluster = registryUrl.getParameter(CLUSTER_KEY, ZONE_AWARE_CLUSTER_NAME);
                 // The invoker wrap sequence would be: ZoneAwareClusterInvoker(StaticDirectory) -> FailoverClusterInvoker
                 // (RegistryDirectory, routing happens here) -> Invoker
                 invoker = Cluster.getCluster(registryUrl.getScopeModel(), cluster, false).join(new StaticDirectory(registryUrl, invokers), false);
