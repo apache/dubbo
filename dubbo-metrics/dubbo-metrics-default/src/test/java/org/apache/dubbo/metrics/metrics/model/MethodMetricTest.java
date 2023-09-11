@@ -19,7 +19,9 @@ package org.apache.dubbo.metrics.metrics.model;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.metrics.model.MethodMetric;
+import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -28,6 +30,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
+import java.util.Optional;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
@@ -88,9 +91,12 @@ class MethodMetricTest {
         Assertions.assertEquals(tags.get(TAG_GROUP_KEY), group);
         Assertions.assertEquals(tags.get(TAG_VERSION_KEY), version);
     }
+
     @Test
     void testServiceMetrics() {
-        applicationModel.getApplicationConfigManager().getMetrics().get().setRpcLevel("service");
+        MetricsConfig metricConfig = new MetricsConfig();
+        applicationModel.getApplicationConfigManager().setMetrics(metricConfig);
+        metricConfig.setRpcLevel(MetricsLevel.SERVICE.name());
         MethodMetric metric = new MethodMetric(applicationModel, invocation);
         Assertions.assertEquals(metric.getServiceKey(), interfaceName);
         Assertions.assertNull(metric.getMethodName(), methodName);
