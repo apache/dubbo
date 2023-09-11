@@ -17,11 +17,13 @@
 package org.apache.dubbo.validation.support.jvalidation;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget;
 import org.apache.dubbo.validation.support.jvalidation.mock.ValidationParameter;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import javax.validation.ConstraintViolationException;
 import javax.validation.ValidationException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,6 +32,8 @@ import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 
 class JValidatorTest {
     @Test
@@ -92,7 +96,7 @@ class JValidatorTest {
         Assertions.assertThrows(ValidationException.class, () -> {
             URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
             JValidator jValidator = new JValidator(url);
-            jValidator.validate("someMethod6", new Class<?>[]{String.class}, new Object[]{null});
+            jValidator.validate("someMethod6", new Class<?>[]{Integer.class, String.class, Long.class}, new Object[]{null, null, null});
         });
     }
 
@@ -101,9 +105,67 @@ class JValidatorTest {
         URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
         JValidator jValidator = new JValidator(url);
         try {
-            jValidator.validate("someMethod6", new Class<?>[]{String.class}, new Object[]{""});
+            jValidator.validate("someMethod6", new Class<?>[]{Integer.class, String.class, Long.class}, new Object[]{null, "", null});
+            Assertions.fail();
         } catch (Exception e) {
             assertThat(e.getMessage(), containsString("string must not be blank"));
+            assertThat(e.getMessage(), containsString("longValue must not be null"));
+        }
+    }
+
+    @Test
+    void testItWithPartialParameterValidation() {
+        URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
+        JValidator jValidator = new JValidator(url);
+        try {
+            jValidator.validate("someMethod6", new Class<?>[]{Integer.class, String.class, Long.class}, new Object[]{null, "", null});
+            Assertions.fail();
+        } catch (Exception e) {
+            assertThat(e, instanceOf(ConstraintViolationException.class));
+            ConstraintViolationException e1 = (ConstraintViolationException) e;
+            assertThat(e1.getConstraintViolations().size(), is(2));
+        }
+    }
+
+    @Test
+    void testItWithNestedParameterValidationWithNullParam() {
+        Assertions.assertThrows(ValidationException.class, () -> {
+            URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
+            JValidator jValidator = new JValidator(url);
+            jValidator.validate("someMethod7", new Class<?>[]{JValidatorTestTarget.BaseParam.class}, new Object[]{null});
+        });
+    }
+
+    @Test
+    void testItWithNestedParameterValidationWithNullNestedParam() {
+        URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
+        JValidator jValidator = new JValidator(url);
+        try {
+            JValidatorTestTarget.BaseParam<JValidatorTestTarget.Param> param = new JValidatorTestTarget.BaseParam<>();
+            jValidator.validate("someMethod7", new Class<?>[]{JValidatorTestTarget.BaseParam.class}, new Object[]{param});
+            Assertions.fail();
+        } catch (Exception e) {
+            assertThat(e, instanceOf(ConstraintViolationException.class));
+            ConstraintViolationException e1 = (ConstraintViolationException) e;
+            assertThat(e1.getConstraintViolations().size(), is(1));
+            assertThat(e1.getMessage(), containsString("body must not be null"));
+        }
+    }
+
+    @Test
+    void testItWithNestedParameterValidationWithNullNestedParams() {
+        URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
+        JValidator jValidator = new JValidator(url);
+        try {
+            JValidatorTestTarget.BaseParam<JValidatorTestTarget.Param> param = new JValidatorTestTarget.BaseParam<>();
+            param.setBody(new JValidatorTestTarget.Param());
+            jValidator.validate("someMethod7", new Class<?>[]{JValidatorTestTarget.BaseParam.class}, new Object[]{param});
+            Assertions.fail();
+        } catch (Exception e) {
+            assertThat(e, instanceOf(ConstraintViolationException.class));
+            ConstraintViolationException e1 = (ConstraintViolationException) e;
+            assertThat(e1.getConstraintViolations().size(), is(1));
+            assertThat(e1.getMessage(), containsString("name must not be null"));
         }
     }
 
