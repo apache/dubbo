@@ -37,10 +37,10 @@ import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
+import org.apache.dubbo.metadata.MetadataPublisher;
 import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.event.MetricsInitEvent;
-import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -768,7 +768,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
                 url = exportRemote(url, registryURLs, registerType);
                 if (!isGeneric(generic) && !getScopeModel().isInternal()) {
-                    MetadataUtils.publishServiceDefinition(url, providerModel.getServiceModel(), getApplicationModel());
+                    publishServiceDefinition(url);
                 }
 
                 if (StringUtils.isNotBlank(extProtocol)) {
@@ -783,7 +783,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                             build();
                         localUrl = exportRemote(localUrl, registryURLs, registerType);
                         if (!isGeneric(generic) && !getScopeModel().isInternal()) {
-                            MetadataUtils.publishServiceDefinition(localUrl, providerModel.getServiceModel(), getApplicationModel());
+                            publishServiceDefinition(url);
                         }
                         this.urls.add(localUrl);
                     }
@@ -1061,5 +1061,12 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     @Transient
     public Runnable getDestroyRunner() {
         return this::unexport;
+    }
+
+    private void publishServiceDefinition(URL url){
+        MetadataPublisher metadataPublisher = getApplicationModel().getBeanFactory().getBean(MetadataPublisher.class);
+        if(metadataPublisher != null){
+            metadataPublisher.publishServiceDefinition(url, providerModel.getServiceModel(), getApplicationModel());
+        }
     }
 }

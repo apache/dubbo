@@ -25,8 +25,8 @@
 //import org.apache.dubbo.config.ServiceConfig;
 //import org.apache.dubbo.config.api.DemoService;
 //import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-//import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
-//import org.apache.dubbo.config.metadata.ExporterDeployListener;
+//import org.apache.dubbo.metadata.deploy.ConfigurableMetadataServiceExporter;
+//import org.apache.dubbo.metadata.deploy.ExporterDeployListener;
 //import org.apache.dubbo.registry.client.metadata.MetadataServiceDelegation;
 //import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 //import org.apache.dubbo.rpc.model.ApplicationModel;
