@@ -73,7 +73,8 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-metrics-event</artifactId>
+            <!--TODO: swap to metrics-event-->
+            <artifactId>dubbo-metrics-api</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>

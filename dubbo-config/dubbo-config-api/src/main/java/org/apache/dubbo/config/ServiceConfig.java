@@ -559,6 +559,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         String [] methods = Optional.ofNullable(url.getParameter(METHODS_KEY)).map(i->i.split(",")).orElse( new String[]{});
         Arrays.stream(methods).forEach( method-> {
             RpcInvocation invocation = new RpcInvocation(url.getServiceKey(),url.getServiceModel(),method,interfaceName, url.getProtocolServiceKey(), null, null,null,null,null,null);
+            //TODO: this event depends on too much outer API.
             MetricsEventBus.publish(MetricsInitEvent.toMetricsInitEvent(application.getApplicationModel(),invocation));
             });
     }
