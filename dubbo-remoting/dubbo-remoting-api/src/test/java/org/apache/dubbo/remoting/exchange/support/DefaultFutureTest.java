@@ -96,7 +96,6 @@ class DefaultFutureTest {
      * start time: 2023-09-03 18:20:14.544, end time: 2023-09-03 18:20:14.598...
      */
     @Test
-    @Disabled
     public void clientTimeoutSend() throws Exception {
         final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
         System.out.println("before a future is create , time is : " + LocalDateTime.now().format(formatter));
