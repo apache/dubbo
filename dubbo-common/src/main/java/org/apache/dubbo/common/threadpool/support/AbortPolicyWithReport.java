@@ -145,6 +145,10 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
         if (!guard.tryAcquire()) {
             return;
         }
+        // To avoid multiple dump, check again
+        if (System.currentTimeMillis() - lastPrintTime < TEN_MINUTES_MILLS) {
+            return;
+        }
 
         ExecutorService pool = Executors.newSingleThreadExecutor();
         pool.execute(() -> {
@@ -169,9 +173,9 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
             } catch (Exception t) {
                 logger.error(COMMON_UNEXPECTED_CREATE_DUMP, "", "", "dump jStack error", t);
             } finally {
+                lastPrintTime = System.currentTimeMillis();
                 guard.release();
             }
-            lastPrintTime = System.currentTimeMillis();
         });
         //must shutdown thread pool ,if not will lead to OOM
         pool.shutdown();
