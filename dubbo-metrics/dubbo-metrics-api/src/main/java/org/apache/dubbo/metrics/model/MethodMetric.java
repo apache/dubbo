@@ -51,8 +51,7 @@ public class MethodMetric extends ServiceKeyMetric {
     private static boolean isServiceLevel(ApplicationModel applicationModel) {
         String rpcLevel = applicationModel.getApplicationConfigManager().getMetrics().map(MetricsConfig::getRpcLevel).orElse(MetricsLevel.METHOD.name());
         rpcLevel = StringUtils.isBlank(rpcLevel) ? MetricsLevel.METHOD.name() : rpcLevel;
-        boolean isServiceLevel = MetricsLevel.SERVICE.name().equalsIgnoreCase(rpcLevel);
-        return isServiceLevel;
+        return MetricsLevel.SERVICE.name().equalsIgnoreCase(rpcLevel);
     }
 
     public String getGroup() {
