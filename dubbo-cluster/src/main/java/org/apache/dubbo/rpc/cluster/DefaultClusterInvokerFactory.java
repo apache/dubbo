@@ -17,7 +17,8 @@
 package org.apache.dubbo.rpc.cluster;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.config.ClusterInvokerFactory;
+
+import org.apache.dubbo.rpc.ClusterInvokerFactory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.model.ScopeModel;

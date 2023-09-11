@@ -14,11 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config;
+package org.apache.dubbo.rpc;
 
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.util.List;

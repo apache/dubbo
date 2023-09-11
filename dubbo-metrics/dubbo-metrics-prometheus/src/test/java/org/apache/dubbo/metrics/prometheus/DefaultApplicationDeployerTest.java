@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.config.deploy;
+package org.apache.dubbo.metrics.prometheus;
 
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.metrics.utils.MetricsSupportUtil;
