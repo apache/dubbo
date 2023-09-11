@@ -18,7 +18,6 @@ package org.apache.dubbo.config.deploy.lifecycle.application;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.ClassUtils;
-import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
 import org.apache.dubbo.config.deploy.context.ApplicationContext;
 import org.apache.dubbo.metrics.service.MetricsServiceExporter;
 
@@ -38,7 +37,7 @@ public class MetricsDisableApplicationLifecycle implements ApplicationLifecycle 
     }
 
     private boolean isClassPresent(String className) {
-        return ClassUtils.isPresent(className, DefaultApplicationDeployer.class.getClassLoader());
+        return ClassUtils.isPresent(className, MetricsDisableApplicationLifecycle.class.getClassLoader());
     }
 
     @Override
