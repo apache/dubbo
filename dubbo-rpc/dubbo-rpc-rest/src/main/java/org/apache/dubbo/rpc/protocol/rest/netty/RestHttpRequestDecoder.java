@@ -60,8 +60,8 @@ public class RestHttpRequestDecoder extends MessageToMessageDecoder<io.netty.han
     protected void decode(ChannelHandlerContext ctx, io.netty.handler.codec.http.FullHttpRequest request, List<Object> out) throws Exception {
         boolean keepAlive = HttpHeaders.isKeepAlive(request);
 
-        NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(ctx, keepAlive);
-        NettyRequestFacade requestFacade = new NettyRequestFacade(request, ctx);
+        NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(ctx, keepAlive,url);
+        NettyRequestFacade requestFacade = new NettyRequestFacade(request, ctx,serviceDeployer);
 
         executor.execute(() -> {
 

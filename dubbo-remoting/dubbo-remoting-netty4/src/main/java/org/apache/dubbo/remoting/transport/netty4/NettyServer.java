@@ -105,10 +105,14 @@ public class NettyServer extends AbstractServer {
         initServerBootstrap(nettyServerHandler);
 
         // bind
-        ChannelFuture channelFuture = bootstrap.bind(getBindAddress());
-        channelFuture.syncUninterruptibly();
-        channel = channelFuture.channel();
-
+        try {
+            ChannelFuture channelFuture = bootstrap.bind(getBindAddress());
+            channelFuture.syncUninterruptibly();
+            channel = channelFuture.channel();
+        } catch (Throwable t) {
+            closeBootstrap();
+            throw t;
+        }
     }
 
     protected EventLoopGroup createBossGroup() {
@@ -172,6 +176,17 @@ public class NettyServer extends AbstractServer {
         } catch (Throwable e) {
             logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }
+        closeBootstrap();
+        try {
+            if (channels != null) {
+                channels.clear();
+            }
+        } catch (Throwable e) {
+            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
+        }
+    }
+
+    private void closeBootstrap() {
         try {
             if (bootstrap != null) {
                 long timeout = ConfigurationUtils.reCalShutdownTime(serverShutdownTimeoutMills);
@@ -180,13 +195,6 @@ public class NettyServer extends AbstractServer {
                 Future<?> workerGroupShutdownFuture = workerGroup.shutdownGracefully(quietPeriod, timeout, MILLISECONDS);
                 bossGroupShutdownFuture.syncUninterruptibly();
                 workerGroupShutdownFuture.syncUninterruptibly();
-            }
-        } catch (Throwable e) {
-            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
-        }
-        try {
-            if (channels != null) {
-                channels.clear();
             }
         } catch (Throwable e) {
             logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
