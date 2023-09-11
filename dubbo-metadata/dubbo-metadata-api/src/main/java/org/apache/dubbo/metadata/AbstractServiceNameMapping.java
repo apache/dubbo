@@ -90,7 +90,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
 
     @Override
     public Set<String> getAndListen(URL registryURL, URL subscribedURL, MappingListener listener) {
-        String key = ServiceNameMapping.buildMappingKey(subscribedURL);
+        String key = ServiceNameMappingUtils.buildMappingKey(subscribedURL);
         // use previously cached services.
         Set<String> mappingServices = mappingCacheManager.get(key);
 
@@ -110,7 +110,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
                 }
             }
             if (CollectionUtils.isNotEmpty(mappingServices)) {
-                this.putCachedMapping(ServiceNameMapping.buildMappingKey(subscribedURL), mappingServices);
+                this.putCachedMapping(ServiceNameMappingUtils.buildMappingKey(subscribedURL), mappingServices);
             }
         } else {
             ExecutorService executorService = applicationModel.getFrameworkModel().getBeanFactory()
@@ -125,7 +125,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
     public MappingListener stopListen(URL subscribeURL, MappingListener listener) {
         synchronized (mappingListeners) {
             if (listener != null) {
-                String mappingKey = ServiceNameMapping.buildMappingKey(subscribeURL);
+                String mappingKey = ServiceNameMappingUtils.buildMappingKey(subscribeURL);
                 Set<MappingListener> listeners = mappingListeners.get(mappingKey);
                 //todo, remove listener from remote metadata center
                 if (CollectionUtils.isNotEmpty(listeners)) {
@@ -170,11 +170,11 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
 
     @Override
     public Set<String> getMapping(URL consumerURL) {
-        Set<String> mappingByUrl = ServiceNameMapping.getMappingByUrl(consumerURL);
+        Set<String> mappingByUrl = ServiceNameMappingUtils.getMappingByUrl(consumerURL);
         if(mappingByUrl != null) {
             return mappingByUrl;
         }
-        return mappingCacheManager.get(ServiceNameMapping.buildMappingKey(consumerURL));
+        return mappingCacheManager.get(ServiceNameMappingUtils.buildMappingKey(consumerURL));
     }
 
     @Override
@@ -226,7 +226,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
             synchronized (mappingListeners) {
                 Set<String> mappedServices = emptySet();
                 try {
-                    String mappingKey = ServiceNameMapping.buildMappingKey(subscribedURL);
+                    String mappingKey = ServiceNameMappingUtils.buildMappingKey(subscribedURL);
                     if (listener != null) {
                         mappedServices = toTreeSet(getAndListen(subscribedURL, listener));
                         Set<MappingListener> listeners = mappingListeners.computeIfAbsent(mappingKey, _k -> new HashSet<>());

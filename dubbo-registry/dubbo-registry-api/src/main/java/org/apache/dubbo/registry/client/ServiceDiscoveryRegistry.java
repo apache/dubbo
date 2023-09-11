@@ -26,6 +26,7 @@ import org.apache.dubbo.metadata.AbstractServiceNameMapping;
 import org.apache.dubbo.metadata.MappingChangedEvent;
 import org.apache.dubbo.metadata.MappingListener;
 import org.apache.dubbo.metadata.ServiceNameMapping;
+import org.apache.dubbo.metadata.ServiceNameMappingUtils;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.NotifyListener;
@@ -51,7 +52,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
 import static org.apache.dubbo.common.function.ThrowableAction.execute;
 import static org.apache.dubbo.common.utils.CollectionUtils.toTreeSet;
-import static org.apache.dubbo.metadata.ServiceNameMapping.toStringKeys;
+import static org.apache.dubbo.metadata.ServiceNameMappingUtils.toStringKeys;
 import static org.apache.dubbo.registry.client.ServiceDiscoveryFactory.getExtension;
 
 /**
@@ -193,9 +194,9 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
         serviceDiscovery.subscribe(url, listener);
 
-        Set<String> mappingByUrl = ServiceNameMapping.getMappingByUrl(url);
+        Set<String> mappingByUrl = ServiceNameMappingUtils.getMappingByUrl(url);
 
-        String key = ServiceNameMapping.buildMappingKey(url);
+        String key = ServiceNameMappingUtils.buildMappingKey(url);
 
 
         if (mappingByUrl == null) {
@@ -393,7 +394,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             try {
                 mappingLock.lock();
                 if (CollectionUtils.isEmpty(tempOldApps) && !newApps.isEmpty()) {
-                    serviceNameMapping.putCachedMapping(ServiceNameMapping.buildMappingKey(url), newApps);
+                    serviceNameMapping.putCachedMapping(ServiceNameMappingUtils.buildMappingKey(url), newApps);
                     subscribeURLs(url, listener, newApps);
                     oldApps = newApps;
                     return;
@@ -401,8 +402,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
                 for (String newAppName : newApps) {
                     if (!tempOldApps.contains(newAppName)) {
-                        serviceNameMapping.removeCachedMapping(ServiceNameMapping.buildMappingKey(url));
-                        serviceNameMapping.putCachedMapping(ServiceNameMapping.buildMappingKey(url), newApps);
+                        serviceNameMapping.removeCachedMapping(ServiceNameMappingUtils.buildMappingKey(url));
+                        serviceNameMapping.putCachedMapping(ServiceNameMappingUtils.buildMappingKey(url), newApps);
                         // old instance listener related to old app list that needs to be destroyed after subscribe refresh.
                         ServiceInstancesChangedListener oldListener = listener.getServiceListener();
                         if (oldListener != null) {

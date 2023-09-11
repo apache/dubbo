@@ -17,20 +17,13 @@
 package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.service.Destroyable;
 
-import java.util.Arrays;
 import java.util.Set;
-import java.util.TreeSet;
 
-import static java.util.Collections.emptySet;
-import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
 
 /**
@@ -57,46 +50,6 @@ public interface ServiceNameMapping extends Destroyable {
      */
     static ServiceNameMapping getDefaultExtension(ScopeModel scopeModel) {
         return ScopeModelUtil.getApplicationModel(scopeModel).getDefaultExtension(ServiceNameMapping.class);
-    }
-
-    static String buildMappingKey(URL url) {
-        return buildGroup(url.getServiceInterface());
-    }
-
-    static String buildGroup(String serviceInterface) {
-        //the issue : https://github.com/apache/dubbo/issues/4671
-//        return DEFAULT_MAPPING_GROUP + SLASH + serviceInterface;
-        return serviceInterface;
-    }
-
-    static String toStringKeys(Set<String> serviceNames) {
-        if (CollectionUtils.isEmpty(serviceNames)) {
-            return "";
-        }
-
-        StringBuilder builder = new StringBuilder();
-        for (String n : serviceNames) {
-            builder.append(n);
-            builder.append(COMMA_SEPARATOR);
-        }
-
-        builder.deleteCharAt(builder.length() - 1);
-        return builder.toString();
-    }
-
-    static Set<String> getAppNames(String content) {
-        if (StringUtils.isBlank(content)) {
-            return emptySet();
-        }
-        return new TreeSet<>(Arrays.asList(content.split(COMMA_SEPARATOR)));
-    }
-
-    static Set<String> getMappingByUrl(URL consumerURL) {
-        String providedBy = consumerURL.getParameter(RegistryConstants.PROVIDED_BY);
-        if(StringUtils.isBlank(providedBy)) {
-            return null;
-        }
-        return AbstractServiceNameMapping.parseServices(providedBy);
     }
 
     /**
