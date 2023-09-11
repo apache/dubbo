@@ -148,7 +148,7 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
                 .ifPresent(map -> map.forEach((k, v) ->
                     samples.add(new CounterMetricSample<>(APPLICATION_METRIC_INFO.getName(),
                         APPLICATION_METRIC_INFO.getDescription(),
-                        k.getTags(), APPLICATION, v)))
+                        k.getTags(k.getTags()), APPLICATION, v)))
                 );
             return samples;
         }

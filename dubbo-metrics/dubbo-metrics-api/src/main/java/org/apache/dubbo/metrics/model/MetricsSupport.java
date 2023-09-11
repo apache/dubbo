@@ -60,6 +60,9 @@ public class MetricsSupport {
 
     private static final String version = Version.getVersion();
 
+    private static final String commitId = Version.getLastCommitId();
+
+
     public static Map<String, String> applicationTags(ApplicationModel applicationModel) {
         return applicationTags(applicationModel, null);
     }
@@ -72,6 +75,12 @@ public class MetricsSupport {
         if (CollectionUtils.isNotEmptyMap(extraInfo)) {
             tags.putAll(extraInfo);
         }
+        return tags;
+    }
+    public static Map<String, String> applicationPrivateTags(ApplicationModel applicationModel, Map<String, String> tags) {
+        tags.put(TAG_IP, getLocalHost());
+        tags.put(TAG_HOSTNAME, getLocalHostName());
+        tags.put(MetricsKey.METADATA_GIT_COMMITID_METRIC.getName(), commitId);
         return tags;
     }
 

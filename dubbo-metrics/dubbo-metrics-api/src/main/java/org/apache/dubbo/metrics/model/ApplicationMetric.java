@@ -43,6 +43,11 @@ public class ApplicationMetric implements Metric {
         return MetricsSupport.applicationTags(applicationModel, getExtraInfo());
     }
 
+    public Map<String, String> getTags(Map<String, String> tags) {
+        return MetricsSupport.applicationPrivateTags(applicationModel, tags);
+    }
+
+
     public Map<String, String> getExtraInfo() {
         return extraInfo;
     }
