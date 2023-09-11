@@ -17,8 +17,23 @@
 
 package org.apache.dubbo.common.logger;
 
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
+
 /**
  * Logger interface with the ability of displaying solution of different types of error.
+ *
+ * <p>
+ * This logger will log a message like this:
+ *
+ * <blockquote><pre>
+ *     ... (original logging message) This may be caused by (... cause),
+ *     go to https://dubbo.apache.org/faq/[Cat]/[X] to find instructions. (... extendedInformation)
+ * </pre></blockquote>
+ *
+ * Where "[Cat]/[X]" is the error code ("code" in arguments). The link is clickable, leading user to
+ * the "Error code and its corresponding solutions" page.
+ *
+ * @see LoggerCodeConstants Detailed Format of Error Code and Error Code Constants
  */
 public interface ErrorTypeAwareLogger extends Logger {
 

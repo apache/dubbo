@@ -348,6 +348,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                 if (!invokersToReconnect.isEmpty()) {
                     checkConnectivity();
                 }
+                MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
             }, reconnectTaskPeriod, TimeUnit.MILLISECONDS);
         }
         MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));

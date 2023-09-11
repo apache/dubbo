@@ -14,29 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.filter.context;
+package org.apache.dubbo.qos.server;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
-import org.apache.dubbo.rpc.protocol.rest.netty.HttpResponse;
-import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
-
-public interface FilterContext {
-
-
-    URL getUrl();
-
-    RequestFacade getRequestFacade();
-
-    HttpResponse getResponse();
-
-    ServiceDeployer getServiceDeployer();
-
-    boolean complete();
-
-    void setComplete(boolean complete);
-
-     Object getOriginRequest();
-
-    Object getOriginResponse();
+/**
+ * Indicate that if Qos Start failed
+ */
+public class QosBindException extends RuntimeException {
+    public QosBindException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }
