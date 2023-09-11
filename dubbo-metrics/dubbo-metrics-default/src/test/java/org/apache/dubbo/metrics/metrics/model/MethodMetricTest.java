@@ -88,4 +88,21 @@ class MethodMetricTest {
         Assertions.assertEquals(tags.get(TAG_GROUP_KEY), group);
         Assertions.assertEquals(tags.get(TAG_VERSION_KEY), version);
     }
+    @Test
+    void testServiceMetrics() {
+        applicationModel.getApplicationConfigManager().getMetrics().get().setRpcLevel("service");
+        MethodMetric metric = new MethodMetric(applicationModel, invocation);
+        Assertions.assertEquals(metric.getServiceKey(), interfaceName);
+        Assertions.assertNull(metric.getMethodName(), methodName);
+        Assertions.assertEquals(metric.getGroup(), group);
+        Assertions.assertEquals(metric.getVersion(), version);
+
+        Map<String, String> tags = metric.getTags();
+        Assertions.assertEquals(tags.get(TAG_APPLICATION_NAME), applicationModel.getApplicationName());
+
+        Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), interfaceName);
+        Assertions.assertNull(tags.get(TAG_METHOD_KEY));
+        Assertions.assertEquals(tags.get(TAG_GROUP_KEY), group);
+        Assertions.assertEquals(tags.get(TAG_VERSION_KEY), version);
+    }
 }
