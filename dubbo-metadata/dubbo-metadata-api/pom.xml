@@ -63,7 +63,6 @@
             <version>${project.parent.version}</version>
             <scope>compile</scope>
         </dependency>
-
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-native</artifactId>
@@ -72,13 +71,13 @@
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-config-api</artifactId>
-            <version>3.3.0-beta.1-METADATA</version>
+            <version>${project.parent.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-registry-api</artifactId>
-            <version>3.3.0-beta.1-METADATA</version>
+            <version>${project.parent.version}</version>
             <scope>compile</scope>
         </dependency>
 

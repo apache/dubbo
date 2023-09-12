@@ -41,6 +41,7 @@ public class MetadataApplicationLifecycle implements ApplicationLifecycle {
     public void refreshServiceInstance(ApplicationContext applicationContext) {
         if (applicationContext.getRegistered().get()) {
             try {
+                //TODO: rely on a simple interface
                 ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationContext.getModel());
             } catch (Exception e) {
                 logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);

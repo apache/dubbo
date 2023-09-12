@@ -48,6 +48,7 @@ public class MetadataRefreshApplicationLifecycle implements ApplicationLifecycle
     private void refreshMetadata(ApplicationContext applicationContext){
         try {
             if (applicationContext.registered()) {
+                //TODO: rely on a simple interface
                 ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationContext.getModel());
             }
         } catch (Exception e) {
