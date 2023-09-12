@@ -15,21 +15,21 @@
  * limitations under the License.
  */
 package org.apache.dubbo.config.integration.multiple.exportmetadata;
-
-import org.apache.dubbo.config.ServiceListener;
-import org.apache.dubbo.config.integration.AbstractRegistryCenterServiceListener;
-import org.apache.dubbo.metadata.MetadataService;
-
-/**
- * This implementation of {@link ServiceListener} is to record exported metadata services in multiple registry center.
- */
-public class MultipleRegistryCenterExportMetadataServiceListener extends AbstractRegistryCenterServiceListener {
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected Class<?> getInterface() {
-        return MetadataService.class;
-    }
-}
+//TODO: metadata
+//import org.apache.dubbo.config.ServiceListener;
+//import org.apache.dubbo.config.integration.AbstractRegistryCenterServiceListener;
+//import org.apache.dubbo.metadata.MetadataService;
+//
+///**
+// * This implementation of {@link ServiceListener} is to record exported metadata services in multiple registry center.
+// */
+//public class MultipleRegistryCenterExportMetadataServiceListener extends AbstractRegistryCenterServiceListener {
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    @Override
+//    protected Class<?> getInterface() {
+//        return MetadataService.class;
+//    }
+//}

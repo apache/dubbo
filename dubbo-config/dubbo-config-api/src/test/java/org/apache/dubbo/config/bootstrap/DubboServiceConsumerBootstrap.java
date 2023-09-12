@@ -16,44 +16,45 @@
  */
 package org.apache.dubbo.config.bootstrap;
 
-import org.apache.dubbo.config.MetadataReportConfig;
-import org.apache.dubbo.config.bootstrap.rest.UserService;
-import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
-
-/**
- * Dubbo Provider Bootstrap
- *
- * @since 2.7.5
- */
-public class DubboServiceConsumerBootstrap {
-
-    public static void main(String[] args) throws Exception {
-
-        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
-                .application("dubbo-consumer-demo")
-                .protocol(builder -> builder.port(20887).name("dubbo"))
-                // Eureka
-//                .registry(builder -> builder.address("eureka://127.0.0.1:8761?registry-type=service&subscribed-services=dubbo-provider-demo"))
-
-                // Zookeeper
-                .registry("zookeeper", builder -> builder.address(ZookeeperRegistryCenterConfig.getConnectionAddress()+"?registry-type=service&subscribed-services=dubbo-provider-demo"))
-                .metadataReport(new MetadataReportConfig(ZookeeperRegistryCenterConfig.getConnectionAddress()))
-
-                // Nacos
-                // .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry.type=service&subscribed.services=dubbo-provider-demo"))
-
-                // Consul
-                // .registry("consul", builder -> builder.address("consul://127.0.0.1:8500?registry.type=service&subscribed.services=dubbo-provider-demo").group("namespace1"))
-                .reference("echo", builder -> builder.interfaceClass(EchoService.class).protocol("dubbo"))
-                .reference("user", builder -> builder.interfaceClass(UserService.class).protocol("rest"))
-                .start();
-
-        EchoService echoService = bootstrap.getCache().get(EchoService.class);
-
-        for (int i = 0; i < 500; i++) {
-            Thread.sleep(2000L);
-            System.out.println(echoService.echo("Hello,World"));
-        }
-
-    }
-}
+//TODO: rest
+//import org.apache.dubbo.config.MetadataReportConfig;
+//import org.apache.dubbo.config.bootstrap.rest.UserService;
+//import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
+//
+///**
+// * Dubbo Provider Bootstrap
+// *
+// * @since 2.7.5
+// */
+//public class DubboServiceConsumerBootstrap {
+//
+//    public static void main(String[] args) throws Exception {
+//
+//        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
+//                .application("dubbo-consumer-demo")
+//                .protocol(builder -> builder.port(20887).name("dubbo"))
+//                // Eureka
+////                .registry(builder -> builder.address("eureka://127.0.0.1:8761?registry-type=service&subscribed-services=dubbo-provider-demo"))
+//
+//                // Zookeeper
+//                .registry("zookeeper", builder -> builder.address(ZookeeperRegistryCenterConfig.getConnectionAddress()+"?registry-type=service&subscribed-services=dubbo-provider-demo"))
+//                .metadataReport(new MetadataReportConfig(ZookeeperRegistryCenterConfig.getConnectionAddress()))
+//
+//                // Nacos
+//                // .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry.type=service&subscribed.services=dubbo-provider-demo"))
+//
+//                // Consul
+//                // .registry("consul", builder -> builder.address("consul://127.0.0.1:8500?registry.type=service&subscribed.services=dubbo-provider-demo").group("namespace1"))
+//                .reference("echo", builder -> builder.interfaceClass(EchoService.class).protocol("dubbo"))
+//                .reference("user", builder -> builder.interfaceClass(UserService.class).protocol("rest"))
+//                .start();
+//
+//        EchoService echoService = bootstrap.getCache().get(EchoService.class);
+//
+//        for (int i = 0; i < 500; i++) {
+//            Thread.sleep(2000L);
+//            System.out.println(echoService.echo("Hello,World"));
+//        }
+//
+//    }
+//}

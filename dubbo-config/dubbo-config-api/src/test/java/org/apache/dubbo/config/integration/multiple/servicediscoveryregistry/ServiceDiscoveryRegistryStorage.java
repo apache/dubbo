@@ -16,11 +16,12 @@
  */
 package org.apache.dubbo.config.integration.multiple.servicediscoveryregistry;
 
-import org.apache.dubbo.config.integration.multiple.AbstractStorage;
-
-/**
- * The storage to store {@link ServiceDiscoveryRegistryInfoWrapper} instances in multiple registry center.
- */
-public class ServiceDiscoveryRegistryStorage extends AbstractStorage<ServiceDiscoveryRegistryInfoWrapper> {
-
-}
+//TODO: registry
+//import org.apache.dubbo.config.integration.multiple.AbstractStorage;
+//
+///**
+// * The storage to store {@link ServiceDiscoveryRegistryInfoWrapper} instances in multiple registry center.
+// */
+//public class ServiceDiscoveryRegistryStorage extends AbstractStorage<ServiceDiscoveryRegistryInfoWrapper> {
+//
+//}

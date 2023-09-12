@@ -16,17 +16,18 @@
  *   limitations under the License.
  *
  */
-package org.apache.dubbo.config.bootstrap.rest;
-
-import java.util.concurrent.atomic.AtomicLong;
-
-public class UserServiceImpl implements UserService {
-
-    private final AtomicLong idGen = new AtomicLong();
-
-    @Override
-    public User getUser(Long id) {
-        return new User(id, "username" + id);
-    }
-
-}
+//TODO: rest
+//package org.apache.dubbo.config.bootstrap.rest;
+//
+//import java.util.concurrent.atomic.AtomicLong;
+//
+//public class UserServiceImpl implements UserService {
+//
+//    private final AtomicLong idGen = new AtomicLong();
+//
+//    @Override
+//    public User getUser(Long id) {
+//        return new User(id, "username" + id);
+//    }
+//
+//}

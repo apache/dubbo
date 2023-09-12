@@ -156,7 +156,7 @@ class SingleRegistryCenterInjvmIntegrationTest implements IntegrationTest {
         // The SingleRegistryCenterInjvmService is exported
         Assertions.assertTrue(serviceListener.getExportedServices().get(0).isExported());
         // The exported exporter is only one
-        Assertions.assertEquals(exporterListener.getExportedExporters().size(), 3);
+        Assertions.assertEquals(1,exporterListener.getExportedExporters().size());
         // The exported exporter contains SingleRegistryCenterInjvmFilter
         Assertions.assertTrue(exporterListener.getFilters().contains(filter));
     }

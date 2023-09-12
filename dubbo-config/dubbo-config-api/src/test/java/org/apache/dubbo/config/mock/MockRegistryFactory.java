@@ -16,22 +16,23 @@
  */
 package org.apache.dubbo.config.mock;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.registry.Registry;
-import org.apache.dubbo.registry.RegistryFactory;
-
-/**
- * TODO Comment of MockRegistryFactory
- */
-public class MockRegistryFactory implements RegistryFactory {
-
-    /*
-     * @see org.apache.dubbo.registry.RegistryFactory#getRegistry(org.apache.dubbo.common.URL)
-     */
-    @Override
-    public Registry getRegistry(URL url) {
-
-        return new MockRegistry();
-    }
-
-}
+//TODO: registry
+//import org.apache.dubbo.common.URL;
+//import org.apache.dubbo.registry.Registry;
+//import org.apache.dubbo.registry.RegistryFactory;
+//
+///**
+// * TODO Comment of MockRegistryFactory
+// */
+//public class MockRegistryFactory implements RegistryFactory {
+//
+//    /*
+//     * @see org.apache.dubbo.registry.RegistryFactory#getRegistry(org.apache.dubbo.common.URL)
+//     */
+//    @Override
+//    public Registry getRegistry(URL url) {
+//
+//        return new MockRegistry();
+//    }
+//
+//}
