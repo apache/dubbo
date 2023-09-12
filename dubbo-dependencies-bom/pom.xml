@@ -114,7 +114,7 @@
         <cxf_version>3.5.5</cxf_version>
         <thrift_version>0.19.0</thrift_version>
         <hessian_version>4.0.66</hessian_version>
-        <protobuf-java_version>3.24.2</protobuf-java_version>
+        <protobuf-java_version>3.24.3</protobuf-java_version>
         <javax_annotation-api_version>1.3.2</javax_annotation-api_version>
         <servlet_version>3.1.0</servlet_version>
         <jetty_version>9.4.52.v20230823</jetty_version>
@@ -149,7 +149,7 @@
         <tomcat_embed_version>8.5.87</tomcat_embed_version>
         <jetcd_version>0.7.6</jetcd_version>
         <nacos_version>2.2.4</nacos_version>
-        <grpc.version>1.57.2</grpc.version>
+        <grpc.version>1.58.0</grpc.version>
         <grpc_contrib_verdion>0.8.1</grpc_contrib_verdion>
         <jprotoc_version>1.2.2</jprotoc_version>
         <!-- Log libs -->
@@ -189,7 +189,7 @@
         <portlet_version>2.0</portlet_version>
         <maven_flatten_version>1.5.0</maven_flatten_version>
         <commons_compress_version>1.23.0</commons_compress_version>
-        <revision>3.2.6-SNAPSHOT</revision>
+        <revision>3.2.7-SNAPSHOT</revision>
     </properties>
 
     <dependencyManagement>

@@ -17,26 +17,26 @@
 
 package org.apache.dubbo.metrics.report;
 
-import io.micrometer.core.instrument.FunctionCounter;
-import io.micrometer.core.instrument.binder.MeterBinder;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.metrics.MetricsGlobalRegistry;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.metrics.MetricsGlobalRegistry;
 import org.apache.dubbo.metrics.collector.AggregateMetricsCollector;
-import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.collector.HistogramMetricsCollector;
+import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import io.micrometer.core.instrument.FunctionCounter;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.binder.MeterBinder;
 import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
@@ -53,6 +53,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
+import static org.apache.dubbo.common.constants.MetricsConstants.ENABLE_COLLECTOR_SYNC_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.ENABLE_JVM_METRICS_KEY;
 
 /**
@@ -140,9 +141,12 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     }
 
     private void scheduleMetricsCollectorSyncJob() {
-        NamedThreadFactory threadFactory = new NamedThreadFactory("metrics-collector-sync-job", true);
-        collectorSyncJobExecutor = Executors.newScheduledThreadPool(1, threadFactory);
-        collectorSyncJobExecutor.scheduleWithFixedDelay(this::refreshData, DEFAULT_SCHEDULE_INITIAL_DELAY, DEFAULT_SCHEDULE_PERIOD, TimeUnit.SECONDS);
+        boolean enableCollectorSync = url.getParameter(ENABLE_COLLECTOR_SYNC_KEY, true);
+        if (enableCollectorSync) {
+            NamedThreadFactory threadFactory = new NamedThreadFactory("metrics-collector-sync-job", true);
+            collectorSyncJobExecutor = Executors.newScheduledThreadPool(1, threadFactory);
+            collectorSyncJobExecutor.scheduleWithFixedDelay(this::refreshData, DEFAULT_SCHEDULE_INITIAL_DELAY, DEFAULT_SCHEDULE_PERIOD, TimeUnit.SECONDS);
+        }
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
