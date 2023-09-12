@@ -89,17 +89,16 @@ public final class ClassGenerator {
         if (loader == null) {
             return ClassPool.getDefault();
         }
-        //https://sonarcloud.io/organizations/apache/rules?open=java%3AS2445&rule_key=java%3AS2445&tab=why
-        final ClassLoader currentLoader = loader;
-        ClassPool pool = POOL_MAP.get(currentLoader);
+
+        ClassPool pool = POOL_MAP.get(loader);
         if (pool == null) {
-            synchronized (currentLoader) {
-                pool = POOL_MAP.get(currentLoader);
+            synchronized (loader) {
+                pool = POOL_MAP.get(loader);
                 if (pool == null) {
                     pool = new ClassPool(true);
-                    pool.insertClassPath(new LoaderClassPath(currentLoader));
+                    pool.insertClassPath(new LoaderClassPath(loader));
                     pool.insertClassPath(new DubboLoaderClassPath());
-                    POOL_MAP.put(currentLoader, pool);
+                    POOL_MAP.put(loader, pool);
                 }
             }
         }
