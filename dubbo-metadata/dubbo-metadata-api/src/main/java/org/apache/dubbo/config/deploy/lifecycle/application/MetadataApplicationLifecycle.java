@@ -20,7 +20,7 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.deploy.context.ApplicationContext;
-import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
+import org.apache.dubbo.registry.ApplicationMetadataUpdater;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REFRESH_INSTANCE_ERROR;
 
@@ -41,8 +41,11 @@ public class MetadataApplicationLifecycle implements ApplicationLifecycle {
     public void refreshServiceInstance(ApplicationContext applicationContext) {
         if (applicationContext.getRegistered().get()) {
             try {
-                //TODO: rely on a simple interface
-                ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationContext.getModel());
+                ApplicationMetadataUpdater updater = applicationContext.getModel().getBeanFactory().getBean(ApplicationMetadataUpdater.class);
+                if(updater == null){
+                    throw new RuntimeException("MetadataUpdater not found. This may be caused by not imported dubbo-registry-api.");
+                }
+                updater.refreshMetadataAndInstance(applicationContext.getModel());
             } catch (Exception e) {
                 logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
             }
