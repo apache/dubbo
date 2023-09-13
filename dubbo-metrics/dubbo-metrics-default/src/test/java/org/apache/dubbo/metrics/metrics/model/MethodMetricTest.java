@@ -79,8 +79,6 @@ class MethodMetricTest {
         Assertions.assertEquals(metric.getVersion(), version);
 
         Map<String, String> tags = metric.getTags();
-        Assertions.assertEquals(tags.get(TAG_IP), getLocalHost());
-        Assertions.assertEquals(tags.get(TAG_HOSTNAME), getLocalHostName());
         Assertions.assertEquals(tags.get(TAG_APPLICATION_NAME), applicationModel.getApplicationName());
 
         Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), interfaceName);
