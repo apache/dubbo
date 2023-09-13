@@ -88,6 +88,43 @@ class DefaultFutureTest {
 
     /**
      * for example, it will print like this:
+     * before a future is created, time is : 2023-09-03 18:20:14.535
+     * after a future is timeout, time is : 2023-09-03 18:20:14.669
+     * <p>
+     * The exception info print like:
+     * Sending request timeout in client-side by scan timer.
+     * start time: 2023-09-03 18:20:14.544, end time: 2023-09-03 18:20:14.598...
+     */
+    @Test
+    public void clientTimeoutSend() throws Exception {
+        final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+        System.out.println("before a future is create , time is : " + LocalDateTime.now().format(formatter));
+        // timeout after 5 milliseconds.
+        Channel channel = new MockedChannel();
+        Request request = new Request(10);
+        DefaultFuture f = DefaultFuture.newFuture(channel, request, 5, null);
+        System.gc(); // events such as Full GC will increase the time required to send messages.
+
+        // mark the future is sent
+        DefaultFuture.sent(channel, request);
+        while (!f.isDone()) {
+            // spin
+            Thread.sleep(100);
+        }
+        System.out.println("after a future is timeout , time is : " + LocalDateTime.now().format(formatter));
+
+        // get operate will throw a timeout exception, because the future is timeout.
+        try {
+            f.get();
+        } catch (Exception e) {
+            Assertions.assertTrue(e.getCause() instanceof TimeoutException, "catch exception is not timeout exception!");
+            System.out.println(e.getMessage());
+            Assertions.assertTrue(e.getMessage().startsWith(e.getCause().getClass().getCanonicalName() + ": Sending request timeout in client-side"));
+        }
+    }
+
+    /**
+     * for example, it will print like this:
      * before a future is create , time is : 2018-06-21 15:11:31
      * after a future is timeout , time is : 2018-06-21 15:11:36
      * <p>

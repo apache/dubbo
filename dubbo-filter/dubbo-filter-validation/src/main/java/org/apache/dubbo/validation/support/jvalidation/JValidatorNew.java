@@ -21,6 +21,7 @@ import org.apache.dubbo.common.bytecode.ClassGenerator;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.validation.MethodValidated;
 import org.apache.dubbo.validation.Validator;
 
@@ -57,6 +58,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -89,7 +91,7 @@ public class JValidatorNew implements Validator {
         this.clazz = ReflectUtils.forName(url.getServiceInterface());
         String jvalidation = url.getParameter("jvalidationNew");
         ValidatorFactory factory;
-        if (jvalidation != null && jvalidation.length() > 0) {
+        if (StringUtils.isNotEmpty(jvalidation)) {
             factory = Validation.byProvider((Class) ReflectUtils.forName(jvalidation)).configure().buildValidatorFactory();
         } else {
             factory = Validation.buildDefaultValidatorFactory();
@@ -129,10 +131,9 @@ public class JValidatorNew implements Validator {
      * @param method             invoke method
      * @param parameterClassName generated parameterClassName
      * @return Class<?> generated methodParameterClass
-     * @throws Exception
      */
     private static Class<?> generateMethodParameterClass(Class<?> clazz, Method method, String parameterClassName)
-        throws Exception {
+            throws Exception {
         ClassPool pool = ClassGenerator.getClassPool(clazz.getClassLoader());
         synchronized (parameterClassName.intern()) {
             CtClass ctClass = null;
@@ -144,28 +145,26 @@ public class JValidatorNew implements Validator {
             if (null == ctClass) {
                 ctClass = pool.makeClass(parameterClassName);
                 ClassFile classFile = ctClass.getClassFile();
-                classFile.setVersionToJava5();
                 ctClass.addConstructor(CtNewConstructor.defaultConstructor(pool.getCtClass(parameterClassName)));
                 // parameter fields
-                Class<?>[] parameterTypes = method.getParameterTypes();
+                Parameter[] parameters = method.getParameters();
                 Annotation[][] parameterAnnotations = method.getParameterAnnotations();
-                for (int i = 0; i < parameterTypes.length; i++) {
-                    Class<?> type = parameterTypes[i];
+                for (int i = 0; i < parameters.length; i++) {
                     Annotation[] annotations = parameterAnnotations[i];
                     AnnotationsAttribute attribute = new AnnotationsAttribute(classFile.getConstPool(), AnnotationsAttribute.visibleTag);
                     for (Annotation annotation : annotations) {
                         if (annotation.annotationType().isAnnotationPresent(Constraint.class)) {
                             javassist.bytecode.annotation.Annotation ja = new javassist.bytecode.annotation.Annotation(
-                                classFile.getConstPool(), pool.getCtClass(annotation.annotationType().getName()));
+                                    classFile.getConstPool(), pool.getCtClass(annotation.annotationType().getName()));
                             Method[] members = annotation.annotationType().getMethods();
                             for (Method member : members) {
                                 if (Modifier.isPublic(member.getModifiers())
-                                    && member.getParameterTypes().length == 0
-                                    && member.getDeclaringClass() == annotation.annotationType()) {
+                                        && member.getParameterTypes().length == 0
+                                        && member.getDeclaringClass() == annotation.annotationType()) {
                                     Object value = member.invoke(annotation);
                                     if (null != value) {
                                         MemberValue memberValue = createMemberValue(
-                                            classFile.getConstPool(), pool.get(member.getReturnType().getName()), value);
+                                                classFile.getConstPool(), pool.get(member.getReturnType().getName()), value);
                                         ja.addMemberValue(member.getName(), memberValue);
                                     }
                                 }
@@ -173,7 +172,9 @@ public class JValidatorNew implements Validator {
                             attribute.addAnnotation(ja);
                         }
                     }
-                    String fieldName = method.getName() + "Argument" + i;
+                    Parameter parameter = parameters[i];
+                    Class<?> type = parameter.getType();
+                    String fieldName = parameter.getName();
                     CtField ctField = CtField.make("public " + type.getCanonicalName() + " " + fieldName + ";", pool.getCtClass(parameterClassName));
                     ctField.getFieldInfo().addAttribute(attribute);
                     ctClass.addField(ctField);
@@ -187,9 +188,9 @@ public class JValidatorNew implements Validator {
 
     private static String generateMethodParameterClassName(Class<?> clazz, Method method) {
         StringBuilder builder = new StringBuilder().append(clazz.getName())
-            .append('_')
-            .append(toUpperMethoName(method.getName()))
-            .append("Parameter");
+                .append('_')
+                .append(toUpperMethodName(method.getName()))
+                .append("Parameter");
 
         Class<?>[] parameterTypes = method.getParameterTypes();
         for (Class<?> parameterType : parameterTypes) {
@@ -201,19 +202,17 @@ public class JValidatorNew implements Validator {
 
     private static boolean hasConstraintParameter(Method method) {
         Annotation[][] parameterAnnotations = method.getParameterAnnotations();
-        if (parameterAnnotations.length > 0) {
-            for (Annotation[] annotations : parameterAnnotations) {
-                for (Annotation annotation : annotations) {
-                    if (annotation.annotationType().isAnnotationPresent(Constraint.class)) {
-                        return true;
-                    }
+        for (Annotation[] annotations : parameterAnnotations) {
+            for (Annotation annotation : annotations) {
+                if (annotation.annotationType().isAnnotationPresent(Constraint.class)) {
+                    return true;
                 }
             }
         }
         return false;
     }
 
-    private static String toUpperMethoName(String methodName) {
+    private static String toUpperMethodName(String methodName) {
         return methodName.substring(0, 1).toUpperCase() + methodName.substring(1);
     }
 
@@ -263,7 +262,7 @@ public class JValidatorNew implements Validator {
         if (methodClass != null) {
             groups.add(methodClass);
         }
-        Set<ConstraintViolation<?>> violations = new HashSet<>();
+
         Method method = clazz.getMethod(methodName, parameterTypes);
         Class<?>[] methodClasses;
         if (method.isAnnotationPresent(MethodValidated.class)) {
@@ -275,15 +274,16 @@ public class JValidatorNew implements Validator {
         groups.add(1, clazz);
 
         // convert list to array
-        Class<?>[] classgroups = groups.toArray(new Class[groups.size()]);
+        Class<?>[] classGroups = groups.toArray(new Class[0]);
 
+        Set<ConstraintViolation<?>> violations = new HashSet<>();
         Object parameterBean = getMethodParameterBean(clazz, method, arguments);
         if (parameterBean != null) {
-            violations.addAll(validator.validate(parameterBean, classgroups));
+            violations.addAll(validator.validate(parameterBean, classGroups));
         }
 
         for (Object arg : arguments) {
-            validate(violations, arg, classgroups);
+            validate(violations, arg, classGroups);
         }
 
         if (!violations.isEmpty()) {
@@ -294,7 +294,7 @@ public class JValidatorNew implements Validator {
 
     private Class<?> methodClass(String methodName) {
         Class<?> methodClass = null;
-        String methodClassName = clazz.getName() + "$" + toUpperMethoName(methodName);
+        String methodClassName = clazz.getName() + "$" + toUpperMethodName(methodName);
         Class<?> cached = methodClassMap.get(methodClassName);
         if (cached != null) {
             return cached == clazz ? null : cached;
