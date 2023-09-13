@@ -83,7 +83,7 @@ public class ValidationFilter implements Filter {
      */
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        if (validation != null && needValidate(invoker.getUrl(), invocation.getMethodName())) {
+        if (needValidate(invoker.getUrl(), invocation.getMethodName())) {
             try {
                 Validator validator = validation.getValidator(invoker.getUrl());
                 if (validator != null) {
@@ -99,7 +99,7 @@ public class ValidationFilter implements Filter {
     }
 
     private boolean needValidate(URL url, String methodName) {
-        return !methodName.startsWith("$") && ConfigUtils.isNotEmpty(url.getMethodParameter(methodName, VALIDATION_KEY));
+        return validation != null && !methodName.startsWith("$") && ConfigUtils.isNotEmpty(url.getMethodParameter(methodName, VALIDATION_KEY));
     }
 
 }
