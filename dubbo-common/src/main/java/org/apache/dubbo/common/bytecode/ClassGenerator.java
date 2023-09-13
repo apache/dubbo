@@ -92,7 +92,7 @@ public final class ClassGenerator {
 
         ClassPool pool = POOL_MAP.get(loader);
         if (pool == null) {
-            synchronized (loader) {
+            synchronized (POOL_MAP) {
                 pool = POOL_MAP.get(loader);
                 if (pool == null) {
                     pool = new ClassPool(true);
