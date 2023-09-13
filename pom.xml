@@ -162,7 +162,6 @@
         <module>dubbo-dependencies</module>
         <module>dubbo-metadata</module>
         <module>dubbo-metrics</module>
-        <module>dubbo-build-tools</module>
         <module>dubbo-spring-boot</module>
         <module>dubbo-native</module>
         <module>dubbo-test</module>
@@ -316,8 +315,8 @@
                                 <version>8.45.1</version>
                             </dependency>
                             <dependency>
-                                <groupId>org.apache.dubbo</groupId>
-                                <artifactId>dubbo-build-tools</artifactId>
+                                <groupId>com.alibaba</groupId>
+                                <artifactId>dubbo-shared-resources</artifactId>
                                 <version>1.0.0</version>
                             </dependency>
                         </dependencies>

@@ -46,7 +46,6 @@ class FileTest {
     static {
         ignoredModules.add(Pattern.compile("dubbo-apache-release"));
         ignoredModules.add(Pattern.compile("dubbo-all-shaded"));
-        ignoredModules.add(Pattern.compile("dubbo-build-tools"));
         ignoredModules.add(Pattern.compile("dubbo-dependencies-all"));
         ignoredModules.add(Pattern.compile("dubbo-parent"));
         ignoredModules.add(Pattern.compile("dubbo-core-spi"));
