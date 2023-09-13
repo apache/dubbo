@@ -40,7 +40,7 @@
     <properties>
         <micrometer.version>1.11.3</micrometer.version>
         <micrometer-tracing.version>1.1.4</micrometer-tracing.version>
-        <opentelemetry.version>1.29.0</opentelemetry.version>
+        <opentelemetry.version>1.30.0</opentelemetry.version>
         <zipkin-reporter.version>2.16.4</zipkin-reporter.version>
         <prometheus-client.version>0.16.0</prometheus-client.version>
     </properties>

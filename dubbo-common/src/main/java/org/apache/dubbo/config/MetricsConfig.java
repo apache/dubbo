@@ -62,6 +62,16 @@ public class MetricsConfig extends AbstractConfig {
     private Boolean exportMetricsService;
 
     /**
+     * Enable metrics init.
+     */
+    private Boolean enableMetricsInit;
+
+    /**
+     * Enable collector sync.
+     */
+    private Boolean enableCollectorSync;
+
+    /**
      * @deprecated After metrics config is refactored.
      * This parameter should no longer use and will be deleted in the future.
      */
@@ -206,6 +216,22 @@ public class MetricsConfig extends AbstractConfig {
 
     public void setEnableThreadpool(Boolean enableThreadpool) {
         this.enableThreadpool = enableThreadpool;
+    }
+
+    public Boolean getEnableMetricsInit() {
+        return enableMetricsInit;
+    }
+
+    public void setEnableMetricsInit(Boolean enableMetricsInit) {
+        this.enableMetricsInit = enableMetricsInit;
+    }
+
+    public Boolean getEnableCollectorSync() {
+        return enableCollectorSync;
+    }
+
+    public void setEnableCollectorSync(Boolean enableCollectorSync) {
+        this.enableCollectorSync = enableCollectorSync;
     }
 
     public Boolean getUseGlobalRegistry() {
