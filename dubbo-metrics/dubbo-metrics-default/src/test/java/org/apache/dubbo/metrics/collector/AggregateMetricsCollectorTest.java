@@ -199,7 +199,8 @@ class AggregateMetricsCollectorTest {
 
         when(applicationModel.getApplicationConfigManager()).thenReturn(configManager);
         when(applicationModel.getBeanFactory()).thenReturn(beanFactory);
-        when(beanFactory.getBean(DefaultMetricsCollector.class)).thenReturn(new DefaultMetricsCollector(applicationModel));
+        DefaultMetricsCollector defaultMetricsCollector = new DefaultMetricsCollector(applicationModel);
+        when(beanFactory.getBean(DefaultMetricsCollector.class)).thenReturn(defaultMetricsCollector);
         when(configManager.getMetrics()).thenReturn(Optional.of(metricsConfig));
         when(metricsConfig.getAggregation()).thenReturn(aggregationConfig);
         when(aggregationConfig.getEnabled()).thenReturn(Boolean.TRUE);
