@@ -52,6 +52,9 @@ public class MethodMetric extends ServiceKeyMetric {
 
 
     public static boolean isServiceLevel(ApplicationModel applicationModel) {
+        if(applicationModel == null){
+            return false;
+        }
         ConfigManager applicationConfigManager = applicationModel.getApplicationConfigManager();
         if (applicationConfigManager == null) {
             return false;
