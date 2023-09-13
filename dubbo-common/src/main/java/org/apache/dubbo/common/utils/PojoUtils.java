@@ -16,6 +16,10 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -52,10 +56,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 
 import static org.apache.dubbo.common.utils.ClassUtils.isAssignableFrom;
 
@@ -113,11 +113,18 @@ public class PojoUtils {
     }
 
     public static Object generalize(Object pojo) {
-        return generalize(pojo, new IdentityHashMap<Object, Object>());
+        return generalize(pojo, null);
+    }
+
+    public static Object generalize(Object pojo, Boolean genericWithClz) {
+        if (null == genericWithClz) {
+            genericWithClz = GENERIC_WITH_CLZ;
+        }
+        return generalize(pojo, new IdentityHashMap<Object, Object>(), genericWithClz);
     }
 
     @SuppressWarnings("unchecked")
-    private static Object generalize(Object pojo, Map<Object, Object> history) {
+    private static Object generalize(Object pojo, Map<Object, Object> history, boolean genericWithClz) {
         if (pojo == null) {
             return null;
         }
@@ -158,7 +165,7 @@ public class PojoUtils {
             history.put(pojo, dest);
             for (int i = 0; i < len; i++) {
                 Object obj = Array.get(pojo, i);
-                dest[i] = generalize(obj, history);
+                dest[i] = generalize(obj, history, genericWithClz);
             }
             return dest;
         }
@@ -168,7 +175,7 @@ public class PojoUtils {
             Collection<Object> dest = (pojo instanceof List<?>) ? new ArrayList<Object>(len) : new HashSet<Object>(len);
             history.put(pojo, dest);
             for (Object obj : src) {
-                dest.add(generalize(obj, history));
+                dest.add(generalize(obj, history, genericWithClz));
             }
             return dest;
         }
@@ -177,20 +184,20 @@ public class PojoUtils {
             Map<Object, Object> dest = createMap(src);
             history.put(pojo, dest);
             for (Map.Entry<Object, Object> obj : src.entrySet()) {
-                dest.put(generalize(obj.getKey(), history), generalize(obj.getValue(), history));
+                dest.put(generalize(obj.getKey(), history, genericWithClz), generalize(obj.getValue(), history, genericWithClz));
             }
             return dest;
         }
         Map<String, Object> map = new HashMap<String, Object>();
         history.put(pojo, map);
-        if (GENERIC_WITH_CLZ) {
+        if (genericWithClz) {
             map.put("class", pojo.getClass().getName());
         }
         for (Method method : pojo.getClass().getMethods()) {
             if (ReflectUtils.isBeanPropertyReadMethod(method)) {
                 ReflectUtils.makeAccessible(method);
                 try {
-                    map.put(ReflectUtils.getPropertyNameFromBeanReadMethod(method), generalize(method.invoke(pojo), history));
+                    map.put(ReflectUtils.getPropertyNameFromBeanReadMethod(method), generalize(method.invoke(pojo), history, genericWithClz));
                 } catch (Exception e) {
                     throw new RuntimeException(e.getMessage(), e);
                 }
@@ -209,7 +216,7 @@ public class PojoUtils {
                         }
                     }
                     if (fieldValue != null) {
-                        map.put(field.getName(), generalize(fieldValue, history));
+                        map.put(field.getName(), generalize(fieldValue, history, genericWithClz));
                     }
                 } catch (Exception e) {
                     throw new RuntimeException(e.getMessage(), e);
