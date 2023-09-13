@@ -44,11 +44,11 @@ public class ApplicationMetric implements Metric {
     }
 
     public Map<String, String> gitTags(Map<String, String> tags) {
-        return MetricsSupport.gitTags(applicationModel, tags);
+        return MetricsSupport.gitTags(tags);
     }
 
     public Map<String, String> hostTags(Map<String, String> tags) {
-        return MetricsSupport.hostTags(applicationModel, tags);
+        return MetricsSupport.hostTags(tags);
     }
 
 
