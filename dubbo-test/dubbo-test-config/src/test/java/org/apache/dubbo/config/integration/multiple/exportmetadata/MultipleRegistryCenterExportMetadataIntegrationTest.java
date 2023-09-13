@@ -24,8 +24,6 @@ import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.ServiceListener;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.integration.IntegrationTest;
-import org.apache.dubbo.config.integration.multiple.MultipleRegistryCenterExportMetadataExporterListener;
-import org.apache.dubbo.config.integration.multiple.MultipleRegistryCenterExportMetadataServiceListener;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.ExporterListener;
