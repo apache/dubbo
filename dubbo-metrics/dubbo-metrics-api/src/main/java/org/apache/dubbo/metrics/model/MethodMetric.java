@@ -19,6 +19,7 @@ package org.apache.dubbo.metrics.model;
 
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.MetricsConfig;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -26,6 +27,7 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
@@ -50,7 +52,15 @@ public class MethodMetric extends ServiceKeyMetric {
 
 
     public static boolean isServiceLevel(ApplicationModel applicationModel) {
-        String rpcLevel = applicationModel.getApplicationConfigManager().getMetrics().map(MetricsConfig::getRpcLevel).orElse(MetricsLevel.METHOD.name());
+        ConfigManager applicationConfigManager = applicationModel.getApplicationConfigManager();
+        if (applicationConfigManager == null) {
+            return false;
+        }
+        Optional<MetricsConfig> metrics = applicationConfigManager.getMetrics();
+        if (!metrics.isPresent()) {
+            return false;
+        }
+        String rpcLevel = metrics.map(MetricsConfig::getRpcLevel).orElse(MetricsLevel.METHOD.name());
         rpcLevel = StringUtils.isBlank(rpcLevel) ? MetricsLevel.METHOD.name() : rpcLevel;
         return MetricsLevel.SERVICE.name().equalsIgnoreCase(rpcLevel);
     }
