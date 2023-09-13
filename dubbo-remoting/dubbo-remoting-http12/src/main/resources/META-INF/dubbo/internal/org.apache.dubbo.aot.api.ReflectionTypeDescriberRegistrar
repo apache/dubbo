@@ -1,0 +1,1 @@
+http12=org.apache.dubbo.remoting.http12.aot.Http12ReflectionTypeDescriberRegistrar

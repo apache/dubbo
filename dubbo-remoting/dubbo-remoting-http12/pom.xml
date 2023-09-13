@@ -59,7 +59,11 @@
             <groupId>io.netty</groupId>
             <artifactId>netty-codec-http2</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-native</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
 
     </dependencies>
 </project>
