@@ -77,10 +77,13 @@ public class MetricsSupport {
         }
         return tags;
     }
-    public static Map<String, String> applicationPrivateTags(ApplicationModel applicationModel, Map<String, String> tags) {
+    public static Map<String, String> gitTags(ApplicationModel applicationModel, Map<String, String> tags) {
+        tags.put(MetricsKey.METADATA_GIT_COMMITID_METRIC.getName(), commitId);
+        return tags;
+    }
+    public static Map<String, String> hostTags(ApplicationModel applicationModel, Map<String, String> tags) {
         tags.put(TAG_IP, getLocalHost());
         tags.put(TAG_HOSTNAME, getLocalHostName());
-        tags.put(MetricsKey.METADATA_GIT_COMMITID_METRIC.getName(), commitId);
         return tags;
     }
 
