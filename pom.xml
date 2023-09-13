@@ -136,7 +136,7 @@
         <jprotoc_version>1.2.2</jprotoc_version>
         <protobuf-java_version>3.22.3</protobuf-java_version>
         <grpc_version>1.54.0</grpc_version>
-        <revision>3.2.6-SNAPSHOT</revision>
+        <revision>3.2.7-SNAPSHOT</revision>
     </properties>
 
     <modules>

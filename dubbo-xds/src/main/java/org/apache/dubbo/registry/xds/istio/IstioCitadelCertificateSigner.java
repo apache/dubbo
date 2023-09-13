@@ -175,7 +175,7 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
 
         IstioCertificateServiceGrpc.IstioCertificateServiceStub stub = IstioCertificateServiceGrpc.newStub(channel);
 
-        stub = MetadataUtils.attachHeaders(stub, header);
+        stub = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(header));
 
         CountDownLatch countDownLatch = new CountDownLatch(1);
         StringBuffer publicKeyBuilder = new StringBuffer();
