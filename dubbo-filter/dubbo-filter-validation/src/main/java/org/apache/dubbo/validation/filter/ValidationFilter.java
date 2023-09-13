@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.validation.filter;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.rpc.AsyncRpcResult;
@@ -82,8 +83,7 @@ public class ValidationFilter implements Filter {
      */
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        if (validation != null && !invocation.getMethodName().startsWith("$")
-            && ConfigUtils.isNotEmpty(invoker.getUrl().getMethodParameter(invocation.getMethodName(), VALIDATION_KEY))) {
+        if (needValidate(invoker.getUrl(), invocation.getMethodName())) {
             try {
                 Validator validator = validation.getValidator(invoker.getUrl());
                 if (validator != null) {
@@ -96,6 +96,10 @@ public class ValidationFilter implements Filter {
             }
         }
         return invoker.invoke(invocation);
+    }
+
+    private boolean needValidate(URL url, String methodName) {
+        return validation != null && !methodName.startsWith("$") && ConfigUtils.isNotEmpty(url.getMethodParameter(methodName, VALIDATION_KEY));
     }
 
 }
