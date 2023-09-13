@@ -39,16 +39,17 @@ public class MethodMetric extends ServiceKeyMetric {
     private String group;
     private String version;
 
-    public MethodMetric(ApplicationModel applicationModel, Invocation invocation) {
+
+    public MethodMetric(ApplicationModel applicationModel, Invocation invocation, boolean serviceLevel) {
         super(applicationModel, MetricsSupport.getInterfaceName(invocation));
         this.side = MetricsSupport.getSide(invocation);
         this.group = MetricsSupport.getGroup(invocation);
         this.version = MetricsSupport.getVersion(invocation);
-        this.methodName = isServiceLevel(applicationModel) ? null : RpcUtils.getMethodName(invocation);
+        this.methodName = serviceLevel ? null : RpcUtils.getMethodName(invocation);
     }
 
 
-    private static boolean isServiceLevel(ApplicationModel applicationModel) {
+    public static boolean isServiceLevel(ApplicationModel applicationModel) {
         String rpcLevel = applicationModel.getApplicationConfigManager().getMetrics().map(MetricsConfig::getRpcLevel).orElse(MetricsLevel.METHOD.name());
         rpcLevel = StringUtils.isBlank(rpcLevel) ? MetricsLevel.METHOD.name() : rpcLevel;
         return MetricsLevel.SERVICE.name().equalsIgnoreCase(rpcLevel);

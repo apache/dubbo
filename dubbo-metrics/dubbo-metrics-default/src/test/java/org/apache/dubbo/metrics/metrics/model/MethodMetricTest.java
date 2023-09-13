@@ -30,7 +30,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
-import java.util.Optional;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
@@ -75,7 +74,7 @@ class MethodMetricTest {
 
     @Test
     void test() {
-        MethodMetric metric = new MethodMetric(applicationModel, invocation);
+        MethodMetric metric = new MethodMetric(applicationModel, invocation, MethodMetric.isServiceLevel(applicationModel));
         Assertions.assertEquals(metric.getServiceKey(), interfaceName);
         Assertions.assertEquals(metric.getMethodName(), methodName);
         Assertions.assertEquals(metric.getGroup(), group);
@@ -97,7 +96,7 @@ class MethodMetricTest {
         MetricsConfig metricConfig = new MetricsConfig();
         applicationModel.getApplicationConfigManager().setMetrics(metricConfig);
         metricConfig.setRpcLevel(MetricsLevel.SERVICE.name());
-        MethodMetric metric = new MethodMetric(applicationModel, invocation);
+        MethodMetric metric = new MethodMetric(applicationModel, invocation, MethodMetric.isServiceLevel(applicationModel));
         Assertions.assertEquals(metric.getServiceKey(), interfaceName);
         Assertions.assertNull(metric.getMethodName(), methodName);
         Assertions.assertEquals(metric.getGroup(), group);
