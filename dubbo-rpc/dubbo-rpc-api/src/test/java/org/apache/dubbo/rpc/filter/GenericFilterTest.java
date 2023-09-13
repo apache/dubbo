@@ -149,4 +149,39 @@ public class GenericFilterTest {
         Assertions.assertEquals(10, ((Person) (result.getValue())).getAge());
     }
 
+
+    @Test
+    public void testInvokeRemoveClassField() throws Exception {
+
+        Method genericInvoke = GenericService.class.getMethods()[0];
+
+        Map<String, Object> person = new HashMap<String, Object>();
+        person.put("name", "dubbo");
+        person.put("age", 10);
+
+        RpcInvocation invocation = new RpcInvocation($INVOKE, GenericService.class.getName(), "", genericInvoke.getParameterTypes(),
+                new Object[]{"getPerson", new String[]{Person.class.getCanonicalName()}, new Object[]{person}});
+
+        URL url = URL.valueOf("test://test:11/org.apache.dubbo.rpc.support.DemoService?" +
+                "accesslog=true&group=dubbo&version=1.1");
+        Invoker invoker = Mockito.mock(Invoker.class);
+        when(invoker.invoke(any(Invocation.class))).thenReturn(AsyncRpcResult.newDefaultAsyncResult(new Person("person", 10), invocation));
+        when(invoker.getUrl()).thenReturn(url);
+        when(invoker.getInterface()).thenReturn(DemoService.class);
+
+
+        Result asyncResult = genericFilter.invoke(invoker, invocation);
+
+        AppResponse appResponse = (AppResponse) asyncResult.get();
+        genericFilter.onResponse(appResponse, invoker, invocation);
+        Assertions.assertTrue(((HashMap) appResponse.getValue()).containsKey("class"));
+
+        when(invoker.invoke(any(Invocation.class))).thenReturn(AsyncRpcResult.newDefaultAsyncResult(new Person("person", 10), invocation));
+        invocation.setObjectAttachment(CommonConstants.GENERIC_WITH_CLZ_KEY, "false");
+        asyncResult = genericFilter.invoke(invoker, invocation);
+        appResponse = (AppResponse) asyncResult.get();
+        genericFilter.onResponse(appResponse, invoker, invocation);
+        Assertions.assertFalse(((HashMap) appResponse.getValue()).containsKey("class"));
+    }
+
 }
