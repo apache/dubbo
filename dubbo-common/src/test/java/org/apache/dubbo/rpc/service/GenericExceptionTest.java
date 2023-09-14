@@ -30,8 +30,8 @@ class GenericExceptionTest {
     void jsonSupport() throws IOException {
         {
             GenericException src = new GenericException();
-            String s = JsonUtils.getJson().toJson(src);
-            GenericException dst = JsonUtils.getJson().toJavaObject(s, GenericException.class);
+            String s = JsonUtils.toJson(src);
+            GenericException dst = JsonUtils.toJavaObject(s, GenericException.class);
             Assertions.assertEquals(src.getExceptionClass(), dst.getExceptionClass());
             Assertions.assertEquals(src.getExceptionMessage(), dst.getExceptionMessage());
             Assertions.assertEquals(src.getMessage(), dst.getMessage());
@@ -39,8 +39,8 @@ class GenericExceptionTest {
         }
         {
             GenericException src = new GenericException(this.getClass().getSimpleName(), "test");
-            String s = JsonUtils.getJson().toJson(src);
-            GenericException dst = JsonUtils.getJson().toJavaObject(s, GenericException.class);
+            String s = JsonUtils.toJson(src);
+            GenericException dst = JsonUtils.toJavaObject(s, GenericException.class);
             Assertions.assertEquals(src.getExceptionClass(), dst.getExceptionClass());
             Assertions.assertEquals(src.getExceptionMessage(), dst.getExceptionMessage());
             Assertions.assertEquals(src.getMessage(), dst.getMessage());
@@ -49,8 +49,8 @@ class GenericExceptionTest {
         {
             Throwable throwable = new Throwable("throwable");
             GenericException src = new GenericException(throwable);
-            String s = JsonUtils.getJson().toJson(src);
-            GenericException dst = JsonUtils.getJson().toJavaObject(s, GenericException.class);
+            String s = JsonUtils.toJson(src);
+            GenericException dst = JsonUtils.toJavaObject(s, GenericException.class);
             Assertions.assertEquals(src.getExceptionClass(), dst.getExceptionClass());
             Assertions.assertEquals(src.getExceptionMessage(), dst.getExceptionMessage());
             Assertions.assertEquals(src.getMessage(), dst.getMessage());

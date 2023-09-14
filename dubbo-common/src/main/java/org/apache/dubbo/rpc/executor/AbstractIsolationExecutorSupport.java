@@ -50,15 +50,17 @@ public abstract class AbstractIsolationExecutorSupport implements ExecutorSuppor
 
         for (URL serviceUrl : serviceUrls) {
             if (serviceUrl.getProtocol().equals(url.getProtocol()) && serviceUrl.getPort() == url.getPort()) {
-                return executorRepository.getExecutor(serviceUrl);
+                return executorRepository.getExecutor(providerModel, serviceUrl);
             }
         }
-        return executorRepository.getExecutor(serviceUrls.get(0));
+        return executorRepository.getExecutor(providerModel, serviceUrls.get(0));
     }
 
-    protected abstract ServiceKey getServiceKey(Object data);
+    protected ServiceKey getServiceKey(Object data) {
+        return null;
+    }
 
-    private ProviderModel getProviderModel(Object data) {
+    protected ProviderModel getProviderModel(Object data) {
         ServiceKey serviceKey = getServiceKey(data);
         if (serviceKey == null) {
             return null;

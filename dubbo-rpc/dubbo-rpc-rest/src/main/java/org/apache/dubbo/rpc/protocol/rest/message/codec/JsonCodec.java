@@ -25,33 +25,50 @@ import org.apache.dubbo.rpc.protocol.rest.message.MediaTypeMatcher;
 import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 
 import java.io.OutputStream;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * body is json
+ */
 @Activate("json")
 public class JsonCodec implements HttpMessageCodec<byte[], OutputStream> {
     private static final Set<Class> unSupportClasses = new HashSet<>();
 
     static {
-
         unSupportClasses.add(byte[].class);
         unSupportClasses.add(String.class);
     }
 
-    @Override
-    public Object decode(byte[] body, Class targetType) throws Exception {
-        return DataParseUtils.jsonConvert(targetType, body);
+    public static void addUnSupportClass(Class<?> unSupportClass) {
+        unSupportClasses.add(unSupportClass);
     }
 
     @Override
-    public boolean contentTypeSupport(MediaType mediaType, Class targetType) {
+    public Object decode(byte[] body, Class<?> targetType, Type actualType) throws Exception {
+        return DataParseUtils.jsonConvert(actualType, body);
+    }
+
+    @Override
+    public boolean contentTypeSupport(MediaType mediaType, Class<?> targetType) {
         return MediaTypeMatcher.APPLICATION_JSON.mediaSupport(mediaType) && !unSupportClasses.contains(targetType);
+    }
+
+    @Override
+    public boolean typeSupport(Class<?> targetType) {
+        return !unSupportClasses.contains(targetType) && !DataParseUtils.isTextType(targetType);
+    }
+
+    @Override
+    public MediaType contentType() {
+        return MediaType.APPLICATION_JSON_VALUE;
     }
 
 
     @Override
     public void encode(OutputStream outputStream, Object unSerializedBody, URL url) throws Exception {
-        outputStream.write(JsonUtils.getJson().toJson(unSerializedBody).getBytes(StandardCharsets.UTF_8));
+        outputStream.write(JsonUtils.toJson(unSerializedBody).getBytes(StandardCharsets.UTF_8));
     }
 }

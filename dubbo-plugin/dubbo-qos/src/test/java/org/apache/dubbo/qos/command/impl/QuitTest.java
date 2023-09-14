@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
-import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.qos.common.QosConstants;
 
 import org.junit.jupiter.api.Test;

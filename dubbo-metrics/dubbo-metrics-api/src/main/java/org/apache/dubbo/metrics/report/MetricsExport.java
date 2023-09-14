@@ -17,7 +17,8 @@
 
 package org.apache.dubbo.metrics.report;
 
-import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
+import org.apache.dubbo.metrics.model.MetricsCategory;
+import org.apache.dubbo.metrics.model.sample.MetricSample;
 
 import java.util.List;
 
@@ -28,12 +29,8 @@ import java.util.List;
 public interface MetricsExport {
 
     /**
-     * Cumulative statistics.
+     * export all.
      */
-    List<GaugeMetricSample> exportNumMetrics();
+    List<MetricSample> export(MetricsCategory category);
 
-    /**
-     * Response time statistics at different latitudes
-     */
-    List<GaugeMetricSample> exportRtMetrics();
 }

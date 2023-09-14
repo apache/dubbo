@@ -24,4 +24,6 @@ public interface ModelConstants {
      * Keep Dubbo running when spring is stopped
      */
     String KEEP_RUNNING_ON_SPRING_CLOSED = "keepRunningOnSpringClosed";
+
+    String KEEP_RUNNING_ON_SPRING_CLOSED_KEY = "dubbo.module.keepRunningOnSpringClosed";
 }

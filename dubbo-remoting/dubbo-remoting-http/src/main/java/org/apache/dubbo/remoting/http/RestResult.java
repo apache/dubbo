@@ -20,6 +20,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * rest response facade
+ */
 public interface RestResult {
     String getContentType();
 
@@ -32,4 +35,8 @@ public interface RestResult {
     int getResponseCode() throws IOException;
 
     String getMessage() throws IOException;
+
+    default String appendErrorMessage(String message, String errorInfo) {
+        return message + "\n error info is: " + errorInfo;
+    }
 }

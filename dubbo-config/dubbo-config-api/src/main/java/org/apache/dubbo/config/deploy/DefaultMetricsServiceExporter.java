@@ -19,15 +19,17 @@ package org.apache.dubbo.config.deploy;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.metrics.service.MetricsService;
-import org.apache.dubbo.metrics.service.MetricsServiceExporter;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.builders.InternalServiceConfigBuilder;
+import org.apache.dubbo.metrics.service.MetricsService;
+import org.apache.dubbo.metrics.service.MetricsServiceExporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
 import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
@@ -52,10 +54,11 @@ public class DefaultMetricsServiceExporter implements MetricsServiceExporter, Sc
         MetricsConfig metricsConfig = applicationModel.getApplicationConfigManager().getMetrics().orElse(null);
         // TODO compatible with old usage of metrics, remove protocol check after new metrics is ready for use.
         if (metricsConfig != null &&  metricsService == null) {
-            if (PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol()) ) {
+            String protocol = Optional.ofNullable(metricsConfig.getProtocol()).orElse(PROTOCOL_PROMETHEUS);
+            if (PROTOCOL_PROMETHEUS.equals(protocol) ) {
                 this.metricsService  = applicationModel.getExtensionLoader(MetricsService.class).getDefaultExtension();
             } else {
-                logger.warn(COMMON_METRICS_COLLECTOR_EXCEPTION, "", "", "Protocol " + metricsConfig.getProtocol() + " not support for new metrics mechanism. " +
+                logger.warn(COMMON_METRICS_COLLECTOR_EXCEPTION, "", "", "Protocol " + protocol + " not support for new metrics mechanism. " +
                     "Using old metrics mechanism instead.");
             }
         }
@@ -70,10 +73,13 @@ public class DefaultMetricsServiceExporter implements MetricsServiceExporter, Sc
     public MetricsServiceExporter export() {
         if (metricsService != null) {
             if (!isExported()) {
+                ExecutorService internalServiceExecutor = applicationModel.getFrameworkModel().getBeanFactory()
+                    .getBean(FrameworkExecutorRepository.class).getInternalServiceExecutor();
                 ServiceConfig<MetricsService> serviceConfig = InternalServiceConfigBuilder.<MetricsService>newBuilder(applicationModel)
                     .interfaceClass(MetricsService.class)
                     .protocol(getMetricsConfig().getExportServiceProtocol())
                     .port(getMetricsConfig().getExportServicePort())
+                    .executor(internalServiceExecutor)
                     .ref(metricsService)
                     .registryId("internal-metrics-registry")
                     .build();

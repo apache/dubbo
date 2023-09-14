@@ -31,6 +31,11 @@ public class CertDeployerListener implements ApplicationDeployListener {
     }
 
     @Override
+    public void onInitialize(ApplicationModel scopeModel) {
+
+    }
+
+    @Override
     public void onStarting(ApplicationModel scopeModel) {
         scopeModel.getApplicationConfigManager().getSsl().ifPresent(sslConfig -> {
             if (Objects.nonNull(sslConfig.getCaAddress()) && dubboCertManager != null) {
@@ -49,7 +54,9 @@ public class CertDeployerListener implements ApplicationDeployListener {
 
     @Override
     public void onStopping(ApplicationModel scopeModel) {
-        dubboCertManager.disConnect();
+        if (dubboCertManager != null) {
+            dubboCertManager.disConnect();
+        }
     }
 
     @Override
@@ -59,6 +66,8 @@ public class CertDeployerListener implements ApplicationDeployListener {
 
     @Override
     public void onFailure(ApplicationModel scopeModel, Throwable cause) {
-        dubboCertManager.disConnect();
+        if (dubboCertManager != null) {
+            dubboCertManager.disConnect();
+        }
     }
 }

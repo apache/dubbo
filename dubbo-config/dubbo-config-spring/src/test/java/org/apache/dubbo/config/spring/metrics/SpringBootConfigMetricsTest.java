@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.config.spring.metrics;
 
-import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
-
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
@@ -31,6 +29,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
+
 @SpringBootTest(
     properties = {
         "dubbo.application.NAME = dubbo-demo-application",
@@ -41,15 +41,14 @@ import org.springframework.context.annotation.Configuration;
         "dubbo.metrics.protocol=prometheus",
         "dubbo.metrics.export-service-protocol=tri",
         "dubbo.metrics.export-service-port=9999",
-        "dubbo.metrics.enable-jvm-metrics=true",
+        "dubbo.metrics.enable-jvm=true",
         "dubbo.metrics.prometheus.exporter.enabled=true",
         "dubbo.metrics.prometheus.exporter.enable-http-service-discovery=true",
         "dubbo.metrics.prometheus.exporter.http-service-discovery-url=localhost:8080",
-        "dubbo.metrics.prometheus.exporter.metrics-port=20888",
-        "dubbo.metrics.prometheus.exporter.metrics-path=/metrics",
         "dubbo.metrics.aggregation.enabled=true",
         "dubbo.metrics.aggregation.bucket-num=5",
         "dubbo.metrics.aggregation.time-window-seconds=120",
+        "dubbo.metrics.histogram.enabled=true",
         "dubbo.metadata-report.address=${zookeeper.connection.address.2}"
     },
     classes = {
@@ -79,17 +78,16 @@ public class SpringBootConfigMetricsTest {
         MetricsConfig metricsConfig = configManager.getMetrics().get();
 
         Assertions.assertEquals(PROTOCOL_PROMETHEUS, metricsConfig.getProtocol());
-        Assertions.assertTrue(metricsConfig.getEnableJvmMetrics());
+        Assertions.assertTrue(metricsConfig.getEnableJvm());
         Assertions.assertEquals("tri",metricsConfig.getExportServiceProtocol());
         Assertions.assertEquals(9999, metricsConfig.getExportServicePort());
         Assertions.assertTrue(metricsConfig.getPrometheus().getExporter().getEnabled());
         Assertions.assertTrue(metricsConfig.getPrometheus().getExporter().getEnableHttpServiceDiscovery());
         Assertions.assertEquals("localhost:8080", metricsConfig.getPrometheus().getExporter().getHttpServiceDiscoveryUrl());
-        Assertions.assertEquals(20888, metricsConfig.getPrometheus().getExporter().getMetricsPort());
-        Assertions.assertEquals("/metrics", metricsConfig.getPrometheus().getExporter().getMetricsPath());
         Assertions.assertEquals(5, metricsConfig.getAggregation().getBucketNum());
         Assertions.assertEquals(120, metricsConfig.getAggregation().getTimeWindowSeconds());
         Assertions.assertTrue(metricsConfig.getAggregation().getEnabled());
+        Assertions.assertTrue(metricsConfig.getHistogram().getEnabled());
     }
 
 }

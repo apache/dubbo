@@ -273,7 +273,7 @@ public class ProtocolConfig extends AbstractConfig {
         return name;
     }
 
-    public final void setName(String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -291,7 +291,7 @@ public class ProtocolConfig extends AbstractConfig {
         return port;
     }
 
-    public final void setPort(Integer port) {
+    public void setPort(Integer port) {
         this.port = port;
     }
 

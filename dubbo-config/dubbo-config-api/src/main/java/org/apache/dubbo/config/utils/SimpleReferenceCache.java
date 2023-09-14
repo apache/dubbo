@@ -110,7 +110,7 @@ public class SimpleReferenceCache implements ReferenceCache {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T get(ReferenceConfigBase<T> rc) {
+    public <T> T get(ReferenceConfigBase<T> rc, boolean check) {
         String key = generator.generateKey(rc);
         Class<?> type = rc.getInterfaceClass();
 
@@ -129,7 +129,7 @@ public class SimpleReferenceCache implements ReferenceCache {
             referencesOfType.add(rc);
             List<ReferenceConfigBase<?>> referenceConfigList = ConcurrentHashMapUtils.computeIfAbsent(referenceKeyMap, key, _k -> Collections.synchronizedList(new ArrayList<>()));
             referenceConfigList.add(rc);
-            proxy = rc.get();
+            proxy = rc.get(check);
         }
 
         return proxy;
@@ -201,6 +201,29 @@ public class SimpleReferenceCache implements ReferenceCache {
             return (T) referenceConfigBases.get(0).get();
         }
         return null;
+    }
+
+    @Override
+    public void check(String key, Class<?> type, long timeout) {
+        List<ReferenceConfigBase<?>> referencesOfKey = referenceKeyMap.get(key);
+        if (CollectionUtils.isEmpty(referencesOfKey)) {
+            return;
+        }
+        List<ReferenceConfigBase<?>> referencesOfType = referenceTypeMap.get(type);
+        if (CollectionUtils.isEmpty(referencesOfType)) {
+            return;
+        }
+        for (ReferenceConfigBase<?> rc : referencesOfKey) {
+            rc.checkOrDestroy(timeout);
+        }
+
+    }
+
+    @Override
+    public <T> void check(ReferenceConfigBase<T> referenceConfig, long timeout) {
+        String key = generator.generateKey(referenceConfig);
+        Class<?> type = referenceConfig.getInterfaceClass();
+        check(key, type, timeout);
     }
 
     @Override

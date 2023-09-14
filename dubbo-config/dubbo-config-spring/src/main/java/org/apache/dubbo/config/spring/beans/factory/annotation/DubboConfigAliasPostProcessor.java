@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.spring.context.annotation.DubboConfigConfigurationRegistrar;
+import org.apache.dubbo.config.spring.util.BeanRegistrar;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -25,7 +26,6 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 
-import static com.alibaba.spring.util.BeanRegistrar.hasAlias;
 import static org.springframework.util.ObjectUtils.nullSafeEquals;
 import static org.springframework.util.StringUtils.hasText;
 
@@ -65,7 +65,7 @@ public class DubboConfigAliasPostProcessor implements BeanDefinitionRegistryPost
             String id = ((AbstractConfig) bean).getId();
             if (hasText(id)                                     // id MUST be present in AbstractConfig
                     && !nullSafeEquals(id, beanName)            // id MUST NOT be equal to bean name
-                    && !hasAlias(registry, beanName, id)) {     // id MUST NOT be present in AliasRegistry
+                    && !BeanRegistrar.hasAlias(registry, beanName, id)) {     // id MUST NOT be present in AliasRegistry
                 registry.registerAlias(beanName, id);
             }
         }

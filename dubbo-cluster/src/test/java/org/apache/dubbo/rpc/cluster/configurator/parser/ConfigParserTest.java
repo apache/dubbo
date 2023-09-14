@@ -22,6 +22,7 @@ import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfiguratorConfig
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
@@ -50,7 +51,7 @@ class ConfigParserTest {
     @Test
     void snakeYamlBasicTest() throws IOException {
         try (InputStream yamlStream = this.getClass().getResourceAsStream("/ServiceNoApp.yml")) {
-            Yaml yaml = new Yaml(new SafeConstructor());
+            Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
             Map<String, Object> map = yaml.load(yamlStream);
             ConfiguratorConfig config = ConfiguratorConfig.parseFromMap(map);
             Assertions.assertNotNull(config);
@@ -186,11 +187,11 @@ class ConfigParserTest {
             URL notMatchURL3 = URL.valueOf("dubbo://10.0.0.1:20880/DemoService?match_key1=value_not_match");// key not match
 
             ConditionMatch matcher = (ConditionMatch) url.getAttribute(MATCH_CONDITION);
-            Assertions.assertTrue(matcher.isMatch(matchURL1));
-            Assertions.assertTrue(matcher.isMatch(matchURL2));
-            Assertions.assertFalse(matcher.isMatch(notMatchURL1));
-            Assertions.assertFalse(matcher.isMatch(notMatchURL2));
-            Assertions.assertFalse(matcher.isMatch(notMatchURL3));
+            Assertions.assertTrue(matcher.isMatch(matchURL1.getAddress(), matchURL1));
+            Assertions.assertTrue(matcher.isMatch(matchURL2.getAddress(), matchURL2));
+            Assertions.assertFalse(matcher.isMatch(notMatchURL1.getAddress(), notMatchURL1));
+            Assertions.assertFalse(matcher.isMatch(notMatchURL2.getAddress(), notMatchURL2));
+            Assertions.assertFalse(matcher.isMatch(notMatchURL3.getAddress(), notMatchURL3));
         }
     }
 
@@ -210,8 +211,8 @@ class ConfigParserTest {
             URL notMatchURL = URL.valueOf("dubbo://10.0.0.1:20880/DemoService?match_key1=value_not_match");// key not match
 
             ConditionMatch matcher = (ConditionMatch) url.getAttribute(MATCH_CONDITION);
-            Assertions.assertTrue(matcher.isMatch(matchURL));
-            Assertions.assertFalse(matcher.isMatch(notMatchURL));
+            Assertions.assertTrue(matcher.isMatch(matchURL.getAddress(), matchURL));
+            Assertions.assertFalse(matcher.isMatch(notMatchURL.getAddress(), notMatchURL));
         }
     }
 
@@ -231,8 +232,8 @@ class ConfigParserTest {
             URL notMatchURL = URL.valueOf("dubbo://10.0.0.1:20880/DemoService?match_key1=value_not_match");// key not match
 
             ConditionMatch matcher = (ConditionMatch) url.getAttribute(MATCH_CONDITION);
-            Assertions.assertTrue(matcher.isMatch(matchURL));
-            Assertions.assertFalse(matcher.isMatch(notMatchURL));
+            Assertions.assertTrue(matcher.isMatch(matchURL.getAddress(), matchURL));
+            Assertions.assertFalse(matcher.isMatch(notMatchURL.getAddress(), notMatchURL));
         }
     }
 

@@ -31,6 +31,7 @@ import org.apache.dubbo.common.utils.FieldUtils;
 import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.ToStringUtils;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.context.ConfigMode;
 import org.apache.dubbo.config.support.Nested;
@@ -101,6 +102,11 @@ public abstract class AbstractConfig implements Serializable {
     private String id;
 
     protected final AtomicBoolean refreshed = new AtomicBoolean(false);
+
+    /**
+     * Indicate that if current config needs to being refreshed, default is true
+     */
+    protected transient volatile boolean needRefresh = true;
 
     /**
      * Is default config or not
@@ -424,9 +430,6 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     protected void checkScopeModel(ScopeModel scopeModel) {
-        if (scopeModel == null) {
-            throw new IllegalArgumentException("scopeModel cannot be null");
-        }
         if (!(scopeModel instanceof ApplicationModel)) {
             throw new IllegalArgumentException("Invalid scope model, expect to be a ApplicationModel but got: " + scopeModel);
         }
@@ -681,21 +684,23 @@ public abstract class AbstractConfig implements Serializable {
      * Dubbo config property override
      */
     public void refresh() {
-        try {
-            // check and init before do refresh
-            preProcessRefresh();
-            refreshWithPrefixes(getPrefixes(), getConfigMode());
-        } catch (Exception e) {
-            logger.error(COMMON_FAILED_OVERRIDE_FIELD, "", "", "Failed to override field value of config bean: " + this, e);
-            throw new IllegalStateException("Failed to override field value of config bean: " + this, e);
-        }
+        if (needRefresh) {
+            try {
+                // check and init before do refresh
+                preProcessRefresh();
+                refreshWithPrefixes(getPrefixes(), getConfigMode());
+            } catch (Exception e) {
+                logger.error(COMMON_FAILED_OVERRIDE_FIELD, "", "", "Failed to override field value of config bean: " + this, e);
+                throw new IllegalStateException("Failed to override field value of config bean: " + this, e);
+            }
 
-        postProcessRefresh();
+            postProcessRefresh();
+        }
         refreshed.set(true);
     }
 
     protected void refreshWithPrefixes(List<String> prefixes, ConfigMode configMode) {
-        Environment environment = getScopeModel().getModelEnvironment();
+        Environment environment = getScopeModel().modelEnvironment();
         List<Map<String, String>> configurationMaps = environment.getConfigurationMaps();
 
         // Search props starts with PREFIX in order
@@ -951,6 +956,17 @@ public abstract class AbstractConfig implements Serializable {
         this.isDefault = isDefault;
     }
 
+    @Transient
+    @Parameter(excluded = true, attribute = false)
+    public boolean isNeedRefresh() {
+        return needRefresh;
+    }
+
+    @Transient
+    public void setNeedRefresh(boolean needRefresh) {
+        this.needRefresh = needRefresh;
+    }
+
     @Override
     public String toString() {
         try {
@@ -967,7 +983,7 @@ public abstract class AbstractConfig implements Serializable {
                         buf.append(' ');
                         buf.append(key);
                         buf.append("=\"");
-                        buf.append(key.equals("password") ? "******" : value);
+                        buf.append(key.equals("password") ? "******" : ToStringUtils.toString(value));
                         buf.append('\"');
                     }
                 } catch (Exception e) {

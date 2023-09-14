@@ -235,7 +235,7 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     public List<Endpoint> getEndpoints() {
         if (endpoints == null) {
-            endpoints = new LinkedList<>(JsonUtils.getJson().toJavaList(metadata.get(ENDPOINTS), Endpoint.class));
+            endpoints = new LinkedList<>(JsonUtils.toJavaList(metadata.get(ENDPOINTS), Endpoint.class));
         }
         return endpoints;
     }

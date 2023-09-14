@@ -34,20 +34,17 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_PROTOCOL_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.CORE_THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
-import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 
@@ -61,6 +58,7 @@ public class InternalServiceConfigBuilder<T> {
     private Integer port;
     private String registryId;
     private Class<T> interfaceClass;
+    private Executor executor;
     private T   ref;
 
     private InternalServiceConfigBuilder(ApplicationModel applicationModel) {
@@ -78,6 +76,11 @@ public class InternalServiceConfigBuilder<T> {
         return getThis();
     }
 
+    public InternalServiceConfigBuilder<T> executor(Executor executor) {
+        this.executor = executor;
+        return getThis();
+    }
+
     public InternalServiceConfigBuilder<T> ref(T ref) {
         this.ref = ref;
         return getThis();
@@ -87,7 +90,7 @@ public class InternalServiceConfigBuilder<T> {
         this.registryId = registryId;
         return getThis();
     }
-    
+
     public InternalServiceConfigBuilder<T> protocol(String protocol, String key) {
         if (StringUtils.isEmpty(protocol) && StringUtils.isNotBlank(key)) {
             Map<String, String> params = getApplicationConfig().getParameters();
@@ -272,14 +275,9 @@ public class InternalServiceConfigBuilder<T> {
         serviceConfig.setRef(this.ref);
         serviceConfig.setGroup(applicationConfig.getName());
         serviceConfig.setVersion("1.0.0");
+        serviceConfig.setFilter("-default");
 
-        serviceConfig.setExecutes(100); // max tasks running at the same time
-        Map<String, String> params = new HashMap<>();
-        params.put(THREADPOOL_KEY, "cached");
-        params.put(THREADS_KEY, "100");
-        params.put(CORE_THREADS_KEY, "2");
-
-        serviceConfig.setParameters(params);
+        serviceConfig.setExecutor(executor);
 
         if (null != configConsumer) {
             configConsumer.accept(serviceConfig);

@@ -31,7 +31,16 @@ dubbo:
     address: zookeeper://127.0.0.1:2181
   metadata-report:
     address: zookeeper://127.0.0.1:2181
-
+  metrics:
+    protocol: prometheus
+    enable-jvm: true
+    enable-registry: true
+    aggregation:
+      enabled: true
+    prometheus:
+      exporter:
+        enabled: true
+    enable-metadata: true
 logging:
   pattern:
     level: '%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]'

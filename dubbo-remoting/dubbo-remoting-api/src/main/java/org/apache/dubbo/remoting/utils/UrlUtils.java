@@ -34,6 +34,29 @@ import static org.apache.dubbo.remoting.Constants.PREFER_SERIALIZATION_KEY;
 import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
 
 public class UrlUtils {
+    private static final String ALLOWED_SERIALIZATION_KEY = "allowedSerialization";
+
+    public static int getCloseTimeout(URL url) {
+        String configuredCloseTimeout = System.getProperty(Constants.CLOSE_TIMEOUT_CONFIG_KEY);
+        int defaultCloseTimeout = -1;
+        if (StringUtils.isNotEmpty(configuredCloseTimeout)) {
+            try {
+                defaultCloseTimeout = Integer.parseInt(configuredCloseTimeout);
+            } catch (NumberFormatException e) {
+                // use default heartbeat
+            }
+        }
+        if (defaultCloseTimeout < 0) {
+            defaultCloseTimeout = getIdleTimeout(url);
+        }
+        int closeTimeout = url.getParameter(Constants.CLOSE_TIMEOUT_KEY, defaultCloseTimeout);
+        int heartbeat = getHeartbeat(url);
+        if (closeTimeout < heartbeat * 2) {
+            throw new IllegalStateException("closeTimeout < heartbeatInterval * 2");
+        }
+        return closeTimeout;
+    }
+
     public static int getIdleTimeout(URL url) {
         int heartBeat = getHeartbeat(url);
         // idleTimeout should be at least more than twice heartBeat because possible retries of client.
@@ -45,7 +68,16 @@ public class UrlUtils {
     }
 
     public static int getHeartbeat(URL url) {
-        return url.getParameter(Constants.HEARTBEAT_KEY, Constants.DEFAULT_HEARTBEAT);
+        String configuredHeartbeat = System.getProperty(Constants.HEARTBEAT_CONFIG_KEY);
+        int defaultHeartbeat = Constants.DEFAULT_HEARTBEAT;
+        if (StringUtils.isNotEmpty(configuredHeartbeat)) {
+            try {
+                defaultHeartbeat = Integer.parseInt(configuredHeartbeat);
+            } catch (NumberFormatException e) {
+                // use default heartbeat
+            }
+        }
+        return url.getParameter(Constants.HEARTBEAT_KEY, defaultHeartbeat);
     }
 
     /**
@@ -91,6 +123,7 @@ public class UrlUtils {
      * @param url url
      * @return {@link List}<{@link String}>
      */
+    @SuppressWarnings("unchecked")
     public static Collection<String> allSerializations(URL url) {
         // preferSerialization -> serialization -> default serialization
         Set<String> serializations = new LinkedHashSet<>(preferSerialization(url));

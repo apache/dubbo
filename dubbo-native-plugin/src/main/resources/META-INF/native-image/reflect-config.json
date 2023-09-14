@@ -3020,7 +3020,7 @@
     "allPublicMethods": true
   },
   {
-    "name": "org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster",
+    "name": "org.apache.dubbo.metrics.event.MetricsDispatcher",
     "allPublicMethods": true,
     "methods": [
       {

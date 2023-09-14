@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.nested.AggregationConfig;
+import org.apache.dubbo.config.nested.HistogramConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
 import org.apache.dubbo.config.support.Nested;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -38,17 +39,37 @@ public class MetricsConfig extends AbstractConfig {
     /**
      * Enable jvm metrics when collecting.
      */
-    private Boolean enableJvmMetrics;
+    private Boolean enableJvm;
+
+    /**
+     * Enable threadpool metrics when collecting.
+     */
+    private Boolean enableThreadpool;
 
     /**
      * Enable registry metrics.
      */
-    private Boolean enableRegistryMetrics;
+    private Boolean enableRegistry;
 
     /**
      * Enable metadata metrics.
      */
-    private Boolean enableMetadataMetrics;
+    private Boolean enableMetadata;
+
+    /**
+     * Export metrics service.
+     */
+    private Boolean exportMetricsService;
+
+    /**
+     * Enable metrics init.
+     */
+    private Boolean enableMetricsInit;
+
+    /**
+     * Enable collector sync.
+     */
+    private Boolean enableCollectorSync;
 
     /**
      * @deprecated After metrics config is refactored.
@@ -69,10 +90,19 @@ public class MetricsConfig extends AbstractConfig {
     @Nested
     private AggregationConfig aggregation;
 
+    @Nested
+    private HistogramConfig histogram;
+
     private String exportServiceProtocol;
 
     private Integer exportServicePort;
 
+    /**
+     * Decide whether to use the global registry of the micrometer.
+     */
+    private Boolean useGlobalRegistry;
+
+    private Boolean enableRpc;
 
     public MetricsConfig() {
     }
@@ -100,20 +130,20 @@ public class MetricsConfig extends AbstractConfig {
         this.protocol = protocol;
     }
 
-    public Boolean getEnableJvmMetrics() {
-        return enableJvmMetrics;
+    public Boolean getEnableJvm() {
+        return enableJvm;
     }
 
-    public void setEnableJvmMetrics(Boolean enableJvmMetrics) {
-        this.enableJvmMetrics = enableJvmMetrics;
+    public void setEnableJvm(Boolean enableJvm) {
+        this.enableJvm = enableJvm;
     }
 
-    public Boolean getEnableRegistryMetrics() {
-        return enableRegistryMetrics;
+    public Boolean getEnableRegistry() {
+        return enableRegistry;
     }
 
-    public void setEnableRegistryMetrics(Boolean enableRegistryMetrics) {
-        this.enableRegistryMetrics = enableRegistryMetrics;
+    public void setEnableRegistry(Boolean enableRegistry) {
+        this.enableRegistry = enableRegistry;
     }
 
     public String getPort() {
@@ -140,6 +170,14 @@ public class MetricsConfig extends AbstractConfig {
         this.aggregation = aggregation;
     }
 
+    public HistogramConfig getHistogram() {
+        return histogram;
+    }
+
+    public void setHistogram(HistogramConfig histogram) {
+        this.histogram = histogram;
+    }
+
     public String getExportServiceProtocol() {
         return exportServiceProtocol;
     }
@@ -156,12 +194,59 @@ public class MetricsConfig extends AbstractConfig {
         this.exportServicePort = exportServicePort;
     }
 
-    public Boolean getEnableMetadataMetrics() {
-        return enableMetadataMetrics;
+    public Boolean getEnableMetadata() {
+        return enableMetadata;
     }
 
-    public void setEnableMetadataMetrics(Boolean enableMetadataMetrics) {
-        this.enableMetadataMetrics = enableMetadataMetrics;
+    public void setEnableMetadata(Boolean enableMetadata) {
+        this.enableMetadata = enableMetadata;
+    }
+
+    public Boolean getExportMetricsService() {
+        return exportMetricsService;
+    }
+
+    public void setExportMetricsService(Boolean exportMetricsService) {
+        this.exportMetricsService = exportMetricsService;
+    }
+
+    public Boolean getEnableThreadpool() {
+        return enableThreadpool;
+    }
+
+    public void setEnableThreadpool(Boolean enableThreadpool) {
+        this.enableThreadpool = enableThreadpool;
+    }
+
+    public Boolean getEnableMetricsInit() {
+        return enableMetricsInit;
+    }
+
+    public void setEnableMetricsInit(Boolean enableMetricsInit) {
+        this.enableMetricsInit = enableMetricsInit;
+    }
+
+    public Boolean getEnableCollectorSync() {
+        return enableCollectorSync;
+    }
+
+    public void setEnableCollectorSync(Boolean enableCollectorSync) {
+        this.enableCollectorSync = enableCollectorSync;
+    }
+
+    public Boolean getUseGlobalRegistry() {
+        return useGlobalRegistry;
+    }
+
+    public void setUseGlobalRegistry(Boolean useGlobalRegistry) {
+        this.useGlobalRegistry = useGlobalRegistry;
+    }
+
+    public Boolean getEnableRpc() {
+        return enableRpc;
+    }
+
+    public void setEnableRpc(Boolean enableRpc) {
+        this.enableRpc = enableRpc;
     }
 }
-

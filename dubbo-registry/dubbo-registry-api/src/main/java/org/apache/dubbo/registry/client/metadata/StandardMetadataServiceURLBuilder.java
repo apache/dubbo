@@ -107,7 +107,6 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
             .setProtocol(protocol)
             .setPath(MetadataService.class.getName())
             .addParameter(TIMEOUT_KEY, ConfigurationUtils.get(applicationModel, METADATA_PROXY_TIMEOUT_KEY, DEFAULT_METADATA_TIMEOUT_VALUE))
-            .addParameter(SIDE_KEY, CONSUMER)
             .addParameter(CONNECTIONS_KEY, 1)
             .addParameter(THREADPOOL_KEY, "cached")
             .addParameter(THREADS_KEY, "100")
@@ -119,6 +118,7 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
 
         // add the default parameters
         urlBuilder.addParameter(GROUP_KEY, serviceName);
+        urlBuilder.addParameter(SIDE_KEY, CONSUMER);
         return urlBuilder.build();
     }
 
@@ -179,6 +179,6 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
     private Map<String, String> getMetadataServiceURLsParams(ServiceInstance serviceInstance) {
         Map<String, String> metadata = serviceInstance.getMetadata();
         String param = metadata.get(METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME);
-        return isBlank(param) ? emptyMap() : (Map) JsonUtils.getJson().toJavaObject(param, Map.class);
+        return isBlank(param) ? emptyMap() : (Map) JsonUtils.toJavaObject(param, Map.class);
     }
 }

@@ -42,15 +42,16 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.CommonConstants.BYTE_ACCESSOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_ISOLATION;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DECODE;
-import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DECODE_IN_IO_THREAD_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DEFAULT_DECODE_IN_IO_THREAD;
 
 /**
@@ -68,15 +69,23 @@ public class DubboCodec extends ExchangeCodec {
     public static final byte RESPONSE_NULL_VALUE_WITH_ATTACHMENTS = 5;
     public static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
     public static final Class<?>[] EMPTY_CLASS_ARRAY = new Class<?>[0];
+    public static final Class<?>[] GENERIC_PTS_ARRAY = new Class<?>[]{String.class, String[].class, Object[].class};
+    public static final Class<?>[] ECHO_PTS_ARRAY = new Class<?>[]{Object.class};
     private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(DubboCodec.class);
 
     private static final AtomicBoolean decodeInUserThreadLogged = new AtomicBoolean(false);
     private final CallbackServiceCodec callbackServiceCodec;
     private final FrameworkModel frameworkModel;
+    private final ByteAccessor customByteAccessor;
+    private static final String DECODE_IN_IO_THREAD_KEY = "decode.in.io.thread";
 
     public DubboCodec(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
         callbackServiceCodec = new CallbackServiceCodec(frameworkModel);
+        customByteAccessor = Optional.ofNullable(System.getProperty(BYTE_ACCESSOR_KEY))
+            .filter(StringUtils::isNotBlank)
+            .map(key -> frameworkModel.getExtensionLoader(ByteAccessor.class).getExtension(key))
+            .orElse(null);
     }
 
     @Override
@@ -107,14 +116,29 @@ public class DubboCodec extends ExchangeCodec {
                         }
                     } else {
                         DecodeableRpcResult result;
+                        Invocation inv = (Invocation) getRequestData(channel, res, id);
                         if (channel.getUrl().getParameter(DECODE_IN_IO_THREAD_KEY, DEFAULT_DECODE_IN_IO_THREAD)) {
-                            result = new DecodeableRpcResult(channel, res, is,
-                                (Invocation) getRequestData(id), proto);
+                            if (customByteAccessor != null) {
+                                result = customByteAccessor.getRpcResult(channel, res,
+                                    new UnsafeByteArrayInputStream(readMessageData(is)),
+                                    inv, proto);
+                            } else {
+                                result = new DecodeableRpcResult(channel, res,
+                                    new UnsafeByteArrayInputStream(readMessageData(is)),
+                                    inv, proto);
+                            }
                             result.decode();
                         } else {
-                            result = new DecodeableRpcResult(channel, res,
-                                new UnsafeByteArrayInputStream(readMessageData(is)),
-                                (Invocation) getRequestData(id), proto);
+                            if (customByteAccessor != null) {
+                                result = customByteAccessor.getRpcResult(channel, res,
+                                    new UnsafeByteArrayInputStream(readMessageData(is)),
+                                    inv, proto);
+                            } else {
+                                result = new DecodeableRpcResult(channel, res,
+                                    new UnsafeByteArrayInputStream(readMessageData(is)),
+                                    inv, proto);
+                            }
+
                         }
                         data = result;
                     }
@@ -141,23 +165,44 @@ public class DubboCodec extends ExchangeCodec {
                     if (CodecSupport.isHeartBeat(eventPayload, proto)) {
                         // heart beat response data is always null;
                         req = new HeartBeatRequest(id);
+                        req.setVersion(Version.getProtocolVersion());
+                        req.setTwoWay((flag & FLAG_TWOWAY) != 0);
                         ((HeartBeatRequest) req).setProto(proto);
                         data = null;
                     } else {
                         req = new Request(id);
+                        req.setVersion(Version.getProtocolVersion());
+                        req.setTwoWay((flag & FLAG_TWOWAY) != 0);
+
                         ObjectInput in = CodecSupport.deserialize(channel.getUrl(), new ByteArrayInputStream(eventPayload), proto);
                         data = decodeEventData(channel, in, eventPayload);
                     }
                     req.setEvent(true);
                 } else {
-                    req = new HeartBeatRequest(id);
+                    req = new Request(id);
+                    req.setVersion(Version.getProtocolVersion());
+                    req.setTwoWay((flag & FLAG_TWOWAY) != 0);
+
+                    // get data length.
+                    int len = Bytes.bytes2int(header, 12);
+                    req.setPayload(len);
+
                     DecodeableRpcInvocation inv;
                     if (isDecodeDataInIoThread(channel)) {
-                        inv = new DecodeableRpcInvocation(frameworkModel, channel, req, is, proto);
+                        if (customByteAccessor != null) {
+                            inv = customByteAccessor.getRpcInvocation(channel, req, new UnsafeByteArrayInputStream(readMessageData(is)), proto);
+                        } else {
+                            inv = new DecodeableRpcInvocation(frameworkModel, channel, req, new UnsafeByteArrayInputStream(readMessageData(is)), proto);
+                        }
                         inv.decode();
                     } else {
-                        inv = new DecodeableRpcInvocation(frameworkModel, channel, req,
-                            new UnsafeByteArrayInputStream(readMessageData(is)), proto);
+                        if (customByteAccessor != null) {
+                            inv = customByteAccessor.getRpcInvocation(channel, req,
+                                new UnsafeByteArrayInputStream(readMessageData(is)), proto);
+                        } else {
+                            inv = new DecodeableRpcInvocation(frameworkModel, channel, req,
+                                new UnsafeByteArrayInputStream(readMessageData(is)), proto);
+                        }
                     }
                     data = inv;
                 }
@@ -171,25 +216,35 @@ public class DubboCodec extends ExchangeCodec {
                 req.setBroken(true);
                 req.setData(t);
             }
-            req.setVersion(Version.getProtocolVersion());
-            req.setTwoWay((flag & FLAG_TWOWAY) != 0);
 
             return req;
         }
     }
 
     private boolean isDecodeDataInIoThread(Channel channel) {
-        boolean decodeDataInIoThread = channel.getUrl().getParameter(DECODE_IN_IO_THREAD_KEY, DEFAULT_DECODE_IN_IO_THREAD);
+        Object obj = channel.getAttribute(DECODE_IN_IO_THREAD_KEY);
+        if (obj instanceof Boolean) {
+            return (Boolean) obj;
+        }
+
         String mode = ExecutorRepository.getMode(channel.getUrl().getOrDefaultApplicationModel());
-        if (EXECUTOR_MANAGEMENT_MODE_ISOLATION.equals(mode)) {
-            if (!decodeDataInIoThread && decodeInUserThreadLogged.compareAndSet(false, true)) {
-                log.info("Because thread pool isolation is enabled on the dubbo protocol, the body can only be decoded " +
-                    "on the io thread, and the parameter[" + DECODE_IN_IO_THREAD_KEY + "] will be ignored");
-                // Why? because obtaining the isolated thread pool requires the serviceKey of the service,
-                // and this part must be decoded before it can be obtained (more see DubboExecutorSupport)
-            }
+        boolean isIsolated = EXECUTOR_MANAGEMENT_MODE_ISOLATION.equals(mode);
+
+        if (isIsolated && !decodeInUserThreadLogged.compareAndSet(false, true)) {
+            channel.setAttribute(DECODE_IN_IO_THREAD_KEY, true);
             return true;
         }
+
+        boolean decodeDataInIoThread = channel.getUrl().getParameter(DECODE_IN_IO_THREAD_KEY, DEFAULT_DECODE_IN_IO_THREAD);
+        if (isIsolated && !decodeDataInIoThread) {
+            log.info("Because thread pool isolation is enabled on the dubbo protocol, the body can only be decoded " +
+                "on the io thread, and the parameter[" + DECODE_IN_IO_THREAD_KEY + "] will be ignored");
+            // Why? because obtaining the isolated thread pool requires the serviceKey of the service,
+            // and this part must be decoded before it can be obtained (more see DubboExecutorSupport)
+            channel.setAttribute(DECODE_IN_IO_THREAD_KEY, true);
+            return true;
+        }
+        channel.setAttribute(DECODE_IN_IO_THREAD_KEY, decodeDataInIoThread);
         return decodeDataInIoThread;
     }
 

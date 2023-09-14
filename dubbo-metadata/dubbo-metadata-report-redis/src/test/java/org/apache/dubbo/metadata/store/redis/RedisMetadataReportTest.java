@@ -133,7 +133,7 @@ class RedisMetadataReportTest {
 
             Assertions.assertNotNull(value);
 
-            FullServiceDefinition fullServiceDefinition = JsonUtils.getJson().toJavaObject(value, FullServiceDefinition.class);
+            FullServiceDefinition fullServiceDefinition = JsonUtils.toJavaObject(value, FullServiceDefinition.class);
             Assertions.assertEquals(fullServiceDefinition.getParameters().get("paramTest"), "redisTest");
         } catch (Throwable e) {
             throw new RpcException("Failed to put to redis . cause: " + e.getMessage(), e);

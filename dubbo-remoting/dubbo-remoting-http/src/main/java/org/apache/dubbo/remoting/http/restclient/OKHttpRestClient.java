@@ -37,7 +37,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-
+// TODO add version 4.0 implements ,and default version is < 4.0,for dependency conflict
 public class OKHttpRestClient implements RestClient {
     private final OkHttpClient okHttpClient;
     private final HttpClientConfig httpClientConfig;
@@ -56,18 +56,26 @@ public class OKHttpRestClient implements RestClient {
 
         Map<String, Collection<String>> allHeaders = requestTemplate.getAllHeaders();
 
+        boolean hasBody = false;
+        RequestBody requestBody = null;
+        // GET & HEAD body is forbidden
+        if (HttpMethod.permitsRequestBody(requestTemplate.getHttpMethod())) {
+            requestBody = RequestBody.create(null, requestTemplate.getSerializedBody());
+            hasBody = true;
+        }
+
         // header
         for (String headerName : allHeaders.keySet()) {
             Collection<String> headerValues = allHeaders.get(headerName);
-
+            if (!hasBody && "Content-Length".equals(headerName)) {
+                continue;
+            }
             for (String headerValue : headerValues) {
+
                 builder.addHeader(headerName, headerValue);
             }
         }
-        RequestBody requestBody = null;
-        if (HttpMethod.permitsRequestBody(requestTemplate.getHttpMethod())) {
-            requestBody = RequestBody.create(null, requestTemplate.getSerializedBody());
-        }
+
         builder.method(requestTemplate.getHttpMethod(), requestBody);
 
         CompletableFuture<RestResult> future = new CompletableFuture<>();
@@ -109,7 +117,7 @@ public class OKHttpRestClient implements RestClient {
 
                     @Override
                     public String getMessage() throws IOException {
-                        return response.message();
+                        return appendErrorMessage(response.message(), new String(getBody()));
                     }
                 });
             }

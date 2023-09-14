@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.TriRpcStatus;
@@ -83,6 +84,8 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
     private boolean halfClosed;
     private boolean rst;
 
+    private boolean isReturnTriException = false;
+
     // for test
     TripleClientStream(FrameworkModel frameworkModel,
                        Executor executor,
@@ -117,7 +120,6 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
                     Channel channel = ctx.channel();
                     channel.pipeline().addLast(new TripleCommandOutBoundHandler());
                     channel.pipeline().addLast(new TripleHttp2ClientResponseHandler(createTransportListener()));
-                    channel.closeFuture().addListener(f -> transportException(f.cause()));
                 }
             });
         CreateStreamQueueCommand cmd = CreateStreamQueueCommand.create(bootstrap, streamChannelFuture);
@@ -146,7 +148,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
     private void transportException(Throwable cause) {
         final TriRpcStatus status = TriRpcStatus.INTERNAL.withDescription("Http2 exception")
             .withCause(cause);
-        listener.onComplete(status, null);
+        listener.onComplete(status, null, null, false);
     }
 
     public ChannelFuture cancelByLocal(TriRpcStatus status) {
@@ -230,10 +232,10 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         void handleH2TransportError(TriRpcStatus status) {
             writeQueue.enqueue(CancelQueueCommand.createCommand(streamChannelFuture, Http2Error.NO_ERROR));
             TripleClientStream.this.rst = true;
-            finishProcess(status, null);
+            finishProcess(status, null, false);
         }
 
-        void finishProcess(TriRpcStatus status, Http2Headers trailers) {
+        void finishProcess(TriRpcStatus status, Http2Headers trailers, boolean isReturnTriException) {
             final Map<String, String> reserved = filterReservedHeaders(trailers);
             final Map<String, Object> attachments = headersToMap(trailers, () -> {
                 return reserved.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader());
@@ -245,7 +247,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
             } else {
                 detailStatus = status;
             }
-            listener.onComplete(detailStatus, attachments, reserved);
+            listener.onComplete(detailStatus, attachments, reserved, isReturnTriException);
         }
 
         private TriRpcStatus validateHeaderStatus(Http2Headers headers) {
@@ -286,6 +288,13 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
 
             // todo support full payload compressor
             CharSequence messageEncoding = headers.get(TripleHeaderEnum.GRPC_ENCODING.getHeader());
+            CharSequence triExceptionCode = headers.get(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader());
+            if (triExceptionCode != null) {
+                Integer triExceptionCodeNum = Integer.parseInt(triExceptionCode.toString());
+                if (!(triExceptionCodeNum.equals(CommonConstants.TRI_EXCEPTION_CODE_NOT_EXISTS))) {
+                    isReturnTriException = true;
+                }
+            }
             if (null != messageEncoding) {
                 String compressorStr = messageEncoding.toString();
                 if (!Identity.IDENTITY.getMessageEncoding().equals(compressorStr)) {
@@ -303,11 +312,11 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
             TriDecoder.Listener listener = new TriDecoder.Listener() {
                 @Override
                 public void onRawMessage(byte[] data) {
-                    TripleClientStream.this.listener.onMessage(data);
+                    TripleClientStream.this.listener.onMessage(data, isReturnTriException);
                 }
 
                 public void close() {
-                    finishProcess(statusFromTrailers(trailers), trailers);
+                    finishProcess(statusFromTrailers(trailers), trailers, isReturnTriException);
                 }
             };
             deframer = new TriDecoder(decompressor, listener);
@@ -324,7 +333,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
                 this.trailers = trailers;
                 TriRpcStatus status = statusFromTrailers(trailers);
                 if (deframer == null) {
-                    finishProcess(status, trailers);
+                    finishProcess(status, trailers, false);
                 }
                 if (deframer != null) {
                     deframer.close();
@@ -464,7 +473,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
             executor.execute(() -> {
                 transportError = TriRpcStatus.CANCELLED
                     .withDescription("Canceled by remote peer, errorCode=" + errorCode);
-                finishProcess(transportError, null);
+                finishProcess(transportError, null, false);
             });
         }
     }

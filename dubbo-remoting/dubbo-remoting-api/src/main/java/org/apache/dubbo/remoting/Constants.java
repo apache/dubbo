@@ -64,6 +64,13 @@ public interface Constants {
     long LEAST_HEARTBEAT_DURATION = 1000;
 
     /**
+     * the least reconnect during is 60000 ms.
+     */
+    long LEAST_RECONNECT_DURATION = 60000;
+
+    String LEAST_RECONNECT_DURATION_KEY = "dubbo.application.least-reconnect-duration";
+
+    /**
      * ticks per wheel.
      */
     int TICKS_PER_WHEEL = 128;
@@ -120,6 +127,10 @@ public interface Constants {
 
     String BIND_PORT_KEY = "bind.port";
 
+    String BIND_RETRY_TIMES = "bind.retry.times";
+
+    String BIND_RETRY_INTERVAL = "bind.retry.interval";
+
     String SENT_KEY = "sent";
 
     String DISPATCHER_KEY = "dispatcher";
@@ -134,6 +145,8 @@ public interface Constants {
 
     int DEFAULT_RECONNECT_PERIOD = 2000;
 
+    String CHANNEL_SHUTDOWN_TIMEOUT_KEY = "channel.shutdown.timeout";
+
     String SEND_RECONNECT_KEY = "send.reconnect";
 
     String CHECK_KEY = "check";
@@ -143,8 +156,11 @@ public interface Constants {
     String DEFAULT_PROMPT = "dubbo>";
     String TELNET_KEY = "telnet";
     String HEARTBEAT_KEY = "heartbeat";
+    String HEARTBEAT_CONFIG_KEY = "dubbo.protocol.default-heartbeat";
+    String CLOSE_TIMEOUT_CONFIG_KEY = "dubbo.protocol.default-close-timeout";
     int DEFAULT_HEARTBEAT = 60 * 1000;
     String HEARTBEAT_TIMEOUT_KEY = "heartbeat.timeout";
+    String CLOSE_TIMEOUT_KEY = "close.timeout";
     String CONNECTIONS_KEY = "connections";
 
     int DEFAULT_BACKLOG = 1024;
@@ -158,4 +174,8 @@ public interface Constants {
     String OK_HTTP = "ok-http";
     String URL_CONNECTION = "url-connection";
     String APACHE_HTTP_CLIENT = "apache-http-client";
+
+    String CONTENT_LENGTH_KEY = "content-length";
+
+    String USE_SECURE_RANDOM_ID = "dubbo.application.use-secure-random-request-id";
 }

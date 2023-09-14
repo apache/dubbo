@@ -19,8 +19,8 @@ package org.apache.dubbo.metadata.rest.springmvc;
 import org.apache.dubbo.metadata.rest.AbstractNoAnnotatedParameterProcessor;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.metadata.rest.media.MediaType;
+import org.apache.dubbo.metadata.rest.tag.BodyTag;
 
-import static org.apache.dubbo.metadata.rest.RestMetadataConstants.SPRING_MVC.REQUEST_BODY_ANNOTATION_CLASS_NAME;
 import static org.apache.dubbo.metadata.rest.media.MediaType.APPLICATION_FORM_URLENCODED_VALUE;
 
 public class FormBodyNoAnnotatedProcessor extends AbstractNoAnnotatedParameterProcessor {
@@ -31,7 +31,7 @@ public class FormBodyNoAnnotatedProcessor extends AbstractNoAnnotatedParameterPr
 
     @Override
     public String defaultAnnotationClassName(RestMethodMetadata restMethodMetadata) {
-        return REQUEST_BODY_ANNOTATION_CLASS_NAME;
+        return BodyTag.class.getName();
     }
 
     @Override

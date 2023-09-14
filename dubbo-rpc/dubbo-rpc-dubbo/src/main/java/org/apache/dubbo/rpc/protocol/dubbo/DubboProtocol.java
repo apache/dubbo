@@ -19,8 +19,8 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
@@ -34,6 +34,7 @@ import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
+import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -49,16 +50,16 @@ import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
@@ -66,7 +67,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.LAZY_CONNECT_KEY
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.STUB_EVENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_SERVER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REFER_INVOKER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNSUPPORTED;
@@ -105,9 +105,7 @@ public class DubboProtocol extends AbstractProtocol {
      * <host:port,Exchanger>
      * Map<String, List<ReferenceCountExchangeClient>
      */
-    private final Map<String, Object> referenceClientMap = new ConcurrentHashMap<>();
-
-    private static final Object PENDING_OBJECT = new Object();
+    private final Map<String, SharedClientsProvider> referenceClientMap = new ConcurrentHashMap<>();
 
     private final AtomicBoolean destroyed = new AtomicBoolean();
 
@@ -126,8 +124,7 @@ public class DubboProtocol extends AbstractProtocol {
                 }
 
                 Invocation inv = (Invocation) message;
-                Invoker<?> invoker = getInvoker(channel, inv);
-                inv.setServiceModel(invoker.getUrl().getServiceModel());
+                Invoker<?> invoker = inv.getInvoker() == null ? getInvoker(channel, inv) : inv.getInvoker();
                 // switch TCCL
                 if (invoker.getUrl().getServiceModel() != null) {
                     Thread.currentThread().setContextClassLoader(invoker.getUrl().getServiceModel().getClassLoader());
@@ -238,6 +235,8 @@ public class DubboProtocol extends AbstractProtocol {
                 return invocation;
             }
         };
+        this.frameworkModel = frameworkModel;
+        this.frameworkModel.getBeanFactory().registerBean(new DubboGracefulShutdown(this));
     }
 
     /**
@@ -293,7 +292,9 @@ public class DubboProtocol extends AbstractProtocol {
                 ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress() + ", message:" + getInvocationWithoutData(inv));
         }
 
-        return exporter.getInvoker();
+        Invoker<?> invoker = exporter.getInvoker();
+        inv.setServiceModel(invoker.getUrl().getServiceModel());
+        return invoker;
     }
 
     public Collection<Invoker<?>> getInvokers() {
@@ -414,7 +415,7 @@ public class DubboProtocol extends AbstractProtocol {
         return invoker;
     }
 
-    private ExchangeClient[] getClients(URL url) {
+    private ClientsProvider getClients(URL url) {
         int connections = url.getParameter(CONNECTIONS_KEY, 0);
         // whether to share connection
         // if not configured, connection is shared, otherwise, one connection for one service
@@ -427,17 +428,13 @@ public class DubboProtocol extends AbstractProtocol {
                 : url.getParameter(SHARE_CONNECTIONS_KEY, (String) null);
             connections = Integer.parseInt(shareConnectionsStr);
 
-            List<ReferenceCountExchangeClient> shareClients = getSharedClient(url, connections);
-            ExchangeClient[] clients = new ExchangeClient[connections];
-            Arrays.setAll(clients, shareClients::get);
-            return clients;
+            return getSharedClient(url, connections);
         }
 
-        ExchangeClient[] clients = new ExchangeClient[connections];
-        for (int i = 0; i < clients.length; i++) {
-            clients[i] = initClient(url);
-        }
-        return clients;
+        List<ExchangeClient> clients = IntStream.range(0, connections)
+            .mapToObj((i) -> initClient(url))
+            .collect(Collectors.toList());
+        return new ExclusiveClientsProvider(clients);
     }
 
     /**
@@ -447,106 +444,24 @@ public class DubboProtocol extends AbstractProtocol {
      * @param connectNum connectNum must be greater than or equal to 1
      */
     @SuppressWarnings("unchecked")
-    private List<ReferenceCountExchangeClient> getSharedClient(URL url, int connectNum) {
+    private SharedClientsProvider getSharedClient(URL url, int connectNum) {
         String key = url.getAddress();
 
-        Object clients = referenceClientMap.get(key);
-        if (clients instanceof List) {
-            List<ReferenceCountExchangeClient> typedClients = (List<ReferenceCountExchangeClient>) clients;
-            if (checkClientCanUse(typedClients)) {
-                batchClientRefIncr(typedClients);
-                return typedClients;
-            }
-        }
-
-        List<ReferenceCountExchangeClient> typedClients = null;
-
-        synchronized (referenceClientMap) {
-            for (; ; ) {
-                // guarantee just one thread in loading condition. And Other is waiting It had finished.
-                clients = referenceClientMap.get(key);
-
-                if (clients instanceof List) {
-                    typedClients = (List<ReferenceCountExchangeClient>) clients;
-                    if (checkClientCanUse(typedClients)) {
-                        batchClientRefIncr(typedClients);
-                        return typedClients;
-                    } else {
-                        referenceClientMap.put(key, PENDING_OBJECT);
-                        break;
-                    }
-                } else if (clients == PENDING_OBJECT) {
-                    try {
-                        referenceClientMap.wait();
-                    } catch (InterruptedException ignored) {
-                    }
-                } else {
-                    referenceClientMap.put(key, PENDING_OBJECT);
-                    break;
-                }
-            }
-        }
-
-        try {
-            // connectNum must be greater than or equal to 1
-            connectNum = Math.max(connectNum, 1);
-
-            // If the clients is empty, then the first initialization is
-            if (CollectionUtils.isEmpty(typedClients)) {
-                typedClients = buildReferenceCountExchangeClientList(url, connectNum);
+        // connectNum must be greater than or equal to 1
+        int expectedConnectNum = Math.max(connectNum, 1);
+        return referenceClientMap.compute(key, (originKey, originValue) -> {
+            if (originValue != null && originValue.increaseCount()) {
+                return originValue;
             } else {
-                for (int i = 0; i < typedClients.size(); i++) {
-                    ReferenceCountExchangeClient referenceCountExchangeClient = typedClients.get(i);
-                    // If there is a client in the list that is no longer available, create a new one to replace him.
-                    if (referenceCountExchangeClient == null || referenceCountExchangeClient.isClosed()) {
-                        typedClients.set(i, buildReferenceCountExchangeClient(url));
-                        continue;
-                    }
-                    referenceCountExchangeClient.incrementAndGetCount();
-                }
+                return new SharedClientsProvider(this, originKey, buildReferenceCountExchangeClientList(url, expectedConnectNum));
             }
-        } finally {
-            synchronized (referenceClientMap) {
-                if (typedClients == null) {
-                    referenceClientMap.remove(key);
-                } else {
-                    referenceClientMap.put(key, typedClients);
-                }
-                referenceClientMap.notifyAll();
-            }
-        }
-        return typedClients;
+        });
     }
 
-    /**
-     * Check if the client list is all available
-     *
-     * @param referenceCountExchangeClients
-     * @return true-available，false-unavailable
-     */
-    private boolean checkClientCanUse(List<ReferenceCountExchangeClient> referenceCountExchangeClients) {
-        if (CollectionUtils.isEmpty(referenceCountExchangeClients)) {
-            return false;
-        }
-
-        // As long as one client is not available, you need to replace the unavailable client with the available one.
-        return referenceCountExchangeClients.stream()
-            .noneMatch(referenceCountExchangeClient -> referenceCountExchangeClient == null
-                || referenceCountExchangeClient.getCount() <= 0 || referenceCountExchangeClient.isClosed());
-    }
-
-    /**
-     * Increase the reference Count if we create new invoker shares same connection, the connection will be closed without any reference.
-     *
-     * @param referenceCountExchangeClients
-     */
-    private void batchClientRefIncr(List<ReferenceCountExchangeClient> referenceCountExchangeClients) {
-        if (CollectionUtils.isEmpty(referenceCountExchangeClients)) {
-            return;
-        }
-        referenceCountExchangeClients.stream()
-            .filter(Objects::nonNull)
-            .forEach(ReferenceCountExchangeClient::incrementAndGetCount);
+    protected void scheduleRemoveSharedClient(String key, SharedClientsProvider sharedClient) {
+        this.frameworkModel.getBeanFactory().getBean(FrameworkExecutorRepository.class)
+            .getSharedExecutor()
+            .submit(() -> referenceClientMap.remove(key, sharedClient));
     }
 
     /**
@@ -600,11 +515,14 @@ public class DubboProtocol extends AbstractProtocol {
         }
 
         try {
+            ScopeModel scopeModel = url.getScopeModel();
+            int heartbeat = UrlUtils.getHeartbeat(url);
             // Replace InstanceAddressURL with ServiceConfigURL.
             url = new ServiceConfigURL(DubboCodec.NAME, url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(), url.getAllParameters());
             url = url.addParameter(CODEC_KEY, DubboCodec.NAME);
             // enable heartbeat by default
-            url = url.addParameterIfAbsent(HEARTBEAT_KEY, String.valueOf(DEFAULT_HEARTBEAT));
+            url = url.addParameterIfAbsent(HEARTBEAT_KEY, Integer.toString(heartbeat));
+            url = url.setScopeModel(scopeModel);
 
             // connection should be lazy
             return url.getParameter(LAZY_CONNECT_KEY, false)
@@ -638,7 +556,7 @@ public class DubboProtocol extends AbstractProtocol {
                     logger.info("Closing dubbo server: " + server.getLocalAddress());
                 }
 
-                server.close(getServerShutdownTimeout(protocolServer));
+                server.close(ConfigurationUtils.reCalShutdownTime(getServerShutdownTimeout(protocolServer)));
 
             } catch (Throwable t) {
                 logger.warn(PROTOCOL_ERROR_CLOSE_SERVER, "", "", "Close dubbo server [" + server.getLocalAddress() + "] failed: " + t.getMessage(), t);
@@ -647,51 +565,14 @@ public class DubboProtocol extends AbstractProtocol {
         serverMap.clear();
 
         for (String key : new ArrayList<>(referenceClientMap.keySet())) {
-            Object clients = referenceClientMap.remove(key);
-            if (clients instanceof List) {
-                List<ReferenceCountExchangeClient> typedClients = (List<ReferenceCountExchangeClient>) clients;
-
-                if (CollectionUtils.isEmpty(typedClients)) {
-                    continue;
-                }
-
-                for (ReferenceCountExchangeClient client : typedClients) {
-                    closeReferenceCountExchangeClient(client);
-                }
-            }
+            SharedClientsProvider clients = referenceClientMap.remove(key);
+            clients.forceClose();
         }
+
         PortUnificationExchanger.close();
         referenceClientMap.clear();
 
         super.destroy();
-    }
-
-    /**
-     * close ReferenceCountExchangeClient
-     *
-     * @param client
-     */
-    private void closeReferenceCountExchangeClient(ReferenceCountExchangeClient client) {
-        if (client == null) {
-            return;
-        }
-
-        try {
-            if (logger.isInfoEnabled()) {
-                logger.info("Close dubbo connect: " + client.getLocalAddress() + "-->" + client.getRemoteAddress());
-            }
-
-            client.close(client.getShutdownWaitTime());
-
-            // TODO
-            /*
-             * At this time, ReferenceCountExchangeClient#client has been replaced with LazyConnectExchangeClient.
-             * Do you need to call client.close again to ensure that LazyConnectExchangeClient is also closed?
-             */
-
-        } catch (Throwable t) {
-            logger.warn(PROTOCOL_ERROR_CLOSE_CLIENT, "", "", t.getMessage(), t);
-        }
     }
 
     /**

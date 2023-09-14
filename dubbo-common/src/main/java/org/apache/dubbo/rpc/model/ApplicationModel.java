@@ -43,7 +43,7 @@ import java.util.concurrent.locks.Lock;
  * returned from them are of process scope. If you want to support multiple dubbo servers in one
  * single process, you may need to refactor those three classes.
  * <p>
- * Represent a application which is using Dubbo and store basic metadata info for using
+ * Represent an application which is using Dubbo and store basic metadata info for using
  * during the processing of RPC invoking.
  * <p>
  * ApplicationModel includes many ProviderModel which is about published services
@@ -84,6 +84,7 @@ public class ApplicationModel extends ScopeModel {
      * During destroying the default FrameworkModel, the FrameworkModel.defaultModel() or ApplicationModel.defaultModel()
      * will return a broken model, maybe cause unpredictable problem.
      * Recommendation: Avoid using the default model as much as possible.
+     *
      * @return the global default ApplicationModel
      */
     public static ApplicationModel defaultModel() {
@@ -200,7 +201,7 @@ public class ApplicationModel extends ScopeModel {
     }
 
     @Override
-    public Environment getModelEnvironment() {
+    public Environment modelEnvironment() {
         if (environment == null) {
             environment = (Environment) this.getExtensionLoader(ApplicationExt.class)
                 .getExtension(Environment.NAME);
@@ -222,6 +223,10 @@ public class ApplicationModel extends ScopeModel {
 
     public ExecutorRepository getApplicationExecutorRepository() {
         return ExecutorRepository.getInstance(this);
+    }
+
+    public boolean NotExistApplicationConfig() {
+        return !getApplicationConfigManager().getApplication().isPresent();
     }
 
     public ApplicationConfig getCurrentConfig() {
@@ -385,11 +390,11 @@ public class ApplicationModel extends ScopeModel {
     }
 
     /**
-     * @deprecated Replace to {@link ScopeModel#getModelEnvironment()}
+     * @deprecated Replace to {@link ScopeModel#modelEnvironment()}
      */
     @Deprecated
     public static Environment getEnvironment() {
-        return defaultModel().getModelEnvironment();
+        return defaultModel().modelEnvironment();
     }
 
     /**

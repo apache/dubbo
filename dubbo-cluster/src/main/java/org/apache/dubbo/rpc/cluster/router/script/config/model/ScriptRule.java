@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster.router.script.config.model;
 
 import org.apache.dubbo.rpc.cluster.router.AbstractRouterRule;
 
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
@@ -30,7 +31,7 @@ public class ScriptRule extends AbstractRouterRule {
     private String script;
 
     public static ScriptRule parse(String rawRule) {
-        Yaml yaml = new Yaml(new SafeConstructor());
+        Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
         Map<String, Object> map = yaml.load(rawRule);
 
         ScriptRule rule = new ScriptRule();

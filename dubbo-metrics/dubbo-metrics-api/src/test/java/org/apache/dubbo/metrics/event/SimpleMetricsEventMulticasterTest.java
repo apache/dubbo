@@ -17,80 +17,80 @@
 
 package org.apache.dubbo.metrics.event;
 
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.metrics.listener.AbstractMetricsListener;
 import org.apache.dubbo.metrics.listener.MetricsLifeListener;
-import org.apache.dubbo.metrics.listener.MetricsListener;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
+
 public class SimpleMetricsEventMulticasterTest {
 
     private SimpleMetricsEventMulticaster eventMulticaster;
-    private Object[] obj;
-    MetricsEvent requestEvent;
+    private Object[] objects;
+    private final Object obj = new Object();
+    private TimeCounterEvent requestEvent;
 
     @BeforeEach
     public void setup() {
         eventMulticaster = new SimpleMetricsEventMulticaster();
-        obj = new Object[]{new Object()};
-        eventMulticaster.addListener(new MetricsListener<MetricsEvent>() {
+        objects = new Object[]{obj};
+        eventMulticaster.addListener(new AbstractMetricsListener<MetricsEvent>() {
             @Override
             public void onEvent(MetricsEvent event) {
-                obj[0] = new Object();
+                objects[0] = new Object();
             }
         });
-        requestEvent = new RequestEvent(obj[0], MetricsEvent.Type.TOTAL);
-
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
+        applicationConfig.setExecutorManagementMode(EXECUTOR_MANAGEMENT_MODE_DEFAULT);
+        applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
+        ConfigManager configManager = new ConfigManager(applicationModel);
+        configManager.setApplication(applicationConfig);
+        applicationModel.setConfigManager(configManager);
+        requestEvent = new TimeCounterEvent(applicationModel,null) {
+        };
     }
 
-
-    @Test
-    void testPublishEvent() {
-
-        // emptyEvent do nothing
-        MetricsEvent emptyEvent = new EmptyEvent(obj[0]);
-        eventMulticaster.publishEvent(emptyEvent);
-        Assertions.assertSame(emptyEvent.getSource(), obj[0]);
-
-        // not empty Event change obj[]
-        MetricsEvent requestEvent = new RequestEvent(obj[0], MetricsEvent.Type.TOTAL);
-        eventMulticaster.publishEvent(requestEvent);
-        Assertions.assertNotSame(requestEvent.getSource(), obj[0]);
-
-    }
 
     @Test
     void testPublishFinishEvent() {
 
         //do nothing with no MetricsLifeListener
         eventMulticaster.publishFinishEvent(requestEvent);
-        Assertions.assertSame(requestEvent.getSource(), obj[0]);
+        Assertions.assertSame(obj, objects[0]);
 
         //do onEventFinish with MetricsLifeListener
-        eventMulticaster.addListener((new MetricsLifeListener<MetricsEvent>() {
+        eventMulticaster.addListener((new MetricsLifeListener<TimeCounterEvent>() {
 
             @Override
-            public void onEvent(MetricsEvent event) {
+            public boolean isSupport(MetricsEvent event) {
+                return event instanceof TimeCounterEvent;
+            }
+
+            @Override
+            public void onEvent(TimeCounterEvent event) {
 
             }
 
             @Override
-            public void onEventFinish(MetricsEvent event) {
-                obj[0] = new Object();
+            public void onEventFinish(TimeCounterEvent event) {
+                objects[0] = new Object();
             }
 
             @Override
-            public void onEventError(MetricsEvent event) {
+            public void onEventError(TimeCounterEvent event) {
 
             }
         }));
         eventMulticaster.publishFinishEvent(requestEvent);
-        Assertions.assertNotSame(requestEvent.getSource(), obj[0]);
+        Assertions.assertNotSame(obj, objects[0]);
 
     }
 
-    @Test
-    void testPublishErrorEvent() {
-
-    }
 }

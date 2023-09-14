@@ -16,14 +16,15 @@
  */
 package org.apache.dubbo.config.spring.reference;
 
-import com.alibaba.spring.util.AnnotationUtils;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.ProvidedBy;
 import org.apache.dubbo.config.spring.Constants;
 import org.apache.dubbo.config.spring.ReferenceBean;
+import org.apache.dubbo.config.spring.util.AnnotationUtils;
 import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
 import org.apache.dubbo.rpc.service.GenericService;
+
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -51,7 +52,7 @@ import static org.apache.dubbo.common.utils.StringUtils.join;
 
 public class ReferenceBeanSupport {
 
-    private static List<String> IGNORED_ATTRS = Arrays.asList(ReferenceAttributes.ID, ReferenceAttributes.GROUP,
+    private static final List<String> IGNORED_ATTRS = Arrays.asList(ReferenceAttributes.ID, ReferenceAttributes.GROUP,
         ReferenceAttributes.VERSION, ReferenceAttributes.INTERFACE, ReferenceAttributes.INTERFACE_NAME,
         ReferenceAttributes.INTERFACE_CLASS);
 
@@ -65,7 +66,7 @@ public class ReferenceBeanSupport {
         if (interfaceName == null) {
             Object interfaceClassValue = attributes.get(ReferenceAttributes.INTERFACE_CLASS);
             if (interfaceClassValue instanceof Class) {
-                interfaceName = ((Class) interfaceClassValue).getName();
+                interfaceName = ((Class<?>) interfaceClassValue).getName();
             } else if (interfaceClassValue instanceof String) {
                 if (interfaceClassValue.equals("void")) {
                     attributes.remove(ReferenceAttributes.INTERFACE_CLASS);

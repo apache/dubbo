@@ -1,0 +1,92 @@
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+public java.lang.String com.alibaba.dubbo.config.ProtocolConfig.getClient()
+public void com.alibaba.dubbo.config.ProtocolConfig.setClient(java.lang.String)
+public java.lang.String com.alibaba.dubbo.config.ProtocolConfig.getThreadpool()
+public void com.alibaba.dubbo.config.ProtocolConfig.setThreadpool(java.lang.String)
+public void com.alibaba.dubbo.config.ProtocolConfig.setThreads(java.lang.Integer)
+public java.lang.Integer com.alibaba.dubbo.config.ProtocolConfig.getQueues()
+public void com.alibaba.dubbo.config.ProtocolConfig.setQueues(java.lang.Integer)
+public java.lang.String com.alibaba.dubbo.config.ProtocolConfig.getContextpath()
+public void com.alibaba.dubbo.config.ProtocolConfig.setContextpath(java.lang.String)
+public java.lang.Integer com.alibaba.dubbo.config.ProtocolConfig.getIothreads()
+public void com.alibaba.dubbo.config.ProtocolConfig.setIothreads(java.lang.Integer)
+public java.lang.Integer com.alibaba.dubbo.config.ProtocolConfig.getAccepts()
+public void com.alibaba.dubbo.config.ProtocolConfig.setAccepts(java.lang.Integer)
+public java.lang.String com.alibaba.dubbo.config.ProtocolConfig.getSerialization()
+public void com.alibaba.dubbo.config.ProtocolConfig.setSerialization(java.lang.String)
+public java.lang.String com.alibaba.dubbo.config.ProtocolConfig.getCharset()
+public void com.alibaba.dubbo.config.ProtocolConfig.setCharset(java.lang.String)
+public java.lang.Integer com.alibaba.dubbo.config.ProtocolConfig.getPayload()
+public void com.alibaba.dubbo.config.ProtocolConfig.setPayload(java.lang.Integer)
+public java.lang.Integer com.alibaba.dubbo.config.ProtocolConfig.getHeartbeat()
+public void com.alibaba.dubbo.config.ProtocolConfig.setHeartbeat(java.lang.Integer)
+public java.lang.String com.alibaba.dubbo.config.ProtocolConfig.getServer()
+public void com.alibaba.dubbo.config.ProtocolConfig.setServer(java.lang.String)
+public java.lang.String com.alibaba.dubbo.config.ProtocolConfig.getAccesslog()
+public void com.alibaba.dubbo.config.ProtocolConfig.setAccesslog(java.lang.String)
+public java.lang.String com.alibaba.dubbo.config.ProtocolConfig.getTelnet()
+public void com.alibaba.dubbo.config.ProtocolConfig.setTelnet(java.lang.String)
+public java.lang.String com.alibaba.dubbo.config.ProtocolConfig.getPrompt()
+public void com.alibaba.dubbo.config.ProtocolConfig.setPrompt(java.lang.String)
+public java.lang.String com.alibaba.dubbo.config.ProtocolConfig.getStatus()
+public void com.alibaba.dubbo.config.ProtocolConfig.setStatus(java.lang.String)
+public java.lang.Boolean com.alibaba.dubbo.config.ProtocolConfig.isRegister()
+public void com.alibaba.dubbo.config.ProtocolConfig.setRegister(java.lang.Boolean)
+public java.lang.String com.alibaba.dubbo.config.ProtocolConfig.getTransporter()
+public void com.alibaba.dubbo.config.ProtocolConfig.setTransporter(java.lang.String)
+public java.lang.String com.alibaba.dubbo.config.ProtocolConfig.getExchanger()
+public void com.alibaba.dubbo.config.ProtocolConfig.setExchanger(java.lang.String)
+public java.lang.String com.alibaba.dubbo.config.ProtocolConfig.getDispather()
+public void com.alibaba.dubbo.config.ProtocolConfig.setDispather(java.lang.String)
+public void com.alibaba.dubbo.config.ProtocolConfig.setDispatcher(java.lang.String)
+public java.lang.String com.alibaba.dubbo.config.ProtocolConfig.getNetworker()
+public void com.alibaba.dubbo.config.ProtocolConfig.setNetworker(java.lang.String)
+public java.lang.String com.alibaba.dubbo.config.ProtocolConfig.getOptimizer()
+public void com.alibaba.dubbo.config.ProtocolConfig.setOptimizer(java.lang.String)
+public void com.alibaba.dubbo.config.ProtocolConfig.setExtension(java.lang.String)
+public void com.alibaba.dubbo.config.ProtocolConfig.setHost(java.lang.String)
+public java.lang.String com.alibaba.dubbo.config.ProtocolConfig.getCodec()
+public void com.alibaba.dubbo.config.ProtocolConfig.setCodec(java.lang.String)
+public java.lang.String com.alibaba.dubbo.config.ProtocolConfig.getName()
+public java.lang.Boolean com.alibaba.dubbo.config.ProtocolConfig.isDefault()
+public void com.alibaba.dubbo.config.ProtocolConfig.destroy()
+public void com.alibaba.dubbo.config.ProtocolConfig.setName(java.lang.String)
+public java.lang.Integer com.alibaba.dubbo.config.ProtocolConfig.getThreads()
+public java.util.Map com.alibaba.dubbo.config.ProtocolConfig.getParameters()
+public java.lang.String com.alibaba.dubbo.config.ProtocolConfig.getPath()
+public java.lang.String com.alibaba.dubbo.config.ProtocolConfig.getHost()
+public java.lang.Integer com.alibaba.dubbo.config.ProtocolConfig.getPort()
+public void com.alibaba.dubbo.config.ProtocolConfig.setDefault(java.lang.Boolean)
+public java.lang.String com.alibaba.dubbo.config.ProtocolConfig.getExtension()
+public void com.alibaba.dubbo.config.ProtocolConfig.setPort(java.lang.Integer)
+public void com.alibaba.dubbo.config.ProtocolConfig.setKeepAlive(java.lang.Boolean)
+public java.lang.Boolean com.alibaba.dubbo.config.ProtocolConfig.getKeepAlive()
+public void com.alibaba.dubbo.config.ProtocolConfig.setPath(java.lang.String)
+public java.lang.String com.alibaba.dubbo.config.ProtocolConfig.getDispatcher()
+public void com.alibaba.dubbo.config.ProtocolConfig.setBuffer(java.lang.Integer)
+public java.lang.Integer com.alibaba.dubbo.config.ProtocolConfig.getBuffer()
+public void com.alibaba.dubbo.config.ProtocolConfig.setParameters(java.util.Map)
+public void com.alibaba.dubbo.config.ProtocolConfig.setId(java.lang.String)
+public java.lang.String com.alibaba.dubbo.config.ProtocolConfig.toString()
+public java.lang.String com.alibaba.dubbo.config.ProtocolConfig.getId()
+public final void com.alibaba.dubbo.config.ProtocolConfig.wait(long,int) throws java.lang.InterruptedException
+public final native void com.alibaba.dubbo.config.ProtocolConfig.wait(long) throws java.lang.InterruptedException
+public final void com.alibaba.dubbo.config.ProtocolConfig.wait() throws java.lang.InterruptedException
+public boolean com.alibaba.dubbo.config.ProtocolConfig.equals(java.lang.Object)
+public native int com.alibaba.dubbo.config.ProtocolConfig.hashCode()
+public final native java.lang.Class com.alibaba.dubbo.config.ProtocolConfig.getClass()
+public final native void com.alibaba.dubbo.config.ProtocolConfig.notify()
+public final native void com.alibaba.dubbo.config.ProtocolConfig.notifyAll()

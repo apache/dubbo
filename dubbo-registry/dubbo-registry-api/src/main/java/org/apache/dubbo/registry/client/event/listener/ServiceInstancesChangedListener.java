@@ -19,7 +19,6 @@ package org.apache.dubbo.registry.client.event.listener;
 import org.apache.dubbo.common.ProtocolServiceKey;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
-import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -28,8 +27,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
-import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
-import org.apache.dubbo.metrics.model.TimePair;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
@@ -92,7 +90,6 @@ public class ServiceInstancesChangedListener {
     private volatile boolean hasEmptyMetadata;
     private final Set<ServiceInstanceNotificationCustomizer> serviceInstanceNotificationCustomizers;
     private final ApplicationModel applicationModel;
-
 
     public ServiceInstancesChangedListener(Set<String> serviceNames, ServiceDiscovery serviceDiscovery) {
         this.serviceNames = serviceNames;
@@ -209,11 +206,7 @@ public class ServiceInstancesChangedListener {
 
             Map<Integer, Map<Set<String>, Object>> portToRevisions = protocolRevisionsToUrls.computeIfAbsent(serviceInfo.getProtocol(), k -> new HashMap<>());
             Map<Set<String>, Object> revisionsToUrls = portToRevisions.computeIfAbsent(serviceInfo.getPort(), k -> new HashMap<>());
-            Object urls = revisionsToUrls.get(revisions);
-            if (urls == null) {
-                urls = getServiceUrlsCache(revisionToInstances, revisions, serviceInfo.getProtocol(), serviceInfo.getPort());
-                revisionsToUrls.put(revisions, urls);
-            }
+            Object urls = revisionsToUrls.computeIfAbsent(revisions, k -> getServiceUrlsCache(revisionToInstances, revisions, serviceInfo.getProtocol(), serviceInfo.getPort()));
 
             List<ProtocolServiceKeyWithUrls> list = newServiceUrls.computeIfAbsent(serviceInfo.getPath(), k -> new LinkedList<>());
             list.add(new ProtocolServiceKeyWithUrls(serviceInfo.getProtocolServiceKey(), (List<URL>) urls));
@@ -255,7 +248,7 @@ public class ServiceInstancesChangedListener {
             notifyListeners.removeIf(listener -> listener.getNotifyListener().equals(notifyListener));
 
             // ServiceKey has no listener, remove set
-            if (notifyListeners.size() == 0) {
+            if (notifyListeners.isEmpty()) {
                 this.listeners.remove(serviceKey);
             }
         }
@@ -405,25 +398,24 @@ public class ServiceInstancesChangedListener {
      */
     protected void notifyAddressChanged() {
 
-        ScopeBeanFactory beanFactory = applicationModel.getFrameworkModel().getBeanFactory();
-        SimpleMetricsEventMulticaster eventMulticaster = beanFactory.getOrRegisterBean(SimpleMetricsEventMulticaster.class);
+        MetricsEventBus.post(RegistryEvent.toNotifyEvent(applicationModel),
+            () -> {
+                Map<String, Integer> lastNumMap = new HashMap<>();
+                // 1 different services
+                listeners.forEach((serviceKey, listenerSet) -> {
+                    // 2 multiple subscription listener of the same service
+                    for (NotifyListenerWithKey listenerWithKey : listenerSet) {
+                        NotifyListener notifyListener = listenerWithKey.getNotifyListener();
 
-        TimePair timePair = TimePair.start();
-        eventMulticaster.publishEvent(new RegistryEvent.MetricsNotifyEvent(applicationModel, timePair, null));
-        Map<String, Integer> lastNumMap = new HashMap<>();
-        // 1 different services
-        listeners.forEach((serviceKey, listenerSet) -> {
-            // 2 multiple subscription listener of the same service
-            for (NotifyListenerWithKey listenerWithKey : listenerSet) {
-                NotifyListener notifyListener = listenerWithKey.getNotifyListener();
-
-                List<URL> urls = toUrlsWithEmpty(getAddresses(listenerWithKey.getProtocolServiceKey(), notifyListener.getConsumerUrl()));
-                logger.info("Notify service " + listenerWithKey.getProtocolServiceKey() + " with urls " + urls.size());
-                notifyListener.notify(urls);
-                lastNumMap.put(serviceKey, urls.size());
+                        List<URL> urls = toUrlsWithEmpty(getAddresses(listenerWithKey.getProtocolServiceKey(), notifyListener.getConsumerUrl()));
+                        logger.info("Notify service " + listenerWithKey.getProtocolServiceKey() + " with urls " + urls.size());
+                        notifyListener.notify(urls);
+                        lastNumMap.put(serviceKey, urls.size());
+                    }
+                });
+                return lastNumMap;
             }
-        });
-        eventMulticaster.publishFinishEvent(new RegistryEvent.MetricsNotifyEvent(applicationModel, timePair, lastNumMap));
+        );
 
     }
 
@@ -479,7 +471,7 @@ public class ServiceInstancesChangedListener {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getClass(), getServiceNames(), listeners);
+        return Objects.hash(getClass(), getServiceNames());
     }
 
     protected class AddressRefreshRetryTask implements Runnable {

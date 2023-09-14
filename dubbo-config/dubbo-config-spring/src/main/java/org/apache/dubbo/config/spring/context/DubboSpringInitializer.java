@@ -24,6 +24,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ApplicationContext;
@@ -41,20 +42,20 @@ public class DubboSpringInitializer {
 
     private static final Logger logger = LoggerFactory.getLogger(DubboSpringInitializer.class);
 
-    private static Map<BeanDefinitionRegistry, DubboSpringInitContext> contextMap = new ConcurrentHashMap<>();
+    private static final Map<BeanDefinitionRegistry, DubboSpringInitContext> contextMap = new ConcurrentHashMap<>();
 
     private DubboSpringInitializer() {
     }
 
     public static void initialize(BeanDefinitionRegistry registry) {
 
+        // prepare context and do customize
+        DubboSpringInitContext context = new DubboSpringInitContext();
+
         // Spring ApplicationContext may not ready at this moment (e.g. load from xml), so use registry as key
-        if (contextMap.putIfAbsent(registry, new DubboSpringInitContext()) != null) {
+        if (contextMap.putIfAbsent(registry, context) != null) {
             return;
         }
-
-        // prepare context and do customize
-        DubboSpringInitContext context = contextMap.get(registry);
 
         // find beanFactory
         ConfigurableListableBeanFactory beanFactory = findBeanFactory(registry);
@@ -68,11 +69,12 @@ public class DubboSpringInitializer {
     }
 
     public static boolean remove(ApplicationContext springContext) {
+        AutowireCapableBeanFactory autowireCapableBeanFactory = springContext.getAutowireCapableBeanFactory();
         for (Map.Entry<BeanDefinitionRegistry, DubboSpringInitContext> entry : contextMap.entrySet()) {
             DubboSpringInitContext initContext = entry.getValue();
             if (initContext.getApplicationContext() == springContext ||
-                initContext.getBeanFactory() == springContext.getAutowireCapableBeanFactory() ||
-                initContext.getRegistry() == springContext.getAutowireCapableBeanFactory()
+                initContext.getBeanFactory() == autowireCapableBeanFactory ||
+                initContext.getRegistry() == autowireCapableBeanFactory
             ) {
                 DubboSpringInitContext context = contextMap.remove(entry.getKey());
                 logger.info("Unbind " + safeGetModelDesc(context.getModuleModel()) + " from spring container: " +
@@ -88,8 +90,7 @@ public class DubboSpringInitializer {
     }
 
     static DubboSpringInitContext findBySpringContext(ApplicationContext applicationContext) {
-        for (Map.Entry<BeanDefinitionRegistry, DubboSpringInitContext> entry : contextMap.entrySet()) {
-            DubboSpringInitContext initContext = entry.getValue();
+        for (DubboSpringInitContext initContext : contextMap.values()) {
             if (initContext.getApplicationContext() == applicationContext) {
                 return initContext;
             }
@@ -112,25 +113,26 @@ public class DubboSpringInitializer {
             if (findContextForApplication(ApplicationModel.defaultModel()) == null) {
                 // first spring context use default application instance
                 applicationModel = ApplicationModel.defaultModel();
-                logger.info("Use default application: " + safeGetModelDesc(applicationModel));
+                logger.info("Use default application: " + applicationModel.getDesc());
             } else {
                 // create a new application instance for later spring context
                 applicationModel = FrameworkModel.defaultModel().newApplication();
-                logger.info("Create new application: " + safeGetModelDesc(applicationModel));
+                logger.info("Create new application: " + applicationModel.getDesc());
             }
 
             // init ModuleModel
             moduleModel = applicationModel.getDefaultModule();
             context.setModuleModel(moduleModel);
-            logger.info("Use default module model of target application: " + safeGetModelDesc(moduleModel));
+            logger.info("Use default module model of target application: " + moduleModel.getDesc());
         } else {
-            logger.info("Use module model from customizer: " + safeGetModelDesc(moduleModel));
+            logger.info("Use module model from customizer: " + moduleModel.getDesc());
         }
-        logger.info("Bind " + safeGetModelDesc(moduleModel) + " to spring container: " + ObjectUtils.identityToString(registry));
+        logger.info("Bind " + moduleModel.getDesc() + " to spring container: " + ObjectUtils.identityToString(registry));
 
         // set module attributes
-        if (context.getModuleAttributes().size() > 0) {
-            context.getModuleModel().getAttributes().putAll(context.getModuleAttributes());
+        Map<String, Object> moduleAttributes = context.getModuleAttributes();
+        if (moduleAttributes.size() > 0) {
+            moduleModel.getAttributes().putAll(moduleAttributes);
         }
 
         // bind dubbo initialization context to spring context
@@ -198,7 +200,6 @@ public class DubboSpringInitializer {
             customizer.customize(context);
         }
         customizerHolder.clearCustomizers();
-
     }
 
 }

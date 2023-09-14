@@ -30,6 +30,9 @@ import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
+import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -103,9 +106,11 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
     private final boolean reportMetadata;
     private final boolean reportDefinition;
+    protected ApplicationModel applicationModel;
 
     public AbstractMetadataReport(URL reportServerURL) {
         setUrl(reportServerURL);
+        applicationModel = reportServerURL.getOrDefaultApplicationModel();
 
         boolean localCacheEnabled = reportServerURL.getParameter(REGISTRY_LOCAL_FILE_CACHE_ENABLED, true);
         // Start file save timer
@@ -273,21 +278,31 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     }
 
     private void storeProviderMetadataTask(MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition) {
-        try {
-            if (logger.isInfoEnabled()) {
-                logger.info("store provider metadata. Identifier : " + providerMetadataIdentifier + "; definition: " + serviceDefinition);
-            }
-            allMetadataReports.put(providerMetadataIdentifier, serviceDefinition);
-            failedReports.remove(providerMetadataIdentifier);
-            String data = JsonUtils.getJson().toJson(serviceDefinition);
-            doStoreProviderMetadata(providerMetadataIdentifier, data);
-            saveProperties(providerMetadataIdentifier, data, true, !syncReport);
-        } catch (Exception e) {
-            // retry again. If failed again, throw exception.
-            failedReports.put(providerMetadataIdentifier, serviceDefinition);
-            metadataReportRetry.startRetryTask();
-            logger.error(PROXY_FAILED_EXPORT_SERVICE, "", "", "Failed to put provider metadata " + providerMetadataIdentifier + " in  " + serviceDefinition + ", cause: " + e.getMessage(), e);
-        }
+
+        MetadataEvent metadataEvent = MetadataEvent.toServiceSubscribeEvent(applicationModel, providerMetadataIdentifier.getUniqueServiceName());
+        MetricsEventBus.post(metadataEvent, () ->
+            {
+                boolean result = true;
+                try {
+                    if (logger.isInfoEnabled()) {
+                        logger.info("store provider metadata. Identifier : " + providerMetadataIdentifier + "; definition: " + serviceDefinition);
+                    }
+                    allMetadataReports.put(providerMetadataIdentifier, serviceDefinition);
+                    failedReports.remove(providerMetadataIdentifier);
+                    String data = JsonUtils.toJson(serviceDefinition);
+                    doStoreProviderMetadata(providerMetadataIdentifier, data);
+                    saveProperties(providerMetadataIdentifier, data, true, !syncReport);
+                } catch (Exception e) {
+                    // retry again. If failed again, throw exception.
+                    failedReports.put(providerMetadataIdentifier, serviceDefinition);
+                    metadataReportRetry.startRetryTask();
+                    logger.error(PROXY_FAILED_EXPORT_SERVICE, "", "", "Failed to put provider metadata " + providerMetadataIdentifier + " in  " + serviceDefinition + ", cause: " + e.getMessage(), e);
+                    result = false;
+                }
+                return result;
+            }, aBoolean -> aBoolean
+        );
+
     }
 
     @Override
@@ -307,7 +322,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             allMetadataReports.put(consumerMetadataIdentifier, serviceParameterMap);
             failedReports.remove(consumerMetadataIdentifier);
 
-            String data = JsonUtils.getJson().toJson(serviceParameterMap);
+            String data = JsonUtils.toJson(serviceParameterMap);
             doStoreConsumerMetadata(consumerMetadataIdentifier, data);
             saveProperties(consumerMetadataIdentifier, data, true, !syncReport);
         } catch (Exception e) {
@@ -359,9 +374,9 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     @Override
     public void saveSubscribedData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, Set<String> urls) {
         if (syncReport) {
-            doSaveSubscriberData(subscriberMetadataIdentifier, JsonUtils.getJson().toJson(urls));
+            doSaveSubscriberData(subscriberMetadataIdentifier, JsonUtils.toJson(urls));
         } else {
-            reportCacheExecutor.execute(() -> doSaveSubscriberData(subscriberMetadataIdentifier, JsonUtils.getJson().toJson(urls)));
+            reportCacheExecutor.execute(() -> doSaveSubscriberData(subscriberMetadataIdentifier, JsonUtils.toJson(urls)));
         }
     }
 
@@ -369,7 +384,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     @Override
     public List<String> getSubscribedURLs(SubscriberMetadataIdentifier subscriberMetadataIdentifier) {
         String content = doGetSubscribedURLs(subscriberMetadataIdentifier);
-        return JsonUtils.getJson().toJavaList(content, String.class);
+        return JsonUtils.toJavaList(content, String.class);
     }
 
     String getProtocol(URL url) {

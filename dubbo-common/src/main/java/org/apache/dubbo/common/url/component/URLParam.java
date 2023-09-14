@@ -22,6 +22,7 @@ import org.apache.dubbo.common.url.component.param.DynamicParamTable;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
+import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
@@ -247,7 +248,7 @@ public class URLParam {
      * copy-on-write mode, urlParam reference will be changed after modify actions.
      * If wishes to get the result after modify, please use {@link URLParamMap#getUrlParam()}
      */
-    public static class URLParamMap implements Map<String, String> {
+    public static class URLParamMap extends AbstractMap<String, String> {
         private URLParam urlParam;
 
         public URLParamMap(URLParam urlParam) {
@@ -994,7 +995,13 @@ public class URLParam {
             Map<String, Map<String, String>> methodParameters = new HashMap<>(capacity);
 
             for (Map.Entry<String, String> entry : params.entrySet()) {
-                addParameter(keyBit, valueMap, extraParam, methodParameters, entry.getKey(), entry.getValue(), false);
+                String key = entry.getKey();
+                String value = entry.getValue();
+                addParameter(keyBit, valueMap, extraParam, methodParameters, key, value, false);
+                // compatible with lower versions registering "default." keys
+                if (key.startsWith(DEFAULT_KEY_PREFIX)) {
+                    addParameter(keyBit, valueMap, extraParam, methodParameters, key.substring(DEFAULT_KEY_PREFIX.length()), value, true);
+                }
             }
             return new URLParam(keyBit, valueMap, extraParam, methodParameters, rawParam);
         } else {

@@ -26,8 +26,8 @@
 
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
-        <protobuf-java.version>3.21.12</protobuf-java.version>
-        <grpc.version>1.41.0</grpc.version>
+        <protobuf-java.version>3.22.2</protobuf-java.version>
+        <grpc.version>1.55.1</grpc.version>
     </properties>
 
     <artifactId>dubbo-security</artifactId>
@@ -103,7 +103,7 @@
             <extension>
                 <groupId>kr.motd.maven</groupId>
                 <artifactId>os-maven-plugin</artifactId>
-                <version>1.6.2</version>
+                <version>1.7.1</version>
             </extension>
         </extensions>
         <plugins>

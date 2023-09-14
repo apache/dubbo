@@ -25,12 +25,8 @@ class NamedInternalThreadFactoryTest {
     @Test
     void newThread() throws Exception {
         NamedInternalThreadFactory namedInternalThreadFactory = new NamedInternalThreadFactory();
-        Thread t = namedInternalThreadFactory.newThread(new Runnable() {
-            @Override
-            public void run() {
+        Thread t = namedInternalThreadFactory.newThread(() -> { });
 
-            }
-        });
         Assertions.assertEquals(t.getClass(), InternalThread.class, "thread is not InternalThread");
     }
 }

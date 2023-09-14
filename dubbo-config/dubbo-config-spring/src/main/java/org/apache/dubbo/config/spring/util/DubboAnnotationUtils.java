@@ -27,12 +27,11 @@ import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.alibaba.spring.util.AnnotationUtils.getAttribute;
 import static org.springframework.util.ClassUtils.getAllInterfacesForClass;
 import static org.springframework.util.StringUtils.hasText;
 
@@ -78,7 +77,7 @@ public class DubboAnnotationUtils {
      */
     public static String resolveInterfaceName(Map<String, Object> attributes, Class<?> defaultInterfaceClass) {
         // 1. get from DubboService.interfaceName()
-        String interfaceClassName = getAttribute(attributes, "interfaceName");
+        String interfaceClassName = AnnotationUtils.getAttribute(attributes, "interfaceName");
         if (StringUtils.hasText(interfaceClassName)) {
             if (GenericService.class.getName().equals(interfaceClassName) ||
                 com.alibaba.dubbo.rpc.service.GenericService.class.getName().equals(interfaceClassName)) {
@@ -88,7 +87,7 @@ public class DubboAnnotationUtils {
         }
 
         // 2. get from DubboService.interfaceClass()
-        Class<?> interfaceClass = getAttribute(attributes, "interfaceClass");
+        Class<?> interfaceClass = AnnotationUtils.getAttribute(attributes, "interfaceClass");
         if (interfaceClass == null || void.class.equals(interfaceClass)) { // default or set void.class for purpose.
             interfaceClass = null;
         } else  if (GenericService.class.isAssignableFrom(interfaceClass)) {
@@ -154,7 +153,7 @@ public class DubboAnnotationUtils {
      */
     public static Map<String, String> convertParameters(String[] parameters) {
         if (ArrayUtils.isEmpty(parameters)) {
-            return Collections.emptyMap();
+            return new HashMap<>();
         }
 
         List<String> compatibleParameterArray = Arrays.stream(parameters)

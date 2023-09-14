@@ -80,7 +80,7 @@ class ReflectionServerCallTest {
             Collections.emptyList(),
             ImmediateEventExecutor.INSTANCE);
         call2.onHeader(Collections.emptyMap());
-        call2.onMessage(new byte[0]);
+        call2.onMessage(new byte[0], false);
         call2.onComplete();
     }
 }

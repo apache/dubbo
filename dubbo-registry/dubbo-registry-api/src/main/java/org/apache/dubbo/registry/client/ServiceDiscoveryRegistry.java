@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -25,12 +26,15 @@ import org.apache.dubbo.metadata.AbstractServiceNameMapping;
 import org.apache.dubbo.metadata.MappingChangedEvent;
 import org.apache.dubbo.metadata.MappingListener;
 import org.apache.dubbo.metadata.ServiceNameMapping;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
+import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,7 +43,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
@@ -109,7 +112,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      */
     protected ServiceDiscovery createServiceDiscovery(URL registryURL) {
         return getServiceDiscovery(registryURL.addParameter(INTERFACE_KEY, ServiceDiscovery.class.getName())
-            .removeParameter(REGISTRY_TYPE_KEY));
+                .removeParameter(REGISTRY_TYPE_KEY));
     }
 
     /**
@@ -130,10 +133,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
         boolean should = PROVIDER_SIDE.equals(side); // Only register the Provider.
 
-        if (!should) {
-            if (logger.isDebugEnabled()) {
-                logger.debug(String.format("The URL[%s] should not be registered.", providerURL));
-            }
+        if (!should && logger.isDebugEnabled()) {
+            logger.debug(String.format("The URL[%s] should not be registered.", providerURL));
         }
 
         if (!acceptable(providerURL)) {
@@ -192,8 +193,6 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
         serviceDiscovery.subscribe(url, listener);
 
-        boolean check = url.getParameter(CHECK_KEY, false);
-
         Set<String> mappingByUrl = ServiceNameMapping.getMappingByUrl(url);
 
         String key = ServiceNameMapping.buildMappingKey(url);
@@ -249,7 +248,9 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         serviceDiscovery.unsubscribe(url, listener);
         String protocolServiceKey = url.getProtocolServiceKey();
         Set<String> serviceNames = serviceNameMapping.getMapping(url);
-        serviceNameMapping.stopListen(url, mappingListeners.remove(protocolServiceKey));
+        if (mappingListeners.get(protocolServiceKey) != null) {
+            serviceNameMapping.stopListen(url, mappingListeners.remove(protocolServiceKey));
+        }
         if (CollectionUtils.isNotEmpty(serviceNames)) {
             String serviceNamesKey = toStringKeys(serviceNames);
             Lock appSubscriptionLock = getAppSubscription(serviceNamesKey);
@@ -277,11 +278,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     @Override
     public boolean isAvailable() {
-        if (serviceDiscovery instanceof NopServiceDiscovery) {
-            // NopServiceDiscovery is designed for compatibility, check availability is meaningless, just return true
-            return true;
-        }
-        return !serviceDiscovery.isDestroy() && !serviceDiscovery.getServices().isEmpty();
+        //serviceDiscovery isAvailable has a default method, which can be used as a reference when implementing
+        return serviceDiscovery.isAvailable();
     }
 
     @Override
@@ -328,7 +326,16 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             if (!serviceInstancesChangedListener.isDestroyed()) {
                 listener.addServiceListener(serviceInstancesChangedListener);
                 serviceInstancesChangedListener.addListenerAndNotify(url, listener);
-                serviceDiscovery.addServiceInstancesChangedListener(serviceInstancesChangedListener);
+                ServiceInstancesChangedListener finalServiceInstancesChangedListener = serviceInstancesChangedListener;
+
+                String serviceDiscoveryName = url.getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY, url.getProtocol());
+
+                MetricsEventBus.post(RegistryEvent.toSsEvent(url.getApplicationModel(), serviceKey, Collections.singletonList(serviceDiscoveryName)),
+                    () -> {
+                        serviceDiscovery.addServiceInstancesChangedListener(finalServiceInstancesChangedListener);
+                        return null;
+                    }
+                );
             } else {
                 logger.info(String.format("Listener of %s has been destroyed by another thread.", serviceNamesKey));
                 serviceListeners.remove(serviceNamesKey);
@@ -385,7 +392,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             Lock mappingLock = serviceNameMapping.getMappingLock(event.getServiceKey());
             try {
                 mappingLock.lock();
-                if (CollectionUtils.isEmpty(tempOldApps) && newApps.size() > 0) {
+                if (CollectionUtils.isEmpty(tempOldApps) && !newApps.isEmpty()) {
                     serviceNameMapping.putCachedMapping(ServiceNameMapping.buildMappingKey(url), newApps);
                     subscribeURLs(url, listener, newApps);
                     oldApps = newApps;

@@ -23,13 +23,16 @@ import org.apache.dubbo.common.json.impl.FastJsonImpl;
 import org.apache.dubbo.common.json.impl.GsonImpl;
 import org.apache.dubbo.common.json.impl.JacksonImpl;
 
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class JsonUtils {
+
     private static volatile JSON json;
 
-    public static JSON getJson() {
+    protected static JSON getJson() {
         if (json == null) {
             synchronized (JsonUtils.class) {
                 if (json == null) {
@@ -93,4 +96,69 @@ public class JsonUtils {
     protected static void setJson(JSON json) {
         JsonUtils.json = json;
     }
+
+    public static <T> T toJavaObject(String json, Type type) {
+        return getJson().toJavaObject(json, type);
+    }
+
+
+    public static <T> List<T> toJavaList(String json, Class<T> clazz) {
+        return getJson().toJavaList(json, clazz);
+    }
+
+
+    public static String toJson(Object obj) {
+        return getJson().toJson(obj);
+    }
+
+
+    public static List<?> getList(Map<String, ?> obj, String key) {
+        return getJson().getList(obj, key);
+    }
+
+
+    public static List<Map<String, ?>> getListOfObjects(Map<String, ?> obj, String key) {
+        return getJson().getListOfObjects(obj, key);
+    }
+
+
+    public static List<String> getListOfStrings(Map<String, ?> obj, String key) {
+        return getJson().getListOfStrings(obj, key);
+    }
+
+
+    public static Map<String, ?> getObject(Map<String, ?> obj, String key) {
+        return getJson().getObject(obj, key);
+    }
+
+
+    public static Double getNumberAsDouble(Map<String, ?> obj, String key) {
+        return getJson().getNumberAsDouble(obj, key);
+    }
+
+
+    public static Integer getNumberAsInteger(Map<String, ?> obj, String key) {
+        return getJson().getNumberAsInteger(obj, key);
+    }
+
+
+    public static Long getNumberAsLong(Map<String, ?> obj, String key) {
+        return getJson().getNumberAsLong(obj, key);
+    }
+
+
+    public static String getString(Map<String, ?> obj, String key) {
+        return getJson().getString(obj, key);
+    }
+
+
+    public static List<Map<String, ?>> checkObjectList(List<?> rawList) {
+        return getJson().checkObjectList(rawList);
+    }
+
+
+    public static List<String> checkStringList(List<?> rawList) {
+        return getJson().checkStringList(rawList);
+    }
+
 }

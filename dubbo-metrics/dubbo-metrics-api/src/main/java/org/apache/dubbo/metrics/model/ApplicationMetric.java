@@ -17,45 +17,60 @@
 
 package org.apache.dubbo.metrics.model;
 
-import org.apache.dubbo.common.Version;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.HashMap;
 import java.util.Map;
-
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_VERSION_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_HOSTNAME;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_IP;
-import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
-import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
+import java.util.Objects;
 
 public class ApplicationMetric implements Metric {
-    private final String applicationName;
-    private static final String version = Version.getVersion();
+    private final ApplicationModel applicationModel;
+    protected Map<String, String> extraInfo;
 
-    public ApplicationMetric(String applicationName) {
-        this.applicationName = applicationName;
+    public ApplicationMetric(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+    }
+
+    public ApplicationModel getApplicationModel() {
+        return applicationModel;
     }
 
     public String getApplicationName() {
-        return applicationName;
-    }
-
-    public String getData() {
-        return version;
+        return getApplicationModel().getApplicationName();
     }
 
     @Override
     public Map<String, String> getTags() {
-        return getTagsByName(this.getApplicationName());
+        return MetricsSupport.applicationTags(applicationModel, getExtraInfo());
     }
 
-    public static Map<String, String> getTagsByName(String applicationName) {
-        Map<String, String> tags = new HashMap<>();
-        tags.put(TAG_IP, getLocalHost());
-        tags.put(TAG_HOSTNAME, getLocalHostName());
-        tags.put(TAG_APPLICATION_NAME, applicationName);
-        tags.put(TAG_APPLICATION_VERSION_KEY, version);
-        return tags;
+    public Map<String, String> getExtraInfo() {
+        return extraInfo;
     }
+
+    public void setExtraInfo(Map<String, String> extraInfo) {
+        this.extraInfo = extraInfo;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ApplicationMetric that = (ApplicationMetric) o;
+        return getApplicationName().equals(that.applicationModel.getApplicationName()) && Objects.equals(extraInfo, that.extraInfo);
+    }
+
+    private volatile int hashCode;
+
+    @Override
+    public int hashCode() {
+        if (hashCode == 0) {
+            hashCode = Objects.hash(getApplicationName(), extraInfo);
+        }
+        return hashCode;
+    }
+
 }

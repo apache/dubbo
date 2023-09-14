@@ -26,9 +26,10 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcStatus;
 import org.apache.dubbo.rpc.service.GenericService;
+import org.apache.dubbo.rpc.support.RpcUtils;
+
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
-
 import static org.apache.dubbo.rpc.Constants.EXECUTES_KEY;
 
 
@@ -45,11 +46,11 @@ public class ExecuteLimitFilter implements Filter, Filter.Listener {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         URL url = invoker.getUrl();
-        String methodName = invocation.getMethodName();
+        String methodName = RpcUtils.getMethodName(invocation);
         int max = url.getMethodParameter(methodName, EXECUTES_KEY, 0);
         if (!RpcStatus.beginCount(url, methodName, max)) {
             throw new RpcException(RpcException.LIMIT_EXCEEDED_EXCEPTION,
-                    "Failed to invoke method " + invocation.getMethodName() + " in provider " +
+                    "Failed to invoke method " + RpcUtils.getMethodName(invocation) + " in provider " +
                             url + ", cause: The service using threads greater than <dubbo:service executes=\"" + max +
                             "\" /> limited.");
         }

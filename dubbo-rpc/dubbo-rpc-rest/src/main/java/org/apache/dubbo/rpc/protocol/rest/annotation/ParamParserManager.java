@@ -21,6 +21,8 @@ import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.consumer.BaseConsumerParamParser;
 import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.consumer.ConsumerParseContext;
+import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider.BaseProviderParamParser;
+import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider.ProviderParseContext;
 
 import java.util.List;
 import java.util.Set;
@@ -30,6 +32,9 @@ public class ParamParserManager {
 
     private static final Set<BaseConsumerParamParser> consumerParamParsers =
         FrameworkModel.defaultModel().getExtensionLoader(BaseConsumerParamParser.class).getSupportedExtensionInstances();
+
+    private static final Set<BaseProviderParamParser> providerParamParsers =
+        FrameworkModel.defaultModel().getExtensionLoader(BaseProviderParamParser.class).getSupportedExtensionInstances();
 
     /**
      * provider  Design Description:
@@ -41,11 +46,36 @@ public class ParamParserManager {
      * <p>
      * args=toArray(new Object[0]);
      */
-    public void consumerParamParse(ConsumerParseContext parseContext) {
+    public static Object[] providerParamParse(ProviderParseContext parseContext) {
 
-        List<Object> args = parseContext.getArgs();
+        List<ArgInfo> args = parseContext.getArgInfos();
 
         for (int i = 0; i < args.size(); i++) {
+            for (ParamParser paramParser : providerParamParsers) {
+
+                paramParser.parse(parseContext, args.get(i));
+            }
+        }
+        // TODO add param require or default & body arg size pre judge
+        return parseContext.getArgs().toArray(new Object[0]);
+    }
+
+
+    /**
+     * consumer  Design Description:
+     * <p>
+     * Object[] args=new Object[0];
+     * List<Object> argsList=new ArrayList<>;</>
+     * <p>
+     * setValueByIndex(int index,Object value);
+     * <p>
+     * args=toArray(new Object[0]);
+     */
+    public static void consumerParamParse(ConsumerParseContext parseContext) {
+
+        List<ArgInfo> argInfos = parseContext.getArgInfos();
+
+        for (int i = 0; i < argInfos.size(); i++) {
             for (BaseConsumerParamParser paramParser : consumerParamParsers) {
                 ArgInfo argInfoByIndex = parseContext.getArgInfoByIndex(i);
 
@@ -56,6 +86,9 @@ public class ParamParserManager {
                 paramParser.parse(parseContext, argInfoByIndex);
             }
         }
+
+        // TODO add param require or default
+
 
     }
 }

@@ -50,9 +50,9 @@ public class URLConnectionRestClient implements RestClient {
             HttpURLConnection connection = (HttpURLConnection) new URL(requestTemplate.getURL()).openConnection();
             connection.setConnectTimeout(clientConfig.getConnectTimeout());
             connection.setReadTimeout(clientConfig.getReadTimeout());
-            connection.setAllowUserInteraction(false);
-            connection.setInstanceFollowRedirects(true);
             connection.setRequestMethod(requestTemplate.getHttpMethod());
+
+            prepareConnection(connection, requestTemplate.getHttpMethod());
 
             // writeHeaders
 
@@ -68,37 +68,7 @@ public class URLConnectionRestClient implements RestClient {
             boolean gzipEncodedRequest = requestTemplate.isGzipEncodedRequest();
             boolean deflateEncodedRequest = requestTemplate.isDeflateEncodedRequest();
             if (requestTemplate.isBodyEmpty()) {
-                future.complete(new RestResult() {
-                    @Override
-                    public String getContentType() {
-                        return connection.getContentType();
-                    }
-
-                    @Override
-                    public byte[] getBody() throws IOException {
-                        return IOUtils.toByteArray(connection.getInputStream());
-                    }
-
-                    @Override
-                    public Map<String, List<String>> headers() {
-                        return connection.getHeaderFields();
-                    }
-
-                    @Override
-                    public byte[] getErrorResponse() throws IOException {
-                        return IOUtils.toByteArray(connection.getErrorStream());
-                    }
-
-                    @Override
-                    public int getResponseCode() throws IOException {
-                        return connection.getResponseCode();
-                    }
-
-                    @Override
-                    public String getMessage() throws IOException {
-                        return connection.getResponseMessage();
-                    }
-                });
+                future.complete(getRestResultFromConnection(connection));
                 return future;
             }
             Integer contentLength = requestTemplate.getContentLength();
@@ -108,7 +78,6 @@ public class URLConnectionRestClient implements RestClient {
             } else {
                 connection.setChunkedStreamingMode(clientConfig.getChunkLength());
             }
-            connection.setDoOutput(true);
 
             OutputStream out = connection.getOutputStream();
             if (gzipEncodedRequest) {
@@ -125,37 +94,7 @@ public class URLConnectionRestClient implements RestClient {
                 }
             }
 
-            future.complete(new RestResult() {
-                @Override
-                public String getContentType() {
-                    return connection.getContentType();
-                }
-
-                @Override
-                public byte[] getBody() throws IOException {
-                    return IOUtils.toByteArray(connection.getInputStream());
-                }
-
-                @Override
-                public Map<String, List<String>> headers() {
-                    return connection.getHeaderFields();
-                }
-
-                @Override
-                public byte[] getErrorResponse() throws IOException {
-                    return IOUtils.toByteArray(connection.getErrorStream());
-                }
-
-                @Override
-                public int getResponseCode() throws IOException {
-                    return connection.getResponseCode();
-                }
-
-                @Override
-                public String getMessage() throws IOException {
-                    return connection.getResponseMessage();
-                }
-            });
+            future.complete(getRestResultFromConnection(connection));
         } catch (Exception e) {
             future.completeExceptionally(e);
         }
@@ -176,6 +115,65 @@ public class URLConnectionRestClient implements RestClient {
     @Override
     public boolean isClosed() {
         return true;
+    }
+
+
+    private RestResult getRestResultFromConnection(HttpURLConnection connection) {
+
+        return new RestResult() {
+            @Override
+            public String getContentType() {
+                return connection.getContentType();
+            }
+
+            @Override
+            public byte[] getBody() throws IOException {
+                return IOUtils.toByteArray(connection.getInputStream());
+            }
+
+            @Override
+            public Map<String, List<String>> headers() {
+                return connection.getHeaderFields();
+            }
+
+            @Override
+            public byte[] getErrorResponse() throws IOException {
+                return IOUtils.toByteArray(connection.getErrorStream());
+            }
+
+            @Override
+            public int getResponseCode() throws IOException {
+                return connection.getResponseCode();
+            }
+
+            @Override
+            public String getMessage() throws IOException {
+                return appendErrorMessage(connection.getResponseMessage(), new String(getErrorResponse()));
+
+            }
+        };
+    }
+
+    private void prepareConnection(HttpURLConnection connection, String httpMethod) throws IOException {
+
+
+        connection.setDoInput(true);
+
+        if ("GET".equals(httpMethod)) {
+            connection.setInstanceFollowRedirects(true);
+        } else {
+            connection.setInstanceFollowRedirects(false);
+        }
+
+
+        if ("POST".equals(httpMethod) || "PUT".equals(httpMethod) ||
+            "PATCH".equals(httpMethod) || "DELETE".equals(httpMethod)) {
+            connection.setDoOutput(true);
+        } else {
+            connection.setDoOutput(false);
+        }
+
+        connection.setRequestMethod(httpMethod);
     }
 
 }

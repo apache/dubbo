@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
-import org.apache.dubbo.remoting.http.HttpBinder;
-import org.apache.dubbo.rpc.model.FrameworkModel;
 
 /**
  * Only the server that implements servlet container
@@ -25,15 +23,8 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
  */
 public class RestServerFactory {
 
-    private static final HttpBinder httpBinder = FrameworkModel.defaultModel().getAdaptiveExtension(HttpBinder.class);
 
     public RestProtocolServer createServer(String name) {
-        if (Constants.SERVLET.equalsIgnoreCase(name) || Constants.JETTY.equalsIgnoreCase(name) || Constants.TOMCAT.equalsIgnoreCase(name)) {
-            return new DubboHttpProtocolServer(httpBinder);
-        } else if (Constants.NETTY.equalsIgnoreCase(name)) {
-            return new NettyRestProtocolServer();
-        } else {
-            throw new IllegalArgumentException("Unrecognized server name: " + name);
-        }
+        return new NettyHttpRestServer();
     }
 }

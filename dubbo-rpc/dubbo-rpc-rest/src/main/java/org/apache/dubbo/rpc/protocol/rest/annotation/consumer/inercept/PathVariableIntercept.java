@@ -29,6 +29,9 @@ import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ *  resolve method args from path
+ */
 @Activate(value = RestConstant.PATH_INTERCEPT,order = 4)
 public class PathVariableIntercept implements HttpConnectionPreBuildIntercept {
 

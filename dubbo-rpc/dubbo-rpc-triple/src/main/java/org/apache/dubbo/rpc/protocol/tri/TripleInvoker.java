@@ -18,24 +18,33 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.FutureContext;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvokeMode;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.PackableMethod;
+import org.apache.dubbo.rpc.model.PackableMethodFactory;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.StubMethodDescriptor;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
@@ -44,8 +53,10 @@ import org.apache.dubbo.rpc.protocol.tri.call.ObserverToClientCallListenerAdapte
 import org.apache.dubbo.rpc.protocol.tri.call.TripleClientCall;
 import org.apache.dubbo.rpc.protocol.tri.call.UnaryClientCallListener;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
+import org.apache.dubbo.rpc.service.ServiceDescriptorInternalCache;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import io.netty.util.AsciiString;
@@ -57,12 +68,16 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PACKABLE_METHOD_FACTORY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DESTROY_INVOKER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
+import static org.apache.dubbo.rpc.Constants.COMPRESSOR_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
+import static org.apache.dubbo.rpc.model.MethodDescriptor.RpcType.UNARY;
 
 /**
  * TripleInvoker
@@ -77,6 +92,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     private final ExecutorService streamExecutor;
     private final String acceptEncodings;
     private final TripleWriteQueue writeQueue = new TripleWriteQueue(256);
+
+    private static final boolean setFutureWhenSync = Boolean.parseBoolean(System.getProperty(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true"));
 
     public TripleInvoker(Class<T> serviceType,
         URL url,
@@ -96,6 +113,12 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         return ssl ? TripleConstant.HTTPS_SCHEME : TripleConstant.HTTP_SCHEME;
     }
 
+    private static Compressor getCompressorFromEnv() {
+        Configuration configuration = ConfigurationUtils.getEnvConfiguration(ApplicationModel.defaultModel());
+        String compressorKey = configuration.getString(COMPRESSOR_KEY, Identity.MESSAGE_ENCODING);
+        return Compressor.getCompressor(ScopeModelUtil.getFrameworkModel(ApplicationModel.defaultModel()), compressorKey);
+    }
+
     @Override
     protected Result doInvoke(final Invocation invocation) {
         if (!connectionClient.isConnected()) {
@@ -110,17 +133,21 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         ConsumerModel consumerModel = (ConsumerModel) (invocation.getServiceModel() != null
             ? invocation.getServiceModel() : getUrl().getServiceModel());
         ServiceDescriptor serviceDescriptor = consumerModel.getServiceModel();
-        final MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(
-            invocation.getMethodName(),
-            invocation.getParameterTypes());
-        ClientCall call = new TripleClientCall(connectionClient, streamExecutor,
+        final MethodDescriptor methodDescriptor;
+        boolean genericCall = RpcUtils.isGenericCall(ReflectUtils.getDesc(invocation.getParameterTypes()), invocation.getMethodName());
+        if (!genericCall) {
+            methodDescriptor = serviceDescriptor.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
+        } else {
+            methodDescriptor = ServiceDescriptorInternalCache.genericService().getMethod(invocation.getMethodName(), invocation.getParameterTypes());
+        }
+        ExecutorService callbackExecutor = isSync(methodDescriptor, invocation) ? new ThreadlessExecutor() : streamExecutor;
+        ClientCall call = new TripleClientCall(connectionClient, callbackExecutor,
             getUrl().getOrDefaultFrameworkModel(), writeQueue);
-
         AsyncRpcResult result;
         try {
             switch (methodDescriptor.getRpcType()) {
                 case UNARY:
-                    result = invokeUnary(methodDescriptor, invocation, call);
+                    result = invokeUnary(methodDescriptor, invocation, call, callbackExecutor);
                     break;
                 case SERVER_STREAM:
                     result = invokeServerStream(methodDescriptor, invocation, call);
@@ -146,6 +173,16 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             future.completeExceptionally(e);
             return new AsyncRpcResult(future, invocation);
         }
+    }
+
+    private static boolean isSync(MethodDescriptor methodDescriptor, Invocation invocation){
+        if (!(invocation instanceof RpcInvocation)) {
+            return false;
+        }
+        RpcInvocation rpcInvocation = (RpcInvocation) invocation;
+        MethodDescriptor.RpcType rpcType = methodDescriptor.getRpcType();
+        return UNARY.equals(rpcType)
+            && InvokeMode.SYNC.equals(rpcInvocation.getInvokeMode());
     }
 
     AsyncRpcResult invokeServerStream(MethodDescriptor methodDescriptor, Invocation invocation,
@@ -187,14 +224,13 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     AsyncRpcResult invokeUnary(MethodDescriptor methodDescriptor, Invocation invocation,
-                               ClientCall call) {
-        ExecutorService callbackExecutor = getCallbackExecutor(getUrl(), invocation);
+                               ClientCall call, ExecutorService callbackExecutor) {
 
-        int timeout = RpcUtils.calculateTimeout(getUrl(), invocation, invocation.getMethodName(), 3000);
+        int timeout = RpcUtils.calculateTimeout(getUrl(), invocation, RpcUtils.getMethodName(invocation), 3000);
         if (timeout <= 0) {
             return AsyncRpcResult.newDefaultAsyncResult(new RpcException(RpcException.TIMEOUT_TERMINATE,
                 "No time left for making the following call: " + invocation.getServiceName() + "."
-                    + invocation.getMethodName() + ", terminate directly."), invocation);
+                    + RpcUtils.getMethodName(invocation)+ ", terminate directly."), invocation);
         }
         invocation.setAttachment(TIMEOUT_KEY, String.valueOf(timeout));
 
@@ -209,10 +245,20 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         if (methodDescriptor instanceof StubMethodDescriptor) {
             pureArgument = invocation.getArguments()[0];
         } else {
-            pureArgument = invocation.getArguments();
+            if (methodDescriptor.isGeneric()) {
+                Object[] args = new Object[3];
+                args[0] = RpcUtils.getMethodName(invocation);
+                args[1] = Arrays.stream(RpcUtils.getParameterTypes(invocation)).map(Class::getName).toArray(String[]::new);
+                args[2] = RpcUtils.getArguments(invocation);
+                pureArgument = args;
+            } else {
+                pureArgument = invocation.getArguments();
+            }
         }
         result = new AsyncRpcResult(future, invocation);
-        FutureContext.getContext().setCompatibleFuture(future);
+        if (setFutureWhenSync || ((RpcInvocation) invocation).getInvokeMode() != InvokeMode.SYNC) {
+            FutureContext.getContext().setCompatibleFuture(future);
+        }
 
         result.setExecutor(callbackExecutor);
         ClientCall.Listener callListener = new UnaryClientCallListener(future);
@@ -234,14 +280,15 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         if (methodDescriptor instanceof PackableMethod) {
             meta.packableMethod = (PackableMethod) methodDescriptor;
         } else {
-            meta.packableMethod = ReflectionPackableMethod.init(methodDescriptor, url);
+            meta.packableMethod = url.getOrDefaultFrameworkModel().getExtensionLoader(PackableMethodFactory.class)
+                .getExtension(ConfigurationUtils.getGlobalConfiguration(url.getApplicationModel()).getString(DUBBO_PACKABLE_METHOD_FACTORY, DEFAULT_KEY))
+                .create(methodDescriptor, url, TripleConstant.CONTENT_PROTO);
         }
         meta.convertNoLowerHeader = TripleProtocol.CONVERT_NO_LOWER_HEADER;
         meta.ignoreDefaultVersion = TripleProtocol.IGNORE_1_0_0_VERSION;
         meta.method = methodDescriptor;
         meta.scheme = getSchemeFromUrl(url);
-        // TODO read compressor from config
-        meta.compressor = Compressor.NONE;
+        meta.compressor = getCompressorFromEnv();
         meta.cancellationContext = RpcContext.getCancellationContext();
         meta.address = url.getAddress();
         meta.service = url.getPath();

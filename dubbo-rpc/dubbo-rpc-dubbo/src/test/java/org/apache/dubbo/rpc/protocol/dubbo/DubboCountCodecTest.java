@@ -22,6 +22,7 @@ import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 import org.apache.dubbo.remoting.buffer.ChannelBuffers;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
+import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 import org.apache.dubbo.remoting.exchange.support.MultiMessage;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.RpcInvocation;
@@ -32,7 +33,9 @@ import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import static org.apache.dubbo.rpc.Constants.INPUT_KEY;
 import static org.apache.dubbo.rpc.Constants.OUTPUT_KEY;
@@ -45,23 +48,25 @@ class DubboCountCodecTest {
         ChannelBuffer buffer = ChannelBuffers.buffer(2048);
         Channel channel = new MockChannel();
         Assertions.assertEquals(Codec2.DecodeResult.NEED_MORE_INPUT, dubboCountCodec.decode(channel, buffer));
+        List<DefaultFuture> futures = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
-            Request request = new Request(1);
+            Request request = new Request(i);
+            futures.add(DefaultFuture.newFuture(channel, request, 1000, null));
             RpcInvocation rpcInvocation = new RpcInvocation(null, "echo", DemoService.class.getName(), "", new Class<?>[]{String.class}, new String[]{"yug"});
             request.setData(rpcInvocation);
             dubboCountCodec.encode(channel, buffer, request);
         }
 
         for (int i = 0; i < 10; i++) {
-            Response response = new Response(1);
+            Response response = new Response(i);
             AppResponse appResponse = new AppResponse(i);
             response.setResult(appResponse);
             dubboCountCodec.encode(channel, buffer, response);
         }
 
         MultiMessage multiMessage = (MultiMessage) dubboCountCodec.decode(channel, buffer);
-        Assertions.assertEquals(multiMessage.size(), 20);
+        Assertions.assertEquals(20, multiMessage.size());
         int requestCount = 0;
         int responseCount = 0;
         Iterator iterator = multiMessage.iterator();
@@ -79,6 +84,8 @@ class DubboCountCodecTest {
         }
         Assertions.assertEquals(requestCount, 10);
         Assertions.assertEquals(responseCount, 10);
+
+        futures.forEach(DefaultFuture::cancel);
     }
 
 }

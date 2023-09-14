@@ -18,7 +18,11 @@ package org.apache.dubbo.metadata.rest;
 
 
 import java.lang.reflect.Parameter;
+import java.lang.reflect.Type;
 
+/**
+ * description of service method args info
+ */
 public class ArgInfo {
     /**
      * method arg index 0,1,2,3
@@ -38,6 +42,11 @@ public class ArgInfo {
      * param Type
      */
     private Class paramType;
+
+    /**
+     *  param actual Type(collection,map,array)
+     */
+    private Type actualType;
 
     /**
      * param name
@@ -61,6 +70,7 @@ public class ArgInfo {
 
     public ArgInfo(int index, Parameter parameter) {
         this(index, parameter.getName(), parameter.getType());
+        this.actualType = parameter.getParameterizedType();
     }
 
     public ArgInfo() {
@@ -147,5 +157,23 @@ public class ArgInfo {
     public ArgInfo setFormContentType(boolean isFormContentType) {
         this.formContentType = isFormContentType;
         return this;
+    }
+
+    public Type actualReflectType() {
+        return actualType;
+    }
+
+    @Override
+    public String toString() {
+        return "ArgInfo{" +
+            "index=" + index +
+            ", annotationNameAttribute='" + annotationNameAttribute + '\'' +
+            ", paramAnnotationType=" + paramAnnotationType +
+            ", paramType=" + paramType +
+            ", paramName='" + paramName + '\'' +
+            ", urlSplitIndex=" + urlSplitIndex +
+            ", defaultValue=" + defaultValue +
+            ", formContentType=" + formContentType +
+            '}';
     }
 }

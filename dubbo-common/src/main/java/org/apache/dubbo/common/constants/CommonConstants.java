@@ -32,6 +32,8 @@ public interface CommonConstants {
     String PROVIDER = "provider";
 
     String CONSUMER = "consumer";
+    
+    String CALLBACK = "callback";
 
     String APPLICATION_KEY = "application";
 
@@ -117,8 +119,6 @@ public interface CommonConstants {
     String EXECUTOR_SERVICE_COMPONENT_KEY = ExecutorService.class.getName();
 
     String CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY = "CONSUMER_SHARED_SERVICE_EXECUTOR";
-
-    String INTERNAL_EXECUTOR_SERVICE_COMPONENT_KEY = "INTERNAL_SERVICE_EXECUTOR";
 
     String THREADPOOL_KEY = "threadpool";
 
@@ -241,6 +241,12 @@ public interface CommonConstants {
 
     String REMOTE_METADATA_STORAGE_TYPE = "remote";
 
+    String INTERFACE_REGISTER_MODE = "interface";
+
+    String INSTANCE_REGISTER_MODE = "instance";
+
+    String DEFAULT_REGISTER_MODE = "all";
+
     String GENERIC_KEY = "generic";
 
     /**
@@ -277,6 +283,7 @@ public interface CommonConstants {
     int MAX_PROXY_COUNT = 65535;
 
     String MONITOR_KEY = "monitor";
+    String BACKGROUND_KEY = "background";
     String CLUSTER_KEY = "cluster";
     String USERNAME_KEY = "username";
     String PASSWORD_KEY = "password";
@@ -315,6 +322,7 @@ public interface CommonConstants {
     String HEARTBEAT_EVENT = null;
     String MOCK_HEARTBEAT_EVENT = "H";
     String READONLY_EVENT = "R";
+    String WRITEABLE_EVENT = "W";
 
     String REFERENCE_FILTER_KEY = "reference.filter";
 
@@ -620,5 +628,20 @@ public interface CommonConstants {
     String ENCODE_IN_IO_THREAD_KEY = "encode.in.io";
     boolean DEFAULT_ENCODE_IN_IO_THREAD = false;
 
+    /**
+     * @since 3.2.0
+     */
+    String BYTE_ACCESSOR_KEY = "byte.accessor";
+
     String PAYLOAD = "payload";
+
+    String DUBBO_METRICS_CONFIGCENTER_ENABLE = "dubbo.metrics.configcenter.enable";
+
+    Integer TRI_EXCEPTION_CODE_NOT_EXISTS = 0;
+
+    String PACKABLE_METHOD_FACTORY_KEY = "serialize.packable.factory";
+
+    String DUBBO_PACKABLE_METHOD_FACTORY = "dubbo.application.parameters." + PACKABLE_METHOD_FACTORY_KEY;
+
+    String DUBBO_MANUAL_REGISTER_KEY = "dubbo.application.manual-register";
 }

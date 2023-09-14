@@ -16,14 +16,6 @@
  */
 package org.apache.dubbo.config;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.dubbo.common.compiler.support.AdaptiveCompiler;
 import org.apache.dubbo.common.infra.InfraAdapter;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -33,6 +25,14 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_VERSION_KEY;
@@ -40,7 +40,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_ENABLE;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE;
-import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
+import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_ISOLATION;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LIVENESS_PROBE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
@@ -55,8 +55,10 @@ import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_WHITELIST;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_WHITELIST_COMPATIBLE;
+import static org.apache.dubbo.common.constants.QosConstants.ANONYMOUS_ACCESS_ALLOW_COMMANDS;
 import static org.apache.dubbo.common.constants.QosConstants.ANONYMOUS_ACCESS_PERMISSION_LEVEL;
 import static org.apache.dubbo.common.constants.QosConstants.ANONYMOUS_ACCESS_PERMISSION_LEVEL_COMPATIBLE;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_CHECK;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
@@ -146,6 +148,11 @@ public class ApplicationConfig extends AbstractConfig {
     private Boolean qosEnable;
 
     /**
+     * Whether qos should start success or not, will check qosEnable first
+     */
+    private Boolean qosCheck;
+
+    /**
      * The qos host to listen
      */
     private String qosHost;
@@ -169,6 +176,11 @@ public class ApplicationConfig extends AbstractConfig {
      * the anonymous(any foreign ip) access permission level, default is NONE, can not access any cmd
      */
     private String qosAnonymousAccessPermissionLevel;
+
+    /**
+     * the anonymous(any foreign ip) allow commands, default is empty, can not access any cmd
+     */
+    private String qosAnonymousAllowCommands;
 
     /**
      * Customized parameters
@@ -274,7 +286,7 @@ public class ApplicationConfig extends AbstractConfig {
             }
         }
         if (executorManagementMode == null) {
-            executorManagementMode = EXECUTOR_MANAGEMENT_MODE_DEFAULT;
+            executorManagementMode = EXECUTOR_MANAGEMENT_MODE_ISOLATION;
         }
         if (enableFileCache == null) {
             enableFileCache = Boolean.TRUE;
@@ -427,6 +439,15 @@ public class ApplicationConfig extends AbstractConfig {
         this.qosEnable = qosEnable;
     }
 
+    @Parameter(key = QOS_CHECK)
+    public Boolean getQosCheck() {
+        return qosCheck;
+    }
+
+    public void setQosCheck(Boolean qosCheck) {
+        this.qosCheck = qosCheck;
+    }
+
     @Parameter(key = QOS_HOST)
     public String getQosHost() {
         return qosHost;
@@ -470,6 +491,15 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setQosAnonymousAccessPermissionLevel(String qosAnonymousAccessPermissionLevel) {
         this.qosAnonymousAccessPermissionLevel = qosAnonymousAccessPermissionLevel;
+    }
+
+    @Parameter(key = ANONYMOUS_ACCESS_ALLOW_COMMANDS)
+    public String getQosAnonymousAllowCommands() {
+        return qosAnonymousAllowCommands;
+    }
+
+    public void setQosAnonymousAllowCommands(String qosAnonymousAllowCommands) {
+        this.qosAnonymousAllowCommands = qosAnonymousAllowCommands;
     }
 
     /**

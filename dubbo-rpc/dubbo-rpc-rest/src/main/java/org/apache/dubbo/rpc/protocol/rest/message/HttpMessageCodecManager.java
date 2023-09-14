@@ -20,8 +20,10 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.rest.exception.UnSupportContentTypeException;
+import org.apache.dubbo.rpc.protocol.rest.pair.MessageCodecResultPair;
 
 import java.io.OutputStream;
+import java.lang.reflect.Type;
 import java.util.Set;
 
 public class HttpMessageCodecManager {
@@ -29,23 +31,65 @@ public class HttpMessageCodecManager {
         FrameworkModel.defaultModel().getExtensionLoader(HttpMessageCodec.class).getSupportedExtensionInstances();
 
 
-    public static Object httpMessageDecode(byte[] body, Class type, MediaType mediaType) throws Exception {
+    public static Object httpMessageDecode(byte[] body, Class<?> type, Type actualType, MediaType mediaType) throws Exception {
+        if (body == null || body.length == 0) {
+            return null;
+        }
+
         for (HttpMessageCodec httpMessageCodec : httpMessageCodecs) {
-            if (httpMessageCodec.contentTypeSupport(mediaType, type)) {
-                return httpMessageCodec.decode(body, type);
+            if (httpMessageCodec.contentTypeSupport(mediaType, type) || typeJudge(mediaType, type, httpMessageCodec)) {
+                return httpMessageCodec.decode(body, type,actualType);
             }
         }
         throw new UnSupportContentTypeException("UnSupport content-type :" + mediaType.value);
     }
 
-    public static void httpMessageEncode(OutputStream outputStream, Object unSerializedBody, URL url, MediaType mediaType) throws Exception {
-        for (HttpMessageCodec httpMessageCodec : httpMessageCodecs) {
-            if (httpMessageCodec.contentTypeSupport(mediaType, unSerializedBody.getClass())) {
-                httpMessageCodec.encode(outputStream, unSerializedBody, url);
-                return;
+    public static MessageCodecResultPair httpMessageEncode(OutputStream outputStream, Object unSerializedBody, URL url, MediaType mediaType, Class<?> bodyType) throws Exception {
+
+
+        if (unSerializedBody == null) {
+            for (HttpMessageCodec httpMessageCodec : httpMessageCodecs) {
+                if (httpMessageCodec.contentTypeSupport(mediaType, bodyType) || typeJudge(mediaType, bodyType, httpMessageCodec)) {
+                    return MessageCodecResultPair.pair(false, httpMessageCodec.contentType());
+                }
             }
         }
+
+        for (HttpMessageCodec httpMessageCodec : httpMessageCodecs) {
+            if (httpMessageCodec.contentTypeSupport(mediaType, bodyType) || typeJudge(mediaType, bodyType, httpMessageCodec)) {
+                httpMessageCodec.encode(outputStream, unSerializedBody, url);
+                return MessageCodecResultPair.pair(true, httpMessageCodec.contentType());
+            }
+        }
+
+
         throw new UnSupportContentTypeException("UnSupport content-type :" + mediaType.value);
     }
+
+    /**
+     * if content-type is null or  all ,will judge media type by class type
+     *
+     * @param mediaType
+     * @param bodyType
+     * @param httpMessageCodec
+     * @return
+     */
+    private static boolean typeJudge(MediaType mediaType, Class<?> bodyType, HttpMessageCodec httpMessageCodec) {
+        return (MediaType.ALL_VALUE.equals(mediaType) || mediaType == null)
+            && bodyType != null && httpMessageCodec.typeSupport(bodyType);
+    }
+
+    public static MediaType typeSupport(Class<?> type) {
+        for (HttpMessageCodec httpMessageCodec : httpMessageCodecs) {
+
+            if (httpMessageCodec.typeSupport(type)) {
+                return httpMessageCodec.contentType();
+            }
+
+        }
+
+        return null;
+    }
+
 
 }

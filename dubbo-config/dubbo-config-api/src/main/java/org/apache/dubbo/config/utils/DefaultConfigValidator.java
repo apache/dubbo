@@ -27,6 +27,7 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.SslConfig;
+import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.config.context.ConfigValidator;
 
 public class DefaultConfigValidator implements ConfigValidator {
@@ -51,6 +52,8 @@ public class DefaultConfigValidator implements ConfigValidator {
             ConfigValidationUtils.validateModuleConfig((ModuleConfig) config);
         } else if (config instanceof MetricsConfig) {
             ConfigValidationUtils.validateMetricsConfig((MetricsConfig) config);
+        } else if (config instanceof TracingConfig) {
+            ConfigValidationUtils.validateTracingConfig((TracingConfig) config);
         } else if (config instanceof SslConfig) {
             ConfigValidationUtils.validateSslConfig((SslConfig) config);
         }

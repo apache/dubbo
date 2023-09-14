@@ -47,4 +47,9 @@ public class JaxrsRestServiceImpl implements JaxrsRestService {
     public String pathVariable(String a) {
         return a;
     }
+
+    @Override
+    public String noAnno(String a) {
+        return a;
+    }
 }

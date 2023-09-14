@@ -17,60 +17,25 @@
 package org.apache.dubbo.rpc.protocol.rest.util;
 
 
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ReflectUtils {
-    private final static Class[] EMPTY_CLASS_ARRAY = new Class[0];
-    private final static Object[] EMPTY_OBJECT_ARRAY = new Object[0];
 
-    public static Field getField(Class clazz, String field) throws IllegalAccessException {
-        Field[] fields = clazz.getDeclaredFields();
+    public static Class findClass(String name, ClassLoader classLoader) throws ClassNotFoundException {
 
-        for (Field field1 : fields) {
-            if (field1.getName().equals(field)) {
-                return setModifiersUnFinal(field1);
-            }
-        }
+        return classLoader.loadClass(name);
 
-        fields = clazz.getFields();
-
-        for (Field field1 : fields) {
-            if (field1.getName().equals(field)) {
-                return setModifiersUnFinal(field1);
-            }
-        }
-
-        return null;
-    }
-
-
-    public static Method getMethod(Class clazz, String method, Class[] paramTypes) throws NoSuchMethodException {
-        Method declaredMethod = clazz.getDeclaredMethod(method, paramTypes);
-        declaredMethod.setAccessible(true);
-        return declaredMethod;
-    }
-
-    private static Field setModifiersUnFinal(Field field) throws IllegalAccessException {
-        // public
-//        MODIFIERS.set(field, 1);
-        field.setAccessible(true);
-        return field;
     }
 
     public static Class findClass(String name) throws ClassNotFoundException {
 
         return findClass(Thread.currentThread().getContextClassLoader(), name);
-
-    }
-
-    public static Class findClass(String name, ClassLoader classLoader) throws ClassNotFoundException {
-
-        return classLoader.loadClass(name);
 
     }
 
@@ -84,12 +49,6 @@ public class ReflectUtils {
         return null;
 
     }
-
-    public static Class findClass(String... name) throws ClassNotFoundException {
-
-        return findClass(Thread.currentThread().getContextClassLoader(), name);
-    }
-
 
     public static Class findClass(ClassLoader classLoader, String... name) throws ClassNotFoundException {
 
@@ -119,79 +78,88 @@ public class ReflectUtils {
 
     }
 
+    public static List<Method> getMethodByNameList(Class clazz, String name) {
+
+        return getMethodByNameList(clazz, name, false);
+    }
+
+    public static List<Method> getMethodByNameList(Class clazz, String name, boolean declare) {
+        // prevent duplicate method
+        Set<Method> methods = new HashSet<>();
+
+        try {
+            filterMethod(name, methods, clazz.getDeclaredMethods());
+
+        } catch (Exception e) {
+
+        }
+
+        if (!declare) {
+            return new ArrayList<>(methods);
+        }
+
+
+        try {
+            filterMethod(name, methods, clazz.getMethods());
+        } catch (Exception e) {
+
+        }
+
+        return new ArrayList<>(methods);
+    }
+
+    public static List<Constructor<?>> getConstructList(Class clazz) {
+        // prevent duplicate method
+        Set<Constructor<?>> methods = new HashSet<>();
+
+        try {
+            filterConstructMethod(methods, clazz.getDeclaredConstructors());
+        } catch (Exception e) {
+        }
+
+        try {
+            filterConstructMethod(methods, clazz.getConstructors());
+        } catch (Exception e) {
+
+        }
+        return new ArrayList<Constructor<?>>(methods);
+
+
+    }
+
+    private static void filterConstructMethod(Set<Constructor<?>> methods, Constructor<?>[] declaredMethods) {
+        for (Constructor<?> constructor : declaredMethods) {
+            methods.add(constructor);
+        }
+
+    }
+
+    private static void filterMethod(String name, Set<Method> methodList, Method[] methods) {
+        for (Method declaredMethod : methods) {
+            if (!name.equals(declaredMethod.getName())) {
+                continue;
+            }
+            declaredMethod.setAccessible(true);
+            methodList.add(declaredMethod);
+        }
+    }
+
+    public static Method getMethodByName(Class clazz, String name) {
+
+        List<Method> methodByNameList = getMethodByNameList(clazz, name, true);
+        if (methodByNameList.isEmpty()) {
+            return null;
+        } else {
+            return methodByNameList.get(0);
+        }
+    }
+
     public static Class findClassTryException(String... name) {
         return findClassTryException(Thread.currentThread().getContextClassLoader(), name);
     }
 
-
-    public static Object getArrayElement(Object obj, int index) {
-        return Array.get(obj, index);
-    }
-
-    public static List<Object> getArrayElements(Object obj) {
-
-        List<Object> objects = new ArrayList<Object>();
-        int length = Array.getLength(obj);
-
-        if (length == 0) {
-            return objects;
-        }
-
-        for (int i = 0; i < length; i++) {
-            objects.add(Array.get(obj, i));
-        }
-
-        return objects;
-    }
-
-
-    public static Field getFieldAndTryCatch(Class clazz, String field) {
-
-        try {
-            return getField(clazz, field);
-        } catch (Exception e) {
-
-        }
-        return null;
-    }
-
-    public static Method getMethod(Class clazz, String method) throws NoSuchMethodException {
-        Method declaredMethod = clazz.getDeclaredMethod(method, new Class[]{});
-        declaredMethod.setAccessible(true);
-        return declaredMethod;
-    }
-
-    public static Method getMethodAndTry(Class clazz, String method) {
-        Method declaredMethod = null;
-        try {
-            declaredMethod = clazz.getDeclaredMethod(method, EMPTY_CLASS_ARRAY);
-            declaredMethod.setAccessible(true);
-        } catch (Exception e) {
-
-        }
-
-        if (declaredMethod == null) {
-            try {
-                declaredMethod = getMethodByName(clazz, method);
-            } catch (Exception e) {
-
-            }
-        }
-
-        return declaredMethod;
-    }
-
-    public static Object invoke(Object object, Method method) {
-        try {
-            return method.invoke(object, EMPTY_OBJECT_ARRAY);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
     public static Object invoke(Object object, Method method, Object[] params) throws InvocationTargetException, IllegalAccessException {
         return method.invoke(object, params);
-
     }
 
     public static Object invokeAndTryCatch(Object object, Method method, Object[] params) {
@@ -202,67 +170,6 @@ public class ReflectUtils {
         }
 
         return null;
-    }
-
-    public static Class findClassAndTry(String name) {
-
-        try {
-            return findClass(name);
-        } catch (Exception e) {
-            return null;
-        }
-
-    }
-
-    public static Method getMethodByName(Class clazz, String name) {
-        Method[] declaredMethods = clazz.getMethods();
-
-        for (Method declaredMethod : declaredMethods) {
-            if (name.equals(declaredMethod.getName())) {
-
-                return declaredMethod;
-            }
-        }
-
-        return null;
-
-    }
-
-
-    public static Object getValueByFields(Object obj, Field... fields) {
-        for (Field field : fields) {
-
-            try {
-                Object o = field.get(obj);
-                if (o != null) {
-                    return o;
-                }
-            } catch (Exception e) {
-
-            }
-
-        }
-
-        return null;
-    }
-
-    public static Method getMethodAndTryCatch(Class clazz, String method, Class[] paramTypes) {
-        try {
-            return getMethod(clazz, method, paramTypes);
-        } catch (Throwable e) {
-
-        }
-        return null;
-
-    }
-
-
-    public static Object getFieldValueAndTryCatch(Object obj, String field) {
-        try {
-            return ReflectUtils.getValueByFields(obj, ReflectUtils.getFieldAndTryCatch(obj.getClass(), field));
-        } catch (Exception e) {
-            return null;
-        }
     }
 
 

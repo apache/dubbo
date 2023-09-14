@@ -416,7 +416,7 @@
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
-                                        META-INF/dubbo/internal/org.apache.dubbo.qos.command.BaseCommand
+                                        META-INF/dubbo/internal/org.apache.dubbo.qos.api.BaseCommand
                                     </resource>
                                 </transformer>
                                 <transformer

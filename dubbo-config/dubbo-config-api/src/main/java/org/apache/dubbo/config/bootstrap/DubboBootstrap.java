@@ -39,6 +39,7 @@ import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.SslConfig;
+import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.config.bootstrap.builders.ApplicationBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ConfigCenterBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ConsumerBuilder;
@@ -81,7 +82,7 @@ public final class DubboBootstrap {
 
     private static final Logger logger = LoggerFactory.getLogger(DubboBootstrap.class);
 
-    private static volatile ConcurrentMap<ApplicationModel, DubboBootstrap> instanceMap = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<ApplicationModel, DubboBootstrap> instanceMap = new ConcurrentHashMap<>();
     private static volatile DubboBootstrap instance;
 
     private final AtomicBoolean awaited = new AtomicBoolean(false);
@@ -92,15 +93,15 @@ public final class DubboBootstrap {
 
     private final Condition condition = lock.newCondition();
 
-    private ExecutorRepository executorRepository;
+    private final ExecutorRepository executorRepository;
+
+    private final Environment environment;
 
     private final ApplicationModel applicationModel;
 
-    protected final ConfigManager configManager;
+    private final ConfigManager configManager;
 
-    protected final Environment environment;
-
-    private ApplicationDeployer applicationDeployer;
+    private final ApplicationDeployer applicationDeployer;
 
     /**
      * See {@link ApplicationModel} and {@link ExtensionLoader} for why DubboBootstrap is designed to be singleton.
@@ -161,7 +162,7 @@ public final class DubboBootstrap {
     private DubboBootstrap(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
         configManager = applicationModel.getApplicationConfigManager();
-        environment = applicationModel.getModelEnvironment();
+        environment = applicationModel.modelEnvironment();
 
         executorRepository = ExecutorRepository.getInstance(applicationModel);
         applicationDeployer = applicationModel.getDeployer();
@@ -700,6 +701,12 @@ public final class DubboBootstrap {
     public DubboBootstrap metrics(MetricsConfig metrics) {
         metrics.setScopeModel(applicationModel);
         configManager.setMetrics(metrics);
+        return this;
+    }
+
+    public DubboBootstrap tracing(TracingConfig tracing){
+        tracing.setScopeModel(applicationModel);
+        configManager.setTracing(tracing);
         return this;
     }
 

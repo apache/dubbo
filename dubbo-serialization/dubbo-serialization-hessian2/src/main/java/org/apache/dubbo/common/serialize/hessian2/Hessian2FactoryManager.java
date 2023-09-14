@@ -16,14 +16,16 @@
  */
 package org.apache.dubbo.common.serialize.hessian2;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.apache.dubbo.common.utils.DefaultSerializeClassChecker;
+import org.apache.dubbo.common.utils.SerializeCheckStatus;
+import org.apache.dubbo.common.utils.SerializeSecurityManager;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import com.alibaba.com.caucho.hessian.io.SerializerFactory;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class Hessian2FactoryManager {
@@ -31,15 +33,23 @@ public class Hessian2FactoryManager {
     String ALLOW = "dubbo.application.hessian2.allow";
     String DENY = "dubbo.application.hessian2.deny";
     private volatile SerializerFactory SYSTEM_SERIALIZER_FACTORY;
+    private volatile SerializerFactory stickySerializerFactory = null;
     private final Map<ClassLoader, SerializerFactory> CL_2_SERIALIZER_FACTORY = new ConcurrentHashMap<>();
 
+    private final SerializeSecurityManager serializeSecurityManager;
     private final DefaultSerializeClassChecker defaultSerializeClassChecker;
 
     public Hessian2FactoryManager(FrameworkModel frameworkModel) {
+        serializeSecurityManager = frameworkModel.getBeanFactory().getOrRegisterBean(SerializeSecurityManager.class);
         defaultSerializeClassChecker = frameworkModel.getBeanFactory().getOrRegisterBean(DefaultSerializeClassChecker.class);
     }
 
     public SerializerFactory getSerializerFactory(ClassLoader classLoader) {
+        SerializerFactory sticky = stickySerializerFactory;
+        if (sticky != null && sticky.getClassLoader().equals(classLoader)) {
+            return sticky;
+        }
+
         if (classLoader == null) {
             // system classloader
             if (SYSTEM_SERIALIZER_FACTORY == null) {
@@ -49,19 +59,23 @@ public class Hessian2FactoryManager {
                     }
                 }
             }
+            stickySerializerFactory = SYSTEM_SERIALIZER_FACTORY;
             return SYSTEM_SERIALIZER_FACTORY;
         }
 
-        if (!CL_2_SERIALIZER_FACTORY.containsKey(classLoader)) {
+        SerializerFactory factory = CL_2_SERIALIZER_FACTORY.get(classLoader);
+        if (factory == null) {
             synchronized (this) {
                 if (!CL_2_SERIALIZER_FACTORY.containsKey(classLoader)) {
                     SerializerFactory serializerFactory = createSerializerFactory();
                     CL_2_SERIALIZER_FACTORY.put(classLoader, serializerFactory);
+                    stickySerializerFactory = serializerFactory;
                     return serializerFactory;
                 }
             }
         }
-        return CL_2_SERIALIZER_FACTORY.get(classLoader);
+        stickySerializerFactory = factory;
+        return factory;
     }
 
     private SerializerFactory createSerializerFactory() {
@@ -89,14 +103,17 @@ public class Hessian2FactoryManager {
             if (StringUtils.isNotEmpty(allowPattern)) {
                 for (String pattern : allowPattern.split(";")) {
                     serializerFactory.getClassFactory().allow(pattern);
+                    serializeSecurityManager.addToAlwaysAllowed(pattern);
                 }
             }
+            serializeSecurityManager.setCheckStatus(SerializeCheckStatus.STRICT);
         } else {
             serializerFactory.getClassFactory().setWhitelist(false);
             String denyPattern = System.getProperty(DENY);
             if (StringUtils.isNotEmpty(denyPattern)) {
                 for (String pattern : denyPattern.split(";")) {
                     serializerFactory.getClassFactory().deny(pattern);
+                    serializeSecurityManager.addToDisAllowed(pattern);
                 }
             }
         }

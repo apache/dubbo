@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.integration;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -30,10 +31,10 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
-import org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster;
-import org.apache.dubbo.metrics.model.TimePair;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.AddressListener;
+import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -63,9 +64,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_REGISTER_MODE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REFER_INVOKER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNSUPPORTED;
@@ -81,9 +82,12 @@ import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_HASHMA
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER_MODE_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.CONFIGURATORS_SUFFIX;
+import static org.apache.dubbo.registry.Constants.ENABLE_26X_CONFIGURATION_LISTEN;
 import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
 import static org.apache.dubbo.rpc.model.ScopeModelUtil.getModuleModel;
@@ -114,19 +118,31 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         super(serviceType, url);
         moduleModel = getModuleModel(url.getScopeModel());
         consumerConfigurationListener = getConsumerConfigurationListener(moduleModel);
-
     }
 
     @Override
     public void subscribe(URL url) {
-        ApplicationModel applicationModel = url.getApplicationModel();
-        GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getBean(GlobalMetricsEventMulticaster.class);
-        TimePair timePair = TimePair.start();
 
-        eventMulticaster.publishEvent(new RegistryEvent.MetricsSubscribeEvent(applicationModel, timePair));
-        super.subscribe(url);
-        eventMulticaster.publishFinishEvent(new RegistryEvent.MetricsSubscribeEvent(applicationModel, timePair));
-        if (moduleModel.getModelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+        // Fail-fast detection protocol spi
+        String queryProtocols = this.queryMap.get(PROTOCOL_KEY);
+        if (StringUtils.isNotBlank(queryProtocols)) {
+            String[] acceptProtocols = queryProtocols.split(",");
+            for (String acceptProtocol : acceptProtocols) {
+                if (!moduleModel.getApplicationModel().getExtensionLoader(Protocol.class).hasExtension(acceptProtocol)) {
+                    throw new IllegalStateException("No such extension org.apache.dubbo.rpc.Protocol by name " + acceptProtocol + ",  please check whether related SPI module is missing");
+                }
+            }
+        }
+
+        ApplicationModel applicationModel = url.getApplicationModel();
+        String registryClusterName = registry.getUrl().getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY, registry.getUrl().getParameter(PROTOCOL_KEY));
+        MetricsEventBus.post(RegistryEvent.toSubscribeEvent(applicationModel,registryClusterName), () ->
+            {
+                super.subscribe(url);
+                return null;
+            }
+        );
+        if (moduleModel.modelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
             consumerConfigurationListener.addNotifyListener(this);
             referenceConfigurationListener = new ReferenceConfigurationListener(moduleModel, this, url);
         }
@@ -140,7 +156,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     @Override
     public void unSubscribe(URL url) {
         super.unSubscribe(url);
-        if (moduleModel.getModelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+        if (moduleModel.modelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
             consumerConfigurationListener.removeNotifyListener(this);
             if (referenceConfigurationListener != null) {
                 referenceConfigurationListener.stop();
@@ -151,7 +167,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     @Override
     public void destroy() {
         super.destroy();
-        if (moduleModel.getModelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+        if (moduleModel.modelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
             consumerConfigurationListener.removeNotifyListener(this);
             if (referenceConfigurationListener != null) {
                 referenceConfigurationListener.stop();
@@ -171,11 +187,13 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             .filter(this::isNotCompatibleFor26x)
             .collect(Collectors.groupingBy(this::judgeCategory));
 
-        List<URL> configuratorURLs = categoryUrls.getOrDefault(CONFIGURATORS_CATEGORY, Collections.emptyList());
-        this.configurators = Configurator.toConfigurators(configuratorURLs).orElse(this.configurators);
+        if (moduleModel.modelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_26X_CONFIGURATION_LISTEN, true)) {
+            List<URL> configuratorURLs = categoryUrls.getOrDefault(CONFIGURATORS_CATEGORY, Collections.emptyList());
+            this.configurators = Configurator.toConfigurators(configuratorURLs).orElse(this.configurators);
 
-        List<URL> routerURLs = categoryUrls.getOrDefault(ROUTERS_CATEGORY, Collections.emptyList());
-        toRouters(routerURLs).ifPresent(this::addRouters);
+            List<URL> routerURLs = categoryUrls.getOrDefault(ROUTERS_CATEGORY, Collections.emptyList());
+            toRouters(routerURLs).ifPresent(this::addRouters);
+        }
 
         // providers
         List<URL> providerURLs = categoryUrls.getOrDefault(PROVIDERS_CATEGORY, Collections.emptyList());
@@ -490,7 +508,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
 
         // FIXME, kept for mock
         if (providerUrl.hasParameter(MOCK_KEY) || providerUrl.getAnyMethodParameter(MOCK_KEY) != null) {
-            providerUrl = providerUrl.removeParameter(TAG_KEY);
+            providerUrl = providerUrl.removeParameter(MOCK_KEY);
         }
 
         if ((providerUrl.getPath() == null || providerUrl.getPath()
@@ -632,6 +650,18 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         return false;
     }
 
+    @Override
+    protected Map<String, String> getDirectoryMeta() {
+        String registryKey = Optional.ofNullable(getRegistry())
+            .map(Registry::getUrl)
+            .map(url -> url.getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY, url.getProtocol()))
+            .orElse("unknown");
+        Map<String, String> metas = new HashMap<>();
+        metas.put(REGISTRY_KEY, registryKey);
+        metas.put(REGISTER_MODE_KEY, INTERFACE_REGISTER_MODE);
+        return metas;
+    }
+
     private boolean isNotCompatibleFor26x(URL url) {
         return StringUtils.isEmpty(url.getParameter(COMPATIBLE_CONFIG_KEY));
     }
@@ -680,4 +710,10 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         }
     }
 
+    @Override
+    public String toString() {
+        return "RegistryDirectory(" +
+            "registry: " + getUrl().getAddress() +
+            ")-" + super.toString();
+    }
 }

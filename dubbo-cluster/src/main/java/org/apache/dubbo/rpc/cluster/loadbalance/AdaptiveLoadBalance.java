@@ -44,7 +44,7 @@ public class AdaptiveLoadBalance extends AbstractLoadBalance {
     //default key
     private String attachmentKey = "mem,load";
 
-    private AdaptiveMetrics adaptiveMetrics;
+    private final AdaptiveMetrics adaptiveMetrics;
 
     public AdaptiveLoadBalance(ApplicationModel scopeModel){
         adaptiveMetrics = scopeModel.getBeanFactory().getBean(AdaptiveMetrics.class);
@@ -110,7 +110,7 @@ public class AdaptiveLoadBalance extends AbstractLoadBalance {
     private <T> Invoker<T> chooseLowLoadInvoker(Invoker<T> invoker1,Invoker<T> invoker2,Invocation invocation){
         int weight1 = getWeight(invoker1, invocation);
         int weight2 = getWeight(invoker2, invocation);
-        int timeout1 = getTimeout(invoker2, invocation);
+        int timeout1 = getTimeout(invoker1, invocation);
         int timeout2 = getTimeout(invoker2, invocation);
         long load1 = Double.doubleToLongBits(adaptiveMetrics.getLoad(getServiceKey(invoker1,invocation),weight1,timeout1 ));
         long load2 = Double.doubleToLongBits(adaptiveMetrics.getLoad(getServiceKey(invoker2,invocation),weight2,timeout2 ));

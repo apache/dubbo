@@ -26,7 +26,11 @@ public class DefaultDubboServerObservationConvention extends AbstractDefaultDubb
     /**
      * Singleton instance of {@link DefaultDubboServerObservationConvention}.
      */
-    public static final DubboServerObservationConvention INSTANCE = new DefaultDubboServerObservationConvention();
+    private static final DubboServerObservationConvention INSTANCE = new DefaultDubboServerObservationConvention();
+
+    public static DubboServerObservationConvention getInstance() {
+        return INSTANCE;
+    }
 
     @Override
     public String getName() {

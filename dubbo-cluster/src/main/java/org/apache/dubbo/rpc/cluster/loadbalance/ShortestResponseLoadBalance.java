@@ -25,6 +25,7 @@ import org.apache.dubbo.rpc.RpcStatus;
 import org.apache.dubbo.rpc.cluster.Constants;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,9 +49,9 @@ public class ShortestResponseLoadBalance extends AbstractLoadBalance implements 
 
     private int slidePeriod = 30_000;
 
-    private ConcurrentMap<RpcStatus, SlideWindowData> methodMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<RpcStatus, SlideWindowData> methodMap = new ConcurrentHashMap<>();
 
-    private AtomicBoolean onResetSlideWindow = new AtomicBoolean(false);
+    private final AtomicBoolean onResetSlideWindow = new AtomicBoolean(false);
 
     private volatile long lastUpdateTime = System.currentTimeMillis();
 
@@ -58,7 +59,7 @@ public class ShortestResponseLoadBalance extends AbstractLoadBalance implements 
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
-        slidePeriod = applicationModel.getModelEnvironment().getConfiguration().getInt(Constants.SHORTEST_RESPONSE_SLIDE_PERIOD, 30_000);
+        slidePeriod = applicationModel.modelEnvironment().getConfiguration().getInt(Constants.SHORTEST_RESPONSE_SLIDE_PERIOD, 30_000);
         executorService = applicationModel.getFrameworkModel().getBeanFactory()
             .getBean(FrameworkExecutorRepository.class).getSharedExecutor();
     }
@@ -67,7 +68,7 @@ public class ShortestResponseLoadBalance extends AbstractLoadBalance implements 
 
         private long succeededOffset;
         private long succeededElapsedOffset;
-        private RpcStatus rpcStatus;
+        private final RpcStatus rpcStatus;
 
         public SlideWindowData(RpcStatus rpcStatus) {
             this.rpcStatus = rpcStatus;
@@ -116,7 +117,7 @@ public class ShortestResponseLoadBalance extends AbstractLoadBalance implements 
         // Filter out all the shortest response invokers
         for (int i = 0; i < length; i++) {
             Invoker<T> invoker = invokers.get(i);
-            RpcStatus rpcStatus = RpcStatus.getStatus(invoker.getUrl(), invocation.getMethodName());
+            RpcStatus rpcStatus = RpcStatus.getStatus(invoker.getUrl(), RpcUtils.getMethodName(invocation));
             SlideWindowData slideWindowData = ConcurrentHashMapUtils.computeIfAbsent(methodMap, rpcStatus, SlideWindowData::new);
 
             // Calculate the estimated response time from the product of active connections and succeeded average elapsed time.

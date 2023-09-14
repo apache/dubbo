@@ -68,6 +68,7 @@ header:
     - 'Jenkinsfile'
     - '**/vendor/**'
     - '**/src/test/resources/certs/**'
+    - '**/src/test/resources/definition/**'
     - 'dubbo-common/src/main/java/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java'
     - 'dubbo-common/src/main/java/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java'
     - 'dubbo-common/src/main/java/org/apache/dubbo/common/timer/HashedWheelTimer.java'
@@ -95,6 +96,11 @@ header:
     - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/MatchingGroupIdFilter.java'
     - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/RunArguments.java'
     - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/RunProcess.java'
+    - 'dubbo-native/src/main/java/org/apache/dubbo/aot/generate/BasicJsonWriter.java'
+    - 'dubbo-native/src/main/java/org/apache/dubbo/aot/generate/ExecutableMode.java'
+    - 'dubbo-native/src/main/java/org/apache/dubbo/aot/generate/MemberCategory.java'
+    - 'dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/aggregate/DubboMergingDigest.java'
+    - 'dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/aggregate/DubboAbstractTDigest.java'
 
   comment: on-failure
 

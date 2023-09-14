@@ -117,7 +117,7 @@ public enum JRE {
                     return OTHER;
             }
         } catch (Exception e) {
-            logger.debug("can't determine current JRE version, if JRE version is 8 but java.version is null", e);
+            logger.debug("Can't determine current JRE version (maybe java.version is null), assuming that JRE version is 8.", e);
         }
         // default java 8
         return JAVA_8;

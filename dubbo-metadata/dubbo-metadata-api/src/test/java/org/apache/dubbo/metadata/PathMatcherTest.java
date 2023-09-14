@@ -20,13 +20,84 @@ import org.apache.dubbo.metadata.rest.PathMatcher;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Method;
+
 public class PathMatcherTest {
 
     @Test
-    public void testPathMatcher() {
-        PathMatcher pathMather = new PathMatcher("/a/b/c/{path1}/d/{path2}/e");
+    void testPathMatcher() {
+        PathMatcher pathMatherMeta = new PathMatcher("/a/b/c/{path1}/d/{path2}/e");
 
-        PathMatcher pathMather1 = new PathMatcher("/a/b/c/1/d/2/e");
-        Assertions.assertEquals(true, pathMather.equals(pathMather1));
+
+        PathMatcher requestPathMather = new PathMatcher("/a/b/c/1/d/2/e");
+        Assertions.assertEquals(requestPathMather, pathMatherMeta);
+
+        PathMatcher requestPathMather1 = new PathMatcher("/{c}/b/c/1/d/2/e");
+        Assertions.assertEquals(requestPathMather, requestPathMather1);
+
+        PathMatcher pathMatcher = new PathMatcher("/{d}/b/c/1/d/2/e");
+
+        pathMatcher.setGroup(null);
+        pathMatcher.setPort(null);
+        pathMatcher.setVersion(null);
+        pathMatcher.setContextPath("");
+
+        Assertions.assertEquals(pathMatherMeta, pathMatcher);
     }
+
+    @Test
+    void testEqual() {
+        PathMatcher pathMatherMeta = new PathMatcher("/a/b/c");
+        pathMatherMeta.setContextPath("/context");
+        PathMatcher pathMatherMeta1 = new PathMatcher("/a/b/d");
+
+        pathMatherMeta1.setContextPath("/context");
+        Assertions.assertNotEquals(pathMatherMeta, pathMatherMeta1);
+
+        pathMatherMeta1 = new PathMatcher("/a/b/c");
+        pathMatherMeta1.setContextPath("/context");
+
+        Assertions.assertEquals(pathMatherMeta, pathMatherMeta1);
+
+        pathMatherMeta.setContextPath("context");
+
+        pathMatherMeta1.setContextPath("context");
+
+
+        Assertions.assertEquals(pathMatherMeta, pathMatherMeta1);
+        Assertions.assertEquals(pathMatherMeta.toString(), pathMatherMeta1.toString());
+    }
+
+    @Test
+    void testMethodCompare() {
+        Method hashCode = null;
+        Method equals = null;
+        try {
+            hashCode = Object.class.getDeclaredMethod("hashCode");
+            equals = Object.class.getDeclaredMethod("equals", Object.class);
+        } catch (NoSuchMethodException e) {
+
+        }
+
+        // no need to compare service method
+        PathMatcher pathMatcher = new PathMatcher(hashCode);
+        PathMatcher pathMatchers = new PathMatcher(hashCode);
+        Assertions.assertNotEquals(pathMatcher, pathMatchers);
+
+
+        //  equal
+        PathMatcher pathMatherMetaHashCode = PathMatcher.getInvokeCreatePathMatcher(hashCode);
+        PathMatcher pathMatherMetaHashCodes = new PathMatcher(hashCode);
+        Assertions.assertEquals(pathMatherMetaHashCode, pathMatherMetaHashCodes);
+
+
+        PathMatcher pathMatherMetaEquals = PathMatcher.getInvokeCreatePathMatcher(equals);
+        PathMatcher pathMatherMetaEqual = PathMatcher.getInvokeCreatePathMatcher(equals);
+        Assertions.assertEquals(pathMatherMetaEqual, pathMatherMetaEquals);
+
+
+        Assertions.assertNotEquals(pathMatherMetaHashCode, pathMatherMetaEquals);
+    }
+
+
 }

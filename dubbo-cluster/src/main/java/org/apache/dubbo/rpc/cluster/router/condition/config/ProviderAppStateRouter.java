@@ -36,7 +36,7 @@ public class ProviderAppStateRouter<T> extends ListenableStateRouter<T> {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ListenableStateRouter.class);
     public static final String NAME = "PROVIDER_APP_ROUTER";
     private String application;
-    private String currentApplication;
+    private final String currentApplication;
 
     public ProviderAppStateRouter(URL url) {
         super(url, url.getApplication());
@@ -54,8 +54,11 @@ public class ProviderAppStateRouter<T> extends ListenableStateRouter<T> {
         String providerApplication = url.getRemoteApplication();
 
         // provider application is empty or equals with the current application
-        if (isEmpty(providerApplication) || providerApplication.equals(currentApplication)) {
+        if (isEmpty(providerApplication)) {
             logger.warn(CLUSTER_TAG_ROUTE_EMPTY, "condition router get providerApplication is empty, will not subscribe to provider app rules.", "", "");
+            return;
+        }
+        if (providerApplication.equals(currentApplication)) {
             return;
         }
 

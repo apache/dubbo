@@ -19,6 +19,9 @@ package org.apache.dubbo.rpc.protocol.rest;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.metadata.rest.PathMatcher;
+import org.apache.dubbo.metadata.rest.RestMethodMetadata;
+import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -33,21 +36,38 @@ import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 
+import org.apache.dubbo.rpc.protocol.rest.annotation.metadata.MetadataResolver;
+import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
+import org.apache.dubbo.rpc.protocol.rest.exception.DoublePathCheckException;
+import org.apache.dubbo.rpc.protocol.rest.exception.ResteasyExceptionMapper;
+import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionHandler;
+import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
+
+import org.apache.dubbo.rpc.protocol.rest.filter.TraceRequestAndResponseFilter;
 import org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestService;
 import org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestServiceImpl;
-
+import org.apache.dubbo.rpc.protocol.rest.rest.HttpMethodService;
+import org.apache.dubbo.rpc.protocol.rest.rest.HttpMethodServiceImpl;
+import org.apache.dubbo.rpc.protocol.rest.rest.RestDemoForTestException;
+import org.apache.dubbo.rpc.protocol.rest.rest.RestDemoService;
+import org.apache.dubbo.rpc.protocol.rest.rest.RestDemoServiceImpl;
+import org.apache.dubbo.rpc.protocol.rest.rest.TestGetInvokerService;
+import org.apache.dubbo.rpc.protocol.rest.rest.TestGetInvokerServiceImpl;
 import org.hamcrest.CoreMatchers;
+import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
-import static org.apache.dubbo.rpc.protocol.rest.Constants.EXCEPTION_MAPPER_KEY;
 import static org.apache.dubbo.rpc.protocol.rest.Constants.EXTENSION_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -60,6 +80,7 @@ class JaxrsRestProtocolTest {
     private final int availablePort = NetUtils.getAvailablePort();
     private final URL exportUrl = URL.valueOf("rest://127.0.0.1:" + availablePort + "/rest?interface=org.apache.dubbo.rpc.protocol.rest.DemoService");
     private final ModuleServiceRepository repository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
+    private final ExceptionMapper exceptionMapper = new ExceptionMapper();
 
     @AfterEach
     public void tearDown() {
@@ -83,14 +104,28 @@ class JaxrsRestProtocolTest {
         String result = client.sayHello("haha");
         Assertions.assertTrue(server.isCalled());
         Assertions.assertEquals("Hello, haha", result);
+
+        String header = client.header("header test");
+        Assertions.assertEquals("header test", header);
+
+        Assertions.assertEquals(1, client.headerInt(1));
         invoker.destroy();
         exporter.unexport();
     }
 
 
     @Test
-    void testAnotherUserRestProtocol() {
-        URL url = URL.valueOf("rest://127.0.0.1:" + NetUtils.getAvailablePort() + "/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestService");
+    void testAnotherUserRestProtocolByDifferentRestClient() {
+        testAnotherUserRestProtocol(org.apache.dubbo.remoting.Constants.OK_HTTP);
+        testAnotherUserRestProtocol(org.apache.dubbo.remoting.Constants.APACHE_HTTP_CLIENT);
+        testAnotherUserRestProtocol(org.apache.dubbo.remoting.Constants.URL_CONNECTION);
+    }
+
+
+    void testAnotherUserRestProtocol(String restClient) {
+        URL url = URL.valueOf("rest://127.0.0.1:" + NetUtils.getAvailablePort()
+            + "/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestService&"
+            + org.apache.dubbo.remoting.Constants.CLIENT_KEY + "=" + restClient);
 
         AnotherUserRestServiceImpl server = new AnotherUserRestServiceImpl();
 
@@ -114,6 +149,12 @@ class JaxrsRestProtocolTest {
         Assertions.assertTrue(Arrays.equals(bytes, client.bytes(bytes)));
 
         Assertions.assertEquals(1l, client.number(1l));
+
+        HashMap<String, String> map = new HashMap<>();
+        map.put("headers", "h1");
+        Assertions.assertEquals("h1", client.headerMap(map));
+        Assertions.assertEquals(null, client.headerMap(null));
+
 
         invoker.destroy();
         exporter.unexport();
@@ -146,7 +187,7 @@ class JaxrsRestProtocolTest {
 
         URL url = this.registerProvider(exportUrl, server, DemoService.class);
 
-        RpcContext.getClientAttachment().setAttachment("timeout", "200");
+        RpcContext.getClientAttachment().setAttachment("timeout", "20000");
         Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, url));
 
         DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, url));
@@ -174,6 +215,7 @@ class JaxrsRestProtocolTest {
         exporter.unexport();
     }
 
+    @Disabled
     @Test
     void testServletWithoutWebConfig() {
         Assertions.assertThrows(RpcException.class, () -> {
@@ -190,6 +232,7 @@ class JaxrsRestProtocolTest {
     @Test
     void testErrorHandler() {
         Assertions.assertThrows(RpcException.class, () -> {
+            exceptionMapper.unRegisterMapper(RuntimeException.class);
             DemoService server = new DemoServiceImpl();
 
             URL url = this.registerProvider(exportUrl, server, DemoService.class);
@@ -269,6 +312,7 @@ class JaxrsRestProtocolTest {
         exporter.unexport();
     }
 
+    @Disabled
     @Test
     void testRegFail() {
         Assertions.assertThrows(RuntimeException.class, () -> {
@@ -288,11 +332,12 @@ class JaxrsRestProtocolTest {
 
     @Test
     void testExceptionMapper() {
+
         DemoService server = new DemoServiceImpl();
 
         URL url = this.registerProvider(exportUrl, server, DemoService.class);
 
-        URL exceptionUrl = url.addParameter(EXCEPTION_MAPPER_KEY, TestExceptionMapper.class.getName());
+        URL exceptionUrl = url.addParameter(EXTENSION_KEY, TestExceptionMapper.class.getName());
 
         protocol.export(proxy.getInvoker(server, DemoService.class, exceptionUrl));
 
@@ -301,13 +346,453 @@ class JaxrsRestProtocolTest {
         Assertions.assertEquals("test-exception", referDemoService.error());
     }
 
-    public static class TestExceptionMapper implements ExceptionMapper<RuntimeException> {
+    @Test
+    void testRestExceptionMapper() {
+
+        DemoService server = new DemoServiceImpl();
+
+        URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+        URL exceptionUrl = url.addParameter(EXTENSION_KEY, ResteasyExceptionMapper.class.getName());
+
+        protocol.export(proxy.getInvoker(server, DemoService.class, exceptionUrl));
+
+        DemoService referDemoService = this.proxy.getProxy(protocol.refer(DemoService.class, exceptionUrl));
+
+        Assertions.assertEquals("test-exception", referDemoService.error());
+    }
+
+    @Test
+    void testFormConsumerParser() {
+        DemoService server = new DemoServiceImpl();
+        URL nettyUrl = this.registerProvider(exportUrl, server, DemoService.class);
+
+
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+
+
+        Long number = demoService.testFormBody(18l);
+        Assertions.assertEquals(18l, number);
+
+        exporter.unexport();
+    }
+
+    @Test
+    void test404() {
+        Assertions.assertThrows(RpcException.class, () -> {
+            DemoService server = new DemoServiceImpl();
+            URL nettyUrl = this.registerProvider(exportUrl, server, DemoService.class);
+
+
+            Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+            URL referUrl = URL.valueOf("rest://127.0.0.1:" + availablePort + "/rest?interface=org.apache.dubbo.rpc.protocol.rest.rest.RestDemoForTestException");
+
+            RestDemoForTestException restDemoForTestException = this.proxy.getProxy(protocol.refer(RestDemoForTestException.class, referUrl));
+
+            restDemoForTestException.test404();
+
+            exporter.unexport();
+        });
+
+    }
+
+    @Test
+    void test400() {
+        Assertions.assertThrows(RpcException.class, () -> {
+            DemoService server = new DemoServiceImpl();
+            URL nettyUrl = this.registerProvider(exportUrl, server, DemoService.class);
+
+
+            Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+            URL referUrl = URL.valueOf("rest://127.0.0.1:" + availablePort + "/rest?interface=org.apache.dubbo.rpc.protocol.rest.rest.RestDemoForTestException");
+
+            RestDemoForTestException restDemoForTestException = this.proxy.getProxy(protocol.refer(RestDemoForTestException.class, referUrl));
+
+            restDemoForTestException.test400("abc", "edf");
+
+            exporter.unexport();
+        });
+
+    }
+
+    @Test
+    void testPrimitive() {
+        DemoService server = new DemoServiceImpl();
+
+        URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+        URL nettyUrl = url.addParameter(SERVER_KEY, "netty")
+            .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.support.LoggingFilter");
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+
+        Integer result = demoService.primitiveInt(1, 2);
+        Long resultLong = demoService.primitiveLong(1, 2l);
+        long resultByte = demoService.primitiveByte((byte) 1, 2l);
+        long resultShort = demoService.primitiveShort((short) 1, 2l, 1);
+
+        assertThat(result, is(3));
+        assertThat(resultShort, is(3l));
+        assertThat(resultLong, is(3l));
+        assertThat(resultByte, is(3l));
+
+        exporter.unexport();
+    }
+
+
+    @Test
+    void testDoubleCheckException() {
+
+
+        Assertions.assertThrows(DoublePathCheckException.class, () -> {
+
+            DemoService server = new DemoServiceImpl();
+
+
+            Invoker<DemoService> invoker = proxy.getInvoker(server, DemoService.class, exportUrl);
+
+            PathAndInvokerMapper pathAndInvokerMapper = new PathAndInvokerMapper();
+
+            ServiceRestMetadata serviceRestMetadata = MetadataResolver.resolveConsumerServiceMetadata(DemoService.class, exportUrl, "");
+
+            Map<PathMatcher, RestMethodMetadata> pathContainPathVariableToServiceMap = serviceRestMetadata.getPathUnContainPathVariableToServiceMap();
+
+            Invoker<TestInterface> invokerNew = proxy.getInvoker(new TestInterface() {
+            }, TestInterface.class, exportUrl);
+
+            pathAndInvokerMapper.addPathAndInvoker(pathContainPathVariableToServiceMap, invoker);
+            pathAndInvokerMapper.addPathAndInvoker(pathContainPathVariableToServiceMap, invokerNew);
+        });
+
+
+    }
+
+    public static interface TestInterface{}
+
+
+    @Test
+    void testMapParam() {
+        DemoService server = new DemoServiceImpl();
+
+        URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+        URL nettyUrl = url.addParameter(SERVER_KEY, "netty")
+            .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.support.LoggingFilter");
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+
+        Map<String, String> params = new HashMap<>();
+        params.put("param", "P1");
+        ;
+
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("header", "H1");
+
+
+        Assertions.assertEquals("P1", demoService.testMapParam(params));
+        Assertions.assertEquals("H1", demoService.testMapHeader(headers));
+
+        MultivaluedMapImpl<String, String> forms = new MultivaluedMapImpl<>();
+        forms.put("form", Arrays.asList("F1"));
+
+        Assertions.assertEquals(Arrays.asList("F1"), demoService.testMapForm(forms));
+        exporter.unexport();
+    }
+
+
+    @Test
+    void testNoArgParam() {
+        DemoService server = new DemoServiceImpl();
+
+        URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+        URL nettyUrl = url.addParameter(SERVER_KEY, "netty")
+            .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.support.LoggingFilter");
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+
+
+        Assertions.assertEquals(null, demoService.noStringHeader(null));
+        Assertions.assertEquals(null, demoService.noStringParam(null));
+        Assertions.assertThrows(RpcException.class, () -> {
+            demoService.noIntHeader(1);
+        });
+
+        Assertions.assertThrows(RpcException.class, () -> {
+            demoService.noIntParam(1);
+        });
+
+        Assertions.assertEquals(null, demoService.noBodyArg(null));
+        exporter.unexport();
+    }
+
+    @Test
+    void testToken() {
+        DemoService server = new DemoServiceImpl();
+
+        URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+        URL nettyUrl = url.addParameter(RestConstant.TOKEN_KEY, "TOKEN");
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+
+
+        Assertions.assertEquals("Hello, hello", demoService.sayHello("hello"));
+        exporter.unexport();
+    }
+
+
+    @Test
+    void testHttpMethods() {
+        testHttpMethod(org.apache.dubbo.remoting.Constants.OK_HTTP);
+        testHttpMethod(org.apache.dubbo.remoting.Constants.APACHE_HTTP_CLIENT);
+        testHttpMethod(org.apache.dubbo.remoting.Constants.URL_CONNECTION);
+    }
+
+    void testHttpMethod(String restClient) {
+        HttpMethodService server = new HttpMethodServiceImpl();
+
+        URL url = URL.valueOf("rest://127.0.0.1:" + NetUtils.getAvailablePort()
+            + "/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.rest.HttpMethodService&"
+            + org.apache.dubbo.remoting.Constants.CLIENT_KEY + "=" + restClient);
+        url = this.registerProvider(url, server, HttpMethodService.class);
+        Exporter<HttpMethodService> exporter = protocol.export(proxy.getInvoker(server, HttpMethodService.class, url));
+
+        HttpMethodService demoService = this.proxy.getProxy(protocol.refer(HttpMethodService.class, url));
+
+
+        String expect = "hello";
+        Assertions.assertEquals(null, demoService.sayHelloHead());
+        Assertions.assertEquals(expect, demoService.sayHelloDelete("hello"));
+        Assertions.assertEquals(expect, demoService.sayHelloGet("hello"));
+        Assertions.assertEquals(expect, demoService.sayHelloOptions("hello"));
+//        Assertions.assertEquals(expect, demoService.sayHelloPatch("hello"));
+        Assertions.assertEquals(expect, demoService.sayHelloPost("hello"));
+        Assertions.assertEquals(expect, demoService.sayHelloPut("hello"));
+        exporter.unexport();
+    }
+
+    public static class TestExceptionMapper implements ExceptionHandler<RuntimeException> {
 
         @Override
-        public Response toResponse(RuntimeException e) {
-            return Response.ok("test-exception").build();
+        public String result(RuntimeException e) {
+            return "test-exception";
         }
     }
+
+    @Test
+    void test405() {
+        int availablePort = NetUtils.getAvailablePort();
+        URL url = URL.valueOf("rest://127.0.0.1:" + availablePort
+            + "/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.rest.RestDemoService&"
+        );
+
+        RestDemoServiceImpl server = new RestDemoServiceImpl();
+
+        url = this.registerProvider(url, server, RestDemoService.class);
+
+        Exporter<RestDemoService> exporter = protocol.export(proxy.getInvoker(server, RestDemoService.class, url));
+
+        URL consumer = URL.valueOf("rest://127.0.0.1:" + availablePort
+            + "/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.rest.RestDemoForTestException&"
+        );
+
+        consumer = this.registerProvider(consumer, server, RestDemoForTestException.class);
+
+        Invoker<RestDemoForTestException> invoker = protocol.refer(RestDemoForTestException.class, consumer);
+
+
+        RestDemoForTestException client = proxy.getProxy(invoker);
+
+        Assertions.assertThrows(RpcException.class, () -> {
+            client.testMethodDisallowed("aaa");
+
+        });
+
+
+        invoker.destroy();
+        exporter.unexport();
+    }
+
+    @Test
+    void testGetInvoker() {
+        Assertions.assertDoesNotThrow(() -> {
+            URL exportUrl = URL.valueOf("rest://127.0.0.1:" + availablePort + "/rest?interface=org.apache.dubbo.rpc.protocol.rest.rest.TestGetInvokerService");
+
+            TestGetInvokerService server = new TestGetInvokerServiceImpl();
+
+            URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+            Exporter<TestGetInvokerService> exporter = protocol.export(proxy.getInvoker(server, TestGetInvokerService.class, url));
+
+            TestGetInvokerService invokerService = this.proxy.getProxy(protocol.refer(TestGetInvokerService.class, url));
+
+
+            String invoker = invokerService.getInvoker();
+            Assertions.assertEquals("success", invoker);
+
+            exporter.unexport();
+        });
+    }
+
+    @Test
+    void testContainerRequestFilter() {
+        DemoService server = new DemoServiceImpl();
+
+        URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+        URL nettyUrl = url.addParameter(SERVER_KEY, "netty")
+            .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.filter.TestContainerRequestFilter");
+
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+
+
+        Assertions.assertEquals("return-success", demoService.sayHello("hello"));
+        exporter.unexport();
+    }
+
+    @Test
+    void testIntercept() {
+        DemoService server = new DemoServiceImpl();
+
+        URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+        URL nettyUrl = url.addParameter(SERVER_KEY, "netty")
+            .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.intercept.DynamicTraceInterceptor");
+
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+
+
+        Assertions.assertEquals("intercept", demoService.sayHello("hello"));
+        exporter.unexport();
+    }
+
+    @Test
+    void testResponseFilter() {
+        DemoService server = new DemoServiceImpl();
+
+        URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+        URL nettyUrl = url.addParameter(SERVER_KEY, "netty")
+            .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.filter.TraceFilter");
+
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+
+
+        Assertions.assertEquals("response-filter", demoService.sayHello("hello"));
+        exporter.unexport();
+    }
+
+    @Test
+    void testCollectionResult() {
+        DemoService server = new DemoServiceImpl();
+
+        URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+        URL nettyUrl = url.addParameter(SERVER_KEY, "netty");
+
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+
+
+        Assertions.assertEquals(User.getInstance(), demoService.list(Arrays.asList(User.getInstance())).get(0));
+
+        HashSet<User> objects = new HashSet<>();
+        objects.add(User.getInstance());
+        Assertions.assertEquals(User.getInstance(), new ArrayList<>(demoService.set(objects)).get(0));
+
+        Assertions.assertEquals(User.getInstance(), demoService.array(objects.toArray(new User[0]))[0]);
+
+        Map<String, User> map = new HashMap<>();
+        map.put("map", User.getInstance());
+        Assertions.assertEquals(User.getInstance(), demoService.stringMap(map).get("map"));
+
+        Map<User, User> maps = new HashMap<>();
+        maps.put(User.getInstance(), User.getInstance());
+        Assertions.assertEquals(User.getInstance(), demoService.userMap(maps).get(User.getInstance()));
+        exporter.unexport();
+    }
+
+    @Test
+    void testReExport() {
+        DemoService server = new DemoServiceImpl();
+
+        URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+        URL nettyUrl = url.addParameter(SERVER_KEY, "netty");
+
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+        nettyUrl = url.addParameter("SERVER_KEY", "netty");
+        exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+
+        exporter.unexport();
+    }
+
+    @Test
+    void testBody() {
+
+
+        Assertions.assertThrowsExactly(RpcException.class, () -> {
+            DemoService server = new DemoServiceImpl();
+
+            URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+            URL nettyUrl = url.addParameter(org.apache.dubbo.remoting.Constants.PAYLOAD_KEY, 1024);
+
+            Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+
+            DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+
+            List<User> users = new ArrayList<>();
+            for (int i = 0; i < 10000; i++) {
+                users.add(User.getInstance());
+
+            }
+
+            demoService.list(users);
+
+            exporter.unexport();
+        });
+
+    }
+
+
+    @Test
+    void testRequestAndResponseFilter() {
+        DemoService server = new DemoServiceImpl();
+
+        URL exportUrl = URL.valueOf("rest://127.0.0.1:" + availablePort + "/rest?interface=org.apache.dubbo.rpc.protocol.rest.DemoService&extension="
+            + TraceRequestAndResponseFilter.class.getName());
+
+        URL nettyUrl = this.registerProvider(exportUrl, server, DemoService.class);
+
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+
+
+        Assertions.assertEquals("header-result", demoService.sayHello("hello"));
+        exporter.unexport();
+    }
+
 
     private URL registerProvider(URL url, Object impl, Class<?> interfaceClass) {
         ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);

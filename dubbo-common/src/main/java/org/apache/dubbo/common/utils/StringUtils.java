@@ -1030,7 +1030,7 @@ public final class StringUtils {
                 buf.append(arg);
             } else {
                 try {
-                    buf.append(JsonUtils.getJson().toJson(arg));
+                    buf.append(JsonUtils.toJson(arg));
                 } catch (Exception e) {
                     logger.warn(COMMON_JSON_CONVERT_EXCEPTION, "", "", e.getMessage(), e);
                     buf.append(arg);

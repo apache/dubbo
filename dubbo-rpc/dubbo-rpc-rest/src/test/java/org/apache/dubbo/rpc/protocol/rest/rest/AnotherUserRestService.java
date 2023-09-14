@@ -20,11 +20,13 @@ import org.apache.dubbo.rpc.protocol.rest.User;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import java.util.Map;
 
 @Path("u")
 @Consumes({MediaType.APPLICATION_JSON, MediaType.TEXT_XML})
@@ -54,4 +56,9 @@ public interface AnotherUserRestService {
     @Path("number")
     @Produces({MediaType.APPLICATION_JSON})
     Long number(Long number);
+
+    @POST
+    @Path("headerMap")
+    @Produces({MediaType.APPLICATION_JSON})
+    String headerMap(@HeaderParam("headers") Map<String,String> headers);
 }

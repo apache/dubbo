@@ -18,6 +18,7 @@ package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.cache.FileCacheStore;
 import org.apache.dubbo.common.cache.FileCacheStoreFactory;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.Disposable;
@@ -32,7 +33,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_LOAD_MAPPING_CACHE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 
 public abstract class AbstractCacheManager<V> implements Disposable {
     protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
@@ -109,6 +112,16 @@ public abstract class AbstractCacheManager<V> implements Disposable {
     public void destroy() {
         if (executorService != null) {
             executorService.shutdownNow();
+            try {
+                if (!executorService.awaitTermination(
+                    ConfigurationUtils.reCalShutdownTime(DEFAULT_SERVER_SHUTDOWN_TIMEOUT),
+                    TimeUnit.MILLISECONDS)) {
+                    logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "",
+                        "Wait global executor service terminated timeout.");
+                }
+            } catch (InterruptedException e) {
+                logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "destroy resources failed: " + e.getMessage(), e);
+            }
         }
         if (cacheStore != null) {
             cacheStore.destroy();
@@ -140,7 +153,7 @@ public abstract class AbstractCacheManager<V> implements Disposable {
             cache.lock();
             try {
                 for (Map.Entry<String, V> entry : cache.entrySet()) {
-                    properties.put(entry.getKey(), JsonUtils.getJson().toJson(entry.getValue()));
+                    properties.put(entry.getKey(), JsonUtils.toJson(entry.getValue()));
                 }
             } finally {
                 cache.releaseLock();

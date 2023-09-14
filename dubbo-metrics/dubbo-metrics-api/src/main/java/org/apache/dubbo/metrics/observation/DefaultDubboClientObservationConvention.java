@@ -16,16 +16,17 @@
  */
 package org.apache.dubbo.metrics.observation;
 
-import java.util.List;
-
-import io.micrometer.common.KeyValues;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcContextAttachment;
 
-import static org.apache.dubbo.metrics.observation.DubboObservation.LowCardinalityKeyNames.NET_PEER_NAME;
-import static org.apache.dubbo.metrics.observation.DubboObservation.LowCardinalityKeyNames.NET_PEER_PORT;
+import io.micrometer.common.KeyValues;
+
+import java.util.List;
+
+import static org.apache.dubbo.metrics.observation.DubboObservationDocumentation.LowCardinalityKeyNames.NET_PEER_NAME;
+import static org.apache.dubbo.metrics.observation.DubboObservationDocumentation.LowCardinalityKeyNames.NET_PEER_PORT;
 
 /**
  * Default implementation of the {@link DubboClientObservationConvention}.
@@ -34,7 +35,11 @@ public class DefaultDubboClientObservationConvention extends AbstractDefaultDubb
     /**
      * Singleton instance of {@link DefaultDubboClientObservationConvention}.
      */
-    public static final DubboClientObservationConvention INSTANCE = new DefaultDubboClientObservationConvention();
+    private static final DubboClientObservationConvention INSTANCE = new DefaultDubboClientObservationConvention();
+
+    public static DubboClientObservationConvention getInstance() {
+        return INSTANCE;
+    }
 
     @Override
     public String getName() {

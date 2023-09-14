@@ -56,7 +56,7 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
 
     private volatile boolean autoTrustSerializeClass = true;
 
-    private volatile int trustSerializeClassLevel = 3;
+    private volatile int trustSerializeClassLevel = Integer.MAX_VALUE;
 
     public SerializeSecurityConfigurator(ModuleModel moduleModel) {
         this.moduleModel = moduleModel;
@@ -75,7 +75,7 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
     public void refreshCheck() {
         Optional<ApplicationConfig> applicationConfig = moduleModel.getApplicationModel().getApplicationConfigManager().getApplication();
         autoTrustSerializeClass = applicationConfig.map(ApplicationConfig::getAutoTrustSerializeClass).orElse(true);
-        trustSerializeClassLevel = applicationConfig.map(ApplicationConfig::getTrustSerializeClassLevel).orElse(3);
+        trustSerializeClassLevel = applicationConfig.map(ApplicationConfig::getTrustSerializeClassLevel).orElse(Integer.MAX_VALUE);
         serializeSecurityManager.setCheckSerializable(applicationConfig.map(ApplicationConfig::getCheckSerializable).orElse(true));
     }
 
@@ -186,7 +186,6 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
         }
 
         Set<Type> markedClass = new HashSet<>();
-        markedClass.add(clazz);
         checkClass(markedClass, clazz);
 
         addToAllow(clazz.getName());
@@ -223,6 +222,10 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
     }
 
     private void checkType(Set<Type> markedClass, Type type) {
+        if (type == null) {
+            return;
+        }
+
         if (type instanceof Class) {
             checkClass(markedClass, (Class<?>) type);
             return;
@@ -258,20 +261,42 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
     }
 
     private void checkClass(Set<Type> markedClass, Class<?> clazz) {
+        if (clazz == null) {
+            return;
+        }
+
         if (!markedClass.add(clazz)) {
             return;
         }
 
         addToAllow(clazz.getName());
 
+        if (ClassUtils.isSimpleType(clazz) || clazz.isPrimitive() || clazz.isArray()) {
+            return;
+        }
+        String className = clazz.getName();
+        if (className.startsWith("java.") || className.startsWith("javax.") || className.startsWith("com.sun.") ||
+            className.startsWith("sun.") || className.startsWith("jdk.")) {
+            return;
+        }
+
         Class<?>[] interfaces = clazz.getInterfaces();
         for (Class<?> interfaceClass : interfaces) {
             checkClass(markedClass, interfaceClass);
         }
 
+        for (Type genericInterface : clazz.getGenericInterfaces()) {
+            checkType(markedClass, genericInterface);
+        }
+
         Class<?> superclass = clazz.getSuperclass();
         if (superclass != null) {
             checkClass(markedClass, superclass);
+        }
+
+        Type genericSuperclass = clazz.getGenericSuperclass();
+        if (genericSuperclass != null) {
+            checkType(markedClass, genericSuperclass);
         }
 
         Field[] fields = clazz.getDeclaredFields();

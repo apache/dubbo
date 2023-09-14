@@ -29,7 +29,7 @@ public interface RuleConverter extends org.apache.dubbo.rpc.cluster.RuleConverte
 
     @Override
     default List<URL> convert(URL subscribeUrl, Object source) {
-        return this.convert(new com.alibaba.dubbo.common.URL(subscribeUrl), source).
+        return this.convert(new com.alibaba.dubbo.common.DelegateURL(subscribeUrl), source).
                 stream().map(url -> url.getOriginalURL()).collect(Collectors.toList());
     }
 }

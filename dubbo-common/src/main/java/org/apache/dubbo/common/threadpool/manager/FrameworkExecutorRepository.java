@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.threadpool.manager;
 
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.Disposable;
@@ -27,9 +28,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXECUTORS_SHUTDOWN;
 
 public class FrameworkExecutorRepository implements Disposable {
@@ -55,6 +58,8 @@ public class FrameworkExecutorRepository implements Disposable {
     private final ExecutorService poolRouterExecutor;
 
     private final Ring<ExecutorService> executorServiceRing = new Ring<>();
+
+    private final ExecutorService internalServiceExecutor;
 
     public FrameworkExecutorRepository() {
         sharedExecutor = Executors.newCachedThreadPool(new NamedThreadFactory("Dubbo-framework-shared-handler", true));
@@ -89,6 +94,9 @@ public class FrameworkExecutorRepository implements Disposable {
         }
 
         metadataRetryExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-framework-metadata-retry"));
+        internalServiceExecutor = new ThreadPoolExecutor(0, 100, 60L, TimeUnit.SECONDS,
+            new SynchronousQueue<>(), new NamedInternalThreadFactory("Dubbo-internal-service", true),
+            new ThreadPoolExecutor.AbortPolicy());
     }
 
     /**
@@ -120,6 +128,10 @@ public class FrameworkExecutorRepository implements Disposable {
 
     public ScheduledExecutorService getMetadataRetryExecutor() {
         return metadataRetryExecutor;
+    }
+
+    public ExecutorService getInternalServiceExecutor() {
+        return internalServiceExecutor;
     }
 
     /**
@@ -177,6 +189,7 @@ public class FrameworkExecutorRepository implements Disposable {
         logger.info("destroying framework executor repository ..");
         shutdownExecutorService(poolRouterExecutor, "poolRouterExecutor");
         shutdownExecutorService(metadataRetryExecutor, "metadataRetryExecutor");
+        shutdownExecutorService(internalServiceExecutor, "internalServiceExecutor");
 
         // scheduledExecutors
         shutdownExecutorServices(scheduledExecutors.listItems(), "scheduledExecutors");
@@ -214,6 +227,12 @@ public class FrameworkExecutorRepository implements Disposable {
     private void shutdownExecutorService(ExecutorService executorService, String name) {
         try {
             executorService.shutdownNow();
+            if (!executorService.awaitTermination(
+                ConfigurationUtils.reCalShutdownTime(DEFAULT_SERVER_SHUTDOWN_TIMEOUT),
+                TimeUnit.MILLISECONDS)) {
+                logger.warn(COMMON_UNEXPECTED_EXECUTORS_SHUTDOWN, "", "",
+                    "Wait global executor service terminated timeout.");
+            }
         } catch (Exception e) {
             String msg = "shutdown executor service [" + name + "] failed: ";
             logger.warn(COMMON_UNEXPECTED_EXECUTORS_SHUTDOWN, "", "", msg + e.getMessage(), e);

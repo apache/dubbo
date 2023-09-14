@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.protocol.rest.exception;
 
 import org.apache.dubbo.metadata.rest.media.MediaType;
 
-public class UnSupportContentTypeException extends RuntimeException {
+public class UnSupportContentTypeException extends MediaTypeUnSupportException {
 
     public UnSupportContentTypeException(String message) {
 

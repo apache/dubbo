@@ -18,13 +18,10 @@ package org.apache.dubbo.rpc.protocol.rest.annotation.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.metadata.ParameterTypesComparator;
-import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadataResolver;
 import org.apache.dubbo.rpc.protocol.rest.exception.CodeStyleNotSupportException;
 
-import java.util.Map;
 
 public class MetadataResolver {
     private MetadataResolver() {
@@ -34,18 +31,19 @@ public class MetadataResolver {
      * for consumer
      *
      * @param targetClass target service class
-     * @param url consumer url
+     * @param url         consumer url
      * @return rest metadata
      * @throws CodeStyleNotSupportException not support type
      */
-    public static Map<String, Map<ParameterTypesComparator, RestMethodMetadata>> resolveConsumerServiceMetadata(Class<?> targetClass, URL url) {
+    public static ServiceRestMetadata resolveConsumerServiceMetadata(Class<?> targetClass, URL url, String contextPathFromUrl) {
         ExtensionLoader<ServiceRestMetadataResolver> extensionLoader = url.getOrDefaultApplicationModel().getExtensionLoader(ServiceRestMetadataResolver.class);
 
         for (ServiceRestMetadataResolver serviceRestMetadataResolver : extensionLoader.getSupportedExtensionInstances()) {
             if (serviceRestMetadataResolver.supports(targetClass, true)) {
                 ServiceRestMetadata serviceRestMetadata = new ServiceRestMetadata(url.getServiceInterface(), url.getVersion(), url.getGroup(), true);
+                serviceRestMetadata.setContextPathFromUrl(contextPathFromUrl);
                 ServiceRestMetadata resolve = serviceRestMetadataResolver.resolve(targetClass, serviceRestMetadata);
-                return resolve.getMethodToServiceMap();
+                return resolve;
             }
         }
 
@@ -53,5 +51,20 @@ public class MetadataResolver {
         throw new CodeStyleNotSupportException("service is: " + targetClass + ", only support " + extensionLoader.getSupportedExtensions() + " annotation");
     }
 
+
+    public static ServiceRestMetadata resolveProviderServiceMetadata(Class serviceImpl, URL url, String contextPathFromUrl) {
+        ExtensionLoader<ServiceRestMetadataResolver> extensionLoader = url.getOrDefaultApplicationModel().getExtensionLoader(ServiceRestMetadataResolver.class);
+
+        for (ServiceRestMetadataResolver serviceRestMetadataResolver : extensionLoader.getSupportedExtensionInstances()) {
+            boolean supports = serviceRestMetadataResolver.supports(serviceImpl);
+            if (supports) {
+                ServiceRestMetadata serviceRestMetadata = new ServiceRestMetadata(url.getServiceInterface(), url.getVersion(), url.getGroup(), false);
+                serviceRestMetadata.setContextPathFromUrl(contextPathFromUrl);
+                ServiceRestMetadata resolve = serviceRestMetadataResolver.resolve(serviceImpl, serviceRestMetadata);
+                return resolve;
+            }
+        }
+        throw new CodeStyleNotSupportException("service is:" + serviceImpl + ",just support rest or spring-web annotation");
+    }
 
 }

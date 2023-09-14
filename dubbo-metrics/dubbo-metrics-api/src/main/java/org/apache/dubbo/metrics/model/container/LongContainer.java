@@ -17,8 +17,9 @@
 
 package org.apache.dubbo.metrics.model.container;
 
-import org.apache.dubbo.metrics.model.MetricsKey;
-import org.apache.dubbo.metrics.model.MetricsKeyWrapper;
+import org.apache.dubbo.metrics.model.Metric;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,7 +31,7 @@ import java.util.function.Supplier;
  * Long type data container
  * @param <N>
  */
-public class LongContainer<N extends Number> extends ConcurrentHashMap<String, N> {
+public class LongContainer<N extends Number> extends ConcurrentHashMap<Metric, N> {
 
     /**
      * Provide the metric type name
@@ -39,7 +40,7 @@ public class LongContainer<N extends Number> extends ConcurrentHashMap<String, N
     /**
      * The initial value corresponding to the key is generally 0 of different data types
      */
-    private final transient Function<String, N> initFunc;
+    private final transient Function<Metric, N> initFunc;
     /**
      * Statistical data calculation function, which can be self-increment, self-decrement, or more complex avg function
      */
@@ -47,10 +48,11 @@ public class LongContainer<N extends Number> extends ConcurrentHashMap<String, N
     /**
      * Data output function required by  {@link GaugeMetricSample GaugeMetricSample}
      */
-    private transient Function<String, Long> valueSupplier;
+    private transient Function<Metric, Long> valueSupplier;
 
 
     public LongContainer(MetricsKeyWrapper metricsKeyWrapper, Supplier<N> initFunc, BiConsumer<Long, N> consumerFunc) {
+        super(128, 0.5f);
         this.metricsKeyWrapper = metricsKeyWrapper;
         this.initFunc = s -> initFunc.get();
         this.consumerFunc = consumerFunc;
@@ -69,7 +71,7 @@ public class LongContainer<N extends Number> extends ConcurrentHashMap<String, N
         return metricsKeyWrapper.isKey(metricsKey, registryOpType);
     }
 
-    public Function<String, N> getInitFunc() {
+    public Function<Metric, N> getInitFunc() {
         return initFunc;
     }
 
@@ -77,11 +79,11 @@ public class LongContainer<N extends Number> extends ConcurrentHashMap<String, N
         return consumerFunc;
     }
 
-    public Function<String, Long> getValueSupplier() {
+    public Function<Metric, Long> getValueSupplier() {
         return valueSupplier;
     }
 
-    public void setValueSupplier(Function<String, Long> valueSupplier) {
+    public void setValueSupplier(Function<Metric, Long> valueSupplier) {
         this.valueSupplier = valueSupplier;
     }
 

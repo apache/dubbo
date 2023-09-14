@@ -1,0 +1,1 @@
+config-collector=org.apache.dubbo.metrics.config.collector.ConfigCenterMetricsCollector

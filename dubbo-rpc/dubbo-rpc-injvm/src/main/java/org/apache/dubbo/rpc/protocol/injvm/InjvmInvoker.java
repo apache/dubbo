@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.threadlocal.InternalThreadLocalMap;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.url.component.DubboServiceAddressURL;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -62,11 +63,16 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
 
     private final Map<String, Exporter<?>> exporterMap;
 
+    private volatile Exporter<?> exporter = null;
+    private volatile URL consumerUrl = null;
+
     private final ExecutorRepository executorRepository;
 
     private final ParamDeepCopyUtil paramDeepCopyUtil;
 
     private final boolean shouldIgnoreSameModule;
+
+    private static final boolean setFutureWhenSync = Boolean.parseBoolean(System.getProperty(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true"));
 
     InjvmInvoker(Class<T> type, URL url, String key, Map<String, Exporter<?>> exporterMap) {
         super(type, url);
@@ -90,11 +96,12 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
 
     @Override
     public Result doInvoke(Invocation invocation) throws Throwable {
-        Exporter<?> exporter = InjvmProtocol.getExporter(exporterMap, getUrl());
         if (exporter == null) {
-            throw new RpcException("Service [" + key + "] not found.");
+            exporter = InjvmProtocol.getExporter(exporterMap, getUrl());
+            if (exporter == null) {
+                throw new RpcException("Service [" + key + "] not found.");
+            }
         }
-        RpcContext.getServiceContext().setRemoteAddress(LOCALHOST_VALUE, 0);
         // Solve local exposure, the server opens the token, and the client call fails.
         Invoker<?> invoker = exporter.getInvoker();
         URL serverURL = invoker.getUrl();
@@ -102,12 +109,16 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
         if (serverHasToken) {
             invocation.setAttachment(Constants.TOKEN_KEY, serverURL.getParameter(Constants.TOKEN_KEY));
         }
+        if (consumerUrl == null) {
+            // no need to sync, multi-objects is acceptable and will be gc-ed.
+            consumerUrl = new DubboServiceAddressURL(serverURL.getUrlAddress(), serverURL.getUrlParam(), getUrl(), null);
+        }
 
-        int timeout = RpcUtils.calculateTimeout(getUrl(), invocation, invocation.getMethodName(), DEFAULT_TIMEOUT);
+        int timeout = RpcUtils.calculateTimeout(consumerUrl, invocation, RpcUtils.getMethodName(invocation), DEFAULT_TIMEOUT);
         if (timeout <= 0) {
             return AsyncRpcResult.newDefaultAsyncResult(new RpcException(RpcException.TIMEOUT_TERMINATE,
                 "No time left for making the following call: " + invocation.getServiceName() + "."
-                    + invocation.getMethodName() + ", terminate directly."), invocation);
+                    + RpcUtils.getMethodName(invocation) + ", terminate directly."), invocation);
         }
         invocation.setAttachment(TIMEOUT_KEY, String.valueOf(timeout));
 
@@ -122,20 +133,30 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
             // use consumer executor
             ExecutorService executor = executorRepository.createExecutorIfAbsent(ExecutorUtil.setThreadName(getUrl(), SERVER_THREAD_POOL_NAME));
             CompletableFuture<AppResponse> appResponseFuture = CompletableFuture.supplyAsync(() -> {
-                Result result = invoker.invoke(copiedInvocation);
-                if (result.hasException()) {
-                    AppResponse appResponse = new AppResponse(result.getException());
-                    appResponse.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
-                    return appResponse;
-                } else {
-                    rebuildValue(invocation, desc, result);
-                    AppResponse appResponse = new AppResponse(result.getValue());
-                    appResponse.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
-                    return appResponse;
+                // clear thread local before child invocation, prevent context pollution
+                InternalThreadLocalMap originTL = InternalThreadLocalMap.getAndRemove();
+                try {
+                    RpcContext.getServiceContext().setRemoteAddress(LOCALHOST_VALUE, 0);
+                    RpcContext.getServiceContext().setRemoteApplicationName(getUrl().getApplication());
+                    Result result = invoker.invoke(copiedInvocation);
+                    if (result.hasException()) {
+                        AppResponse appResponse = new AppResponse(result.getException());
+                        appResponse.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
+                        return appResponse;
+                    } else {
+                        rebuildValue(invocation, desc, result);
+                        AppResponse appResponse = new AppResponse(result.getValue());
+                        appResponse.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
+                        return appResponse;
+                    }
+                } finally {
+                    InternalThreadLocalMap.set(originTL);
                 }
             }, executor);
             // save for 2.6.x compatibility, for example, TraceFilter in Zipkin uses com.alibaba.xxx.FutureAdapter
-            FutureContext.getContext().setCompatibleFuture(appResponseFuture);
+            if (setFutureWhenSync || ((RpcInvocation) invocation).getInvokeMode() != InvokeMode.SYNC) {
+                FutureContext.getContext().setCompatibleFuture(appResponseFuture);
+            }
             AsyncRpcResult result = new AsyncRpcResult(appResponseFuture, copiedInvocation);
             result.setExecutor(executor);
             return result;
@@ -144,6 +165,8 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
             // clear thread local before child invocation, prevent context pollution
             InternalThreadLocalMap originTL = InternalThreadLocalMap.getAndRemove();
             try {
+                RpcContext.getServiceContext().setRemoteAddress(LOCALHOST_VALUE, 0);
+                RpcContext.getServiceContext().setRemoteApplicationName(getUrl().getApplication());
                 result = invoker.invoke(copiedInvocation);
             } finally {
                 InternalThreadLocalMap.set(originTL);
@@ -229,7 +252,7 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
                 if (pts != null && args != null && pts.length == args.length) {
                     realArgument = new Object[pts.length];
                     for (int i = 0; i < pts.length; i++) {
-                        realArgument[i] = paramDeepCopyUtil.copy(invoker.getUrl(), args[i], pts[i]);
+                        realArgument[i] = paramDeepCopyUtil.copy(consumerUrl, args[i], pts[i]);
                     }
                 }
                 if (realArgument == null) {
@@ -260,7 +283,7 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
                 Class<?> returnType = getReturnType(consumerServiceModel, invocation.getMethodName(), desc);
                 if (returnType != null) {
                     Thread.currentThread().setContextClassLoader(consumerServiceModel.getClassLoader());
-                    value = paramDeepCopyUtil.copy(getUrl(), originValue, returnType);
+                    value = paramDeepCopyUtil.copy(consumerUrl, originValue, returnType);
                 }
             }
             return value;

@@ -24,6 +24,8 @@ public interface QosConstants {
 
     String QOS_ENABLE = "qos.enable";
 
+    String QOS_CHECK = "qos.check";
+
     String QOS_HOST = "qos.host";
 
     String QOS_PORT = "qos.port";
@@ -33,6 +35,8 @@ public interface QosConstants {
     String ACCEPT_FOREIGN_IP_WHITELIST = "qos.accept.foreign.ip.whitelist";
 
     String ANONYMOUS_ACCESS_PERMISSION_LEVEL = "qos.anonymous.access.permission.level";
+
+    String ANONYMOUS_ACCESS_ALLOW_COMMANDS = "qos.anonymous.access.allow.commands";
 
     String QOS_ENABLE_COMPATIBLE = "qos-enable";
 

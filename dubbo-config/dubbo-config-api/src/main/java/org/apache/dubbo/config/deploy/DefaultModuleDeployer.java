@@ -17,8 +17,11 @@
 package org.apache.dubbo.config.deploy;
 
 import org.apache.dubbo.common.config.ReferenceCache;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
+import org.apache.dubbo.common.constants.RegisterTypeEnum;
 import org.apache.dubbo.common.deploy.AbstractDeployer;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
+import org.apache.dubbo.common.deploy.DeployListener;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.deploy.ModuleDeployListener;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
@@ -30,10 +33,13 @@ import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.utils.SimpleReferenceCache;
+import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
@@ -41,17 +47,18 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_START_MODEL;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_UNABLE_DESTROY_MODEL;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_REFERENCE_MODEL;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_EXPORT_SERVICE;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_WAIT_EXPORT_REFER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_REFERENCE_MODEL;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_REFER_SERVICE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_START_MODEL;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_WAIT_EXPORT_REFER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_UNABLE_DESTROY_MODEL;
 
 /**
  * Export/refer services of module
@@ -110,6 +117,8 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             if (initialized) {
                 return;
             }
+            onInitialize();
+
             loadConfigs();
 
             // read ModuleConfig
@@ -168,7 +177,17 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
             // if no async export/refer services, just set started
             if (asyncExportingFutures.isEmpty() && asyncReferringFutures.isEmpty()) {
+                // publish module started event
                 onModuleStarted();
+
+                // register services to registry
+                registerServices();
+
+                // check reference config
+                checkReferences();
+
+                // complete module start future after application state changed
+                completeStartFuture(true);
             } else {
                 frameworkExecutorRepository.getSharedExecutor().submit(() -> {
                     try {
@@ -176,17 +195,30 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                         waitExportFinish();
                         // wait for refer finish
                         waitReferFinish();
+
+                        // publish module started event
+                        onModuleStarted();
+
+                        // register services to registry
+                        registerServices();
+
+                        // check reference config
+                        checkReferences();
                     } catch (Throwable e) {
                         logger.warn(CONFIG_FAILED_WAIT_EXPORT_REFER, "", "", "wait for export/refer services occurred an exception", e);
+                        onModuleFailed(getIdentifier() + " start failed: " + e, e);
                     } finally {
-                        onModuleStarted();
+                        // complete module start future after application state changed
+                        completeStartFuture(true);
                     }
                 });
             }
+
         } catch (Throwable e) {
             onModuleFailed(getIdentifier() + " start failed: " + e, e);
             throw e;
         }
+
         return startFuture;
     }
 
@@ -210,6 +242,33 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             return;
         }
         onModuleStopping();
+
+        offline();
+    }
+
+    private void offline() {
+        try {
+            ModuleServiceRepository serviceRepository = moduleModel.getServiceRepository();
+            List<ProviderModel> exportedServices = serviceRepository.getExportedServices();
+            for (ProviderModel exportedService : exportedServices) {
+                List<ProviderModel.RegisterStatedURL> statedUrls = exportedService.getStatedUrl();
+                for (ProviderModel.RegisterStatedURL statedURL : statedUrls) {
+                    if (statedURL.isRegistered()) {
+                        doOffline(statedURL);
+                    }
+                }
+            }
+        } catch (Throwable t) {
+            logger.error(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Exceptions occurred when unregister services.", t);
+        }
+    }
+
+    private void doOffline(ProviderModel.RegisterStatedURL statedURL) {
+        RegistryFactory registryFactory =
+            statedURL.getRegistryUrl().getOrDefaultApplicationModel().getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
+        Registry registry = registryFactory.getRegistry(statedURL.getRegistryUrl());
+        registry.unregister(statedURL.getProviderUrl());
+        statedURL.setRegistered(false);
     }
 
     @Override
@@ -249,6 +308,16 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         onModuleStopped();
     }
 
+    private void onInitialize() {
+        for (DeployListener<ModuleModel> listener : listeners) {
+            try {
+                listener.onInitialize(moduleModel);
+            } catch (Throwable e) {
+                logger.error(CONFIG_FAILED_START_MODEL, "", "", getIdentifier() + " an exception occurred when handle initialize event", e);
+            }
+        }
+    }
+
     private void onModuleStarting() {
         setStarting();
         startFuture = new CompletableFuture();
@@ -257,23 +326,25 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     }
 
     private void onModuleStarted() {
-        try {
             if (isStarting()) {
                 setStarted();
                 logger.info(getIdentifier() + " has started.");
                 applicationDeployer.notifyModuleChanged(moduleModel, DeployState.STARTED);
             }
-        } finally {
-            // complete module start future after application state changed
-            completeStartFuture(true);
-        }
     }
 
     private void onModuleFailed(String msg, Throwable ex) {
         try {
+            try {
+                // un-export all services if start failure
+                unexportServices();
+            } catch (Throwable t) {
+                logger.info("Failed to un-export services after module failed.", t);
+            }
+
             setFailed(ex);
             logger.error(CONFIG_FAILED_START_MODEL, "", "", "Model start failed: " + msg, ex);
-            applicationDeployer.notifyModuleChanged(moduleModel, DeployState.STARTED);
+            applicationDeployer.notifyModuleChanged(moduleModel, DeployState.FAILED);
         } finally {
             completeStartFuture(false);
         }
@@ -323,6 +394,23 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         }
     }
 
+    private void registerServices() {
+        for (ServiceConfigBase sc : configManager.getServices()) {
+            if (!Boolean.FALSE.equals(sc.isRegister())) {
+                registerServiceInternal(sc);
+            }
+        }
+        applicationDeployer.refreshServiceInstance();
+    }
+
+    private void checkReferences() {
+        Optional<ModuleConfig> module = configManager.getModule();
+        long timeout = module.map(ModuleConfig::getCheckReferenceTimeout).orElse(30000L);
+        for (ReferenceConfigBase<?> rc : configManager.getReferences()) {
+            referenceCache.check(rc, timeout);
+        }
+    }
+
     private void exportServiceInternal(ServiceConfigBase sc) {
         ServiceConfig<?> serviceConfig = (ServiceConfig<?>) sc;
         if (!serviceConfig.isRefreshed()) {
@@ -347,10 +435,21 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             asyncExportingFutures.add(future);
         } else {
             if (!sc.isExported()) {
-                sc.export();
+                sc.export(RegisterTypeEnum.AUTO_REGISTER_BY_DEPLOYER);
                 exportedServices.add(sc);
             }
         }
+    }
+
+    private void registerServiceInternal(ServiceConfigBase sc) {
+        ServiceConfig<?> serviceConfig = (ServiceConfig<?>) sc;
+        if (!serviceConfig.isRefreshed()) {
+            serviceConfig.refresh();
+        }
+        if (!sc.isExported()) {
+            return;
+        }
+        sc.register(true);
     }
 
     private void unexportServices() {
@@ -358,8 +457,8 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             try {
                 configManager.removeConfig(sc);
                 sc.unexport();
-            } catch (Exception ignored) {
-                // ignored
+            } catch (Throwable t) {
+                logger.info("Failed to un-export service. Service Key: " + sc.getUniqueServiceName(), t);
             }
         });
         exportedServices.clear();
@@ -385,7 +484,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                         ExecutorService executor = executorRepository.getServiceReferExecutor();
                         CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                             try {
-                                referenceCache.get(rc);
+                                referenceCache.get(rc, false);
                             } catch (Throwable t) {
                                 logger.error(CONFIG_FAILED_EXPORT_SERVICE, "", "", "Failed to async export service config: " + getIdentifier() + " , catch error : " + t.getMessage(), t);
                             }
@@ -393,7 +492,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
                         asyncReferringFutures.add(future);
                     } else {
-                        referenceCache.get(rc);
+                        referenceCache.get(rc, false);
                     }
                 }
             } catch (Throwable t) {
@@ -413,6 +512,9 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             });
             asyncReferringFutures.clear();
             referenceCache.destroyAll();
+            for (ReferenceConfigBase<?> rc : configManager.getReferences()) {
+                rc.destroy();
+            }
         } catch (Exception ignored) {
         }
     }
@@ -423,7 +525,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             exportFuture = CompletableFuture.allOf(asyncExportingFutures.toArray(new CompletableFuture[0]));
             exportFuture.get();
         } catch (Throwable e) {
-            logger.warn(CONFIG_FAILED_EXPORT_SERVICE, "","",getIdentifier() + " export services occurred an exception: " + e.toString());
+            logger.warn(CONFIG_FAILED_EXPORT_SERVICE, "", "", getIdentifier() + " export services occurred an exception: " + e.toString());
         } finally {
             logger.info(getIdentifier() + " export services finished.");
             asyncExportingFutures.clear();

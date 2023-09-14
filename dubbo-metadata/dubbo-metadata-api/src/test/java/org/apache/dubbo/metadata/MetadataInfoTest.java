@@ -168,13 +168,13 @@ class MetadataInfoTest {
 
         // export normal url again
         metadataInfo.addService(url);
-        System.out.println(JsonUtils.getJson().toJson(metadataInfo));
+        System.out.println(JsonUtils.toJson(metadataInfo));
 
         MetadataInfo metadataInfo2 = new MetadataInfo("demo");
         // export normal url again
         metadataInfo2.addService(url);
         metadataInfo2.addService(url2);
-        System.out.println(JsonUtils.getJson().toJson(metadataInfo2));
+        System.out.println(JsonUtils.toJson(metadataInfo2));
 
     }
 
@@ -218,7 +218,7 @@ class MetadataInfoTest {
 
         metadataInfo.calAndGetRevision();
 
-        Map<String, Object> ret  = JsonUtils.getJson().toJavaObject(metadataInfo.getContent(), Map.class);
+        Map<String, Object> ret  = JsonUtils.toJavaObject(metadataInfo.getContent(), Map.class);
         assertNull(ret.get("content"));
         assertNull(ret.get("rawMetadataInfo"));
     }

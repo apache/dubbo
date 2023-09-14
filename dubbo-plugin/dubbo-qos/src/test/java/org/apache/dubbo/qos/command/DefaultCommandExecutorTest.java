@@ -17,9 +17,10 @@
 
 package org.apache.dubbo.qos.command;
 
+import org.apache.dubbo.qos.api.CommandContext;
+import org.apache.dubbo.qos.api.PermissionLevel;
+import org.apache.dubbo.qos.api.QosConfiguration;
 import org.apache.dubbo.qos.command.exception.NoSuchCommandException;
-import org.apache.dubbo.qos.common.QosConfiguration;
-import org.apache.dubbo.qos.permission.PermissionLevel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

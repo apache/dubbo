@@ -18,7 +18,6 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,7 +30,7 @@ import java.util.Map;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
-import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
+import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_ISOLATION;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -346,7 +345,7 @@ class ApplicationConfigTest {
         ApplicationConfig applicationConfig = DubboBootstrap.getInstance().getApplication();
 
         Assertions.assertEquals(DUBBO, applicationConfig.getProtocol());
-        Assertions.assertEquals(EXECUTOR_MANAGEMENT_MODE_DEFAULT, applicationConfig.getExecutorManagementMode());
+        Assertions.assertEquals(EXECUTOR_MANAGEMENT_MODE_ISOLATION, applicationConfig.getExecutorManagementMode());
         Assertions.assertEquals(Boolean.TRUE, applicationConfig.getEnableFileCache());
 
         DubboBootstrap.getInstance().destroy();

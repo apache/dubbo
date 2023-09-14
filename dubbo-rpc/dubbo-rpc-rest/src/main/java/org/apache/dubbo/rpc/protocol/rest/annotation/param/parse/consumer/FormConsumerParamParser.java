@@ -17,12 +17,21 @@
 package org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.consumer;
 
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.ParamType;
+import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.remoting.http.RequestTemplate;
-import org.apache.dubbo.rpc.protocol.rest.util.MultiValueCreator;
+import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
+import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Activate("consumer-form")
 public class FormConsumerParamParser implements BaseConsumerParamParser {
@@ -35,14 +44,34 @@ public class FormConsumerParamParser implements BaseConsumerParamParser {
         RequestTemplate requestTemplate = parseContext.getRequestTemplate();
         Object value = args.get(argInfo.getIndex());
 
-        Object unSerializedBody = requestTemplate.getUnSerializedBody();
-        if (unSerializedBody == null) {
-            unSerializedBody = MultiValueCreator.createMultiValueMap();
+        if (value == null) {
+            return;
         }
 
-        MultiValueCreator.add(unSerializedBody, argInfo.getAnnotationNameAttribute(), String.valueOf(value));
 
-        requestTemplate.body(unSerializedBody);
+        Map<String, List<String>> tmp = new HashMap<>();
+        if (DataParseUtils.isTextType(value.getClass())) {
+            tmp.put(argInfo.getAnnotationNameAttribute(), Arrays.asList(String.valueOf(value)));
+            requestTemplate.body(tmp, Map.class);
+        } else if (value instanceof Map) {
+            requestTemplate.body(value, Map.class);
+        } else {
+            Set<String> allFieldNames = ReflectUtils.getAllFieldNames(value.getClass());
+
+            allFieldNames.stream().forEach(entry -> {
+
+                    Object fieldValue = ReflectUtils.getFieldValue(value, entry);
+                    tmp.put(String.valueOf(entry), Arrays.asList(String.valueOf(fieldValue)));
+                }
+            );
+
+            requestTemplate.body(tmp, Map.class);
+        }
+
+        Collection<String> headers = requestTemplate.getHeaders(RestConstant.CONTENT_TYPE);
+        if (CollectionUtils.isEmpty(headers)) {
+            requestTemplate.addHeader(RestConstant.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE.value);
+        }
 
 
     }

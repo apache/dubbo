@@ -18,17 +18,19 @@ package org.apache.dubbo.remoting.transport.netty;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.Exchangers;
-
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
 
 /**
  * Date: 5/3/11
@@ -40,7 +42,13 @@ class NettyClientTest {
 
     @BeforeAll
     public static void setUp() throws Exception {
-        server = Exchangers.bind(URL.valueOf("exchange://localhost:" + port + "?server=netty3&codec=exchange"), new TelnetServerHandler());
+        URL url = URL.valueOf("exchange://localhost:" + port + "?server=netty3&codec=exchange");
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
+        applicationConfig.setExecutorManagementMode(EXECUTOR_MANAGEMENT_MODE_DEFAULT);
+        applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
+        url = url.setScopeModel(applicationModel);
+        server = Exchangers.bind(url, new TelnetServerHandler());
     }
 
     @AfterAll
@@ -52,16 +60,22 @@ class NettyClientTest {
         }
     }
 
-    public static void main(String[] args) throws RemotingException, InterruptedException {
-        ExchangeChannel client = Exchangers.connect(URL.valueOf("exchange://10.20.153.10:20880?client=netty3&heartbeat=1000&codec=exchange"));
-        Thread.sleep(60 * 1000 * 50);
-    }
+//    public static void main(String[] args) throws RemotingException, InterruptedException {
+//        ExchangeChannel client = Exchangers.connect(URL.valueOf("exchange://10.20.153.10:20880?client=netty3&heartbeat=1000&codec=exchange"));
+//        Thread.sleep(60 * 1000 * 50);
+//    }
 
     @Test
     void testClientClose() throws Exception {
         List<ExchangeChannel> clients = new ArrayList<ExchangeChannel>(100);
         for (int i = 0; i < 100; i++) {
-            ExchangeChannel client = Exchangers.connect(URL.valueOf("exchange://localhost:" + port + "?client=netty3&codec=exchange"));
+            URL url = URL.valueOf("exchange://localhost:" + port + "?client=netty3&codec=exchange");
+            ApplicationModel applicationModel = ApplicationModel.defaultModel();
+            ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
+            applicationConfig.setExecutorManagementMode(EXECUTOR_MANAGEMENT_MODE_DEFAULT);
+            applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
+            url = url.setScopeModel(applicationModel);
+            ExchangeChannel client = Exchangers.connect(url);
             Thread.sleep(5);
             clients.add(client);
         }
@@ -74,7 +88,13 @@ class NettyClientTest {
     @Test
     void testServerClose() throws Exception {
         for (int i = 0; i < 100; i++) {
-            RemotingServer aServer = Exchangers.bind(URL.valueOf("exchange://localhost:" + NetUtils.getAvailablePort(6000) + "?server=netty3&codec=exchange"), new TelnetServerHandler());
+            URL url = URL.valueOf("exchange://localhost:" + NetUtils.getAvailablePort(6000) + "?server=netty3&codec=exchange");
+            ApplicationModel applicationModel = ApplicationModel.defaultModel();
+            ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
+            applicationConfig.setExecutorManagementMode(EXECUTOR_MANAGEMENT_MODE_DEFAULT);
+            applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
+            url = url.setScopeModel(applicationModel);
+            RemotingServer aServer = Exchangers.bind(url, new TelnetServerHandler());
             aServer.close();
         }
     }

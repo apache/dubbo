@@ -51,7 +51,7 @@ public interface ServerStream extends Stream {
      * @param attachments response attachments
      * @return a future that indicates the completion of send trailers
      */
-    Future<?> complete(TriRpcStatus status, Map<String, Object> attachments);
+    Future<?> complete(TriRpcStatus status, Map<String, Object> attachments, boolean isNeedReturnException, int exceptionCode);
 
     /**
      * Send message to client

@@ -43,7 +43,7 @@ class ServiceBeanTest {
     @Test
     void testGetService() {
         TestService service = mock(TestService.class);
-        ServiceBean serviceBean = new ServiceBean(service);
+        ServiceBean serviceBean = new ServiceBean(null, service);
 
         Service beanService = serviceBean.getService();
         MatcherAssert.assertThat(beanService, not(nullValue()));

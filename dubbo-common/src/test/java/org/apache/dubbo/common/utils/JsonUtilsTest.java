@@ -110,7 +110,7 @@ class JsonUtilsTest {
     }
 
     @Test
-    public void consistentTest() {
+    void consistentTest() {
         List<Object> objs = new LinkedList<>();
 
         {

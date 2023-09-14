@@ -95,7 +95,7 @@ class MetadataServiceURLParamsMetadataCustomizerTest {
         String val = instance.getMetadata().get(METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME);
         Assertions.assertNotNull(val);
 
-        Map<String, String> map = JsonUtils.getJson().toJavaObject(val, Map.class);
+        Map<String, String> map = JsonUtils.toJavaObject(val, Map.class);
         Assertions.assertEquals(map.get(PORT_KEY), String.valueOf(metadataServiceURL.getPort()));
         Assertions.assertEquals(map.get(PROTOCOL_KEY), metadataServiceURL.getProtocol());
         Assertions.assertEquals(map.get(VERSION_KEY), metadataServiceURL.getVersion());

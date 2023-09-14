@@ -68,7 +68,10 @@ public final class TimeUtils {
             ticker.setDaemon(true);
             ticker.setName("time-millis-ticker-thread");
             ticker.start();
-            Runtime.getRuntime().addShutdownHook(new Thread(ticker::interrupt));
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                isFallback = true;
+                ticker.interrupt();
+            }));
             isTickerAlive = true;
         }
     }

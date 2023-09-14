@@ -17,7 +17,15 @@
 
 package org.apache.dubbo.metrics.event;
 
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
 import org.apache.dubbo.metrics.model.MethodMetric;
+import org.apache.dubbo.metrics.model.key.TypeWrapper;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 /**
  * BaseMetricsEvent.
@@ -27,18 +35,100 @@ public abstract class MetricsEvent {
     /**
      * Metric object. (eg. {@link MethodMetric})
      */
-    protected transient Object source;
+    protected transient final ApplicationModel source;
+    private boolean available = true;
+    private final TypeWrapper typeWrapper;
+    private final String appName;
+    private final MetricsDispatcher metricsDispatcher;
 
-    public MetricsEvent(Object source) {
-        if (source == null) {
-            throw new IllegalArgumentException("null source");
-        }
+    private final Map<String, Object> attachments = new IdentityHashMap<>(8);
 
-        this.source = source;
+    public MetricsEvent(ApplicationModel source, TypeWrapper typeWrapper) {
+        this(source, null, null, typeWrapper);
     }
 
-    public Object getSource() {
+    public MetricsEvent(ApplicationModel source, String appName, MetricsDispatcher metricsDispatcher, TypeWrapper typeWrapper) {
+        this.typeWrapper = typeWrapper;
+        if (source == null) {
+            this.source = ApplicationModel.defaultModel();
+            // Appears only in unit tests
+            this.available = false;
+        } else {
+            this.source = source;
+        }
+        if (metricsDispatcher == null) {
+            if (this.source.isDestroyed()) {
+                this.metricsDispatcher = null;
+            } else {
+                ScopeBeanFactory beanFactory = this.source.getBeanFactory();
+                if (beanFactory.isDestroyed()) {
+                    this.metricsDispatcher = null;
+                } else {
+                    MetricsDispatcher dispatcher = beanFactory.getBean(MetricsDispatcher.class);
+                    this.metricsDispatcher = dispatcher;
+                }
+            }
+        } else {
+            this.metricsDispatcher = metricsDispatcher;
+        }
+        if (appName == null) {
+            this.appName = this.source.tryGetApplicationName();
+        } else {
+            this.appName = appName;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getAttachmentValue(String key) {
+        if (key == null) {
+            throw new MetricsNeverHappenException("Attachment key is null");
+        }
+        return (T) attachments.get(key);
+    }
+
+    public Map<String, Object> getAttachments() {
+        return Collections.unmodifiableMap(attachments);
+    }
+
+    public void putAttachment(String key, Object value) {
+        attachments.put(key, value);
+    }
+
+    public void putAttachments(Map<String, String> attachments) {
+        this.attachments.putAll(attachments);
+    }
+
+    public void setAvailable(boolean available) {
+        this.available = available;
+    }
+
+    public boolean isAvailable() {
+        return available;
+    }
+
+
+    public void customAfterPost(Object postResult) {
+
+    }
+
+    public ApplicationModel getSource() {
         return source;
+    }
+
+    public MetricsDispatcher getMetricsDispatcher() {
+        return metricsDispatcher;
+    }
+
+    public String appName() {
+        return appName;
+    }
+
+    public TypeWrapper getTypeWrapper() {
+        return typeWrapper;
+    }
+
+    public boolean isAssignableFrom(Object type) {
+        return typeWrapper.isAssignableFrom(type);
     }
 
     public String toString() {
@@ -57,9 +147,11 @@ public abstract class MetricsEvent {
         APPLICATION_INFO("APPLICATION_INFO_%s"),
         NETWORK_EXCEPTION("NETWORK_EXCEPTION_%s"),
         SERVICE_UNAVAILABLE("SERVICE_UNAVAILABLE_%s"),
-        CODEC_EXCEPTION("CODEC_EXCEPTION_%s"),;
+        CODEC_EXCEPTION("CODEC_EXCEPTION_%s"),
+        NO_INVOKER_AVAILABLE("NO_INVOKER_AVAILABLE_%s"),
+        ;
 
-        private String name;
+        private final String name;
 
         public final String getName() {
             return this.name;

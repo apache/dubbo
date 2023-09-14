@@ -23,4 +23,6 @@ public interface IGreeter2 {
      * Use request to respond
      */
     String echo(String request) throws IGreeterException;
+
+    Exception echoException(String request);
 }

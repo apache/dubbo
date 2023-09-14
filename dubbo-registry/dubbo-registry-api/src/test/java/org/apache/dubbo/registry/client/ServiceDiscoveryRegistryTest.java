@@ -138,6 +138,7 @@ class ServiceDiscoveryRegistryTest {
         }
 //        // when check = true
         URL checkURL = url.addParameter(CHECK_KEY, true);
+        checkURL.setScopeModel(url.getApplicationModel());
 //        Exception exceptionShouldHappen = null;
 //        try {
 //            serviceDiscoveryRegistry.doSubscribe(checkURL, testServiceListener);

@@ -26,9 +26,8 @@ import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
-import org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
-import org.apache.dubbo.metrics.model.TimePair;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
@@ -52,7 +51,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.METADATA_INFO_CA
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_FILE_CACHE_ENABLED;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_FETCH_INSTANCE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_LOAD_METADATA;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
@@ -100,32 +98,32 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         this.metadataInfo = new MetadataInfo(serviceName);
         boolean localCacheEnabled = registryURL.getParameter(REGISTRY_LOCAL_FILE_CACHE_ENABLED, true);
         this.metaCacheManager = new MetaCacheManager(localCacheEnabled, getCacheNameSuffix(),
-            applicationModel.getFrameworkModel().getBeanFactory()
-                .getBean(FrameworkExecutorRepository.class).getCacheRefreshingScheduledExecutor());
+                applicationModel.getFrameworkModel().getBeanFactory()
+                        .getBean(FrameworkExecutorRepository.class).getCacheRefreshingScheduledExecutor());
         int metadataInfoCacheExpireTime = registryURL.getParameter(METADATA_INFO_CACHE_EXPIRE_KEY, DEFAULT_METADATA_INFO_CACHE_EXPIRE);
         int metadataInfoCacheSize = registryURL.getParameter(METADATA_INFO_CACHE_SIZE_KEY, DEFAULT_METADATA_INFO_CACHE_SIZE);
         this.refreshCacheFuture = applicationModel.getFrameworkModel().getBeanFactory()
-            .getBean(FrameworkExecutorRepository.class).getSharedScheduledExecutor()
-            .scheduleAtFixedRate(() -> {
-                try {
-                    while (metadataInfos.size() > metadataInfoCacheSize) {
-                        AtomicReference<String> oldestRevision = new AtomicReference<>();
-                        AtomicReference<MetadataInfoStat> oldestStat = new AtomicReference<>();
-                        metadataInfos.forEach((k, v) -> {
-                            if (System.currentTimeMillis() - v.getUpdateTime() > metadataInfoCacheExpireTime &&
-                                (oldestStat.get() == null || oldestStat.get().getUpdateTime() > v.getUpdateTime())) {
-                                oldestRevision.set(k);
-                                oldestStat.set(v);
+                .getBean(FrameworkExecutorRepository.class).getSharedScheduledExecutor()
+                .scheduleAtFixedRate(() -> {
+                    try {
+                        while (metadataInfos.size() > metadataInfoCacheSize) {
+                            AtomicReference<String> oldestRevision = new AtomicReference<>();
+                            AtomicReference<MetadataInfoStat> oldestStat = new AtomicReference<>();
+                            metadataInfos.forEach((k, v) -> {
+                                if (System.currentTimeMillis() - v.getUpdateTime() > metadataInfoCacheExpireTime &&
+                                        (oldestStat.get() == null || oldestStat.get().getUpdateTime() > v.getUpdateTime())) {
+                                    oldestRevision.set(k);
+                                    oldestStat.set(v);
+                                }
+                            });
+                            if (oldestStat.get() != null) {
+                                metadataInfos.remove(oldestRevision.get(), oldestStat.get());
                             }
-                        });
-                        if (oldestStat.get() != null) {
-                            metadataInfos.remove(oldestRevision.get(), oldestStat.get());
                         }
+                    } catch (Throwable t) {
+                        logger.error(INTERNAL_ERROR, "", "", "Error occurred when clean up metadata info cache.", t);
                     }
-                } catch (Throwable t) {
-                    logger.error(INTERNAL_ERROR, "", "", "Error occurred when clean up metadata info cache.", t);
-                }
-            }, metadataInfoCacheExpireTime / 2, metadataInfoCacheExpireTime / 2, TimeUnit.MILLISECONDS);
+                }, metadataInfoCacheExpireTime / 2, metadataInfoCacheExpireTime / 2, TimeUnit.MILLISECONDS);
     }
 
 
@@ -134,12 +132,13 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         if (isDestroy) {
             return;
         }
-        this.serviceInstance = createServiceInstance(this.metadataInfo);
-        if (!isValidInstance(this.serviceInstance)) {
-            logger.warn(REGISTRY_FAILED_FETCH_INSTANCE, "", "", "No valid instance found, stop registering instance address to registry.");
-            return;
+        if (this.serviceInstance == null) {
+            ServiceInstance serviceInstance = createServiceInstance(this.metadataInfo);
+            if (!isValidInstance(serviceInstance)) {
+                return;
+            }
+            this.serviceInstance = serviceInstance;
         }
-
         boolean revisionUpdated = calOrUpdateInstanceRevision(this.serviceInstance);
         if (revisionUpdated) {
             reportMetadata(this.metadataInfo);
@@ -159,15 +158,12 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         }
 
         if (this.serviceInstance == null) {
-            this.serviceInstance = createServiceInstance(this.metadataInfo);
-        } else if (!isValidInstance(this.serviceInstance)) {
-            ServiceInstanceMetadataUtils.customizeInstance(this.serviceInstance, this.applicationModel);
+            register();
         }
 
         if (!isValidInstance(this.serviceInstance)) {
             return;
         }
-
         ServiceInstance oldServiceInstance = this.serviceInstance;
         DefaultServiceInstance newServiceInstance = new DefaultServiceInstance((DefaultServiceInstance) oldServiceInstance);
         boolean revisionUpdated = calOrUpdateInstanceRevision(newServiceInstance);
@@ -229,18 +225,16 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             int triedTimes = 0;
             while (triedTimes < 3) {
 
-                TimePair timePair = TimePair.start();
-                GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getBean(GlobalMetricsEventMulticaster.class);
-                eventMulticaster.publishEvent(new MetadataEvent.SubscribeEvent(applicationModel, timePair));
+                metadata = MetricsEventBus.post(MetadataEvent.toSubscribeEvent(applicationModel),
+                    () -> MetadataUtils.getRemoteMetadata(revision, instances, metadataReport),
+                    result -> result != MetadataInfo.EMPTY
+                );
 
-                metadata = MetadataUtils.getRemoteMetadata(revision, instances, metadataReport);
 
                 if (metadata != MetadataInfo.EMPTY) {// succeeded
                     metadata.init();
-                    eventMulticaster.publishFinishEvent(new MetadataEvent.SubscribeEvent(applicationModel, timePair));
                     break;
                 } else {// failed
-                    eventMulticaster.publishErrorEvent(new MetadataEvent.SubscribeEvent(applicationModel, timePair));
                     if (triedTimes > 0) {
                         if (logger.isDebugEnabled()) {
                             logger.debug("Retry the " + triedTimes + " times to get metadata for revision=" + revision);
@@ -361,19 +355,15 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         if (metadataInfo == null) {
             return;
         }
-        TimePair timePair = TimePair.start();
-        GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getBean(GlobalMetricsEventMulticaster.class);
         if (metadataReport != null) {
             SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.getRevision());
             if ((DEFAULT_METADATA_STORAGE_TYPE.equals(metadataType) && metadataReport.shouldReportMetadata()) || REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
-                try {
-                    eventMulticaster.publishEvent(new MetadataEvent.PushEvent(applicationModel, timePair));
-                    metadataReport.publishAppMetadata(identifier, metadataInfo);
-                    eventMulticaster.publishFinishEvent(new MetadataEvent.PushEvent(applicationModel, timePair));
-                } catch (IllegalStateException e) {
-                    eventMulticaster.publishErrorEvent(new MetadataEvent.PushEvent(applicationModel, timePair));
-                    throw e;
-                }
+                MetricsEventBus.post(MetadataEvent.toPushEvent(applicationModel),
+                    () ->
+                    {
+                        metadataReport.publishAppMetadata(identifier, metadataInfo);
+                        return null;
+                    });
             }
         }
         MetadataInfo clonedMetadataInfo = metadataInfo.clone();

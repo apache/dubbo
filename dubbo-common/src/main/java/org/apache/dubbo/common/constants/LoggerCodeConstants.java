@@ -192,6 +192,8 @@ public interface LoggerCodeConstants {
 
     String REGISTRY_ISTIO_EXCEPTION = "1-41";
 
+    String REGISTRY_NACOS_SUB_LEGACY = "1-42";
+
     // Cluster module 2-x
     String CLUSTER_FAILED_SITE_SELECTION = "2-1";
 

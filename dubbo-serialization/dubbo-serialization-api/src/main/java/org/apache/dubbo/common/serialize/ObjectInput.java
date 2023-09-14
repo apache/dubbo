@@ -73,13 +73,13 @@ public interface ObjectInput extends DataInput {
     default Throwable readThrowable() throws IOException, ClassNotFoundException {
         Object obj = readObject();
         if (!(obj instanceof Throwable)) {
-            throw new IOException("Response data error, expect Throwable, but get " + obj);
+            throw new IOException("Response data error, expect Throwable, but get " + obj.getClass());
         }
         return (Throwable) obj;
     }
 
-    default Object readEvent() throws IOException, ClassNotFoundException {
-        return readObject();
+    default String readEvent() throws IOException, ClassNotFoundException {
+        return readUTF();
     }
 
     default Map<String, Object> readAttachments() throws IOException, ClassNotFoundException {

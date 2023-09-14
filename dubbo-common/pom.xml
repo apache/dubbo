@@ -65,12 +65,12 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -101,37 +101,4 @@
             <artifactId>javax.annotation-api</artifactId>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>get-version-infos</id>
-                        <phase>compile</phase>
-                        <configuration>
-                            <failOnError>true</failOnError>
-                            <target>
-                                <property name="version_file"
-                                          value="${project.build.outputDirectory}/META-INF/version"/>
-                                <!-- get the current version of dubbo -->
-                                <echo message="revision=${revision}${line.separator}" file="${version_file}"/>
-                                <echo message="git.commit.id=" file="${version_file}" append="true"/>
-                                <!-- get the latest commit id -->
-                                <exec executable="git" output="${version_file}" error=".git.exec.error" append="true"
-                                      timeout="3000" failifexecutionfails="false">
-                                    <arg line="rev-parse HEAD"/>
-                                </exec>
-                            </target>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 </project>

@@ -23,6 +23,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfigItem;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfiguratorConfig;
 
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
@@ -68,7 +69,7 @@ public class ConfigParser {
     private static List<URL> parseJsonArray(String rawConfig) {
         List<URL> urls = new ArrayList<>();
         try {
-            List<String> list = JsonUtils.getJson().toJavaList(rawConfig, String.class);
+            List<String> list = JsonUtils.toJavaList(rawConfig, String.class);
             if (!CollectionUtils.isEmpty(list)) {
                 list.forEach(u -> urls.add(URL.valueOf(u)));
             }
@@ -79,7 +80,7 @@ public class ConfigParser {
     }
 
     private static ConfiguratorConfig parseObject(String rawConfig) {
-        Yaml yaml = new Yaml(new SafeConstructor());
+        Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
         Map<String, Object> map = yaml.load(rawConfig);
         return ConfiguratorConfig.parseFromMap(map);
     }

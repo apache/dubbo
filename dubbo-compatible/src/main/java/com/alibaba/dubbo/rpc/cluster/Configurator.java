@@ -37,6 +37,6 @@ public interface Configurator extends org.apache.dubbo.rpc.cluster.Configurator 
 
     @Override
     default URL configure(URL url) {
-        return this.configure(new com.alibaba.dubbo.common.URL(url));
+        return this.configure(new com.alibaba.dubbo.common.DelegateURL(url));
     }
 }
