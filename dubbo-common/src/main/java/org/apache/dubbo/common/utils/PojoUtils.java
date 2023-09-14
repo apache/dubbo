@@ -16,6 +16,15 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.convert.jsr310.Jsr310Converter;
+import org.apache.dubbo.common.convert.jsr310.LocalDateConverter;
+import org.apache.dubbo.common.convert.jsr310.LocalDateTimeConverter;
+import org.apache.dubbo.common.convert.jsr310.LocalTimeConverter;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -53,10 +62,6 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-
 import static org.apache.dubbo.common.utils.ClassUtils.isAssignableFrom;
 
 /**
@@ -79,6 +84,14 @@ public class PojoUtils {
     private static final boolean GENERIC_WITH_CLZ = Boolean.parseBoolean(ConfigUtils.getProperty(CommonConstants.GENERIC_WITH_CLZ_KEY, "true"));
     private static final List<Class<?>> CLASS_CAN_BE_STRING = Arrays.asList(Byte.class, Short.class, Integer.class,
             Long.class, Float.class, Double.class, Boolean.class, Character.class);
+
+    private static final Map<Class<?>, Jsr310Converter> JSR_310_CONVERTER_CACHE = new ConcurrentHashMap<>();
+
+    static {
+        registerJsr310Converter(LocalDateTime.class, ExtensionLoader.getExtensionLoader(LocalDateTimeConverter.class).getDefaultExtension());
+        registerJsr310Converter(LocalDate.class, ExtensionLoader.getExtensionLoader(LocalDateConverter.class).getDefaultExtension());
+        registerJsr310Converter(LocalTime.class, ExtensionLoader.getExtensionLoader(LocalTimeConverter.class).getDefaultExtension());
+    }
 
     public static Object[] generalize(Object[] objs) {
         Object[] dests = new Object[objs.length];
@@ -125,7 +138,8 @@ public class PojoUtils {
         if (pojo instanceof Enum<?>) {
             return ((Enum<?>) pojo).name();
         }
-        if (pojo.getClass().isArray() && Enum.class.isAssignableFrom(pojo.getClass().getComponentType())) {
+        Class<?> pojoClazz = pojo.getClass();
+        if (pojoClazz.isArray() && Enum.class.isAssignableFrom(pojoClazz.getComponentType())) {
             int len = Array.getLength(pojo);
             String[] values = new String[len];
             for (int i = 0; i < len; i++) {
@@ -134,12 +148,12 @@ public class PojoUtils {
             return values;
         }
 
-        if (ReflectUtils.isPrimitives(pojo.getClass())) {
+        if (ReflectUtils.isPrimitives(pojoClazz)) {
             return pojo;
         }
-        
-        if (pojo instanceof LocalDate || pojo instanceof LocalDateTime || pojo instanceof LocalTime) {
-            return pojo.toString();
+
+        if (JSR_310_CONVERTER_CACHE.containsKey(pojoClazz)) {
+            return JSR_310_CONVERTER_CACHE.get(pojoClazz).generalize(pojoClazz.cast(pojo));
         }
 
         if (pojo instanceof Class) {
@@ -152,7 +166,7 @@ public class PojoUtils {
         }
         history.put(pojo, pojo);
 
-        if (pojo.getClass().isArray()) {
+        if (pojoClazz.isArray()) {
             int len = Array.getLength(pojo);
             Object[] dest = new Object[len];
             history.put(pojo, dest);
@@ -184,9 +198,9 @@ public class PojoUtils {
         Map<String, Object> map = new HashMap<String, Object>();
         history.put(pojo, map);
         if (GENERIC_WITH_CLZ) {
-            map.put("class", pojo.getClass().getName());
+            map.put("class", pojoClazz.getName());
         }
-        for (Method method : pojo.getClass().getMethods()) {
+        for (Method method : pojoClazz.getMethods()) {
             if (ReflectUtils.isBeanPropertyReadMethod(method)) {
                 ReflectUtils.makeAccessible(method);
                 try {
@@ -197,14 +211,14 @@ public class PojoUtils {
             }
         }
         // public field
-        for (Field field : pojo.getClass().getFields()) {
+        for (Field field : pojoClazz.getFields()) {
             if (ReflectUtils.isPublicInstanceField(field)) {
                 try {
                     Object fieldValue = field.get(pojo);
                     if (history.containsKey(pojo)) {
                         Object pojoGeneralizedValue = history.get(pojo);
                         if (pojoGeneralizedValue instanceof Map
-                            && ((Map) pojoGeneralizedValue).containsKey(field.getName())) {
+                                && ((Map) pojoGeneralizedValue).containsKey(field.getName())) {
                             continue;
                         }
                     }
@@ -263,7 +277,7 @@ public class PojoUtils {
             return new ArrayList<Object>(len);
         }
         if (type.isAssignableFrom(HashSet.class)) {
-            return new HashSet<Object>(Math.max((int) (len/.75f) + 1, 16));
+            return new HashSet<Object>(Math.max((int) (len / .75f) + 1, 16));
         }
         if (!type.isInterface() && !Modifier.isAbstract(type.getModifiers())) {
             try {
@@ -280,11 +294,11 @@ public class PojoUtils {
         int size = src.size();
         Map result = null;
         if (HashMap.class == cl) {
-            result = new HashMap(Math.max((int) (size/.75f) + 1, 16));
+            result = new HashMap(Math.max((int) (size / .75f) + 1, 16));
         } else if (Hashtable.class == cl) {
-            result = new Hashtable(Math.max((int) (size/.75f) + 1, 16));
+            result = new Hashtable(Math.max((int) (size / .75f) + 1, 16));
         } else if (IdentityHashMap.class == cl) {
-            result = new IdentityHashMap((int)(1 + size * 1.1));
+            result = new IdentityHashMap((int) (1 + size * 1.1));
         } else if (LinkedHashMap.class == cl) {
             result = new LinkedHashMap();
         } else if (Properties.class == cl) {
@@ -292,9 +306,9 @@ public class PojoUtils {
         } else if (TreeMap.class == cl) {
             result = new TreeMap();
         } else if (WeakHashMap.class == cl) {
-            return new WeakHashMap(Math.max((int) (size/.75f) + 1, 16));
+            return new WeakHashMap(Math.max((int) (size / .75f) + 1, 16));
         } else if (ConcurrentHashMap.class == cl) {
-            result = new ConcurrentHashMap(Math.max((int) (size/.75f) + 1, 16));
+            result = new ConcurrentHashMap(Math.max((int) (size / .75f) + 1, 16));
         } else if (ConcurrentSkipListMap.class == cl) {
             result = new ConcurrentSkipListMap();
         } else {
@@ -311,7 +325,7 @@ public class PojoUtils {
         }
 
         if (result == null) {
-            result = new HashMap<Object, Object>(Math.max((int) (size/.75f) + 1, 16));
+            result = new HashMap<Object, Object>(Math.max((int) (size / .75f) + 1, 16));
         }
 
         return result;
@@ -327,10 +341,14 @@ public class PojoUtils {
             return Enum.valueOf((Class<Enum>) type, (String) pojo);
         }
 
+        if (null != type && JSR_310_CONVERTER_CACHE.containsKey(type)) {
+            return JSR_310_CONVERTER_CACHE.get(type).realize(pojo);
+        }
+
         if (ReflectUtils.isPrimitives(pojo.getClass())
-            && !(type != null && type.isArray()
-            && type.getComponentType().isEnum()
-            && pojo.getClass() == String[].class)) {
+                && !(type != null && type.isArray()
+                && type.getComponentType().isEnum()
+                && pojo.getClass() == String[].class)) {
             return CompatibleTypeUtils.compatibleTypeConvert(pojo, type);
         }
 
@@ -434,8 +452,8 @@ public class PojoUtils {
                 Type mapKeyType = getKeyTypeForMap(map.getClass());
                 Type typeKeyType = getGenericClassByIndex(genericType, 0);
                 boolean typeMismatch = mapKeyType instanceof Class
-                    && typeKeyType instanceof Class
-                    && !typeKeyType.getTypeName().equals(mapKeyType.getTypeName());
+                        && typeKeyType instanceof Class
+                        && !typeKeyType.getTypeName().equals(mapKeyType.getTypeName());
                 if (typeMismatch) {
                     result = createMap(new HashMap(0));
                 } else {
@@ -489,7 +507,7 @@ public class PojoUtils {
                                     method.invoke(dest, value);
                                 } catch (Exception e) {
                                     String exceptionDescription = "Failed to set pojo " + dest.getClass().getSimpleName() + " property " + name
-                                        + " value " + value.getClass() + ", cause: " + e.getMessage();
+                                            + " value " + value.getClass() + ", cause: " + e.getMessage();
                                     logger.error(exceptionDescription, e);
                                     throw new RuntimeException(exceptionDescription, e);
                                 }
@@ -670,8 +688,8 @@ public class PojoUtils {
 
     public static boolean isPojo(Class<?> cls) {
         return !ReflectUtils.isPrimitives(cls)
-            && !Collection.class.isAssignableFrom(cls)
-            && !Map.class.isAssignableFrom(cls);
+                && !Collection.class.isAssignableFrom(cls)
+                && !Map.class.isAssignableFrom(cls);
     }
 
     /**
@@ -776,6 +794,10 @@ public class PojoUtils {
             // ignore other type currently
             return null;
         }
+    }
+
+    public static <T> void registerJsr310Converter(Class<T> clazz, Jsr310Converter<T> jsr310Converter) {
+        JSR_310_CONVERTER_CACHE.put(clazz, jsr310Converter);
     }
 
 }

@@ -5,7 +5,8 @@ org.springframework.context.ApplicationListener=\
 org.apache.dubbo.spring.boot.context.event.OverrideDubboConfigApplicationListener,\
 org.apache.dubbo.spring.boot.context.event.DubboConfigBeanDefinitionConflictApplicationListener,\
 org.apache.dubbo.spring.boot.context.event.WelcomeLogoApplicationListener,\
-org.apache.dubbo.spring.boot.context.event.AwaitingNonWebApplicationListener
+org.apache.dubbo.spring.boot.context.event.AwaitingNonWebApplicationListener,\
+org.apache.dubbo.spring.boot.context.event.Jsr310ConverterApplicationListener
 org.springframework.boot.env.EnvironmentPostProcessor=\
 org.apache.dubbo.spring.boot.env.DubboDefaultPropertiesEnvironmentPostProcessor
 org.springframework.context.ApplicationContextInitializer=\
