@@ -33,7 +33,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.stream.Collectors;
 
 public class ReflectionServiceDescriptor implements ServiceDescriptor {
     private final String interfaceName;
