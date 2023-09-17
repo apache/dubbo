@@ -55,7 +55,7 @@ public class BodyProviderParamParser extends ProviderParamParser {
             try {
                 body = new String(request.getInputStream());
             } catch (IOException ex) {
-                logger.error("dubbo rest protocol provider body param parser  error", e.getMessage(), "\n body is:" + body);
+//                logger.error("dubbo rest protocol provider body param parser  error", e.getMessage(), "\n body is:" + body);
 
             }
             throw new ParamParseException("dubbo rest protocol provider body param parser  error: " + e.getMessage() + "\n body is:" + body);
