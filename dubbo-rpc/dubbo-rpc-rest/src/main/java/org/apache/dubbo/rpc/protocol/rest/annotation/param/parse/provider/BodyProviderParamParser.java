@@ -17,6 +17,8 @@
 package org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider;
 
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.ParamType;
 import org.apache.dubbo.metadata.rest.media.MediaType;
@@ -27,12 +29,15 @@ import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 
+import java.io.IOException;
+
 
 /**
  * body param parse
  */
 @Activate(value = RestConstant.PROVIDER_BODY_PARSE)
 public class BodyProviderParamParser extends ProviderParamParser {
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(BodyProviderParamParser.class);
 
     @Override
     protected void doParse(ProviderParseContext parseContext, ArgInfo argInfo) {
@@ -45,7 +50,15 @@ public class BodyProviderParamParser extends ProviderParamParser {
             Object param = HttpMessageCodecManager.httpMessageDecode(request.getInputStream(), argInfo.getParamType(), argInfo.actualReflectType(), mediaType);
             parseContext.setValueByIndex(argInfo.getIndex(), param);
         } catch (Throwable e) {
-            throw new ParamParseException("dubbo rest protocol provider body param parser  error: " + e.getMessage());
+
+            String body = "";
+            try {
+                body = new String(request.getInputStream());
+            } catch (IOException ex) {
+                logger.error("dubbo rest protocol provider body param parser  error", e.getMessage(), "\n body is:" + body);
+
+            }
+            throw new ParamParseException("dubbo rest protocol provider body param parser  error: " + e.getMessage() + "\n body is:" + body);
         }
     }
 

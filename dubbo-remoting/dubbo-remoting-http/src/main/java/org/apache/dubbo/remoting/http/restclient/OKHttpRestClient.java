@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.remoting.http.restclient;
 
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.http.RequestTemplate;
 import org.apache.dubbo.remoting.http.RestClient;
 import org.apache.dubbo.remoting.http.RestResult;
@@ -39,6 +41,8 @@ import java.util.concurrent.TimeUnit;
 
 // TODO add version 4.0 implements ,and default version is < 4.0,for dependency conflict
 public class OKHttpRestClient implements RestClient {
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(OKHttpRestClient.class);
+
     private final OkHttpClient okHttpClient;
     private final HttpClientConfig httpClientConfig;
 
@@ -78,9 +82,16 @@ public class OKHttpRestClient implements RestClient {
 
         builder.method(requestTemplate.getHttpMethod(), requestBody);
 
+        Request build = builder.build();
+
+        LOGGER.info("OKHttpRestClient send request http method is :"+requestTemplate.getHttpMethod());
+        LOGGER.info("OKHttpRestClient send request header is :"+requestTemplate.getAllHeaders());
+        LOGGER.info("OKHttpRestClient send request body is :"+new String(requestTemplate.getSerializedBody()));
+
+
         CompletableFuture<RestResult> future = new CompletableFuture<>();
 
-        okHttpClient.newCall(builder.build()).enqueue(new Callback() {
+        okHttpClient.newCall(build).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 future.completeExceptionally(e);
