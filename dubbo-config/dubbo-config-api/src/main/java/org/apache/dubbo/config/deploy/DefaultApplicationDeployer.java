@@ -154,7 +154,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
         // load spi listener
         Set<ApplicationDeployListener> deployListeners = applicationModel.getExtensionLoader(ApplicationDeployListener.class)
-                .getSupportedExtensionInstances();
+            .getSupportedExtensionInstances();
         for (ApplicationDeployListener listener : deployListeners) {
             this.addDeployListener(listener);
         }
@@ -187,7 +187,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
      * by default is false.
      */
     private boolean isRegisterConsumerInstance() {
-        Boolean registerConsumer = getApplication().getRegisterConsumer();
+        Boolean registerConsumer = getApplicationOrElseThrow().getRegisterConsumer();
         if (registerConsumer == null) {
             return false;
         }
@@ -310,7 +310,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
         useRegistryAsMetadataCenterIfNecessary();
 
-        ApplicationConfig applicationConfig = getApplication();
+        ApplicationConfig applicationConfig = getApplicationOrElseThrow();
 
         String metadataType = applicationConfig.getMetadataType();
         // FIXME, multiple metadata config support.
@@ -357,17 +357,17 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         List<RegistryConfig> defaultRegistries = configManager.getDefaultRegistries();
         if (defaultRegistries.size() > 0) {
             defaultRegistries
-                    .stream()
-                    .filter(this::isUsedRegistryAsConfigCenter)
-                    .map(this::registryAsConfigCenter)
-                    .forEach(configCenter -> {
-                        if (configManager.getConfigCenter(configCenter.getId()).isPresent()) {
-                            return;
-                        }
-                        configManager.addConfigCenter(configCenter);
-                        logger.info("use registry as config-center: " + configCenter);
+                .stream()
+                .filter(this::isUsedRegistryAsConfigCenter)
+                .map(this::registryAsConfigCenter)
+                .forEach(configCenter -> {
+                    if (configManager.getConfigCenter(configCenter.getId()).isPresent()) {
+                        return;
+                    }
+                    configManager.addConfigCenter(configCenter);
+                    logger.info("use registry as config-center: " + configCenter);
 
-                    });
+                });
         }
     }
 
@@ -381,7 +381,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             return;
         }
         DefaultMetricsCollector collector =
-                applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
+            applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
         Optional<MetricsConfig> configOptional = configManager.getMetrics();
         //If no specific metrics type is configured and there is no Prometheus dependency in the dependencies.
         MetricsConfig metricsConfig = configOptional.orElse(new MetricsConfig(applicationModel));
@@ -442,7 +442,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private boolean isUsedRegistryAsConfigCenter(RegistryConfig registryConfig) {
         return isUsedRegistryAsCenter(registryConfig, registryConfig::getUseAsConfigCenter, "config",
-                DynamicConfigurationFactory.class);
+            DynamicConfigurationFactory.class);
     }
 
     private ConfigCenterConfig registryAsConfigCenter(RegistryConfig registryConfig) {
@@ -484,9 +484,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
 
         Collection<MetadataReportConfig> metadataConfigsToOverride = originMetadataConfigs
-                .stream()
-                .filter(m -> Objects.isNull(m.getAddress()))
-                .collect(Collectors.toList());
+            .stream()
+            .filter(m -> Objects.isNull(m.getAddress()))
+            .collect(Collectors.toList());
 
         if (metadataConfigsToOverride.size() > 1) {
             return;
@@ -858,14 +858,18 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 if (StringUtils.isNotEmpty(configContent)) {
                     logger.info(String.format("Got global remote configuration from config center with key-%s and group-%s: \n %s", configCenter.getConfigFile(), configCenter.getGroup(), configContent));
                 }
-                String appGroup = getApplication().getName();
+                String appGroup = "";
                 String appConfigContent = null;
                 String appConfigFile = null;
-                if (isNotEmpty(appGroup)) {
-                    appConfigFile = isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile();
-                    appConfigContent = dynamicConfiguration.getProperties(appConfigFile, appGroup);
-                    if (StringUtils.isNotEmpty(appConfigContent)) {
-                        logger.info(String.format("Got application specific remote configuration from config center with key %s and group %s: \n %s", appConfigFile, appGroup, appConfigContent));
+                Optional<ApplicationConfig> applicationOptional = getApplication();
+                if (applicationOptional.isPresent()) {
+                    appGroup = applicationOptional.get().getName();
+                    if (isNotEmpty(appGroup)) {
+                        appConfigFile = isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile();
+                        appConfigContent = dynamicConfiguration.getProperties(appConfigFile, appGroup);
+                        if (StringUtils.isNotEmpty(appConfigContent)) {
+                            logger.info(String.format("Got application specific remote configuration from config center with key %s and group %s: \n %s", appConfigFile, appGroup, appConfigContent));
+                        }
                     }
                 }
                 try {
@@ -1322,8 +1326,12 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
     }
 
-    private ApplicationConfig getApplication() {
+    private ApplicationConfig getApplicationOrElseThrow() {
         return configManager.getApplicationOrElseThrow();
+    }
+
+    private Optional<ApplicationConfig> getApplication() {
+        return configManager.getApplication();
     }
 
 

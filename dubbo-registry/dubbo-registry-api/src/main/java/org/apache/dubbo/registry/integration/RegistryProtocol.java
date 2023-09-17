@@ -917,7 +917,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         public ProviderConfigurationListener(ModuleModel moduleModel) {
             super(moduleModel);
             this.moduleModel = moduleModel;
-            if (moduleModel.modelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
+            if (moduleModel.modelEnvironment().getConfiguration().getBoolean(ENABLE_CONFIGURATION_LISTEN, true)) {
                 this.initWith(moduleModel.getApplicationModel().getApplicationName() + CONFIGURATORS_SUFFIX);
             }
         }
