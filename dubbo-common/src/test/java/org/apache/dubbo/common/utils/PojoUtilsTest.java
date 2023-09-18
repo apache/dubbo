@@ -35,6 +35,9 @@ import com.alibaba.fastjson.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import org.apache.dubbo.common.convert.jsr310.DefaultLocalDateTimeConverter;
+import org.apache.dubbo.common.convert.jsr310.DefaultLocalTimeConverter;
+
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -42,8 +45,10 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1054,6 +1059,29 @@ class PojoUtilsTest {
         public int hashCode() {
             return Objects.hash(NameA, NameAbsent);
         }
+    }
+
+    @Test
+    public void testJava8TimeWithCustomFormat() {
+        String localDateTimeFormat = "yyyy-MM-dd HH:mm:ss";
+        List<DateTimeFormatter> dateTimeFormatterList = Collections.singletonList(DateTimeFormatter.ofPattern(localDateTimeFormat));
+        PojoUtils.registerJsr310Converter(LocalDateTime.class, new DefaultLocalDateTimeConverter(dateTimeFormatterList));
+
+        String localTimeFormat = "HH:mm:ss";
+        List<DateTimeFormatter> localTimeFormatterList = Collections.singletonList(DateTimeFormatter.ofPattern(localTimeFormat));
+        PojoUtils.registerJsr310Converter(LocalTime.class, new DefaultLocalTimeConverter(localTimeFormatterList));
+
+        LocalDateTime now = LocalDateTime.now();
+        Object localDateTimeGen = PojoUtils.generalize(now);
+        Object localDateTime = PojoUtils.realize(localDateTimeGen, LocalDateTime.class);
+        assertTrue(localDateTime instanceof LocalDateTime);
+        assertEquals(localDateTimeGen.toString().length(), localDateTimeFormat.length());
+
+        LocalTime nowTime = LocalTime.now();
+        Object localTimeGen = PojoUtils.generalize(nowTime);
+        Object localTime = PojoUtils.realize(localTimeGen, LocalTime.class);
+        assertTrue(localTime instanceof LocalTime);
+        assertEquals(localTimeGen.toString().length(), localTimeFormat.length());
     }
 
     public enum Day {

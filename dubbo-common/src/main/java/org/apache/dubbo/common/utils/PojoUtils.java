@@ -18,6 +18,11 @@ package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.convert.jsr310.Jsr310Converter;
+import org.apache.dubbo.common.convert.jsr310.LocalDateConverter;
+import org.apache.dubbo.common.convert.jsr310.LocalDateTimeConverter;
+import org.apache.dubbo.common.convert.jsr310.LocalTimeConverter;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -92,6 +97,14 @@ public class PojoUtils {
     private static final List<Class<?>> CLASS_CAN_BE_STRING = Arrays.asList(Byte.class, Short.class, Integer.class,
         Long.class, Float.class, Double.class, Boolean.class, Character.class);
 
+    private static final Map<Class<?>, Jsr310Converter> JSR_310_CONVERTER_CACHE = new ConcurrentHashMap<>();
+
+    static {
+        registerJsr310Converter(LocalDateTime.class, ExtensionLoader.getExtensionLoader(LocalDateTimeConverter.class).getDefaultExtension());
+        registerJsr310Converter(LocalDate.class, ExtensionLoader.getExtensionLoader(LocalDateConverter.class).getDefaultExtension());
+        registerJsr310Converter(LocalTime.class, ExtensionLoader.getExtensionLoader(LocalTimeConverter.class).getDefaultExtension());
+    }
+
     public static Object[] generalize(Object[] objs) {
         Object[] dests = new Object[objs.length];
         for (int i = 0; i < objs.length; i++) {
@@ -137,7 +150,8 @@ public class PojoUtils {
         if (pojo instanceof Enum<?>) {
             return ((Enum<?>) pojo).name();
         }
-        if (pojo.getClass().isArray() && Enum.class.isAssignableFrom(pojo.getClass().getComponentType())) {
+        Class<?> pojoClazz = pojo.getClass();
+        if (pojoClazz.isArray() && Enum.class.isAssignableFrom(pojoClazz.getComponentType())) {
             int len = Array.getLength(pojo);
             String[] values = new String[len];
             for (int i = 0; i < len; i++) {
@@ -146,12 +160,12 @@ public class PojoUtils {
             return values;
         }
 
-        if (ReflectUtils.isPrimitives(pojo.getClass())) {
+        if (ReflectUtils.isPrimitives(pojoClazz)) {
             return pojo;
         }
 
-        if (pojo instanceof LocalDate || pojo instanceof LocalDateTime || pojo instanceof LocalTime) {
-            return pojo.toString();
+        if (JSR_310_CONVERTER_CACHE.containsKey(pojoClazz)) {
+            return JSR_310_CONVERTER_CACHE.get(pojoClazz).generalize(pojoClazz.cast(pojo));
         }
 
         if (pojo instanceof Class) {
@@ -164,7 +178,7 @@ public class PojoUtils {
         }
         history.put(pojo, pojo);
 
-        if (pojo.getClass().isArray()) {
+        if (pojoClazz.isArray()) {
             int len = Array.getLength(pojo);
             Object[] dest = new Object[len];
             history.put(pojo, dest);
@@ -196,9 +210,9 @@ public class PojoUtils {
         Map<String, Object> map = new HashMap<>();
         history.put(pojo, map);
         if (GENERIC_WITH_CLZ) {
-            map.put("class", pojo.getClass().getName());
+            map.put("class", pojoClazz.getName());
         }
-        for (Method method : pojo.getClass().getMethods()) {
+        for (Method method : pojoClazz.getMethods()) {
             if (ReflectUtils.isBeanPropertyReadMethod(method)) {
                 ReflectUtils.makeAccessible(method);
                 try {
@@ -209,14 +223,14 @@ public class PojoUtils {
             }
         }
         // public field
-        for (Field field : pojo.getClass().getFields()) {
+        for (Field field : pojoClazz.getFields()) {
             if (ReflectUtils.isPublicInstanceField(field)) {
                 try {
                     Object fieldValue = field.get(pojo);
                     if (history.containsKey(pojo)) {
                         Object pojoGeneralizedValue = history.get(pojo);
                         if (pojoGeneralizedValue instanceof Map
-                            && ((Map) pojoGeneralizedValue).containsKey(field.getName())) {
+                                && ((Map) pojoGeneralizedValue).containsKey(field.getName())) {
                             continue;
                         }
                     }
@@ -340,6 +354,10 @@ public class PojoUtils {
 
         if (type != null && type.isEnum() && pojo.getClass() == String.class) {
             return Enum.valueOf((Class<Enum>) type, (String) pojo);
+        }
+
+        if (null != type && JSR_310_CONVERTER_CACHE.containsKey(type)) {
+            return JSR_310_CONVERTER_CACHE.get(type).realize(pojo);
         }
 
         if (ReflectUtils.isPrimitives(pojo.getClass())
@@ -852,4 +870,9 @@ public class PojoUtils {
             return null;
         }
     }
+
+    public static <T> void registerJsr310Converter(Class<T> clazz, Jsr310Converter<T> jsr310Converter) {
+        JSR_310_CONVERTER_CACHE.put(clazz, jsr310Converter);
+    }
+
 }
