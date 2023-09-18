@@ -19,6 +19,9 @@ package org.apache.dubbo.qos.aot;
 import org.apache.dubbo.aot.api.MemberCategory;
 import org.apache.dubbo.aot.api.ReflectionTypeDescriberRegistrar;
 import org.apache.dubbo.aot.api.TypeDescriber;
+import org.apache.dubbo.qos.server.handler.ForeignHostPermitHandler;
+import org.apache.dubbo.qos.server.handler.QosProcessHandler;
+import org.apache.dubbo.qos.server.handler.TelnetIdleEventHandler;
 
 import java.nio.channels.spi.SelectorProvider;
 import java.util.ArrayList;
@@ -33,6 +36,9 @@ public class QosReflectionTypeDescriberRegistrar implements ReflectionTypeDescri
     public List<TypeDescriber> getTypeDescribers() {
         List<TypeDescriber> typeDescribers = new ArrayList<>();
         typeDescribers.add(buildTypeDescriberWithPublicMethod(SelectorProvider.class));
+        typeDescribers.add(buildTypeDescriberWithPublicMethod(ForeignHostPermitHandler.class));
+        typeDescribers.add(buildTypeDescriberWithPublicMethod(QosProcessHandler.class));
+        typeDescribers.add(buildTypeDescriberWithPublicMethod(TelnetIdleEventHandler.class));
         return typeDescribers;
     }
 
