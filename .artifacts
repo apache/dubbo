@@ -30,6 +30,7 @@ dubbo-config
 dubbo-config-api
 dubbo-config-spring
 dubbo-config-spring6
+dubbo-config-test
 dubbo-configcenter
 dubbo-configcenter-api
 dubbo-configcenter-file
