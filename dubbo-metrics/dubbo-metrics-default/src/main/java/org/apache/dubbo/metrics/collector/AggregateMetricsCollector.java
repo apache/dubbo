@@ -97,8 +97,8 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
                 this.enableRt = Optional.ofNullable(aggregation.getEnableRt()).orElse(true);
                 this.enableRequest = Optional.ofNullable(aggregation.getEnableRequest()).orElse(true);
             }
+            this.serviceLevel = MethodMetric.isServiceLevel(applicationModel);
         }
-        this.serviceLevel = MethodMetric.isServiceLevel(applicationModel);
     }
 
     public void setCollectEnabled(Boolean collectEnabled) {

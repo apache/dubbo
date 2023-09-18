@@ -70,8 +70,8 @@ public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEv
             }
 
             metricRegister = new HistogramMetricRegister(MetricsGlobalRegistry.getCompositeRegistry(applicationModel), histogram);
+            this.serviceLevel = MethodMetric.isServiceLevel(applicationModel);
         }
-        this.serviceLevel = MethodMetric.isServiceLevel(applicationModel);
     }
 
     private void registerListener() {
