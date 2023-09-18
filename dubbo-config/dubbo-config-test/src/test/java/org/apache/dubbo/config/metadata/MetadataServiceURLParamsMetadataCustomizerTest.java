@@ -47,7 +47,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME;
 
-class MetadataServiceURLParamsMetadataCustomizerTest {
+class MetadataServiceURLParamsMetadataCustomizerMetadataServiceURLParamsMetadataCustomizerTest {
 
     public DefaultServiceInstance instance;
     private URL metadataServiceURL = URL.valueOf("dubbo://10.225.12.124:2002/org.apache.dubbo.metadata.MetadataService" +
