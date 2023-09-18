@@ -27,7 +27,7 @@
     <artifactId>dubbo-config-test</artifactId>
 
     <properties>
-        <skip_maven_deploy>true</skip_maven_deploy>
+        <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
 
     <dependencies>
