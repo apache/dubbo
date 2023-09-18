@@ -62,6 +62,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_BEAN;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_NATIVE_JAVA;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_PROTOBUF;
+import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_WITH_CLZ_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FILTER_VALIDATION_EXCEPTION;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
@@ -333,7 +334,15 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
             } else if (ProtocolUtils.isGenericReturnRawResult(generic)) {
                 return;
             } else {
-                appResponse.setValue(PojoUtils.generalize(appResponse.getValue()));
+                String genericWithClzStr = inv.getAttachment(GENERIC_WITH_CLZ_KEY);
+                Object response = appResponse.getValue();
+                if ("true".equals(genericWithClzStr) || "false".equals(genericWithClzStr)) {
+                    boolean genericWithClz = Boolean.parseBoolean(genericWithClzStr);
+                    response = PojoUtils.generalize(response, genericWithClz);
+                } else {
+                    response = PojoUtils.generalize(response);
+                }
+                appResponse.setValue(response);
             }
         }
     }
