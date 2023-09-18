@@ -16,7 +16,6 @@
  *   limitations under the License.
  *
  */
-
 package org.apache.dubbo.config.bootstrap.rest;
 
 import java.util.concurrent.atomic.AtomicLong;

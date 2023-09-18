@@ -24,11 +24,9 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
-import org.apache.dubbo.metadata.deploy.MetadataServiceURLParamsMetadataCustomizer;
+import org.apache.dubbo.config.provider.impl.DemoServiceImpl;import org.apache.dubbo.metadata.deploy.MetadataServiceURLParamsMetadataCustomizer;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,7 +45,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME;
 
-class MetadataServiceURLParamsMetadataCustomizerMetadataServiceURLParamsMetadataCustomizerTest {
+class MetadataServiceURLParamsMetadataCustomizerTest {
 
     public DefaultServiceInstance instance;
     private URL metadataServiceURL = URL.valueOf("dubbo://10.225.12.124:2002/org.apache.dubbo.metadata.MetadataService" +

@@ -18,9 +18,9 @@ package org.apache.dubbo.config.bootstrap.compatible;
 
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 import org.apache.dubbo.config.bootstrap.EchoService;
 import org.apache.dubbo.config.bootstrap.rest.UserService;
+import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 
 /**
  * Dubbo Provider Bootstrap
