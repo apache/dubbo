@@ -1,0 +1,6 @@
+dubbo:
+  metrics:
+    protocol: promethus
+    enable-jvm: true
+    aggregation:
+      enabled: true
