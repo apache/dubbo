@@ -48,6 +48,8 @@ public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEv
 
     private static final Integer[] DEFAULT_BUCKETS_MS = new Integer[]{100, 300, 500, 1000, 3000, 5000, 10000};
 
+    private boolean serviceLevel;
+
     public HistogramMetricsCollector(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
 
@@ -68,6 +70,7 @@ public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEv
             }
 
             metricRegister = new HistogramMetricRegister(MetricsGlobalRegistry.getCompositeRegistry(applicationModel), histogram);
+            this.serviceLevel = MethodMetric.isServiceLevel(applicationModel);
         }
     }
 
@@ -92,7 +95,7 @@ public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEv
 
     private void onRTEvent(RequestEvent event) {
         if (metricRegister != null) {
-            MethodMetric metric = new MethodMetric(applicationModel, event.getAttachmentValue(MetricsConstants.INVOCATION));
+            MethodMetric metric = new MethodMetric(applicationModel, event.getAttachmentValue(MetricsConstants.INVOCATION), serviceLevel);
             long responseTime = event.getTimePair().calc();
 
             HistogramMetricSample sample = new HistogramMetricSample(MetricsKey.METRIC_RT_HISTOGRAM.getNameByType(metric.getSide()),
