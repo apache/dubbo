@@ -28,6 +28,7 @@ public class RegistryApplicationDeployListener implements ApplicationDeployListe
     @Override
     public void onStarting(ApplicationModel scopeModel) {
         scopeModel.getBeanFactory().getOrRegisterBean(DefaultMetadataUpdater.class);
+        System.out.println("DefaultMetadataUpdater registered.");
     }
 
     @Override
