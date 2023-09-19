@@ -24,6 +24,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.registry.DefaultMetadataUpdater;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +35,8 @@ public class Application {
 
 
     public static void main(String[] args) throws Exception {
+        System.out.printf("Provider Application start...");
+        System.out.printf(DefaultMetadataUpdater.class.getName());
         System.setProperty("dubbo.application.logger", "log4j");
         System.setProperty("native", "true");
         System.setProperty("dubbo.json-framework.prefer", "fastjson");

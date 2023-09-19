@@ -47,6 +47,11 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metadata-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-registry-multicast</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -222,7 +227,7 @@
                     <plugin>
                         <groupId>org.graalvm.buildtools</groupId>
                         <artifactId>native-maven-plugin</artifactId>
-                        <version>0.9.25</version>
+                        <version>0.9.23</version>
                         <configuration>
                             <classesDirectory>${project.build.outputDirectory}</classesDirectory>
                             <metadataRepository>
