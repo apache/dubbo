@@ -40,6 +40,7 @@ import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.event.MetricsInitEvent;
+import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -556,11 +557,12 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     private void initServiceMethodMetrics(URL url) {
-        String [] methods = Optional.ofNullable(url.getParameter(METHODS_KEY)).map(i->i.split(",")).orElse( new String[]{});
-        Arrays.stream(methods).forEach( method-> {
-            RpcInvocation invocation = new RpcInvocation(url.getServiceKey(),url.getServiceModel(),method,interfaceName, url.getProtocolServiceKey(), null, null,null,null,null,null);
-            MetricsEventBus.publish(MetricsInitEvent.toMetricsInitEvent(application.getApplicationModel(),invocation));
-            });
+        String[] methods = Optional.ofNullable(url.getParameter(METHODS_KEY)).map(i -> i.split(",")).orElse(new String[]{});
+        boolean serviceLevel = MethodMetric.isServiceLevel(application.getApplicationModel());
+        Arrays.stream(methods).forEach(method -> {
+            RpcInvocation invocation = new RpcInvocation(url.getServiceKey(), url.getServiceModel(), method, interfaceName, url.getProtocolServiceKey(), null, null, null, null, null, null);
+            MetricsEventBus.publish(MetricsInitEvent.toMetricsInitEvent(application.getApplicationModel(), invocation, serviceLevel));
+        });
     }
 
     private void processServiceExecutor(URL url) {

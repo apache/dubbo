@@ -56,8 +56,8 @@ public class RequestEvent extends TimeCounterEvent {
 
     public static RequestEvent toRequestEvent(ApplicationModel applicationModel, String appName,
                                               MetricsDispatcher metricsDispatcher, DefaultMetricsCollector collector,
-                                              Invocation invocation, String side) {
-        MethodMetric methodMetric = new MethodMetric(applicationModel, invocation);
+                                              Invocation invocation, String side, boolean serviceLevel) {
+        MethodMetric methodMetric = new MethodMetric(applicationModel, invocation, serviceLevel);
         RequestEvent requestEvent = new RequestEvent(applicationModel, appName, metricsDispatcher, collector, REQUEST_EVENT);
         requestEvent.putAttachment(MetricsConstants.INVOCATION, invocation);
         requestEvent.putAttachment(MetricsConstants.METHOD_METRICS, methodMetric);
@@ -80,13 +80,13 @@ public class RequestEvent extends TimeCounterEvent {
     /**
      * Acts on MetricsClusterFilter to monitor exceptions that occur before request execution
      */
-    public static RequestEvent toRequestErrorEvent(ApplicationModel applicationModel, String appName, MetricsDispatcher metricsDispatcher, Invocation invocation, String side, int code) {
+    public static RequestEvent toRequestErrorEvent(ApplicationModel applicationModel, String appName, MetricsDispatcher metricsDispatcher, Invocation invocation, String side, int code, boolean serviceLevel) {
         RequestEvent event = new RequestEvent(applicationModel, appName, metricsDispatcher, null,  REQUEST_ERROR_EVENT);
         event.putAttachment(ATTACHMENT_KEY_SERVICE, MetricsSupport.getInterfaceName(invocation));
         event.putAttachment(MetricsConstants.INVOCATION_SIDE, side);
         event.putAttachment(MetricsConstants.INVOCATION, invocation);
         event.putAttachment(MetricsConstants.INVOCATION_REQUEST_ERROR, code);
-        event.putAttachment(MetricsConstants.METHOD_METRICS, new MethodMetric(applicationModel, invocation));
+        event.putAttachment(MetricsConstants.METHOD_METRICS, new MethodMetric(applicationModel, invocation, serviceLevel));
         return event;
     }
 
