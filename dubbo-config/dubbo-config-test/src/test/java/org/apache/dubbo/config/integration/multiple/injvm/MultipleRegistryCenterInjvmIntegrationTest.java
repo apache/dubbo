@@ -155,8 +155,8 @@ class MultipleRegistryCenterInjvmIntegrationTest implements IntegrationTest {
             MultipleRegistryCenterInjvmService.class);
         // The MultipleRegistryCenterInjvmService is exported
         Assertions.assertTrue(serviceListener.getExportedServices().get(0).isExported());
-        // The exported exporter is only one
-        Assertions.assertEquals(1,exporterListener.getExportedExporters().size());
+        // There have three exported exporters.
+        Assertions.assertEquals(3,exporterListener.getExportedExporters().size());
         // The exported exporter contains MultipleRegistryCenterInjvmFilter
         Assertions.assertTrue(exporterListener.getFilters().contains(filter));
     }
