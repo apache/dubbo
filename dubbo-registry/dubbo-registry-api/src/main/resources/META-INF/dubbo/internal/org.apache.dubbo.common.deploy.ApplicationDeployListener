@@ -1,2 +1,1 @@
-registry=org.apache.dubbo.registry.deploy.RegistryApplicationDeployListener
 exporter=org.apache.dubbo.metadata.deploy.ExporterDeployListener
