@@ -17,12 +17,17 @@
 
 package org.apache.dubbo.metrics.model;
 
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.MetricsConfig;
+import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
@@ -36,12 +41,31 @@ public class MethodMetric extends ServiceKeyMetric {
     private String group;
     private String version;
 
-    public MethodMetric(ApplicationModel applicationModel, Invocation invocation) {
+
+    public MethodMetric(ApplicationModel applicationModel, Invocation invocation, boolean serviceLevel) {
         super(applicationModel, MetricsSupport.getInterfaceName(invocation));
-        this.methodName = RpcUtils.getMethodName(invocation);
         this.side = MetricsSupport.getSide(invocation);
         this.group = MetricsSupport.getGroup(invocation);
         this.version = MetricsSupport.getVersion(invocation);
+        this.methodName = serviceLevel ? null : RpcUtils.getMethodName(invocation);
+    }
+
+
+    public static boolean isServiceLevel(ApplicationModel applicationModel) {
+        if(applicationModel == null){
+            return false;
+        }
+        ConfigManager applicationConfigManager = applicationModel.getApplicationConfigManager();
+        if (applicationConfigManager == null) {
+            return false;
+        }
+        Optional<MetricsConfig> metrics = applicationConfigManager.getMetrics();
+        if (!metrics.isPresent()) {
+            return false;
+        }
+        String rpcLevel = metrics.map(MetricsConfig::getRpcLevel).orElse(MetricsLevel.METHOD.name());
+        rpcLevel = StringUtils.isBlank(rpcLevel) ? MetricsLevel.METHOD.name() : rpcLevel;
+        return MetricsLevel.SERVICE.name().equalsIgnoreCase(rpcLevel);
     }
 
     public String getGroup() {
@@ -82,13 +106,13 @@ public class MethodMetric extends ServiceKeyMetric {
     @Override
     public String toString() {
         return "MethodMetric{" +
-                "applicationName='" + getApplicationName() + '\'' +
-                ", side='" + side + '\'' +
-                ", interfaceName='" + getServiceKey() + '\'' +
-                ", methodName='" + methodName + '\'' +
-                ", group='" + group + '\'' +
-                ", version='" + version + '\'' +
-                '}';
+            "applicationName='" + getApplicationName() + '\'' +
+            ", side='" + side + '\'' +
+            ", interfaceName='" + getServiceKey() + '\'' +
+            ", methodName='" + methodName + '\'' +
+            ", group='" + group + '\'' +
+            ", version='" + version + '\'' +
+            '}';
     }
 
     @Override
@@ -100,6 +124,7 @@ public class MethodMetric extends ServiceKeyMetric {
     }
 
     private volatile int hashCode = 0;
+
     @Override
     public int hashCode() {
         if (hashCode == 0) {
