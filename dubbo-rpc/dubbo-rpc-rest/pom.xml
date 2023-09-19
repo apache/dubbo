@@ -288,12 +288,12 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-registry-zookeeper</artifactId>
-            <version>${project.parent.version}</version>
-            <scope>test</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.apache.dubbo</groupId>-->
+<!--            <artifactId>dubbo-registry-zookeeper</artifactId>-->
+<!--            <version>${project.parent.version}</version>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.apache.curator</groupId>
@@ -319,45 +319,45 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-metadata-report-zookeeper</artifactId>
-            <version>${project.parent.version}</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.apache.dubbo</groupId>-->
+<!--            <artifactId>dubbo-metadata-report-zookeeper</artifactId>-->
+<!--            <version>${project.parent.version}</version>-->
+<!--            <scope>test</scope>-->
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    <groupId>com.google.guava</groupId>-->
+<!--                    <artifactId>guava</artifactId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
+<!--        </dependency>-->
 
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-metadata-report-redis</artifactId>
-            <version>${project.parent.version}</version>
-            <scope>test</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.apache.dubbo</groupId>-->
+<!--            <artifactId>dubbo-metadata-report-redis</artifactId>-->
+<!--            <version>${project.parent.version}</version>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
 
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-configcenter-zookeeper</artifactId>
-            <version>${project.parent.version}</version>
-            <scope>test</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.apache.dubbo</groupId>-->
+<!--            <artifactId>dubbo-configcenter-zookeeper</artifactId>-->
+<!--            <version>${project.parent.version}</version>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
 
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-configcenter-nacos</artifactId>
-            <version>${project.parent.version}</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.apache.dubbo</groupId>-->
+<!--            <artifactId>dubbo-configcenter-nacos</artifactId>-->
+<!--            <version>${project.parent.version}</version>-->
+<!--            <scope>test</scope>-->
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    <groupId>com.google.guava</groupId>-->
+<!--                    <artifactId>guava</artifactId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.apache.dubbo</groupId>
@@ -394,11 +394,22 @@
             <scope>test</scope>
         </dependency>
 
+
+        <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-test-common</artifactId>
-            <version>${project.parent.version}</version>
-            <scope>test</scope>
+            <artifactId>dubbo-test-check</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
     </dependencies>
