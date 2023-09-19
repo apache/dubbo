@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
@@ -125,7 +126,7 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
         if (enableQps) {
             MethodMetric metric = calcWindowCounter(event, MetricsKey.METRIC_REQUESTS);
             TimeWindowCounter qpsCounter = ConcurrentHashMapUtils.computeIfAbsent(qps, metric,
-                methodMetric -> new TimeWindowCounter(bucketNum, qpsTimeWindowMillSeconds));
+                methodMetric -> new TimeWindowCounter(bucketNum, TimeUnit.MILLISECONDS.toSeconds(qpsTimeWindowMillSeconds)));
             qpsCounter.increment();
         }
     }
