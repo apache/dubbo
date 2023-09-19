@@ -23,6 +23,7 @@ import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.metrics.aggregate.TimeWindowCounter;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.event.MetricsInitEvent;
+import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.ServiceKeyMetric;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.key.MetricsLevel;
@@ -96,7 +97,7 @@ class InitServiceMetricsTest {
         String protocolServiceKey=serviceKey+":dubbo";
 
         RpcInvocation invocation = new RpcInvocation(serviceKey,null,methodName,interfaceName, protocolServiceKey, null, null,null,null,null,null);
-        MetricsEventBus.publish(MetricsInitEvent.toMetricsInitEvent(applicationModel,invocation));
+        MetricsEventBus.publish(MetricsInitEvent.toMetricsInitEvent(applicationModel,invocation, MethodMetric.isServiceLevel(applicationModel)));
 
     }
 

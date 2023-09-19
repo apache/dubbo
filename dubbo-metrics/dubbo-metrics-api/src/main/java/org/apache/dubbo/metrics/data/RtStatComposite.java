@@ -50,9 +50,11 @@ import java.util.stream.Collectors;
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class RtStatComposite extends AbstractMetricsExport {
+    private boolean serviceLevel;
 
     public RtStatComposite(ApplicationModel applicationModel) {
         super(applicationModel);
+        this.serviceLevel = MethodMetric.isServiceLevel(getApplicationModel());
     }
 
     private final Map<String, List<LongContainer<? extends Number>>> rtStats = new ConcurrentHashMap<>();
@@ -168,7 +170,7 @@ public class RtStatComposite extends AbstractMetricsExport {
         List<Action> actions;
         actions = new LinkedList<>();
         for (LongContainer container : rtStats.get(registryOpType)) {
-            MethodMetric key = new MethodMetric(getApplicationModel(), invocation);
+            MethodMetric key = new MethodMetric(getApplicationModel(), invocation, serviceLevel);
             Number current = (Number) container.get(key);
             if (current == null) {
                 container.putIfAbsent(key, container.getInitFunc().apply(key));
