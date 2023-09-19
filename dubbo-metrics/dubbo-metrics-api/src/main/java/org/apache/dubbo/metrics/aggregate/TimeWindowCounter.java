@@ -28,7 +28,7 @@ public class TimeWindowCounter {
 
     private final LongAdderSlidingWindow slidingWindow;
 
-    public TimeWindowCounter(int bucketNum, int timeWindowSeconds) {
+    public TimeWindowCounter(int bucketNum, long timeWindowSeconds) {
         this.slidingWindow = new LongAdderSlidingWindow(bucketNum, TimeUnit.SECONDS.toMillis(timeWindowSeconds));
     }
 

@@ -23,6 +23,7 @@ import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.event.RequestEvent;
+import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -42,6 +43,7 @@ public class MetricsClusterFilter implements ClusterFilter, BaseFilter.Listener,
     private DefaultMetricsCollector collector;
     private String appName;
     private MetricsDispatcher metricsDispatcher;
+    private boolean serviceLevel;
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
@@ -49,6 +51,7 @@ public class MetricsClusterFilter implements ClusterFilter, BaseFilter.Listener,
         this.collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
         this.appName = applicationModel.tryGetApplicationName();
         this.metricsDispatcher = applicationModel.getBeanFactory().getBean(MetricsDispatcher.class);
+        this.serviceLevel = MethodMetric.isServiceLevel(applicationModel);
     }
 
     @Override
@@ -73,7 +76,7 @@ public class MetricsClusterFilter implements ClusterFilter, BaseFilter.Listener,
         if (t instanceof RpcException) {
             RpcException e = (RpcException) t;
             if (e.isForbidden()) {
-                MetricsEventBus.publish(RequestEvent.toRequestErrorEvent(applicationModel, appName, metricsDispatcher, invocation, CONSUMER_SIDE, e.getCode()));
+                MetricsEventBus.publish(RequestEvent.toRequestErrorEvent(applicationModel, appName, metricsDispatcher, invocation, CONSUMER_SIDE, e.getCode(), serviceLevel));
             }
         }
     }
