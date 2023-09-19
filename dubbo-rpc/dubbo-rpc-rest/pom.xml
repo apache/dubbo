@@ -226,6 +226,12 @@
             <artifactId>dubbo-registry-zookeeper</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.dubbo</groupId>
+                    <artifactId>dubbo-rpc-rest</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
