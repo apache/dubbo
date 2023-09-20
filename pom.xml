@@ -163,7 +163,6 @@
         <module>dubbo-metadata</module>
         <module>dubbo-metrics</module>
         <module>dubbo-spring-boot</module>
-        <module>dubbo-native</module>
         <module>dubbo-test</module>
         <module>dubbo-kubernetes</module>
         <module>dubbo-xds</module>
