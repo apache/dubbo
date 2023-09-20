@@ -31,6 +31,5 @@ public class RegisterBeanInitLifecycle implements ApplicationLifecycle{
     @Override
     public void initialize(ApplicationContext context) {
         context.getModel().getBeanFactory().getOrRegisterBean(DefaultMetadataUpdater.class);
-        System.out.println("DefaultMetadataUpdater registered.");
     }
 }

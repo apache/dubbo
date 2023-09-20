@@ -21,6 +21,9 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 
 public class DefaultMetadataUpdater implements ApplicationMetadataUpdater {
+
+    public DefaultMetadataUpdater() {}
+
     @Override
     public void refreshMetadataAndInstance(ApplicationModel applicationModel) {
         ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationModel);
