@@ -87,7 +87,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
     /**
      * {@link Node} destroy
      */
-    private boolean destroyed = false;
+    private volatile boolean destroyed = false;
 
     /**
      * Whether set future to Thread Local when invocation mode is sync

@@ -229,6 +229,9 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
     @Override
     public final void onCancelByRemote(TriRpcStatus status) {
         closed = true;
+        if (listener == null) {
+            return;
+        }
         cancellationContext.cancel(status.cause);
         listener.onCancel(status);
     }
