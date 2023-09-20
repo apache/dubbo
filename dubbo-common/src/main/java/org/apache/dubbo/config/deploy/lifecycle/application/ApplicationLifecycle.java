@@ -29,7 +29,7 @@ import org.apache.dubbo.rpc.model.ModuleModel;
  * Used in an application Lifecycle managing procedure, and dubbo packages
  * can implement this interface to define what to do when application status changes.
  * <p>
- * Note: If you want to auto registry some extensions to BeanFactory, consider use {@link ApplicationDeployListener}.
+ * Note: If you want to auto registry some extensions to BeanFactory that shared in an application, consider use {@link ApplicationDeployListener}.
  * <br>
  */
 @SPI
