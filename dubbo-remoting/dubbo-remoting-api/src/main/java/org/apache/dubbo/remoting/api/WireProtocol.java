@@ -32,4 +32,9 @@ public interface WireProtocol {
     void configClientPipeline(URL url, ChannelOperator operator, ContextOperator contextOperator);
 
     void close();
+
+    default String getName(URL url) {
+        return url.getOrDefaultFrameworkModel().getExtensionLoader(WireProtocol.class)
+            .getExtensionName(this);
+    }
 }
