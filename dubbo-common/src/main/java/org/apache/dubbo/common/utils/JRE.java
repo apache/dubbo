@@ -51,6 +51,14 @@ public enum JRE {
 
     JAVA_19,
 
+    JAVA_20,
+
+    JAVA_21,
+
+    JAVA_22,
+
+    JAVA_23,
+
     OTHER;
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(JRE.class);
@@ -113,6 +121,12 @@ public enum JRE {
                     return JAVA_18;
                 case 19:
                     return JAVA_19;
+                case 20:
+                    return JAVA_20;
+                case 21:
+                    return JAVA_21;
+                case 22:
+                    return JAVA_22;
                 default:
                     return OTHER;
             }
