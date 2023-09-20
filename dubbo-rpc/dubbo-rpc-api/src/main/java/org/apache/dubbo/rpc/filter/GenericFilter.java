@@ -29,6 +29,7 @@ import org.apache.dubbo.common.json.GsonUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Serialization;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.PojoUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -40,7 +41,9 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
+import org.apache.dubbo.rpc.model.ServiceModel;
 import org.apache.dubbo.rpc.service.GenericException;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
@@ -48,6 +51,10 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.IntStream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
@@ -67,6 +74,8 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
 
     private ApplicationModel applicationModel;
 
+    private final Map<ClassLoader, Map<String, Class<?>>> classCache = new ConcurrentHashMap<>();
+
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
@@ -82,7 +91,7 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
             String[] types = (String[]) inv.getArguments()[1];
             Object[] args = (Object[]) inv.getArguments()[2];
             try {
-                Method method = ReflectUtils.findMethodByMethodSignature(invoker.getInterface(), name, types);
+                Method method = findMethodByMethodSignature(invoker.getInterface(), name, types, inv.getServiceModel());
                 Class<?>[] params = method.getParameterTypes();
                 if (args == null) {
                     args = new Object[params.length];
@@ -115,7 +124,7 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                 } else if (ProtocolUtils.isGsonGenericSerialization(generic)) {
                     args = getGsonGenericArgs(args, method.getGenericParameterTypes());
                 } else if (ProtocolUtils.isJavaGenericSerialization(generic)) {
-                    Configuration configuration = ApplicationModel.ofNullable(applicationModel).getModelEnvironment().getConfiguration();
+                    Configuration configuration = ApplicationModel.ofNullable(applicationModel).modelEnvironment().getConfiguration();
                     if (!configuration.getBoolean(CommonConstants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE, false)) {
                         String notice = "Trigger the safety barrier! " +
                             "Native Java Serializer is not allowed by default." +
@@ -199,6 +208,9 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
 
     private Object[] getGsonGenericArgs(final Object[] args, Type[] types) {
         return IntStream.range(0, args.length).mapToObj(i -> {
+            if (args[i] == null) {
+                return null;
+            }
             if (!(args[i] instanceof String)) {
                 throw new RpcException("When using GSON to deserialize generic dubbo request arguments, the arguments must be of type String");
             }
@@ -219,6 +231,54 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
         return generic;
     }
 
+    public Method findMethodByMethodSignature(Class<?> clazz, String methodName, String[] parameterTypes, ServiceModel serviceModel)
+        throws NoSuchMethodException, ClassNotFoundException {
+        Method method;
+        if (parameterTypes == null) {
+            List<Method> finded = new ArrayList<>();
+            for (Method m : clazz.getMethods()) {
+                if (m.getName().equals(methodName)) {
+                    finded.add(m);
+                }
+            }
+            if (finded.isEmpty()) {
+                throw new NoSuchMethodException("No such method " + methodName + " in class " + clazz);
+            }
+            if (finded.size() > 1) {
+                String msg = String.format("Not unique method for method name(%s) in class(%s), find %d methods.",
+                    methodName, clazz.getName(), finded.size());
+                throw new IllegalStateException(msg);
+            }
+            method = finded.get(0);
+        } else {
+            Class<?>[] types = new Class<?>[parameterTypes.length];
+            for (int i = 0; i < parameterTypes.length; i++) {
+                ClassLoader classLoader = ClassUtils.getClassLoader();
+                Map<String, Class<?>> cacheMap = classCache.get(classLoader);
+                if (cacheMap == null) {
+                    cacheMap = new ConcurrentHashMap<>();
+                    classCache.putIfAbsent(classLoader, cacheMap);
+                    cacheMap = classCache.get(classLoader);
+                }
+                types[i] = cacheMap.get(parameterTypes[i]);
+                if (types[i] == null) {
+                    types[i] = ReflectUtils.name2class(parameterTypes[i]);
+                    cacheMap.put(parameterTypes[i], types[i]);
+                }
+            }
+            if (serviceModel != null) {
+                MethodDescriptor methodDescriptor = serviceModel.getServiceModel().getMethod(methodName, types);
+                if (methodDescriptor == null) {
+                    throw new NoSuchMethodException("No such method " + methodName + " in class " + clazz);
+                }
+                method = methodDescriptor.getMethod();
+            } else {
+                method = clazz.getMethod(methodName, types);
+            }
+        }
+        return method;
+    }
+
     @Override
     public void onResponse(Result appResponse, Invoker<?> invoker, Invocation inv) {
         if ((inv.getMethodName().equals($INVOKE) || inv.getMethodName().equals($INVOKE_ASYNC))
@@ -235,7 +295,9 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                 Throwable appException = appResponse.getException();
                 if (appException instanceof GenericException) {
                     GenericException tmp = (GenericException) appException;
-                    appException = new com.alibaba.dubbo.rpc.service.GenericException(tmp.getExceptionClass(), tmp.getExceptionMessage());
+                    appException = new com.alibaba.dubbo.rpc.service.GenericException(tmp.getMessage(), tmp.getCause(),
+                        tmp.getExceptionClass(), tmp.getExceptionMessage());
+                    appException.setStackTrace(tmp.getStackTrace());
                 }
                 if (!(appException instanceof com.alibaba.dubbo.rpc.service.GenericException)) {
                     appException = new com.alibaba.dubbo.rpc.service.GenericException(appException);

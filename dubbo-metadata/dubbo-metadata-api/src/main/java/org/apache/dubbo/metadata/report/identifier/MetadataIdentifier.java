@@ -97,4 +97,18 @@ public class MetadataIdentifier extends BaseServiceMetadataIdentifier implements
         this.application = application;
     }
 
+    public String getUniqueServiceName() {
+        return serviceInterface != null ? URL.buildKey(serviceInterface, getGroup(), getVersion()) : null;
+    }
+
+    @Override
+    public String toString() {
+        return "MetadataIdentifier{" +
+            "application='" + application + '\'' +
+            ", serviceInterface='" + serviceInterface + '\'' +
+            ", version='" + version + '\'' +
+            ", group='" + group + '\'' +
+            ", side='" + side + '\'' +
+            '}';
+    }
 }

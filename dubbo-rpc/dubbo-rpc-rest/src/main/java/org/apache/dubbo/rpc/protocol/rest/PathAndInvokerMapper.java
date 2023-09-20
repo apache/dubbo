@@ -24,7 +24,10 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.protocol.rest.exception.DoublePathCheckException;
 import org.apache.dubbo.rpc.protocol.rest.pair.InvokerAndRestMethodMetadataPair;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -36,6 +39,8 @@ public class PathAndInvokerMapper {
     private final Map<PathMatcher, InvokerAndRestMethodMetadataPair> pathToServiceMapContainPathVariable = new ConcurrentHashMap<>();
     private final Map<PathMatcher, InvokerAndRestMethodMetadataPair> pathToServiceMapNoPathVariable = new ConcurrentHashMap<>();
 
+    // for http method compare 405
+    private final Map<PathMatcher, Set<String>> pathMatcherToHttpMethodMap = new HashMap<>();
 
     /**
      * deploy path metadata
@@ -57,7 +62,8 @@ public class PathAndInvokerMapper {
 
 
     /**
-     *  get rest method metadata by path matcher
+     * get rest method metadata by path matcher
+     *
      * @param pathMatcher
      * @return
      */
@@ -100,19 +106,72 @@ public class PathAndInvokerMapper {
 
         if (pathMatcherPairMap.containsKey(pathMatcher)) {
 
-            InvokerAndRestMethodMetadataPair beforeMetadata = pathMatcherPairMap.get(pathMatcher);
+            // cover the old service metadata when  current interface is old interface & current method desc equals old`s method desc,else ,throw double check exception
 
-            throw new DoublePathCheckException(
-                "dubbo rest double path check error, current path is: " + pathMatcher
-                    + " ,and service method is: " + invokerRestMethodMetadataPair.getRestMethodMetadata().getReflectMethod()
-                    + "before service  method is: " + beforeMetadata.getRestMethodMetadata().getReflectMethod()
-            );
+            InvokerAndRestMethodMetadataPair beforeMetadata = pathMatcherPairMap.get(pathMatcher);
+            // true when reExport
+            if (!invokerRestMethodMetadataPair.compareServiceMethod(beforeMetadata)) {
+                throw new DoublePathCheckException(
+                    "dubbo rest double path check error, current path is: " + pathMatcher
+                        + " ,and service method is: " + invokerRestMethodMetadataPair.getRestMethodMetadata().getReflectMethod()
+                        + "before service  method is: " + beforeMetadata.getRestMethodMetadata().getReflectMethod()
+                );
+            }
         }
 
         pathMatcherPairMap.put(pathMatcher, invokerRestMethodMetadataPair);
 
+        addPathMatcherToHttpMethodsMap(pathMatcher);
+
 
         logger.info("dubbo rest deploy pathMatcher:" + pathMatcher + ", and service method is :" + invokerRestMethodMetadataPair.getRestMethodMetadata().getReflectMethod());
+    }
+
+    private void addPathMatcherToHttpMethodsMap(PathMatcher pathMatcher) {
+
+        PathMatcher newPathMatcher = PathMatcher.convertPathMatcher(pathMatcher);
+
+        if (!pathMatcherToHttpMethodMap.containsKey(newPathMatcher)) {
+            HashSet<String> httpMethods = new HashSet<>();
+
+            httpMethods.add(pathMatcher.getHttpMethod());
+
+            pathMatcherToHttpMethodMap.put(newPathMatcher, httpMethods);
+
+        }
+
+        Set<String> httpMethods = pathMatcherToHttpMethodMap.get(newPathMatcher);
+
+        httpMethods.add(newPathMatcher.getHttpMethod());
+
+    }
+
+    public boolean isHttpMethodAllowed(PathMatcher pathMatcher) {
+
+        PathMatcher newPathMatcher = PathMatcher.convertPathMatcher(pathMatcher);
+        if (!pathMatcherToHttpMethodMap.containsKey(newPathMatcher)) {
+            return false;
+        }
+
+
+        Set<String> httpMethods = pathMatcherToHttpMethodMap.get(newPathMatcher);
+
+        return httpMethods.contains(newPathMatcher.getHttpMethod());
+
+    }
+
+    public String pathHttpMethods(PathMatcher pathMatcher) {
+
+        PathMatcher newPathMatcher = PathMatcher.convertPathMatcher(pathMatcher);
+        if (!pathMatcherToHttpMethodMap.containsKey(newPathMatcher)) {
+            return null;
+        }
+
+
+        Set<String> httpMethods = pathMatcherToHttpMethodMap.get(newPathMatcher);
+
+        return httpMethods.toString();
+
     }
 
 }

@@ -24,6 +24,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.List;
 
@@ -51,7 +52,7 @@ public class FailfastClusterInvoker<T> extends AbstractClusterInvoker<T> {
             throw new RpcException(e instanceof RpcException ? ((RpcException) e).getCode() : 0,
                 "Failfast invoke providers " + invoker.getUrl() + " " + loadbalance.getClass().getSimpleName()
                     + " for service " + getInterface().getName()
-                    + " method " + invocation.getMethodName() + " on consumer " + NetUtils.getLocalHost()
+                    + " method " + RpcUtils.getMethodName(invocation) + " on consumer " + NetUtils.getLocalHost()
                     + " use dubbo version " + Version.getVersion()
                     + ", but no luck to perform the invocation. Last error is: " + e.getMessage(),
                 e.getCause() != null ? e.getCause() : e);

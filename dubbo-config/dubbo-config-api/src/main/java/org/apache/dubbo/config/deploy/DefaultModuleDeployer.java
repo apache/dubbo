@@ -18,6 +18,7 @@ package org.apache.dubbo.config.deploy;
 
 import org.apache.dubbo.common.config.ReferenceCache;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
+import org.apache.dubbo.common.constants.RegisterTypeEnum;
 import org.apache.dubbo.common.deploy.AbstractDeployer;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.deploy.DeployListener;
@@ -334,6 +335,13 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
     private void onModuleFailed(String msg, Throwable ex) {
         try {
+            try {
+                // un-export all services if start failure
+                unexportServices();
+            } catch (Throwable t) {
+                logger.info("Failed to un-export services after module failed.", t);
+            }
+
             setFailed(ex);
             logger.error(CONFIG_FAILED_START_MODEL, "", "", "Model start failed: " + msg, ex);
             applicationDeployer.notifyModuleChanged(moduleModel, DeployState.FAILED);
@@ -427,7 +435,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             asyncExportingFutures.add(future);
         } else {
             if (!sc.isExported()) {
-                sc.export(false);
+                sc.export(RegisterTypeEnum.AUTO_REGISTER_BY_DEPLOYER);
                 exportedServices.add(sc);
             }
         }
@@ -441,7 +449,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         if (!sc.isExported()) {
             return;
         }
-        sc.register();
+        sc.register(true);
     }
 
     private void unexportServices() {
@@ -449,8 +457,8 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             try {
                 configManager.removeConfig(sc);
                 sc.unexport();
-            } catch (Exception ignored) {
-                // ignored
+            } catch (Throwable t) {
+                logger.info("Failed to un-export service. Service Key: " + sc.getUniqueServiceName(), t);
             }
         });
         exportedServices.clear();

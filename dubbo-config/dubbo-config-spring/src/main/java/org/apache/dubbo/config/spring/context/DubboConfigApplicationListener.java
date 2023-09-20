@@ -16,20 +16,21 @@
  */
 package org.apache.dubbo.config.spring.context;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_DUBBO_BEAN_NOT_FOUND;
-import static org.springframework.util.ObjectUtils.nullSafeEquals;
-
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.spring.context.event.DubboConfigInitEvent;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.rpc.model.ModuleModel;
+
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_DUBBO_BEAN_NOT_FOUND;
+import static org.springframework.util.ObjectUtils.nullSafeEquals;
 
 /**
  * An ApplicationListener to load config beans
@@ -53,11 +54,15 @@ public class DubboConfigApplicationListener implements ApplicationListener<Dubbo
     @Override
     public void onApplicationEvent(DubboConfigInitEvent event) {
         if (nullSafeEquals(applicationContext, event.getSource())) {
-            // It's expected to be notified at org.springframework.context.support.AbstractApplicationContext.registerListeners(),
-            // before loading non-lazy singleton beans. At this moment, all BeanFactoryPostProcessor have been processed,
-            if (initialized.compareAndSet(false, true)) {
-                initDubboConfigBeans();
-            }
+            init();
+        }
+    }
+
+    public void init() {
+        // It's expected to be notified at org.springframework.context.support.AbstractApplicationContext.registerListeners(),
+        // before loading non-lazy singleton beans. At this moment, all BeanFactoryPostProcessor have been processed,
+        if (initialized.compareAndSet(false, true)) {
+            initDubboConfigBeans();
         }
     }
 

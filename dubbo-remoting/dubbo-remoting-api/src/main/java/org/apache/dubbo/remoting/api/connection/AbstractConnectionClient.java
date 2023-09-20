@@ -49,6 +49,9 @@ public abstract class AbstractConnectionClient extends AbstractClient {
 
     protected AbstractConnectionClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
+    }
+
+    public final void increase() {
         COUNTER_UPDATER.set(this, 1L);
     }
 

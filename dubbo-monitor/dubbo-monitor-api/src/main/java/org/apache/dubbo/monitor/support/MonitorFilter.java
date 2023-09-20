@@ -116,7 +116,7 @@ public class MonitorFilter implements Filter, Filter.Listener {
      * @return
      */
     private AtomicInteger getConcurrent(Invoker<?> invoker, Invocation invocation) {
-        String key = invoker.getInterface().getName() + "." + invocation.getMethodName();
+        String key = invoker.getInterface().getName() + "." + RpcUtils.getMethodName(invocation);
         return ConcurrentHashMapUtils.computeIfAbsent(concurrents, key, k -> new AtomicInteger());
     }
 

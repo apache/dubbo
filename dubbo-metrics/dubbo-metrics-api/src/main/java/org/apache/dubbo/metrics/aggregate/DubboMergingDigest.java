@@ -18,11 +18,12 @@
 package org.apache.dubbo.metrics.aggregate;
 
 
+import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
+
 import com.tdunning.math.stats.Centroid;
 import com.tdunning.math.stats.ScaleFunction;
 import com.tdunning.math.stats.Sort;
 import com.tdunning.math.stats.TDigest;
-import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
 
 import java.nio.ByteBuffer;
 import java.util.AbstractCollection;
@@ -118,8 +119,6 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
     // scale functions are more expensive than the corresponding
     // weight limits.
     public static boolean useWeightLimit = true;
-
-    private volatile boolean merging = false;
 
     /**
      * Allocates a buffer merging t-digest.  This is the normally used constructor that
@@ -286,20 +285,18 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
         if (Double.isNaN(x)) {
             throw new IllegalArgumentException("Cannot add NaN to t-digest");
         }
-        while (merging) {
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+
+        int where;
+        synchronized (this) {
+            // There is a small probability of entering here
+            if (tempUsed.get() >= tempWeight.length - lastUsedCell.get() - 1) {
+                mergeNewValues();
             }
+            where = tempUsed.getAndIncrement();
+            tempWeight[where] = w;
+            tempMean[where] = x;
+            unmergedWeight.addAndGet(w);
         }
-        if (tempUsed.get() >= tempWeight.length - lastUsedCell.get() - 1) {
-            mergeNewValues();
-        }
-        int where = tempUsed.getAndIncrement();
-        tempWeight[where] = w;
-        tempMean[where] = x;
-        unmergedWeight.addAndGet(w);
         if (x < min) {
             min = x;
         }
@@ -326,13 +323,8 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
         throw new MetricsNeverHappenException("Method not used");
     }
 
-    private synchronized void mergeNewValues() {
-        merging = true;
-        try {
-            mergeNewValues(false, compression);
-        } finally {
-            merging = false;
-        }
+    private void mergeNewValues() {
+        mergeNewValues(false, compression);
     }
 
     private void mergeNewValues(boolean force, double compression) {

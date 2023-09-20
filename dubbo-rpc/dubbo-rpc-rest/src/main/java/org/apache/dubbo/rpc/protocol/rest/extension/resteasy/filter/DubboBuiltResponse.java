@@ -14,23 +14,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.protocol.rest.extension.resteasy.filter;
 
-package org.apache.dubbo.metrics.event;
-
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.jboss.resteasy.specimpl.BuiltResponse;
 
 /**
- * EmptyEvent, do nothing.
+ * wrapper resteasy  BuiltResponse
  */
-public class EmptyEvent extends MetricsEvent {
+public class DubboBuiltResponse extends BuiltResponse {
 
-    private static final EmptyEvent empty = new EmptyEvent(null);
+    // user reset entity
+    private boolean resetEntity;
 
-    private EmptyEvent(ApplicationModel source) {
-        super(source, null);
+    public DubboBuiltResponse(Object entity, int status, Class<?> entityClass) {
+
+        this.entity = entity;
+        this.entityClass = entityClass;
+        this.status = status;
     }
 
-    public static EmptyEvent instance() {
-        return empty;
+
+    @Override
+    public void setEntity(Object entity) {
+        if (entity == null) {
+            return;
+        }
+
+        if (entity.equals(this.entity)) {
+            return;
+        }
+        //  reset entity true
+        this.resetEntity = true;
+        super.setEntity(entity);
+    }
+
+    public boolean isResetEntity() {
+        return resetEntity;
     }
 }

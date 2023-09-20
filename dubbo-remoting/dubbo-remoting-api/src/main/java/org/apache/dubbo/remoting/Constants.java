@@ -64,6 +64,13 @@ public interface Constants {
     long LEAST_HEARTBEAT_DURATION = 1000;
 
     /**
+     * the least reconnect during is 60000 ms.
+     */
+    long LEAST_RECONNECT_DURATION = 60000;
+
+    String LEAST_RECONNECT_DURATION_KEY = "dubbo.application.least-reconnect-duration";
+
+    /**
      * ticks per wheel.
      */
     int TICKS_PER_WHEEL = 128;
@@ -120,6 +127,10 @@ public interface Constants {
 
     String BIND_PORT_KEY = "bind.port";
 
+    String BIND_RETRY_TIMES = "bind.retry.times";
+
+    String BIND_RETRY_INTERVAL = "bind.retry.interval";
+
     String SENT_KEY = "sent";
 
     String DISPATCHER_KEY = "dispatcher";
@@ -163,4 +174,8 @@ public interface Constants {
     String OK_HTTP = "ok-http";
     String URL_CONNECTION = "url-connection";
     String APACHE_HTTP_CLIENT = "apache-http-client";
+
+    String CONTENT_LENGTH_KEY = "content-length";
+
+    String USE_SECURE_RANDOM_ID = "dubbo.application.use-secure-random-request-id";
 }

@@ -19,7 +19,6 @@ package org.apache.dubbo.metrics.data;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metrics.model.MetricsCategory;
-import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.ServiceKeyMetric;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
@@ -54,21 +53,37 @@ public class ServiceStatComposite extends AbstractMetricsExport {
     }
 
     public void incrementServiceKey(MetricsKeyWrapper wrapper, String serviceKey, int size) {
+        incrementExtraServiceKey(wrapper, serviceKey, null, size);
+    }
+
+    public void incrementExtraServiceKey(MetricsKeyWrapper wrapper, String serviceKey, Map<String, String> extra, int size) {
         if (!serviceWrapperNumStats.containsKey(wrapper)) {
             return;
         }
-        serviceWrapperNumStats.get(wrapper).computeIfAbsent(new ServiceKeyMetric(getApplicationModel(), serviceKey), k -> new AtomicLong(0L)).getAndAdd(size);
-        MetricsSupport.fillZero(serviceWrapperNumStats);
+        ServiceKeyMetric serviceKeyMetric = new ServiceKeyMetric(getApplicationModel(), serviceKey);
+        if (extra != null) {
+            serviceKeyMetric.setExtraInfo(extra);
+        }
+        serviceWrapperNumStats.get(wrapper).computeIfAbsent(serviceKeyMetric, k -> new AtomicLong(0L)).getAndAdd(size);
+//        MetricsSupport.fillZero(serviceWrapperNumStats);
     }
 
     public void setServiceKey(MetricsKeyWrapper wrapper, String serviceKey, int num) {
+        setExtraServiceKey(wrapper, serviceKey, num, null);
+    }
+
+    public void setExtraServiceKey(MetricsKeyWrapper wrapper, String serviceKey, int num, Map<String, String> extra) {
         if (!serviceWrapperNumStats.containsKey(wrapper)) {
             return;
         }
-        serviceWrapperNumStats.get(wrapper).computeIfAbsent(new ServiceKeyMetric(getApplicationModel(), serviceKey), k -> new AtomicLong(0L)).set(num);
-        MetricsSupport.fillZero(serviceWrapperNumStats);
+        ServiceKeyMetric serviceKeyMetric = new ServiceKeyMetric(getApplicationModel(), serviceKey);
+        if (extra != null) {
+            serviceKeyMetric.setExtraInfo(extra);
+        }
+        serviceWrapperNumStats.get(wrapper).computeIfAbsent(serviceKeyMetric, k -> new AtomicLong(0L)).set(num);
     }
 
+    @Override
     public List<MetricSample> export(MetricsCategory category) {
         List<MetricSample> list = new ArrayList<>();
         for (MetricsKeyWrapper wrapper : serviceWrapperNumStats.keySet()) {

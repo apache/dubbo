@@ -24,6 +24,7 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.spring.context.DubboConfigApplicationListener;
 import org.apache.dubbo.config.spring.context.DubboConfigBeanInitializer;
 import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
@@ -31,6 +32,7 @@ import org.apache.dubbo.config.spring.reference.ReferenceBeanSupport;
 import org.apache.dubbo.config.spring.schema.DubboBeanDefinitionParser;
 import org.apache.dubbo.config.spring.util.LazyTargetInvocationHandler;
 import org.apache.dubbo.config.spring.util.LazyTargetSource;
+import org.apache.dubbo.config.spring.util.LockUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.proxy.AbstractProxyFactory;
 
@@ -43,7 +45,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.support.DefaultSingletonBeanRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -53,6 +54,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_DUBBO_BEAN_INITIALIZER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_FAILED;
 
 
@@ -142,6 +144,9 @@ public class ReferenceBean<T> implements FactoryBean<T>,
 
     //actual reference config
     private ReferenceConfig referenceConfig;
+
+    // ReferenceBeanManager
+    private ReferenceBeanManager referenceBeanManager;
 
     // Registration sources of this reference, may be xml file or annotation location
     private List<Map<String,Object>> sources = new ArrayList<>();
@@ -251,7 +256,7 @@ public class ReferenceBean<T> implements FactoryBean<T>,
         }
         Assert.notNull(this.interfaceName, "The interface name of ReferenceBean is not initialized");
 
-        ReferenceBeanManager referenceBeanManager = beanFactory.getBean(ReferenceBeanManager.BEAN_NAME, ReferenceBeanManager.class);
+        this.referenceBeanManager = beanFactory.getBean(ReferenceBeanManager.BEAN_NAME, ReferenceBeanManager.class);
         referenceBeanManager.addReference(this);
     }
 
@@ -387,13 +392,18 @@ public class ReferenceBean<T> implements FactoryBean<T>,
 
     private Object getCallProxy() throws Exception {
         if (referenceConfig == null) {
-            throw new IllegalStateException("ReferenceBean is not ready yet, please make sure to call reference interface method after dubbo is started.");
+            referenceBeanManager.initReferenceBean(this);
+            applicationContext.getBean(DubboConfigApplicationListener.class.getName(), DubboConfigApplicationListener.class).init();
+            logger.warn(CONFIG_DUBBO_BEAN_INITIALIZER, "", "",  "ReferenceBean is not ready yet, please make sure to call reference interface method after dubbo is started.");
         }
         //get reference proxy
         //Subclasses should synchronize on the given Object if they perform any sort of extended singleton creation phase.
         // In particular, subclasses should not have their own mutexes involved in singleton creation, to avoid the potential for deadlocks in lazy-init situations.
         //The redundant type cast is to be compatible with earlier than spring-4.2
-        synchronized (((DefaultSingletonBeanRegistry)getBeanFactory()).getSingletonMutex()) {
+        if (referenceConfig.configInitialized()) {
+            return referenceConfig.get();
+        }
+        synchronized (LockUtils.getSingletonMutex(applicationContext)) {
             return referenceConfig.get();
         }
     }

@@ -97,13 +97,13 @@ public class MockClusterInvoker<T> implements ClusterInvoker<T> {
     public Result invoke(Invocation invocation) throws RpcException {
         Result result;
 
-        String value = getUrl().getMethodParameter(invocation.getMethodName(), MOCK_KEY, Boolean.FALSE.toString()).trim();
+        String value = getUrl().getMethodParameter(RpcUtils.getMethodName(invocation), MOCK_KEY, Boolean.FALSE.toString()).trim();
         if (ConfigUtils.isEmpty(value)) {
             //no mock
             result = this.invoker.invoke(invocation);
         } else if (value.startsWith(FORCE_KEY)) {
             if (logger.isWarnEnabled()) {
-                logger.warn(CLUSTER_FAILED_MOCK_REQUEST,"force mock","","force-mock: " + invocation.getMethodName() + " force-mock enabled , url : " + getUrl());
+                logger.warn(CLUSTER_FAILED_MOCK_REQUEST,"force mock","","force-mock: " + RpcUtils.getMethodName(invocation) + " force-mock enabled , url : " + getUrl());
             }
             //force:direct mock
             result = doMockInvoke(invocation, null);
@@ -128,7 +128,7 @@ public class MockClusterInvoker<T> implements ClusterInvoker<T> {
                 }
 
                 if (logger.isWarnEnabled()) {
-                    logger.warn(CLUSTER_FAILED_MOCK_REQUEST,"failed to mock invoke","","fail-mock: " + invocation.getMethodName() + " fail-mock enabled , url : " + getUrl(),e);
+                    logger.warn(CLUSTER_FAILED_MOCK_REQUEST,"failed to mock invoke","","fail-mock: " + RpcUtils.getMethodName(invocation) + " fail-mock enabled , url : " + getUrl(),e);
                 }
                 result = doMockInvoke(invocation, e);
             }
@@ -198,7 +198,7 @@ public class MockClusterInvoker<T> implements ClusterInvoker<T> {
             } catch (RpcException e) {
                 if (logger.isInfoEnabled()) {
                     logger.info("Exception when try to invoke mock. Get mock invokers error for service:"
-                            + getUrl().getServiceInterface() + ", method:" + invocation.getMethodName()
+                            + getUrl().getServiceInterface() + ", method:" + RpcUtils.getMethodName(invocation)
                             + ", will construct a new mock with 'new MockInvoker()'.", e);
                 }
             }

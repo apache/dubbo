@@ -55,7 +55,6 @@ import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
-import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.metrics.report.DefaultMetricsReporterFactory;
 import org.apache.dubbo.metrics.report.MetricsReporter;
 import org.apache.dubbo.metrics.report.MetricsReporterFactory;
@@ -143,7 +142,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         super(applicationModel);
         this.applicationModel = applicationModel;
         configManager = applicationModel.getApplicationConfigManager();
-        environment = applicationModel.getModelEnvironment();
+        environment = applicationModel.modelEnvironment();
 
         referenceCache = new CompositeReferenceCache(applicationModel);
         frameworkExecutorRepository = applicationModel.getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
@@ -386,6 +385,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         collector.setCollectEnabled(true);
         collector.collectApplication();
         collector.setThreadpoolCollectEnabled(Optional.ofNullable(metricsConfig.getEnableThreadpool()).orElse(true));
+        collector.setMetricsInitEnabled(Optional.ofNullable(metricsConfig.getEnableMetricsInit()).orElse(true));
         MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
         MetricsReporter metricsReporter = null;
         try {
@@ -899,16 +899,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private void registerServiceInstance() {
         try {
             registered = true;
-            MetricsEventBus.post(RegistryEvent.toRegisterEvent(applicationModel),
-                () -> {
-                    ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
-                    return null;
-                }
-            );
+            ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
         } catch (Exception e) {
             logger.error(CONFIG_REGISTER_INSTANCE_ERROR, "configuration server disconnected", "", "Register instance error.", e);
         }
-
         if (registered) {
             // scheduled task for updating Metadata and ServiceInstance
             asyncMetadataFuture = frameworkExecutorRepository.getSharedScheduledExecutor().scheduleWithFixedDelay(() -> {

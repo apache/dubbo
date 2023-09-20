@@ -52,24 +52,30 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
 
     private ApplicationEventPublisher applicationEventPublisher;
 
-    public ServiceBean() {
+    public ServiceBean(ApplicationContext applicationContext) {
         super();
         this.service = null;
+        this.applicationContext = applicationContext;
+        this.setScopeModel(DubboBeanUtils.getModuleModel(applicationContext));
     }
 
-    public ServiceBean(ModuleModel moduleModel) {
+    public ServiceBean(ApplicationContext applicationContext, ModuleModel moduleModel) {
         super(moduleModel);
         this.service = null;
+        this.applicationContext = applicationContext;
     }
 
-    public ServiceBean(Service service) {
+    public ServiceBean(ApplicationContext applicationContext, Service service) {
         super(service);
         this.service = service;
+        this.applicationContext = applicationContext;
+        this.setScopeModel(DubboBeanUtils.getModuleModel(applicationContext));
     }
 
-    public ServiceBean(ModuleModel moduleModel, Service service) {
+    public ServiceBean(ApplicationContext applicationContext, ModuleModel moduleModel, Service service) {
         super(moduleModel, service);
         this.service = service;
+        this.applicationContext = applicationContext;
     }
 
     @Override

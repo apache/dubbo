@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.context;
 
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.deploy.DeployListenerAdapter;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
@@ -25,6 +26,7 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.spring.context.event.DubboApplicationStateEvent;
 import org.apache.dubbo.config.spring.context.event.DubboModuleStateEvent;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
+import org.apache.dubbo.config.spring.util.LockUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModelConstants;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -146,8 +148,12 @@ public class DubboDeployApplicationListener implements ApplicationListener<Appli
     private void onContextRefreshedEvent(ContextRefreshedEvent event) {
         ModuleDeployer deployer = moduleModel.getDeployer();
         Assert.notNull(deployer, "Module deployer is null");
+        Object singletonMutex = LockUtils.getSingletonMutex(applicationContext);
         // start module
-        Future future = deployer.start();
+        Future future = null;
+        synchronized (singletonMutex) {
+            future = deployer.start();
+        }
 
         // if the module does not start in background, await finish
         if (!deployer.isBackground()) {
@@ -164,6 +170,9 @@ public class DubboDeployApplicationListener implements ApplicationListener<Appli
     private void onContextClosedEvent(ContextClosedEvent event) {
         try {
             Object value = moduleModel.getAttribute(ModelConstants.KEEP_RUNNING_ON_SPRING_CLOSED);
+            if (value == null) {
+                value = ConfigurationUtils.getProperty(moduleModel, ModelConstants.KEEP_RUNNING_ON_SPRING_CLOSED_KEY);
+            }
             boolean keepRunningOnClosed = Boolean.parseBoolean(String.valueOf(value));
             if (!keepRunningOnClosed && !moduleModel.isDestroyed()) {
                 moduleModel.destroy();

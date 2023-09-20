@@ -31,7 +31,6 @@ import org.apache.dubbo.metrics.TestMetricsInvoker;
 import org.apache.dubbo.metrics.aggregate.TimeWindowCounter;
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
-import org.apache.dubbo.metrics.event.RequestBeforeEvent;
 import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.metrics.filter.MetricsFilter;
 import org.apache.dubbo.metrics.listener.MetricsListener;
@@ -39,7 +38,6 @@ import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.TimePair;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
-import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.metrics.model.key.TypeWrapper;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -50,6 +48,7 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -90,7 +89,7 @@ class AggregateMetricsCollectorTest {
 
     public MethodMetric getTestMethodMetric() {
 
-        MethodMetric methodMetric = new MethodMetric(applicationModel, invocation);
+        MethodMetric methodMetric = new MethodMetric(applicationModel, invocation, MethodMetric.isServiceLevel(applicationModel));
         methodMetric.setGroup("TestGroup");
         methodMetric.setVersion("1.0.0");
         methodMetric.setSide("PROVIDER");
@@ -141,10 +140,11 @@ class AggregateMetricsCollectorTest {
     @Test
     void testListener() {
         AggregateMetricsCollector metricsCollector = new AggregateMetricsCollector(applicationModel);
-        RequestEvent event = RequestEvent.toRequestEvent(applicationModel, invocation);
-        RequestBeforeEvent beforeEvent = new RequestBeforeEvent(applicationModel, new TypeWrapper(MetricsLevel.METHOD, MetricsKey.METRIC_REQUESTS));
+        RequestEvent event = RequestEvent.toRequestEvent(applicationModel, null, null, null, invocation, MetricsSupport.getSide(invocation), MethodMetric.isServiceLevel(applicationModel));
+        RequestEvent beforeEvent = RequestEvent.toRequestErrorEvent(applicationModel, null, null, invocation, MetricsSupport.getSide(invocation), RpcException.FORBIDDEN_EXCEPTION, MethodMetric.isServiceLevel(applicationModel));
+
         Assertions.assertTrue(metricsCollector.isSupport(event));
-        Assertions.assertFalse(metricsCollector.isSupport(beforeEvent));
+        Assertions.assertTrue(metricsCollector.isSupport(beforeEvent));
     }
 
     @AfterEach
@@ -199,7 +199,8 @@ class AggregateMetricsCollectorTest {
 
         when(applicationModel.getApplicationConfigManager()).thenReturn(configManager);
         when(applicationModel.getBeanFactory()).thenReturn(beanFactory);
-        when(beanFactory.getBean(DefaultMetricsCollector.class)).thenReturn(new DefaultMetricsCollector(applicationModel));
+        DefaultMetricsCollector defaultMetricsCollector = new DefaultMetricsCollector(applicationModel);
+        when(beanFactory.getBean(DefaultMetricsCollector.class)).thenReturn(defaultMetricsCollector);
         when(configManager.getMetrics()).thenReturn(Optional.of(metricsConfig));
         when(metricsConfig.getAggregation()).thenReturn(aggregationConfig);
         when(aggregationConfig.getEnabled()).thenReturn(Boolean.TRUE);
@@ -248,7 +249,7 @@ class AggregateMetricsCollectorTest {
         rtList.add(30L);
 
         for (Long requestTime: rtList) {
-            RequestEvent requestEvent = RequestEvent.toRequestEvent(applicationModel, invocation);
+            RequestEvent requestEvent = RequestEvent.toRequestEvent(applicationModel, null, null, null, invocation, MetricsSupport.getSide(invocation), MethodMetric.isServiceLevel(applicationModel));
             TestRequestEvent testRequestEvent = new TestRequestEvent(requestEvent.getSource(), requestEvent.getTypeWrapper());
             testRequestEvent.putAttachment(MetricsConstants.INVOCATION, invocation);
             testRequestEvent.putAttachment(ATTACHMENT_KEY_SERVICE, MetricsSupport.getInterfaceName(invocation));
@@ -298,7 +299,7 @@ class AggregateMetricsCollectorTest {
         double manualP99 = requestTimes.get((int) Math.round(p99Index));
 
         for (Long requestTime : requestTimes) {
-            RequestEvent requestEvent = RequestEvent.toRequestEvent(applicationModel, invocation);
+            RequestEvent requestEvent = RequestEvent.toRequestEvent(applicationModel, null, null, null, invocation, MetricsSupport.getSide(invocation), MethodMetric.isServiceLevel(applicationModel));
             TestRequestEvent testRequestEvent = new TestRequestEvent(requestEvent.getSource(), requestEvent.getTypeWrapper());
             testRequestEvent.putAttachment(MetricsConstants.INVOCATION, invocation);
             testRequestEvent.putAttachment(ATTACHMENT_KEY_SERVICE, MetricsSupport.getInterfaceName(invocation));
@@ -345,7 +346,7 @@ class AggregateMetricsCollectorTest {
         private long rt;
 
         public TestRequestEvent(ApplicationModel applicationModel, TypeWrapper typeWrapper) {
-            super(applicationModel, typeWrapper);
+            super(applicationModel, null, null, null, typeWrapper);
         }
 
         public void setRt(long rt) {

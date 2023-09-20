@@ -187,9 +187,9 @@ class ConsumerConfigTest {
     @Test
     void testOverrideConfigByDubboProps() {
         ApplicationModel.defaultModel().getDefaultModule();
-        ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().setProperty("dubbo.consumers.consumerA.check", "false");
-        ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().setProperty("dubbo.consumers.consumerA.group", "demo");
-        ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().setProperty("dubbo.consumers.consumerA.threads", "10");
+        ApplicationModel.defaultModel().modelEnvironment().getPropertiesConfiguration().setProperty("dubbo.consumers.consumerA.check", "false");
+        ApplicationModel.defaultModel().modelEnvironment().getPropertiesConfiguration().setProperty("dubbo.consumers.consumerA.group", "demo");
+        ApplicationModel.defaultModel().modelEnvironment().getPropertiesConfiguration().setProperty("dubbo.consumers.consumerA.threads", "10");
 
         try {
             ConsumerConfig consumerConfig = new ConsumerConfig();
@@ -208,7 +208,7 @@ class ConsumerConfigTest {
             Assertions.assertEquals("groupA", consumerConfig.getGroup());
             Assertions.assertEquals(10, consumerConfig.getThreads());
         } finally {
-            ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().refresh();
+            ApplicationModel.defaultModel().modelEnvironment().getPropertiesConfiguration().refresh();
             DubboBootstrap.getInstance().destroy();
         }
     }

@@ -19,10 +19,11 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.serialize.SerializationException;
 import org.apache.dubbo.common.utils.AtomicPositiveInteger;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.common.serialize.SerializationException;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.Request;
@@ -30,9 +31,9 @@ import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.FutureContext;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvokeMode;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
@@ -70,6 +71,8 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
 
     private final int serverShutdownTimeout;
 
+    private static final boolean setFutureWhenSync = Boolean.parseBoolean(System.getProperty(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true"));
+
     public DubboInvoker(Class<T> serviceType, URL url, ClientsProvider clientsProvider) {
         this(serviceType, url, clientsProvider, null);
     }
@@ -102,12 +105,10 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
             if (timeout <= 0) {
                 return AsyncRpcResult.newDefaultAsyncResult(new RpcException(RpcException.TIMEOUT_TERMINATE,
                     "No time left for making the following call: " + invocation.getServiceName() + "."
-                        + invocation.getMethodName() + ", terminate directly."), invocation);
+                        + RpcUtils.getMethodName(invocation) + ", terminate directly."), invocation);
             }
 
             invocation.setAttachment(TIMEOUT_KEY, String.valueOf(timeout));
-
-            RpcContext.getServiceContext().setRemoteAddress(currentClient.getRemoteAddress());
 
             Integer payload = getUrl().getParameter(PAYLOAD, Integer.class);
 
@@ -129,15 +130,17 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 CompletableFuture<AppResponse> appResponseFuture =
                     currentClient.request(request, timeout, executor).thenApply(AppResponse.class::cast);
                 // save for 2.6.x compatibility, for example, TraceFilter in Zipkin uses com.alibaba.xxx.FutureAdapter
-                FutureContext.getContext().setCompatibleFuture(appResponseFuture);
+                if (setFutureWhenSync || ((RpcInvocation) invocation).getInvokeMode() != InvokeMode.SYNC) {
+                    FutureContext.getContext().setCompatibleFuture(appResponseFuture);
+                }
                 AsyncRpcResult result = new AsyncRpcResult(appResponseFuture, inv);
                 result.setExecutor(executor);
                 return result;
             }
         } catch (TimeoutException e) {
-            throw new RpcException(RpcException.TIMEOUT_EXCEPTION, "Invoke remote method timeout. method: " + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
+            throw new RpcException(RpcException.TIMEOUT_EXCEPTION, "Invoke remote method timeout. method: " + RpcUtils.getMethodName(invocation) + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
         } catch (RemotingException e) {
-            String remoteExpMsg = "Failed to invoke remote method: " + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage();
+            String remoteExpMsg = "Failed to invoke remote method: " + RpcUtils.getMethodName(invocation) + ", provider: " + getUrl() + ", cause: " + e.getMessage();
             if (e.getCause() instanceof IOException && e.getCause().getCause() instanceof SerializationException) {
                 throw new RpcException(RpcException.SERIALIZATION_EXCEPTION, remoteExpMsg, e);
             } else {
@@ -176,7 +179,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 if (invokers != null) {
                     invokers.remove(this);
                 }
-                clientsProvider.close(serverShutdownTimeout);
+                clientsProvider.close(ConfigurationUtils.reCalShutdownTime(serverShutdownTimeout));
             } finally {
                 destroyLock.unlock();
             }

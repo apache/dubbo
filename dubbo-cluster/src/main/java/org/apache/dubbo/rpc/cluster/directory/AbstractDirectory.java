@@ -224,10 +224,8 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
                 logger.warn(CLUSTER_NO_VALID_PROVIDER, "provider server or registry center crashed", "",
                     "No provider available after connectivity filter for the service " + getConsumerUrl().getServiceKey()
-                        + " All validInvokers' size: " + validInvokers.size()
                         + " All routed invokers' size: " + routedResult.size()
-                        + " All invokers' size: " + invokers.size()
-                        + " from registry " + getUrl().getAddress()
+                        + " from registry " + this
                         + " on the consumer " + NetUtils.getLocalHost()
                         + " using the dubbo version " + Version.getVersion() + ".");
             }
@@ -350,9 +348,10 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                 if (!invokersToReconnect.isEmpty()) {
                     checkConnectivity();
                 }
+                MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
             }, reconnectTaskPeriod, TimeUnit.MILLISECONDS);
         }
-        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
     }
 
     /**
@@ -366,7 +365,11 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         if (invokersInitialized) {
             refreshInvokerInternal();
         }
-        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
+    }
+
+    protected Map<String, String> getDirectoryMeta() {
+        return Collections.emptyMap();
     }
 
     private synchronized void refreshInvokerInternal() {
@@ -395,7 +398,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             removeValidInvoker(invoker);
             logger.info("Disable service address: " + invoker.getUrl() + ".");
         }
-        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
     }
 
     @Override
@@ -408,7 +411,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
             }
         }
-        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
     }
 
     protected final void refreshRouter(BitList<Invoker<T>> newlyInvokers, Runnable switchAction) {
@@ -465,7 +468,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         refreshInvokerInternal();
         this.invokersInitialized = true;
 
-        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
     }
 
     protected void destroyInvokers() {
@@ -476,15 +479,21 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     }
 
     private boolean addValidInvoker(Invoker<T> invoker) {
+        boolean result;
         synchronized (this.validInvokers) {
-            return this.validInvokers.add(invoker);
+            result = this.validInvokers.add(invoker);
         }
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
+        return result;
     }
 
     private boolean removeValidInvoker(Invoker<T> invoker) {
+        boolean result;
         synchronized (this.validInvokers) {
-            return this.validInvokers.remove(invoker);
+            result = this.validInvokers.remove(invoker);
         }
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
+        return result;
     }
 
     protected abstract List<Invoker<T>> doList(SingleRouterChain<T> singleRouterChain,
@@ -513,17 +522,30 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     }
 
     private Map<String, Integer> groupByServiceKey(Collection<Invoker<T>> invokers) {
+        return Collections.singletonMap(getConsumerUrl().getServiceKey(), invokers.size());
+    }
 
-        Map<String, Integer> serviceNumMap = new HashMap<>();
-        for (Invoker<T> invoker : invokers) {
-            if (invoker.getClass().getSimpleName().contains("Mockito")) {
-                return serviceNumMap;
-            }
-        }
-        if (invokers.size() > 0) {
-            serviceNumMap = invokers.stream().filter(invoker -> invoker.getInterface() != null).collect(Collectors.groupingBy(invoker -> invoker.getInterface().getName(), Collectors.reducing(0, e -> 1, Integer::sum)));
-        }
-
-        return serviceNumMap;
+    @Override
+    public String toString() {
+        return "Directory(" +
+            "invokers: " + invokers.size() + "[" +
+            invokers.stream()
+                .map(Invoker::getUrl)
+                .map(URL::getAddress)
+                .limit(3)
+                .collect(Collectors.joining(", ")) + "]" +
+            ", validInvokers: " + validInvokers.size() + "[" +
+            validInvokers.stream()
+                .map(Invoker::getUrl)
+                .map(URL::getAddress)
+                .limit(3)
+                .collect(Collectors.joining(", ")) + "]" +
+            ", invokersToReconnect: " + invokersToReconnect.size() + "[" +
+            invokersToReconnect.stream()
+                .map(Invoker::getUrl)
+                .map(URL::getAddress)
+                .limit(3)
+                .collect(Collectors.joining(", ")) + "]" +
+            ')';
     }
 }

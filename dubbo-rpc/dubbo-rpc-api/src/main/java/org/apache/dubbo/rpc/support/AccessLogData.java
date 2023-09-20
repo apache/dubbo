@@ -284,7 +284,7 @@ public final class AccessLogData {
 
     public void buildAccessLogData(Invoker<?> invoker, Invocation inv) {
         setServiceName(invoker.getInterface().getName());
-        setMethodName(inv.getMethodName());
+        setMethodName(RpcUtils.getMethodName(inv));
         setVersion(invoker.getUrl().getVersion());
         setGroup(invoker.getUrl().getGroup());
         setInvocationTime(new Date());

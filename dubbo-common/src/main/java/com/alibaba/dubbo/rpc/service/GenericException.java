@@ -15,40 +15,30 @@
  * limitations under the License.
  */
 
-package com.alibaba.dubbo.rpc;
+package com.alibaba.dubbo.rpc.service;
+
 
 @Deprecated
-public class RpcException extends org.apache.dubbo.rpc.RpcException {
-    
-    public RpcException() {
-        super();
+public class GenericException extends org.apache.dubbo.rpc.service.GenericException {
+
+    private static final long serialVersionUID = -1182299763306599962L;
+
+    public GenericException() {
     }
 
-    public RpcException(String message, Throwable cause) {
-        super(message, cause);
+    public GenericException(String exceptionMessage) {
+        super(exceptionMessage);
     }
 
-    public RpcException(String message) {
-        super(message);
+    public GenericException(String exceptionClass, String exceptionMessage) {
+        super(exceptionClass, exceptionMessage);
     }
 
-    public RpcException(Throwable cause) {
+    public GenericException(Throwable cause) {
         super(cause);
     }
 
-    public RpcException(int code) {
-        super(code);
-    }
-
-    public RpcException(int code, String message, Throwable cause) {
-        super(code, message, cause);
-    }
-
-    public RpcException(int code, String message) {
-        super(code, message);
-    }
-
-    public RpcException(int code, Throwable cause) {
-        super(code, cause);
+    public GenericException(String message, Throwable cause, String exceptionClass, String exceptionMessage) {
+        super(message, cause, exceptionClass, exceptionMessage);
     }
 }
