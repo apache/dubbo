@@ -21,10 +21,10 @@ import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.filter.DemoService;
-import org.apache.dubbo.rpc.RpcException;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,6 +56,7 @@ class FailSafeClusterInvokerTest {
 
     @BeforeEach
     public void setUp() throws Exception {
+        RpcContext.removeServiceContext();
 
         dic = mock(Directory.class);
 

@@ -34,8 +34,8 @@ public class MetricsInitEvent extends TimeCounterEvent {
         super(source,typeWrapper);
     }
 
-    public static MetricsInitEvent toMetricsInitEvent(ApplicationModel applicationModel, Invocation invocation) {
-        MethodMetric methodMetric = new MethodMetric(applicationModel, invocation);
+    public static MetricsInitEvent toMetricsInitEvent(ApplicationModel applicationModel, Invocation invocation, boolean serviceLevel) {
+        MethodMetric methodMetric = new MethodMetric(applicationModel, invocation, serviceLevel);
         MetricsInitEvent initEvent = new MetricsInitEvent(applicationModel, METRIC_EVENT);
         initEvent.putAttachment(MetricsConstants.INVOCATION, invocation);
         initEvent.putAttachment(MetricsConstants.METHOD_METRICS, methodMetric);
