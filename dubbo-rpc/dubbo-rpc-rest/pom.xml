@@ -32,23 +32,18 @@
 	<dependencies>
 
         <!--APIs that come from old dubbo-config-api-->
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-registry-api</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.apache.dubbo</groupId>-->
+<!--            <artifactId>dubbo-test-check</artifactId>-->
+<!--            <version>${project.parent.version}</version>-->
+<!--        </dependency>-->
 
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-metadata-api</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-remoting-api</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.apache.dubbo</groupId>-->
+<!--            <artifactId>dubbo-test-common</artifactId>-->
+<!--            <version>${project.parent.version}</version>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
         <!--End-->
 
 		<dependency>
@@ -150,6 +145,12 @@
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-metadata-rest</artifactId>
             <version>${project.parent.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.dubbo</groupId>
+                    <artifactId>dubbo-config-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
