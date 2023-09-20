@@ -1114,6 +1114,11 @@
                 <xsd:documentation><![CDATA[ Enable record rpc metrics. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="rpc-level" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Is the metric for rpc requests at the METHOD level or SERVICE level ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="tracingType">
