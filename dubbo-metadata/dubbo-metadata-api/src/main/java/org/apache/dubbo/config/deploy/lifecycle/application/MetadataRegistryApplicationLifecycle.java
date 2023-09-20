@@ -14,31 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
+package org.apache.dubbo.config.deploy.lifecycle.application;
 
-import org.apache.dubbo.common.deploy.ApplicationDeployListener;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.config.deploy.context.ApplicationContext;
+import org.apache.dubbo.metadata.MetadataPublisher;
 import org.apache.dubbo.metadata.report.DefaultMetadataPublisher;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
-public class MetadataPublisherRegister implements ApplicationDeployListener {
+@Activate(order = -10000)
+public class MetadataRegistryApplicationLifecycle implements ApplicationLifecycle{
 
     @Override
-    public void onStarting(ApplicationModel scopeModel) {
-         scopeModel.getBeanFactory().getOrRegisterBean(DefaultMetadataPublisher.class);
+    public boolean needInitialize() {
+        return true;
     }
 
     @Override
-    public void onInitialize(ApplicationModel scopeModel) {}
-
-    @Override
-    public void onStarted(ApplicationModel scopeModel) {}
-
-    @Override
-    public void onStopping(ApplicationModel scopeModel) {}
-
-    @Override
-    public void onStopped(ApplicationModel scopeModel) {}
-
-    @Override
-    public void onFailure(ApplicationModel scopeModel, Throwable cause) {}
+    public void initialize(ApplicationContext context) {
+        context.getModel().getBeanFactory().getOrRegisterBean(MetadataPublisher.class,clz->new DefaultMetadataPublisher());
+    }
 }
