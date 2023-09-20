@@ -113,8 +113,9 @@ public class JValidatorNew implements Validator {
                 parameterClass = generateMethodParameterClass(clazz, method, parameterClassName);
             }
             Object parameterBean = parameterClass.getDeclaredConstructor().newInstance();
-            for (int i = 0; i < args.length; i++) {
-                Field field = parameterClass.getField(method.getName() + "Argument" + i);
+            Parameter[] parameters = method.getParameters();
+            for (int i = 0; i < parameters.length; i++) {
+                Field field = parameterClass.getField(parameters[i].getName());
                 field.set(parameterBean, args[i]);
             }
             return parameterBean;
@@ -179,7 +180,7 @@ public class JValidatorNew implements Validator {
                     ctField.getFieldInfo().addAttribute(attribute);
                     ctClass.addField(ctField);
                 }
-                return ctClass.toClass(clazz.getClassLoader(), null);
+                return pool.toClass(ctClass, clazz, clazz.getClassLoader(), clazz.getProtectionDomain());
             } else {
                 return Class.forName(parameterClassName, true, clazz.getClassLoader());
             }
@@ -194,7 +195,10 @@ public class JValidatorNew implements Validator {
 
         Class<?>[] parameterTypes = method.getParameterTypes();
         for (Class<?> parameterType : parameterTypes) {
-            builder.append('_').append(parameterType.getName());
+            // In order to ensure that the parameter class can be generated correctly,
+            // replace "." with "_" to make the package name of the generated parameter class
+            // consistent with the package name of the actual parameter class.
+            builder.append('_').append(parameterType.getName().replace(".", "_"));
         }
 
         return builder.toString();

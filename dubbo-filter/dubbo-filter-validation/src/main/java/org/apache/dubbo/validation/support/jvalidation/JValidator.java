@@ -195,7 +195,7 @@ public class JValidator implements Validator {
 
         Class<?>[] parameterTypes = method.getParameterTypes();
         for (Class<?> parameterType : parameterTypes) {
-            // On jdk17, in order to ensure that the parameter class can be generated correctly,
+            // In order to ensure that the parameter class can be generated correctly,
             // replace "." with "_" to make the package name of the generated parameter class
             // consistent with the package name of the actual parameter class.
             builder.append('_').append(parameterType.getName().replace(".", "_"));
