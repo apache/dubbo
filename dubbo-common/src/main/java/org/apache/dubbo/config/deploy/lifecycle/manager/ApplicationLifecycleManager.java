@@ -87,11 +87,11 @@ public class ApplicationLifecycleManager{
         lifecycles.forEach(applicationLifecycle -> {
             if(applicationLifecycle.needInitialize()) {
                 beanFactory.registerBean(applicationLifecycle);
-                sequence.append(applicationLifecycle.getClass().getSimpleName()).append("->");
+                sequence.append(applicationLifecycle.getClass().getSimpleName()).append("-> ");
             }
         });
         sequence.append(" [END]");
-        logger.info(sequence.toString());
+        logger.debug(sequence.toString());
 
         return lifecycles;
     }
