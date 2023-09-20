@@ -38,7 +38,7 @@
         <skip_maven_deploy>true</skip_maven_deploy>
         <spring-boot.version>2.7.15</spring-boot.version>
         <spring-boot-maven-plugin.version>2.7.15</spring-boot-maven-plugin.version>
-        <micrometer-core.version>1.11.3</micrometer-core.version>
+        <micrometer-core.version>1.11.4</micrometer-core.version>
     </properties>
     <dependencyManagement>
         <dependencies>
