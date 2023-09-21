@@ -654,7 +654,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 }
                 URL curUrl = invokers.get(0).getUrl();
                 String cluster = curUrl.getParameter(CLUSTER_KEY, DEFAULT_CLUSTER);
-                invoker = clusterInvokerFactory.buildWithStaticDirectory(getScopeModel(), cluster,true, curUrl, invokers, true);
+                invoker = clusterInvokerFactory.buildWithStaticDirectory(registryUrl.getScopeModel(), cluster,true, curUrl, invokers, true);
             }
         }
     }
