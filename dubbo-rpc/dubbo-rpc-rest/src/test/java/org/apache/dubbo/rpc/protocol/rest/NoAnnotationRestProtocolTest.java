@@ -21,7 +21,6 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.NetUtils;
-
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -31,13 +30,11 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
-
 import org.apache.dubbo.rpc.protocol.rest.noannotation.NoAnnotationDemoService;
 import org.apache.dubbo.rpc.protocol.rest.noannotation.NoAnnotationDemoServiceImpl;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -53,6 +50,12 @@ class NoAnnotationRestProtocolTest {
     public void tearDown() {
         protocol.destroy();
         FrameworkModel.destroyAll();
+        new JsonUtils() {
+            public void clearJson() {
+                setJson(null);
+            }
+        }.clearJson();
+        System.clearProperty(CommonConstants.PREFER_JSON_FRAMEWORK_NAME);
     }
 
     @Test
