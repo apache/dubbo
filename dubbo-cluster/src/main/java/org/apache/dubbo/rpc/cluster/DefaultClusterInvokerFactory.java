@@ -29,6 +29,6 @@ public class DefaultClusterInvokerFactory implements ClusterInvokerFactory {
 
     @Override
     public Invoker<?> buildWithStaticDirectory(ScopeModel scopeModel, String name, boolean wrap, URL url, List<Invoker<?>> invokers, boolean buildFilterChain) {
-        return Cluster.getCluster(scopeModel,name,wrap).join(new StaticDirectory(invokers),buildFilterChain);
+        return Cluster.getCluster(scopeModel,name,wrap).join(new StaticDirectory(url,invokers),buildFilterChain);
     }
 }

@@ -91,7 +91,7 @@ public class ApplicationLifecycleManager{
             }
         });
         sequence.append(" [END]");
-        logger.debug(sequence.toString());
+        logger.info(sequence.toString());
 
         return lifecycles;
     }
