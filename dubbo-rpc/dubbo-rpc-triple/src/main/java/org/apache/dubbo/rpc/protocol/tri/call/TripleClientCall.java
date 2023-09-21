@@ -170,7 +170,12 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         }
         if (!headerSent) {
             headerSent = true;
-            stream.sendHeader(requestMetadata.toHeaders());
+            stream.sendHeader(requestMetadata.toHeaders())
+                .addListener(f -> {
+                    if (f.isSuccess()) {
+                        listener.onHeaderSent();
+                    }
+                });
         }
         final byte[] data;
         try {
@@ -181,7 +186,9 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
             final byte[] compress = requestMetadata.compressor.compress(data);
             stream.sendMessage(compress, compressed, false)
                 .addListener(f -> {
-                    if (!f.isSuccess()) {
+                    if (f.isSuccess()) {
+                        listener.onDataSent();
+                    } else {
                         cancelByLocal(f.cause());
                     }
                 });
