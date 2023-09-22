@@ -21,6 +21,7 @@ import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.Metric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.ServiceKeyMetric;
+import org.apache.dubbo.metrics.model.StatVersion;
 import org.apache.dubbo.metrics.model.container.AtomicLongContainer;
 import org.apache.dubbo.metrics.model.container.LongAccumulatorContainer;
 import org.apache.dubbo.metrics.model.container.LongContainer;
@@ -52,6 +53,8 @@ import java.util.stream.Collectors;
 public class RtStatComposite extends AbstractMetricsExport {
     private boolean serviceLevel;
 
+    private final StatVersion statVersion = new StatVersion();
+
     public RtStatComposite(ApplicationModel applicationModel) {
         super(applicationModel);
         this.serviceLevel = MethodMetric.isServiceLevel(getApplicationModel());
@@ -66,8 +69,10 @@ public class RtStatComposite extends AbstractMetricsExport {
         for (MetricsPlaceValue placeValue : placeValues) {
             List<LongContainer<? extends Number>> containers = initStats(placeValue);
             for (LongContainer<? extends Number> container : containers) {
-                rtStats.computeIfAbsent(container.getMetricsKeyWrapper().getType(), k -> new ArrayList<>())
-                    .add(container);
+                rtStats.computeIfAbsent(container.getMetricsKeyWrapper().getType(), k -> {
+                        statVersion.increaseVersion();
+                        return new ArrayList<>();
+                    }).add(container);
             }
         }
     }
@@ -95,6 +100,7 @@ public class RtStatComposite extends AbstractMetricsExport {
             Number current = (Number) container.get(key);
             if (current == null) {
                 container.putIfAbsent(key, container.getInitFunc().apply(key));
+                statVersion.increaseVersion();
                 current = (Number) container.get(key);
             }
             container.getConsumerFunc().accept(responseTime, current);
@@ -114,6 +120,7 @@ public class RtStatComposite extends AbstractMetricsExport {
             if (actions == null) {
                 actions = calServiceRtActions(invocation, registryOpType);
                 cache.putIfAbsent(registryOpType, actions);
+                statVersion.increaseVersion();
                 actions = cache.get(registryOpType);
             }
         } else {
@@ -134,6 +141,7 @@ public class RtStatComposite extends AbstractMetricsExport {
             Number current = (Number) container.get(key);
             if (current == null) {
                 container.putIfAbsent(key, container.getInitFunc().apply(key));
+                statVersion.increaseVersion();
                 current = (Number) container.get(key);
             }
             actions.add(new Action(container.getConsumerFunc(), current));
@@ -155,6 +163,7 @@ public class RtStatComposite extends AbstractMetricsExport {
             if (actions == null) {
                 actions = calMethodRtActions(invocation, registryOpType);
                 cache.putIfAbsent(registryOpType, actions);
+                statVersion.increaseVersion();
                 actions = cache.get(registryOpType);
             }
         } else {
@@ -174,6 +183,7 @@ public class RtStatComposite extends AbstractMetricsExport {
             Number current = (Number) container.get(key);
             if (current == null) {
                 container.putIfAbsent(key, container.getInitFunc().apply(key));
+                statVersion.increaseVersion();
                 current = (Number) container.get(key);
             }
             actions.add(new Action(container.getConsumerFunc(), current));
@@ -217,5 +227,10 @@ public class RtStatComposite extends AbstractMetricsExport {
         public void run(Long responseTime) {
             consumerFunc.accept(responseTime, initValue);
         }
+    }
+
+    @Override
+    public StatVersion getStatVersion() {
+        return statVersion;
     }
 }

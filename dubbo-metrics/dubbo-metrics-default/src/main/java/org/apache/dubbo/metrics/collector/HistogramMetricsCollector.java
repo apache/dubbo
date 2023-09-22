@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.metrics.collector;
 
-import io.micrometer.core.instrument.Timer;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.context.ConfigManager;
@@ -27,11 +26,14 @@ import org.apache.dubbo.metrics.MetricsGlobalRegistry;
 import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.metrics.listener.AbstractMetricsListener;
 import org.apache.dubbo.metrics.model.MethodMetric;
+import org.apache.dubbo.metrics.model.StatVersion;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.register.HistogramMetricRegister;
 import org.apache.dubbo.metrics.sample.HistogramMetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import io.micrometer.core.instrument.Timer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +47,7 @@ public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEv
     private final ConcurrentHashMap<MethodMetric, Timer> rt = new ConcurrentHashMap<>();
     private HistogramMetricRegister metricRegister;
     private final ApplicationModel applicationModel;
+    private final StatVersion statVersion = new StatVersion();
 
     private static final Integer[] DEFAULT_BUCKETS_MS = new Integer[]{100, 300, 500, 1000, 3000, 5000, 10000};
 
@@ -109,5 +112,10 @@ public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEv
     @Override
     public List<MetricSample> collect() {
         return new ArrayList<>();
+    }
+
+    @Override
+    public StatVersion getStatVersion() {
+        return statVersion;
     }
 }

@@ -27,6 +27,7 @@ import org.apache.dubbo.metrics.MetricsGlobalRegistry;
 import org.apache.dubbo.metrics.collector.AggregateMetricsCollector;
 import org.apache.dubbo.metrics.collector.HistogramMetricsCollector;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
+import org.apache.dubbo.metrics.model.StatVersion;
 import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -77,7 +78,9 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     private ScheduledExecutorService collectorSyncJobExecutor = null;
 
     private static final int DEFAULT_SCHEDULE_INITIAL_DELAY = 5;
-    private static final int DEFAULT_SCHEDULE_PERIOD = 3;
+    private static final int DEFAULT_SCHEDULE_PERIOD = 60;
+
+    private volatile StatVersion statVersion = new StatVersion();
 
     protected AbstractMetricsReporter(URL url, ApplicationModel applicationModel) {
         this.url = url;
@@ -151,37 +154,42 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void refreshData() {
-        collectors.forEach(collector -> {
-            List<MetricSample> samples = collector.collect();
-            for (MetricSample sample : samples) {
-                try {
-                    switch (sample.getType()) {
-                        case GAUGE:
-                            GaugeMetricSample gaugeSample = (GaugeMetricSample) sample;
-                            List<Tag> tags = getTags(gaugeSample);
+        StatVersion newStatVersion = new StatVersion();
+        collectors.forEach(c -> newStatVersion.getChild().add(c.getStatVersion()));
+        if (newStatVersion.compareToChanged(statVersion)) {
+            statVersion = newStatVersion.clone();
+            collectors.forEach(collector -> {
+                List<MetricSample> samples = collector.collect();
+                for (MetricSample sample : samples) {
+                    try {
+                        switch (sample.getType()) {
+                            case GAUGE:
+                                GaugeMetricSample gaugeSample = (GaugeMetricSample) sample;
+                                List<Tag> tags = getTags(gaugeSample);
 
-                            Gauge.builder(gaugeSample.getName(), gaugeSample.getValue(), gaugeSample.getApply())
-                                .description(gaugeSample.getDescription()).tags(tags).register(compositeRegistry);
-                            break;
-                        case COUNTER:
-                            CounterMetricSample counterMetricSample = (CounterMetricSample) sample;
-                            FunctionCounter.builder(counterMetricSample.getName(),  counterMetricSample.getValue(),
-                                    Number::doubleValue).description(counterMetricSample.getDescription())
-                                .tags(getTags(counterMetricSample))
-                                .register(compositeRegistry);
-                        case TIMER:
-                        case LONG_TASK_TIMER:
-                        case DISTRIBUTION_SUMMARY:
-                            // TODO
-                            break;
-                        default:
-                            break;
+                                Gauge.builder(gaugeSample.getName(), gaugeSample.getValue(), gaugeSample.getApply())
+                                    .description(gaugeSample.getDescription()).tags(tags).register(compositeRegistry);
+                                break;
+                            case COUNTER:
+                                CounterMetricSample counterMetricSample = (CounterMetricSample) sample;
+                                FunctionCounter.builder(counterMetricSample.getName(), counterMetricSample.getValue(),
+                                        Number::doubleValue).description(counterMetricSample.getDescription())
+                                    .tags(getTags(counterMetricSample))
+                                    .register(compositeRegistry);
+                            case TIMER:
+                            case LONG_TASK_TIMER:
+                            case DISTRIBUTION_SUMMARY:
+                                // TODO
+                                break;
+                            default:
+                                break;
+                        }
+                    } catch (Exception e) {
+                        logger.error(COMMON_METRICS_COLLECTOR_EXCEPTION, "", "", "error occurred when synchronize metrics collector.", e);
                     }
-                } catch (Exception e) {
-                    logger.error(COMMON_METRICS_COLLECTOR_EXCEPTION, "", "", "error occurred when synchronize metrics collector.", e);
                 }
-            }
-        });
+            });
+        }
     }
 
     private static List<Tag> getTags(MetricSample gaugeSample) {

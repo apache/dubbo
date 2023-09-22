@@ -20,6 +20,7 @@ package org.apache.dubbo.metrics.data;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.ServiceKeyMetric;
+import org.apache.dubbo.metrics.model.StatVersion;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -39,6 +40,8 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class ServiceStatComposite extends AbstractMetricsExport {
 
+    private final StatVersion statVersion = new StatVersion();
+
     public ServiceStatComposite(ApplicationModel applicationModel) {
         super(applicationModel);
     }
@@ -49,7 +52,10 @@ public class ServiceStatComposite extends AbstractMetricsExport {
         if (CollectionUtils.isEmpty(metricsKeyWrappers)) {
             return;
         }
-        metricsKeyWrappers.forEach(appKey -> serviceWrapperNumStats.put(appKey, new ConcurrentHashMap<>()));
+        metricsKeyWrappers.forEach(appKey -> {
+            statVersion.increaseVersion();
+            serviceWrapperNumStats.put(appKey, new ConcurrentHashMap<>());
+        });
     }
 
     public void incrementServiceKey(MetricsKeyWrapper wrapper, String serviceKey, int size) {
@@ -64,7 +70,10 @@ public class ServiceStatComposite extends AbstractMetricsExport {
         if (extra != null) {
             serviceKeyMetric.setExtraInfo(extra);
         }
-        serviceWrapperNumStats.get(wrapper).computeIfAbsent(serviceKeyMetric, k -> new AtomicLong(0L)).getAndAdd(size);
+        serviceWrapperNumStats.get(wrapper).computeIfAbsent(serviceKeyMetric, k -> {
+            statVersion.increaseVersion();
+            return new AtomicLong(0L);
+        }).getAndAdd(size);
 //        MetricsSupport.fillZero(serviceWrapperNumStats);
     }
 
@@ -80,7 +89,10 @@ public class ServiceStatComposite extends AbstractMetricsExport {
         if (extra != null) {
             serviceKeyMetric.setExtraInfo(extra);
         }
-        serviceWrapperNumStats.get(wrapper).computeIfAbsent(serviceKeyMetric, k -> new AtomicLong(0L)).set(num);
+        serviceWrapperNumStats.get(wrapper).computeIfAbsent(serviceKeyMetric, k -> {
+            statVersion.increaseVersion();
+            return new AtomicLong(0L);
+        }).set(num);
     }
 
     @Override
@@ -95,4 +107,8 @@ public class ServiceStatComposite extends AbstractMetricsExport {
         return list;
     }
 
+    @Override
+    public StatVersion getStatVersion() {
+        return statVersion;
+    }
 }

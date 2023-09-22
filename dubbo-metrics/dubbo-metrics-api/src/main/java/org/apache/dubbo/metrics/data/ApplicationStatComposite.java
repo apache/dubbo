@@ -20,6 +20,7 @@ package org.apache.dubbo.metrics.data;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.MetricsSupport;
+import org.apache.dubbo.metrics.model.StatVersion;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -46,11 +47,16 @@ public class ApplicationStatComposite extends AbstractMetricsExport {
 
     private final Map<MetricsKey, AtomicLong> applicationNumStats = new ConcurrentHashMap<>();
 
+    private final StatVersion statVersion = new StatVersion();
+
     public void init(List<MetricsKey> appKeys) {
         if (CollectionUtils.isEmpty(appKeys)) {
             return;
         }
-        appKeys.forEach(appKey -> applicationNumStats.put(appKey, new AtomicLong(0L)));
+        appKeys.forEach(appKey -> {
+            statVersion.increaseVersion();
+            applicationNumStats.put(appKey, new AtomicLong(0L));
+        });
     }
 
     public void incrementSize(MetricsKey metricsKey, int size) {
@@ -78,4 +84,9 @@ public class ApplicationStatComposite extends AbstractMetricsExport {
         return applicationNumStats;
     }
 
+
+    @Override
+    public StatVersion getStatVersion() {
+        return statVersion;
+    }
 }

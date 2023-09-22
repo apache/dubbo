@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
+import org.apache.dubbo.metrics.model.StatVersion;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
@@ -43,6 +44,8 @@ import java.util.concurrent.atomic.AtomicLong;
 public class MethodStatComposite extends AbstractMetricsExport {
     private boolean serviceLevel;
 
+    private final StatVersion statVersion = new StatVersion();
+
     public MethodStatComposite(ApplicationModel applicationModel) {
         super(applicationModel);
         this.serviceLevel = MethodMetric.isServiceLevel(getApplicationModel());
@@ -54,7 +57,10 @@ public class MethodStatComposite extends AbstractMetricsExport {
         if (CollectionUtils.isEmpty(metricsKeyWrappers)) {
             return;
         }
-        metricsKeyWrappers.forEach(appKey -> methodNumStats.put(appKey, new ConcurrentHashMap<>()));
+        metricsKeyWrappers.forEach(appKey -> {
+            statVersion.increaseVersion();
+            methodNumStats.put(appKey, new ConcurrentHashMap<>());
+        });
     }
 
     public void initMethodKey(MetricsKeyWrapper wrapper, Invocation invocation) {
@@ -62,7 +68,11 @@ public class MethodStatComposite extends AbstractMetricsExport {
             return;
         }
 
-        methodNumStats.get(wrapper).computeIfAbsent(new MethodMetric(getApplicationModel(), invocation, serviceLevel), k -> new AtomicLong(0L));
+        methodNumStats.get(wrapper).computeIfAbsent(new MethodMetric(getApplicationModel(), invocation, serviceLevel),
+            k -> {
+                statVersion.increaseVersion();
+                return new AtomicLong(0L);
+            });
     }
 
     public void incrementMethodKey(MetricsKeyWrapper wrapper, MethodMetric methodMetric, int size) {
@@ -71,7 +81,10 @@ public class MethodStatComposite extends AbstractMetricsExport {
         }
         AtomicLong stat = methodNumStats.get(wrapper).get(methodMetric);
         if (stat == null) {
-            methodNumStats.get(wrapper).putIfAbsent(methodMetric, new AtomicLong(0L));
+            methodNumStats.get(wrapper).computeIfAbsent(methodMetric, (k)-> {
+                statVersion.increaseVersion();
+                return new AtomicLong(0L);
+            });
             stat = methodNumStats.get(wrapper).get(methodMetric);
         }
         stat.getAndAdd(size);
@@ -97,4 +110,8 @@ public class MethodStatComposite extends AbstractMetricsExport {
         return list;
     }
 
+    @Override
+    public StatVersion getStatVersion() {
+        return statVersion;
+    }
 }

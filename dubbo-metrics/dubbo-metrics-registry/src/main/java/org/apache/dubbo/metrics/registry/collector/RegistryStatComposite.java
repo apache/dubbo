@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.MetricsSupport;
+import org.apache.dubbo.metrics.model.StatVersion;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -41,6 +42,8 @@ public class RegistryStatComposite extends AbstractMetricsExport {
 
     private final Map<MetricsKey, Map<ApplicationMetric, AtomicLong>> appStats = new ConcurrentHashMap<>();
 
+    private final StatVersion statVersion = new StatVersion();
+
     public RegistryStatComposite(ApplicationModel applicationModel) {
         super(applicationModel);
         init(RegistryMetricsConstants.REGISTER_LEVEL_KEYS);
@@ -50,7 +53,10 @@ public class RegistryStatComposite extends AbstractMetricsExport {
         if (CollectionUtils.isEmpty(appKeys)) {
             return;
         }
-        appKeys.forEach(appKey -> appStats.put(appKey, new ConcurrentHashMap<>()));
+        appKeys.forEach(appKey -> {
+            statVersion.increaseVersion();
+            appStats.put(appKey, new ConcurrentHashMap<>());
+        });
     }
 
     @Override
@@ -71,11 +77,19 @@ public class RegistryStatComposite extends AbstractMetricsExport {
         }
         ApplicationMetric applicationMetric = new ApplicationMetric(getApplicationModel());
         applicationMetric.setExtraInfo(Collections.singletonMap(RegistryConstants.REGISTRY_CLUSTER_KEY.toLowerCase(), name));
-        appStats.get(metricsKey).computeIfAbsent(applicationMetric, k -> new AtomicLong(0L)).getAndAdd(SELF_INCREMENT_SIZE);
+        appStats.get(metricsKey).computeIfAbsent(applicationMetric, k -> {
+            statVersion.increaseVersion();
+            return new AtomicLong(0L);
+        }).getAndAdd(SELF_INCREMENT_SIZE);
         MetricsSupport.fillZero(appStats);
     }
 
     public Map<MetricsKey, Map<ApplicationMetric, AtomicLong>> getAppStats() {
         return appStats;
+    }
+
+    @Override
+    public StatVersion getStatVersion() {
+        return statVersion;
     }
 }

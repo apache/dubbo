@@ -29,6 +29,7 @@ import org.apache.dubbo.metrics.data.ServiceStatComposite;
 import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.ServiceKeyMetric;
+import org.apache.dubbo.metrics.model.StatVersion;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -60,6 +61,8 @@ public class RegistryMetricsCollector extends CombMetricsCollector<RegistryEvent
     private final ApplicationModel applicationModel;
     private final RegistryStatComposite internalStat;
 
+    private final StatVersion statVersion = new StatVersion();
+
     public RegistryMetricsCollector(ApplicationModel applicationModel) {
         super(new BaseStatComposite(applicationModel) {
             @Override
@@ -82,6 +85,8 @@ public class RegistryMetricsCollector extends CombMetricsCollector<RegistryEvent
         });
         super.setEventMulticaster(new RegistrySubDispatcher(this));
         internalStat = new RegistryStatComposite(applicationModel);
+        statVersion.getChild().add(super.getStats().getStatVersion());
+        statVersion.getChild().add(internalStat.getStatVersion());
         this.applicationModel = applicationModel;
     }
 
@@ -149,4 +154,8 @@ public class RegistryMetricsCollector extends CombMetricsCollector<RegistryEvent
         this.stats.setServiceKey(metricsKey, serviceKey, num, attachments);
     }
 
+    @Override
+    public StatVersion getStatVersion() {
+        return statVersion;
+    }
 }

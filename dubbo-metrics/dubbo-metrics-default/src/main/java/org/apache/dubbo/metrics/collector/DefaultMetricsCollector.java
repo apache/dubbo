@@ -36,6 +36,7 @@ import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.MetricsSupport;
+import org.apache.dubbo.metrics.model.StatVersion;
 import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
@@ -72,6 +73,7 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
 
     private final AtomicBoolean initialized = new AtomicBoolean();
 
+    private final StatVersion statVersion = new StatVersion();
 
     public DefaultMetricsCollector(ApplicationModel applicationModel) {
         super(new BaseStatComposite(applicationModel) {
@@ -91,11 +93,14 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
         super.setEventMulticaster(new DefaultSubDispatcher(this));
         samplers.add(applicationSampler);
         samplers.add(threadPoolSampler);
+        statVersion.increaseVersion();
+        statVersion.getChild().add(super.getStats().getStatVersion());
         this.applicationModel = applicationModel;
     }
 
     public void addSampler(MetricsSampler sampler) {
         samplers.add(sampler);
+        statVersion.increaseVersion();
     }
 
     public void setApplicationName(String applicationName) {
@@ -204,4 +209,9 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
             sampleConfigure.configureMetrics(configure -> new ApplicationMetric(applicationModel));
         }
     };
+
+    @Override
+    public StatVersion getStatVersion() {
+        return statVersion;
+    }
 }

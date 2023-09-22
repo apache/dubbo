@@ -22,6 +22,7 @@ import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.ServiceKeyMetric;
+import org.apache.dubbo.metrics.model.StatVersion;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -47,6 +48,7 @@ public abstract class BaseStatComposite implements MetricsExport {
     private MethodStatComposite methodStatComposite;
     private RtStatComposite rtStatComposite;
 
+    private final StatVersion statVersion = new StatVersion();
 
     public BaseStatComposite(ApplicationModel applicationModel) {
         init(new ApplicationStatComposite(applicationModel));
@@ -58,18 +60,22 @@ public abstract class BaseStatComposite implements MetricsExport {
 
     protected void init(ApplicationStatComposite applicationStatComposite) {
         this.applicationStatComposite = applicationStatComposite;
+        statVersion.getChild().add(applicationStatComposite.getStatVersion());
     }
 
     protected void init(ServiceStatComposite serviceStatComposite) {
         this.serviceStatComposite = serviceStatComposite;
+        statVersion.getChild().add(serviceStatComposite.getStatVersion());
     }
 
     protected void init(MethodStatComposite methodStatComposite) {
         this.methodStatComposite = methodStatComposite;
+        statVersion.getChild().add(methodStatComposite.getStatVersion());
     }
 
     protected void init(RtStatComposite rtStatComposite) {
         this.rtStatComposite = rtStatComposite;
+        statVersion.getChild().add(rtStatComposite.getStatVersion());
     }
 
     public void calcApplicationRt(String registryOpType, Long responseTime) {
@@ -132,5 +138,10 @@ public abstract class BaseStatComposite implements MetricsExport {
 
     public RtStatComposite getRtStatComposite() {
         return rtStatComposite;
+    }
+
+    @Override
+    public StatVersion getStatVersion() {
+        return statVersion;
     }
 }

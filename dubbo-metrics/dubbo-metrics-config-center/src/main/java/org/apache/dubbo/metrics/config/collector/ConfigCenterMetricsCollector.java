@@ -24,6 +24,7 @@ import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;
 import org.apache.dubbo.metrics.config.event.ConfigCenterSubDispatcher;
 import org.apache.dubbo.metrics.model.ConfigCenterMetric;
+import org.apache.dubbo.metrics.model.StatVersion;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -47,6 +48,7 @@ public class ConfigCenterMetricsCollector extends CombMetricsCollector<ConfigCen
 
     private Boolean collectEnabled = null;
     private final ApplicationModel applicationModel;
+    private final StatVersion statVersion = new StatVersion();
 
     private final Map<ConfigCenterMetric, AtomicLong> updatedMetrics = new ConcurrentHashMap<>();
 
@@ -76,7 +78,10 @@ public class ConfigCenterMetricsCollector extends CombMetricsCollector<ConfigCen
             return;
         }
         ConfigCenterMetric metric = new ConfigCenterMetric(applicationModel.getApplicationName(), key, group, protocol, changeTypeName);
-        updatedMetrics.computeIfAbsent(metric, k -> new AtomicLong(0L)).addAndGet(size);
+        updatedMetrics.computeIfAbsent(metric, k -> {
+            statVersion.increaseVersion();
+            return new AtomicLong(0L);
+        }).addAndGet(size);
     }
 
 
@@ -91,5 +96,8 @@ public class ConfigCenterMetricsCollector extends CombMetricsCollector<ConfigCen
         return list;
     }
 
-
+    @Override
+    public StatVersion getStatVersion() {
+        return statVersion;
+    }
 }
