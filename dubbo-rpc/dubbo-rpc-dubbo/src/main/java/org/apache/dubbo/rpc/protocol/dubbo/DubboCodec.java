@@ -42,6 +42,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Type;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -70,6 +71,8 @@ public class DubboCodec extends ExchangeCodec {
     public static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
     public static final Class<?>[] EMPTY_CLASS_ARRAY = new Class<?>[0];
     public static final Class<?>[] GENERIC_PTS_ARRAY = new Class<?>[]{String.class, String[].class, Object[].class};
+    public static final Type[][] GENERIC_PARAMETER_TYPE_ARRAY = new Type[][]{{String.class, String.class}, {String[].class, String[].class}, {Object[].class, Object[].class}};
+    public static final Type[][] ECHO_PARAMETER_TYPE_ARRAY = new Type[][]{{Object.class, Object.class}};
     public static final Class<?>[] ECHO_PTS_ARRAY = new Class<?>[]{Object.class};
     private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(DubboCodec.class);
 

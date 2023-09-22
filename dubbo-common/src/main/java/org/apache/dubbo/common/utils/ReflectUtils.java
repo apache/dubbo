@@ -1288,6 +1288,7 @@ public final class ReflectUtils {
 
     /**
      * Check target bean class whether has specify method
+     *
      * @param beanClass
      * @param methodName
      * @return
@@ -1349,6 +1350,7 @@ public final class ReflectUtils {
      * necessary. The {@code setAccessible(true)} method is only called
      * when actually necessary, to avoid unnecessary conflicts with a JVM
      * SecurityManager (if active).
+     *
      * @param method the method to make accessible
      * @see java.lang.reflect.Method#setAccessible
      */
@@ -1362,6 +1364,7 @@ public final class ReflectUtils {
 
     /**
      * Get all field names of target type
+     *
      * @param type
      * @return
      */

@@ -38,6 +38,7 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DECODE;
@@ -169,7 +170,17 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
             } else if (returnTypes.length == 1) {
                 value = in.readObject((Class<?>) returnTypes[0]);
             } else {
-                value = in.readObject((Class<?>) returnTypes[0], returnTypes[1]);
+                if (returnTypes[0] == returnTypes[1]) {
+                    value = in.readObject((Class<?>) returnTypes[0]);
+                } else {
+                    if (returnTypes[1] instanceof ParameterizedType) {
+                        Type actualArgType = ((ParameterizedType) returnTypes[1]).getActualTypeArguments()[0];
+                        value = in.readObject((Class<?>) returnTypes[0], actualArgType);
+                    } else {
+                        value = in.readObject((Class<?>) returnTypes[0]);
+                    }
+
+                }
             }
             setValue(value);
         } catch (ClassNotFoundException e) {

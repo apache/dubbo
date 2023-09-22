@@ -33,6 +33,8 @@ public interface MethodDescriptor {
 
     Class<?>[] getParameterClasses();
 
+    Type[] getGenericParameterTypes();
+
     Class<?> getReturnClass();
 
     Type[] getReturnTypes();
