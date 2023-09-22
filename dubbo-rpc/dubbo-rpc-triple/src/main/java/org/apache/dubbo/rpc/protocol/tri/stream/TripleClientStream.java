@@ -449,23 +449,25 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
 
         @Override
         public void onData(ByteBuf data, boolean endStream) {
-            executor.execute(() -> {
-                if (transportError != null) {
-                    transportError.appendDescription(
-                        "Data:" + data.toString(StandardCharsets.UTF_8));
-                    ReferenceCountUtil.release(data);
-                    if (transportError.description.length() > 512 || endStream) {
-                        handleH2TransportError(transportError);
-                    }
-                    return;
+            executor.execute(() -> doOnData(data, endStream), () -> ReferenceCountUtil.release(data));
+        }
+
+        private void doOnData(ByteBuf data, boolean endStream) {
+            if (transportError != null) {
+                transportError.appendDescription(
+                    "Data:" + data.toString(StandardCharsets.UTF_8));
+                ReferenceCountUtil.release(data);
+                if (transportError.description.length() > 512 || endStream) {
+                    handleH2TransportError(transportError);
                 }
-                if (!headerReceived) {
-                    handleH2TransportError(TriRpcStatus.INTERNAL.withDescription(
-                        "headers not received before payload"));
-                    return;
-                }
-                deframer.deframe(data);
-            });
+                return;
+            }
+            if (!headerReceived) {
+                handleH2TransportError(TriRpcStatus.INTERNAL.withDescription(
+                    "headers not received before payload"));
+                return;
+            }
+            deframer.deframe(data);
         }
 
         @Override

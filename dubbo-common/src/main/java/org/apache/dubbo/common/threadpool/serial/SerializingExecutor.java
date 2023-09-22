@@ -60,11 +60,15 @@ public final class SerializingExecutor implements Executor, Runnable {
      */
     @Override
     public void execute(Runnable r) {
-        runQueue.add(r);
-        schedule(r);
+        execute(r, null);
     }
 
-    private void schedule(Runnable removable) {
+    public void execute(Runnable r, Runnable cleanIfFailed) {
+        runQueue.add(r);
+        schedule(r, cleanIfFailed);
+    }
+
+    private void schedule(Runnable removable, Runnable cleanIfFailed) {
         if (atomicBoolean.compareAndSet(false, true)) {
             boolean success = false;
             try {
@@ -85,6 +89,9 @@ public final class SerializingExecutor implements Executor, Runnable {
                         // This is important to run in case of RejectedExecutionException, so that future calls
                         // to execute don't succeed and accidentally run a previous runnable.
                         runQueue.remove(removable);
+                    }
+                    if (cleanIfFailed != null) {
+                        cleanIfFailed.run();
                     }
                     atomicBoolean.set(false);
                 }
@@ -111,7 +118,7 @@ public final class SerializingExecutor implements Executor, Runnable {
         }
         if (!runQueue.isEmpty()) {
             // we didn't enqueue anything but someone else did.
-            schedule(null);
+            schedule(null, null);
         }
     }
 }

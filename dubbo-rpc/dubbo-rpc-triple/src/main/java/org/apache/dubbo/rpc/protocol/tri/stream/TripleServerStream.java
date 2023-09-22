@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
+import io.netty.util.ReferenceCountUtil;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
@@ -431,7 +432,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
 
         @Override
         public void onData(ByteBuf data, boolean endStream) {
-            executor.execute(() -> doOnData(data, endStream));
+            executor.execute(() -> doOnData(data, endStream), () -> ReferenceCountUtil.release(data));
         }
 
         private void doOnData(ByteBuf data, boolean endStream) {
