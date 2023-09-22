@@ -265,7 +265,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
         BeanNameGenerator beanNameGenerator = null;
 
         if (registry instanceof SingletonBeanRegistry) {
-            SingletonBeanRegistry singletonBeanRegistry = SingletonBeanRegistry.class.cast(registry);
+            SingletonBeanRegistry singletonBeanRegistry = (SingletonBeanRegistry) registry;
             beanNameGenerator = (BeanNameGenerator) singletonBeanRegistry.getSingleton(CONFIGURATION_BEAN_NAME_GENERATOR);
         }
 
