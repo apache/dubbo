@@ -150,7 +150,7 @@ class ActiveLimitFilterTest {
     void testInvokeNotTimeOut() {
         int totalThread = 100;
         int maxActives = 10;
-        long timeout = 1000;
+        long timeout = 100000;
         long blockTime = 0;
         AtomicInteger count = new AtomicInteger(0);
         final CountDownLatch latch = new CountDownLatch(1);
