@@ -73,6 +73,13 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-config-test</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
 
         <!-- config-center -->
         <dependency>
@@ -690,6 +697,7 @@
                                     <include>org.apache.dubbo:dubbo-compatible</include>
                                     <include>org.apache.dubbo:dubbo-config-api</include>
                                     <include>org.apache.dubbo:dubbo-config-spring</include>
+                                    <include>org.apache.dubbo:dubbo-config-test</include>
                                     <include>org.apache.dubbo:dubbo-configcenter-api</include>
                                     <include>org.apache.dubbo:dubbo-configcenter-file</include>
                                     <include>org.apache.dubbo:dubbo-configcenter-apollo</include>
