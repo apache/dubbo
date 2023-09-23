@@ -45,8 +45,7 @@ import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.core.instrument.binder.system.UptimeMetrics;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -78,6 +77,8 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
 
     private static final int DEFAULT_SCHEDULE_INITIAL_DELAY = 5;
     private static final int DEFAULT_SCHEDULE_PERIOD = 3;
+
+    private final Set<Map<String, String>> tagsSet = new HashSet<>();
 
     protected AbstractMetricsReporter(URL url, ApplicationModel applicationModel) {
         this.url = url;
@@ -155,20 +156,17 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
             List<MetricSample> samples = collector.collect();
             for (MetricSample sample : samples) {
                 try {
+                    Map<String, String> sampleTags = sample.getTags();
+                    if (tagsSet.contains(sampleTags)) {
+                        continue;
+                    }
+                    tagsSet.add(sampleTags);
                     switch (sample.getType()) {
                         case GAUGE:
-                            GaugeMetricSample gaugeSample = (GaugeMetricSample) sample;
-                            List<Tag> tags = getTags(gaugeSample);
-
-                            Gauge.builder(gaugeSample.getName(), gaugeSample.getValue(), gaugeSample.getApply())
-                                .description(gaugeSample.getDescription()).tags(tags).register(compositeRegistry);
+                            register((GaugeMetricSample) sample);
                             break;
                         case COUNTER:
-                            CounterMetricSample counterMetricSample = (CounterMetricSample) sample;
-                            FunctionCounter.builder(counterMetricSample.getName(),  counterMetricSample.getValue(),
-                                    Number::doubleValue).description(counterMetricSample.getDescription())
-                                .tags(getTags(counterMetricSample))
-                                .register(compositeRegistry);
+                            register((CounterMetricSample) sample);
                         case TIMER:
                         case LONG_TASK_TIMER:
                         case DISTRIBUTION_SUMMARY:
@@ -182,6 +180,22 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
                 }
             }
         });
+    }
+
+    private void register(CounterMetricSample sample) {
+        CounterMetricSample counterMetricSample = sample;
+        FunctionCounter.builder(counterMetricSample.getName(), counterMetricSample.getValue(),
+                Number::doubleValue).description(counterMetricSample.getDescription())
+            .tags(getTags(counterMetricSample))
+            .register(compositeRegistry);
+    }
+
+    private void register(GaugeMetricSample sample) {
+        GaugeMetricSample gaugeSample = sample;
+        List<Tag> tags = getTags(gaugeSample);
+
+        Gauge.builder(gaugeSample.getName(), gaugeSample.getValue(), gaugeSample.getApply())
+            .description(gaugeSample.getDescription()).tags(tags).register(compositeRegistry);
     }
 
     private static List<Tag> getTags(MetricSample gaugeSample) {
