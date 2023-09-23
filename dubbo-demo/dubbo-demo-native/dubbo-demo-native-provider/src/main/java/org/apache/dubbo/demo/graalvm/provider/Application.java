@@ -35,8 +35,6 @@ public class Application {
 
 
     public static void main(String[] args) throws Exception {
-        System.out.printf("Provider Application start...");
-        System.out.printf(DefaultMetadataUpdater.class.getName());
         System.setProperty("dubbo.application.logger", "log4j");
         System.setProperty("native", "true");
         System.setProperty("dubbo.json-framework.prefer", "fastjson");
