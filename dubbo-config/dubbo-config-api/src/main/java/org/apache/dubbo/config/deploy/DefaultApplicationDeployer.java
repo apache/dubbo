@@ -187,7 +187,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
      * by default is false.
      */
     private boolean isRegisterConsumerInstance() {
-        Boolean registerConsumer = getApplication().getRegisterConsumer();
+        Boolean registerConsumer = getApplicationOrElseThrow().getRegisterConsumer();
         if (registerConsumer == null) {
             return false;
         }
@@ -310,7 +310,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
         useRegistryAsMetadataCenterIfNecessary();
 
-        ApplicationConfig applicationConfig = getApplication();
+        ApplicationConfig applicationConfig = getApplicationOrElseThrow();
 
         String metadataType = applicationConfig.getMetadataType();
         // FIXME, multiple metadata config support.
@@ -858,14 +858,18 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 if (StringUtils.isNotEmpty(configContent)) {
                     logger.info(String.format("Got global remote configuration from config center with key-%s and group-%s: \n %s", configCenter.getConfigFile(), configCenter.getGroup(), configContent));
                 }
-                String appGroup = getApplication().getName();
+                String appGroup = "";
                 String appConfigContent = null;
                 String appConfigFile = null;
-                if (isNotEmpty(appGroup)) {
-                    appConfigFile = isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile();
-                    appConfigContent = dynamicConfiguration.getProperties(appConfigFile, appGroup);
-                    if (StringUtils.isNotEmpty(appConfigContent)) {
-                        logger.info(String.format("Got application specific remote configuration from config center with key %s and group %s: \n %s", appConfigFile, appGroup, appConfigContent));
+                Optional<ApplicationConfig> applicationOptional = getApplication();
+                if (applicationOptional.isPresent()) {
+                    appGroup = applicationOptional.get().getName();
+                    if (isNotEmpty(appGroup)) {
+                        appConfigFile = isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile();
+                        appConfigContent = dynamicConfiguration.getProperties(appConfigFile, appGroup);
+                        if (StringUtils.isNotEmpty(appConfigContent)) {
+                            logger.info(String.format("Got application specific remote configuration from config center with key %s and group %s: \n %s", appConfigFile, appGroup, appConfigContent));
+                        }
                     }
                 }
                 try {
@@ -1322,9 +1326,12 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
     }
 
-    private ApplicationConfig getApplication() {
+    private ApplicationConfig getApplicationOrElseThrow() {
         return configManager.getApplicationOrElseThrow();
     }
 
+    private Optional<ApplicationConfig> getApplication() {
+        return configManager.getApplication();
+    }
 
 }
