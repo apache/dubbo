@@ -28,6 +28,8 @@
 
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
+        <curator5_version>5.1.0</curator5_version>
+        <zookeeper_version>3.7.0</zookeeper_version>
     </properties>
 
     <dependencies>
@@ -183,25 +185,25 @@
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-framework</artifactId>
             <scope>test</scope>
-            <version>5.1.0</version>
+            <version>${curator5_version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-recipes</artifactId>
             <scope>test</scope>
-            <version>5.1.0</version>
+            <version>${curator5_version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.zookeeper</groupId>
             <artifactId>zookeeper</artifactId>
             <scope>test</scope>
-            <version>3.7.0</version>
+            <version>${zookeeper_version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-x-discovery</artifactId>
             <scope>test</scope>
-            <version>5.1.0</version>
+            <version>${curator5_version}</version>
         </dependency>
 
         <dependency>
