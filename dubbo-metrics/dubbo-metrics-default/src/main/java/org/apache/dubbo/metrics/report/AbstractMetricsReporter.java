@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -82,7 +83,12 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     private static final int DEFAULT_SCHEDULE_INITIAL_DELAY = 5;
     private static final int DEFAULT_SCHEDULE_PERIOD = 3;
 
-    private final Set<Map<String, String>> tagsSet = new HashSet<>();
+    /**
+     * The set of meter that have been registered
+     * key is metric name
+     * value is tags
+     */
+    private final Map<String, Set<Map<String, String>>> meterMap = new ConcurrentHashMap();
 
     protected AbstractMetricsReporter(URL url, ApplicationModel applicationModel) {
         this.url = url;
@@ -160,11 +166,9 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
             List<MetricSample> samples = collector.collect();
             for (MetricSample sample : samples) {
                 try {
-                    Map<String, String> sampleTags = sample.getTags();
-                    if (tagsSet.contains(sampleTags)) {
+                    if (meterExists(sample)) {
                         continue;
                     }
-                    tagsSet.add(sampleTags);
                     switch (sample.getType()) {
                         case GAUGE:
                             register((GaugeMetricSample) sample);
@@ -184,6 +188,23 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
                 }
             }
         });
+    }
+
+    private boolean meterExists(MetricSample sample) {
+        String name = sample.getName();
+        Map<String, String> sampleTags = sample.getTags();
+        Set<Map<String, String>> tagsSet = meterMap.get(name);
+        if (tagsSet != null) {
+            if (tagsSet.contains(sampleTags)) {
+                return true;
+            }
+            tagsSet.add(sampleTags);
+        } else {
+            tagsSet = new HashSet<>();
+            tagsSet.add(sampleTags);
+            meterMap.put(name, tagsSet);
+        }
+        return false;
     }
 
     private void register(CounterMetricSample sample) {
