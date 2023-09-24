@@ -33,6 +33,7 @@ import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.PojoUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -191,6 +192,26 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                                 args.length + " and type is" +
                                 args[0].getClass().getName());
                     }
+                }  else if (ProtocolUtils.isNativeStreamGenericSerialization(generic)) {
+                    for (int i = 0; i < args.length; i++) {
+                        if (byte[].class == args[i].getClass()) {
+                            try (UnsafeByteArrayInputStream is = new UnsafeByteArrayInputStream((byte[]) args[i])) {
+                                args[i] = applicationModel.getExtensionLoader(Serialization.class)
+                                    .getExtension(invoker.getUrl().getParameter(Constants.SERIALIZATION_KEY))
+                                    .deserialize(null, is).readObject(method.getParameterTypes()[i]);
+                            } catch (Exception e) {
+                                throw new RpcException("Deserialize argument [" + (i + 1) + "] failed.", e);
+                            }
+                        } else {
+                            throw new RpcException(
+                                "Generic serialization [" +
+                                    invoker.getUrl().getParameter(Constants.SERIALIZATION_KEY) +
+                                    "] only support message type " +
+                                    byte[].class +
+                                    " and your message type is " +
+                                    args[i].getClass());
+                        }
+                    }
                 }
 
                 RpcInvocation rpcInvocation = new RpcInvocation(inv.getTargetServiceUniqueName(),
@@ -328,6 +349,18 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                 } catch (IOException e) {
                     throw new RpcException("Generic serialization [" +
                         GENERIC_SERIALIZATION_PROTOBUF +
+                        "] serialize result failed.", e);
+                }
+            } else if (ProtocolUtils.isNativeStreamGenericSerialization(generic)) {
+                try {
+                    UnsafeByteArrayOutputStream os = new UnsafeByteArrayOutputStream(512);
+                    applicationModel.getExtensionLoader(Serialization.class)
+                        .getExtension(invoker.getUrl().getParameter(Constants.SERIALIZATION_KEY))
+                        .serialize(null, os).writeObject(appResponse.getValue());
+                    appResponse.setValue(os.toByteArray());
+                } catch (IOException e) {
+                    throw new RpcException("Generic serialization [" +
+                        invoker.getUrl().getParameter(Constants.SERIALIZATION_KEY) +
                         "] serialize result failed.", e);
                 }
             } else if (ProtocolUtils.isGenericReturnRawResult(generic)) {

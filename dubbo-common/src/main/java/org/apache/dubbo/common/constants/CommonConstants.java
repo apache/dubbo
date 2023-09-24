@@ -358,6 +358,8 @@ public interface CommonConstants {
      */
     String EXTRA_KEYS_KEY = "extra-keys";
 
+    String GENERIC_SERIALIZATION_NATIVE_STREAM = "nativestream";
+
     String GENERIC_SERIALIZATION_NATIVE_JAVA = "nativejava";
 
     String GENERIC_SERIALIZATION_GSON = "gson";
