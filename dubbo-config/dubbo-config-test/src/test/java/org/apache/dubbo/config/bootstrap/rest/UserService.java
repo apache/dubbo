@@ -18,6 +18,7 @@
  */
 package org.apache.dubbo.config.bootstrap.rest;
 
+
 import org.apache.dubbo.rpc.protocol.rest.support.ContentType;
 
 import io.swagger.annotations.Api;

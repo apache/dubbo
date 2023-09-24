@@ -197,39 +197,39 @@
 //        }
 //        assertFalse(exporter.isExported());
 //    }
-//
-//    /**
-//     * test multiple protocols
-//     * @throws Exception
-//     */
-//    @Test
-//    public void testMultiProtocols() throws Exception {
-//        DubboBootstrap providerBootstrap = DubboBootstrap.newInstance();
-//        ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
-//        serviceConfig.setInterface(DemoService.class);
-//        serviceConfig.setRef(new DemoServiceImpl());
-//
-//        providerBootstrap
-//            .application("provider-app")
-//            .registry(registryConfig)
-//            .protocol(new ProtocolConfig("dubbo", 2002))
-//            .service(serviceConfig);
-//
-//        ConfigurableMetadataServiceExporter exporter = (ConfigurableMetadataServiceExporter) applicationModel.getExtensionLoader(MetadataServiceExporter.class).getDefaultExtension();
-//        MetadataService metadataService = Mockito.mock(MetadataService.class);
-//        exporter.setMetadataService(metadataService);
-//
-//        try {
-//            providerBootstrap.start();
-//            assertTrue(exporter.isExported());
-//            assertTrue(exporter.supports(DEFAULT_METADATA_STORAGE_TYPE));
-//            assertTrue(exporter.supports(REMOTE_METADATA_STORAGE_TYPE));
-//            assertTrue(exporter.supports(COMPOSITE_METADATA_STORAGE_TYPE));
-//        } finally {
-//            providerBootstrap.stop();
-//        }
-//        assertFalse(exporter.isExported());
-//    }
+////
+////    /**
+////     * test multiple protocols
+////     * @throws Exception
+////     */
+////    @Test
+////    public void testMultiProtocols() throws Exception {
+////        DubboBootstrap providerBootstrap = DubboBootstrap.newInstance();
+////        ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
+////        serviceConfig.setInterface(DemoService.class);
+////        serviceConfig.setRef(new DemoServiceImpl());
+////
+////        providerBootstrap
+////            .application("provider-app")
+////            .registry(registryConfig)
+////            .protocol(new ProtocolConfig("dubbo", 2002))
+////            .service(serviceConfig);
+////
+////        ConfigurableMetadataServiceExporter exporter = (ConfigurableMetadataServiceExporter) applicationModel.getExtensionLoader(MetadataServiceExporter.class).getDefaultExtension();
+////        MetadataService metadataService = Mockito.mock(MetadataService.class);
+////        exporter.setMetadataService(metadataService);
+////
+////        try {
+////            providerBootstrap.start();
+////            assertTrue(exporter.isExported());
+////            assertTrue(exporter.supports(DEFAULT_METADATA_STORAGE_TYPE));
+////            assertTrue(exporter.supports(REMOTE_METADATA_STORAGE_TYPE));
+////            assertTrue(exporter.supports(COMPOSITE_METADATA_STORAGE_TYPE));
+////        } finally {
+////            providerBootstrap.stop();
+////        }
+////        assertFalse(exporter.isExported());
+////    }
 //
 //    private static ZookeeperSingleRegistryCenter registryCenter;
 //    private static RegistryConfig registryConfig;

@@ -24,9 +24,11 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.provider.impl.DemoServiceImpl;import org.apache.dubbo.metadata.deploy.MetadataServiceURLParamsMetadataCustomizer;
+import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
+import org.apache.dubbo.metadata.deploy.MetadataServiceURLParamsMetadataCustomizer;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

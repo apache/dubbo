@@ -18,7 +18,7 @@ package org.apache.dubbo.config.bootstrap;
 
 import org.apache.dubbo.rpc.RpcContext;
 
-
+import static java.lang.String.format;
 /**
  * The implementation of {@link EchoService}
  *
@@ -30,6 +30,6 @@ public class EchoServiceImpl implements EchoService {
     @Override
     public String echo(String message) {
         RpcContext rpcContext = RpcContext.getServiceContext();
-        return String.format("[%s:%s] ECHO - %s", rpcContext.getLocalHost(), rpcContext.getLocalPort(), message);
+        return format("[%s:%s] ECHO - %s", rpcContext.getLocalHost(), rpcContext.getLocalPort(), message);
     }
 }

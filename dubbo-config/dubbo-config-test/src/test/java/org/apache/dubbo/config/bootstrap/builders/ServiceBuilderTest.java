@@ -16,17 +16,19 @@
  */
 package org.apache.dubbo.config.bootstrap.builders;
 
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ServiceConfig;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 
+import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_BEAN;
+import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_DEFAULT;
+import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_NATIVE_JAVA;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 class ServiceBuilderTest {
 
@@ -73,13 +75,12 @@ class ServiceBuilderTest {
     @Test
     void generic() throws Exception {
         ServiceBuilder builder = new ServiceBuilder();
-        builder.generic(CommonConstants.GENERIC_SERIALIZATION_DEFAULT);
-        MatcherAssert.assertThat(builder.build().getGeneric(), equalTo(CommonConstants.GENERIC_SERIALIZATION_DEFAULT));
-        builder.generic(CommonConstants.GENERIC_SERIALIZATION_NATIVE_JAVA);
-        MatcherAssert.assertThat(builder.build().getGeneric(), equalTo(CommonConstants.GENERIC_SERIALIZATION_NATIVE_JAVA));
-        builder.generic(CommonConstants.GENERIC_SERIALIZATION_BEAN);
-        MatcherAssert.assertThat(builder.build().getGeneric(), equalTo(CommonConstants.GENERIC_SERIALIZATION_BEAN));
-    }
+        builder.generic(GENERIC_SERIALIZATION_DEFAULT);
+        assertThat(builder.build().getGeneric(), equalTo(GENERIC_SERIALIZATION_DEFAULT));
+        builder.generic(GENERIC_SERIALIZATION_NATIVE_JAVA);
+        assertThat(builder.build().getGeneric(), equalTo(GENERIC_SERIALIZATION_NATIVE_JAVA));
+        builder.generic(GENERIC_SERIALIZATION_BEAN);
+        assertThat(builder.build().getGeneric(), equalTo(GENERIC_SERIALIZATION_BEAN));    }
 
     @Test
     void generic1() throws Exception {
@@ -112,12 +113,12 @@ class ServiceBuilderTest {
 
         ServiceBuilder builder = new ServiceBuilder();
         builder.path("path").addMethod(method).provider(provider).providerIds("providerIds")
-                .generic(CommonConstants.GENERIC_SERIALIZATION_DEFAULT);
+                .generic(GENERIC_SERIALIZATION_DEFAULT);
 
         ServiceConfig config = builder.build();
         ServiceConfig config2 = builder.build();
 
-        MatcherAssert.assertThat(config.getGeneric(), equalTo(CommonConstants.GENERIC_SERIALIZATION_DEFAULT));
+        assertThat(config.getGeneric(), equalTo(GENERIC_SERIALIZATION_DEFAULT));
         Assertions.assertEquals("path", config.getPath());
         Assertions.assertEquals("providerIds", config.getProviderIds());
         Assertions.assertSame(provider, config.getProvider());

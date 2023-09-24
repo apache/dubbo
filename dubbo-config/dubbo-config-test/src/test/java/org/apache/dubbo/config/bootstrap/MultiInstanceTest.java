@@ -35,7 +35,6 @@ import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.mock.GreetingLocal2;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.registry.client.migration.MigrationInvoker;
-import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -44,6 +43,7 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.test.check.DubboTestChecker;
 import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,6 +57,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+
+import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_BOSS_POOL_NAME;
 
 
 @Disabled
@@ -368,7 +370,7 @@ class MultiInstanceTest {
             // TODO Remove ignore thread prefix of NettyServerBoss if supporting close protocol server only used by one application
             // see org.apache.dubbo.config.deploy.DefaultApplicationDeployer.postDestroy
             // NettyServer will close when all applications are shutdown, but not close if any application of the framework is alive, just ignore it currently
-            checkUnclosedThreadsOfApp(stackTraces1, "Found unclosed threads of app 1: ", new String[]{Constants.EVENT_LOOP_BOSS_POOL_NAME, "Dubbo-global-shared-handler", "Dubbo-framework"});
+            checkUnclosedThreadsOfApp(stackTraces1, "Found unclosed threads of app 1: ", new String[]{EVENT_LOOP_BOSS_POOL_NAME, "Dubbo-global-shared-handler", "Dubbo-framework"});
 
 
             // stop provider app 2 and check threads
