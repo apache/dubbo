@@ -33,8 +33,7 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <!--TODO: swap to dubbo-common-->
-            <artifactId>dubbo-config-api</artifactId>
+            <artifactId>dubbo-common</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
 
