@@ -67,7 +67,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PACKABLE_METHOD_FACTORY;
@@ -249,7 +248,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             if (methodDescriptor.isGeneric()) {
                 Object[] args = new Object[3];
                 args[0] = RpcUtils.getMethodName(invocation);
-                args[1] = Arrays.stream(RpcUtils.getParameterTypes(invocation)).map(Class::getName).collect(Collectors.toList());
+                args[1] = Arrays.stream(RpcUtils.getParameterTypes(invocation)).map(Class::getName).toArray(String[]::new);
                 args[2] = RpcUtils.getArguments(invocation);
                 pureArgument = args;
             } else {

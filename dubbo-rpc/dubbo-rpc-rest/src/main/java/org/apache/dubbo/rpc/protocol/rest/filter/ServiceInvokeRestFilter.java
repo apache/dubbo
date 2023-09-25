@@ -63,7 +63,12 @@ public class ServiceInvokeRestFilter implements RestRequestFilter {
 
         FullHttpRequest nettyHttpRequest = nettyRequestFacade.getRequest();
 
-        doHandler(nettyHttpRequest, restFilterContext.getResponse(), restFilterContext.getRequestFacade(), restFilterContext.getUrl(), restFilterContext.getServiceDeployer());
+        doHandler(nettyHttpRequest,
+            restFilterContext.getResponse(),
+            restFilterContext.getRequestFacade(),
+            restFilterContext.getUrl(),
+            restFilterContext.getOriginRequest(),
+            restFilterContext.getServiceDeployer());
 
     }
 
@@ -72,6 +77,7 @@ public class ServiceInvokeRestFilter implements RestRequestFilter {
                            NettyHttpResponse nettyHttpResponse,
                            RequestFacade request,
                            URL url,
+                           Object originRequest,// resteasy  request
                            ServiceDeployer serviceDeployer) throws Exception {
         PathMatcher pathMatcher = RestRPCInvocationUtil.createPathMatcher(request);
 
@@ -130,8 +136,12 @@ public class ServiceInvokeRestFilter implements RestRequestFilter {
         }
 
         try {
+            RestInterceptContext restFilterContext = new RestInterceptContext(url, request, nettyHttpResponse, serviceDeployer, result.getValue(), rpcInvocation);
+            // set filter request
+            restFilterContext.setOriginRequest(originRequest);
+
             // invoke the intercept chain before Result  write to  response
-            executeResponseIntercepts(url, request, nettyHttpResponse, result.getValue(), rpcInvocation, serviceDeployer);
+            executeResponseIntercepts(restFilterContext);
         } catch (Exception exception) {
             logger.error("", exception.getMessage(), "", "dubbo rest protocol execute ResponseIntercepts error", exception);
             throw exception;
@@ -215,17 +225,11 @@ public class ServiceInvokeRestFilter implements RestRequestFilter {
     /**
      * execute response Intercepts
      *
-     * @param url
-     * @param request
-     * @param nettyHttpResponse
-     * @param result
-     * @param rpcInvocation
-     * @param serviceDeployer
+     * @param restFilterContext
      * @throws Exception
      */
-    public void executeResponseIntercepts(URL url, RequestFacade request, NettyHttpResponse nettyHttpResponse, Object result, RpcInvocation rpcInvocation, ServiceDeployer serviceDeployer) throws Exception {
+    public void executeResponseIntercepts(RestInterceptContext restFilterContext) throws Exception {
 
-        RestInterceptContext restFilterContext = new RestInterceptContext(url, request, nettyHttpResponse, serviceDeployer, result, rpcInvocation);
 
         for (RestResponseInterceptor restResponseInterceptor : restResponseInterceptors) {
 

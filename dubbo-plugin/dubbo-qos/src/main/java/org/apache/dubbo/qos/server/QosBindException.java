@@ -14,23 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.dubbo.metrics.event;
-
-import org.apache.dubbo.rpc.model.ApplicationModel;
+package org.apache.dubbo.qos.server;
 
 /**
- * EmptyEvent, do nothing.
+ * Indicate that if Qos Start failed
  */
-public class EmptyEvent extends MetricsEvent {
-
-    private static final EmptyEvent empty = new EmptyEvent(null);
-
-    private EmptyEvent(ApplicationModel source) {
-        super(source, null);
-    }
-
-    public static EmptyEvent instance() {
-        return empty;
+public class QosBindException extends RuntimeException {
+    public QosBindException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

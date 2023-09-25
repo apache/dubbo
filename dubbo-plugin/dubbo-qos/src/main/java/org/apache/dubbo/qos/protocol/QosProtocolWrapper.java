@@ -96,7 +96,9 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
         return protocol.getServers();
     }
 
-    private void startQosServer(URL url) {
+    private void startQosServer(URL url) throws RpcException {
+        boolean qosCheck = url.getParameter(QOS_CHECK, false);
+
         try {
             if (!hasStarted.compareAndSet(false, true)) {
                 return;
@@ -132,9 +134,13 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
 
         } catch (Throwable throwable) {
             logger.warn(QOS_FAILED_START_SERVER, "", "", "Fail to start qos server: ", throwable);
-            boolean qosCheck = url.getParameter(QOS_CHECK, false);
+            try {
+                stopServer();
+            } catch (Throwable stop) {
+                logger.warn(QOS_FAILED_START_SERVER, "", "", "Fail to stop qos server: ", stop);
+            }
             if (qosCheck) {
-                throw new IllegalStateException("Fail to start qos server: " + throwable.getMessage(), throwable);
+                throw new RpcException(throwable);
             }
         }
     }
