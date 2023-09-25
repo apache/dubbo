@@ -65,6 +65,7 @@ import static org.apache.dubbo.common.constants.MetricsConstants.ENABLE_JVM_METR
  */
 public abstract class AbstractMetricsReporter implements MetricsReporter {
 
+    public static final long MIN_INTERVAL_REGISTER = Long.parseLong(System.getProperty("dubbo.metrics.min_interval_register", "60000"));
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractMetricsReporter.class);
 
     private final AtomicBoolean initialized = new AtomicBoolean(false);
@@ -82,6 +83,9 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
 
     private static final int DEFAULT_SCHEDULE_INITIAL_DELAY = 5;
     private static final int DEFAULT_SCHEDULE_PERIOD = 3;
+
+    private volatile long lastRegisterTime;
+
 
     /**
      * The set of meter that have been registered
@@ -156,12 +160,15 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
         if (enableCollectorSync) {
             NamedThreadFactory threadFactory = new NamedThreadFactory("metrics-collector-sync-job", true);
             collectorSyncJobExecutor = Executors.newScheduledThreadPool(1, threadFactory);
-            collectorSyncJobExecutor.scheduleWithFixedDelay(this::refreshData, DEFAULT_SCHEDULE_INITIAL_DELAY, DEFAULT_SCHEDULE_PERIOD, TimeUnit.SECONDS);
+            collectorSyncJobExecutor.scheduleWithFixedDelay(this::registerData, DEFAULT_SCHEDULE_INITIAL_DELAY, DEFAULT_SCHEDULE_PERIOD, TimeUnit.SECONDS);
         }
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public void refreshData() {
+    public void registerData() {
+        if (!needRegister()) {
+            return;
+        }
         collectors.forEach(collector -> {
             List<MetricSample> samples = collector.collect();
             for (MetricSample sample : samples) {
@@ -188,6 +195,17 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
                 }
             }
         });
+    }
+
+    private boolean needRegister() {
+        long currentTimeMillis = System.currentTimeMillis();
+        long interval = currentTimeMillis - lastRegisterTime;
+        if (interval <= MIN_INTERVAL_REGISTER) {
+            logger.debug("interval is less " + MIN_INTERVAL_REGISTER);
+            return false;
+        }
+        lastRegisterTime = currentTimeMillis;
+        return true;
     }
 
     private boolean meterExists(MetricSample sample) {
