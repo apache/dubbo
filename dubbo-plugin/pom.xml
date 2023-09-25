@@ -63,4 +63,16 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>loom</id>
+            <activation>
+                <jdk>[21,)</jdk>
+            </activation>
+            <modules>
+                <module>dubbo-plugin-loom</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>
