@@ -69,8 +69,6 @@ public class DubboCodec extends ExchangeCodec {
     public static final byte RESPONSE_NULL_VALUE_WITH_ATTACHMENTS = 5;
     public static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
     public static final Class<?>[] EMPTY_CLASS_ARRAY = new Class<?>[0];
-    public static final Class<?>[] GENERIC_PTS_ARRAY = new Class<?>[]{String.class, String[].class, Object[].class};
-    public static final Class<?>[] ECHO_PTS_ARRAY = new Class<?>[]{Object.class};
     private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(DubboCodec.class);
 
     private static final AtomicBoolean decodeInUserThreadLogged = new AtomicBoolean(false);
