@@ -28,17 +28,21 @@ import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.support.ReplierDispatcher;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.Serializable;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
@@ -99,14 +103,18 @@ class ReplierDispatcherTest {
     void testMultiThread() throws Exception {
         int tc = 10;
         ExecutorService exec = Executors.newFixedThreadPool(tc);
+        List<Future<?>> futureList = new LinkedList<>();
         for (int i = 0; i < tc; i++)
-            exec.execute(() -> {
+            futureList.add(exec.submit(() -> {
                 try {
                     clientExchangeInfo(port);
                 } catch (Exception e) {
                     fail();
                 }
-            });
+            }));
+        for (Future<?> future : futureList) {
+            future.get();
+        }
         exec.shutdown();
         exec.awaitTermination(10, TimeUnit.SECONDS);
     }
