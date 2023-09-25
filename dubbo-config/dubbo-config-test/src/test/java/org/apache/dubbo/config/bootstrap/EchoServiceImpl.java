@@ -19,6 +19,7 @@ package org.apache.dubbo.config.bootstrap;
 import org.apache.dubbo.rpc.RpcContext;
 
 import static java.lang.String.format;
+
 /**
  * The implementation of {@link EchoService}
  *

@@ -1,4 +1,3 @@
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -32,12 +31,12 @@ import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.SysProps;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
+import org.apache.dubbo.metadata.deploy.ConfigurableMetadataServiceExporter;
+import org.apache.dubbo.metadata.deploy.ExporterDeployListener;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.config.validator.ApplicationConfigValidator;
 import org.apache.dubbo.metadata.MetadataService;
-import org.apache.dubbo.metadata.deploy.ConfigurableMetadataServiceExporter;
-import org.apache.dubbo.metadata.deploy.ExporterDeployListener;
 import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.rpc.Exporter;
@@ -296,11 +295,11 @@ class DubboBootstrapTest {
         Exception exception = null;
         try {
             DubboBootstrap.getInstance()
-                    .application(applicationConfig)
-                    .registry(registryConfig)
-                    .protocol(new ProtocolConfig(CommonConstants.DUBBO_PROTOCOL, -1))
-                    .service(service)
-                    .start();
+                 .application(applicationConfig)
+                 .registry(registryConfig)
+                 .protocol(new ProtocolConfig(CommonConstants.DUBBO_PROTOCOL, -1))
+                 .service(service)
+                 .start();
         } catch (Exception e) {
             exception = e;
             DubboBootstrap.reset();

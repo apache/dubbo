@@ -254,6 +254,12 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Nacos dependencies for testing -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>
@@ -272,25 +278,25 @@
             <artifactId>nacos-client</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-test-common</artifactId>
-            <version>${project.parent.version}</version>
-            <scope>test</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.apache.dubbo</groupId>-->
+<!--            <artifactId>dubbo-test-common</artifactId>-->
+<!--            <version>${project.parent.version}</version>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
 
-        <!--Dependencies comes from old dubbo-config-api-->
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-registry-api</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
+<!--        &lt;!&ndash;Dependencies comes from old dubbo-config-api&ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>org.apache.dubbo</groupId>-->
+<!--            <artifactId>dubbo-registry-api</artifactId>-->
+<!--            <version>${project.parent.version}</version>-->
+<!--        </dependency>-->
 
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-metadata-api</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.apache.dubbo</groupId>-->
+<!--            <artifactId>dubbo-metadata-api</artifactId>-->
+<!--            <version>${project.parent.version}</version>-->
+<!--        </dependency>-->
 
     </dependencies>
 
@@ -314,7 +320,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <configuration>
                     <forkCount>1</forkCount>
-<!--                    <reuseForks>false</reuseForks>-->
+                    <!--<reuseForks>false</reuseForks>-->
                 </configuration>
             </plugin>
         </plugins>

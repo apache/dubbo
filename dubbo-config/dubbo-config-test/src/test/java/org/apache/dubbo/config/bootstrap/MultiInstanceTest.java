@@ -60,7 +60,6 @@ import java.util.concurrent.Future;
 
 import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_BOSS_POOL_NAME;
 
-
 @Disabled
 class MultiInstanceTest {
 

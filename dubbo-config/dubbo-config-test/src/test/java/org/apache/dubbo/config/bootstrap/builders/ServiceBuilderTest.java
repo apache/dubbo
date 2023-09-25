@@ -80,7 +80,8 @@ class ServiceBuilderTest {
         builder.generic(GENERIC_SERIALIZATION_NATIVE_JAVA);
         assertThat(builder.build().getGeneric(), equalTo(GENERIC_SERIALIZATION_NATIVE_JAVA));
         builder.generic(GENERIC_SERIALIZATION_BEAN);
-        assertThat(builder.build().getGeneric(), equalTo(GENERIC_SERIALIZATION_BEAN));    }
+        assertThat(builder.build().getGeneric(), equalTo(GENERIC_SERIALIZATION_BEAN));
+    }
 
     @Test
     void generic1() throws Exception {
