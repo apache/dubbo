@@ -75,7 +75,7 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
     private boolean enableRtPxx;
     private boolean enableRt;
     private boolean enableRequest;
-    private final AtomicBoolean metricsChanged = new AtomicBoolean(true);
+    private final AtomicBoolean samplesChanged = new AtomicBoolean(true);
 
     private final ConcurrentMap<MethodMetric, TimeWindowAggregator> rtAgr = new ConcurrentHashMap<>();
 
@@ -133,7 +133,7 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
             if (qpsCounter == null) {
                 qpsCounter = ConcurrentHashMapUtils.computeIfAbsent(qps, metric,
                     methodMetric -> new TimeWindowCounter(bucketNum, TimeUnit.MILLISECONDS.toSeconds(qpsTimeWindowMillSeconds)));
-                metricsChanged.set(true);
+                samplesChanged.set(true);
             }
             qpsCounter.increment();
         }
@@ -173,7 +173,7 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
             if (quantile == null) {
                 quantile = ConcurrentHashMapUtils.computeIfAbsent(rt, metric,
                     k -> new TimeWindowQuantile(DEFAULT_COMPRESSION, bucketNum, timeWindowSeconds));
-                metricsChanged.set(true);
+                samplesChanged.set(true);
             }
             quantile.add(responseTime);
         }
@@ -183,7 +183,7 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
             if (timeWindowAggregator == null) {
                 timeWindowAggregator = ConcurrentHashMapUtils.computeIfAbsent(rtAgr, metric,
                     methodMetric -> new TimeWindowAggregator(bucketNum, timeWindowSeconds));
-                metricsChanged.set(true);
+                samplesChanged.set(true);
             }
             timeWindowAggregator.add(responseTime);
         }
@@ -201,7 +201,7 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
         if (windowCounter == null) {
             windowCounter = ConcurrentHashMapUtils.computeIfAbsent(counter, metric,
                 methodMetric -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
-            metricsChanged.set(true);
+            samplesChanged.set(true);
         }
         windowCounter.increment();
         return metric;
@@ -306,17 +306,17 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
 
     public void initQpsMetric(MethodMetric metric) {
         ConcurrentHashMapUtils.computeIfAbsent(qps, metric, methodMetric -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
-        metricsChanged.set(true);
+        samplesChanged.set(true);
     }
 
     public void initRtMetric(MethodMetric metric) {
         ConcurrentHashMapUtils.computeIfAbsent(rt, metric, k -> new TimeWindowQuantile(DEFAULT_COMPRESSION, bucketNum, timeWindowSeconds));
-        metricsChanged.set(true);
+        samplesChanged.set(true);
     }
 
     public void initRtAgrMetric(MethodMetric metric) {
         ConcurrentHashMapUtils.computeIfAbsent(rtAgr, metric, k -> new TimeWindowAggregator(bucketNum, timeWindowSeconds));
-        metricsChanged.set(true);
+        samplesChanged.set(true);
     }
 
     public void initWindowCounter(MetricsEvent event, MetricsKey targetKey) {
@@ -328,12 +328,12 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
         ConcurrentMap<MethodMetric, TimeWindowCounter> counter = methodTypeCounter.computeIfAbsent(metricsKeyWrapper, k -> new ConcurrentHashMap<>());
 
         ConcurrentHashMapUtils.computeIfAbsent(counter, metric, methodMetric -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
-        metricsChanged.set(true);
+        samplesChanged.set(true);
 
     }
 
     @Override
-    public boolean checkAndUpdateChanged() {
-        return metricsChanged.compareAndSet(true, false);
+    public boolean calSamplesChanged() {
+        return samplesChanged.compareAndSet(true, false);
     }
 }

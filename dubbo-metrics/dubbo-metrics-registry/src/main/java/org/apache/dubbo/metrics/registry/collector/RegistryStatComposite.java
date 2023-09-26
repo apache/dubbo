@@ -42,7 +42,7 @@ public class RegistryStatComposite extends AbstractMetricsExport {
 
     private final Map<MetricsKey, Map<ApplicationMetric, AtomicLong>> appStats = new ConcurrentHashMap<>();
 
-    private final AtomicBoolean metricsChanged = new AtomicBoolean(true);
+    private final AtomicBoolean samplesChanged = new AtomicBoolean(true);
 
     public RegistryStatComposite(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -56,7 +56,7 @@ public class RegistryStatComposite extends AbstractMetricsExport {
         appKeys.forEach(appKey -> {
             appStats.put(appKey, new ConcurrentHashMap<>());
         });
-        metricsChanged.set(true);
+        samplesChanged.set(true);
     }
 
     @Override
@@ -81,7 +81,7 @@ public class RegistryStatComposite extends AbstractMetricsExport {
         AtomicLong metrics = stats.get(applicationMetric);
         if (metrics == null) {
             metrics = stats.computeIfAbsent(applicationMetric, k -> new AtomicLong(0L));
-            metricsChanged.set(true);
+            samplesChanged.set(true);
         }
         metrics.getAndAdd(SELF_INCREMENT_SIZE);
         MetricsSupport.fillZero(appStats);
@@ -92,7 +92,7 @@ public class RegistryStatComposite extends AbstractMetricsExport {
     }
 
     @Override
-    public boolean checkAndUpdateChanged() {
-        return metricsChanged.compareAndSet(true, false);
+    public boolean calSamplesChanged() {
+        return samplesChanged.compareAndSet(true, false);
     }
 }

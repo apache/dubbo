@@ -40,7 +40,7 @@ public class ThreadRejectMetricsCountSampler extends SimpleMetricsCountSampler<S
     private final DefaultMetricsCollector collector;
 
     private final Set<String> metricNames = new ConcurrentHashSet<>();
-    private final AtomicBoolean metricsChanged = new AtomicBoolean(true);
+    private final AtomicBoolean samplesChanged = new AtomicBoolean(true);
 
     public ThreadRejectMetricsCountSampler(DefaultMetricsCollector collector) {
         this.collector = collector;
@@ -50,7 +50,7 @@ public class ThreadRejectMetricsCountSampler extends SimpleMetricsCountSampler<S
     public void addMetricName(String name){
         this.metricNames.add(name);
         this.initMetricsCounter(name,name);
-        metricsChanged.set(true);
+        samplesChanged.set(true);
     }
 
     @Override
@@ -91,7 +91,7 @@ public class ThreadRejectMetricsCountSampler extends SimpleMetricsCountSampler<S
     }
 
     @Override
-    public boolean checkAndUpdateChanged() {
-        return metricsChanged.compareAndSet(true, false);
+    public boolean calSamplesChanged() {
+        return samplesChanged.compareAndSet(true, false);
     }
 }

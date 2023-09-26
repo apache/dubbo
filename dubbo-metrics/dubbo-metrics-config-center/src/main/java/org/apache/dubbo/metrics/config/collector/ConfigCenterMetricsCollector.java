@@ -48,7 +48,7 @@ public class ConfigCenterMetricsCollector extends CombMetricsCollector<ConfigCen
 
     private Boolean collectEnabled = null;
     private final ApplicationModel applicationModel;
-    private final AtomicBoolean metricsChanged = new AtomicBoolean(true);
+    private final AtomicBoolean samplesChanged = new AtomicBoolean(true);
 
     private final Map<ConfigCenterMetric, AtomicLong> updatedMetrics = new ConcurrentHashMap<>();
 
@@ -81,7 +81,7 @@ public class ConfigCenterMetricsCollector extends CombMetricsCollector<ConfigCen
         AtomicLong metrics = updatedMetrics.get(metric);
         if (metrics == null) {
             metrics = updatedMetrics.computeIfAbsent(metric, k -> new AtomicLong(0L));
-            metricsChanged.set(true);
+            samplesChanged.set(true);
         }
         metrics.addAndGet(size);
     }
@@ -99,7 +99,7 @@ public class ConfigCenterMetricsCollector extends CombMetricsCollector<ConfigCen
     }
 
     @Override
-    public boolean checkAndUpdateChanged() {
-        return metricsChanged.compareAndSet(true, false);
+    public boolean calSamplesChanged() {
+        return samplesChanged.compareAndSet(true, false);
     }
 }

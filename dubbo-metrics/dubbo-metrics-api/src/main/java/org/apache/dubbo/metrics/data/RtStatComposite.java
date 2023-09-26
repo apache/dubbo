@@ -53,7 +53,7 @@ import java.util.stream.Collectors;
 public class RtStatComposite extends AbstractMetricsExport {
     private boolean serviceLevel;
 
-    private final AtomicBoolean metricsChanged = new AtomicBoolean(true);
+    private final AtomicBoolean samplesChanged = new AtomicBoolean(true);
 
     public RtStatComposite(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -72,7 +72,7 @@ public class RtStatComposite extends AbstractMetricsExport {
                 rtStats.computeIfAbsent(container.getMetricsKeyWrapper().getType(), k -> new ArrayList<>()).add(container);
             }
         }
-        metricsChanged.set(true);
+        samplesChanged.set(true);
     }
 
     private List<LongContainer<? extends Number>> initStats(MetricsPlaceValue placeValue) {
@@ -98,7 +98,7 @@ public class RtStatComposite extends AbstractMetricsExport {
             Number current = (Number) container.get(key);
             if (current == null) {
                 container.putIfAbsent(key, container.getInitFunc().apply(key));
-                metricsChanged.set(true);
+                samplesChanged.set(true);
                 current = (Number) container.get(key);
             }
             container.getConsumerFunc().accept(responseTime, current);
@@ -118,7 +118,7 @@ public class RtStatComposite extends AbstractMetricsExport {
             if (actions == null) {
                 actions = calServiceRtActions(invocation, registryOpType);
                 cache.putIfAbsent(registryOpType, actions);
-                metricsChanged.set(true);
+                samplesChanged.set(true);
                 actions = cache.get(registryOpType);
             }
         } else {
@@ -139,7 +139,7 @@ public class RtStatComposite extends AbstractMetricsExport {
             Number current = (Number) container.get(key);
             if (current == null) {
                 container.putIfAbsent(key, container.getInitFunc().apply(key));
-                metricsChanged.set(true);
+                samplesChanged.set(true);
                 current = (Number) container.get(key);
             }
             actions.add(new Action(container.getConsumerFunc(), current));
@@ -161,7 +161,7 @@ public class RtStatComposite extends AbstractMetricsExport {
             if (actions == null) {
                 actions = calMethodRtActions(invocation, registryOpType);
                 cache.putIfAbsent(registryOpType, actions);
-                metricsChanged.set(true);
+                samplesChanged.set(true);
                 actions = cache.get(registryOpType);
             }
         } else {
@@ -181,7 +181,7 @@ public class RtStatComposite extends AbstractMetricsExport {
             Number current = (Number) container.get(key);
             if (current == null) {
                 container.putIfAbsent(key, container.getInitFunc().apply(key));
-                metricsChanged.set(true);
+                samplesChanged.set(true);
                 current = (Number) container.get(key);
             }
             actions.add(new Action(container.getConsumerFunc(), current));
@@ -228,7 +228,7 @@ public class RtStatComposite extends AbstractMetricsExport {
     }
 
     @Override
-    public boolean checkAndUpdateChanged() {
-        return metricsChanged.compareAndSet(true, false);
+    public boolean calSamplesChanged() {
+        return samplesChanged.compareAndSet(true, false);
     }
 }

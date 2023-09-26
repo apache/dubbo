@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class ServiceStatComposite extends AbstractMetricsExport {
 
-    private final AtomicBoolean metricsChanged = new AtomicBoolean(true);
+    private final AtomicBoolean samplesChanged = new AtomicBoolean(true);
 
     public ServiceStatComposite(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -55,7 +55,7 @@ public class ServiceStatComposite extends AbstractMetricsExport {
         metricsKeyWrappers.forEach(appKey -> {
             serviceWrapperNumStats.put(appKey, new ConcurrentHashMap<>());
         });
-        metricsChanged.set(true);
+        samplesChanged.set(true);
     }
 
     public void incrementServiceKey(MetricsKeyWrapper wrapper, String serviceKey, int size) {
@@ -74,7 +74,7 @@ public class ServiceStatComposite extends AbstractMetricsExport {
         AtomicLong metrics = map.get(serviceKeyMetric);
         if (metrics == null) {
             metrics = map.computeIfAbsent(serviceKeyMetric, k -> new AtomicLong(0L));
-            metricsChanged.set(true);
+            samplesChanged.set(true);
         }
         metrics.getAndAdd(size);
 //        MetricsSupport.fillZero(serviceWrapperNumStats);
@@ -96,7 +96,7 @@ public class ServiceStatComposite extends AbstractMetricsExport {
         AtomicLong metrics = stats.get(serviceKeyMetric);
         if (metrics == null) {
             metrics = stats.computeIfAbsent(serviceKeyMetric, k -> new AtomicLong(0L));
-            metricsChanged.set(true);
+            samplesChanged.set(true);
         }
         metrics.set(num);
     }
@@ -114,7 +114,7 @@ public class ServiceStatComposite extends AbstractMetricsExport {
     }
 
     @Override
-    public boolean checkAndUpdateChanged() {
-        return metricsChanged.compareAndSet(true, false);
+    public boolean calSamplesChanged() {
+        return samplesChanged.compareAndSet(true, false);
     }
 }

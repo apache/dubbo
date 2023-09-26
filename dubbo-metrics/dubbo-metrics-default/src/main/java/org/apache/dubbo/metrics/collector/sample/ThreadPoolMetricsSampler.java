@@ -55,7 +55,7 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
     private DataStore dataStore;
     private final Map<String, ThreadPoolExecutor> sampleThreadPoolExecutor = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, ThreadPoolMetric> threadPoolMetricMap = new ConcurrentHashMap<>();
-    private final AtomicBoolean metricsChanged = new AtomicBoolean(true);
+    private final AtomicBoolean samplesChanged = new AtomicBoolean(true);
 
     public ThreadPoolMetricsSampler(DefaultMetricsCollector collector) {
         this.collector = collector;
@@ -66,7 +66,7 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
             .map(e -> (ThreadPoolExecutor) e)
             .ifPresent(threadPoolExecutor -> {
                 sampleThreadPoolExecutor.put(name, threadPoolExecutor);
-                metricsChanged.set(true);
+                samplesChanged.set(true);
             });
     }
 
@@ -142,7 +142,7 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
     }
 
     @Override
-    public boolean checkAndUpdateChanged() {
-        return metricsChanged.compareAndSet(true, false);
+    public boolean calSamplesChanged() {
+        return samplesChanged.compareAndSet(true, false);
     }
 }

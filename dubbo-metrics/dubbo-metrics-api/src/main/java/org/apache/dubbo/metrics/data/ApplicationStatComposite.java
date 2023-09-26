@@ -47,7 +47,7 @@ public class ApplicationStatComposite extends AbstractMetricsExport {
 
     private final Map<MetricsKey, AtomicLong> applicationNumStats = new ConcurrentHashMap<>();
 
-    private final AtomicBoolean metricsChanged = new AtomicBoolean(true);
+    private final AtomicBoolean samplesChanged = new AtomicBoolean(true);
 
     public void init(List<MetricsKey> appKeys) {
         if (CollectionUtils.isEmpty(appKeys)) {
@@ -56,7 +56,7 @@ public class ApplicationStatComposite extends AbstractMetricsExport {
         appKeys.forEach(appKey -> {
             applicationNumStats.put(appKey, new AtomicLong(0L));
         });
-        metricsChanged.set(true);
+        samplesChanged.set(true);
     }
 
     public void incrementSize(MetricsKey metricsKey, int size) {
@@ -86,7 +86,7 @@ public class ApplicationStatComposite extends AbstractMetricsExport {
 
 
     @Override
-    public boolean checkAndUpdateChanged() {
-        return metricsChanged.compareAndSet(true, false);
+    public boolean calSamplesChanged() {
+        return samplesChanged.compareAndSet(true, false);
     }
 }

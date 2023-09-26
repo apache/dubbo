@@ -72,7 +72,7 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
 
     private final AtomicBoolean initialized = new AtomicBoolean();
 
-    private final AtomicBoolean metricsChanged = new AtomicBoolean();
+    private final AtomicBoolean samplesChanged = new AtomicBoolean();
 
     public DefaultMetricsCollector(ApplicationModel applicationModel) {
         super(new BaseStatComposite(applicationModel) {
@@ -92,13 +92,13 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
         super.setEventMulticaster(new DefaultSubDispatcher(this));
         samplers.add(applicationSampler);
         samplers.add(threadPoolSampler);
-        metricsChanged.set(true);
+        samplesChanged.set(true);
         this.applicationModel = applicationModel;
     }
 
     public void addSampler(MetricsSampler sampler) {
         samplers.add(sampler);
-        metricsChanged.set(true);
+        samplesChanged.set(true);
     }
 
     public void setApplicationName(String applicationName) {
@@ -208,18 +208,18 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
         }
 
         @Override
-        public boolean checkAndUpdateChanged() {
+        public boolean calSamplesChanged() {
             return false;
         }
     };
 
     @Override
-    public boolean checkAndUpdateChanged() {
-        // Should ensure that all the sampler's metricsChanged have been compareAndSet, and cannot flip the `or` logic
-        boolean changed = metricsChanged.compareAndSet(true, false);
-        changed = stats.checkAndUpdateChanged() || changed;
+    public boolean calSamplesChanged() {
+        // Should ensure that all the sampler's samplesChanged have been compareAndSet, and cannot flip the `or` logic
+        boolean changed = samplesChanged.compareAndSet(true, false);
+        changed = stats.calSamplesChanged() || changed;
         for (MetricsSampler sampler : samplers) {
-            changed = sampler.checkAndUpdateChanged() || changed;
+            changed = sampler.calSamplesChanged() || changed;
         }
         return changed;
     }

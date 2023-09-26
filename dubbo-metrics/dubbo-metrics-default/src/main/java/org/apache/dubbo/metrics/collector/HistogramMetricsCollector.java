@@ -113,7 +113,7 @@ public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEv
     }
 
     @Override
-    public boolean checkAndUpdateChanged() {
+    public boolean calSamplesChanged() {
         // Histogram is directly register micrometer
         return false;
     }

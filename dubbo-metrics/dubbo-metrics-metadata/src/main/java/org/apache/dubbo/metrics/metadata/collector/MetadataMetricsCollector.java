@@ -100,7 +100,7 @@ public class MetadataMetricsCollector extends CombMetricsCollector<MetadataEvent
     }
 
     @Override
-    public boolean checkAndUpdateChanged() {
-        return stats.checkAndUpdateChanged();
+    public boolean calSamplesChanged() {
+        return stats.calSamplesChanged();
     }
 }

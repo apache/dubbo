@@ -44,7 +44,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class MethodStatComposite extends AbstractMetricsExport {
     private boolean serviceLevel;
 
-    private final AtomicBoolean metricsChanged = new AtomicBoolean(true);
+    private final AtomicBoolean samplesChanged = new AtomicBoolean(true);
 
     public MethodStatComposite(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -60,7 +60,7 @@ public class MethodStatComposite extends AbstractMetricsExport {
         metricsKeyWrappers.forEach(appKey -> {
             methodNumStats.put(appKey, new ConcurrentHashMap<>());
         });
-        metricsChanged.set(true);
+        samplesChanged.set(true);
     }
 
     public void initMethodKey(MetricsKeyWrapper wrapper, Invocation invocation) {
@@ -69,7 +69,7 @@ public class MethodStatComposite extends AbstractMetricsExport {
         }
 
         methodNumStats.get(wrapper).computeIfAbsent(new MethodMetric(getApplicationModel(), invocation, serviceLevel), k -> new AtomicLong(0L));
-        metricsChanged.set(true);
+        samplesChanged.set(true);
     }
 
     public void incrementMethodKey(MetricsKeyWrapper wrapper, MethodMetric methodMetric, int size) {
@@ -79,7 +79,7 @@ public class MethodStatComposite extends AbstractMetricsExport {
         AtomicLong stat = methodNumStats.get(wrapper).get(methodMetric);
         if (stat == null) {
             methodNumStats.get(wrapper).computeIfAbsent(methodMetric, (k)-> new AtomicLong(0L));
-            metricsChanged.set(true);
+            samplesChanged.set(true);
             stat = methodNumStats.get(wrapper).get(methodMetric);
         }
         stat.getAndAdd(size);
@@ -106,7 +106,7 @@ public class MethodStatComposite extends AbstractMetricsExport {
     }
 
     @Override
-    public boolean checkAndUpdateChanged() {
-        return metricsChanged.compareAndSet(true, false);
+    public boolean calSamplesChanged() {
+        return samplesChanged.compareAndSet(true, false);
     }
 }
