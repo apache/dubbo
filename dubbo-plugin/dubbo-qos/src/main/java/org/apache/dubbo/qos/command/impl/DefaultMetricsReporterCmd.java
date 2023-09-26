@@ -102,7 +102,7 @@ public class DefaultMetricsReporterCmd implements BaseCommand {
         String response = "DefaultMetricsReporter not init";
         MetricsReporter metricsReporter = applicationModel.getBeanFactory().getBean(DefaultMetricsReporter.class);
         if (metricsReporter != null) {
-            metricsReporter.reloadIfSamplesChanged();
+            metricsReporter.resetIfSamplesChanged();
             response = metricsReporter.getResponseWithName(metricsName);
         }
         return response;

@@ -145,12 +145,12 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
         if (enableCollectorSync) {
             NamedThreadFactory threadFactory = new NamedThreadFactory("metrics-collector-sync-job", true);
             collectorSyncJobExecutor = Executors.newScheduledThreadPool(1, threadFactory);
-            collectorSyncJobExecutor.scheduleWithFixedDelay(this::reloadIfSamplesChanged, DEFAULT_SCHEDULE_INITIAL_DELAY, DEFAULT_SCHEDULE_PERIOD, TimeUnit.SECONDS);
+            collectorSyncJobExecutor.scheduleWithFixedDelay(this::resetIfSamplesChanged, DEFAULT_SCHEDULE_INITIAL_DELAY, DEFAULT_SCHEDULE_PERIOD, TimeUnit.SECONDS);
         }
     }
 
     @SuppressWarnings({"unchecked"})
-    public void reloadIfSamplesChanged() {
+    public void resetIfSamplesChanged() {
         collectors.forEach(collector -> {
             if (!collector.calSamplesChanged()) {
                 // Metrics has not been changed since last time, no need to reload

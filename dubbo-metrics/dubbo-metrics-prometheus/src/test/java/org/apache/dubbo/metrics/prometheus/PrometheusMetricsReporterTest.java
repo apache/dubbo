@@ -144,7 +144,7 @@ class PrometheusMetricsReporterTest {
         try {
             HttpServer prometheusExporterHttpServer = HttpServer.create(new InetSocketAddress(port), 0);
             prometheusExporterHttpServer.createContext("/metrics", httpExchange -> {
-                reporter.reloadIfSamplesChanged();
+                reporter.resetIfSamplesChanged();
                 String response = reporter.getPrometheusRegistry().scrape();
                 httpExchange.sendResponseHeaders(200, response.getBytes().length);
                 try (OutputStream os = httpExchange.getResponseBody()) {

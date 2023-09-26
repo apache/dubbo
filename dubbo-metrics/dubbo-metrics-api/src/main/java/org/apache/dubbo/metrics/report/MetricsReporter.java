@@ -28,7 +28,7 @@ public interface MetricsReporter {
      */
     void init();
 
-    void reloadIfSamplesChanged();
+    void resetIfSamplesChanged();
 
     String getResponse();
 
