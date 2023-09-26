@@ -26,7 +26,6 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.aliyun.dubbo</groupId>
     <artifactId>dubbo-plugin-loom</artifactId>
 
     <properties>
