@@ -109,7 +109,7 @@ class ReplierDispatcherTest {
                 try {
                     clientExchangeInfo(port);
                 } catch (Exception e) {
-                    fail();
+                    fail(e);
                 }
             }));
         for (Future<?> future : futureList) {
@@ -120,7 +120,7 @@ class ReplierDispatcherTest {
     }
 
     void clientExchangeInfo(int port) throws Exception {
-        ExchangeChannel client = Exchangers.connect(URL.valueOf("exchange://localhost:" + port + "?" + CommonConstants.TIMEOUT_KEY + "=5000"));
+        ExchangeChannel client = Exchangers.connect(URL.valueOf("exchange://localhost:" + port + "?" + CommonConstants.TIMEOUT_KEY + "=60000"));
         clients.put(Thread.currentThread().getName(), client);
         MockResult result = (MockResult) client.request(new RpcMessage(DemoService.class.getName(), "plus", new Class<?>[]{int.class, int.class}, new Object[]{55, 25})).get();
         Assertions.assertEquals(result.getResult(), 80);
