@@ -20,7 +20,6 @@ package org.apache.dubbo.metrics.data;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.ServiceKeyMetric;
-import org.apache.dubbo.metrics.model.StatVersion;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -31,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class ServiceStatComposite extends AbstractMetricsExport {
 
-    private final StatVersion statVersion = new StatVersion();
+    private final AtomicBoolean metricsChanged = new AtomicBoolean(true);
 
     public ServiceStatComposite(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -53,9 +53,9 @@ public class ServiceStatComposite extends AbstractMetricsExport {
             return;
         }
         metricsKeyWrappers.forEach(appKey -> {
-            statVersion.increaseVersion();
             serviceWrapperNumStats.put(appKey, new ConcurrentHashMap<>());
         });
+        metricsChanged.set(true);
     }
 
     public void incrementServiceKey(MetricsKeyWrapper wrapper, String serviceKey, int size) {
@@ -70,10 +70,13 @@ public class ServiceStatComposite extends AbstractMetricsExport {
         if (extra != null) {
             serviceKeyMetric.setExtraInfo(extra);
         }
-        serviceWrapperNumStats.get(wrapper).computeIfAbsent(serviceKeyMetric, k -> {
-            statVersion.increaseVersion();
-            return new AtomicLong(0L);
-        }).getAndAdd(size);
+        Map<ServiceKeyMetric, AtomicLong> map = serviceWrapperNumStats.get(wrapper);
+        AtomicLong metrics = map.get(serviceKeyMetric);
+        if (metrics == null) {
+            metrics = map.computeIfAbsent(serviceKeyMetric, k -> new AtomicLong(0L));
+            metricsChanged.set(true);
+        }
+        metrics.getAndAdd(size);
 //        MetricsSupport.fillZero(serviceWrapperNumStats);
     }
 
@@ -89,10 +92,13 @@ public class ServiceStatComposite extends AbstractMetricsExport {
         if (extra != null) {
             serviceKeyMetric.setExtraInfo(extra);
         }
-        serviceWrapperNumStats.get(wrapper).computeIfAbsent(serviceKeyMetric, k -> {
-            statVersion.increaseVersion();
-            return new AtomicLong(0L);
-        }).set(num);
+        Map<ServiceKeyMetric, AtomicLong> stats = serviceWrapperNumStats.get(wrapper);
+        AtomicLong metrics = stats.get(serviceKeyMetric);
+        if (metrics == null) {
+            metrics = stats.computeIfAbsent(serviceKeyMetric, k -> new AtomicLong(0L));
+            metricsChanged.set(true);
+        }
+        metrics.set(num);
     }
 
     @Override
@@ -108,7 +114,7 @@ public class ServiceStatComposite extends AbstractMetricsExport {
     }
 
     @Override
-    public StatVersion getStatVersion() {
-        return statVersion;
+    public boolean isMetricsChanged() {
+        return metricsChanged.compareAndSet(true, false);
     }
 }

@@ -29,7 +29,6 @@ import org.apache.dubbo.metrics.metadata.MetadataMetricsConstants;
 import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
 import org.apache.dubbo.metrics.metadata.event.MetadataSubDispatcher;
 import org.apache.dubbo.metrics.model.MetricsCategory;
-import org.apache.dubbo.metrics.model.StatVersion;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -50,8 +49,6 @@ public class MetadataMetricsCollector extends CombMetricsCollector<MetadataEvent
 
     private Boolean collectEnabled = null;
     private final ApplicationModel applicationModel;
-
-    private final StatVersion statVersion = new StatVersion();
 
     public MetadataMetricsCollector(ApplicationModel applicationModel) {
         super(new BaseStatComposite(applicationModel) {
@@ -74,7 +71,6 @@ public class MetadataMetricsCollector extends CombMetricsCollector<MetadataEvent
             }
         });
         super.setEventMulticaster(new MetadataSubDispatcher(this));
-        statVersion.getChild().add(super.getStats().getStatVersion());
         this.applicationModel = applicationModel;
     }
 
@@ -104,7 +100,7 @@ public class MetadataMetricsCollector extends CombMetricsCollector<MetadataEvent
     }
 
     @Override
-    public StatVersion getStatVersion() {
-        return statVersion;
+    public boolean isMetricsChanged() {
+        return stats.isMetricsChanged();
     }
 }

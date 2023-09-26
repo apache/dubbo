@@ -21,7 +21,6 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.listener.MetricsLifeListener;
-import org.apache.dubbo.metrics.model.StatVersion;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 
 import java.util.List;
@@ -44,7 +43,7 @@ public interface MetricsCollector<E extends TimeCounterEvent> extends MetricsLif
      */
     List<MetricSample> collect();
 
-    StatVersion getStatVersion();
+    boolean isMetricsChanged();
 
     default  void initMetrics(MetricsEvent event) {};
 

@@ -18,9 +18,12 @@
 package org.apache.dubbo.metrics.collector.sample;
 
 import org.apache.dubbo.metrics.model.sample.MetricSample;
+
 import java.util.List;
 
 public interface MetricsSampler {
 
     List<MetricSample> sample();
+
+    boolean isMetricsChanged();
 }

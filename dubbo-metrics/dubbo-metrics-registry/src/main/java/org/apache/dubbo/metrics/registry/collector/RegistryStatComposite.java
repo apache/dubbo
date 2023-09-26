@@ -21,7 +21,6 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.MetricsSupport;
-import org.apache.dubbo.metrics.model.StatVersion;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -34,6 +33,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
@@ -42,7 +42,7 @@ public class RegistryStatComposite extends AbstractMetricsExport {
 
     private final Map<MetricsKey, Map<ApplicationMetric, AtomicLong>> appStats = new ConcurrentHashMap<>();
 
-    private final StatVersion statVersion = new StatVersion();
+    private final AtomicBoolean metricsChanged = new AtomicBoolean(true);
 
     public RegistryStatComposite(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -54,8 +54,8 @@ public class RegistryStatComposite extends AbstractMetricsExport {
             return;
         }
         appKeys.forEach(appKey -> {
-            statVersion.increaseVersion();
             appStats.put(appKey, new ConcurrentHashMap<>());
+            metricsChanged.set(true);
         });
     }
 
@@ -77,10 +77,13 @@ public class RegistryStatComposite extends AbstractMetricsExport {
         }
         ApplicationMetric applicationMetric = new ApplicationMetric(getApplicationModel());
         applicationMetric.setExtraInfo(Collections.singletonMap(RegistryConstants.REGISTRY_CLUSTER_KEY.toLowerCase(), name));
-        appStats.get(metricsKey).computeIfAbsent(applicationMetric, k -> {
-            statVersion.increaseVersion();
-            return new AtomicLong(0L);
-        }).getAndAdd(SELF_INCREMENT_SIZE);
+        Map<ApplicationMetric, AtomicLong> stats = appStats.get(metricsKey);
+        AtomicLong metrics = stats.get(applicationMetric);
+        if (metrics == null) {
+            metrics = stats.computeIfAbsent(applicationMetric, k -> new AtomicLong(0L));
+            metricsChanged.set(true);
+        }
+        metrics.getAndAdd(SELF_INCREMENT_SIZE);
         MetricsSupport.fillZero(appStats);
     }
 
@@ -89,7 +92,7 @@ public class RegistryStatComposite extends AbstractMetricsExport {
     }
 
     @Override
-    public StatVersion getStatVersion() {
-        return statVersion;
+    public boolean isMetricsChanged() {
+        return metricsChanged.compareAndSet(true, false);
     }
 }

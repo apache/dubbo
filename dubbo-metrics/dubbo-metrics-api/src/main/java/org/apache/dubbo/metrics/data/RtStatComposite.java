@@ -21,7 +21,6 @@ import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.Metric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.ServiceKeyMetric;
-import org.apache.dubbo.metrics.model.StatVersion;
 import org.apache.dubbo.metrics.model.container.AtomicLongContainer;
 import org.apache.dubbo.metrics.model.container.LongAccumulatorContainer;
 import org.apache.dubbo.metrics.model.container.LongContainer;
@@ -39,6 +38,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAccumulator;
 import java.util.function.BiConsumer;
@@ -53,7 +53,7 @@ import java.util.stream.Collectors;
 public class RtStatComposite extends AbstractMetricsExport {
     private boolean serviceLevel;
 
-    private final StatVersion statVersion = new StatVersion();
+    private final AtomicBoolean metricsChanged = new AtomicBoolean(true);
 
     public RtStatComposite(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -69,10 +69,8 @@ public class RtStatComposite extends AbstractMetricsExport {
         for (MetricsPlaceValue placeValue : placeValues) {
             List<LongContainer<? extends Number>> containers = initStats(placeValue);
             for (LongContainer<? extends Number> container : containers) {
-                rtStats.computeIfAbsent(container.getMetricsKeyWrapper().getType(), k -> {
-                        statVersion.increaseVersion();
-                        return new ArrayList<>();
-                    }).add(container);
+                rtStats.computeIfAbsent(container.getMetricsKeyWrapper().getType(), k -> new ArrayList<>()).add(container);
+                metricsChanged.set(true);
             }
         }
     }
@@ -100,7 +98,7 @@ public class RtStatComposite extends AbstractMetricsExport {
             Number current = (Number) container.get(key);
             if (current == null) {
                 container.putIfAbsent(key, container.getInitFunc().apply(key));
-                statVersion.increaseVersion();
+                metricsChanged.set(true);
                 current = (Number) container.get(key);
             }
             container.getConsumerFunc().accept(responseTime, current);
@@ -120,7 +118,7 @@ public class RtStatComposite extends AbstractMetricsExport {
             if (actions == null) {
                 actions = calServiceRtActions(invocation, registryOpType);
                 cache.putIfAbsent(registryOpType, actions);
-                statVersion.increaseVersion();
+                metricsChanged.set(true);
                 actions = cache.get(registryOpType);
             }
         } else {
@@ -141,7 +139,7 @@ public class RtStatComposite extends AbstractMetricsExport {
             Number current = (Number) container.get(key);
             if (current == null) {
                 container.putIfAbsent(key, container.getInitFunc().apply(key));
-                statVersion.increaseVersion();
+                metricsChanged.set(true);
                 current = (Number) container.get(key);
             }
             actions.add(new Action(container.getConsumerFunc(), current));
@@ -163,7 +161,7 @@ public class RtStatComposite extends AbstractMetricsExport {
             if (actions == null) {
                 actions = calMethodRtActions(invocation, registryOpType);
                 cache.putIfAbsent(registryOpType, actions);
-                statVersion.increaseVersion();
+                metricsChanged.set(true);
                 actions = cache.get(registryOpType);
             }
         } else {
@@ -183,7 +181,7 @@ public class RtStatComposite extends AbstractMetricsExport {
             Number current = (Number) container.get(key);
             if (current == null) {
                 container.putIfAbsent(key, container.getInitFunc().apply(key));
-                statVersion.increaseVersion();
+                metricsChanged.set(true);
                 current = (Number) container.get(key);
             }
             actions.add(new Action(container.getConsumerFunc(), current));
@@ -230,7 +228,7 @@ public class RtStatComposite extends AbstractMetricsExport {
     }
 
     @Override
-    public StatVersion getStatVersion() {
-        return statVersion;
+    public boolean isMetricsChanged() {
+        return metricsChanged.compareAndSet(true, false);
     }
 }

@@ -26,7 +26,6 @@ import org.apache.dubbo.metrics.MetricsGlobalRegistry;
 import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.metrics.listener.AbstractMetricsListener;
 import org.apache.dubbo.metrics.model.MethodMetric;
-import org.apache.dubbo.metrics.model.StatVersion;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.register.HistogramMetricRegister;
@@ -47,7 +46,6 @@ public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEv
     private final ConcurrentHashMap<MethodMetric, Timer> rt = new ConcurrentHashMap<>();
     private HistogramMetricRegister metricRegister;
     private final ApplicationModel applicationModel;
-    private final StatVersion statVersion = new StatVersion();
 
     private static final Integer[] DEFAULT_BUCKETS_MS = new Integer[]{100, 300, 500, 1000, 3000, 5000, 10000};
 
@@ -115,7 +113,7 @@ public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEv
     }
 
     @Override
-    public StatVersion getStatVersion() {
-        return statVersion;
+    public boolean isMetricsChanged() {
+        return false;
     }
 }

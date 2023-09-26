@@ -18,7 +18,6 @@
 package org.apache.dubbo.metrics.report;
 
 import org.apache.dubbo.metrics.model.MetricsCategory;
-import org.apache.dubbo.metrics.model.StatVersion;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 
 import java.util.List;
@@ -34,5 +33,5 @@ public interface MetricsExport {
      */
     List<MetricSample> export(MetricsCategory category);
 
-    StatVersion getStatVersion();
+    boolean isMetricsChanged();
 }

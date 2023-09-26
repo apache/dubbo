@@ -20,7 +20,6 @@ package org.apache.dubbo.metrics.data;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.MetricsSupport;
-import org.apache.dubbo.metrics.model.StatVersion;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -31,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -47,15 +47,15 @@ public class ApplicationStatComposite extends AbstractMetricsExport {
 
     private final Map<MetricsKey, AtomicLong> applicationNumStats = new ConcurrentHashMap<>();
 
-    private final StatVersion statVersion = new StatVersion();
+    private final AtomicBoolean metricsChanged = new AtomicBoolean(true);
 
     public void init(List<MetricsKey> appKeys) {
         if (CollectionUtils.isEmpty(appKeys)) {
             return;
         }
         appKeys.forEach(appKey -> {
-            statVersion.increaseVersion();
             applicationNumStats.put(appKey, new AtomicLong(0L));
+            metricsChanged.set(true);
         });
     }
 
@@ -86,7 +86,7 @@ public class ApplicationStatComposite extends AbstractMetricsExport {
 
 
     @Override
-    public StatVersion getStatVersion() {
-        return statVersion;
+    public boolean isMetricsChanged() {
+        return metricsChanged.compareAndSet(true, false);
     }
 }
