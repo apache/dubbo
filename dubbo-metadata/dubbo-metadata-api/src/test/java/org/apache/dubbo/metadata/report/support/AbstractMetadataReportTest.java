@@ -192,9 +192,8 @@ class AbstractMetadataReportTest {
         assertFalse(retryReport.metadataReportRetry.retryExecutor.isShutdown());
         retryReport.semaphore.release(2);
         await().until(() -> retryExecutor.getCompletedTaskCount() > completedTaskCount + 2);
-        assertTrue(retryReport.metadataReportRetry.retryScheduledFuture.isCancelled());
-        assertTrue(retryReport.metadataReportRetry.retryExecutor.isShutdown());
-
+        await().untilAsserted(() -> assertTrue(retryReport.metadataReportRetry.retryScheduledFuture.isCancelled()));
+        await().untilAsserted(() -> assertTrue(retryReport.metadataReportRetry.retryExecutor.isShutdown()));
     }
 
     private MetadataIdentifier storeProvider(AbstractMetadataReport abstractMetadataReport, String interfaceName, String version, String group, String application) throws ClassNotFoundException {
