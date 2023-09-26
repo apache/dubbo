@@ -69,7 +69,7 @@ public class ReferenceCountInvokerWrapper<T> implements Invoker<T> {
             try {
                 lock.writeLock().unlock();
             } catch (IllegalMonitorStateException ignore) {
-
+                // ignore if lock failed, maybe in a long invoke
             } catch (Throwable t) {
                 logger.warn(LoggerCodeConstants.PROTOCOL_CLOSED_SERVER, "", "",
                     "Unexpected error occurred when releasing write lock, cause: " + t.getMessage(), t);
