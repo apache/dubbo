@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
+import static org.apache.dubbo.common.constants.CommonConstants.EXT_PROTOCOL;
 
 class PortUnificationServerTest {
 
