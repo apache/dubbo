@@ -36,6 +36,7 @@
         <module>dubbo-spring-security</module>
         <module>dubbo-qos-api</module>
         <module>dubbo-plugin-cluster-mergeable</module>
+        <module>dubbo-native</module>
         <module>dubbo-plugin-mock</module>
         <module>dubbo-plugin-router-script</module>
         <module>dubbo-plugin-router-mesh</module>
