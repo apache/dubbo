@@ -136,6 +136,7 @@ public abstract class BaseStatComposite implements MetricsExport {
 
     @Override
     public boolean isMetricsChanged() {
+        // Should ensure that all the composite's metricsChanged have been compareAndSet, and cannot flip the `or` logic
         boolean changed = applicationStatComposite.isMetricsChanged();
         changed = rtStatComposite.isMetricsChanged() || changed;
         changed = serviceStatComposite.isMetricsChanged() || changed;

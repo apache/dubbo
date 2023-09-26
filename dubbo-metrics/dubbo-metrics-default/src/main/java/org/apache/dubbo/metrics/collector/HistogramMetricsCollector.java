@@ -114,6 +114,7 @@ public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEv
 
     @Override
     public boolean isMetricsChanged() {
+        // Histogram is directly register micrometer
         return false;
     }
 }

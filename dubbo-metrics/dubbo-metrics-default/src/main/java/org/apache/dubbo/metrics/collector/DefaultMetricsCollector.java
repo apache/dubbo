@@ -215,6 +215,7 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
 
     @Override
     public boolean isMetricsChanged() {
+        // Should ensure that all the sampler's metricsChanged have been compareAndSet, and cannot flip the `or` logic
         boolean changed = metricsChanged.compareAndSet(true, false);
         changed = stats.isMetricsChanged() || changed;
         for (MetricsSampler sampler : samplers) {
