@@ -149,7 +149,7 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
         }
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({"unchecked"})
     public void reloadIfSamplesChanged() {
         collectors.forEach(collector -> {
             if (!collector.calSamplesChanged()) {
@@ -160,33 +160,46 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
             List<MetricSample> samples = collector.collect();
             for (MetricSample sample : samples) {
                 try {
-                    switch (sample.getType()) {
-                        case GAUGE:
-                            GaugeMetricSample gaugeSample = (GaugeMetricSample) sample;
-                            List<Tag> tags = getTags(gaugeSample);
-
-                            Gauge.builder(gaugeSample.getName(), gaugeSample.getValue(), gaugeSample.getApply())
-                                .description(gaugeSample.getDescription()).tags(tags).register(compositeRegistry);
-                            break;
-                        case COUNTER:
-                            CounterMetricSample counterMetricSample = (CounterMetricSample) sample;
-                            FunctionCounter.builder(counterMetricSample.getName(), counterMetricSample.getValue(),
-                                    Number::doubleValue).description(counterMetricSample.getDescription())
-                                .tags(getTags(counterMetricSample))
-                                .register(compositeRegistry);
-                        case TIMER:
-                        case LONG_TASK_TIMER:
-                        case DISTRIBUTION_SUMMARY:
-                            // TODO
-                            break;
-                        default:
-                            break;
-                    }
+                    registerSample(sample);
                 } catch (Exception e) {
                     logger.error(COMMON_METRICS_COLLECTOR_EXCEPTION, "", "", "error occurred when synchronize metrics collector.", e);
                 }
             }
         });
+    }
+
+    @SuppressWarnings({"rawtypes"})
+    private void registerSample(MetricSample sample) {
+        switch (sample.getType()) {
+            case GAUGE:
+                registerGaugeSample((GaugeMetricSample) sample);
+                break;
+            case COUNTER:
+                registerCounterSample((CounterMetricSample) sample);
+            case TIMER:
+            case LONG_TASK_TIMER:
+            case DISTRIBUTION_SUMMARY:
+                // TODO
+                break;
+            default:
+                break;
+        }
+    }
+
+    @SuppressWarnings({"rawtypes"})
+    private void registerCounterSample(CounterMetricSample sample) {
+        FunctionCounter.builder(sample.getName(), sample.getValue(), Number::doubleValue)
+            .description(sample.getDescription())
+            .tags(getTags(sample))
+            .register(compositeRegistry);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private void registerGaugeSample(GaugeMetricSample sample) {
+        Gauge.builder(sample.getName(), sample.getValue(), sample.getApply())
+            .description(sample.getDescription())
+            .tags(getTags(sample))
+            .register(compositeRegistry);
     }
 
     private static List<Tag> getTags(MetricSample gaugeSample) {
