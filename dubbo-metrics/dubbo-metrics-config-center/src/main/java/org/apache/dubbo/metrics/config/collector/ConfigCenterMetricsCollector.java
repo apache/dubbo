@@ -100,6 +100,7 @@ public class ConfigCenterMetricsCollector extends CombMetricsCollector<ConfigCen
 
     @Override
     public boolean calSamplesChanged() {
+        // CAS to get and reset the flag in an atomic operation
         return samplesChanged.compareAndSet(true, false);
     }
 }

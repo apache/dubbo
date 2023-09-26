@@ -87,6 +87,7 @@ public class ApplicationStatComposite extends AbstractMetricsExport {
 
     @Override
     public boolean calSamplesChanged() {
+        // CAS to get and reset the flag in an atomic operation
         return samplesChanged.compareAndSet(true, false);
     }
 }

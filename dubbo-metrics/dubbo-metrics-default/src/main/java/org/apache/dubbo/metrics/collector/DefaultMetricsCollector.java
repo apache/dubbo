@@ -215,8 +215,9 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
 
     @Override
     public boolean calSamplesChanged() {
-        // Should ensure that all the sampler's samplesChanged have been compareAndSet, and cannot flip the `or` logic
+        // CAS to get and reset the flag in an atomic operation
         boolean changed = samplesChanged.compareAndSet(true, false);
+        // Should ensure that all the sampler's samplesChanged have been compareAndSet, and cannot flip the `or` logic
         changed = stats.calSamplesChanged() || changed;
         for (MetricsSampler sampler : samplers) {
             changed = sampler.calSamplesChanged() || changed;
