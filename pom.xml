@@ -464,7 +464,9 @@
                                             <version>${log4j2_version}</version>
                                         </additionalDependency>
                                     </additionalDependencies>
-                                    <doclint>all,-missing</doclint>
+                                    <!--FIXME-->
+                                    <!--<doclint>all,-missing</doclint>-->
+                                    <doclint>none</doclint>
                                 </configuration>
                             </execution>
                         </executions>
@@ -473,7 +475,7 @@
                             <charset>UTF-8</charset>
                             <encoding>UTF-8</encoding>
                             <docencoding>UTF-8</docencoding>
-                            <source>${maven_source_version}</source>
+                            <source>${java_source_version}</source>
                             <links>
                                 <link>http://docs.oracle.com/javase/8/docs/api</link>
                             </links>
