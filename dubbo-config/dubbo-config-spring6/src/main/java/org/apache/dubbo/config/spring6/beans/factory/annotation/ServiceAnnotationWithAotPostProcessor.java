@@ -18,7 +18,6 @@ package org.apache.dubbo.config.spring6.beans.factory.annotation;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationPostProcessor;
 import org.apache.dubbo.config.spring.schema.AnnotationBeanDefinitionParser;
@@ -29,21 +28,19 @@ import org.springframework.aot.hint.TypeReference;
 import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
 import org.springframework.beans.factory.aot.BeanRegistrationAotProcessor;
 import org.springframework.beans.factory.aot.BeanRegistrationCode;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.beans.factory.support.RootBeanDefinition;
-import org.springframework.beans.factory.xml.BeanDefinitionParser;
 
 import java.util.Collection;
 
 /**
- * A {@link BeanFactoryPostProcessor} used for processing of {@link Service @Service} annotated classes and annotated bean in java config classes.
- * It's also the infrastructure class of XML {@link BeanDefinitionParser} on &lt;dubbo:annotation /&gt;
+ * The purpose of implementing {@link BeanRegistrationAotProcessor} is to
+ * supplement for {@link ServiceAnnotationPostProcessor} ability of AOT.
  *
  * @see AnnotationBeanDefinitionParser
  * @see BeanDefinitionRegistryPostProcessor
- * @since 3.2
+ * @since 3.3
  */
 public class ServiceAnnotationWithAotPostProcessor extends ServiceAnnotationPostProcessor implements BeanRegistrationAotProcessor {
 

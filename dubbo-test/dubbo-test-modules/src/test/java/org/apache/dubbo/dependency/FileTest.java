@@ -46,13 +46,13 @@ class FileTest {
     static {
         ignoredModules.add(Pattern.compile("dubbo-apache-release"));
         ignoredModules.add(Pattern.compile("dubbo-all-shaded"));
-        ignoredModules.add(Pattern.compile("dubbo-build-tools"));
         ignoredModules.add(Pattern.compile("dubbo-dependencies-all"));
         ignoredModules.add(Pattern.compile("dubbo-parent"));
         ignoredModules.add(Pattern.compile("dubbo-core-spi"));
         ignoredModules.add(Pattern.compile("dubbo-demo.*"));
         ignoredModules.add(Pattern.compile("dubbo-annotation-processor"));
         ignoredModules.add(Pattern.compile("dubbo-config-spring6"));
+        ignoredModules.add(Pattern.compile("dubbo-plugin-loom.*"));
 
         ignoredArtifacts.add(Pattern.compile("dubbo-demo.*"));
         ignoredArtifacts.add(Pattern.compile("dubbo-test.*"));

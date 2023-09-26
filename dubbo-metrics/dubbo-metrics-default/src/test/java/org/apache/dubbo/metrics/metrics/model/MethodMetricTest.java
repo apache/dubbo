@@ -19,7 +19,9 @@ package org.apache.dubbo.metrics.metrics.model;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.metrics.model.MethodMetric;
+import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -72,7 +74,7 @@ class MethodMetricTest {
 
     @Test
     void test() {
-        MethodMetric metric = new MethodMetric(applicationModel, invocation);
+        MethodMetric metric = new MethodMetric(applicationModel, invocation, MethodMetric.isServiceLevel(applicationModel));
         Assertions.assertEquals(metric.getServiceKey(), interfaceName);
         Assertions.assertEquals(metric.getMethodName(), methodName);
         Assertions.assertEquals(metric.getGroup(), group);
@@ -85,6 +87,26 @@ class MethodMetricTest {
 
         Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), interfaceName);
         Assertions.assertEquals(tags.get(TAG_METHOD_KEY), methodName);
+        Assertions.assertEquals(tags.get(TAG_GROUP_KEY), group);
+        Assertions.assertEquals(tags.get(TAG_VERSION_KEY), version);
+    }
+
+    @Test
+    void testServiceMetrics() {
+        MetricsConfig metricConfig = new MetricsConfig();
+        applicationModel.getApplicationConfigManager().setMetrics(metricConfig);
+        metricConfig.setRpcLevel(MetricsLevel.SERVICE.name());
+        MethodMetric metric = new MethodMetric(applicationModel, invocation, MethodMetric.isServiceLevel(applicationModel));
+        Assertions.assertEquals(metric.getServiceKey(), interfaceName);
+        Assertions.assertNull(metric.getMethodName(), methodName);
+        Assertions.assertEquals(metric.getGroup(), group);
+        Assertions.assertEquals(metric.getVersion(), version);
+
+        Map<String, String> tags = metric.getTags();
+        Assertions.assertEquals(tags.get(TAG_APPLICATION_NAME), applicationModel.getApplicationName());
+
+        Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), interfaceName);
+        Assertions.assertNull(tags.get(TAG_METHOD_KEY));
         Assertions.assertEquals(tags.get(TAG_GROUP_KEY), group);
         Assertions.assertEquals(tags.get(TAG_VERSION_KEY), version);
     }

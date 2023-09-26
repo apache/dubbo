@@ -128,6 +128,8 @@ public interface CommonConstants {
 
     String THREAD_POOL_EXHAUSTED_LISTENERS_KEY = "thread-pool-exhausted-listeners";
 
+    String JSON_CHECK_LEVEL_KEY = "jsonCheckLevel";
+
     String THREADS_KEY = "threads";
 
     String QUEUES_KEY = "queues";
@@ -643,7 +645,7 @@ public interface CommonConstants {
 
     String SERVICE_DEPLOYER_ATTRIBUTE_KEY = "serviceDeployer";
 
-    String RESTEASY_NETTY_HTTP_REQUEST_ATTRIBUTE_KEY = "resteasyNettyHttpRequest";
+
 
     String DUBBO_MANUAL_REGISTER_KEY = "dubbo.application.manual-register";
 

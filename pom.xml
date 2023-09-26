@@ -119,7 +119,7 @@
         <maven_compiler_version>3.11.0</maven_compiler_version>
         <maven_source_version>3.2.1</maven_source_version>
         <maven_javadoc_version>3.5.0</maven_javadoc_version>
-        <maven_jetty_version>9.4.51.v20230217</maven_jetty_version>
+        <maven_jetty_version>9.4.52.v20230823</maven_jetty_version>
         <maven_checkstyle_version>3.2.1</maven_checkstyle_version>
         <maven_jacoco_version>0.8.10</maven_jacoco_version>
         <maven_flatten_version>1.5.0</maven_flatten_version>
@@ -160,9 +160,7 @@
         <module>dubbo-dependencies</module>
         <module>dubbo-metadata</module>
         <module>dubbo-metrics</module>
-        <module>dubbo-build-tools</module>
         <module>dubbo-spring-boot</module>
-        <module>dubbo-native</module>
         <module>dubbo-test</module>
         <module>dubbo-kubernetes</module>
         <module>dubbo-xds</module>
@@ -306,8 +304,8 @@
                                 <version>8.45.1</version>
                             </dependency>
                             <dependency>
-                                <groupId>org.apache.dubbo</groupId>
-                                <artifactId>dubbo-build-tools</artifactId>
+                                <groupId>com.alibaba</groupId>
+                                <artifactId>dubbo-shared-resources</artifactId>
                                 <version>1.0.0</version>
                             </dependency>
                         </dependencies>

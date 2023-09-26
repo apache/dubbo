@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.protocol.rest.extension.resteasy.filter;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 import org.apache.dubbo.rpc.protocol.rest.extension.resteasy.ResteasyContext;
 import org.apache.dubbo.rpc.protocol.rest.filter.RestRequestFilter;
@@ -30,7 +29,6 @@ import org.jboss.resteasy.specimpl.BuiltResponse;
 import javax.ws.rs.container.ContainerRequestFilter;
 import java.util.List;
 
-import static org.apache.dubbo.common.constants.CommonConstants.RESTEASY_NETTY_HTTP_REQUEST_ATTRIBUTE_KEY;
 
 
 @Activate(value = "resteasy", onClass = {"javax.ws.rs.container.ContainerRequestFilter", "org.jboss.resteasy.plugins.server.netty.NettyHttpRequest", "org.jboss.resteasy.plugins.server.netty.NettyHttpResponse"}, order = Integer.MAX_VALUE - 1)
@@ -55,7 +53,8 @@ public class ResteasyRequestContainerFilterAdapter implements RestRequestFilter,
 
         DubboPreMatchContainerRequestContext containerRequestContext = convertHttpRequestToContainerRequestContext(requestFacade, containerRequestFilters.toArray(new ContainerRequestFilter[0]));
 
-        RpcContext.getServiceContext().setObjectAttachment(RESTEASY_NETTY_HTTP_REQUEST_ATTRIBUTE_KEY, containerRequestContext.getHttpRequest());
+        // set resteasy request for save user`s custom  request attribute
+        restFilterContext.setOriginRequest(containerRequestContext.getHttpRequest());
 
         try {
             BuiltResponse restResponse = containerRequestContext.filter();

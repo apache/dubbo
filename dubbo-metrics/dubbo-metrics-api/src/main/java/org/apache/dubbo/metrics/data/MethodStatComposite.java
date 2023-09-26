@@ -26,6 +26,7 @@ import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.report.AbstractMetricsExport;
+import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
@@ -40,9 +41,11 @@ import java.util.concurrent.atomic.AtomicLong;
  * the key will not be displayed when exporting (to be optimized)
  */
 public class MethodStatComposite extends AbstractMetricsExport {
+    private boolean serviceLevel;
 
     public MethodStatComposite(ApplicationModel applicationModel) {
         super(applicationModel);
+        this.serviceLevel = MethodMetric.isServiceLevel(getApplicationModel());
     }
 
     private final Map<MetricsKeyWrapper, Map<MethodMetric, AtomicLong>> methodNumStats = new ConcurrentHashMap<>();
@@ -52,6 +55,14 @@ public class MethodStatComposite extends AbstractMetricsExport {
             return;
         }
         metricsKeyWrappers.forEach(appKey -> methodNumStats.put(appKey, new ConcurrentHashMap<>()));
+    }
+
+    public void initMethodKey(MetricsKeyWrapper wrapper, Invocation invocation) {
+        if (!methodNumStats.containsKey(wrapper)) {
+            return;
+        }
+
+        methodNumStats.get(wrapper).computeIfAbsent(new MethodMetric(getApplicationModel(), invocation, serviceLevel), k -> new AtomicLong(0L));
     }
 
     public void incrementMethodKey(MetricsKeyWrapper wrapper, MethodMetric methodMetric, int size) {

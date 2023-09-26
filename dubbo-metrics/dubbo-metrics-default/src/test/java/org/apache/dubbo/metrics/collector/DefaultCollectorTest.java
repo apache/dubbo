@@ -19,18 +19,21 @@ package org.apache.dubbo.metrics.collector;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.TestMetricsInvoker;
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.metrics.filter.MetricsFilter;
+import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.ServiceKeyMetric;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
-import org.apache.dubbo.metrics.model.key.TypeWrapper;
 import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -112,8 +115,8 @@ class DefaultCollectorTest {
     @Test
     void testListener() {
         DefaultMetricsCollector metricsCollector = new DefaultMetricsCollector(applicationModel);
-        RequestEvent event = RequestEvent.toRequestEvent(applicationModel, null, null, null, invocation, MetricsSupport.getSide(invocation));
-        RequestEvent beforeEvent = RequestEvent.toRequestErrorEvent(applicationModel, null, null, invocation, MetricsSupport.getSide(invocation), RpcException.FORBIDDEN_EXCEPTION);
+        RequestEvent event = RequestEvent.toRequestEvent(applicationModel, null, null, null, invocation, MetricsSupport.getSide(invocation), MethodMetric.isServiceLevel(applicationModel));
+        RequestEvent beforeEvent = RequestEvent.toRequestErrorEvent(applicationModel, null, null, invocation, MetricsSupport.getSide(invocation), RpcException.FORBIDDEN_EXCEPTION, MethodMetric.isServiceLevel(applicationModel));
 
         Assertions.assertTrue(metricsCollector.isSupport(event));
         Assertions.assertTrue(metricsCollector.isSupport(beforeEvent));
@@ -134,6 +137,9 @@ class DefaultCollectorTest {
         DefaultMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
         collector.setCollectEnabled(true);
 
+        ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DefaultCollectorTest.class);
+        logger.warn("0-99","","","Test error code message.");
+
         metricsFilter.invoke(new TestMetricsInvoker(side), invocation);
         try {
             Thread.sleep(50);
@@ -150,8 +156,8 @@ class DefaultCollectorTest {
 
         // push finish rt +1
         List<MetricSample> metricSamples = collector.collect();
-        //num(total+success+processing) + rt(5) = 8
-        Assertions.assertEquals(8, metricSamples.size());
+        //num(total+success+processing) + rt(5) + error code = 9
+        Assertions.assertEquals(metricSamples.size(),9);
         List<String> metricsNames = metricSamples.stream().map(MetricSample::getName).collect(Collectors.toList());
         // No error will contain total+success+processing
         String REQUESTS = new MetricsKeyWrapper(METRIC_REQUESTS, MetricsPlaceValue.of(side, MetricsLevel.SERVICE)).targetKey();
@@ -192,8 +198,8 @@ class DefaultCollectorTest {
         long c2 = eventObj.getTimePair().calc();
         metricSamples = collector.collect();
 
-        // num(total+success+error+total_error+processing) + rt(5) = 5
-        Assertions.assertEquals(10, metricSamples.size());
+        // num(total+success+error+total_error+processing) + rt(5) + error code = 11
+        Assertions.assertEquals(11, metricSamples.size());
 
         String TIMEOUT = new MetricsKeyWrapper(METRIC_REQUESTS_TIMEOUT, MetricsPlaceValue.of(side, MetricsLevel.SERVICE)).targetKey();
         String TOTAL_FAILED = new MetricsKeyWrapper(METRIC_REQUESTS_TOTAL_FAILED, MetricsPlaceValue.of(side, MetricsLevel.SERVICE)).targetKey();

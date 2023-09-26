@@ -21,7 +21,6 @@ dubbo-auth
 dubbo-apache-release
 dubbo-all-shaded
 dubbo-bom
-dubbo-build-tools
 dubbo-cluster
 dubbo-common
 dubbo-compatible
@@ -66,6 +65,7 @@ dubbo-metrics-prometheus
 dubbo-metrics-registry
 dubbo-metrics-config-center
 dubbo-metrics-netty
+dubbo-metrics-event
 dubbo-monitor
 dubbo-monitor-api
 dubbo-monitor-common
@@ -141,3 +141,4 @@ dubbo-plugin-context
 dubbo-plugin-classloader-filter
 dubbo-plugin-proxy-bytebuddy
 dubbo-plugin-qos-trace
+dubbo-plugin-loom
