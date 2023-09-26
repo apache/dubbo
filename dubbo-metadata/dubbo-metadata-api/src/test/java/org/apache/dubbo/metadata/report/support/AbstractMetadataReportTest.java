@@ -30,6 +30,7 @@ import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
@@ -178,6 +180,7 @@ class AbstractMetadataReportTest {
         RetryMetadataReport retryReport = new RetryMetadataReport(storeUrl, 2, applicationModel);
         retryReport.metadataReportRetry.retryPeriod = 150L;
         retryReport.metadataReportRetry.retryTimesIfNonFail = 2;
+        retryReport.semaphore = new Semaphore(1);
 
         ScheduledThreadPoolExecutor retryExecutor = (ScheduledThreadPoolExecutor) retryReport.getMetadataReportRetry().getRetryExecutor();
         long completedTaskCount = retryExecutor.getCompletedTaskCount();
@@ -187,10 +190,10 @@ class AbstractMetadataReportTest {
         await().until(() -> retryReport.metadataReportRetry.retryScheduledFuture != null);
         assertFalse(retryReport.metadataReportRetry.retryScheduledFuture.isCancelled());
         assertFalse(retryReport.metadataReportRetry.retryExecutor.isShutdown());
+        retryReport.semaphore.release(2);
         await().until(() -> retryExecutor.getCompletedTaskCount() > completedTaskCount + 2);
-        assertTrue(retryReport.metadataReportRetry.retryScheduledFuture.isCancelled());
-        assertTrue(retryReport.metadataReportRetry.retryExecutor.isShutdown());
-
+        await().untilAsserted(() -> assertTrue(retryReport.metadataReportRetry.retryScheduledFuture.isCancelled()));
+        await().untilAsserted(() -> assertTrue(retryReport.metadataReportRetry.retryExecutor.isShutdown()));
     }
 
     private MetadataIdentifier storeProvider(AbstractMetadataReport abstractMetadataReport, String interfaceName, String version, String group, String application) throws ClassNotFoundException {
@@ -353,6 +356,7 @@ class AbstractMetadataReportTest {
         Map<String, String> store = new ConcurrentHashMap<>();
         int needRetryTimes;
         int executeTimes = 0;
+        Semaphore semaphore = new Semaphore(Integer.MAX_VALUE);
 
         public RetryMetadataReport(URL metadataReportURL, int needRetryTimes, ApplicationModel applicationModel) {
             super(metadataReportURL);
@@ -364,6 +368,7 @@ class AbstractMetadataReportTest {
         protected void doStoreProviderMetadata(MetadataIdentifier providerMetadataIdentifier, String serviceDefinitions) {
             ++executeTimes;
             System.out.println("***" + executeTimes + ";" + System.currentTimeMillis());
+            semaphore.acquireUninterruptibly();
             if (executeTimes <= needRetryTimes) {
                 throw new RuntimeException("must retry:" + executeTimes);
             }
