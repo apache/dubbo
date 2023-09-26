@@ -22,6 +22,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.serial.CloseableRunnable;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.Invoker;
@@ -432,7 +433,17 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
 
         @Override
         public void onData(ByteBuf data, boolean endStream) {
-            executor.execute(() -> doOnData(data, endStream), () -> ReferenceCountUtil.release(data));
+            executor.execute(new CloseableRunnable() {
+                @Override
+                public void close() {
+                    ReferenceCountUtil.release(data);
+                }
+
+                @Override
+                public void run() {
+                    doOnData(data, endStream);
+                }
+            });
         }
 
         private void doOnData(ByteBuf data, boolean endStream) {

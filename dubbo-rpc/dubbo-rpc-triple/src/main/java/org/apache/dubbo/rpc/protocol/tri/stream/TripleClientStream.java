@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri.stream;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.serial.CloseableRunnable;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
@@ -449,7 +450,17 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
 
         @Override
         public void onData(ByteBuf data, boolean endStream) {
-            executor.execute(() -> doOnData(data, endStream), () -> ReferenceCountUtil.release(data));
+            executor.execute(new CloseableRunnable() {
+                @Override
+                public void close() {
+                    ReferenceCountUtil.release(data);
+                }
+
+                @Override
+                public void run() {
+                    doOnData(data, endStream);
+                }
+            });
         }
 
         private void doOnData(ByteBuf data, boolean endStream) {
