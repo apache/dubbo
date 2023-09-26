@@ -208,18 +208,18 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
         }
 
         @Override
-        public boolean isMetricsChanged() {
+        public boolean checkAndUpdateChanged() {
             return false;
         }
     };
 
     @Override
-    public boolean isMetricsChanged() {
+    public boolean checkAndUpdateChanged() {
         // Should ensure that all the sampler's metricsChanged have been compareAndSet, and cannot flip the `or` logic
         boolean changed = metricsChanged.compareAndSet(true, false);
-        changed = stats.isMetricsChanged() || changed;
+        changed = stats.checkAndUpdateChanged() || changed;
         for (MetricsSampler sampler : samplers) {
-            changed = sampler.isMetricsChanged() || changed;
+            changed = sampler.checkAndUpdateChanged() || changed;
         }
         return changed;
     }

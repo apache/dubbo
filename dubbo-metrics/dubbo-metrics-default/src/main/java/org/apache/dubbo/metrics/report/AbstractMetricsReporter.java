@@ -152,7 +152,7 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void refreshData() {
         collectors.forEach(collector -> {
-            if (!collector.isMetricsChanged()) {
+            if (!collector.checkAndUpdateChanged()) {
                 return;
             }
             List<MetricSample> samples = collector.collect();

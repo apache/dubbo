@@ -91,7 +91,7 @@ public class ThreadRejectMetricsCountSampler extends SimpleMetricsCountSampler<S
     }
 
     @Override
-    public boolean isMetricsChanged() {
+    public boolean checkAndUpdateChanged() {
         return metricsChanged.compareAndSet(true, false);
     }
 }

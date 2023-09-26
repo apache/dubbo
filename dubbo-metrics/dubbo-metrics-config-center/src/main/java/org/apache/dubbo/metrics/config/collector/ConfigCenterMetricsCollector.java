@@ -99,7 +99,7 @@ public class ConfigCenterMetricsCollector extends CombMetricsCollector<ConfigCen
     }
 
     @Override
-    public boolean isMetricsChanged() {
+    public boolean checkAndUpdateChanged() {
         return metricsChanged.compareAndSet(true, false);
     }
 }

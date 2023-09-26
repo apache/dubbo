@@ -43,7 +43,13 @@ public interface MetricsCollector<E extends TimeCounterEvent> extends MetricsLif
      */
     List<MetricSample> collect();
 
-    boolean isMetricsChanged();
+    /**
+     * Check if metrics tags have been changed.
+     * Note that this method will reset the changed flag to false using CAS.
+     *
+     * @return true if metrics tags have been changed
+     */
+    boolean checkAndUpdateChanged();
 
     default  void initMetrics(MetricsEvent event) {};
 

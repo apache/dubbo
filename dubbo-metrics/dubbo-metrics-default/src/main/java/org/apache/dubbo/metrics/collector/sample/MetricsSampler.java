@@ -25,5 +25,11 @@ public interface MetricsSampler {
 
     List<MetricSample> sample();
 
-    boolean isMetricsChanged();
+    /**
+     * Check if metrics tags have been changed.
+     * Note that this method will reset the changed flag to false using CAS.
+     *
+     * @return true if metrics tags have been changed
+     */
+    boolean checkAndUpdateChanged();
 }

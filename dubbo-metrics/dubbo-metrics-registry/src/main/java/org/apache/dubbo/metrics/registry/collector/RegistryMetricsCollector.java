@@ -150,10 +150,10 @@ public class RegistryMetricsCollector extends CombMetricsCollector<RegistryEvent
     }
 
     @Override
-    public boolean isMetricsChanged() {
+    public boolean checkAndUpdateChanged() {
         // Should ensure that all the stat's metricsChanged have been compareAndSet, and cannot flip the `or` logic
-        boolean changed = stats.isMetricsChanged();
-        changed = internalStat.isMetricsChanged() || changed;
+        boolean changed = stats.checkAndUpdateChanged();
+        changed = internalStat.checkAndUpdateChanged() || changed;
         return changed;
     }
 }
