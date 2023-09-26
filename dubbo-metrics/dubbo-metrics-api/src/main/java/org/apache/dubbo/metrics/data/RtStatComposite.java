@@ -70,9 +70,9 @@ public class RtStatComposite extends AbstractMetricsExport {
             List<LongContainer<? extends Number>> containers = initStats(placeValue);
             for (LongContainer<? extends Number> container : containers) {
                 rtStats.computeIfAbsent(container.getMetricsKeyWrapper().getType(), k -> new ArrayList<>()).add(container);
-                metricsChanged.set(true);
             }
         }
+        metricsChanged.set(true);
     }
 
     private List<LongContainer<? extends Number>> initStats(MetricsPlaceValue placeValue) {

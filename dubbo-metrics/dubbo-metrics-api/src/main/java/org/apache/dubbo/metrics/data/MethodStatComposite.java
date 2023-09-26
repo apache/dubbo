@@ -59,8 +59,8 @@ public class MethodStatComposite extends AbstractMetricsExport {
         }
         metricsKeyWrappers.forEach(appKey -> {
             methodNumStats.put(appKey, new ConcurrentHashMap<>());
-            metricsChanged.set(true);
         });
+        metricsChanged.set(true);
     }
 
     public void initMethodKey(MetricsKeyWrapper wrapper, Invocation invocation) {

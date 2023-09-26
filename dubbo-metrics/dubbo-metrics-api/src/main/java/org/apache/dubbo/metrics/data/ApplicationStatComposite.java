@@ -55,8 +55,8 @@ public class ApplicationStatComposite extends AbstractMetricsExport {
         }
         appKeys.forEach(appKey -> {
             applicationNumStats.put(appKey, new AtomicLong(0L));
-            metricsChanged.set(true);
         });
+        metricsChanged.set(true);
     }
 
     public void incrementSize(MetricsKey metricsKey, int size) {

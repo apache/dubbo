@@ -55,8 +55,8 @@ public class RegistryStatComposite extends AbstractMetricsExport {
         }
         appKeys.forEach(appKey -> {
             appStats.put(appKey, new ConcurrentHashMap<>());
-            metricsChanged.set(true);
         });
+        metricsChanged.set(true);
     }
 
     @Override
