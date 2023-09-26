@@ -75,5 +75,11 @@
                 <module>dubbo-plugin-loom</module>
             </modules>
         </profile>
+        <profile>
+            <id>release</id>
+            <modules>
+                <module>dubbo-plugin-loom</module>
+            </modules>
+        </profile>
     </profiles>
 </project>
