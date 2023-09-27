@@ -16,19 +16,24 @@
  */
 package org.apache.dubbo.rpc.cluster;
 
-import org.apache.dubbo.common.URL;
 
-import org.apache.dubbo.rpc.ClusterInvokerFactory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
-import org.apache.dubbo.rpc.model.ScopeModel;
 
-import java.util.List;
+import static org.apache.dubbo.rpc.cluster.Cluster.getCluster;
 
 public class DefaultClusterInvokerFactory implements ClusterInvokerFactory {
 
+    /**
+     * Build an Invoker with StaticDirectory.
+     *
+     * @param config config
+     * @return ClusterInvoker
+     */
     @Override
-    public Invoker<?> buildWithStaticDirectory(ScopeModel scopeModel, String name, boolean wrap, URL url, List<Invoker<?>> invokers, boolean buildFilterChain) {
-        return Cluster.getCluster(scopeModel,name,wrap).join(new StaticDirectory(url,invokers),buildFilterChain);
+    public Invoker<?> getInvoker(ClusterInvokerConfig config) {
+        return getCluster(config.getScopeModel(), config.getClusterName(), config.isWrappedCluster())
+                .join(new StaticDirectory(config.getServiceUrl(), config.getInvokersToJoin()), config.isWrappedDirectory());
     }
+
 }
