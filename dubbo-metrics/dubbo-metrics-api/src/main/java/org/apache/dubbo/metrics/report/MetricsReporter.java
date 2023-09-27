@@ -28,7 +28,7 @@ public interface MetricsReporter {
      */
     void init();
 
-    void refreshData();
+    void registerData();
 
     String getResponse();
     

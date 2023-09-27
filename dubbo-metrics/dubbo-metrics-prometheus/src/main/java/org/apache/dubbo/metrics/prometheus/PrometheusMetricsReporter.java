@@ -90,7 +90,7 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
 
     protected void push(PushGateway pushGateway, String job) {
         try {
-            refreshData();
+            registerData();
             pushGateway.pushAdd(prometheusRegistry.getPrometheusRegistry(), job);
         } catch (IOException e) {
             logger.error(COMMON_METRICS_COLLECTOR_EXCEPTION, "", "", "Error occurred when pushing metrics to prometheus: ", e);
