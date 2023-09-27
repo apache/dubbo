@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.metadata.definition.TypeDefinitionBuilder;
 import org.apache.dubbo.rpc.support.DemoService;
 
+import org.apache.dubbo.rpc.support.DemoService1;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -40,6 +41,16 @@ class ReflectionServiceDescriptorTest {
         when(method.getMethodName()).thenReturn("sayHello2");
         service2.addMethod(method);
         Assertions.assertEquals(1, service2.getMethods("sayHello2").size());
+    }
+
+    @Test
+    void testStreamRpcTypeException() {
+        try {
+            new ReflectionServiceDescriptor(DemoService1.class);
+        } catch (IllegalStateException e) {
+            Assertions.assertTrue(e.getMessage()
+                .contains("Stream method could not be overloaded."));
+        }
     }
 
     @Test
