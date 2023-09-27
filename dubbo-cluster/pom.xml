@@ -29,6 +29,7 @@
     <description>The cluster module of dubbo project</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
+        <nashorn-core.version>15.4</nashorn-core.version>
     </properties>
     <dependencies>
         <dependency>
@@ -90,6 +91,11 @@
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-tracing-integration-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.openjdk.nashorn</groupId>
+            <artifactId>nashorn-core</artifactId>
+            <version>${nashorn-core.version}</version>
         </dependency>
     </dependencies>
 </project>

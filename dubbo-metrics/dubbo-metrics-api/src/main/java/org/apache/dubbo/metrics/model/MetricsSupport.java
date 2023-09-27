@@ -20,6 +20,7 @@ package org.apache.dubbo.metrics.model;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.lang.Nullable;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metrics.collector.MethodMetricsCollector;
 import org.apache.dubbo.metrics.collector.ServiceMetricsCollector;
 import org.apache.dubbo.metrics.event.MetricsEvent;
@@ -32,10 +33,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -162,6 +160,9 @@ public class MetricsSupport {
         } else {
             String serviceUniqueName = invocation.getTargetServiceUniqueName();
             String interfaceAndVersion;
+            if (StringUtils.isBlank(serviceUniqueName)) {
+                return "";
+            }
             String[] arr = serviceUniqueName.split(PATH_SEPARATOR);
             if (arr.length == 2) {
                 interfaceAndVersion = arr[1];
