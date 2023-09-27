@@ -59,6 +59,9 @@ public class XdsServiceDiscovery extends ReflectionBasedServiceDiscovery {
     @Override
     public void doDestroy() {
         try {
+            if (exchanger == null) {
+                return;
+            }
             exchanger.destroy();
         } catch (Throwable t) {
             logger.error(REGISTRY_ERROR_INITIALIZE_XDS, "", "", t.getMessage(), t);

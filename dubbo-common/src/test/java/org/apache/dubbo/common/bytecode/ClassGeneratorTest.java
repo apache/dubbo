@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.bytecode;
 
+import javassist.ClassPool;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -23,6 +24,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 interface Builder<T> {
     T getName(Bean bean);
@@ -196,6 +200,35 @@ class ClassGeneratorTest {
         System.out.println(b.getName());
         builder.setName(b, "ok");
         System.out.println(b.getName());
+    }
+
+    @Test
+    public void test_getClassPool() throws InterruptedException {
+        int threadCount = 5;
+        CountDownLatch LATCH = new CountDownLatch(threadCount);
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        List<Integer> hashCodeList = new ArrayList<>();
+        for (int i = 0; i < threadCount; i++) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    ClassPool classPool = ClassGenerator.getClassPool(loader);
+                    int currentHashCode = classPool.hashCode();
+                    hashCodeList.add(currentHashCode);
+                    System.out.println(currentHashCode);
+                    LATCH.countDown();
+                }
+            }).start();
+        }
+        LATCH.await();
+        Integer firstHashCode = null;
+        for (Integer currentHashCode : hashCodeList) {
+            if (firstHashCode == null) {
+                firstHashCode = currentHashCode;
+                continue;
+            }
+            Assertions.assertTrue(firstHashCode.intValue() == currentHashCode.intValue());
+        }
     }
 }
 

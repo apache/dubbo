@@ -30,7 +30,9 @@ public class Hessian2SerializerFactory extends SerializerFactory {
 
     private final DefaultSerializeClassChecker defaultSerializeClassChecker;
 
-    public Hessian2SerializerFactory(DefaultSerializeClassChecker defaultSerializeClassChecker) {
+
+    public Hessian2SerializerFactory(ClassLoader classLoader, DefaultSerializeClassChecker defaultSerializeClassChecker) {
+        super(classLoader);
         this.defaultSerializeClassChecker = defaultSerializeClassChecker;
     }
 
