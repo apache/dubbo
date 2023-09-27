@@ -18,6 +18,8 @@ package org.apache.dubbo.spring.security.filter;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -43,6 +45,7 @@ import static org.apache.dubbo.spring.security.utils.SecurityNames.SIMPLE_MODULE
     JAVA_TIME_MODULE_CLASS_NAME, SIMPLE_MODULE_CLASS_NAME})
 public class ContextHolderAuthenticationPrepareFilter implements ClusterFilter {
 
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     private final ObjectMapperCodec mapper;
 
     public ContextHolderAuthenticationPrepareFilter(ApplicationModel applicationModel) {
@@ -51,7 +54,9 @@ public class ContextHolderAuthenticationPrepareFilter implements ClusterFilter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        setSecurityContext(invocation);
+        if (this.mapper != null) {
+            setSecurityContext(invocation);
+        }
 
         return invoker.invoke(invocation);
     }

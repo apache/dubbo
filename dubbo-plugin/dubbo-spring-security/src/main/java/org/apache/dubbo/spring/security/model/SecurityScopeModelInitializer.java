@@ -19,6 +19,8 @@ package org.apache.dubbo.spring.security.model;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -38,16 +40,24 @@ import static org.apache.dubbo.spring.security.utils.SecurityNames.SIMPLE_MODULE
     JAVA_TIME_MODULE_CLASS_NAME, SIMPLE_MODULE_CLASS_NAME})
 public class SecurityScopeModelInitializer implements ScopeModelInitializer {
 
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
     @Override
     public void initializeFrameworkModel(FrameworkModel frameworkModel) {
         ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
 
-        ObjectMapperCodec objectMapperCodec = beanFactory.getOrRegisterBean(ObjectMapperCodec.class);
+        try {
+            ObjectMapperCodec objectMapperCodec = new ObjectMapperCodec();
 
-        Set<ObjectMapperCodecCustomer> objectMapperCodecCustomerList = frameworkModel.getExtensionLoader(ObjectMapperCodecCustomer.class).getSupportedExtensionInstances();
+            Set<ObjectMapperCodecCustomer> objectMapperCodecCustomerList = frameworkModel.getExtensionLoader(ObjectMapperCodecCustomer.class).getSupportedExtensionInstances();
 
-        for (ObjectMapperCodecCustomer objectMapperCodecCustomer : objectMapperCodecCustomerList) {
-            objectMapperCodecCustomer.customize(objectMapperCodec);
+            for (ObjectMapperCodecCustomer objectMapperCodecCustomer : objectMapperCodecCustomerList) {
+                objectMapperCodecCustomer.customize(objectMapperCodec);
+            }
+
+            beanFactory.registerBean(objectMapperCodec);
+        } catch (Throwable t) {
+            logger.info("Failed to initialize ObjectMapperCodecCustomer and spring security related features are disabled.", t);
         }
     }
 

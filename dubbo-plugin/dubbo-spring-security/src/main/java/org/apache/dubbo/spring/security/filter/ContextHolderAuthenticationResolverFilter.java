@@ -50,7 +50,9 @@ public class ContextHolderAuthenticationResolverFilter implements Filter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        getSecurityContext(invocation);
+        if (this.mapper != null) {
+            getSecurityContext(invocation);
+        }
 
         return invoker.invoke(invocation);
     }
