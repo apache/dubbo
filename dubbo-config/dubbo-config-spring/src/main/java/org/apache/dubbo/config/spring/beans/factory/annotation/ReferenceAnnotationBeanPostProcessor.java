@@ -110,10 +110,10 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
     private final ConcurrentMap<InjectionMetadata.InjectedElement, String> injectedMethodReferenceBeanCache =
         new ConcurrentHashMap<>(CACHE_SIZE);
 
-    private ApplicationContext applicationContext;
+    protected ApplicationContext applicationContext;
 
-    private ReferenceBeanManager referenceBeanManager;
-    private BeanDefinitionRegistry beanDefinitionRegistry;
+    protected ReferenceBeanManager referenceBeanManager;
+    protected BeanDefinitionRegistry beanDefinitionRegistry;
 
     /**
      * {@link com.alibaba.dubbo.config.annotation.Reference @com.alibaba.dubbo.config.annotation.Reference} has been supported since 2.7.3
@@ -211,7 +211,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
      * @param beanName
      * @param beanDefinition
      */
-    private void processReferenceAnnotatedBeanDefinition(String beanName, AnnotatedBeanDefinition beanDefinition) {
+    protected void processReferenceAnnotatedBeanDefinition(String beanName, AnnotatedBeanDefinition beanDefinition) {
 
         MethodMetadata factoryMethodMetadata = SpringCompatUtils.getFactoryMethodMetadata(beanDefinition);
 
@@ -499,6 +499,9 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         beanDefinition.setAttribute(Constants.REFERENCE_PROPS, attributes);
         beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_CLASS, interfaceClass);
         beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_NAME, interfaceName);
+
+        beanDefinition.getPropertyValues().add(ReferenceAttributes.INTERFACE_CLASS, interfaceClass);
+        beanDefinition.getPropertyValues().add(ReferenceAttributes.INTERFACE_NAME, interfaceName);
 
         // create decorated definition for reference bean, Avoid being instantiated when getting the beanType of ReferenceBean
         // see org.springframework.beans.factory.support.AbstractBeanFactory#getTypeForFactoryBean()

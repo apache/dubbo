@@ -36,6 +36,7 @@
         <module>dubbo-spring-security</module>
         <module>dubbo-qos-api</module>
         <module>dubbo-plugin-cluster-mergeable</module>
+        <module>dubbo-native</module>
         <module>dubbo-plugin-mock</module>
         <module>dubbo-plugin-router-script</module>
         <module>dubbo-plugin-router-mesh</module>
@@ -63,4 +64,22 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>loom</id>
+            <activation>
+                <jdk>[21,)</jdk>
+            </activation>
+            <modules>
+                <module>dubbo-plugin-loom</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>release</id>
+            <modules>
+                <module>dubbo-plugin-loom</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>
