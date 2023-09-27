@@ -101,6 +101,7 @@ header:
     - 'dubbo-native/src/main/java/org/apache/dubbo/aot/generate/MemberCategory.java'
     - 'dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/aggregate/DubboMergingDigest.java'
     - 'dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/aggregate/DubboAbstractTDigest.java'
+    - 'dubbo-registry/dubbo-registry-multiple/src/test/java/org/apache/dubbo/registry/multiple/MultipleServiceDiscoveryTest.java'
 
   comment: on-failure
 
