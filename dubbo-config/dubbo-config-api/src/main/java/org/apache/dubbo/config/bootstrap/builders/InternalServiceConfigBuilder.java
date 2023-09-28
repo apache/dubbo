@@ -262,8 +262,11 @@ public class InternalServiceConfigBuilder<T> {
         serviceConfig.setScopeModel(applicationModel.getInternalModule());
         serviceConfig.setApplication(applicationConfig);
 
-        RegistryConfig registryConfig = new RegistryConfig("N/A");
+        RegistryConfig registryConfig = new RegistryConfig();
+        registryConfig.refresh();
+        registryConfig.setNeedRefresh(false);
         registryConfig.setId(this.registryId);
+        registryConfig.setAddress("N/A");
         registryConfig.setScopeModel(this.applicationModel);
 
         serviceConfig.setRegistry(registryConfig);

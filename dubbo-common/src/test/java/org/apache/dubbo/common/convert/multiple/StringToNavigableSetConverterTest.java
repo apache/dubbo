@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.convert.multiple;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.JRE;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -112,6 +113,8 @@ class StringToNavigableSetConverterTest {
 
     @Test
     void testGetPriority() {
-        assertEquals(Integer.MAX_VALUE - 4, converter.getPriority());
+        // Since JDK21, add SequencedCollection, SequencedSet
+        assertEquals(Integer.MAX_VALUE - (JRE.currentVersion().compareTo(JRE.JAVA_21) >= 0 ? 6 : 4),
+                converter.getPriority());
     }
 }

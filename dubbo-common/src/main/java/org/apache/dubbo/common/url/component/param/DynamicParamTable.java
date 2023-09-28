@@ -18,7 +18,6 @@ package org.apache.dubbo.common.url.component.param;
 
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -31,10 +30,6 @@ import java.util.TreeMap;
  * Not support method parameters
  */
 public final class DynamicParamTable {
-    /**
-     * Keys array, value is key's identity hashcode ( assume key is in constant pool )
-     */
-    private static int[] KEYS;
     /**
      * Keys array, value is string
      */
@@ -54,13 +49,6 @@ public final class DynamicParamTable {
         if (!enabled) {
             return -1;
         }
-        // assume key is in constant pool
-        int identityHashCode = System.identityHashCode(key);
-        int index = Arrays.binarySearch(KEYS, identityHashCode);
-        if (index >= 0) {
-            return index;
-        }
-        // fallback to key2index map
         Integer indexFromMap = KEY2INDEX.get(key);
         return indexFromMap == null ? -1 : indexFromMap;
     }
@@ -96,13 +84,6 @@ public final class DynamicParamTable {
         for (int i = 0; i < keys.size(); i++) {
             resultMap.put(keys.get(i), values.get(i));
         }
-
-        // assume key is in constant pool, store identity hashCode as index
-        KEYS = resultMap.keySet()
-            .stream()
-            .map(System::identityHashCode)
-            .mapToInt(x -> x)
-            .toArray();
 
         ORIGIN_KEYS = resultMap.keySet().toArray(new String[0]);
 
