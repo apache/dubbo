@@ -51,6 +51,8 @@
         <module>dubbo-plugin-classloader-filter</module>
         <module>dubbo-plugin-proxy-bytebuddy</module>
         <module>dubbo-plugin-qos-trace</module>
+        <module>dubbo-filter-cache</module>
+        <module>dubbo-filter-validation</module>
     </modules>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
