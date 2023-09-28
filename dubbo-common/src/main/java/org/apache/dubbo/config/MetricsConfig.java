@@ -77,6 +77,11 @@ public class MetricsConfig extends AbstractConfig {
     private Boolean enableCollectorSync;
 
     /**
+     * Collector sync period.
+     */
+    private Integer collectorSyncPeriod;
+
+    /**
      * @deprecated After metrics config is refactored.
      * This parameter should no longer use and will be deleted in the future.
      */
@@ -251,6 +256,14 @@ public class MetricsConfig extends AbstractConfig {
 
     public void setEnableCollectorSync(Boolean enableCollectorSync) {
         this.enableCollectorSync = enableCollectorSync;
+    }
+
+    public Integer getCollectorSyncPeriod() {
+        return collectorSyncPeriod;
+    }
+
+    public void setCollectorSyncPeriod(Integer collectorSyncPeriod) {
+        this.collectorSyncPeriod = collectorSyncPeriod;
     }
 
     public Boolean getUseGlobalRegistry() {

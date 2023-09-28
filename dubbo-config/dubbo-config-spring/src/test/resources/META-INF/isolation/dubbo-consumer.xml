@@ -26,7 +26,7 @@
 
     <dubbo:metadata-report address="zookeeper://127.0.0.1:2181"/>
 
-    <dubbo:registry id="demo1" address="zookeeper://127.0.0.1:2181?registry-type=service"/>
+    <dubbo:registry id="demo1" address="zookeeper://127.0.0.1:2181"/>
 
     <!-- refer with dubbo protocol-->
     <dubbo:reference version="1.0.0" group="Group1" id="dubbo-demoServiceV1" check="false" scope="remote"

@@ -22,8 +22,6 @@ import org.apache.dubbo.common.utils.ReflectUtils;
 
 import javassist.ClassPool;
 import javassist.CtMethod;
-import javassist.LoaderClassPath;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -158,9 +156,7 @@ public abstract class Wrapper {
             pts.put(fn, ft);
         }
 
-        final ClassPool classPool = new ClassPool(ClassPool.getDefault());
-        classPool.insertClassPath(new LoaderClassPath(cl));
-        classPool.insertClassPath(new DubboLoaderClassPath());
+        final ClassPool classPool = ClassGenerator.getClassPool(cl);
 
         List<String> allMethod = new ArrayList<>();
         try {
