@@ -51,6 +51,8 @@ public interface MetricsConstants {
 
     String ENABLE_COLLECTOR_SYNC_KEY = "enable.collector.sync";
 
+    String COLLECTOR_SYNC_PERIOD_KEY = "collector.sync.period";
+
     String AGGREGATION_COLLECTOR_KEY = "aggregation";
 
     String AGGREGATION_ENABLED_KEY = "aggregation.enabled";
