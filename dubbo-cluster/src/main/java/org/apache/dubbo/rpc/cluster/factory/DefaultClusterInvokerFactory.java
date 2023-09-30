@@ -20,7 +20,7 @@ package org.apache.dubbo.rpc.cluster.factory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.ClusterInvokerFactory;
 import org.apache.dubbo.rpc.cluster.Directory;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.util.List;
 
@@ -30,8 +30,8 @@ public class DefaultClusterInvokerFactory implements ClusterInvokerFactory {
 
     private final List<DirectoryStrategy> strategies;
 
-    public DefaultClusterInvokerFactory(ApplicationModel applicationModel) {
-        this.strategies = applicationModel.getBeanFactory().getBeansOfType(DirectoryStrategy.class);
+    public DefaultClusterInvokerFactory(ScopeModel scopeModel) {
+        this.strategies = scopeModel.getBeanFactory().getBeansOfType(DirectoryStrategy.class);
     }
 
     /**
