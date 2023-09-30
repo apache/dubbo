@@ -17,6 +17,8 @@
 package org.apache.dubbo.rpc.cluster;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.rpc.cluster.factory.DefaultClusterInvokerFactory;
+import org.apache.dubbo.rpc.cluster.factory.StaticDirectoryStrategy;
 import org.apache.dubbo.rpc.cluster.router.RouterSnapshotSwitcher;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -25,10 +27,12 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 
 public class ClusterScopeModelInitializer implements ScopeModelInitializer {
+
     @Override
     public void initializeFrameworkModel(FrameworkModel frameworkModel) {
         ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
         beanFactory.registerBean(RouterSnapshotSwitcher.class);
+        beanFactory.registerBean(StaticDirectoryStrategy.class);
         beanFactory.registerBean(DefaultClusterInvokerFactory.class);
     }
 

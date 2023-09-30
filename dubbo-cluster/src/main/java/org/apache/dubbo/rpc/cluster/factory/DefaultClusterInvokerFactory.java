@@ -14,15 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster;
+package org.apache.dubbo.rpc.cluster.factory;
 
 
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
+import org.apache.dubbo.rpc.cluster.ClusterInvokerFactory;
+import org.apache.dubbo.rpc.cluster.Directory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import java.util.List;
 
 import static org.apache.dubbo.rpc.cluster.Cluster.getCluster;
 
 public class DefaultClusterInvokerFactory implements ClusterInvokerFactory {
+
+    private final List<DirectoryStrategy> strategies;
+
+    public DefaultClusterInvokerFactory(ApplicationModel applicationModel) {
+        this.strategies = applicationModel.getBeanFactory().getBeansOfType(DirectoryStrategy.class);
+    }
 
     /**
      * Build an Invoker with StaticDirectory.
@@ -32,8 +42,15 @@ public class DefaultClusterInvokerFactory implements ClusterInvokerFactory {
      */
     @Override
     public Invoker<?> getInvoker(ClusterInvokerConfig config) {
+        Directory<?> directory = null;
+        for (DirectoryStrategy strategy : strategies) {
+            if (strategy.name().equals(config.getDirectoryName())) {
+                directory = strategy.createDirectory(config);
+                break;
+            }
+        }
         return getCluster(config.getScopeModel(), config.getClusterName(), config.isWrappedCluster())
-                .join(new StaticDirectory(config.getServiceUrl(), config.getInvokersToJoin()), config.isWrappedDirectory());
+                .join(directory,config.isWrappedInvoker());
     }
 
 }

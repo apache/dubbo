@@ -30,28 +30,42 @@ public interface ClusterInvokerFactory {
 
     Invoker<?> getInvoker(ClusterInvokerConfig config);
 
-    class ClusterInvokerConfig{
+    enum DirectoryNames {
+        STATIC;
+    }
+
+    class ClusterInvokerConfig {
         private ScopeModel scopeModel;
         private String clusterName;
         private URL serviceUrl;
         private List<Invoker<?>> invokersToJoin;
         boolean wrappedCluster;
-        boolean wrappedDirectory;
+        boolean wrappedInvoker;
+        DirectoryNames directoryName;
 
         public ClusterInvokerConfig(ScopeModel scopeModel, String clusterName, URL serviceUrl, List<Invoker<?>> invokersToJoin) {
             this.scopeModel = scopeModel;
             this.clusterName = clusterName;
             this.serviceUrl = serviceUrl;
             this.invokersToJoin = invokersToJoin;
+            this.directoryName = DirectoryNames.STATIC;
         }
 
-        public ClusterInvokerConfig(ScopeModel scopeModel, String clusterName, URL serviceUrl, List<Invoker<?>> invokersToJoin, boolean wrappedCluster, boolean wrappedDirectory) {
+        public ClusterInvokerConfig(ScopeModel scopeModel, String clusterName, URL serviceUrl, List<Invoker<?>> invokersToJoin, boolean wrappedCluster, boolean wrappedInvoker) {
             this.scopeModel = scopeModel;
             this.clusterName = clusterName;
             this.serviceUrl = serviceUrl;
             this.invokersToJoin = invokersToJoin;
             this.wrappedCluster = wrappedCluster;
-            this.wrappedDirectory = wrappedDirectory;
+            this.wrappedInvoker = wrappedInvoker;
+            this.directoryName = DirectoryNames.STATIC;
+        }
+
+        public ClusterInvokerConfig() {
+        }
+
+        public DirectoryNames getDirectoryName() {
+            return directoryName;
         }
 
         public ScopeModel getScopeModel() {
@@ -74,8 +88,36 @@ public interface ClusterInvokerFactory {
             return wrappedCluster;
         }
 
-        public boolean isWrappedDirectory() {
-            return wrappedDirectory;
+        public boolean isWrappedInvoker() {
+            return wrappedInvoker;
+        }
+
+        public void setScopeModel(ScopeModel scopeModel) {
+            this.scopeModel = scopeModel;
+        }
+
+        public void setClusterName(String clusterName) {
+            this.clusterName = clusterName;
+        }
+
+        public void setServiceUrl(URL serviceUrl) {
+            this.serviceUrl = serviceUrl;
+        }
+
+        public void setInvokersToJoin(List<Invoker<?>> invokersToJoin) {
+            this.invokersToJoin = invokersToJoin;
+        }
+
+        public void setWrappedCluster(boolean wrappedCluster) {
+            this.wrappedCluster = wrappedCluster;
+        }
+
+        public void setWrappedDirectory(boolean wrappedDirectory) {
+            this.wrappedInvoker = wrappedDirectory;
+        }
+
+        public void setDirectoryName(DirectoryNames directoryName) {
+            this.directoryName = directoryName;
         }
     }
 }
