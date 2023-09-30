@@ -38,6 +38,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAccumulator;
 import java.util.function.BiConsumer;
@@ -51,6 +52,8 @@ import java.util.stream.Collectors;
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class RtStatComposite extends AbstractMetricsExport {
     private boolean serviceLevel;
+
+    private final AtomicBoolean samplesChanged = new AtomicBoolean(true);
 
     public RtStatComposite(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -66,10 +69,10 @@ public class RtStatComposite extends AbstractMetricsExport {
         for (MetricsPlaceValue placeValue : placeValues) {
             List<LongContainer<? extends Number>> containers = initStats(placeValue);
             for (LongContainer<? extends Number> container : containers) {
-                rtStats.computeIfAbsent(container.getMetricsKeyWrapper().getType(), k -> new ArrayList<>())
-                    .add(container);
+                rtStats.computeIfAbsent(container.getMetricsKeyWrapper().getType(), k -> new ArrayList<>()).add(container);
             }
         }
+        samplesChanged.set(true);
     }
 
     private List<LongContainer<? extends Number>> initStats(MetricsPlaceValue placeValue) {
@@ -95,6 +98,7 @@ public class RtStatComposite extends AbstractMetricsExport {
             Number current = (Number) container.get(key);
             if (current == null) {
                 container.putIfAbsent(key, container.getInitFunc().apply(key));
+                samplesChanged.set(true);
                 current = (Number) container.get(key);
             }
             container.getConsumerFunc().accept(responseTime, current);
@@ -114,6 +118,7 @@ public class RtStatComposite extends AbstractMetricsExport {
             if (actions == null) {
                 actions = calServiceRtActions(invocation, registryOpType);
                 cache.putIfAbsent(registryOpType, actions);
+                samplesChanged.set(true);
                 actions = cache.get(registryOpType);
             }
         } else {
@@ -134,6 +139,7 @@ public class RtStatComposite extends AbstractMetricsExport {
             Number current = (Number) container.get(key);
             if (current == null) {
                 container.putIfAbsent(key, container.getInitFunc().apply(key));
+                samplesChanged.set(true);
                 current = (Number) container.get(key);
             }
             actions.add(new Action(container.getConsumerFunc(), current));
@@ -155,6 +161,7 @@ public class RtStatComposite extends AbstractMetricsExport {
             if (actions == null) {
                 actions = calMethodRtActions(invocation, registryOpType);
                 cache.putIfAbsent(registryOpType, actions);
+                samplesChanged.set(true);
                 actions = cache.get(registryOpType);
             }
         } else {
@@ -174,6 +181,7 @@ public class RtStatComposite extends AbstractMetricsExport {
             Number current = (Number) container.get(key);
             if (current == null) {
                 container.putIfAbsent(key, container.getInitFunc().apply(key));
+                samplesChanged.set(true);
                 current = (Number) container.get(key);
             }
             actions.add(new Action(container.getConsumerFunc(), current));
@@ -217,5 +225,11 @@ public class RtStatComposite extends AbstractMetricsExport {
         public void run(Long responseTime) {
             consumerFunc.accept(responseTime, initValue);
         }
+    }
+
+    @Override
+    public boolean calSamplesChanged() {
+        // CAS to get and reset the flag in an atomic operation
+        return samplesChanged.compareAndSet(true, false);
     }
 }
