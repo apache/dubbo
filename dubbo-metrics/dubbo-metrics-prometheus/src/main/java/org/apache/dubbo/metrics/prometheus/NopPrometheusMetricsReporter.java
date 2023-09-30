@@ -31,7 +31,7 @@ public class NopPrometheusMetricsReporter implements MetricsReporter {
     }
 
     @Override
-    public void refreshData() {
+    public void resetIfSamplesChanged() {
 
     }
 

@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -46,11 +47,16 @@ public class ApplicationStatComposite extends AbstractMetricsExport {
 
     private final Map<MetricsKey, AtomicLong> applicationNumStats = new ConcurrentHashMap<>();
 
+    private final AtomicBoolean samplesChanged = new AtomicBoolean(true);
+
     public void init(List<MetricsKey> appKeys) {
         if (CollectionUtils.isEmpty(appKeys)) {
             return;
         }
-        appKeys.forEach(appKey -> applicationNumStats.put(appKey, new AtomicLong(0L)));
+        appKeys.forEach(appKey -> {
+            applicationNumStats.put(appKey, new AtomicLong(0L));
+        });
+        samplesChanged.set(true);
     }
 
     public void incrementSize(MetricsKey metricsKey, int size) {
@@ -78,4 +84,10 @@ public class ApplicationStatComposite extends AbstractMetricsExport {
         return applicationNumStats;
     }
 
+
+    @Override
+    public boolean calSamplesChanged() {
+        // CAS to get and reset the flag in an atomic operation
+        return samplesChanged.compareAndSet(true, false);
+    }
 }
