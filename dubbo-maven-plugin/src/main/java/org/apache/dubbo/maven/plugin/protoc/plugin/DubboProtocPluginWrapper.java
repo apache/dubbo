@@ -14,25 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.gen.dubbo;
+package org.apache.dubbo.maven.plugin.protoc.plugin;
 
-import org.apache.dubbo.gen.AbstractGenerator;
-import org.apache.dubbo.gen.DubboGeneratorPlugin;
+import org.apache.maven.plugin.logging.Log;
 
+import java.io.File;
 
-public class DubboGenerator extends AbstractGenerator {
+public interface DubboProtocPluginWrapper {
 
-    public static void main(String[] args) {
-        DubboGeneratorPlugin.generate(new DubboGenerator());
-    }
-
-    @Override
-    protected String getClassPrefix() {
-        return "";
-    }
-
-    @Override
-    protected String getClassSuffix() {
-        return "Dubbo";
-    }
+    File createProtocPlugin(DubboProtocPlugin dubboProtocPlugin, Log log);
 }
