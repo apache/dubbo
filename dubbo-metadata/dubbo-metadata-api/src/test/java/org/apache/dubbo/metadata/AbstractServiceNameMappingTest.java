@@ -48,7 +48,7 @@ class AbstractServiceNameMappingTest {
 
     @AfterEach
     public void clearup() {
-        mapping.removeCachedMapping(ServiceNameMapping.buildMappingKey(url));
+        mapping.removeCachedMapping(ServiceNameMappingUtils.buildMappingKey(url));
     }
 
     @Test
@@ -78,7 +78,7 @@ class AbstractServiceNameMappingTest {
         Assertions.assertTrue(services.contains("registry-app1"));
 
         // remove mapping cache, check get() works.
-        mapping2.removeCachedMapping(ServiceNameMapping.buildMappingKey(url));
+        mapping2.removeCachedMapping(ServiceNameMappingUtils.buildMappingKey(url));
         mapping2.enabled = true;
         services = mapping2.getAndListen(registryURL, url, new MappingListener() {
             @Override

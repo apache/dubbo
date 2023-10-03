@@ -38,7 +38,7 @@ public class DefaultMetadataPublisher implements MetadataPublisher {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DefaultMetadataPublisher.class);
     @Override
     public void publishServiceDefinition(URL url, ServiceDescriptor serviceDescriptor, ApplicationModel applicationModel) {
-        if (getMetadataReports(applicationModel).isEmpty()) {
+        if (getMetadataReports(applicationModel).size() == 0) {
             String msg = "Remote Metadata Report Server is not provided or unavailable, will stop registering service definition to remote center!";
             logger.warn(REGISTRY_FAILED_LOAD_METADATA, "", "", msg);
             return;

@@ -31,7 +31,6 @@
         <!-- Uncomment spring_version property to check Spring 4.x compatibility -->
         <!-- <spring_version>4.3.30.RELEASE</spring_version> -->
     </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
@@ -254,6 +253,7 @@
             <artifactId>curator-x-discovery</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.apache.zookeeper</groupId>
             <artifactId>zookeeper</artifactId>
@@ -278,6 +278,12 @@
             <artifactId>nacos-client</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-test-common</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -294,7 +300,6 @@
                 </includes>
             </testResource>
         </testResources>
-
         <plugins>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>

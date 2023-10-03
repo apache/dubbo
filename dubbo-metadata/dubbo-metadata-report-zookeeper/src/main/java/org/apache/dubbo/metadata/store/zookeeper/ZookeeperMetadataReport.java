@@ -51,7 +51,7 @@ import java.util.concurrent.ConcurrentMap;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ZOOKEEPER_EXCEPTION;
 import static org.apache.dubbo.metadata.ServiceNameMapping.DEFAULT_MAPPING_GROUP;
-import static org.apache.dubbo.metadata.ServiceNameMapping.getAppNames;
+import static org.apache.dubbo.metadata.ServiceNameMappingUtils.getAppNames;
 
 /**
  * ZookeeperMetadataReport

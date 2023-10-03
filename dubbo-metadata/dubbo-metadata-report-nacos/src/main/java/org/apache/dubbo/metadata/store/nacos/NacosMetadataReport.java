@@ -41,7 +41,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MappingChangedEvent;
 import org.apache.dubbo.metadata.MappingListener;
 import org.apache.dubbo.metadata.MetadataInfo;
-import org.apache.dubbo.metadata.ServiceNameMapping;
+import org.apache.dubbo.metadata.ServiceNameMappingUtils;
 import org.apache.dubbo.metadata.report.identifier.BaseMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
@@ -66,7 +66,7 @@ import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of
 import static org.apache.dubbo.common.utils.StringUtils.HYPHEN_CHAR;
 import static org.apache.dubbo.metadata.MetadataConstants.REPORT_CONSUMER_URL_KEY;
 import static org.apache.dubbo.metadata.ServiceNameMapping.DEFAULT_MAPPING_GROUP;
-import static org.apache.dubbo.metadata.ServiceNameMapping.getAppNames;
+import static org.apache.dubbo.metadata.ServiceNameMappingUtils.getAppNames;
 
 /**
  * metadata report impl for nacos
@@ -296,7 +296,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
             addCasServiceMappingListener(serviceKey, group, listener);
         }
         String content = getConfig(serviceKey, group);
-        return ServiceNameMapping.getAppNames(content);
+        return ServiceNameMappingUtils.getAppNames(content);
     }
 
     @Override
@@ -312,7 +312,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
     @Override
     public Set<String> getServiceAppMapping(String serviceKey, URL url) {
         String content = getConfig(serviceKey, DEFAULT_MAPPING_GROUP);
-        return ServiceNameMapping.getAppNames(content);
+        return ServiceNameMappingUtils.getAppNames(content);
     }
 
     private String getConfig(String dataId, String group) {

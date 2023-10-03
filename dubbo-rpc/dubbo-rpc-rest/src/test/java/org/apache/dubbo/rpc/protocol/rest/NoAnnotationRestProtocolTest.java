@@ -53,6 +53,12 @@ class NoAnnotationRestProtocolTest {
     public void tearDown() {
         protocol.destroy();
         FrameworkModel.destroyAll();
+        new JsonUtils() {
+            public void clearJson() {
+                setJson(null);
+            }
+        }.clearJson();
+        System.clearProperty(CommonConstants.PREFER_JSON_FRAMEWORK_NAME);
     }
 
     @Test

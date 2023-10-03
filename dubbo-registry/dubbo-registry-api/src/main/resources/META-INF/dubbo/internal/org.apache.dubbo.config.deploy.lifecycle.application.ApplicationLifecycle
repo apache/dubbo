@@ -2,3 +2,5 @@ deregister=org.apache.dubbo.config.deploy.lifecycle.application.DeregisterApplic
 register=org.apache.dubbo.config.deploy.lifecycle.application.RegisterApplicationLifecycle
 application-offline=org.apache.dubbo.config.deploy.lifecycle.application.ApplicationPreOfflineLifecycle
 module-offline=org.apache.dubbo.config.deploy.lifecycle.application.ModuleOfflineLifecycle
+app-post-offline=org.apache.dubbo.config.deploy.lifecycle.application.ApplicationPostOfflineLifecycle
+register-bean-init=org.apache.dubbo.config.deploy.lifecycle.application.RegisterBeanInitLifecycle

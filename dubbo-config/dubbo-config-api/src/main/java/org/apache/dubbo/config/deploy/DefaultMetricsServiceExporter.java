@@ -34,6 +34,7 @@ import java.util.concurrent.ExecutorService;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
 import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 
+//TODO: move to metrics-default
 /**
  * Export metrics service
  */

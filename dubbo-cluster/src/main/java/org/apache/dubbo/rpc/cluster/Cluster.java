@@ -24,6 +24,8 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
+import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_CLUSTER;
+
 /**
  * Cluster. (SPI, Singleton, ThreadSafe)
  * <p>
@@ -31,10 +33,8 @@ import org.apache.dubbo.rpc.model.ScopeModelUtil;
  * <a href="http://en.wikipedia.org/wiki/Fault-tolerant_system">Fault-Tolerant</a>
  *
  */
-@SPI(Cluster.DEFAULT)
+@SPI(DEFAULT_CLUSTER)
 public interface Cluster {
-
-    String DEFAULT = "failover";
 
     /**
      * Merge the directory invokers to a virtual invoker.
@@ -53,7 +53,7 @@ public interface Cluster {
 
     static Cluster getCluster(ScopeModel scopeModel, String name, boolean wrap) {
         if (StringUtils.isEmpty(name)) {
-            name = Cluster.DEFAULT;
+            name = DEFAULT_CLUSTER;
         }
         return ScopeModelUtil.getApplicationModel(scopeModel).getExtensionLoader(Cluster.class).getExtension(name, wrap);
     }

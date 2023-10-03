@@ -139,4 +139,8 @@ public interface Constants {
     String RULE_VERSION_V27 = "v2.7";
 
     String RULE_VERSION_V30 = "v3.0";
+
+    String ZONE_AWARE_CLUSTER_NAME = "zone-aware";
+
+    String DEFAULT_CLUSTER = "failover";
 }
