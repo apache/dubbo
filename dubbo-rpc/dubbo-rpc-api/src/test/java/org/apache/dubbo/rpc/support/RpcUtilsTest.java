@@ -50,6 +50,11 @@ class RpcUtilsTest {
      * regular scenario: async invocation in URL
      * verify: 1. whether invocationId is set correctly, 2. idempotent or not
      */
+    Invoker creatmockinvoker(URL url){
+        Invoker invoker = mock(Invoker.class);
+        given(invoker.getUrl()).willReturn(url);
+        return  invoker;
+    }
     @Test
     void testAttachInvocationIdIfAsync_normal() {
         URL url = URL.valueOf("dubbo://localhost/?test.async=true");
@@ -117,8 +122,7 @@ class RpcUtilsTest {
     void testGetReturnType() {
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
-        Invoker invoker = mock(Invoker.class);
-        given(invoker.getUrl()).willReturn(URL.valueOf(
+        Invoker invoker = creatmockinvoker(URL.valueOf(
                 "test://127.0.0.1:1/org.apache.dubbo.rpc.support.DemoService?interface=org.apache.dubbo.rpc.support.DemoService"));
 
         // void sayHello(String name);
@@ -157,8 +161,7 @@ class RpcUtilsTest {
     void testGetReturnTypesUseCache() throws Exception {
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
-        Invoker invoker = mock(Invoker.class);
-        given(invoker.getUrl()).willReturn(URL.valueOf(
+        Invoker invoker = creatmockinvoker(URL.valueOf(
                 "test://127.0.0.1:1/org.apache.dubbo.rpc.support.DemoService?interface=org.apache.dubbo.rpc.support.DemoService"));
 
         RpcInvocation inv = new RpcInvocation("testReturnType", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
@@ -221,8 +224,7 @@ class RpcUtilsTest {
     void testGetReturnTypesWithoutCache() throws Exception {
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
-        Invoker invoker = mock(Invoker.class);
-        given(invoker.getUrl()).willReturn(URL.valueOf(
+        Invoker invoker = creatmockinvoker(URL.valueOf(
             "test://127.0.0.1:1/org.apache.dubbo.rpc.support.DemoService?interface=org.apache.dubbo.rpc.support.DemoService"));
 
         RpcInvocation inv = new RpcInvocation("testReturnType", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
@@ -286,8 +288,7 @@ class RpcUtilsTest {
     void testGetReturnTypesWhenGeneric() throws Exception {
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
-        Invoker invoker = mock(Invoker.class);
-        given(invoker.getUrl()).willReturn(URL.valueOf(
+        Invoker invoker = creatmockinvoker(URL.valueOf(
             "test://127.0.0.1:1/org.apache.dubbo.rpc.support.DemoService?interface=org.apache.dubbo.rpc.support.DemoService"));
 
         RpcInvocation inv = new RpcInvocation("testReturnType", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
@@ -470,8 +471,7 @@ class RpcUtilsTest {
     void testIsReturnTypeFuture() {
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
-        Invoker invoker = mock(Invoker.class);
-        given(invoker.getUrl()).willReturn(URL.valueOf(
+        Invoker invoker = creatmockinvoker(URL.valueOf(
                 "test://127.0.0.1:1/org.apache.dubbo.rpc.support.DemoService?interface=org.apache.dubbo.rpc.support.DemoService"));
 
         RpcInvocation inv = new RpcInvocation("testReturnType", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
