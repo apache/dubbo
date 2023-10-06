@@ -55,6 +55,9 @@ class RpcUtilsTest {
         given(invoker.getUrl()).willReturn(url);
         return  invoker;
     }
+    Invoker creatmockinvoker(){
+        return  mock(Invoker.class);
+    }
     @Test
     void testAttachInvocationIdIfAsync_normal() {
         URL url = URL.valueOf("dubbo://localhost/?test.async=true");
@@ -330,7 +333,7 @@ class RpcUtilsTest {
     void testGetParameterTypes() {
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
-        Invoker invoker = mock(Invoker.class);
+        Invoker invoker =creatmockinvoker();
 
         // void sayHello(String name);
         RpcInvocation inv1 = new RpcInvocation("sayHello", serviceName, "",
@@ -384,7 +387,7 @@ class RpcUtilsTest {
     public void testGetMethodName(String methodName) {
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
-        Invoker invoker = mock(Invoker.class);
+        Invoker invoker =creatmockinvoker();
 
         RpcInvocation inv1 = new RpcInvocation(methodName, serviceName, "",
                 new Class<?>[] {String.class}, null, null, invoker, null);
@@ -402,7 +405,7 @@ class RpcUtilsTest {
     public void testGet_$invoke_MethodName(String method) {
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
-        Invoker invoker = mock(Invoker.class);
+        Invoker invoker =creatmockinvoker();
 
         RpcInvocation inv = new RpcInvocation("$invoke", serviceName, "",
                 new Class<?>[] {String.class, String[].class},
@@ -419,7 +422,7 @@ class RpcUtilsTest {
         Object[] args = new Object[] {"hello", "dubbo", 520};
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
-        Invoker invoker = mock(Invoker.class);
+        Invoker invoker =creatmockinvoker();
 
         RpcInvocation inv = new RpcInvocation("$invoke", serviceName, "",
                 new Class<?>[] {String.class, String[].class, Object[].class},
@@ -439,7 +442,7 @@ class RpcUtilsTest {
         Object[] args = new Object[] {"hello", "dubbo", 520};
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
-        Invoker invoker = mock(Invoker.class);
+        Invoker invoker =creatmockinvoker();
 
         URL url = URL.valueOf(
                 "test://127.0.0.1:1/org.apache.dubbo.rpc.support.DemoService?interface=org.apache.dubbo.rpc.support.DemoService");
