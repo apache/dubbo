@@ -62,7 +62,10 @@ public class LinuxDubboProtocPluginWrapper implements DubboProtocPluginWrapper {
             out.println("\"" + javaLocation.getAbsolutePath() + "\" $JVMARGS -cp $CP "
                     + dubboProtocPlugin.getMainClass() + " $ARGS");
             out.println();
-            pluginExecutableFile.setExecutable(true);
+            boolean b = pluginExecutableFile.setExecutable(true);
+            if (!b) {
+                throw new RuntimeException("Could not make plugin executable: " + pluginExecutableFile);
+            }
             return pluginExecutableFile;
         } catch (IOException e) {
             throw new RuntimeException("Could not write plugin script file: " + pluginExecutableFile, e);

@@ -112,10 +112,8 @@ public class DubboProtocCompilerMojo extends AbstractMojo {
             protocExecutable = "protoc";
         }
         getLog().info("protocExecutable: " + protocExecutable);
-        //创建plugin
         DubboProtocPlugin dubboProtocPlugin = buildDubboProtocPlugin(dubboVersion, dubboGenerateType, protocPluginDirectory);
         getLog().info("dubboProtocPlugin: " + dubboProtocPlugin);
-        //创建protoc command
         List<String> commandArgs = defaultProtocCommandBuilder.buildProtocCommandArgs(new ProtocMetaData(
             protocExecutable, protoSourceDir, findAllProtoFiles(protoSourceDir), outputDir, dubboProtocPlugin
         ));
@@ -133,27 +131,18 @@ public class DubboProtocCompilerMojo extends AbstractMojo {
             } else if (StringUtils.isNotBlank(getError())) {
                 getLog().warn("PROTOC: " + getError());
             } else {
-                //将protoc生成的文件加载到Maven环境中
                 linkProtoFilesToMaven();
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | CommandLineException e) {
             throw new MojoExecutionException(e);
         }
     }
 
-    /**
-     This code snippet defines a method called linkProtoFilesToMaven that links proto files to Maven.
-     It calls two other methods, linkProtoSources and linkGeneratedFiles, to perform the linking process.
-     */
     public void linkProtoFilesToMaven() {
         linkProtoSources();
         linkGeneratedFiles();
     }
 
-    /**
-     * This code snippet defines a method called linkProtoSources that adds the specified directory (protoSourceDir) to the project's resources.
-     * It includes all files with the extension .proto recursively in the directory
-     */
     public void linkProtoSources() {
         projectHelper.addResource(project, protoSourceDir.getAbsolutePath(),
             Collections.singletonList("**/*.proto*"), Collections.singletonList(""));
@@ -370,7 +359,10 @@ public class DubboProtocCompilerMojo extends AbstractMojo {
             throw new RuntimeException("Unable to copy the file to " + protocPluginDirectory, e);
         }
         if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
-            targetFile.setExecutable(true);
+            boolean b = targetFile.setExecutable(true);
+            if (!b) {
+                throw new RuntimeException("Unable to make executable: " + targetFile.getAbsolutePath());
+            }
         }
 
         if (getLog().isDebugEnabled()) {

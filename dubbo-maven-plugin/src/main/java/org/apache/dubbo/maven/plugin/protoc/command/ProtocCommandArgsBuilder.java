@@ -17,7 +17,6 @@
 package org.apache.dubbo.maven.plugin.protoc.command;
 
 import org.apache.dubbo.maven.plugin.protoc.plugin.ProtocMetaData;
-
 import java.util.List;
 
 public interface ProtocCommandArgsBuilder {
