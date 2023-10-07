@@ -18,10 +18,6 @@ package org.apache.dubbo.maven.plugin.protoc;
 
 import org.apache.dubbo.maven.plugin.protoc.command.DefaultProtocCommandBuilder;
 import org.apache.dubbo.maven.plugin.protoc.enums.DubboGenerateTypeEnum;
-import org.apache.dubbo.maven.plugin.protoc.plugin.DubboProtocPlugin;
-import org.apache.dubbo.maven.plugin.protoc.plugin.DubboProtocPluginWrapper;
-import org.apache.dubbo.maven.plugin.protoc.plugin.DubboProtocPluginWrapperFactory;
-import org.apache.dubbo.maven.plugin.protoc.plugin.ProtocMetaData;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;

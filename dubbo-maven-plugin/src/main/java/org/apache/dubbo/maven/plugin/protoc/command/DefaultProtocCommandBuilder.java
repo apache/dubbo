@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.maven.plugin.protoc.command;
 
-import org.apache.dubbo.maven.plugin.protoc.plugin.DubboProtocPlugin;
-import org.apache.dubbo.maven.plugin.protoc.plugin.ProtocMetaData;
+import org.apache.dubbo.maven.plugin.protoc.DubboProtocPlugin;
+import org.apache.dubbo.maven.plugin.protoc.ProtocMetaData;
 
 import java.io.File;
 import java.util.ArrayList;
