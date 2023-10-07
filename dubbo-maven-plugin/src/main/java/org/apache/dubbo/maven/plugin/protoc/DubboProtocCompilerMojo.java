@@ -107,19 +107,18 @@ public class DubboProtocCompilerMojo extends AbstractMojo {
             getLog().warn("No 'protocExecutable' parameter is configured, using the default: 'protoc'");
             protocExecutable = "protoc";
         }
-        getLog().info("protocExecutable: " + protocExecutable);
+        getLog().info("using protocExecutable: " + protocExecutable);
         DubboProtocPlugin dubboProtocPlugin = buildDubboProtocPlugin(dubboVersion, dubboGenerateType, protocPluginDirectory);
-        getLog().info("dubboProtocPlugin: " + dubboProtocPlugin);
+        getLog().info("build dubbo protoc plugin:" + dubboProtocPlugin + " success");
         List<String> commandArgs = defaultProtocCommandBuilder.buildProtocCommandArgs(new ProtocMetaData(
             protocExecutable, protoSourceDir, findAllProtoFiles(protoSourceDir), outputDir, dubboProtocPlugin
         ));
         if (!outputDir.exists()) {
             FileUtils.mkdir(outputDir.getAbsolutePath());
         }
-        getLog().info("commandArgs: " + commandArgs);
         try {
             int exitStatus = executeCommandLine(commandArgs);
-            getLog().info("commandLine exit code: " + exitStatus);
+            getLog().info("execute commandLine finished with exit code: " + exitStatus);
             if (exitStatus != 0) {
                 getLog().error("PROTOC FAILED: " + getError());
                 throw new MojoFailureException(
@@ -129,7 +128,7 @@ public class DubboProtocCompilerMojo extends AbstractMojo {
             } else {
                 linkProtoFilesToMaven();
             }
-        } catch (InterruptedException | CommandLineException e) {
+        } catch (CommandLineException e) {
             throw new MojoExecutionException(e);
         }
     }
@@ -166,7 +165,7 @@ public class DubboProtocCompilerMojo extends AbstractMojo {
         return protoFilesInDirectory;
     }
 
-    public int executeCommandLine(List<String> commandArgs) throws CommandLineException, InterruptedException {
+    public int executeCommandLine(List<String> commandArgs) throws CommandLineException {
         final Commandline cl = new Commandline();
         cl.setExecutable(protocExecutable);
         cl.addArguments(commandArgs.toArray(new String[]{}));
@@ -180,7 +179,12 @@ public class DubboProtocCompilerMojo extends AbstractMojo {
                     throw e;
                 }
                 getLog().warn("[PROTOC] Unable to invoke protoc, will retry " + attemptsLeft + " time(s)", e);
-                Thread.sleep(1000L);
+                try {
+                    Thread.sleep(1000L);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException(ex);
+                }
             }
         }
     }
@@ -203,7 +207,6 @@ public class DubboProtocCompilerMojo extends AbstractMojo {
         if (debugEnabled) {
             getLog().debug("protocPlugin: " + protocPlugin.getAbsolutePath());
         }
-        getLog().info("protocPlugin: " + protocPlugin.getAbsolutePath());
         dubboProtocPlugin.setProtocPlugin(protocPlugin);
         return dubboProtocPlugin;
     }

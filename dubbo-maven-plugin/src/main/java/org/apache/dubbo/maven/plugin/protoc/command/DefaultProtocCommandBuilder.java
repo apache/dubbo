@@ -28,7 +28,6 @@ public class DefaultProtocCommandBuilder implements ProtocCommandArgsBuilder {
     @Override
     public List<String> buildProtocCommandArgs(ProtocMetaData protocMetaData) {
         final List<String> command = new ArrayList<>();
-        // add the executable
         command.add("--proto_path=" + protocMetaData.getProtoSourceDir());
         String outputOption = "--java_out=";
         outputOption += protocMetaData.getOutputDir();
