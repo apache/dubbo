@@ -1082,6 +1082,10 @@ class PojoUtilsTest {
         Object localTime = PojoUtils.realize(localTimeGen, LocalTime.class);
         assertTrue(localTime instanceof LocalTime);
         assertEquals(localTimeGen.toString().length(), localTimeFormat.length());
+
+        // revert to default
+        PojoUtils.registerJsr310Converter(LocalDateTime.class, new DefaultLocalDateTimeConverter(Collections.emptyList()));
+        PojoUtils.registerJsr310Converter(LocalTime.class, new DefaultLocalTimeConverter(Collections.emptyList()));
     }
 
     public enum Day {

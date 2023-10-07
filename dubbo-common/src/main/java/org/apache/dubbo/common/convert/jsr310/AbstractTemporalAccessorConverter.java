@@ -17,6 +17,8 @@
 package org.apache.dubbo.common.convert.jsr310;
 
 
+import org.apache.dubbo.common.utils.CollectionUtils;
+
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.Collections;
@@ -25,21 +27,23 @@ import java.util.function.BiFunction;
 
 public abstract class AbstractTemporalAccessorConverter {
 
-    private final List<DateTimeFormatter> dateTimeFormatterSet;
+    private final List<DateTimeFormatter> dateTimeFormatterList;
 
     public AbstractTemporalAccessorConverter() {
-        this.dateTimeFormatterSet = Collections.emptyList();
+        this.dateTimeFormatterList = Collections.emptyList();
     }
 
-    public AbstractTemporalAccessorConverter(List<DateTimeFormatter> dateTimeFormatterSet) {
-        this.dateTimeFormatterSet = dateTimeFormatterSet;
+    public AbstractTemporalAccessorConverter(List<DateTimeFormatter> dateTimeFormatterList) {
+        this.dateTimeFormatterList = dateTimeFormatterList;
     }
 
     public Object generalize(TemporalAccessor accessor) {
-        for (DateTimeFormatter dateTimeFormatter : dateTimeFormatterSet) {
-            try {
-                return dateTimeFormatter.format(accessor);
-            } catch (Exception ignore) {
+        if (CollectionUtils.isNotEmpty(dateTimeFormatterList)) {
+            for (DateTimeFormatter dateTimeFormatter : dateTimeFormatterList) {
+                try {
+                    return dateTimeFormatter.format(accessor);
+                } catch (Exception ignore) {
+                }
             }
         }
         return accessor.toString();
@@ -47,10 +51,12 @@ public abstract class AbstractTemporalAccessorConverter {
 
     public <T extends TemporalAccessor> T realize(Object obj, BiFunction<String, DateTimeFormatter, T> parse, DateTimeFormatter defaultDateTimeFormatter) {
         String text = obj.toString();
-        for (DateTimeFormatter dateTimeFormatter : dateTimeFormatterSet) {
-            try {
-                return parse.apply(text, dateTimeFormatter);
-            } catch (Exception ignore) {
+        if (CollectionUtils.isNotEmpty(dateTimeFormatterList)) {
+            for (DateTimeFormatter dateTimeFormatter : dateTimeFormatterList) {
+                try {
+                    return parse.apply(text, dateTimeFormatter);
+                } catch (Exception ignore) {
+                }
             }
         }
         return parse.apply(text, defaultDateTimeFormatter);
