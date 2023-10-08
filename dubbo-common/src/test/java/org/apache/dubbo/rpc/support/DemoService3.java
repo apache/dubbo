@@ -21,7 +21,7 @@ import org.apache.dubbo.rpc.model.HelloRequest;
 
 public interface DemoService3 {
 
-     HelloReply sayHello(HelloRequest request);
+    HelloReply sayHello(HelloRequest request);
 
     Integer sayHello(Integer num);
 }

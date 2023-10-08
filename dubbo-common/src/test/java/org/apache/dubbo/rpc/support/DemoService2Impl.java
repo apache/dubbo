@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.support;
 
-public class DemoService2Impl implements DemoService2{
+public class DemoService2Impl implements DemoService2 {
     @Override
     public String sayHello(String name) {
         return name;

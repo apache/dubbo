@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.support;
 import org.apache.dubbo.rpc.model.HelloReply;
 import org.apache.dubbo.rpc.model.HelloRequest;
 
-public class DemoService3Impl implements DemoService3{
+public class DemoService3Impl implements DemoService3 {
     @Override
     public HelloReply sayHello(HelloRequest request) {
         return null;
