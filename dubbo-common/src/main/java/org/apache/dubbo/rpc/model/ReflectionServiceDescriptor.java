@@ -80,7 +80,7 @@ public class ReflectionServiceDescriptor implements ServiceDescriptor {
             if(methodList.size() > 1){
                 long pbMethodCount = methodList.stream().filter(methodDescriptor -> Arrays.stream(methodDescriptor.getParameterClasses()).anyMatch(pclss -> isProtobufClass(pclss))).count();
                 if(pbMethodCount > 0L){
-                    throw new IllegalStateException("Protobuf method not allow override,"+"method(" + methodName + ").");
+                    throw new IllegalStateException("Protobuf method not allow override,"+"method(" + interfaceName + "." + methodName + ").");
                 }
             }
             Map<String, MethodDescriptor> descMap = descToMethods.computeIfAbsent(methodName, k -> new HashMap<>());

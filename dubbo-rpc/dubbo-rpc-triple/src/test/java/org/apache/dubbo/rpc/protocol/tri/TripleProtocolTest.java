@@ -48,7 +48,8 @@ class TripleProtocolTest {
         ModuleServiceRepository serviceRepository = ApplicationModel.defaultModel().getDefaultModule()
             .getServiceRepository();
         serviceRepository.registerService(IGreeter.class);
-        String EXPECT_RESPONSE_MSG = "Protobuf method not allow override,method(hello).";
+        serviceRepository.registerService(IGreeter2.class);
+        String EXPECT_RESPONSE_MSG = "Protobuf method not allow override,method(org.apache.dubbo.rpc.protocol.tri.support.IGreeter3.hello).";
         try {
             serviceRepository.registerService(IGreeter3.class);
         } catch (IllegalStateException e) {
