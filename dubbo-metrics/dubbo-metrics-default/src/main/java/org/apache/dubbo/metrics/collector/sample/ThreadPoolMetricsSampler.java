@@ -55,6 +55,8 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
     private DataStore dataStore;
     private final Map<String, ThreadPoolExecutor> sampleThreadPoolExecutor = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, ThreadPoolMetric> threadPoolMetricMap = new ConcurrentHashMap<>();
+    private final AtomicBoolean samplesChanged = new AtomicBoolean(true);
+
 
     public ThreadPoolMetricsSampler(DefaultMetricsCollector collector) {
         this.collector = collector;
