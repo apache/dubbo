@@ -31,8 +31,9 @@ import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
-import org.apache.dubbo.rpc.protocol.tri.support.*;
-
+import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
+import org.apache.dubbo.rpc.protocol.tri.support.IGreeterImpl;
+import org.apache.dubbo.rpc.protocol.tri.support.MockStreamObserver;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
