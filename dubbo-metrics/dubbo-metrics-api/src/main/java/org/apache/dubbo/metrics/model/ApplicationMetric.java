@@ -40,8 +40,17 @@ public class ApplicationMetric implements Metric {
 
     @Override
     public Map<String, String> getTags() {
-        return MetricsSupport.applicationTags(applicationModel, getExtraInfo());
+        return hostTags(gitTags(MetricsSupport.applicationTags(applicationModel, getExtraInfo())));
     }
+
+    public Map<String, String> gitTags(Map<String, String> tags) {
+        return MetricsSupport.gitTags(tags);
+    }
+
+    public Map<String, String> hostTags(Map<String, String> tags) {
+        return MetricsSupport.hostTags(tags);
+    }
+
 
     public Map<String, String> getExtraInfo() {
         return extraInfo;
