@@ -34,6 +34,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOBUF_MESSAGE_CLASS_NAME;
+
 public class ReflectionServiceDescriptor implements ServiceDescriptor {
     private final String interfaceName;
     private final Class<?> serviceInterfaceClass;
