@@ -14,15 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.support;
 
-package org.apache.dubbo.rpc.protocol.tri.support;
+import org.apache.dubbo.rpc.model.HelloReply;
+import org.apache.dubbo.rpc.model.HelloRequest;
 
-import org.apache.dubbo.rpc.protocol.tri.HelloReply;
-import org.apache.dubbo.rpc.protocol.tri.HelloRequest;
+public interface DemoService3 {
 
-public interface IGreeter3 {
+     HelloReply sayHello(HelloRequest request);
 
-    HelloReply hello(HelloRequest request);
-
-    String hello(String request);
+    Integer sayHello(Integer num);
 }

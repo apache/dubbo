@@ -14,36 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.support;
 
+public interface DemoService2 {
 
-package org.apache.dubbo.rpc.protocol.tri;
+    String sayHello(String name);
 
-import com.google.protobuf.Message;
-
-public final class HelloRequest extends com.google.protobuf.GeneratedMessageV3 {
-
-    @Override
-    protected FieldAccessorTable internalGetFieldAccessorTable() {
-        return null;
-    }
-
-    @Override
-    protected Message.Builder newBuilderForType(BuilderParent builderParent) {
-        return null;
-    }
-
-    @Override
-    public Message.Builder newBuilderForType() {
-        return null;
-    }
-
-    @Override
-    public Message.Builder toBuilder() {
-        return null;
-    }
-
-    @Override
-    public Message getDefaultInstanceForType() {
-        return null;
-    }
+    Integer sayHello(Integer num);
 }

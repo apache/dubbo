@@ -44,20 +44,6 @@ import static org.apache.dubbo.rpc.protocol.tri.support.IGreeter.SERVER_MSG;
 class TripleProtocolTest {
 
     @Test
-    void testPbMethodOverride()throws Exception{
-        ModuleServiceRepository serviceRepository = ApplicationModel.defaultModel().getDefaultModule()
-            .getServiceRepository();
-        serviceRepository.registerService(IGreeter.class);
-        serviceRepository.registerService(IGreeter2.class);
-        String EXPECT_RESPONSE_MSG = "Protobuf method not allow override,method(org.apache.dubbo.rpc.protocol.tri.support.IGreeter3.hello).";
-        try {
-            serviceRepository.registerService(IGreeter3.class);
-        } catch (IllegalStateException e) {
-            Assertions.assertEquals(EXPECT_RESPONSE_MSG, e.getMessage());
-        }
-    }
-
-    @Test
     void testDemoProtocol() throws Exception {
         IGreeter serviceImpl = new IGreeterImpl();
 
@@ -98,6 +84,7 @@ class TripleProtocolTest {
         // 1. test unaryStream
         String REQUEST_MSG = "hello world";
         Integer REQUEST_INT = 1024;
+        greeterProxy.echo();
         Assertions.assertEquals(REQUEST_MSG, greeterProxy.echo(REQUEST_MSG));
         Assertions.assertEquals(REQUEST_INT, greeterProxy.echo(REQUEST_INT));
         Assertions.assertEquals(REQUEST_MSG, serviceImpl.echoAsync(REQUEST_MSG).get());
