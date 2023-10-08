@@ -23,12 +23,17 @@ import org.apache.dubbo.metrics.model.ThreadPoolRejectMetric;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.metrics.model.MetricsCategory.THREAD_POOL;
 
 public class ThreadRejectMetricsCountSampler extends MetricsNameCountSampler<String, String, ThreadPoolRejectMetric> {
+
+    private final AtomicBoolean samplesChanged = new AtomicBoolean(true);
 
     public ThreadRejectMetricsCountSampler(DefaultMetricsCollector collector) {
         super(collector, THREAD_POOL,MetricsKey.THREAD_POOL_THREAD_REJECT_COUNT);
@@ -48,5 +53,11 @@ public class ThreadRejectMetricsCountSampler extends MetricsNameCountSampler<Str
     @Override
     protected void countConfigure(MetricsCountSampleConfigurer<String, String, ThreadPoolRejectMetric> sampleConfigure) {
         sampleConfigure.configureMetrics(configure -> new ThreadPoolRejectMetric(collector.getApplicationName(),configure.getSource()));
+    }
+
+    @Override
+    public boolean calSamplesChanged() {
+        // CAS to get and reset the flag in an atomic operation
+        return samplesChanged.compareAndSet(true, false);
     }
 }

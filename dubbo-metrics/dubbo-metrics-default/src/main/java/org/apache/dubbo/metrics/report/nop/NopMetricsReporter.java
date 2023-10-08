@@ -35,7 +35,7 @@ public class NopMetricsReporter implements MetricsReporter {
     }
 
     @Override
-    public void refreshData() {
+    public void resetIfSamplesChanged() {
 
     }
 

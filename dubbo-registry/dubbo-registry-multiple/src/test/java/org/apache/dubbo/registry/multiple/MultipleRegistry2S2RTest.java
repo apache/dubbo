@@ -21,7 +21,7 @@ import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.zookeeper.ZookeeperRegistry;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
-import org.apache.dubbo.remoting.zookeeper.curator.CuratorZookeeperClient;
+import org.apache.dubbo.remoting.zookeeper.curator5.Curator5ZookeeperClient;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
@@ -61,9 +61,9 @@ class MultipleRegistry2S2RTest {
         multipleRegistry = (MultipleRegistry) new MultipleRegistryFactory().createRegistry(url);
 
         // for test validation
-        zookeeperClient = new CuratorZookeeperClient(URL.valueOf(zookeeperConnectionAddress1));
+        zookeeperClient = new Curator5ZookeeperClient(URL.valueOf(zookeeperConnectionAddress1));
         zookeeperRegistry = MultipleRegistryTestUtil.getZookeeperRegistry(multipleRegistry.getServiceRegistries().values());
-        zookeeperClient2 = new CuratorZookeeperClient(URL.valueOf(zookeeperConnectionAddress2));
+        zookeeperClient2 = new Curator5ZookeeperClient(URL.valueOf(zookeeperConnectionAddress2));
         zookeeperRegistry2 = MultipleRegistryTestUtil.getZookeeperRegistry(multipleRegistry.getServiceRegistries().values());
     }
 

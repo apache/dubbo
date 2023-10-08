@@ -137,4 +137,14 @@ public abstract class BaseStatComposite implements MetricsExport {
     public void setAppKey(MetricsKey metricsKey, Long num) {
         applicationStatComposite.setAppKey(metricsKey, num);
     }
+
+    @Override
+    public boolean calSamplesChanged() {
+        // Should ensure that all the composite's samplesChanged have been compareAndSet, and cannot flip the `or` logic
+        boolean changed = applicationStatComposite.calSamplesChanged();
+        changed = rtStatComposite.calSamplesChanged() || changed;
+        changed = serviceStatComposite.calSamplesChanged() || changed;
+        changed = methodStatComposite.calSamplesChanged() || changed;
+        return changed;
+    }
 }
