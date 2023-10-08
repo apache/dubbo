@@ -29,6 +29,11 @@ public class IGreeterImpl implements IGreeter {
     }
 
     @Override
+    public Integer echo(Integer request) {
+        return request;
+    }
+
+    @Override
     public void serverStream(String str, StreamObserver<String> observer) {
         System.out.println("server stream data=" + str);
         observer.onNext(str);

@@ -14,30 +14,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.support;
 
-import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.rpc.protocol.tri.HelloReply;
+import org.apache.dubbo.rpc.protocol.tri.HelloRequest;
 
-import java.util.concurrent.CompletableFuture;
-
-public interface IGreeter {
-
-    String SERVER_MSG = "HELLO WORLD";
-
-    /**
-     * Use request to respond
-     */
-    String echo(String request);
-
-    Integer echo(Integer request);
-
-    default CompletableFuture<String> echoAsync(String request) {
-        return CompletableFuture.supplyAsync(() -> echo(request));
+public class IGreeter3Impl implements IGreeter3{
+    @Override
+    public HelloReply hello(HelloRequest request) {
+        return null;
     }
 
-    void serverStream(String str, StreamObserver<String> observer);
-
-    StreamObserver<String> bidirectionalStream(StreamObserver<String> observer);
-
+    @Override
+    public String hello(String request) {
+        return request;
+    }
 }

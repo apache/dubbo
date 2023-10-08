@@ -31,9 +31,7 @@ import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
-import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
-import org.apache.dubbo.rpc.protocol.tri.support.IGreeterImpl;
-import org.apache.dubbo.rpc.protocol.tri.support.MockStreamObserver;
+import org.apache.dubbo.rpc.protocol.tri.support.*;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -44,6 +42,19 @@ import static org.apache.dubbo.rpc.protocol.tri.support.IGreeter.SERVER_MSG;
 
 
 class TripleProtocolTest {
+
+    @Test
+    void testPbMethodOverride()throws Exception{
+        ModuleServiceRepository serviceRepository = ApplicationModel.defaultModel().getDefaultModule()
+            .getServiceRepository();
+        serviceRepository.registerService(IGreeter.class);
+        String EXPECT_RESPONSE_MSG = "Protobuf method not allow override,method(hello).";
+        try {
+            serviceRepository.registerService(IGreeter3.class);
+        } catch (IllegalStateException e) {
+            Assertions.assertEquals(EXPECT_RESPONSE_MSG, e.getMessage());
+        }
+    }
 
     @Test
     void testDemoProtocol() throws Exception {
@@ -85,7 +96,9 @@ class TripleProtocolTest {
 
         // 1. test unaryStream
         String REQUEST_MSG = "hello world";
+        Integer REQUEST_INT = 1024;
         Assertions.assertEquals(REQUEST_MSG, greeterProxy.echo(REQUEST_MSG));
+        Assertions.assertEquals(REQUEST_INT, greeterProxy.echo(REQUEST_INT));
         Assertions.assertEquals(REQUEST_MSG, serviceImpl.echoAsync(REQUEST_MSG).get());
 
         // 2. test serverStream
@@ -117,4 +130,6 @@ class TripleProtocolTest {
         serviceRepository.destroy();
         System.out.println("serviceRepository destroyed");
     }
+
+
 }
