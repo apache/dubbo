@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.common.constants;
 
-import org.apache.logging.log4j.core.net.Protocol;
 
 public interface RegistryConstants {
 
