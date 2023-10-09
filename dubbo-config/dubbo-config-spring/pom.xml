@@ -214,12 +214,6 @@
             <artifactId>dubbo-registry-zookeeper</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.dubbo</groupId>
-                    <artifactId>dubbo-remoting-zookeeper</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -232,15 +226,11 @@
                     <groupId>com.google.guava</groupId>
                     <artifactId>guava</artifactId>
                 </exclusion>
-                <exclusion>
-                    <groupId>org.apache.dubbo</groupId>
-                    <artifactId>dubbo-remoting-zookeeper</artifactId>
-                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-remoting-zookeeper</artifactId>
+            <artifactId>dubbo-remoting-zookeeper-curator5</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
