@@ -16,6 +16,11 @@
  */
 package org.apache.dubbo.gen;
 
+import com.github.mustachejava.DefaultMustacheFactory;
+import com.github.mustachejava.Mustache;
+import com.github.mustachejava.MustacheFactory;
+import com.google.common.base.Charsets;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.html.HtmlEscapers;
 import com.google.protobuf.DescriptorProtos.FileDescriptorProto;
@@ -23,22 +28,23 @@ import com.google.protobuf.DescriptorProtos.FileOptions;
 import com.google.protobuf.DescriptorProtos.MethodDescriptorProto;
 import com.google.protobuf.DescriptorProtos.ServiceDescriptorProto;
 import com.google.protobuf.DescriptorProtos.SourceCodeInfo.Location;
-import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse.Feature;
 import com.google.protobuf.compiler.PluginProtos;
-import com.salesforce.jprotoc.Generator;
-import com.salesforce.jprotoc.GeneratorException;
-import com.salesforce.jprotoc.ProtoTypeMap;
+import org.apache.dubbo.gen.utils.ProtoTypeMap;
 
+import javax.annotation.Nonnull;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public abstract class AbstractGenerator extends Generator {
+public abstract class AbstractGenerator  {
 
+    private static final MustacheFactory MUSTACHE_FACTORY = new DefaultMustacheFactory();
     private static final int SERVICE_NUMBER_OF_PATHS = 2;
     private static final int METHOD_NUMBER_OF_PATHS = 4;
 
@@ -58,10 +64,6 @@ public abstract class AbstractGenerator extends Generator {
         return getClassPrefix() + getClassSuffix() + "InterfaceStub.mustache";
     }
 
-    @Override
-    protected List<Feature> supportedFeatures() {
-        return Collections.singletonList(Feature.FEATURE_PROTO3_OPTIONAL);
-    }
 
     private String getServiceJavaDocPrefix() {
         return "    ";
@@ -71,9 +73,7 @@ public abstract class AbstractGenerator extends Generator {
         return "        ";
     }
 
-    @Override
-    public List<PluginProtos.CodeGeneratorResponse.File> generateFiles(
-        PluginProtos.CodeGeneratorRequest request) throws GeneratorException {
+    public List<PluginProtos.CodeGeneratorResponse.File> generateFiles(PluginProtos.CodeGeneratorRequest request) {
         final ProtoTypeMap typeMap = ProtoTypeMap.of(request.getProtoFileList());
 
         List<FileDescriptorProto> protosToGenerate = request.getProtoFileList().stream()
@@ -260,6 +260,20 @@ public abstract class AbstractGenerator extends Generator {
 
         return files;
     }
+
+    protected String applyTemplate(@Nonnull String resourcePath, @Nonnull Object generatorContext) {
+        Preconditions.checkNotNull(resourcePath, "resourcePath");
+        Preconditions.checkNotNull(generatorContext, "generatorContext");
+        InputStream resource = MustacheFactory.class.getClassLoader().getResourceAsStream(resourcePath);
+        if (resource == null) {
+            throw new RuntimeException("Could not find resource " + resourcePath);
+        } else {
+            InputStreamReader resourceReader = new InputStreamReader(resource, Charsets.UTF_8);
+            Mustache template = MUSTACHE_FACTORY.compile(resourceReader, resourcePath);
+            return template.execute(new StringWriter(), generatorContext).toString();
+        }
+    }
+
 
     private String absoluteDir(ServiceContext ctx) {
         return ctx.packageName.replace('.', '/');
