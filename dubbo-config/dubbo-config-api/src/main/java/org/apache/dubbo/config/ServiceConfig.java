@@ -226,7 +226,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             exporters.clear();
         }
         unexported = true;
-        onUnexpoted();
+        onUnExported();
         ModuleServiceRepository repository = getScopeModel().getServiceRepository();
         repository.unregisterProvider(providerModel);
     }
@@ -918,7 +918,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
     }
 
-    protected void onUnexpoted() {
+    protected void onUnExported() {
         for (ServiceListener serviceListener : this.serviceListeners) {
             serviceListener.unexported(this);
         }
