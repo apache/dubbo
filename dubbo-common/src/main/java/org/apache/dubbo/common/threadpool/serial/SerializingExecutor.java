@@ -86,9 +86,6 @@ public final class SerializingExecutor implements Executor, Runnable {
                         // to execute don't succeed and accidentally run a previous runnable.
                         runQueue.remove(removable);
                     }
-                    if (removable instanceof CloseableRunnable) {
-                        ((CloseableRunnable) removable).close();
-                    }
                     atomicBoolean.set(false);
                 }
             }
