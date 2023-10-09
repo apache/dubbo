@@ -339,7 +339,9 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             "Registry type: instance. " +
             "Service Key: " + getConsumerUrl().getServiceKey() + ". " +
             "Urls Size : " + invokerUrls.size() + ". " +
-            "Registry : " + this);
+            "Invokers Size : " + getInvokers().size() + ". " +
+            "Available Size: " + getValidInvokers().size() + ". " +
+            "Available Invokers : " + joinValidInvokerAddresses());
     }
 
     /**
