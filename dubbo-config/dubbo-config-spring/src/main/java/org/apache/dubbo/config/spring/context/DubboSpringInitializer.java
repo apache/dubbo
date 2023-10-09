@@ -85,11 +85,6 @@ public class DubboSpringInitializer {
         }
         return false;
     }
-
-    static Map<BeanDefinitionRegistry, DubboSpringInitContext> getContextMap() {
-        return REGISTRY_CONTEXT_MAP;
-    }
-
     static DubboSpringInitContext findBySpringContext(ApplicationContext applicationContext) {
         for (DubboSpringInitContext initContext : REGISTRY_CONTEXT_MAP.values()) {
             if (initContext.getApplicationContext() == applicationContext) {
