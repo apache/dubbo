@@ -14,30 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.support;
 
-package org.apache.dubbo.metrics.report;
+import org.apache.dubbo.common.stream.StreamObserver;
 
-import org.apache.dubbo.metrics.model.MetricsCategory;
-import org.apache.dubbo.metrics.model.sample.MetricSample;
+public class DemoService1Impl implements DemoService1{
+    @Override
+    public StreamObserver<String> sayHello(StreamObserver<String> request) {
+        request.onNext("BI_STREAM");
+        return request;
+    }
 
-import java.util.List;
-
-/**
- * Metrics data export.
- * Export data in a unified format for external collection(e.g. Prometheus).
- */
-public interface MetricsExport {
-
-    /**
-     * export all.
-     */
-    List<MetricSample> export(MetricsCategory category);
-
-    /**
-     * Check if samples have been changed.
-     * Note that this method will reset the changed flag to false using CAS.
-     *
-     * @return true if samples have been changed
-     */
-    boolean calSamplesChanged();
+    @Override
+    public void sayHello(String msg, StreamObserver<String> request) {
+        request.onNext(msg);
+        request.onNext("SERVER_STREAM");
+        request.onCompleted();
+    }
 }

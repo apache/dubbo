@@ -67,7 +67,7 @@ class ReplierDispatcherTest {
         ReplierDispatcher dispatcher = new ReplierDispatcher();
         dispatcher.addReplier(RpcMessage.class, new RpcMessageHandler());
         dispatcher.addReplier(Data.class, (channel, msg) -> new StringMessage("hello world"));
-        URL url = URL.valueOf("exchange://localhost:" + port + "?" + CommonConstants.TIMEOUT_KEY + "=60000");
+        URL url = URL.valueOf("exchange://localhost:" + port + "?" + CommonConstants.TIMEOUT_KEY + "=60000&threadpool=cached");
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
         applicationConfig.setExecutorManagementMode(EXECUTOR_MANAGEMENT_MODE_DEFAULT);

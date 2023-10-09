@@ -133,4 +133,14 @@ public abstract class BaseStatComposite implements MetricsExport {
     public RtStatComposite getRtStatComposite() {
         return rtStatComposite;
     }
+
+    @Override
+    public boolean calSamplesChanged() {
+        // Should ensure that all the composite's samplesChanged have been compareAndSet, and cannot flip the `or` logic
+        boolean changed = applicationStatComposite.calSamplesChanged();
+        changed = rtStatComposite.calSamplesChanged() || changed;
+        changed = serviceStatComposite.calSamplesChanged() || changed;
+        changed = methodStatComposite.calSamplesChanged() || changed;
+        return changed;
+    }
 }

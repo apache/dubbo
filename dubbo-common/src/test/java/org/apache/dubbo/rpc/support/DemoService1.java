@@ -14,23 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.support;
 
-package org.apache.dubbo.metrics.report;
+import org.apache.dubbo.common.stream.StreamObserver;
 
-import org.apache.dubbo.rpc.model.ApplicationModel;
+public interface DemoService1 {
+    StreamObserver<String> sayHello(StreamObserver<String> request);
 
-/**
- * AbstractMetricsReporterFactory.
- */
-public abstract class AbstractMetricsReporterFactory implements MetricsReporterFactory {
-
-    private final ApplicationModel applicationModel;
-
-    public AbstractMetricsReporterFactory(ApplicationModel applicationModel) {
-        this.applicationModel = applicationModel;
-    }
-
-    protected ApplicationModel getApplicationModel() {
-        return applicationModel;
-    }
+    void sayHello(String msg, StreamObserver<String> request);
 }

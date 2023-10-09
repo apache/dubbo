@@ -43,6 +43,14 @@ public interface MetricsCollector<E extends TimeCounterEvent> extends MetricsLif
      */
     List<MetricSample> collect();
 
+    /**
+     * Check if samples have been changed.
+     * Note that this method will reset the changed flag to false using CAS.
+     *
+     * @return true if samples have been changed
+     */
+    boolean calSamplesChanged();
+
     default  void initMetrics(MetricsEvent event) {};
 
 }

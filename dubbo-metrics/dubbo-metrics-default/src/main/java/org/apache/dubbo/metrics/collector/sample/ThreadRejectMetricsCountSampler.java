@@ -16,19 +16,23 @@
  */
 
 package org.apache.dubbo.metrics.collector.sample;
+
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.model.Metric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
-import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.ThreadPoolRejectMetric;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.ToDoubleFunction;
+
 import static org.apache.dubbo.metrics.model.MetricsCategory.THREAD_POOL;
 
 public class ThreadRejectMetricsCountSampler extends SimpleMetricsCountSampler<String, String, ThreadPoolRejectMetric> {
@@ -36,6 +40,8 @@ public class ThreadRejectMetricsCountSampler extends SimpleMetricsCountSampler<S
     private final DefaultMetricsCollector collector;
 
     private final Set<String> metricNames = new ConcurrentHashSet<>();
+    private final AtomicBoolean samplesChanged = new AtomicBoolean(true);
+
     public ThreadRejectMetricsCountSampler(DefaultMetricsCollector collector) {
         this.collector = collector;
         this.collector.addSampler(this);
@@ -44,6 +50,7 @@ public class ThreadRejectMetricsCountSampler extends SimpleMetricsCountSampler<S
     public void addMetricName(String name){
         this.metricNames.add(name);
         this.initMetricsCounter(name,name);
+        samplesChanged.set(true);
     }
 
     @Override
@@ -81,5 +88,11 @@ public class ThreadRejectMetricsCountSampler extends SimpleMetricsCountSampler<S
     @Override
     protected void countConfigure(MetricsCountSampleConfigurer<String, String, ThreadPoolRejectMetric> sampleConfigure) {
         sampleConfigure.configureMetrics(configure -> new ThreadPoolRejectMetric(collector.getApplicationName(),configure.getSource()));
+    }
+
+    @Override
+    public boolean calSamplesChanged() {
+        // CAS to get and reset the flag in an atomic operation
+        return samplesChanged.compareAndSet(true, false);
     }
 }
