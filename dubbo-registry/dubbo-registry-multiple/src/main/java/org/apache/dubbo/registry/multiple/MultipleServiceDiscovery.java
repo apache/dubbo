@@ -220,20 +220,6 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
             super.onEvent(new ServiceInstancesChangedEvent(event.getServiceName(), serviceInstances));
         }
 
-        @Override
-        protected MetadataInfo getRemoteMetadata(String revision, List<ServiceInstance> instances) {
-            MetadataInfo metadataInfo = MetadataInfo.EMPTY;
-            MultipleServiceDiscovery multipleServiceDiscovery = (MultipleServiceDiscovery) serviceDiscovery;
-            for (ServiceDiscovery serviceDiscovery : multipleServiceDiscovery.serviceDiscoveries.values()) {
-                MetadataInfo remoteMetadata = serviceDiscovery.getRemoteMetadata(revision, instances);
-                if (!Objects.equals(MetadataInfo.EMPTY, remoteMetadata)) {
-                    metadataInfo = remoteMetadata;
-                    break;
-                }
-            }
-            return metadataInfo;
-        }
-
         public void putSingleListener(String registryKey, SingleServiceInstancesChangedListener singleListener) {
             singleListenerMap.put(registryKey, singleListener);
         }
