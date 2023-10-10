@@ -80,6 +80,10 @@ public abstract class CombMetricsCollector<E extends TimeCounterEvent> extends A
         stats.calcMethodKeyRt(invocation, registryOpType, responseTime);
     }
 
+    public void setAppNum(MetricsKey metricsKey,Long num) {
+        stats.setAppKey(metricsKey, num);
+    }
+  
     @Override
     public void increment(MethodMetric methodMetric, MetricsKeyWrapper wrapper, int size) {
         this.stats.incrementMethodKey(wrapper, methodMetric, size);

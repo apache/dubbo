@@ -1,0 +1,1 @@
+trace=org.apache.dubbo.rpc.protocol.dubbo.filter.TraceFilter

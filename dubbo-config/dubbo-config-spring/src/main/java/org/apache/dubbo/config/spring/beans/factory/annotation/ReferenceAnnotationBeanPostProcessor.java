@@ -95,7 +95,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
     /**
      * The bean name of {@link ReferenceAnnotationBeanPostProcessor}
      */
-    public static final String BEAN_NAME = "referenceAnnotationBeanPostProcessor";
+    public static final String BEAN_NAME = ReferenceAnnotationBeanPostProcessor.class.getName();
 
     /**
      * Cache size
@@ -110,10 +110,10 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
     private final ConcurrentMap<InjectionMetadata.InjectedElement, String> injectedMethodReferenceBeanCache =
         new ConcurrentHashMap<>(CACHE_SIZE);
 
-    private ApplicationContext applicationContext;
+    protected ApplicationContext applicationContext;
 
-    private ReferenceBeanManager referenceBeanManager;
-    private BeanDefinitionRegistry beanDefinitionRegistry;
+    protected ReferenceBeanManager referenceBeanManager;
+    protected BeanDefinitionRegistry beanDefinitionRegistry;
 
     /**
      * {@link com.alibaba.dubbo.config.annotation.Reference @com.alibaba.dubbo.config.annotation.Reference} has been supported since 2.7.3
@@ -211,7 +211,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
      * @param beanName
      * @param beanDefinition
      */
-    private void processReferenceAnnotatedBeanDefinition(String beanName, AnnotatedBeanDefinition beanDefinition) {
+    protected void processReferenceAnnotatedBeanDefinition(String beanName, AnnotatedBeanDefinition beanDefinition) {
 
         MethodMetadata factoryMethodMetadata = SpringCompatUtils.getFactoryMethodMetadata(beanDefinition);
 
@@ -315,6 +315,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
      * Alternatives to the {@link #postProcessProperties(PropertyValues, Object, String)}, that removed as of Spring
      * Framework 6.0.0, and in favor of {@link #postProcessProperties(PropertyValues, Object, String)}.
      * <p>In order to be compatible with the lower version of Spring, it is still retained.
+     *
      * @see #postProcessProperties
      */
     public PropertyValues postProcessPropertyValues(
@@ -324,6 +325,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
     /**
      * Alternatives to the {@link #postProcessPropertyValues(PropertyValues, PropertyDescriptor[], Object, String)}.
+     *
      * @see #postProcessPropertyValues
      */
     @Override
@@ -418,7 +420,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         boolean isContains;
         if ((isContains = beanDefinitionRegistry.containsBeanDefinition(referenceBeanName)) || beanDefinitionRegistry.isAlias(referenceBeanName)) {
             String preReferenceBeanName = referenceBeanName;
-            if (!isContains){
+            if (!isContains) {
                 // Look in the alias for the origin bean name
                 String[] aliases = beanDefinitionRegistry.getAliases(referenceBeanName);
                 if (ArrayUtils.isNotEmpty(aliases)) {
@@ -497,6 +499,9 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         beanDefinition.setAttribute(Constants.REFERENCE_PROPS, attributes);
         beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_CLASS, interfaceClass);
         beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_NAME, interfaceName);
+
+        beanDefinition.getPropertyValues().add(ReferenceAttributes.INTERFACE_CLASS, interfaceClass);
+        beanDefinition.getPropertyValues().add(ReferenceAttributes.INTERFACE_NAME, interfaceName);
 
         // create decorated definition for reference bean, Avoid being instantiated when getting the beanType of ReferenceBean
         // see org.springframework.beans.factory.support.AbstractBeanFactory#getTypeForFactoryBean()

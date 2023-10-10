@@ -36,6 +36,7 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
     implements MetricsCountSampler<S, K, M> {
 
     private final ConcurrentMap<M, AtomicLong> EMPTY_COUNT = new ConcurrentHashMap<>();
+
     private final Map<K, ConcurrentMap<M, AtomicLong>> metricCounter = new ConcurrentHashMap<>();
 
     @Override
@@ -48,10 +49,6 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
         return Optional.ofNullable(metricCounter.get(metricName) == null ?
             EMPTY_COUNT :
             metricCounter.get(metricName));
-    }
-
-    protected  void initMetricsCounter(S source, K metricsName){
-        getAtomicCounter(source,metricsName);
     }
 
     protected abstract void countConfigure(MetricsCountSampleConfigurer<S, K, M> sampleConfigure);

@@ -2,3 +2,4 @@ body=org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider.BodyProv
 header=org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider.HeaderProviderParamParser
 path=org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider.PathProviderParamParser
 param=org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider.ParamProviderParamParser
+no-annotation=org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider.NoAnnotationParamProviderParamParser

@@ -125,6 +125,7 @@
         <maven_flatten_version>1.5.0</maven_flatten_version>
         <maven_enforce_version>3.3.0</maven_enforce_version>
         <maven_antrun_version>3.1.0</maven_antrun_version>
+        <dubbo_annotation_processor_version>1.0.0</dubbo_annotation_processor_version>
         <maven_os_plugin_version>1.7.1</maven_os_plugin_version>
         <maven_protobuf_plugin_version>0.6.1</maven_protobuf_plugin_version>
         <arguments />
@@ -136,10 +137,11 @@
         <jprotoc_version>1.2.2</jprotoc_version>
         <protobuf-java_version>3.22.3</protobuf-java_version>
         <grpc_version>1.54.0</grpc_version>
-        <revision>3.2.8-SNAPSHOT</revision>
+        <revision>3.3.0-beta.1-SNAPSHOT</revision>
     </properties>
 
     <modules>
+        <module>dubbo-annotation-processor</module>
         <module>dubbo-common</module>
         <module>dubbo-container</module>
         <module>dubbo-compiler</module>
@@ -149,7 +151,6 @@
         <module>dubbo-registry</module>
         <module>dubbo-monitor</module>
         <module>dubbo-config</module>
-        <module>dubbo-filter</module>
         <module>dubbo-demo</module>
         <module>dubbo-plugin</module>
         <module>dubbo-serialization</module>
@@ -160,13 +161,10 @@
         <module>dubbo-dependencies</module>
         <module>dubbo-metadata</module>
         <module>dubbo-metrics</module>
-        <module>dubbo-build-tools</module>
         <module>dubbo-spring-boot</module>
-        <module>dubbo-native</module>
         <module>dubbo-test</module>
         <module>dubbo-kubernetes</module>
         <module>dubbo-xds</module>
-        <module>dubbo-native-plugin</module>
         <module>dubbo-maven-plugin</module>
     </modules>
 
@@ -183,6 +181,14 @@
     </dependencyManagement>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-annotation-processor</artifactId>
+            <version>${dubbo_annotation_processor_version}</version>
+            <optional>true</optional>
+        </dependency>
+
         <!--JUnit Jupiter Engine to depend on the JUnit5 engine and JUnit 5 API -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -307,8 +313,8 @@
                                 <version>8.45.1</version>
                             </dependency>
                             <dependency>
-                                <groupId>org.apache.dubbo</groupId>
-                                <artifactId>dubbo-build-tools</artifactId>
+                                <groupId>com.alibaba</groupId>
+                                <artifactId>dubbo-shared-resources</artifactId>
                                 <version>1.0.0</version>
                             </dependency>
                         </dependencies>
@@ -341,8 +347,8 @@
                                         **/org/apache/dubbo/maven/plugin/aot/RunArguments.java,
                                         **/org/apache/dubbo/maven/plugin/aot/RunProcess.java,
                                         **/org/apache/dubbo/aot/generate/BasicJsonWriter.java,
-                                        **/org/apache/dubbo/aot/generate/ExecutableMode.java,
-                                        **/org/apache/dubbo/aot/generate/MemberCategory.java,
+                                        **/org/apache/dubbo/aot/api/ExecutableMode.java,
+                                        **/org/apache/dubbo/aot/api/MemberCategory.java,
                                         **/org/apache/dubbo/common/threadpool/serial/SerializingExecutor.java,
                                         **/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java,
                                         **/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java,
@@ -359,6 +365,8 @@
                                         **/org/apache/dubbo/rpc/protocol/tri/TriHttp2RemoteFlowController.java,
                                         **/org/apache/dubbo/metrics/aggregate/DubboMergingDigest.java,
                                         **/org/apache/dubbo/metrics/aggregate/DubboAbstractTDigest.java,
+                                        **/org/apache/dubbo/common/logger/helpers/FormattingTuple.java,
+                                        **/org/apache/dubbo/common/logger/helpers/MessageFormatter.java,
                                         **/istio/v1/auth/**/*,
                                         **/com/google/rpc/*,
                                         **/generated/**/*,
@@ -427,6 +435,7 @@
             <build>
                 <plugins>
                     <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
                         <version>${maven_source_version}</version>
                         <executions>
@@ -439,6 +448,7 @@
                         </executions>
                     </plugin>
                     <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <version>${maven_javadoc_version}</version>
                         <executions>
@@ -461,6 +471,7 @@
                                             <version>${log4j2_version}</version>
                                         </additionalDependency>
                                     </additionalDependencies>
+                                    <doclint>all,-missing</doclint>
                                 </configuration>
                             </execution>
                         </executions>
@@ -524,6 +535,10 @@
                                             License|BSD|3-Clause BSD License|The New BSD License
                                         </licenseMerge>
                                     </licenseMerges>
+                                    <excludes>
+                                        **/org/apache/dubbo/common/logger/helpers/FormattingTuple.java,
+                                        **/org/apache/dubbo/common/logger/helpers/MessageFormatter.java
+                                    </excludes>
                                 </configuration>
                             </execution>
                         </executions>
@@ -708,7 +723,6 @@
                 <version>${maven_compiler_version}</version>
                 <configuration>
                     <compilerArgs>
-                        <compilerArg>-proc:none</compilerArg>
                         <compilerArg>-parameters</compilerArg>
                     </compilerArgs>
                     <fork>true</fork>

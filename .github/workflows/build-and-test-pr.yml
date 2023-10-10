@@ -54,7 +54,7 @@ jobs:
       - uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
-          java-version: 8
+          java-version: 17
       - uses: actions/cache@v3
         name: "Cache local Maven repository"
         with:
@@ -417,10 +417,10 @@ jobs:
 
       - name: "Setup Zookeeper environment"
         run: |
-          wget https://dlcdn.apache.org/zookeeper/zookeeper-3.7.1/apache-zookeeper-3.7.1-bin.tar.gz
-          tar -zxvf apache-zookeeper-3.7.1-bin.tar.gz
-          mv apache-zookeeper-3.7.1-bin/conf/zoo_sample.cfg apache-zookeeper-3.7.1-bin/conf/zoo.cfg
-          apache-zookeeper-3.7.1-bin/bin/zkServer.sh start
+          wget https://dlcdn.apache.org/zookeeper/zookeeper-3.8.3/apache-zookeeper-3.8.3-bin.tar.gz
+          tar -zxvf apache-zookeeper-3.8.3-bin.tar.gz
+          mv apache-zookeeper-3.8.3-bin/conf/zoo_sample.cfg apache-zookeeper-3.8.3-bin/conf/zoo.cfg
+          apache-zookeeper-3.8.3-bin/bin/zkServer.sh start
 
       - name: "Check environment"
         run: |

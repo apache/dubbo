@@ -18,16 +18,22 @@
 package org.apache.dubbo.common.logger.support;
 
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.ListenableLogger;
+import org.apache.dubbo.common.logger.LogListener;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.utils.NetUtils;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 /**
  * A fail-safe (ignoring exception thrown by logger) wrapper of error type aware logger.
  */
-public class FailsafeErrorTypeAwareLogger extends FailsafeLogger implements ErrorTypeAwareLogger {
+public class FailsafeErrorTypeAwareLogger extends FailsafeLogger implements ListenableLogger {
 
     /**
      * Template address for formatting.
@@ -35,6 +41,16 @@ public class FailsafeErrorTypeAwareLogger extends FailsafeLogger implements Erro
     private static final String INSTRUCTIONS_URL = "https://dubbo.apache.org/faq/%d/%d";
 
     private static final Pattern ERROR_CODE_PATTERN = Pattern.compile("\\d+-\\d+");
+
+    /**
+     * Listeners that listened to all Loggers.
+     */
+    private static final List<LogListener> GLOBAL_LISTENERS = Collections.synchronizedList(new ArrayList<>());
+
+    /**
+     *  Listeners that listened to this listener.
+     */
+    private final AtomicReference<List<LogListener>> listeners = new AtomicReference<>();
 
     public FailsafeErrorTypeAwareLogger(Logger logger) {
         super(logger);
@@ -80,6 +96,7 @@ public class FailsafeErrorTypeAwareLogger extends FailsafeLogger implements Erro
         }
 
         try {
+            onEvent(code, msg);
             getLogger().warn(appendContextMessageWithInstructions(code, cause, extendedInformation, msg));
         } catch (Throwable t) {
             // ignored.
@@ -93,6 +110,7 @@ public class FailsafeErrorTypeAwareLogger extends FailsafeLogger implements Erro
         }
 
         try {
+            onEvent(code, msg);
             getLogger().warn(appendContextMessageWithInstructions(code, cause, extendedInformation, msg), e);
         } catch (Throwable t) {
             // ignored.
@@ -106,6 +124,7 @@ public class FailsafeErrorTypeAwareLogger extends FailsafeLogger implements Erro
         }
 
         try {
+            onEvent(code, msg);
             getLogger().error(appendContextMessageWithInstructions(code, cause, extendedInformation, msg));
         } catch (Throwable t) {
             // ignored.
@@ -119,9 +138,45 @@ public class FailsafeErrorTypeAwareLogger extends FailsafeLogger implements Erro
         }
 
         try {
+            onEvent(code, msg);
             getLogger().error(appendContextMessageWithInstructions(code, cause, extendedInformation, msg), e);
         } catch (Throwable t) {
             // ignored.
         }
     }
+
+    public static void registerGlobalListen(LogListener listener) {
+        GLOBAL_LISTENERS.add(listener);
+    }
+
+    @Override
+    public void registerListen(LogListener listener) {
+        listeners.getAndUpdate(logListeners -> {
+            if (logListeners == null) {
+                logListeners = Collections.synchronizedList(new ArrayList<>());
+            }
+            logListeners.add(listener);
+            return logListeners;
+        });
+    }
+
+    private void onEvent(String code, String msg) {
+        Optional.ofNullable(listeners.get()).ifPresent(
+            logListeners -> logListeners.forEach(logListener -> {
+                try {
+                    logListener.onMessage(code, msg);
+                } catch (Exception e) {
+                    // ignored.
+                }
+            }));
+
+        GLOBAL_LISTENERS.forEach(logListener -> {
+            try {
+                logListener.onMessage(code, msg);
+            } catch (Exception e) {
+                // ignored.
+            }
+        });
+    }
+
 }

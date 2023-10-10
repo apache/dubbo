@@ -62,6 +62,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -473,7 +474,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
         }
         checkStubAndLocal(interfaceClass);
-        ConfigValidationUtils.checkMock(interfaceClass, this);
         ConfigValidationUtils.validateServiceConfig(this);
         postProcessConfig();
     }
@@ -522,7 +522,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         providerModel.setDestroyRunner(getDestroyRunner());
         repository.registerProvider(providerModel);
 
-        List<URL> registryURLs = ConfigValidationUtils.loadRegistries(this, true);
+        List<URL> registryURLs = !Boolean.FALSE.equals(isRegister()) ?
+            ConfigValidationUtils.loadRegistries(this, true) : Collections.emptyList();
 
         for (ProtocolConfig protocolConfig : protocols) {
             String pathKey = URL.buildKey(getContextPath(protocolConfig)
@@ -551,6 +552,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         processServiceExecutor(url);
 
+        if (CollectionUtils.isEmpty(registryURLs)) {
+            registerType = RegisterTypeEnum.NEVER_REGISTER;
+        }
         exportUrl(url, registryURLs, registerType);
 
         initServiceMethodMetrics(url);
@@ -892,7 +896,16 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     private void postProcessConfig() {
         List<ConfigPostProcessor> configPostProcessors = this.getExtensionLoader(ConfigPostProcessor.class)
             .getActivateExtension(URL.valueOf("configPostProcessor://", getScopeModel()), (String[]) null);
-        configPostProcessors.forEach(component -> component.postProcessServiceConfig(this));
+        List<CommonConfigPostProcessor> commonConfigPostProcessors = this.getExtensionLoader(CommonConfigPostProcessor.class)
+            .getActivateExtension(URL.valueOf("configPostProcessor://"), (String[]) null);
+
+        HashSet<CommonConfigPostProcessor> allConfigPostProcessor = new HashSet<>();
+
+        // merge common and old config
+        allConfigPostProcessor.addAll(commonConfigPostProcessors);
+        allConfigPostProcessor.addAll(configPostProcessors);
+
+        allConfigPostProcessor.forEach(component -> component.postProcessServiceConfig(this));
     }
 
     public void addServiceListener(ServiceListener listener) {

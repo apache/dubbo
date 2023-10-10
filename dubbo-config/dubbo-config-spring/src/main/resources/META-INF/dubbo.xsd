@@ -1097,6 +1097,12 @@
             </xsd:annotation>
         </xsd:attribute>
 
+        <xsd:attribute name="enable-netty" type="xsd:boolean" default="true">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Enable netty metrics when collecting. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
         <xsd:attribute name="export-metrics-service" type="xsd:boolean" default="true">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Enable export metrics service. ]]></xsd:documentation>
@@ -1694,6 +1700,11 @@
         <xsd:attribute name="contextpath" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The protocol context path. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="json-check-level" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The level of json compatibility check. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="register" type="xsd:string">

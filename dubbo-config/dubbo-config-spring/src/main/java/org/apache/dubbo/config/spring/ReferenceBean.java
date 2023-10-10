@@ -24,6 +24,7 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.spring.aot.AotWithSpringDetector;
 import org.apache.dubbo.config.spring.context.DubboConfigApplicationListener;
 import org.apache.dubbo.config.spring.context.DubboConfigBeanInitializer;
 import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
@@ -83,14 +84,14 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_FAILED
  *     }
  * }
  * </pre>
- *
+ * <p>
  * Or register ReferenceBean in xml:
  * <pre class="code">
  * &lt;dubbo:reference id="helloService" interface="org.apache.dubbo.config.spring.api.HelloService"/&gt;
  * &lt;!-- As GenericService --&gt;
  * &lt;dubbo:reference id="genericHelloService" interface="org.apache.dubbo.config.spring.api.HelloService" generic="true"/&gt;
  * </pre>
- *
+ * <p>
  * Step 2: Inject ReferenceBean by @Autowired
  * <pre class="code">
  * public class FooController {
@@ -102,12 +103,11 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_FAILED
  * }
  * </pre>
  *
- *
  * @see org.apache.dubbo.config.annotation.DubboReference
  * @see org.apache.dubbo.config.spring.reference.ReferenceBeanBuilder
  */
 public class ReferenceBean<T> implements FactoryBean<T>,
-        ApplicationContextAware, BeanClassLoaderAware, BeanNameAware, InitializingBean, DisposableBean {
+    ApplicationContextAware, BeanClassLoaderAware, BeanNameAware, InitializingBean, DisposableBean {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
     private transient ApplicationContext applicationContext;
 
@@ -149,7 +149,7 @@ public class ReferenceBean<T> implements FactoryBean<T>,
     private ReferenceBeanManager referenceBeanManager;
 
     // Registration sources of this reference, may be xml file or annotation location
-    private List<Map<String,Object>> sources = new ArrayList<>();
+    private List<Map<String, Object>> sources = new ArrayList<>();
 
     public ReferenceBean() {
         super();
@@ -179,23 +179,22 @@ public class ReferenceBean<T> implements FactoryBean<T>,
      *
      * <p></p>
      * Why we need a lazy proxy?
-     *
+     * <p>
      * <p/>
      * When Spring searches beans by type, if Spring cannot determine the type of a factory bean, it may try to initialize it.
      * The ReferenceBean is also a FactoryBean.
      * <br/>
      * (This has already been resolved by decorating the BeanDefinition: {@link DubboBeanDefinitionParser#configReferenceBean})
-     *
+     * <p>
      * <p/>
      * In addition, if some ReferenceBeans are dependent on beans that are initialized very early,
      * and dubbo config beans are not ready yet, there will be many unexpected problems if initializing the dubbo reference immediately.
-     *
+     * <p>
      * <p/>
      * When it is initialized, only a lazy proxy object will be created,
      * and dubbo reference-related resources will not be initialized.
      * <br/>
      * In this way, the influence of Spring is eliminated, and the dubbo configuration initialization is controllable.
-     *
      *
      * @see DubboConfigBeanInitializer
      * @see ReferenceBeanManager#initReferenceBean(ReferenceBean)
@@ -227,8 +226,14 @@ public class ReferenceBean<T> implements FactoryBean<T>,
         // pre init xml reference bean or @DubboReference annotation
         Assert.notEmptyString(getId(), "The id of ReferenceBean cannot be empty");
         BeanDefinition beanDefinition = beanFactory.getBeanDefinition(getId());
-        this.interfaceClass = (Class<?>) beanDefinition.getAttribute(ReferenceAttributes.INTERFACE_CLASS);
-        this.interfaceName = (String) beanDefinition.getAttribute(ReferenceAttributes.INTERFACE_NAME);
+        if (AotWithSpringDetector.useGeneratedArtifacts()) {
+            this.interfaceClass = (Class<?>) beanDefinition.getPropertyValues().get(ReferenceAttributes.INTERFACE_CLASS);
+            this.interfaceName = (String) beanDefinition.getPropertyValues().get(ReferenceAttributes.INTERFACE_NAME);
+
+        } else {
+            this.interfaceClass = (Class<?>) beanDefinition.getAttribute(ReferenceAttributes.INTERFACE_CLASS);
+            this.interfaceName = (String) beanDefinition.getAttribute(ReferenceAttributes.INTERFACE_NAME);
+        }
         Assert.notNull(this.interfaceClass, "The interface class of ReferenceBean is not initialized");
 
         if (beanDefinition.hasAttribute(Constants.REFERENCE_PROPS)) {
@@ -280,6 +285,7 @@ public class ReferenceBean<T> implements FactoryBean<T>,
 
     /**
      * The interface of this ReferenceBean, for injection purpose
+     *
      * @return
      */
     public Class<?> getInterfaceClass() {
@@ -415,4 +421,11 @@ public class ReferenceBean<T> implements FactoryBean<T>,
         }
     }
 
+    public void setInterfaceClass(Class<?> interfaceClass) {
+        this.interfaceClass = interfaceClass;
+    }
+
+    public void setInterfaceName(String interfaceName) {
+        this.interfaceName = interfaceName;
+    }
 }

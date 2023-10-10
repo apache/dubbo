@@ -36,12 +36,12 @@ public class DubboDetector implements ProtocolDetector {
         int bytesRead = min(in.readableBytes(), prefaceLen);
 
         if (bytesRead ==0 || !ChannelBuffers.prefixEquals(in,  Preface,  bytesRead)) {
-            return Result.UNRECOGNIZED;
+            return Result.unrecognized();
         }
         if (bytesRead == prefaceLen) {
-            return Result.RECOGNIZED;
+            return Result.recognized();
         }
 
-        return Result.NEED_MORE_DATA;
+        return Result.needMoreData();
     }
 }

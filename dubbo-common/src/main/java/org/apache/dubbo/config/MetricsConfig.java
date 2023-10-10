@@ -62,6 +62,11 @@ public class MetricsConfig extends AbstractConfig {
     private Boolean exportMetricsService;
 
     /**
+     * Enable netty metrics.
+     */
+    private Boolean enableNetty;
+
+    /**
      * Enable metrics init.
      */
     private Boolean enableMetricsInit;
@@ -275,5 +280,13 @@ public class MetricsConfig extends AbstractConfig {
 
     public void setEnableRpc(Boolean enableRpc) {
         this.enableRpc = enableRpc;
+    }
+
+    public Boolean getEnableNetty() {
+        return enableNetty;
+    }
+
+    public void setEnableNetty(Boolean enableNetty) {
+        this.enableNetty = enableNetty;
     }
 }

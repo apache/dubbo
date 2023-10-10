@@ -66,6 +66,12 @@ public class ApplicationStatComposite extends AbstractMetricsExport {
         applicationNumStats.get(metricsKey).getAndAdd(size);
     }
 
+    public void setAppKey(MetricsKey metricsKey, Long num){
+        if (!applicationNumStats.containsKey(metricsKey)) {
+            return;
+        }
+        applicationNumStats.get(metricsKey).set(num);
+    }
 
     public List<MetricSample> export(MetricsCategory category) {
         List<MetricSample> list = new ArrayList<>();

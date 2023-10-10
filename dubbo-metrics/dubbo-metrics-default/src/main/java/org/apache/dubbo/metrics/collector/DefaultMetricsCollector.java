@@ -21,10 +21,11 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metrics.DefaultConstants;
 import org.apache.dubbo.metrics.MetricsConstants;
-import org.apache.dubbo.metrics.collector.sample.MetricsCountSampleConfigurer;
+import org.apache.dubbo.metrics.collector.sample.ErrorCodeSampler;
 import org.apache.dubbo.metrics.collector.sample.MetricsSampler;
 import org.apache.dubbo.metrics.collector.sample.SimpleMetricsCountSampler;
 import org.apache.dubbo.metrics.collector.sample.ThreadPoolMetricsSampler;
+import org.apache.dubbo.metrics.collector.sample.MetricsCountSampleConfigurer;
 import org.apache.dubbo.metrics.data.BaseStatComposite;
 import org.apache.dubbo.metrics.data.MethodStatComposite;
 import org.apache.dubbo.metrics.data.RtStatComposite;
@@ -64,8 +65,13 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
     private volatile boolean metricsInitEnabled = true;
 
     private final ThreadPoolMetricsSampler threadPoolSampler = new ThreadPoolMetricsSampler(this);
+
+    private final ErrorCodeSampler errorCodeSampler;
+
     private String applicationName;
+
     private final ApplicationModel applicationModel;
+
     private final List<MetricsSampler> samplers = new ArrayList<>();
 
     private final List<MetricsCollector> collectors = new ArrayList<>();
@@ -90,9 +96,10 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
             }
         });
         super.setEventMulticaster(new DefaultSubDispatcher(this));
-        samplers.add(applicationSampler);
-        samplers.add(threadPoolSampler);
-        samplesChanged.set(true);
+        this.samplers.add(applicationSampler);
+        this.samplers.add(threadPoolSampler);
+        this.samplesChanged.set(true);
+        this.errorCodeSampler = new ErrorCodeSampler(this);
         this.applicationModel = applicationModel;
     }
 
@@ -117,6 +124,7 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
         this.collectEnabled = collectEnabled;
     }
 
+    @Override
     public boolean isCollectEnabled() {
         return collectEnabled;
     }

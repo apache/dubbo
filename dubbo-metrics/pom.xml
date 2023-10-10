@@ -19,11 +19,14 @@
     <modelVersion>4.0.0</modelVersion>
     <modules>
         <module>dubbo-metrics-api</module>
+        <module>dubbo-metrics-event</module>
         <module>dubbo-metrics-default</module>
         <module>dubbo-metrics-registry</module>
         <module>dubbo-metrics-metadata</module>
         <module>dubbo-metrics-prometheus</module>
         <module>dubbo-metrics-config-center</module>
+        <module>dubbo-tracing</module>
+        <module>dubbo-metrics-netty</module>
     </modules>
     <parent>
         <groupId>org.apache.dubbo</groupId>

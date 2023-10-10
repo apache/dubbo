@@ -58,6 +58,7 @@ import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -744,7 +745,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
 
         checkStubAndLocal(interfaceClass);
-        ConfigValidationUtils.checkMock(interfaceClass, this);
 
         if (StringUtils.isEmpty(url)) {
             checkRegistry();
@@ -798,7 +798,16 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     private void postProcessConfig() {
         List<ConfigPostProcessor> configPostProcessors = this.getExtensionLoader(ConfigPostProcessor.class)
                 .getActivateExtension(URL.valueOf("configPostProcessor://"), (String[]) null);
-        configPostProcessors.forEach(component -> component.postProcessReferConfig(this));
+        List<CommonConfigPostProcessor> commonConfigPostProcessors = this.getExtensionLoader(CommonConfigPostProcessor.class)
+            .getActivateExtension(URL.valueOf("configPostProcessor://"), (String[]) null);
+
+        HashSet<CommonConfigPostProcessor> allConfigPostProcessor = new HashSet<>();
+
+        // merge common and old config
+        allConfigPostProcessor.addAll(commonConfigPostProcessors);
+        allConfigPostProcessor.addAll(configPostProcessors);
+
+        allConfigPostProcessor.forEach(component -> component.postProcessReferConfig(this));
     }
 
     /**

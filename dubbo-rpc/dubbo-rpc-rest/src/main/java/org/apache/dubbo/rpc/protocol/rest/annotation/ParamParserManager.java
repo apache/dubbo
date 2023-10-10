@@ -25,16 +25,15 @@ import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider.BasePr
 import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider.ProviderParseContext;
 
 import java.util.List;
-import java.util.Set;
 
 public class ParamParserManager {
 
 
-    private static final Set<BaseConsumerParamParser> consumerParamParsers =
-        FrameworkModel.defaultModel().getExtensionLoader(BaseConsumerParamParser.class).getSupportedExtensionInstances();
+    private static final List<BaseConsumerParamParser> consumerParamParsers =
+        FrameworkModel.defaultModel().getExtensionLoader(BaseConsumerParamParser.class).getActivateExtensions();
 
-    private static final Set<BaseProviderParamParser> providerParamParsers =
-        FrameworkModel.defaultModel().getExtensionLoader(BaseProviderParamParser.class).getSupportedExtensionInstances();
+    private static final List<BaseProviderParamParser> providerParamParsers =
+        FrameworkModel.defaultModel().getExtensionLoader(BaseProviderParamParser.class).getActivateExtensions();
 
     /**
      * provider  Design Description:
@@ -51,9 +50,13 @@ public class ParamParserManager {
         List<ArgInfo> args = parseContext.getArgInfos();
 
         for (int i = 0; i < args.size(); i++) {
-            for (ParamParser paramParser : providerParamParsers) {
+            for (BaseProviderParamParser paramParser : providerParamParsers) {
 
-                paramParser.parse(parseContext, args.get(i));
+                if (paramParser.matchParseType(args.get(i).getParamAnnotationType())) {
+                    paramParser.parse(parseContext, args.get(i));
+                    // one arg only can be parsed by one parser
+                    break;
+                }
             }
         }
         // TODO add param require or default & body arg size pre judge
