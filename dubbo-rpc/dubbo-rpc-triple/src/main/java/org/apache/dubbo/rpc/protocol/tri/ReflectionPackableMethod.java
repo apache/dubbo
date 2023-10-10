@@ -21,13 +21,13 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.common.utils.ProtobufUtils;
 import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.Pack;
 import org.apache.dubbo.rpc.model.PackableMethod;
-import org.apache.dubbo.rpc.model.ReflectionServiceDescriptor;
 import org.apache.dubbo.rpc.model.UnPack;
 import org.apache.dubbo.rpc.model.WrapperUnPack;
 
@@ -152,7 +152,7 @@ public class ReflectionPackableMethod implements PackableMethod {
         if ($ECHO.equals(methodName)) {
             return true;
         }
-        boolean returnClassProtobuf = ReflectionServiceDescriptor.isProtobufClass(returnClass);
+        boolean returnClassProtobuf = ProtobufUtils.isProtobufClass(returnClass);
         // Response foo()
         if (parameterClasses.length == 0) {
             return !returnClassProtobuf;
@@ -164,7 +164,7 @@ public class ReflectionPackableMethod implements PackableMethod {
         // count normal and protobuf param
         for (int i = 0; i < parameterClasses.length; i++) {
             Class<?> parameterClass = parameterClasses[i];
-            if (ReflectionServiceDescriptor.isProtobufClass(parameterClass)) {
+            if (ProtobufUtils.isProtobufClass(parameterClass)) {
                 protobufParameterCount++;
             } else {
                 if (isStreamType(parameterClass)) {
@@ -246,7 +246,7 @@ public class ReflectionPackableMethod implements PackableMethod {
             if (TRI_ASYNC_RETURN_CLASS.equalsIgnoreCase(returnClass.getName())) {
                 Class<?> actualReturnClass = (Class<?>) ((ParameterizedType) methodDescriptor.getMethod()
                     .getGenericReturnType()).getActualTypeArguments()[0];
-                boolean actualReturnClassProtobuf = ReflectionServiceDescriptor.isProtobufClass(actualReturnClass);
+                boolean actualReturnClassProtobuf = ProtobufUtils.isProtobufClass(actualReturnClass);
                 if (actualReturnClassProtobuf && protobufParameterCount == 1) {
                     return false;
                 }

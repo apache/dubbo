@@ -18,6 +18,7 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ProtobufUtils;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 
@@ -33,8 +34,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
-
-import static org.apache.dubbo.common.constants.CommonConstants.PROTOBUF_MESSAGE_CLASS_NAME;
 
 public class ReflectionServiceDescriptor implements ServiceDescriptor {
     private final String interfaceName;
@@ -78,7 +77,7 @@ public class ReflectionServiceDescriptor implements ServiceDescriptor {
         methods.forEach((methodName, methodList) -> {
             //pb method not allow override
             if (methodList.size() > 1) {
-                long pbMethodCount = methodList.stream().filter(methodDescriptor -> Arrays.stream(methodDescriptor.getParameterClasses()).anyMatch(pclss -> isProtobufClass(pclss))).count();
+                long pbMethodCount = methodList.stream().filter(methodDescriptor -> Arrays.stream(methodDescriptor.getParameterClasses()).anyMatch(pclss -> ProtobufUtils.isProtobufClass(pclss))).count();
                 if (pbMethodCount > 0L) {
                     throw new IllegalStateException("Protobuf method not allow override," + "method(" + interfaceName + "." + methodName + ").");
                 }
@@ -97,21 +96,6 @@ public class ReflectionServiceDescriptor implements ServiceDescriptor {
                 throw new IllegalStateException("Stream method could not be overloaded.There are " + streamMethodCount
                     + " stream method signatures. method(" + methodName + ")");
         });
-    }
-
-    public static boolean isProtobufClass(Class<?> clazz) {
-        while (clazz != Object.class && clazz != null) {
-            Class<?>[] interfaces = clazz.getInterfaces();
-            if (interfaces.length > 0) {
-                for (Class<?> clazzInterface : interfaces) {
-                    if (PROTOBUF_MESSAGE_CLASS_NAME.equalsIgnoreCase(clazzInterface.getName())) {
-                        return true;
-                    }
-                }
-            }
-            clazz = clazz.getSuperclass();
-        }
-        return false;
     }
 
     public String getInterfaceName() {
