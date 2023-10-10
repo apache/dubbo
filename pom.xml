@@ -367,6 +367,8 @@
                                         **/org/apache/dubbo/metrics/aggregate/DubboAbstractTDigest.java,
                                         **/org/apache/dubbo/common/logger/helpers/FormattingTuple.java,
                                         **/org/apache/dubbo/common/logger/helpers/MessageFormatter.java,
+                                        **/org/apache/dubbo/maven/plugin/protoc/DubboProtocCompilerMojo.java,
+                                        **/org/apache/dubbo/gen/utils/ProtoTypeMap.java,
                                         **/istio/v1/auth/**/*,
                                         **/com/google/rpc/*,
                                         **/generated/**/*,
