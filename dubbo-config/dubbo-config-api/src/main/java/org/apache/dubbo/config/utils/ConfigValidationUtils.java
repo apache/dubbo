@@ -111,6 +111,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL_TYPE;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
@@ -605,7 +606,7 @@ public class ConfigValidationUtils {
     }
 
     private static String getRegistryProtocolType(URL url) {
-        String registryProtocol = url.getParameter("registry-protocol-type");
+        String registryProtocol = url.getParameter(REGISTRY_PROTOCOL_TYPE);
         return isNotEmpty(registryProtocol) ? registryProtocol : REGISTRY_PROTOCOL;
     }
 
