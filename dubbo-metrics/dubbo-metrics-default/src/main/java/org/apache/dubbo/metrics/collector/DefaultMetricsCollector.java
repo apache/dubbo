@@ -62,6 +62,8 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
 
     private volatile boolean threadpoolCollectEnabled = false;
 
+    private volatile boolean metricsInitEnabled = true;
+
     private final ThreadPoolMetricsSampler threadPoolSampler = new ThreadPoolMetricsSampler(this);
 
     private final ErrorCodeSampler errorCodeSampler;
@@ -76,6 +78,7 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
 
     private final AtomicBoolean initialized = new AtomicBoolean();
 
+    private final AtomicBoolean samplesChanged = new AtomicBoolean();
 
     public DefaultMetricsCollector(ApplicationModel applicationModel) {
         super(new BaseStatComposite(applicationModel) {
@@ -95,12 +98,14 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
         super.setEventMulticaster(new DefaultSubDispatcher(this));
         this.samplers.add(applicationSampler);
         this.samplers.add(threadPoolSampler);
+        this.samplesChanged.set(true);
         this.errorCodeSampler = new ErrorCodeSampler(this);
         this.applicationModel = applicationModel;
     }
 
     public void addSampler(MetricsSampler sampler) {
         samplers.add(sampler);
+        samplesChanged.set(true);
     }
 
     public void setApplicationName(String applicationName) {
@@ -130,6 +135,14 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
 
     public void setThreadpoolCollectEnabled(boolean threadpoolCollectEnabled) {
         this.threadpoolCollectEnabled = threadpoolCollectEnabled;
+    }
+
+    public boolean isMetricsInitEnabled() {
+        return metricsInitEnabled;
+    }
+
+    public void setMetricsInitEnabled(boolean metricsInitEnabled) {
+        this.metricsInitEnabled = metricsInitEnabled;
     }
 
     public void collectApplication() {
@@ -164,6 +177,9 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
     @Override
     public void onEvent(TimeCounterEvent event) {
         if(event instanceof MetricsInitEvent){
+            if (!metricsInitEnabled) {
+                return;
+            }
             if(initialized.compareAndSet(false,true)) {
                 collectors.addAll(applicationModel.getBeanFactory().getBeansOfType(MetricsCollector.class));
             }
@@ -198,5 +214,22 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
             MetricsCountSampleConfigurer<String, MetricsEvent.Type, ApplicationMetric> sampleConfigure) {
             sampleConfigure.configureMetrics(configure -> new ApplicationMetric(applicationModel));
         }
+
+        @Override
+        public boolean calSamplesChanged() {
+            return false;
+        }
     };
+
+    @Override
+    public boolean calSamplesChanged() {
+        // CAS to get and reset the flag in an atomic operation
+        boolean changed = samplesChanged.compareAndSet(true, false);
+        // Should ensure that all the sampler's samplesChanged have been compareAndSet, and cannot flip the `or` logic
+        changed = stats.calSamplesChanged() || changed;
+        for (MetricsSampler sampler : samplers) {
+            changed = sampler.calSamplesChanged() || changed;
+        }
+        return changed;
+    }
 }

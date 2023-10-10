@@ -27,11 +27,14 @@ import org.apache.dubbo.metrics.model.sample.MetricSample;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class MetricsNameCountSampler<S, K, M extends Metric> extends SimpleMetricsCountSampler<S, K, M> {
 
     protected final DefaultMetricsCollector collector;
+
+    private final AtomicBoolean samplesChanged = new AtomicBoolean(true);
 
     protected final Set<K> metricNames = new ConcurrentHashSet<>();
 
@@ -48,6 +51,7 @@ public abstract class MetricsNameCountSampler<S, K, M extends Metric> extends Si
 
     public void addMetricName(K name) {
         this.metricNames.add(name);
+        this.samplesChanged.set(true);
     }
 
     @Override
@@ -66,4 +70,9 @@ public abstract class MetricsNameCountSampler<S, K, M extends Metric> extends Si
 
     protected abstract MetricSample provideMetricsSample(M metric,AtomicLong count,MetricsKey metricsKey,MetricsCategory metricsCategory);
 
+    @Override
+    public boolean calSamplesChanged() {
+        // CAS to get and reset the flag in an atomic operation
+        return samplesChanged.compareAndSet(true, false);
+    }
 }

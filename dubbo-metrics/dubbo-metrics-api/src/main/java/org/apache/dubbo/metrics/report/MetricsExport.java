@@ -33,4 +33,11 @@ public interface MetricsExport {
      */
     List<MetricSample> export(MetricsCategory category);
 
+    /**
+     * Check if samples have been changed.
+     * Note that this method will reset the changed flag to false using CAS.
+     *
+     * @return true if samples have been changed
+     */
+    boolean calSamplesChanged();
 }

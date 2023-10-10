@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metrics.prometheus;
 
-import com.sun.net.httpserver.HttpServer;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
@@ -25,6 +24,8 @@ import org.apache.dubbo.metrics.collector.sample.ThreadRejectMetricsCountSampler
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import com.sun.net.httpserver.HttpServer;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -122,7 +123,7 @@ public class PrometheusMetricsThreadPoolTest {
         try {
             HttpServer prometheusExporterHttpServer = HttpServer.create(new InetSocketAddress(port), 0);
             prometheusExporterHttpServer.createContext("/metrics", httpExchange -> {
-                reporter.refreshData();
+                reporter.resetIfSamplesChanged();
                 String response = reporter.getPrometheusRegistry().scrape();
                 httpExchange.sendResponseHeaders(200, response.getBytes().length);
                 try (OutputStream os = httpExchange.getResponseBody()) {

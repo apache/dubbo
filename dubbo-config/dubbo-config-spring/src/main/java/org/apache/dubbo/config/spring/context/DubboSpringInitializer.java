@@ -43,7 +43,7 @@ public class DubboSpringInitializer {
 
     private static final Logger logger = LoggerFactory.getLogger(DubboSpringInitializer.class);
 
-    private static final Map<BeanDefinitionRegistry, DubboSpringInitContext> contextMap = new ConcurrentHashMap<>();
+    private static final Map<BeanDefinitionRegistry, DubboSpringInitContext> REGISTRY_CONTEXT_MAP = new ConcurrentHashMap<>();
 
     public DubboSpringInitializer() {
     }
@@ -54,7 +54,7 @@ public class DubboSpringInitializer {
         DubboSpringInitContext context = new DubboSpringInitContext();
 
         // Spring ApplicationContext may not ready at this moment (e.g. load from xml), so use registry as key
-        if (contextMap.putIfAbsent(registry, context) != null) {
+        if (REGISTRY_CONTEXT_MAP.putIfAbsent(registry, context) != null) {
             return;
         }
 
@@ -66,18 +66,18 @@ public class DubboSpringInitializer {
     }
 
     public static boolean remove(BeanDefinitionRegistry registry) {
-        return contextMap.remove(registry) != null;
+        return REGISTRY_CONTEXT_MAP.remove(registry) != null;
     }
 
     public static boolean remove(ApplicationContext springContext) {
         AutowireCapableBeanFactory autowireCapableBeanFactory = springContext.getAutowireCapableBeanFactory();
-        for (Map.Entry<BeanDefinitionRegistry, DubboSpringInitContext> entry : contextMap.entrySet()) {
+        for (Map.Entry<BeanDefinitionRegistry, DubboSpringInitContext> entry : REGISTRY_CONTEXT_MAP.entrySet()) {
             DubboSpringInitContext initContext = entry.getValue();
             if (initContext.getApplicationContext() == springContext ||
                 initContext.getBeanFactory() == autowireCapableBeanFactory ||
                 initContext.getRegistry() == autowireCapableBeanFactory
             ) {
-                DubboSpringInitContext context = contextMap.remove(entry.getKey());
+                DubboSpringInitContext context = REGISTRY_CONTEXT_MAP.remove(entry.getKey());
                 logger.info("Unbind " + safeGetModelDesc(context.getModuleModel()) + " from spring container: " +
                     ObjectUtils.identityToString(entry.getKey()));
                 return true;
@@ -87,11 +87,11 @@ public class DubboSpringInitializer {
     }
 
     static Map<BeanDefinitionRegistry, DubboSpringInitContext> getContextMap() {
-        return contextMap;
+        return REGISTRY_CONTEXT_MAP;
     }
 
     static DubboSpringInitContext findBySpringContext(ApplicationContext applicationContext) {
-        for (DubboSpringInitContext initContext : contextMap.values()) {
+        for (DubboSpringInitContext initContext : REGISTRY_CONTEXT_MAP.values()) {
             if (initContext.getApplicationContext() == applicationContext) {
                 return initContext;
             }
@@ -184,7 +184,7 @@ public class DubboSpringInitializer {
     }
 
     private static DubboSpringInitContext findContextForApplication(ApplicationModel applicationModel) {
-        for (DubboSpringInitContext initializationContext : contextMap.values()) {
+        for (DubboSpringInitContext initializationContext : REGISTRY_CONTEXT_MAP.values()) {
             if (initializationContext.getApplicationModel() == applicationModel) {
                 return initializationContext;
             }

@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -38,6 +39,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * the key is displayed and the initial data is 0 value of the AtomicLong type
  */
 public class ServiceStatComposite extends AbstractMetricsExport {
+
+    private final AtomicBoolean samplesChanged = new AtomicBoolean(true);
 
     public ServiceStatComposite(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -49,7 +52,10 @@ public class ServiceStatComposite extends AbstractMetricsExport {
         if (CollectionUtils.isEmpty(metricsKeyWrappers)) {
             return;
         }
-        metricsKeyWrappers.forEach(appKey -> serviceWrapperNumStats.put(appKey, new ConcurrentHashMap<>()));
+        metricsKeyWrappers.forEach(appKey -> {
+            serviceWrapperNumStats.put(appKey, new ConcurrentHashMap<>());
+        });
+        samplesChanged.set(true);
     }
 
     public void incrementServiceKey(MetricsKeyWrapper wrapper, String serviceKey, int size) {
@@ -64,7 +70,13 @@ public class ServiceStatComposite extends AbstractMetricsExport {
         if (extra != null) {
             serviceKeyMetric.setExtraInfo(extra);
         }
-        serviceWrapperNumStats.get(wrapper).computeIfAbsent(serviceKeyMetric, k -> new AtomicLong(0L)).getAndAdd(size);
+        Map<ServiceKeyMetric, AtomicLong> map = serviceWrapperNumStats.get(wrapper);
+        AtomicLong metrics = map.get(serviceKeyMetric);
+        if (metrics == null) {
+            metrics = map.computeIfAbsent(serviceKeyMetric, k -> new AtomicLong(0L));
+            samplesChanged.set(true);
+        }
+        metrics.getAndAdd(size);
 //        MetricsSupport.fillZero(serviceWrapperNumStats);
     }
 
@@ -80,7 +92,13 @@ public class ServiceStatComposite extends AbstractMetricsExport {
         if (extra != null) {
             serviceKeyMetric.setExtraInfo(extra);
         }
-        serviceWrapperNumStats.get(wrapper).computeIfAbsent(serviceKeyMetric, k -> new AtomicLong(0L)).set(num);
+        Map<ServiceKeyMetric, AtomicLong> stats = serviceWrapperNumStats.get(wrapper);
+        AtomicLong metrics = stats.get(serviceKeyMetric);
+        if (metrics == null) {
+            metrics = stats.computeIfAbsent(serviceKeyMetric, k -> new AtomicLong(0L));
+            samplesChanged.set(true);
+        }
+        metrics.set(num);
     }
 
     @Override
@@ -95,4 +113,9 @@ public class ServiceStatComposite extends AbstractMetricsExport {
         return list;
     }
 
+    @Override
+    public boolean calSamplesChanged() {
+        // CAS to get and reset the flag in an atomic operation
+        return samplesChanged.compareAndSet(true, false);
+    }
 }

@@ -30,21 +30,23 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.Environment;
 
 import java.util.SortedMap;
 
 
-public class DubboContextPostProcessor implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware {
+public class DubboContextPostProcessor implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware, EnvironmentAware {
 
     /**
      * The bean name of {@link DubboConfigConfigurationRegistrar}
      */
     public final static String BEAN_NAME = "dubboContextPostProcessor";
 
-    private BeanDefinitionRegistry registry;
-
     private ApplicationContext applicationContext;
+
+    private ConfigurableEnvironment environment;
 
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
@@ -58,7 +60,6 @@ public class DubboContextPostProcessor implements BeanDefinitionRegistryPostProc
 
         // Initialize dubbo Environment before ConfigManager
         // Extract dubbo props from Spring env and put them to app config
-        ConfigurableEnvironment environment = (ConfigurableEnvironment) applicationContext.getEnvironment();
         SortedMap<String, String> dubboProperties = EnvironmentUtils.filterDubboProperties(environment);
         applicationModel.getModelEnvironment().getAppConfigMap().putAll(dubboProperties);
 
@@ -70,11 +71,15 @@ public class DubboContextPostProcessor implements BeanDefinitionRegistryPostProc
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry beanDefinitionRegistry) throws BeansException {
         DubboSpringInitializer.initialize(beanDefinitionRegistry);
-        this.registry = beanDefinitionRegistry;
     }
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
+    }
+
+    @Override
+    public void setEnvironment(Environment environment) {
+        this.environment = (ConfigurableEnvironment) environment;
     }
 }

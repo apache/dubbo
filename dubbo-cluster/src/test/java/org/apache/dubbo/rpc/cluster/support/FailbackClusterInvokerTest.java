@@ -24,10 +24,10 @@ import org.apache.dubbo.common.utils.LogUtil;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.cluster.Directory;
 
 import org.apache.log4j.Level;
 import org.junit.jupiter.api.AfterEach;
@@ -38,7 +38,6 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.jupiter.api.function.Executable;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -47,7 +46,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.RETRIES_KEY;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -72,6 +71,7 @@ class FailbackClusterInvokerTest {
 
     @BeforeEach
     public void setUp() throws Exception {
+        RpcContext.removeServiceContext();
 
         dic = mock(Directory.class);
         given(dic.getUrl()).willReturn(url);

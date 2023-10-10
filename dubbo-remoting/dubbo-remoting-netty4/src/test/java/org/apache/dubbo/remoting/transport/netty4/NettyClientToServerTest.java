@@ -58,7 +58,7 @@ class NettyClientToServerTest extends ClientToServerTest {
 
     protected ExchangeChannel newClient(int port) throws RemotingException {
         // add heartbeat cycle to avoid unstable ut.
-        URL url = URL.valueOf("exchange://localhost:" + port + "?client=netty4&timeout=3000");
+        URL url = URL.valueOf("exchange://localhost:" + port + "?client=netty4&timeout=300000");
         url = url.addParameter(Constants.HEARTBEAT_KEY, 600 * 1000);
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");

@@ -99,4 +99,8 @@ public class MetadataMetricsCollector extends CombMetricsCollector<MetadataEvent
         return list;
     }
 
+    @Override
+    public boolean calSamplesChanged() {
+        return stats.calSamplesChanged();
+    }
 }

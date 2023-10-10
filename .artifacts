@@ -21,7 +21,6 @@ dubbo-auth
 dubbo-apache-release
 dubbo-all-shaded
 dubbo-bom
-dubbo-build-tools
 dubbo-cluster
 dubbo-common
 dubbo-compatible
@@ -45,7 +44,6 @@ dubbo-dependencies-bom
 dubbo-dependencies-zookeeper
 dubbo-dependencies-zookeeper-curator5
 dubbo-distribution
-dubbo-filter
 dubbo-filter-cache
 dubbo-filter-validation
 dubbo-kubernetes
@@ -141,3 +139,4 @@ dubbo-plugin-context
 dubbo-plugin-classloader-filter
 dubbo-plugin-proxy-bytebuddy
 dubbo-plugin-qos-trace
+dubbo-plugin-loom
