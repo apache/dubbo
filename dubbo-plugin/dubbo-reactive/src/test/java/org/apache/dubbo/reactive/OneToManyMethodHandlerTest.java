@@ -35,11 +35,11 @@ import static org.mockito.ArgumentMatchers.any;
  */
 public final class OneToManyMethodHandlerTest {
 
-    private CreatObserverAdapter creator;
+    private CreateObserverAdapter creator;
 
     @BeforeEach
     void init() {
-        creator = new CreatObserverAdapter();
+        creator = new CreateObserverAdapter();
     }
 
     @Test

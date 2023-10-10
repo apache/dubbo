@@ -27,14 +27,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 
-public class CreatObserverAdapter {
+public class CreateObserverAdapter {
 
     private ServerCallToObserverAdapter<String> responseObserver;
     private AtomicInteger nextCounter;
     private AtomicInteger completeCounter;
     private AtomicInteger errorCounter;
 
-    CreatObserverAdapter() {
+    CreateObserverAdapter() {
 
         nextCounter = new AtomicInteger();
         completeCounter = new AtomicInteger();

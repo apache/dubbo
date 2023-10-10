@@ -32,7 +32,7 @@ import java.util.concurrent.ExecutionException;
 public final class ManyToManyMethodHandlerTest {
     @Test
     void testInvoke() throws ExecutionException, InterruptedException {
-        CreatObserverAdapter creator = new CreatObserverAdapter();
+        CreateObserverAdapter creator = new CreateObserverAdapter();
 
         ManyToManyMethodHandler<String, String> handler = new ManyToManyMethodHandler<>(requestFlux ->
             requestFlux.map(r -> r + "0"));
