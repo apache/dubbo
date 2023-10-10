@@ -42,9 +42,9 @@ message HelloReply {
   <plugin>
     <groupId>org.apache.dubbo</groupId>
     <artifactId>dubbo-maven-plugin</artifactId>
-    <version>3.2.7-SNAPSHOT</version>
+    <version>3.3.0</version>
     <configuration>
-        <dubboVersion>3.2.7-SNAPSHOT</dubboVersion>
+        <dubboVersion>3.3.0</dubboVersion>
         <dubboGenerateType>dubbo3</dubboGenerateType>
         <protocExecutable>protoc</protocExecutable>
         <protocArtifact>com.google.protobuf:protoc:${protoc.version}:exe:${os.detected.classifier}</protocArtifact>
@@ -123,16 +123,15 @@ static Class<?> clazz = init();
 
 dubbo-maven-plugin protoc mojo supported configurations
 
-| configuration params  | isRequired | explain                                        | default                                                    | eg                                                           |
-| :-------------------- | ---------- | ---------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------ |
-| dubboVersion          | true       | dubbo version ,use for find Generator          | ${dubbo.version}                                           | 3.2.7-SNAPSHOT                                               |
-| dubboGenerateType     | true       | dubbo generator type                           | dubbo3                                                     | grpc                                                         |
-| protocExecutable      | false      | protoc executable,you can use local protoc.exe |                                                            | protoc                                                       |
+| configuration params  | isRequired | explain                                        | default                                                    | eg                                                                         |
+|:----------------------|------------|------------------------------------------------|------------------------------------------------------------|----------------------------------------------------------------------------|
+| dubboVersion          | true       | dubbo version ,use for find Generator          | ${dubbo.version}                                           | 3.3.0                                                                      |
+| dubboGenerateType     | true       | dubbo generator type                           | dubbo3                                                     | grpc                                                                       |
+| protocExecutable      | false      | protoc executable,you can use local protoc.exe |                                                            | protoc                                                                     |
 | protocArtifact        | false      | download protoc from maven artifact            |                                                            | com.google.protobuf:protoc:${protoc.version}:exe:${os.detected.classifier} |
-| protoSourceDir        | true       | .proto files dir                               | ${basedir}/src/main/proto                                  | ./proto                                                      |
-| outputDir             | true       | generated file output dir                      | ${project.build.directory}/generated-sources/protobuf/java | ${basedir}/src/main/java                                     |
-| protocPluginDirectory | false      | protoc plugin dir                              | ${project.build.directory}/protoc-plugins                  | ./target/protoc-plugins                                      |
-|                       |            |                                                |                                                            |                                                              |
+| protoSourceDir        | true       | .proto files dir                               | ${basedir}/src/main/proto                                  | ./proto                                                                    |
+| outputDir             | true       | generated file output dir                      | ${project.build.directory}/generated-sources/protobuf/java | ${basedir}/src/main/java                                                   |
+| protocPluginDirectory | false      | protoc plugin dir                              | ${project.build.directory}/protoc-plugins                  | ./target/protoc-plugins                                                    |
 
 
 ​    
