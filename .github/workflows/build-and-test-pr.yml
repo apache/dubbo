@@ -13,9 +13,8 @@ env:
   VERSIONS_LIMIT: 4
   JACOCO_ENABLE: true
   CANDIDATE_VERSIONS: '
-    spring.version:4.3.30.RELEASE;
-    spring-boot.version:1.5.22.RELEASE;
-    spring-boot.version:2.4.1;
+    spring.version:5.3.24;
+    spring-boot.version:2.7.6;
     '
 
 jobs:
@@ -358,6 +357,8 @@ jobs:
           path: dubbo/
       - name: "Upload coverage to Codecov"
         uses: codecov/codecov-action@v3
+        with:
+          verbose: true
 
   error-code-inspecting:
     runs-on: ubuntu-latest
@@ -415,10 +416,10 @@ jobs:
 
       - name: "Setup Zookeeper environment"
         run: |
-          wget https://dlcdn.apache.org/zookeeper/zookeeper-3.7.1/apache-zookeeper-3.7.1-bin.tar.gz
-          tar -zxvf apache-zookeeper-3.7.1-bin.tar.gz
-          mv apache-zookeeper-3.7.1-bin/conf/zoo_sample.cfg apache-zookeeper-3.7.1-bin/conf/zoo.cfg
-          apache-zookeeper-3.7.1-bin/bin/zkServer.sh start
+          wget https://dlcdn.apache.org/zookeeper/zookeeper-3.8.3/apache-zookeeper-3.8.3-bin.tar.gz
+          tar -zxvf apache-zookeeper-3.8.3-bin.tar.gz
+          mv apache-zookeeper-3.8.3-bin/conf/zoo_sample.cfg apache-zookeeper-3.8.3-bin/conf/zoo.cfg
+          apache-zookeeper-3.8.3-bin/bin/zkServer.sh start
 
       - name: "Check environment"
         run: |

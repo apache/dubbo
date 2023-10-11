@@ -17,14 +17,15 @@
 
 package org.apache.dubbo.metrics.prometheus;
 
-import com.sun.net.httpserver.HttpServer;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import com.sun.net.httpserver.HttpServer;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -143,7 +144,7 @@ class PrometheusMetricsReporterTest {
         try {
             HttpServer prometheusExporterHttpServer = HttpServer.create(new InetSocketAddress(port), 0);
             prometheusExporterHttpServer.createContext("/metrics", httpExchange -> {
-                reporter.refreshData();
+                reporter.resetIfSamplesChanged();
                 String response = reporter.getPrometheusRegistry().scrape();
                 httpExchange.sendResponseHeaders(200, response.getBytes().length);
                 try (OutputStream os = httpExchange.getResponseBody()) {

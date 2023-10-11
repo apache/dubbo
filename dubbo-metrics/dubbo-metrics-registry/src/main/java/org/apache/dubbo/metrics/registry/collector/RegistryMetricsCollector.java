@@ -149,4 +149,11 @@ public class RegistryMetricsCollector extends CombMetricsCollector<RegistryEvent
         this.stats.setServiceKey(metricsKey, serviceKey, num, attachments);
     }
 
+    @Override
+    public boolean calSamplesChanged() {
+        // Should ensure that all the stat's samplesChanged have been compareAndSet, and cannot flip the `or` logic
+        boolean changed = stats.calSamplesChanged();
+        changed = internalStat.calSamplesChanged() || changed;
+        return changed;
+    }
 }
