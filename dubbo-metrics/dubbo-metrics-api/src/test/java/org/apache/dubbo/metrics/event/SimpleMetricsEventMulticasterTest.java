@@ -59,16 +59,6 @@ public class SimpleMetricsEventMulticasterTest {
 
 
     @Test
-    void testPublishEvent() {
-
-        // emptyEvent do nothing
-        MetricsEvent emptyEvent = EmptyEvent.instance();
-        eventMulticaster.publishEvent(emptyEvent);
-        Assertions.assertSame(obj, objects[0]);
-
-    }
-
-    @Test
     void testPublishFinishEvent() {
 
         //do nothing with no MetricsLifeListener

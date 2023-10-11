@@ -289,7 +289,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         this.originalUrls = invokerUrls;
 
         if (invokerUrls.size() == 1 && EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
-            logger.warn(PROTOCOL_UNSUPPORTED, "", "", "Received url with EMPTY protocol, will clear all available addresses.");
+            logger.warn(PROTOCOL_UNSUPPORTED, "", "", String.format("Received url with EMPTY protocol from registry %s, will clear all available addresses.", this));
             refreshRouter(BitList.emptyList(), () ->
                 this.forbidden = true // Forbid to access
             );
@@ -297,7 +297,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         } else {
             this.forbidden = false; // Allow accessing
             if (CollectionUtils.isEmpty(invokerUrls)) {
-                logger.warn(PROTOCOL_UNSUPPORTED, "", "", "Received empty url list, will ignore for protection purpose.");
+                logger.warn(PROTOCOL_UNSUPPORTED, "", "", String.format("Received empty url list from registry %s, will ignore for protection purpose.", this));
                 return;
             }
 
@@ -311,10 +311,10 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                 localUrlInvokerMap.forEach(oldUrlInvokerMap::put);
             }
             Map<ProtocolServiceKeyWithAddress, Invoker<T>> newUrlInvokerMap = toInvokers(oldUrlInvokerMap, invokerUrls);// Translate url list to Invoker map
-            logger.info("Refreshed invoker size " + newUrlInvokerMap.size());
+            logger.info(String.format("Refreshed invoker size %s from registry %s", newUrlInvokerMap.size(), this));
 
             if (CollectionUtils.isEmptyMap(newUrlInvokerMap)) {
-                logger.error(PROTOCOL_UNSUPPORTED, "", "", "Unsupported protocol.", new IllegalStateException("Cannot create invokers from url address list (total " + invokerUrls.size() + ")"));
+                logger.error(PROTOCOL_UNSUPPORTED, "", "", "Unsupported protocol.", new IllegalStateException(String.format("Cannot create invokers from url address list (total %s)", invokerUrls.size())));
                 return;
             }
             List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
@@ -584,7 +584,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         }
 
         void addNotifyListener(ServiceDiscoveryRegistryDirectory<?> listener) {
-            if (listeners.size() == 0) {
+            if (listeners.isEmpty()) {
                 this.initWith(moduleModel.getApplicationModel().getApplicationName() + CONFIGURATORS_SUFFIX);
             }
             this.listeners.add(listener);
@@ -592,7 +592,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
 
         void removeNotifyListener(ServiceDiscoveryRegistryDirectory<?> listener) {
             this.listeners.remove(listener);
-            if (listeners.size() == 0) {
+            if (listeners.isEmpty()) {
                 this.stopListen(moduleModel.getApplicationModel().getApplicationName() + CONFIGURATORS_SUFFIX);
             }
         }
@@ -693,4 +693,12 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         }
     }
 
+    @Override
+    public String toString() {
+        return "ServiceDiscoveryRegistryDirectory(" +
+            "registry: " + getUrl().getAddress() +
+            ", subscribed key: " + (serviceListener == null || CollectionUtils.isEmpty(serviceListener.getServiceNames())
+            ? getConsumerUrl().getServiceKey() : serviceListener.getServiceNames().toString()) +
+            ")-" + super.toString();
+    }
 }

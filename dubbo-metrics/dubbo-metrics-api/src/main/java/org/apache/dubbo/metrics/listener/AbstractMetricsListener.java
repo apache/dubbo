@@ -25,17 +25,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class AbstractMetricsListener<E extends MetricsEvent> implements MetricsListener<E> {
 
-    private final Map<Integer, Boolean> eventMatchCache = new ConcurrentHashMap<>();
+    private final Map<Class<?>, Boolean> eventMatchCache = new ConcurrentHashMap<>();
 
     /**
-     * Only interested in events of the current listener's generic parameter type
+     * Whether to support the general determination of event points depends on the event type
      */
     public boolean isSupport(MetricsEvent event) {
-        Boolean eventMatch = eventMatchCache.get(System.identityHashCode(event.getClass()));
-        if (eventMatch == null) {
-            eventMatch = ReflectionUtils.match(getClass(), AbstractMetricsListener.class, event);
-            eventMatchCache.put(System.identityHashCode(event.getClass()), eventMatch);
-        }
+        Boolean eventMatch = eventMatchCache.computeIfAbsent(event.getClass(),
+            clazz -> ReflectionUtils.match(getClass(), AbstractMetricsListener.class, event));
         return event.isAvailable() && eventMatch;
     }
 

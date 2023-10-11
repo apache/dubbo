@@ -97,14 +97,14 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
         }
     }
 
-    public void bind() {
+    public void bind() throws Throwable {
         if (channel == null) {
             doOpen();
         }
     }
 
     @Override
-    public void doOpen() {
+    public void doOpen() throws Throwable {
         bootstrap = new ServerBootstrap();
 
         bossGroup = NettyEventLoopFactory.eventLoopGroup(1, EVENT_LOOP_BOSS_POOL_NAME);
@@ -138,9 +138,31 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
             bindIp = ANYHOST_VALUE;
         }
         InetSocketAddress bindAddress = new InetSocketAddress(bindIp, bindPort);
-        ChannelFuture channelFuture = bootstrap.bind(bindAddress);
-        channelFuture.syncUninterruptibly();
-        channel = channelFuture.channel();
+        try {
+            ChannelFuture channelFuture = bootstrap.bind(bindAddress);
+            channelFuture.syncUninterruptibly();
+            channel = channelFuture.channel();
+        } catch (Throwable t) {
+            closeBootstrap();
+            throw t;
+        }
+    }
+
+    private void closeBootstrap() {
+        try {
+            if (bootstrap != null) {
+                long timeout = ConfigurationUtils.reCalShutdownTime(serverShutdownTimeoutMills);
+                long quietPeriod = Math.min(2000L, timeout);
+                Future<?> bossGroupShutdownFuture = bossGroup.shutdownGracefully(quietPeriod,
+                    timeout, MILLISECONDS);
+                Future<?> workerGroupShutdownFuture = workerGroup.shutdownGracefully(quietPeriod,
+                    timeout, MILLISECONDS);
+                bossGroupShutdownFuture.awaitUninterruptibly(timeout, MILLISECONDS);
+                workerGroupShutdownFuture.awaitUninterruptibly(timeout, MILLISECONDS);
+            }
+        } catch (Throwable e) {
+            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
+        }
     }
 
     @Override
@@ -176,20 +198,7 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
             protocol.close();
         }
 
-        try {
-            if (bootstrap != null) {
-                long timeout = ConfigurationUtils.reCalShutdownTime(serverShutdownTimeoutMills);
-                long quietPeriod = Math.min(2000L, timeout);
-                Future<?> bossGroupShutdownFuture = bossGroup.shutdownGracefully(quietPeriod,
-                    timeout, MILLISECONDS);
-                Future<?> workerGroupShutdownFuture = workerGroup.shutdownGracefully(quietPeriod,
-                    timeout, MILLISECONDS);
-                bossGroupShutdownFuture.awaitUninterruptibly(timeout, MILLISECONDS);
-                workerGroupShutdownFuture.awaitUninterruptibly(timeout, MILLISECONDS);
-            }
-        } catch (Throwable e) {
-            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
-        }
+        closeBootstrap();
     }
 
     @Override

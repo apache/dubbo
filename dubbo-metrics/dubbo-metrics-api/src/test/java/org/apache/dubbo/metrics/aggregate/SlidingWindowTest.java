@@ -18,6 +18,7 @@
 package org.apache.dubbo.metrics.aggregate;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.atomic.LongAdder;
@@ -40,7 +41,7 @@ class SlidingWindowTest {
         window = new TestSlidingWindow(paneCount, intervalInMs);
     }
 
-    @Test
+    @RepeatedTest(1000)
     void testCurrentPane() {
         assertNull(window.currentPane(/* invalid time*/-1L));
         long timeInMs = System.currentTimeMillis();
@@ -48,7 +49,7 @@ class SlidingWindowTest {
         assertNotNull(currentPane);
         // reuse test
         assertEquals(currentPane,
-            window.currentPane(1 + timeInMs + window.getPaneIntervalInMs() * paneCount));
+            window.currentPane(timeInMs + window.getPaneIntervalInMs() * paneCount));
     }
 
     @Test

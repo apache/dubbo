@@ -160,9 +160,9 @@ public interface ResteasyContext {
         }
     }
 
-    default DubboContainerResponseContextImpl createContainerResponseContext(RequestFacade request, HttpResponse httpResponse, BuiltResponse jaxrsResponse, ContainerResponseFilter[] responseFilters) {
+    default DubboContainerResponseContextImpl createContainerResponseContext(Object originRequest, RequestFacade request, HttpResponse httpResponse, BuiltResponse jaxrsResponse, ContainerResponseFilter[] responseFilters) {
 
-        NettyHttpRequest nettyHttpRequest = createNettyHttpRequest(request);
+        NettyHttpRequest nettyHttpRequest = originRequest == null ? createNettyHttpRequest(request) : (NettyHttpRequest) originRequest;
 
         ResponseContainerRequestContext requestContext = new ResponseContainerRequestContext(nettyHttpRequest);
         DubboContainerResponseContextImpl responseContext = new DubboContainerResponseContextImpl(nettyHttpRequest, httpResponse, jaxrsResponse,

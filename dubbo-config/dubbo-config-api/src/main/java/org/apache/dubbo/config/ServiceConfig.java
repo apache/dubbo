@@ -38,11 +38,15 @@ import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.ServiceNameMapping;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
+import org.apache.dubbo.metrics.event.MetricsInitEvent;
+import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.ServerService;
 import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -60,6 +64,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -291,8 +296,13 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             return;
         }
 
-        // ensure start module, compatible with old api usage
-        getScopeModel().getDeployer().start();
+        if (getScopeModel().isLifeCycleManagedExternally()) {
+            // prepare model for reference
+            getScopeModel().getDeployer().prepare();
+        } else {
+            // ensure start module, compatible with old api usage
+            getScopeModel().getDeployer().start();
+        }
 
         synchronized (this) {
             if (this.exported) {
@@ -542,6 +552,17 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         processServiceExecutor(url);
 
         exportUrl(url, registryURLs, registerType);
+
+        initServiceMethodMetrics(url);
+    }
+
+    private void initServiceMethodMetrics(URL url) {
+        String[] methods = Optional.ofNullable(url.getParameter(METHODS_KEY)).map(i -> i.split(",")).orElse(new String[]{});
+        boolean serviceLevel = MethodMetric.isServiceLevel(application.getApplicationModel());
+        Arrays.stream(methods).forEach(method -> {
+            RpcInvocation invocation = new RpcInvocation(url.getServiceKey(), url.getServiceModel(), method, interfaceName, url.getProtocolServiceKey(), null, null, null, null, null, null);
+            MetricsEventBus.publish(MetricsInitEvent.toMetricsInitEvent(application.getApplicationModel(), invocation, serviceLevel));
+        });
     }
 
     private void processServiceExecutor(URL url) {

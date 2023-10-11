@@ -17,26 +17,26 @@
 
 package org.apache.dubbo.metrics.report;
 
-import io.micrometer.core.instrument.FunctionCounter;
-import io.micrometer.core.instrument.binder.MeterBinder;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.metrics.MetricsGlobalRegistry;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.metrics.MetricsGlobalRegistry;
 import org.apache.dubbo.metrics.collector.AggregateMetricsCollector;
-import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.collector.HistogramMetricsCollector;
+import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import io.micrometer.core.instrument.FunctionCounter;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.binder.MeterBinder;
 import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
@@ -53,6 +53,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
+import static org.apache.dubbo.common.constants.MetricsConstants.COLLECTOR_SYNC_PERIOD_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.ENABLE_COLLECTOR_SYNC_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.ENABLE_JVM_METRICS_KEY;
 
 /**
@@ -76,7 +78,7 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     private ScheduledExecutorService collectorSyncJobExecutor = null;
 
     private static final int DEFAULT_SCHEDULE_INITIAL_DELAY = 5;
-    private static final int DEFAULT_SCHEDULE_PERIOD = 3;
+    private static final int DEFAULT_SCHEDULE_PERIOD = 60;
 
     protected AbstractMetricsReporter(URL url, ApplicationModel applicationModel) {
         this.url = url;
@@ -140,44 +142,67 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     }
 
     private void scheduleMetricsCollectorSyncJob() {
-        NamedThreadFactory threadFactory = new NamedThreadFactory("metrics-collector-sync-job", true);
-        collectorSyncJobExecutor = Executors.newScheduledThreadPool(1, threadFactory);
-        collectorSyncJobExecutor.scheduleWithFixedDelay(this::refreshData, DEFAULT_SCHEDULE_INITIAL_DELAY, DEFAULT_SCHEDULE_PERIOD, TimeUnit.SECONDS);
+        boolean enableCollectorSync = url.getParameter(ENABLE_COLLECTOR_SYNC_KEY, true);
+        if (enableCollectorSync) {
+            int collectSyncPeriod = url.getParameter(COLLECTOR_SYNC_PERIOD_KEY, DEFAULT_SCHEDULE_PERIOD);
+
+            NamedThreadFactory threadFactory = new NamedThreadFactory("metrics-collector-sync-job", true);
+            collectorSyncJobExecutor = Executors.newScheduledThreadPool(1, threadFactory);
+            collectorSyncJobExecutor.scheduleWithFixedDelay(this::resetIfSamplesChanged, DEFAULT_SCHEDULE_INITIAL_DELAY, collectSyncPeriod, TimeUnit.SECONDS);
+        }
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public void refreshData() {
+    @SuppressWarnings({"unchecked"})
+    public void resetIfSamplesChanged() {
         collectors.forEach(collector -> {
+            if (!collector.calSamplesChanged()) {
+                // Metrics has not been changed since last time, no need to reload
+                return;
+            }
+            // Collect all the samples and register them to the micrometer registry
             List<MetricSample> samples = collector.collect();
             for (MetricSample sample : samples) {
                 try {
-                    switch (sample.getType()) {
-                        case GAUGE:
-                            GaugeMetricSample gaugeSample = (GaugeMetricSample) sample;
-                            List<Tag> tags = getTags(gaugeSample);
-
-                            Gauge.builder(gaugeSample.getName(), gaugeSample.getValue(), gaugeSample.getApply())
-                                .description(gaugeSample.getDescription()).tags(tags).register(compositeRegistry);
-                            break;
-                        case COUNTER:
-                            CounterMetricSample counterMetricSample = (CounterMetricSample) sample;
-                            FunctionCounter.builder(counterMetricSample.getName(),  counterMetricSample.getValue(),
-                                    Number::doubleValue).description(counterMetricSample.getDescription())
-                                .tags(getTags(counterMetricSample))
-                                .register(compositeRegistry);
-                        case TIMER:
-                        case LONG_TASK_TIMER:
-                        case DISTRIBUTION_SUMMARY:
-                            // TODO
-                            break;
-                        default:
-                            break;
-                    }
+                    registerSample(sample);
                 } catch (Exception e) {
                     logger.error(COMMON_METRICS_COLLECTOR_EXCEPTION, "", "", "error occurred when synchronize metrics collector.", e);
                 }
             }
         });
+    }
+
+    @SuppressWarnings({"rawtypes"})
+    private void registerSample(MetricSample sample) {
+        switch (sample.getType()) {
+            case GAUGE:
+                registerGaugeSample((GaugeMetricSample) sample);
+                break;
+            case COUNTER:
+                registerCounterSample((CounterMetricSample) sample);
+            case TIMER:
+            case LONG_TASK_TIMER:
+            case DISTRIBUTION_SUMMARY:
+                // TODO
+                break;
+            default:
+                break;
+        }
+    }
+
+    @SuppressWarnings({"rawtypes"})
+    private void registerCounterSample(CounterMetricSample sample) {
+        FunctionCounter.builder(sample.getName(), sample.getValue(), Number::doubleValue)
+            .description(sample.getDescription())
+            .tags(getTags(sample))
+            .register(compositeRegistry);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private void registerGaugeSample(GaugeMetricSample sample) {
+        Gauge.builder(sample.getName(), sample.getValue(), sample.getApply())
+            .description(sample.getDescription())
+            .tags(getTags(sample))
+            .register(compositeRegistry);
     }
 
     private static List<Tag> getTags(MetricSample gaugeSample) {

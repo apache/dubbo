@@ -31,6 +31,7 @@ import org.apache.dubbo.remoting.transport.netty4.NettyConnectionClient;
 import org.apache.dubbo.remoting.transport.netty4.NettyPortUnificationServer;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -51,7 +52,7 @@ public class SingleProtocolConnectionManagerTest {
     private static ConnectionManager connectionManager;
 
     @BeforeAll
-    public static void init() throws RemotingException {
+    public static void init() throws Throwable {
         int port = NetUtils.getAvailablePort();
         url = URL.valueOf("empty://127.0.0.1:" + port + "?foo=bar");
         ApplicationModel applicationModel = ApplicationModel.defaultModel();

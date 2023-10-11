@@ -14,23 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.dubbo.metrics.report;
-
-import org.apache.dubbo.rpc.model.ApplicationModel;
+package org.apache.dubbo.qos.server;
 
 /**
- * AbstractMetricsReporterFactory.
+ * Indicate that if Qos Start failed
  */
-public abstract class AbstractMetricsReporterFactory implements MetricsReporterFactory {
-
-    private final ApplicationModel applicationModel;
-
-    public AbstractMetricsReporterFactory(ApplicationModel applicationModel) {
-        this.applicationModel = applicationModel;
-    }
-
-    protected ApplicationModel getApplicationModel() {
-        return applicationModel;
+public class QosBindException extends RuntimeException {
+    public QosBindException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

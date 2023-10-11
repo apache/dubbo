@@ -40,15 +40,18 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoop;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.ssl.SslContext;
+import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.DefaultPromise;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import io.netty.util.concurrent.Promise;
+import org.apache.dubbo.remoting.utils.UrlUtils;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_CLIENT_CONNECT_TIMEOUT;
@@ -122,12 +125,15 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                 }
 
 //                pipeline.addLast("logging", new LoggingHandler(LogLevel.INFO)); //for debug
-                // TODO support IDLE
-//                int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
+
+                int heartbeat = UrlUtils.getHeartbeat(getUrl());
+                pipeline.addLast("client-idle-handler", new IdleStateHandler(heartbeat, 0, 0, MILLISECONDS));
+
                 pipeline.addLast("connectionHandler", connectionHandler);
 
                 NettyConfigOperator operator = new NettyConfigOperator(nettyChannel, getChannelHandler());
                 protocol.configClientPipeline(getUrl(), operator, nettySslContextOperator);
+                ch.closeFuture().addListener(channelFuture -> doClose());
                 // TODO support Socks5
             }
         });
@@ -271,7 +277,7 @@ public class NettyConnectionClient extends AbstractConnectionClient {
             try {
                 doConnect();
             } catch (RemotingException e) {
-                LOGGER.error(TRANSPORT_FAILED_RECONNECT, "", "",  "Failed to connect to server: " + getConnectAddress());
+                LOGGER.error(TRANSPORT_FAILED_RECONNECT, "", "", "Failed to connect to server: " + getConnectAddress());
             }
         }
 
@@ -349,7 +355,7 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                 try {
                     connectionClient.doConnect();
                 } catch (RemotingException e) {
-                    LOGGER.error(TRANSPORT_FAILED_RECONNECT, "", "",  "Failed to connect to server: " + getConnectAddress());
+                    LOGGER.error(TRANSPORT_FAILED_RECONNECT, "", "", "Failed to connect to server: " + getConnectAddress());
                 }
             }, 1L, TimeUnit.SECONDS);
         }
