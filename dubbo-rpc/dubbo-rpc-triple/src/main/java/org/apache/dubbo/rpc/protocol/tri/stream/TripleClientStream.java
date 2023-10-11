@@ -237,9 +237,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
 
         void finishProcess(TriRpcStatus status, Http2Headers trailers, boolean isReturnTriException) {
             final Map<String, String> reserved = filterReservedHeaders(trailers);
-            final Map<String, Object> attachments = headersToMap(trailers, () -> {
-                return reserved.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader());
-            });
+            final Map<String, Object> attachments = headersToMap(trailers, () -> reserved.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader()));
             final TriRpcStatus detailStatus;
             final TriRpcStatus statusFromTrailers = getStatusFromTrailers(reserved);
             if (statusFromTrailers != null) {
@@ -449,23 +447,33 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
 
         @Override
         public void onData(ByteBuf data, boolean endStream) {
-            executor.execute(() -> {
-                if (transportError != null) {
-                    transportError.appendDescription(
-                        "Data:" + data.toString(StandardCharsets.UTF_8));
-                    ReferenceCountUtil.release(data);
-                    if (transportError.description.length() > 512 || endStream) {
-                        handleH2TransportError(transportError);
-                    }
-                    return;
+            try {
+                executor.execute(() -> doOnData(data, endStream));
+            } catch (Throwable t) {
+                // Tasks will be rejected when the thread pool is closed or full,
+                // ByteBuf needs to be released to avoid out of heap memory leakage.
+                // For example, ThreadLessExecutor will be shutdown when request timeout {@link AsyncRpcResult}
+                ReferenceCountUtil.release(data);
+                LOGGER.error(PROTOCOL_FAILED_RESPONSE, "", "", "submit onData task failed", t);
+            }
+        }
+
+        private void doOnData(ByteBuf data, boolean endStream) {
+            if (transportError != null) {
+                transportError.appendDescription(
+                    "Data:" + data.toString(StandardCharsets.UTF_8));
+                ReferenceCountUtil.release(data);
+                if (transportError.description.length() > 512 || endStream) {
+                    handleH2TransportError(transportError);
                 }
-                if (!headerReceived) {
-                    handleH2TransportError(TriRpcStatus.INTERNAL.withDescription(
-                        "headers not received before payload"));
-                    return;
-                }
-                deframer.deframe(data);
-            });
+                return;
+            }
+            if (!headerReceived) {
+                handleH2TransportError(TriRpcStatus.INTERNAL.withDescription(
+                    "headers not received before payload"));
+                return;
+            }
+            deframer.deframe(data);
         }
 
         @Override
