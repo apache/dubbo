@@ -21,22 +21,19 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROTOBUF_MESSAGE
 public class ProtobufUtils {
 
     private static Class<?> protobufClss;
-    private static Boolean supportProtobuf;
 
     private ProtobufUtils() {
     }
 
     static {
-        supportProtobuf = false;
         try {
             protobufClss = ClassUtils.forNameWithThreadContextClassLoader(PROTOBUF_MESSAGE_CLASS_NAME);
-            supportProtobuf = protobufClss != null;
-        } catch (Throwable t) {
+        } catch (ClassNotFoundException e) {
         }
     }
 
     public static boolean isProtobufClass(Class<?> pojoClazz) {
-        if (supportProtobuf) {
+        if (protobufClss != null) {
             return protobufClss.isAssignableFrom(pojoClazz);
         }
         return false;
