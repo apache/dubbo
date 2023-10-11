@@ -3,3 +3,4 @@ consumer-classloader=org.apache.dubbo.rpc.cluster.filter.support.ConsumerClassLo
 router-snapshot=org.apache.dubbo.rpc.cluster.router.RouterSnapshotFilter
 observationsender=org.apache.dubbo.rpc.cluster.filter.support.ObservationSenderFilter
 metricsClusterFilter=org.apache.dubbo.rpc.cluster.filter.support.MetricsClusterFilter
+metricsConsumerFilter=org.apache.dubbo.rpc.cluster.filter.support.MetricsConsumerFilter

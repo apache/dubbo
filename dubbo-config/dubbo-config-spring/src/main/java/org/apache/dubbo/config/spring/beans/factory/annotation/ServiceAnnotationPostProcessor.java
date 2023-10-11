@@ -239,7 +239,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
                 }
             } else {
                 if (logger.isWarnEnabled()) {
-                    logger.warn(CONFIG_NO_ANNOTATIONS_FOUND,"No annotations were found on the class","","No class annotated by Dubbo @Service was found under package ["
+                    logger.warn(CONFIG_NO_ANNOTATIONS_FOUND,"No annotations were found on the class","","No class annotated by Dubbo @DubboService or @Service was found under package ["
                             + packageToScan + "], ignore re-scanned classes: " + scanExcludeFilter.getExcludedCount());
                 }
             }

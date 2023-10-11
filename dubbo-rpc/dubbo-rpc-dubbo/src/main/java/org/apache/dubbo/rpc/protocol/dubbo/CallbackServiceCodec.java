@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
@@ -33,10 +34,12 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.cluster.filter.FilterChainBuilder;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.support.RpcUtils;
@@ -47,11 +50,14 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CALLBACK_INSTANCES_LIMIT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CALLBACK_INSTANCES;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_TYPE_MISMATCH;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DESTROY_INVOKER;
@@ -202,11 +208,16 @@ public class CallbackServiceCodec {
         if (isRefer) {
             if (proxy == null) {
                 URL referurl = URL.valueOf("callback://" + url.getAddress() + "/" + clazz.getName() + "?" + INTERFACE_KEY + "=" + clazz.getName());
-                referurl = referurl.addParametersIfAbsent(url.getParameters()).removeParameter(METHODS_KEY);
+                referurl = referurl.addParametersIfAbsent(url.getParameters()).removeParameter(METHODS_KEY).addParameter(SIDE_KEY, CONSUMER_SIDE);
                 if (!isInstancesOverLimit(channel, referurl, clazz.getName(), instid, true)) {
                     url.getOrDefaultApplicationModel().getDefaultModule().getServiceRepository().registerService(clazz);
                     @SuppressWarnings("rawtypes")
                     Invoker<?> invoker = new ChannelWrappedInvoker(clazz, channel, referurl, String.valueOf(instid));
+
+                    FilterChainBuilder builder = getFilterChainBuilder(url);
+                    invoker = builder.buildInvokerChain(invoker, REFERENCE_FILTER_KEY, CommonConstants.CONSUMER);
+                    invoker = builder.buildInvokerChain(invoker, REFERENCE_FILTER_KEY, CommonConstants.CALLBACK);
+                    
                     proxy = proxyFactory.getProxy(invoker);
                     channel.setAttribute(proxyCacheKey, proxy);
                     channel.setAttribute(invokerCacheKey, invoker);
@@ -242,6 +253,10 @@ public class CallbackServiceCodec {
             }
         }
         return proxy;
+    }
+
+    private FilterChainBuilder getFilterChainBuilder(URL url) {
+        return ScopeModelUtil.getExtensionLoader(FilterChainBuilder.class, url.getScopeModel()).getDefaultExtension();
     }
 
     private static String getClientSideCallbackServiceCacheKey(int instid) {

@@ -14,28 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.qos.server;
 
-package org.apache.dubbo.qos.pu;
-
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.api.pu.ChannelOperator;
-import org.apache.dubbo.rpc.model.FrameworkModel;
-
-import org.junit.jupiter.api.Test;
-
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-
-class QosWireProtocolTest {
-
-    @Test
-    void ShouldNotThrowExOnConfigServerProtocolHandler_GivenHappyPassConfig() {
-        final QosWireProtocol target = new QosWireProtocol(FrameworkModel.defaultModel());
-        final URL url = mock(URL.class);
-        final ChannelOperator channelOperator = mock(ChannelOperator.class);
-        target.configServerProtocolHandler(url, channelOperator);
-        verify(channelOperator).configChannelHandler(anyList());
-
+/**
+ * Indicate that if Qos Start failed
+ */
+public class QosBindException extends RuntimeException {
+    public QosBindException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

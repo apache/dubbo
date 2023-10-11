@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.metrics.event;
 
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metrics.listener.MetricsLifeListener;
 import org.apache.dubbo.metrics.listener.MetricsListener;
 
@@ -39,9 +40,6 @@ public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
     public void publishEvent(MetricsEvent event) {
-        if (event instanceof EmptyEvent) {
-            return;
-        }
         if (validateIfApplicationConfigExist(event)) return;
         for (MetricsListener listener : listeners) {
             if (listener.isSupport(event)) {
@@ -53,7 +51,7 @@ public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
     private boolean validateIfApplicationConfigExist(MetricsEvent event) {
         if (event.getSource() != null) {
             // Check if exist application config
-            return event.getSource().NotExistApplicationConfig();
+            return StringUtils.isEmpty(event.appName());
         }
         return false;
     }
@@ -73,9 +71,6 @@ public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
     @SuppressWarnings({"rawtypes"})
     private void publishTimeEvent(MetricsEvent event, Consumer<MetricsLifeListener> consumer) {
         if (validateIfApplicationConfigExist(event)) return;
-        if (event instanceof EmptyEvent) {
-            return;
-        }
         if (event instanceof TimeCounterEvent) {
             ((TimeCounterEvent) event).getTimePair().end();
         }

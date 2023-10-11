@@ -57,12 +57,12 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.TreeSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
@@ -227,8 +227,13 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
 
         if (ref == null) {
-            // ensure start module, compatible with old api usage
-            getScopeModel().getDeployer().start();
+            if (getScopeModel().isLifeCycleManagedExternally()) {
+                // prepare model for reference
+                getScopeModel().getDeployer().prepare();
+            } else {
+                // ensure start module, compatible with old api usage
+                getScopeModel().getDeployer().start();
+            }
 
             init(check);
         }
@@ -462,7 +467,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         if (logger.isInfoEnabled()) {
             logger.info("Referred dubbo service: [" + referenceParameters.get(INTERFACE_KEY) + "]." +
-                    (Boolean.parseBoolean(referenceParameters.get(GENERIC_KEY)) ?
+                    (ProtocolUtils.isGeneric(referenceParameters.get(GENERIC_KEY)) ?
                             " it's GenericService reference" : " it's not GenericService reference"));
         }
 
@@ -794,6 +799,17 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         List<ConfigPostProcessor> configPostProcessors = this.getExtensionLoader(ConfigPostProcessor.class)
                 .getActivateExtension(URL.valueOf("configPostProcessor://"), (String[]) null);
         configPostProcessors.forEach(component -> component.postProcessReferConfig(this));
+    }
+
+    /**
+     * Return if ReferenceConfig has been initialized
+     * Note: Cannot use `isInitilized` as it may be treated as a Java Bean property
+     *
+     * @return initialized
+     */
+    @Transient
+    public boolean configInitialized() {
+        return initialized;
     }
 
     /**

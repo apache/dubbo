@@ -39,7 +39,7 @@ class MemorySafeLinkedBlockingQueueTest {
         final Instrumentation instrumentation = ByteBuddyAgent.getInstrumentation();
         final long objectSize = instrumentation.getObjectSize((Runnable) () -> {
         });
-        int maxFreeMemory = (int) MemoryLimitCalculator.maxAvailable();
+        long maxFreeMemory = (long) MemoryLimitCalculator.maxAvailable();
         MemorySafeLinkedBlockingQueue<Runnable> queue = new MemorySafeLinkedBlockingQueue<>(maxFreeMemory);
         // all memory is reserved for JVM, so it will fail here
         assertThat(queue.offer(() -> {
@@ -53,7 +53,7 @@ class MemorySafeLinkedBlockingQueueTest {
 
     @Test
     void testCustomReject() {
-        MemorySafeLinkedBlockingQueue<Runnable> queue = new MemorySafeLinkedBlockingQueue<>(Integer.MAX_VALUE);
+        MemorySafeLinkedBlockingQueue<Runnable> queue = new MemorySafeLinkedBlockingQueue<>(Long.MAX_VALUE);
         queue.setRejector(new AbortPolicy<>());
         assertThrows(RejectException.class, () -> queue.offer(() -> {
         }));

@@ -17,8 +17,15 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpScheme;
+import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2StreamChannel;
+import io.netty.util.concurrent.ImmediateEventExecutor;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -38,21 +45,12 @@ import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
-
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.embedded.EmbeddedChannel;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpScheme;
-import io.netty.handler.codec.http2.DefaultHttp2Headers;
-import io.netty.util.concurrent.ImmediateEventExecutor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.Executor;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -121,7 +119,6 @@ class TripleClientStreamTest {
         byte[] data = new byte[]{0, 0, 0, 0, 1, 1};
         final ByteBuf buf = Unpooled.wrappedBuffer(data);
         transportListener.onData(buf, false);
-        buf.release();
         Assertions.assertEquals(1, listener.message.length);
     }
 }
