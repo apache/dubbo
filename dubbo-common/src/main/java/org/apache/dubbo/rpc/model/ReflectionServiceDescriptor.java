@@ -77,7 +77,7 @@ public class ReflectionServiceDescriptor implements ServiceDescriptor {
         methods.forEach((methodName, methodList) -> {
             //pb method not allow override
             if (methodList.size() > 1) {
-                long pbMethodCount = methodList.stream().filter(methodDescriptor -> Arrays.stream(methodDescriptor.getParameterClasses()).anyMatch(pclss -> ProtobufUtils.isProtobufClass(pclss))).count();
+                long pbMethodCount = methodList.stream().filter(methodDescriptor -> Arrays.stream(methodDescriptor.getParameterClasses()).anyMatch(ProtobufUtils::isProtobufClass)).count();
                 if (pbMethodCount > 0L) {
                     throw new IllegalStateException("Protobuf method not allow override," + "method(" + interfaceName + "." + methodName + ").");
                 }

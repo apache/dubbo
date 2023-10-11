@@ -26,7 +26,7 @@ import org.apache.dubbo.rpc.model.SerializablePerson;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class ProtobufUtilsTest {
+class ProtobufUtilsTest {
 
     @Test
     void testIsProtobufClass() {

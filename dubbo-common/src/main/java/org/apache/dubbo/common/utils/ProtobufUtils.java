@@ -20,27 +20,23 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROTOBUF_MESSAGE
 
 public class ProtobufUtils {
 
-    private static volatile Class<?> protobufClss;
-    private static volatile Boolean supportProtobuf;
+    private static Class<?> protobufClss;
+    private static Boolean supportProtobuf;
 
-    private static boolean loadProtobufClss() {
-        if (supportProtobuf == null) {
-            synchronized (ProtobufUtils.class) {
-                if (supportProtobuf == null) {
-                    try {
-                        protobufClss = ClassUtils.forNameWithThreadContextClassLoader(PROTOBUF_MESSAGE_CLASS_NAME);
-                        supportProtobuf = protobufClss != null;
-                    } catch (Throwable t) {
-                        supportProtobuf = false;
-                    }
-                }
-            }
+    private ProtobufUtils() {
+    }
+
+    static {
+        supportProtobuf = false;
+        try {
+            protobufClss = ClassUtils.forNameWithThreadContextClassLoader(PROTOBUF_MESSAGE_CLASS_NAME);
+            supportProtobuf = protobufClss != null;
+        } catch (Throwable t) {
         }
-        return supportProtobuf;
     }
 
     public static boolean isProtobufClass(Class<?> pojoClazz) {
-        if (loadProtobufClss()) {
+        if (supportProtobuf) {
             return protobufClss.isAssignableFrom(pojoClazz);
         }
         return false;
