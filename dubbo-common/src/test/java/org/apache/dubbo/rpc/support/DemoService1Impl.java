@@ -14,23 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.support;
 
-package org.apache.dubbo.metrics.report;
+import org.apache.dubbo.common.stream.StreamObserver;
 
-import org.apache.dubbo.rpc.model.ApplicationModel;
-
-/**
- * AbstractMetricsReporterFactory.
- */
-public abstract class AbstractMetricsReporterFactory implements MetricsReporterFactory {
-
-    private final ApplicationModel applicationModel;
-
-    public AbstractMetricsReporterFactory(ApplicationModel applicationModel) {
-        this.applicationModel = applicationModel;
+public class DemoService1Impl implements DemoService1{
+    @Override
+    public StreamObserver<String> sayHello(StreamObserver<String> request) {
+        request.onNext("BI_STREAM");
+        return request;
     }
 
-    protected ApplicationModel getApplicationModel() {
-        return applicationModel;
+    @Override
+    public void sayHello(String msg, StreamObserver<String> request) {
+        request.onNext(msg);
+        request.onNext("SERVER_STREAM");
+        request.onCompleted();
     }
 }

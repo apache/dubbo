@@ -145,36 +145,43 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
         if (!guard.tryAcquire()) {
             return;
         }
+        // To avoid multiple dump, check again
+        if (System.currentTimeMillis() - lastPrintTime < TEN_MINUTES_MILLS) {
+            return;
+        }
 
         ExecutorService pool = Executors.newSingleThreadExecutor();
-        pool.execute(() -> {
-            String dumpPath = getDumpPath();
+        try {
+            pool.execute(() -> {
+                String dumpPath = getDumpPath();
 
-            SimpleDateFormat sdf;
+                SimpleDateFormat sdf;
 
-            String os = System.getProperty(OS_NAME_KEY).toLowerCase();
+                String os = System.getProperty(OS_NAME_KEY).toLowerCase();
 
-            // window system don't support ":" in file name
-            if (os.contains(OS_WIN_PREFIX)) {
-                sdf = new SimpleDateFormat(WIN_DATETIME_FORMAT);
-            } else {
-                sdf = new SimpleDateFormat(DEFAULT_DATETIME_FORMAT);
-            }
+                // window system don't support ":" in file name
+                if (os.contains(OS_WIN_PREFIX)) {
+                    sdf = new SimpleDateFormat(WIN_DATETIME_FORMAT);
+                } else {
+                    sdf = new SimpleDateFormat(DEFAULT_DATETIME_FORMAT);
+                }
 
-            String dateStr = sdf.format(new Date());
-            //try-with-resources
-            try (FileOutputStream jStackStream = new FileOutputStream(
-                new File(dumpPath, "Dubbo_JStack.log" + "." + dateStr))) {
-                jstack(jStackStream);
-            } catch (Exception t) {
-                logger.error(COMMON_UNEXPECTED_CREATE_DUMP, "", "", "dump jStack error", t);
-            } finally {
-                guard.release();
-            }
-            lastPrintTime = System.currentTimeMillis();
-        });
-        //must shutdown thread pool ,if not will lead to OOM
-        pool.shutdown();
+                String dateStr = sdf.format(new Date());
+                //try-with-resources
+                try (FileOutputStream jStackStream = new FileOutputStream(
+                    new File(dumpPath, "Dubbo_JStack.log" + "." + dateStr))) {
+                    jstack(jStackStream);
+                } catch (Exception t) {
+                    logger.error(COMMON_UNEXPECTED_CREATE_DUMP, "", "", "dump jStack error", t);
+                } finally {
+                    lastPrintTime = System.currentTimeMillis();
+                    guard.release();
+                }
+            });
+        } finally {
+            //must shutdown thread pool ,if not will lead to OOM
+            pool.shutdown();
+        }
 
     }
 

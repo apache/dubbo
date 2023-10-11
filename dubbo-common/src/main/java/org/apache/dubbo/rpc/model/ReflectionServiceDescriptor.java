@@ -75,7 +75,18 @@ public class ReflectionServiceDescriptor implements ServiceDescriptor {
 
         methods.forEach((methodName, methodList) -> {
             Map<String, MethodDescriptor> descMap = descToMethods.computeIfAbsent(methodName, k -> new HashMap<>());
-            methodList.forEach(methodModel -> descMap.put(methodModel.getParamDesc(), methodModel));
+            // not support BI_STREAM and SERVER_STREAM at the same time, for example,
+            // void foo(Request, StreamObserver<Response>)  ---> SERVER_STREAM
+            // StreamObserver<Response> foo(StreamObserver<Request>)   ---> BI_STREAM
+            long streamMethodCount =  methodList.stream()
+                .peek(methodModel -> descMap.put(methodModel.getParamDesc(), methodModel))
+                .map(MethodDescriptor::getRpcType)
+                .filter(rpcType -> rpcType == MethodDescriptor.RpcType.SERVER_STREAM
+                    || rpcType == MethodDescriptor.RpcType.BI_STREAM)
+                .count();
+            if (streamMethodCount > 1L)
+                throw new IllegalStateException("Stream method could not be overloaded.There are " + streamMethodCount
+                    +" stream method signatures. method(" + methodName + ")");
         });
     }
 

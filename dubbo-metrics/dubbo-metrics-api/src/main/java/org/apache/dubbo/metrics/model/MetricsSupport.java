@@ -59,7 +59,9 @@ import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
 public class MetricsSupport {
 
     private static final String version = Version.getVersion();
+
     private static final String commitId = Version.getLastCommitId();
+
 
     public static Map<String, String> applicationTags(ApplicationModel applicationModel) {
         return applicationTags(applicationModel, null);
@@ -67,15 +69,21 @@ public class MetricsSupport {
 
     public static Map<String, String> applicationTags(ApplicationModel applicationModel, @Nullable Map<String, String> extraInfo) {
         Map<String, String> tags = new HashMap<>();
-        tags.put(TAG_IP, getLocalHost());
-        tags.put(TAG_HOSTNAME, getLocalHostName());
         tags.put(TAG_APPLICATION_NAME, applicationModel.getApplicationName());
         tags.put(TAG_APPLICATION_MODULE, applicationModel.getInternalId());
-        tags.put(TAG_APPLICATION_VERSION_KEY, version);
-        tags.put(MetricsKey.METADATA_GIT_COMMITID_METRIC.getName(), commitId);
         if (CollectionUtils.isNotEmptyMap(extraInfo)) {
             tags.putAll(extraInfo);
         }
+        return tags;
+    }
+    public static Map<String, String> gitTags(Map<String, String> tags) {
+        tags.put(MetricsKey.METADATA_GIT_COMMITID_METRIC.getName(), commitId);
+        tags.put(TAG_APPLICATION_VERSION_KEY, version);
+        return tags;
+    }
+    public static Map<String, String> hostTags( Map<String, String> tags) {
+        tags.put(TAG_IP, getLocalHost());
+        tags.put(TAG_HOSTNAME, getLocalHostName());
         return tags;
     }
 

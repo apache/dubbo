@@ -14,23 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.support;
 
-package org.apache.dubbo.metrics.event;
+import org.apache.dubbo.common.stream.StreamObserver;
 
-import org.apache.dubbo.rpc.model.ApplicationModel;
+public interface DemoService1 {
+    StreamObserver<String> sayHello(StreamObserver<String> request);
 
-/**
- * EmptyEvent, do nothing.
- */
-public class EmptyEvent extends MetricsEvent {
-
-    private static final EmptyEvent empty = new EmptyEvent(null);
-
-    private EmptyEvent(ApplicationModel source) {
-        super(source, null);
-    }
-
-    public static EmptyEvent instance() {
-        return empty;
-    }
+    void sayHello(String msg, StreamObserver<String> request);
 }

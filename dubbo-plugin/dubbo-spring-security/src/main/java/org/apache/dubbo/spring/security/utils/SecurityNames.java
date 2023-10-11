@@ -24,6 +24,8 @@ final public class SecurityNames {
     public static final String SECURITY_CONTEXT_HOLDER_CLASS_NAME = "org.springframework.security.core.context.SecurityContextHolder";
     public static final String CORE_JACKSON_2_MODULE_CLASS_NAME = "org.springframework.security.jackson2.CoreJackson2Module";
     public static final String OBJECT_MAPPER_CLASS_NAME = "com.fasterxml.jackson.databind.ObjectMapper";
+    public static final String JAVA_TIME_MODULE_CLASS_NAME = "com.fasterxml.jackson.datatype.jsr310.JavaTimeModule";
+    public static final String SIMPLE_MODULE_CLASS_NAME = "com.fasterxml.jackson.databind.module.SimpleModule";
 
     private SecurityNames() {}
 
