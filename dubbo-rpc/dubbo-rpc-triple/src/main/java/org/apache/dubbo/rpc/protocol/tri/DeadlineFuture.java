@@ -47,6 +47,8 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
     private final List<Runnable> timeoutListeners = new ArrayList<>();
     private final Timeout timeoutTask;
     private ExecutorService executor;
+    private volatile long headerSent;
+    private volatile long dataSent;
 
     private DeadlineFuture(String serviceName, String methodName, String address, int timeout) {
         this.serviceName = serviceName;
@@ -107,6 +109,14 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
         this.executor = executor;
     }
 
+    public void doHeaderSent() {
+        headerSent = System.currentTimeMillis();
+    }
+
+    public void doDataSent() {
+        dataSent = System.currentTimeMillis();
+    }
+
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
         timeoutTask.cancel();
@@ -134,11 +144,32 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
 
     private String getTimeoutMessage() {
         long nowTimestamp = System.currentTimeMillis();
-        return "Waiting server-side response timeout by scan timer. start time: "
-            + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(start)))
-            + ", end time: " + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(
-            new Date(nowTimestamp))) + ", timeout: " + timeout + " ms, service: " + serviceName
-            + ", method: " + methodName;
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        long headerSentElapsed = headerSent - start;
+        long dataSentElapsed = dataSent - start;
+        return getTimeoutSide(headerSentElapsed, dataSentElapsed) + " by scan timer. start time: "
+            + (dateFormat.format(new Date(start)))
+            + ", end time: " + (dateFormat.format(new Date(nowTimestamp))) + ","
+            + getElapsed(nowTimestamp, headerSentElapsed, dataSentElapsed)
+            + ", timeout: " + timeout + " ms, service: " + serviceName
+            + ", method: " + methodName + ", address: " + address;
+    }
+
+    private String getTimeoutSide(long headerSentElapsed, long dataSentElapsed) {
+        if (dataSent > 0 && dataSentElapsed < timeout) {
+            return "Waiting server-side response timeout";
+        }
+        return headerSent > 0 && headerSentElapsed < timeout ? "Sending DataFrame timeout in client-side" : "Sending HeaderFrame timeout in client-side";
+    }
+
+    private String getElapsed(long nowTimestamp, long headerSentElapsed, long dataSentElapsed) {
+        if (dataSent > 0) {
+            return " client send HeaderFrame elapsed: " + headerSentElapsed
+                + " ms, client send DataFrame elapsed: " + (dataSent - headerSent)
+                + " ms" + (dataSentElapsed < timeout ? ", server elapsed: " + (nowTimestamp - dataSent) + " ms" : "");
+        }
+        return headerSent > 0 && headerSentElapsed < timeout ? "client send HeaderFrame elapsed: " + headerSentElapsed
+            + " ms" : " elapsed: " + (nowTimestamp - start) + " ms";
     }
 
     private class TimeoutCheckTask implements TimerTask {

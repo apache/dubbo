@@ -55,6 +55,16 @@ public class ObserverToClientCallListenerAdapter implements ClientCall.Listener 
     }
 
     @Override
+    public void onHeaderSent() {
+
+    }
+
+    @Override
+    public void onDataSent() {
+
+    }
+
+    @Override
     public void onStart(ClientCall call) {
         this.call = call;
         if (call.isAutoRequest()) {

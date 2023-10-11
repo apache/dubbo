@@ -55,6 +55,16 @@ public interface ClientCall {
          * @param trailers response trailers
          */
         void onClose(TriRpcStatus status, Map<String, Object> trailers, boolean isReturnTriException);
+
+        /**
+         * Trigger when send HeaderFrame success
+         */
+        void onHeaderSent();
+
+        /**
+         * Trigger when send DataFrame success
+         */
+        void onDataSent();
     }
 
     /**
