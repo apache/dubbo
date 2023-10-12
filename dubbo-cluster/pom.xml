@@ -96,6 +96,7 @@
             <groupId>org.openjdk.nashorn</groupId>
             <artifactId>nashorn-core</artifactId>
             <version>${nashorn-core.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
