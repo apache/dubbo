@@ -26,14 +26,13 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadlocal.InternalThreadLocalMap;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_ERROR_RUN_THREAD_TASK;
-import static org.apache.dubbo.common.utils.ExecutorUtil.isShutdown;
 
 /**
  * Executor ensuring that all {@link Runnable} tasks submitted are executed in order
  * using the provided {@link Executor}, and serially such that no two will ever be
  * running at the same time.
  */
-public final class SerializingExecutor implements Executor, Runnable {
+public class SerializingExecutor implements Executor, Runnable {
 
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(SerializingExecutor.class);
 
@@ -42,7 +41,7 @@ public final class SerializingExecutor implements Executor, Runnable {
      */
     private final AtomicBoolean atomicBoolean = new AtomicBoolean();
 
-    private final Executor executor;
+    protected final Executor executor;
 
     private final Queue<Runnable> runQueue = new ConcurrentLinkedQueue<>();
 
@@ -69,10 +68,7 @@ public final class SerializingExecutor implements Executor, Runnable {
         if (atomicBoolean.compareAndSet(false, true)) {
             boolean success = false;
             try {
-                if (!isShutdown(executor)) {
-                    executor.execute(this);
-                    success = true;
-                }
+                success = submitTask();
             } finally {
                 // It is possible that at this point that there are still tasks in
                 // the queue, it would be nice to keep trying but the error may not
@@ -88,6 +84,14 @@ public final class SerializingExecutor implements Executor, Runnable {
                         // This is important to run in case of RejectedExecutionException, so that future calls
                         // to execute don't succeed and accidentally run a previous runnable.
                         runQueue.remove(removable);
+                    }
+                    // This case is designed to release resources in a timely manner when the thread pool
+                    // fails to submit a task. For example, if the thread pool is in a shutdown state
+                    // and submits a task to handle ByteBuf, the thread pool will reject the processing
+                    // and throw an exception. A CloseableRunnable can be passed in to trigger resource cleaning.
+                    // If there are no resources to clean up, Runnable can be used
+                    if (removable instanceof CloseableRunnable) {
+                        ((CloseableRunnable) removable).close();
                     }
                     atomicBoolean.set(false);
                 }
@@ -116,5 +120,10 @@ public final class SerializingExecutor implements Executor, Runnable {
             // we didn't enqueue anything but someone else did.
             schedule(null);
         }
+    }
+
+    protected boolean submitTask() {
+        executor.execute(this);
+        return true;
     }
 }
