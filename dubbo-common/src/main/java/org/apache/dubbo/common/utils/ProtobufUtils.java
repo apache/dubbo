@@ -27,8 +27,9 @@ public class ProtobufUtils {
 
     static {
         try {
-            protobufClss = ClassUtils.forNameWithThreadContextClassLoader(PROTOBUF_MESSAGE_CLASS_NAME);
+            protobufClss = ClassUtils.forName(PROTOBUF_MESSAGE_CLASS_NAME, ProtobufUtils.class.getClassLoader());
         } catch (ClassNotFoundException e) {
+            //do nothing
         }
     }
 
