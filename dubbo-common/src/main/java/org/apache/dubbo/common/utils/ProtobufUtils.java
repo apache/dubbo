@@ -28,7 +28,7 @@ public class ProtobufUtils {
     static {
         try {
             protobufClss = ClassUtils.forName(PROTOBUF_MESSAGE_CLASS_NAME, ProtobufUtils.class.getClassLoader());
-        } catch (ClassNotFoundException e) {
+        } catch (Throwable t) {
             //do nothing
         }
     }
