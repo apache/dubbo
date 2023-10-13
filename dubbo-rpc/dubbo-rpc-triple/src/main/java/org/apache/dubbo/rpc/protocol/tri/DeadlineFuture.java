@@ -47,6 +47,9 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
     private final List<Runnable> timeoutListeners = new ArrayList<>();
     private final Timeout timeoutTask;
     private ExecutorService executor;
+    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(
+        () -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true), 30,
+            TimeUnit.MILLISECONDS), DeadlineFuture::destroy);
 
     private DeadlineFuture(String serviceName, String methodName, String address, int timeout) {
         this.serviceName = serviceName;
@@ -76,20 +79,15 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
     }
 
     public void received(TriRpcStatus status, AppResponse appResponse) {
-        if (status.code != TriRpcStatus.Code.DEADLINE_EXCEEDED) {
-            // decrease Time
-            if (!timeoutTask.isCancelled()) {
-                timeoutTask.cancel();
-            }
+        if (status.code != TriRpcStatus.Code.DEADLINE_EXCEEDED && !timeoutTask.isCancelled()) {
+            timeoutTask.cancel();
         }
         if (getExecutor() != null) {
             getExecutor().execute(() -> doReceived(status, appResponse));
         } else {
             doReceived(status, appResponse);
         }
-    }    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(
-        () -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true), 30,
-            TimeUnit.MILLISECONDS), DeadlineFuture::destroy);
+    }
 
     public void addTimeoutListener(Runnable runnable) {
         timeoutListeners.add(runnable);
