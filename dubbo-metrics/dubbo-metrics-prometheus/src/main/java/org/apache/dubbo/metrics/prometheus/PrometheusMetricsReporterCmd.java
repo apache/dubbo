@@ -116,7 +116,7 @@ public class PrometheusMetricsReporterCmd implements BaseCommand {
                 logger.debug("scrape begin");
             }
 
-            metricsReporter.refreshData();
+            metricsReporter.resetIfSamplesChanged();
 
             if (logger.isDebugEnabled()) {
                 logger.debug(String.format("scrape end,Elapsed Time：%s", System.currentTimeMillis() - begin));

@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.metrics.collector;
 
-import io.micrometer.core.instrument.Timer;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.context.ConfigManager;
@@ -32,6 +31,8 @@ import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.register.HistogramMetricRegister;
 import org.apache.dubbo.metrics.sample.HistogramMetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import io.micrometer.core.instrument.Timer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -109,5 +110,11 @@ public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEv
     @Override
     public List<MetricSample> collect() {
         return new ArrayList<>();
+    }
+
+    @Override
+    public boolean calSamplesChanged() {
+        // Histogram is directly register micrometer
+        return false;
     }
 }

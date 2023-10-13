@@ -17,10 +17,6 @@
 
 package org.apache.dubbo.metrics.prometheus;
 
-import io.micrometer.prometheus.PrometheusConfig;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
-import io.prometheus.client.exporter.BasicAuthHttpConnectionFactory;
-import io.prometheus.client.exporter.PushGateway;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -28,6 +24,11 @@ import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metrics.report.AbstractMetricsReporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import io.micrometer.prometheus.PrometheusConfig;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.prometheus.client.exporter.BasicAuthHttpConnectionFactory;
+import io.prometheus.client.exporter.PushGateway;
 
 import java.io.IOException;
 import java.util.concurrent.Executors;
@@ -90,7 +91,7 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
 
     protected void push(PushGateway pushGateway, String job) {
         try {
-            refreshData();
+            resetIfSamplesChanged();
             pushGateway.pushAdd(prometheusRegistry.getPrometheusRegistry(), job);
         } catch (IOException e) {
             logger.error(COMMON_METRICS_COLLECTOR_EXCEPTION, "", "", "Error occurred when pushing metrics to prometheus: ", e);

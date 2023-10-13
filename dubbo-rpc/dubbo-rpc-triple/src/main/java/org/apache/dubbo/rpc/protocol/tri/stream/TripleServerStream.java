@@ -17,9 +17,10 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
+import io.netty.util.ReferenceCountUtil;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.HeaderFilter;
@@ -69,10 +70,11 @@ import java.util.Optional;
 import java.util.concurrent.Executor;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
 
 public class TripleServerStream extends AbstractStream implements ServerStream {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TripleServerStream.class);
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(TripleServerStream.class);
     public final ServerTransportObserver transportObserver = new ServerTransportObserver();
     private final TripleWriteQueue writeQueue;
     private final PathResolver pathResolver;
@@ -408,11 +410,10 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
                 }
             }
 
-            Map<String, Object> requestMetadata = headersToMap(headers, () -> {
-                return Optional.ofNullable(headers.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader()))
-                    .map(CharSequence::toString)
-                    .orElse(null);
-            });
+            Map<String, Object> requestMetadata = headersToMap(headers, () ->
+                Optional.ofNullable(headers.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader()))
+                .map(CharSequence::toString)
+                .orElse(null));
             boolean hasStub = pathResolver.hasNativeStub(path);
             if (hasStub) {
                 listener = new StubAbstractServerCall(invoker, TripleServerStream.this,
@@ -431,7 +432,15 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
 
         @Override
         public void onData(ByteBuf data, boolean endStream) {
-            executor.execute(() -> doOnData(data, endStream));
+            try {
+                executor.execute(() -> doOnData(data, endStream));
+            } catch (Throwable t) {
+                // Tasks will be rejected when the thread pool is closed or full,
+                // ByteBuf needs to be released to avoid out of heap memory leakage.
+                // For example, ThreadLessExecutor will be shutdown when request timeout {@link AsyncRpcResult}
+                ReferenceCountUtil.release(data);
+                LOGGER.error(PROTOCOL_FAILED_REQUEST, "", "", "submit onData task failed", t);
+            }
         }
 
         private void doOnData(ByteBuf data, boolean endStream) {
@@ -454,10 +463,8 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             if (listener == null) {
                 return;
             }
-            executor.execute(() -> {
-                listener.onCancelByRemote(TriRpcStatus.CANCELLED
-                    .withDescription("Canceled by client ,errorCode=" + errorCode));
-            });
+            executor.execute(() -> listener.onCancelByRemote(TriRpcStatus.CANCELLED
+                .withDescription("Canceled by client ,errorCode=" + errorCode)));
         }
     }
 

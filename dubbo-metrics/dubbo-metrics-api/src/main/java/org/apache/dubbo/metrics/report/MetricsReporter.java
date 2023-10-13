@@ -28,10 +28,10 @@ public interface MetricsReporter {
      */
     void init();
 
-    void refreshData();
+    void resetIfSamplesChanged();
 
     String getResponse();
-    
+
     default String getResponseWithName(String metricsName) {
         return null;
     }
