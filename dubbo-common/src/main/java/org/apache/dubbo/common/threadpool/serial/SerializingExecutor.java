@@ -89,7 +89,7 @@ public class SerializingExecutor implements Executor, Runnable {
                     // fails to submit a task. For example, if the thread pool is in a shutdown state
                     // and submits a task to handle ByteBuf, the thread pool will reject the processing
                     // and throw an exception. A CloseableRunnable can be passed in to trigger resource cleaning.
-                    // If there are no resources to clean up, Runnable can be used
+                    // If there are no resources to clean up, Runnable can be used.
                     if (removable instanceof CloseableRunnable) {
                         ((CloseableRunnable) removable).close();
                     }

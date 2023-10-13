@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
-import org.apache.dubbo.common.threadpool.serial.SafeSerializingExecutor;
+import org.apache.dubbo.common.threadpool.serial.SubmitSafeSerializingExecutor;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -35,12 +35,12 @@ public abstract class AbstractStream implements Stream {
     private static final boolean HAS_PROTOBUF = hasProtobuf();
 
     public AbstractStream(Executor executor, FrameworkModel frameworkModel) {
-        this.executor = new SafeSerializingExecutor(executor);
+        this.executor = new SubmitSafeSerializingExecutor(executor);
         this.frameworkModel = frameworkModel;
     }
 
     public void setExecutor(Executor executor) {
-        this.executor = new SafeSerializingExecutor(executor);
+        this.executor = new SubmitSafeSerializingExecutor(executor);
     }
 
     public static boolean getGrpcStatusDetailEnabled() {

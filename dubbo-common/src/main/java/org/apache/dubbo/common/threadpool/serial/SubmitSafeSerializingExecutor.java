@@ -24,14 +24,14 @@ import static org.apache.dubbo.common.utils.ExecutorUtil.isShutdown;
 /**
  * If the thread pool is in a shutdown state, won't submit task, so it doesn't throw reject exception
  */
-public class SafeSerializingExecutor extends SerializingExecutor {
+public class SubmitSafeSerializingExecutor extends SerializingExecutor {
 
     /**
      * Creates a SerializingExecutor, running tasks using {@code executor}.
      *
      * @param executor Executor in which tasks should be run. Must not be null.
      */
-    public SafeSerializingExecutor(Executor executor) {
+    public SubmitSafeSerializingExecutor(Executor executor) {
         super(executor);
     }
 
