@@ -46,6 +46,7 @@ import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 
 import java.util.List;
+import java.util.Objects;
 
 @Activate(value = "invoke", order = Integer.MAX_VALUE)
 public class ServiceInvokeRestFilter implements RestRequestFilter {
@@ -179,6 +180,7 @@ public class ServiceInvokeRestFilter implements RestRequestFilter {
      */
     public static MediaType getAcceptMediaType(RequestFacade request, Class<?> returnType) {
         String accept = request.getHeader(RestHeaderEnum.ACCEPT.getHeader());
+        accept = Objects.isNull(accept) ? MediaType.ALL_VALUE.value : accept;
         MediaType mediaType = MediaTypeUtil.convertMediaType(returnType, accept);
         return mediaType;
     }
