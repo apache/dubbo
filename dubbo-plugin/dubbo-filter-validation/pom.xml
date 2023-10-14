@@ -18,13 +18,13 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-filter</artifactId>
+        <artifactId>dubbo-plugin</artifactId>
         <version>${revision}</version>
     </parent>
-    <artifactId>dubbo-filter-cache</artifactId>
+    <artifactId>dubbo-filter-validation</artifactId>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
-    <description>The cache module of dubbo project</description>
+    <description>The validation module of dubbo project</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
@@ -35,14 +35,42 @@
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.cache</groupId>
-            <artifactId>cache-api</artifactId>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.hazelcast</groupId>
-            <artifactId>hazelcast</artifactId>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-validator</artifactId>
             <scope>test</scope>
-            <version>${hazelcast_version}</version>
+            <version>${hibernate_validator_version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.el</groupId>
+            <artifactId>javax.el-api</artifactId>
+            <scope>test</scope>
+            <version>${el_api_version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <scope>test</scope>
+            <version>${jaxb_api_version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <scope>test</scope>
+            <version>${jaxb_api_version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-core</artifactId>
+            <scope>test</scope>
+            <version>${jaxb_api_version}</version>
         </dependency>
     </dependencies>
 </project>

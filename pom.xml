@@ -151,7 +151,6 @@
         <module>dubbo-registry</module>
         <module>dubbo-monitor</module>
         <module>dubbo-config</module>
-        <module>dubbo-filter</module>
         <module>dubbo-demo</module>
         <module>dubbo-plugin</module>
         <module>dubbo-serialization</module>

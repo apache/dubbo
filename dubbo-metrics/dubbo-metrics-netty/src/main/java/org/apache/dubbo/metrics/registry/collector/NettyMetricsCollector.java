@@ -94,4 +94,8 @@ public class NettyMetricsCollector extends CombMetricsCollector<NettyEvent> {
         return list;
     }
 
+    @Override
+    public boolean calSamplesChanged() {
+        return stats.calSamplesChanged();
+    }
 }

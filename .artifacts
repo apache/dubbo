@@ -44,7 +44,6 @@ dubbo-dependencies-bom
 dubbo-dependencies-zookeeper
 dubbo-dependencies-zookeeper-curator5
 dubbo-distribution
-dubbo-filter
 dubbo-filter-cache
 dubbo-filter-validation
 dubbo-kubernetes

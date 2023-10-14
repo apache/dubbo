@@ -18,28 +18,31 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-parent</artifactId>
+        <artifactId>dubbo-plugin</artifactId>
         <version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>dubbo-filter</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>dubbo-filter-cache</artifactId>
+    <packaging>jar</packaging>
     <name>${project.artifactId}</name>
-    <description>The filter module of dubbo project</description>
+    <description>The cache module of dubbo project</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
-    <modules>
-        <module>dubbo-filter-cache</module>
-        <module>dubbo-filter-validation</module>
-    </modules>
-
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-test-check</artifactId>
+            <artifactId>dubbo-rpc-api</artifactId>
             <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.cache</groupId>
+            <artifactId>cache-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast</artifactId>
             <scope>test</scope>
+            <version>${hazelcast_version}</version>
         </dependency>
     </dependencies>
 </project>

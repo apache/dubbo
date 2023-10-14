@@ -148,43 +148,61 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
 
             NamedThreadFactory threadFactory = new NamedThreadFactory("metrics-collector-sync-job", true);
             collectorSyncJobExecutor = Executors.newScheduledThreadPool(1, threadFactory);
-            collectorSyncJobExecutor.scheduleWithFixedDelay(this::refreshData, DEFAULT_SCHEDULE_INITIAL_DELAY, collectSyncPeriod, TimeUnit.SECONDS);
+            collectorSyncJobExecutor.scheduleWithFixedDelay(this::resetIfSamplesChanged, DEFAULT_SCHEDULE_INITIAL_DELAY, collectSyncPeriod, TimeUnit.SECONDS);
         }
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public void refreshData() {
+    @SuppressWarnings({"unchecked"})
+    public void resetIfSamplesChanged() {
         collectors.forEach(collector -> {
+            if (!collector.calSamplesChanged()) {
+                // Metrics has not been changed since last time, no need to reload
+                return;
+            }
+            // Collect all the samples and register them to the micrometer registry
             List<MetricSample> samples = collector.collect();
             for (MetricSample sample : samples) {
                 try {
-                    switch (sample.getType()) {
-                        case GAUGE:
-                            GaugeMetricSample gaugeSample = (GaugeMetricSample) sample;
-                            List<Tag> tags = getTags(gaugeSample);
-
-                            Gauge.builder(gaugeSample.getName(), gaugeSample.getValue(), gaugeSample.getApply())
-                                .description(gaugeSample.getDescription()).tags(tags).register(compositeRegistry);
-                            break;
-                        case COUNTER:
-                            CounterMetricSample counterMetricSample = (CounterMetricSample) sample;
-                            FunctionCounter.builder(counterMetricSample.getName(),  counterMetricSample.getValue(),
-                                    Number::doubleValue).description(counterMetricSample.getDescription())
-                                .tags(getTags(counterMetricSample))
-                                .register(compositeRegistry);
-                        case TIMER:
-                        case LONG_TASK_TIMER:
-                        case DISTRIBUTION_SUMMARY:
-                            // TODO
-                            break;
-                        default:
-                            break;
-                    }
+                    registerSample(sample);
                 } catch (Exception e) {
                     logger.error(COMMON_METRICS_COLLECTOR_EXCEPTION, "", "", "error occurred when synchronize metrics collector.", e);
                 }
             }
         });
+    }
+
+    @SuppressWarnings({"rawtypes"})
+    private void registerSample(MetricSample sample) {
+        switch (sample.getType()) {
+            case GAUGE:
+                registerGaugeSample((GaugeMetricSample) sample);
+                break;
+            case COUNTER:
+                registerCounterSample((CounterMetricSample) sample);
+            case TIMER:
+            case LONG_TASK_TIMER:
+            case DISTRIBUTION_SUMMARY:
+                // TODO
+                break;
+            default:
+                break;
+        }
+    }
+
+    @SuppressWarnings({"rawtypes"})
+    private void registerCounterSample(CounterMetricSample sample) {
+        FunctionCounter.builder(sample.getName(), sample.getValue(), Number::doubleValue)
+            .description(sample.getDescription())
+            .tags(getTags(sample))
+            .register(compositeRegistry);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private void registerGaugeSample(GaugeMetricSample sample) {
+        Gauge.builder(sample.getName(), sample.getValue(), sample.getApply())
+            .description(sample.getDescription())
+            .tags(getTags(sample))
+            .register(compositeRegistry);
     }
 
     private static List<Tag> getTags(MetricSample gaugeSample) {
