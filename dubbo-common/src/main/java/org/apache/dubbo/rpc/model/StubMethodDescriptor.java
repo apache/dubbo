@@ -63,7 +63,7 @@ public class StubMethodDescriptor implements MethodDescriptor, PackableMethod {
         this.returnClass = responseClass;
         this.paramDesc = ReflectUtils.getDesc(parameterClasses);
         this.compatibleParamSignatures = Stream.of(parameterClasses).map(Class::getName).toArray(String[]::new);
-        this.returnTypes = new Type[]{requestClass, requestClass};
+        this.returnTypes = new Type[]{responseClass, responseClass};
         serviceDescriptor.addMethod(this);
     }
 
