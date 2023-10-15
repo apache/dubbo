@@ -184,4 +184,10 @@ public class DemoServiceImpl implements DemoService {
         return userMap;
     }
 
+    @Override
+    public User formBody(User user) {
+        user.setName("formBody");
+        return user;
+    }
+
 }
