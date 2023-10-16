@@ -76,13 +76,13 @@ public class MultipleServiceDiscoveryTest {
             MultipleServiceDiscovery.MultiServiceInstancesChangedListener listener = (MultipleServiceDiscovery.MultiServiceInstancesChangedListener) multipleServiceDiscovery.createListener(Sets.newHashSet("app1"));
             multipleServiceDiscovery.addServiceInstancesChangedListener(listener);
             MultipleServiceDiscovery.SingleServiceInstancesChangedListener singleServiceInstancesChangedListener = listener.getAndComputeIfAbsent("child.a1", (a1) -> null);
-            Assert.notNull(singleServiceInstancesChangedListener, "监听器不能为空");
+            Assert.notNull(singleServiceInstancesChangedListener, "singleServiceInstancesChangedListener can not be null");
             singleServiceInstancesChangedListener.onEvent(new ServiceInstancesChangedEvent("app1", buildInstances(urlsSameRevision)));
             Mockito.verify(serviceDiscoveryMock, Mockito.times(1)).getRemoteMetadata(Mockito.anyString(), Mockito.anyList());
             Field serviceUrlsField = ServiceInstancesChangedListener.class.getDeclaredField("serviceUrls");
             serviceUrlsField.setAccessible(true);
             Map<String, List<ServiceInstancesChangedListener.ProtocolServiceKeyWithUrls>> map= (Map<String, List<ServiceInstancesChangedListener.ProtocolServiceKeyWithUrls>>) serviceUrlsField.get(listener);
-            Assert.assertTrue(!CollectionUtils.isEmptyMap(map),"url不能为空");
+            Assert.assertTrue(!CollectionUtils.isEmptyMap(map),"url can not be empty");
         } catch (NoSuchFieldException e) {
             throw new RuntimeException(e);
         } catch (IllegalAccessException e) {
