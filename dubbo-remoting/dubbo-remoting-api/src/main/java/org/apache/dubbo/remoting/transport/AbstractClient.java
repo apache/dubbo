@@ -40,13 +40,12 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LAZY_CONNECT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CONNECT_PROVIDER;
+import static org.apache.dubbo.config.Constants.CLIENT_THREAD_POOL_NAME;
 
 /**
  * AbstractClient
  */
 public abstract class AbstractClient extends AbstractEndpoint implements Client {
-
-    protected static final String CLIENT_THREAD_POOL_NAME = "DubboClientHandler";
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractClient.class);
 
