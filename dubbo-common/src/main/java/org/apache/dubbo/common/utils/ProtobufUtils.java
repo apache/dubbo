@@ -16,9 +16,14 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOBUF_MESSAGE_CLASS_NAME;
 
 public class ProtobufUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(ProtobufUtils.class);
 
     private static Class<?> protobufClss;
 
@@ -29,7 +34,7 @@ public class ProtobufUtils {
         try {
             protobufClss = ClassUtils.forName(PROTOBUF_MESSAGE_CLASS_NAME, ProtobufUtils.class.getClassLoader());
         } catch (Throwable t) {
-            //do nothing
+            logger.info("protobuf's dependency is absent");
         }
     }
 
