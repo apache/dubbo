@@ -159,7 +159,7 @@ public class ServiceInstancesChangedListener {
                 .filter(Objects::nonNull)
                 .filter(m -> revision.equals(m.getRevision()))
                 .findFirst()
-                .orElseGet(() -> getRemoteMetadata(revision, subInstances));
+                .orElseGet(() -> serviceDiscovery.getRemoteMetadata(revision, subInstances));
 
             parseMetadata(revision, metadata, localServiceToRevisions);
             // update metadata into each instance, in case new instance created.
@@ -214,10 +214,6 @@ public class ServiceInstancesChangedListener {
 
         this.serviceUrls = newServiceUrls;
         this.notifyAddressChanged();
-    }
-
-    protected MetadataInfo getRemoteMetadata(String revision, List<ServiceInstance> instances) {
-        return serviceDiscovery.getRemoteMetadata(revision, instances);
     }
 
     public synchronized void addListenerAndNotify(URL url, NotifyListener listener) {
