@@ -51,7 +51,7 @@ class RpcUtilsTest {
      * verify: 1. whether invocationId is set correctly, 2. idempotent or not
      */
     Invoker CreateMockInvoker(URL url){
-        Invoker invoker = CreatNockInvoker();
+        Invoker invoker = CreateMockInvoker();
         given(invoker.getUrl()).willReturn(url);
         return  invoker;
     }
