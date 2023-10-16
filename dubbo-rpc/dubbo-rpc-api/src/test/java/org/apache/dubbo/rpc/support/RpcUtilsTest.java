@@ -50,12 +50,12 @@ class RpcUtilsTest {
      * regular scenario: async invocation in URL
      * verify: 1. whether invocationId is set correctly, 2. idempotent or not
      */
-    Invoker creatmockinvoker(URL url){
-        Invoker invoker = mock(Invoker.class);
+    Invoker CreateMockInvoker(URL url){
+        Invoker invoker = CreatNockInvoker();
         given(invoker.getUrl()).willReturn(url);
         return  invoker;
     }
-    Invoker creatmockinvoker(){
+    Invoker CreateMockInvoker(){
         return  mock(Invoker.class);
     }
     @Test
