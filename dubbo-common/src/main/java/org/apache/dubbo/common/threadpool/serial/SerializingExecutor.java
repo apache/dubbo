@@ -32,7 +32,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_ERROR
  * using the provided {@link Executor}, and serially such that no two will ever be
  * running at the same time.
  */
-public class SerializingExecutor implements Executor, Runnable {
+public abstract class SerializingExecutor implements Executor, Runnable {
 
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(SerializingExecutor.class);
 
