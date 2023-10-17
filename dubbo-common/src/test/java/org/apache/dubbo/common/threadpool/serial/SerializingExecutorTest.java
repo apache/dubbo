@@ -47,7 +47,8 @@ class SerializingExecutorTest {
         serializingExecutor = new SerializingExecutor(service) {
             @Override
             protected boolean submitTask() {
-                return super.submitTask();
+                executor.execute(this);
+                return true;
             }
         };
         submitSafeSerializingExecutor = new SubmitSafeSerializingExecutor(service);

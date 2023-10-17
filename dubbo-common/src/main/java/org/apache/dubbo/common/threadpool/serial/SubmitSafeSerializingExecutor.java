@@ -40,6 +40,7 @@ public class SubmitSafeSerializingExecutor extends SerializingExecutor {
         if (isShutdown(executor)) {
             return false;
         }
-        return super.submitTask();
+        executor.execute(this);
+        return true;
     }
 }

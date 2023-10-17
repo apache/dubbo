@@ -122,8 +122,6 @@ public abstract class SerializingExecutor implements Executor, Runnable {
         }
     }
 
-    protected boolean submitTask() {
-        executor.execute(this);
-        return true;
-    }
+    protected abstract boolean submitTask();
+
 }
