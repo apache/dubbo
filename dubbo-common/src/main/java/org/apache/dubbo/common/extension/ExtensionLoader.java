@@ -1008,16 +1008,18 @@ public class ExtensionLoader<T> {
     private void loadDirectory(Map<String, Class<?>> extensionClasses, LoadingStrategy strategy,
                                String type) throws InterruptedException {
         loadDirectoryInternal(extensionClasses, strategy, type);
-        try {
-            String oldType = type.replace("org.apache", "com.alibaba");
-            if (oldType.equals(type)) {
-                return;
-            }
-            //if class not found,skip try to load resources
-            ClassUtils.forName(oldType);
-            loadDirectoryInternal(extensionClasses, strategy, oldType);
-        } catch (ClassNotFoundException classNotFoundException) {
+        if (Dubbo2CompactUtils.isEnabled()) {
+            try {
+                String oldType = type.replace("org.apache", "com.alibaba");
+                if (oldType.equals(type)) {
+                    return;
+                }
+                //if class not found,skip try to load resources
+                ClassUtils.forName(oldType);
+                loadDirectoryInternal(extensionClasses, strategy, oldType);
+            } catch (ClassNotFoundException classNotFoundException) {
 
+            }
         }
     }
 
