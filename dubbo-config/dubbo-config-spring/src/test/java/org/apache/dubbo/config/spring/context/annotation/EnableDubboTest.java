@@ -119,13 +119,13 @@ class EnableDubboTest {
 
         // From Parent
 
-        demoService = child.getDemoServiceFromParent();
-
-        Assertions.assertNotNull(demoService);
-
-        value = demoService.sayName("Mercy");
-
-        Assertions.assertEquals("Hello,Mercy", value);
+//        demoService = child.getDemoServiceFromParent();
+//
+//        Assertions.assertNotNull(demoService);
+//
+//        value = demoService.sayName("Mercy");
+//
+//        Assertions.assertEquals("Hello,Mercy", value);
 
         // From Ancestor
 

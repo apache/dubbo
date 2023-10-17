@@ -17,7 +17,7 @@
 package org.apache.dubbo.metadata.tools;
 
 
-import com.alibaba.dubbo.config.annotation.Service;
+import org.apache.dubbo.config.annotation.Service;
 
 import java.util.EventListener;
 

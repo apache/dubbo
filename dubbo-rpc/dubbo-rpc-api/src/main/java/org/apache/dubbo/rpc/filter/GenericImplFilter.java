@@ -176,8 +176,8 @@ public class GenericImplFilter implements Filter, Filter.Listener {
                 } catch (NoSuchMethodException e) {
                     throw new RpcException(e.getMessage(), e);
                 }
-            } else if (appResponse.getException() instanceof com.alibaba.dubbo.rpc.service.GenericException) {
-                com.alibaba.dubbo.rpc.service.GenericException exception = (com.alibaba.dubbo.rpc.service.GenericException) appResponse.getException();
+            } else if (appResponse.getException() instanceof org.apache.dubbo.rpc.service.GenericException) {
+                org.apache.dubbo.rpc.service.GenericException exception = (org.apache.dubbo.rpc.service.GenericException) appResponse.getException();
                 try {
                     String className = exception.getExceptionClass();
                     DefaultSerializeClassChecker classChecker = moduleModel.getApplicationModel()
