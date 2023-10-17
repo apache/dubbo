@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.compact.Dubbo2GenericExceptionUtils;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
@@ -25,6 +24,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.service.GenericException;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.DemoService;
 import org.apache.dubbo.rpc.support.Person;
@@ -84,7 +84,7 @@ class GenericImplFilterTest {
                 "accesslog=true&group=dubbo&version=1.1&generic=true");
         Invoker invoker = Mockito.mock(Invoker.class);
 
-        AppResponse mockRpcResult = new AppResponse(Dubbo2GenericExceptionUtils.newGenericException(new RuntimeException("failed")));
+        AppResponse mockRpcResult = new AppResponse(new GenericException(new RuntimeException("failed")));
         when(invoker.invoke(any(Invocation.class))).thenReturn(AsyncRpcResult.newDefaultAsyncResult(mockRpcResult, invocation));
         when(invoker.getUrl()).thenReturn(url);
         when(invoker.getInterface()).thenReturn(DemoService.class);
