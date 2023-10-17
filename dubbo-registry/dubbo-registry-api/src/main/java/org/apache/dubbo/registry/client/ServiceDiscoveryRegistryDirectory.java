@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -34,6 +35,7 @@ import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.registry.AddressListener;
 import org.apache.dubbo.registry.Constants;
 import org.apache.dubbo.registry.ProviderFirstParams;
+import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.integration.AbstractConfiguratorListener;
 import org.apache.dubbo.registry.integration.DynamicDirectory;
 import org.apache.dubbo.rpc.Invocation;
@@ -58,6 +60,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -66,6 +69,7 @@ import java.util.stream.Collectors;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INSTANCE_REGISTER_MODE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DESTROY_INVOKER;
@@ -73,6 +77,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAI
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNSUPPORTED;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_HASHMAP_LOAD_FACTOR;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER_MODE_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
 import static org.apache.dubbo.registry.Constants.CONFIGURATORS_SUFFIX;
@@ -283,7 +289,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         this.originalUrls = invokerUrls;
 
         if (invokerUrls.size() == 1 && EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
-            logger.warn(PROTOCOL_UNSUPPORTED, "", "", "Received url with EMPTY protocol, will clear all available addresses.");
+            logger.warn(PROTOCOL_UNSUPPORTED, "", "", String.format("Received url with EMPTY protocol from registry %s, will clear all available addresses.", this));
             refreshRouter(BitList.emptyList(), () ->
                 this.forbidden = true // Forbid to access
             );
@@ -291,7 +297,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         } else {
             this.forbidden = false; // Allow accessing
             if (CollectionUtils.isEmpty(invokerUrls)) {
-                logger.warn(PROTOCOL_UNSUPPORTED, "", "", "Received empty url list, will ignore for protection purpose.");
+                logger.warn(PROTOCOL_UNSUPPORTED, "", "", String.format("Received empty url list from registry %s, will ignore for protection purpose.", this));
                 return;
             }
 
@@ -305,10 +311,10 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                 localUrlInvokerMap.forEach(oldUrlInvokerMap::put);
             }
             Map<ProtocolServiceKeyWithAddress, Invoker<T>> newUrlInvokerMap = toInvokers(oldUrlInvokerMap, invokerUrls);// Translate url list to Invoker map
-            logger.info("Refreshed invoker size " + newUrlInvokerMap.size());
+            logger.info(String.format("Refreshed invoker size %s from registry %s", newUrlInvokerMap.size(), this));
 
             if (CollectionUtils.isEmptyMap(newUrlInvokerMap)) {
-                logger.error(PROTOCOL_UNSUPPORTED, "", "", "Unsupported protocol.", new IllegalStateException("Cannot create invokers from url address list (total " + invokerUrls.size() + ")"));
+                logger.error(PROTOCOL_UNSUPPORTED, "", "", "Unsupported protocol.", new IllegalStateException(String.format("Cannot create invokers from url address list (total %s)", invokerUrls.size())));
                 return;
             }
             List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
@@ -498,6 +504,18 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         this.destroyInvokers();
     }
 
+    @Override
+    protected Map<String, String> getDirectoryMeta() {
+        String registryKey = Optional.ofNullable(getRegistry())
+            .map(Registry::getUrl)
+            .map(url -> url.getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY, url.getParameter(RegistryConstants.REGISTRY_KEY, url.getProtocol())))
+            .orElse("unknown");
+        Map<String, String> metas = new HashMap<>();
+        metas.put(REGISTRY_KEY, registryKey);
+        metas.put(REGISTER_MODE_KEY, INSTANCE_REGISTER_MODE);
+        return metas;
+    }
+
     /**
      * Check whether the invoker in the cache needs to be destroyed
      * If set attribute of url: refer.autodestroy=false, the invokers will only increase without decreasing,there may be a refer leak
@@ -566,7 +584,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         }
 
         void addNotifyListener(ServiceDiscoveryRegistryDirectory<?> listener) {
-            if (listeners.size() == 0) {
+            if (listeners.isEmpty()) {
                 this.initWith(moduleModel.getApplicationModel().getApplicationName() + CONFIGURATORS_SUFFIX);
             }
             this.listeners.add(listener);
@@ -574,7 +592,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
 
         void removeNotifyListener(ServiceDiscoveryRegistryDirectory<?> listener) {
             this.listeners.remove(listener);
-            if (listeners.size() == 0) {
+            if (listeners.isEmpty()) {
                 this.stopListen(moduleModel.getApplicationModel().getApplicationName() + CONFIGURATORS_SUFFIX);
             }
         }
@@ -675,4 +693,12 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         }
     }
 
+    @Override
+    public String toString() {
+        return "ServiceDiscoveryRegistryDirectory(" +
+            "registry: " + getUrl().getAddress() +
+            ", subscribed key: " + (serviceListener == null || CollectionUtils.isEmpty(serviceListener.getServiceNames())
+            ? getConsumerUrl().getServiceKey() : serviceListener.getServiceNames().toString()) +
+            ")-" + super.toString();
+    }
 }

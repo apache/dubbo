@@ -188,7 +188,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         } catch (Throwable t) {
             LOGGER.error(PROTOCOL_FAILED_SERIALIZE_TRIPLE, "", "", String.format("Serialize triple request failed, service=%s method=%s",
                 requestMetadata.service,
-                requestMetadata.method), t);
+                requestMetadata.method.getMethodName()), t);
             cancelByLocal(t);
             listener.onClose(TriRpcStatus.INTERNAL.withDescription("Serialize request failed")
                 .withCause(t), null, false);

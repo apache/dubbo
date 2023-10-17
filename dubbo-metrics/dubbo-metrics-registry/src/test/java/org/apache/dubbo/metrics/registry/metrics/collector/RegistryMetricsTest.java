@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.metrics.registry.metrics.collector;
 
+import com.google.common.collect.Lists;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.context.ConfigManager;
@@ -35,7 +36,11 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.concurrent.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -284,19 +289,20 @@ public class RegistryMetricsTest {
     }
 
     RegistryEvent registerEvent() {
-        RegistryEvent event = RegistryEvent.toRegisterEvent(applicationModel);
+        RegistryEvent event = RegistryEvent.toRegisterEvent(applicationModel, Lists.newArrayList("reg1"));
         event.setAvailable(true);
         return event;
     }
 
     RegistryEvent rsEvent() {
-        RegistryEvent event = RegistryEvent.toRsEvent(applicationModel, "TestServiceInterface1", 1);
+        List<String> rcNames = Lists.newArrayList("demo1");
+        RegistryEvent event = RegistryEvent.toRsEvent(applicationModel, "TestServiceInterface1", 1, rcNames);
         event.setAvailable(true);
         return event;
     }
 
     RegistryEvent subscribeEvent() {
-        RegistryEvent event = RegistryEvent.toSubscribeEvent(applicationModel);
+        RegistryEvent event = RegistryEvent.toSubscribeEvent(applicationModel, "registryClusterName_test");
         event.setAvailable(true);
         return event;
     }

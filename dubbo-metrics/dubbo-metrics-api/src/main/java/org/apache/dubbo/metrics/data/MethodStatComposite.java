@@ -17,8 +17,6 @@
 
 package org.apache.dubbo.metrics.data;
 
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
 import org.apache.dubbo.metrics.model.MethodMetric;
@@ -35,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -43,11 +42,13 @@ import java.util.concurrent.atomic.AtomicLong;
  * the key will not be displayed when exporting (to be optimized)
  */
 public class MethodStatComposite extends AbstractMetricsExport {
+    private boolean serviceLevel;
 
-    private static final Logger logger = LoggerFactory.getLogger(MethodStatComposite.class);
+    private final AtomicBoolean samplesChanged = new AtomicBoolean(true);
 
     public MethodStatComposite(ApplicationModel applicationModel) {
         super(applicationModel);
+        this.serviceLevel = MethodMetric.isServiceLevel(getApplicationModel());
     }
 
     private final Map<MetricsKeyWrapper, Map<MethodMetric, AtomicLong>> methodNumStats = new ConcurrentHashMap<>();
@@ -56,14 +57,32 @@ public class MethodStatComposite extends AbstractMetricsExport {
         if (CollectionUtils.isEmpty(metricsKeyWrappers)) {
             return;
         }
-        metricsKeyWrappers.forEach(appKey -> methodNumStats.put(appKey, new ConcurrentHashMap<>()));
+        metricsKeyWrappers.forEach(appKey -> {
+            methodNumStats.put(appKey, new ConcurrentHashMap<>());
+        });
+        samplesChanged.set(true);
     }
 
-    public void incrementMethodKey(MetricsKeyWrapper wrapper, Invocation invocation, int size) {
+    public void initMethodKey(MetricsKeyWrapper wrapper, Invocation invocation) {
         if (!methodNumStats.containsKey(wrapper)) {
             return;
         }
-        methodNumStats.get(wrapper).computeIfAbsent(new MethodMetric(getApplicationModel(), invocation), k -> new AtomicLong(0L)).getAndAdd(size);
+
+        methodNumStats.get(wrapper).computeIfAbsent(new MethodMetric(getApplicationModel(), invocation, serviceLevel), k -> new AtomicLong(0L));
+        samplesChanged.set(true);
+    }
+
+    public void incrementMethodKey(MetricsKeyWrapper wrapper, MethodMetric methodMetric, int size) {
+        if (!methodNumStats.containsKey(wrapper)) {
+            return;
+        }
+        AtomicLong stat = methodNumStats.get(wrapper).get(methodMetric);
+        if (stat == null) {
+            methodNumStats.get(wrapper).computeIfAbsent(methodMetric, (k)-> new AtomicLong(0L));
+            samplesChanged.set(true);
+            stat = methodNumStats.get(wrapper).get(methodMetric);
+        }
+        stat.getAndAdd(size);
 //        MetricsSupport.fillZero(methodNumStats);
     }
 
@@ -86,4 +105,9 @@ public class MethodStatComposite extends AbstractMetricsExport {
         return list;
     }
 
+    @Override
+    public boolean calSamplesChanged() {
+        // CAS to get and reset the flag in an atomic operation
+        return samplesChanged.compareAndSet(true, false);
+    }
 }

@@ -276,7 +276,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
 
     private String getTimeoutMessage(boolean scan) {
         long nowTimestamp = System.currentTimeMillis();
-        return (sent > 0 ? "Waiting server-side response timeout" : "Sending request timeout in client-side")
+        return (sent > 0 && sent - start < timeout ? "Waiting server-side response timeout" : "Sending request timeout in client-side")
             + (scan ? " by scan timer" : "") + ". start time: "
             + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(start))) + ", end time: "
             + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(nowTimestamp))) + ","

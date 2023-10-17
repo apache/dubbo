@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class DeadlineFuture extends CompletableFuture<AppResponse> {
@@ -46,7 +46,10 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
     private final long start = System.currentTimeMillis();
     private final List<Runnable> timeoutListeners = new ArrayList<>();
     private final Timeout timeoutTask;
-    private Executor executor;
+    private ExecutorService executor;
+    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(
+        () -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true), 30,
+            TimeUnit.MILLISECONDS), DeadlineFuture::destroy);
 
     private DeadlineFuture(String serviceName, String methodName, String address, int timeout) {
         this.serviceName = serviceName;
@@ -69,27 +72,22 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
      * @return a new DeadlineFuture
      */
     public static DeadlineFuture newFuture(String serviceName, String methodName, String address,
-        int timeout, Executor executor) {
+        int timeout, ExecutorService executor) {
         final DeadlineFuture future = new DeadlineFuture(serviceName, methodName, address, timeout);
         future.setExecutor(executor);
         return future;
     }
 
     public void received(TriRpcStatus status, AppResponse appResponse) {
-        if (status.code != TriRpcStatus.Code.DEADLINE_EXCEEDED) {
-            // decrease Time
-            if (!timeoutTask.isCancelled()) {
-                timeoutTask.cancel();
-            }
+        if (status.code != TriRpcStatus.Code.DEADLINE_EXCEEDED && !timeoutTask.isCancelled()) {
+            timeoutTask.cancel();
         }
         if (getExecutor() != null) {
             getExecutor().execute(() -> doReceived(status, appResponse));
         } else {
             doReceived(status, appResponse);
         }
-    }    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(
-        () -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true), 30,
-            TimeUnit.MILLISECONDS), DeadlineFuture::destroy);
+    }
 
     public void addTimeoutListener(Runnable runnable) {
         timeoutListeners.add(runnable);
@@ -99,11 +97,11 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
         return timeoutListeners;
     }
 
-    public Executor getExecutor() {
+    public ExecutorService getExecutor() {
         return executor;
     }
 
-    public void setExecutor(Executor executor) {
+    public void setExecutor(ExecutorService executor) {
         this.executor = executor;
     }
 
@@ -149,8 +147,9 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
                 return;
             }
 
-            if (getExecutor() != null) {
-                getExecutor().execute(() -> {
+            ExecutorService executor = getExecutor();
+            if (executor != null && !executor.isShutdown()) {
+                executor.execute(() -> {
                     notifyTimeout();
                     for (Runnable timeoutListener : getTimeoutListeners()) {
                         timeoutListener.run();

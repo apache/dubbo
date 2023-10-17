@@ -16,9 +16,7 @@
  */
 package org.apache.dubbo.common.serialize.hessian2;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.DefaultSerializeClassChecker;
 import org.apache.dubbo.common.utils.SerializeCheckStatus;
 import org.apache.dubbo.common.utils.SerializeSecurityManager;
@@ -27,13 +25,16 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import com.alibaba.com.caucho.hessian.io.SerializerFactory;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 
 public class Hessian2FactoryManager {
     String WHITELIST = "dubbo.application.hessian2.whitelist";
     String ALLOW = "dubbo.application.hessian2.allow";
     String DENY = "dubbo.application.hessian2.deny";
     private volatile SerializerFactory SYSTEM_SERIALIZER_FACTORY;
-    private final Map<ClassLoader, SerializerFactory> CL_2_SERIALIZER_FACTORY = new ConcurrentHashMap<>();
+    private volatile SerializerFactory stickySerializerFactory = null;
+    private final ConcurrentHashMap<ClassLoader, SerializerFactory> CL_2_SERIALIZER_FACTORY = new ConcurrentHashMap<>();
 
     private final SerializeSecurityManager serializeSecurityManager;
     private final DefaultSerializeClassChecker defaultSerializeClassChecker;
@@ -44,48 +45,48 @@ public class Hessian2FactoryManager {
     }
 
     public SerializerFactory getSerializerFactory(ClassLoader classLoader) {
+        SerializerFactory sticky = stickySerializerFactory;
+        if (sticky != null && sticky.getClassLoader().equals(classLoader)) {
+            return sticky;
+        }
+
         if (classLoader == null) {
             // system classloader
             if (SYSTEM_SERIALIZER_FACTORY == null) {
                 synchronized (this) {
                     if (SYSTEM_SERIALIZER_FACTORY == null) {
-                        SYSTEM_SERIALIZER_FACTORY = createSerializerFactory();
+                        SYSTEM_SERIALIZER_FACTORY = createSerializerFactory(null);
                     }
                 }
             }
+            stickySerializerFactory = SYSTEM_SERIALIZER_FACTORY;
             return SYSTEM_SERIALIZER_FACTORY;
         }
 
-        if (!CL_2_SERIALIZER_FACTORY.containsKey(classLoader)) {
-            synchronized (this) {
-                if (!CL_2_SERIALIZER_FACTORY.containsKey(classLoader)) {
-                    SerializerFactory serializerFactory = createSerializerFactory();
-                    CL_2_SERIALIZER_FACTORY.put(classLoader, serializerFactory);
-                    return serializerFactory;
-                }
-            }
-        }
-        return CL_2_SERIALIZER_FACTORY.get(classLoader);
+        SerializerFactory factory = ConcurrentHashMapUtils.computeIfAbsent(CL_2_SERIALIZER_FACTORY,
+            classLoader, this::createSerializerFactory);
+        stickySerializerFactory = factory;
+        return factory;
     }
 
-    private SerializerFactory createSerializerFactory() {
+    private SerializerFactory createSerializerFactory(ClassLoader classLoader) {
         String whitelist = System.getProperty(WHITELIST);
         if (StringUtils.isNotEmpty(whitelist)) {
-            return createWhiteListSerializerFactory();
+            return createWhiteListSerializerFactory(classLoader);
         }
 
-        return createDefaultSerializerFactory();
+        return createDefaultSerializerFactory(classLoader);
     }
 
-    private SerializerFactory createDefaultSerializerFactory() {
-        Hessian2SerializerFactory hessian2SerializerFactory = new Hessian2SerializerFactory(defaultSerializeClassChecker);
+    private SerializerFactory createDefaultSerializerFactory(ClassLoader classLoader) {
+        Hessian2SerializerFactory hessian2SerializerFactory = new Hessian2SerializerFactory(classLoader, defaultSerializeClassChecker);
         hessian2SerializerFactory.setAllowNonSerializable(Boolean.parseBoolean(System.getProperty("dubbo.hessian.allowNonSerializable", "false")));
         hessian2SerializerFactory.getClassFactory().allow("org.apache.dubbo.*");
         return hessian2SerializerFactory;
     }
 
-    public SerializerFactory createWhiteListSerializerFactory() {
-        SerializerFactory serializerFactory = new Hessian2SerializerFactory(defaultSerializeClassChecker);
+    public SerializerFactory createWhiteListSerializerFactory(ClassLoader classLoader) {
+        SerializerFactory serializerFactory = new Hessian2SerializerFactory(classLoader, defaultSerializeClassChecker);
         String whiteList = System.getProperty(WHITELIST);
         if ("true".equals(whiteList)) {
             serializerFactory.getClassFactory().setWhitelist(true);

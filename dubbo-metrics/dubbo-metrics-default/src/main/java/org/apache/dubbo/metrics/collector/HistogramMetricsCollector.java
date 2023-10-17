@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.metrics.collector;
 
-import io.micrometer.core.instrument.Timer;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.context.ConfigManager;
@@ -33,6 +32,8 @@ import org.apache.dubbo.metrics.register.HistogramMetricRegister;
 import org.apache.dubbo.metrics.sample.HistogramMetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import io.micrometer.core.instrument.Timer;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,6 +48,8 @@ public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEv
     private final ApplicationModel applicationModel;
 
     private static final Integer[] DEFAULT_BUCKETS_MS = new Integer[]{100, 300, 500, 1000, 3000, 5000, 10000};
+
+    private boolean serviceLevel;
 
     public HistogramMetricsCollector(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
@@ -68,6 +71,7 @@ public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEv
             }
 
             metricRegister = new HistogramMetricRegister(MetricsGlobalRegistry.getCompositeRegistry(applicationModel), histogram);
+            this.serviceLevel = MethodMetric.isServiceLevel(applicationModel);
         }
     }
 
@@ -92,7 +96,7 @@ public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEv
 
     private void onRTEvent(RequestEvent event) {
         if (metricRegister != null) {
-            MethodMetric metric = new MethodMetric(applicationModel, event.getAttachmentValue(MetricsConstants.INVOCATION));
+            MethodMetric metric = new MethodMetric(applicationModel, event.getAttachmentValue(MetricsConstants.INVOCATION), serviceLevel);
             long responseTime = event.getTimePair().calc();
 
             HistogramMetricSample sample = new HistogramMetricSample(MetricsKey.METRIC_RT_HISTOGRAM.getNameByType(metric.getSide()),
@@ -106,5 +110,11 @@ public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEv
     @Override
     public List<MetricSample> collect() {
         return new ArrayList<>();
+    }
+
+    @Override
+    public boolean calSamplesChanged() {
+        // Histogram is directly register micrometer
+        return false;
     }
 }

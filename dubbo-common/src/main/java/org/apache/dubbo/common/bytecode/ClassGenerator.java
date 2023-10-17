@@ -92,10 +92,15 @@ public final class ClassGenerator {
 
         ClassPool pool = POOL_MAP.get(loader);
         if (pool == null) {
-            pool = new ClassPool(true);
-            pool.insertClassPath(new LoaderClassPath(loader));
-            pool.insertClassPath(new DubboLoaderClassPath());
-            POOL_MAP.put(loader, pool);
+            synchronized (POOL_MAP) {
+                pool = POOL_MAP.get(loader);
+                if (pool == null) {
+                    pool = new ClassPool(true);
+                    pool.insertClassPath(new LoaderClassPath(loader));
+                    pool.insertClassPath(new DubboLoaderClassPath());
+                    POOL_MAP.put(loader, pool);
+                }
+            }
         }
         return pool;
     }

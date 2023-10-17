@@ -58,6 +58,7 @@ import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_W
 import static org.apache.dubbo.common.constants.QosConstants.ANONYMOUS_ACCESS_ALLOW_COMMANDS;
 import static org.apache.dubbo.common.constants.QosConstants.ANONYMOUS_ACCESS_PERMISSION_LEVEL;
 import static org.apache.dubbo.common.constants.QosConstants.ANONYMOUS_ACCESS_PERMISSION_LEVEL_COMPATIBLE;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_CHECK;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
@@ -145,6 +146,11 @@ public class ApplicationConfig extends AbstractConfig {
      * Whether to enable qos or not
      */
     private Boolean qosEnable;
+
+    /**
+     * Whether qos should start success or not, will check qosEnable first
+     */
+    private Boolean qosCheck;
 
     /**
      * The qos host to listen
@@ -431,6 +437,15 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setQosEnable(Boolean qosEnable) {
         this.qosEnable = qosEnable;
+    }
+
+    @Parameter(key = QOS_CHECK)
+    public Boolean getQosCheck() {
+        return qosCheck;
+    }
+
+    public void setQosCheck(Boolean qosCheck) {
+        this.qosCheck = qosCheck;
     }
 
     @Parameter(key = QOS_HOST)

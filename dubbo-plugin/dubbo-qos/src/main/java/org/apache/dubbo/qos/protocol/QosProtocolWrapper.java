@@ -23,9 +23,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.qos.api.PermissionLevel;
 import org.apache.dubbo.qos.common.QosConstants;
-import org.apache.dubbo.qos.pu.QosWireProtocol;
 import org.apache.dubbo.qos.server.Server;
-import org.apache.dubbo.remoting.api.WireProtocol;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -42,6 +40,7 @@ import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_WHITELIST;
 import static org.apache.dubbo.common.constants.QosConstants.ANONYMOUS_ACCESS_ALLOW_COMMANDS;
 import static org.apache.dubbo.common.constants.QosConstants.ANONYMOUS_ACCESS_PERMISSION_LEVEL;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_CHECK;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
@@ -97,17 +96,15 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
         return protocol.getServers();
     }
 
-    private void startQosServer(URL url) {
+    private void startQosServer(URL url) throws RpcException {
+        boolean qosCheck = url.getParameter(QOS_CHECK, false);
+
         try {
             if (!hasStarted.compareAndSet(false, true)) {
                 return;
             }
 
             boolean qosEnable = url.getParameter(QOS_ENABLE, true);
-            WireProtocol qosWireProtocol = frameworkModel.getExtensionLoader(WireProtocol.class).getExtension("qos");
-            if (qosWireProtocol != null) {
-                ((QosWireProtocol) qosWireProtocol).setQosEnable(qosEnable);
-            }
             if (!qosEnable) {
                 logger.info("qos won't be started because it is disabled. " +
                     "Please check dubbo.application.qos.enable is configured either in system property, " +
@@ -137,6 +134,14 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
 
         } catch (Throwable throwable) {
             logger.warn(QOS_FAILED_START_SERVER, "", "", "Fail to start qos server: ", throwable);
+            try {
+                stopServer();
+            } catch (Throwable stop) {
+                logger.warn(QOS_FAILED_START_SERVER, "", "", "Fail to stop qos server: ", stop);
+            }
+            if (qosCheck) {
+                throw new RpcException(throwable);
+            }
         }
     }
 

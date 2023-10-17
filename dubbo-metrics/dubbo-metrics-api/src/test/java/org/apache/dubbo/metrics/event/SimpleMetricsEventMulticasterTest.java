@@ -22,6 +22,7 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metrics.listener.AbstractMetricsListener;
 import org.apache.dubbo.metrics.listener.MetricsLifeListener;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,16 +57,6 @@ public class SimpleMetricsEventMulticasterTest {
         };
     }
 
-
-    @Test
-    void testPublishEvent() {
-
-        // emptyEvent do nothing
-        MetricsEvent emptyEvent = EmptyEvent.instance();
-        eventMulticaster.publishEvent(emptyEvent);
-        Assertions.assertSame(obj, objects[0]);
-
-    }
 
     @Test
     void testPublishFinishEvent() {

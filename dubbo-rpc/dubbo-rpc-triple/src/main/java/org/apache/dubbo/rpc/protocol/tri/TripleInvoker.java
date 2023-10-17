@@ -25,6 +25,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
@@ -55,6 +56,7 @@ import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
+import org.apache.dubbo.rpc.service.ServiceDescriptorInternalCache;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import io.netty.util.AsciiString;
@@ -63,7 +65,6 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -132,10 +133,14 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         ConsumerModel consumerModel = (ConsumerModel) (invocation.getServiceModel() != null
             ? invocation.getServiceModel() : getUrl().getServiceModel());
         ServiceDescriptor serviceDescriptor = consumerModel.getServiceModel();
-        final MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(
-            invocation.getMethodName(),
-            invocation.getParameterTypes());
-        Executor callbackExecutor = isSync(methodDescriptor, invocation) ? new ThreadlessExecutor() : streamExecutor;
+        final MethodDescriptor methodDescriptor;
+        boolean genericCall = RpcUtils.isGenericCall(ReflectUtils.getDesc(invocation.getParameterTypes()), invocation.getMethodName());
+        if (!genericCall) {
+            methodDescriptor = serviceDescriptor.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
+        } else {
+            methodDescriptor = ServiceDescriptorInternalCache.genericService().getMethod(invocation.getMethodName(), invocation.getParameterTypes());
+        }
+        ExecutorService callbackExecutor = isSync(methodDescriptor, invocation) ? new ThreadlessExecutor() : streamExecutor;
         ClientCall call = new TripleClientCall(connectionClient, callbackExecutor,
             getUrl().getOrDefaultFrameworkModel(), writeQueue);
         AsyncRpcResult result;
@@ -219,7 +224,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     AsyncRpcResult invokeUnary(MethodDescriptor methodDescriptor, Invocation invocation,
-                               ClientCall call, Executor callbackExecutor) {
+                               ClientCall call, ExecutorService callbackExecutor) {
 
         int timeout = RpcUtils.calculateTimeout(getUrl(), invocation, RpcUtils.getMethodName(invocation), 3000);
         if (timeout <= 0) {
@@ -240,7 +245,15 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         if (methodDescriptor instanceof StubMethodDescriptor) {
             pureArgument = invocation.getArguments()[0];
         } else {
-            pureArgument = invocation.getArguments();
+            if (methodDescriptor.isGeneric()) {
+                Object[] args = new Object[3];
+                args[0] = RpcUtils.getMethodName(invocation);
+                args[1] = Arrays.stream(RpcUtils.getParameterTypes(invocation)).map(Class::getName).toArray(String[]::new);
+                args[2] = RpcUtils.getArguments(invocation);
+                pureArgument = args;
+            } else {
+                pureArgument = invocation.getArguments();
+            }
         }
         result = new AsyncRpcResult(future, invocation);
         if (setFutureWhenSync || ((RpcInvocation) invocation).getInvokeMode() != InvokeMode.SYNC) {

@@ -127,6 +127,10 @@ public interface Constants {
 
     String BIND_PORT_KEY = "bind.port";
 
+    String BIND_RETRY_TIMES = "bind.retry.times";
+
+    String BIND_RETRY_INTERVAL = "bind.retry.interval";
+
     String SENT_KEY = "sent";
 
     String DISPATCHER_KEY = "dispatcher";
@@ -173,4 +177,5 @@ public interface Constants {
 
     String CONTENT_LENGTH_KEY = "content-length";
 
+    String USE_SECURE_RANDOM_ID = "dubbo.application.use-secure-random-request-id";
 }

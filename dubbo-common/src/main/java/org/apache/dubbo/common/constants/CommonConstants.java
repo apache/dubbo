@@ -32,6 +32,8 @@ public interface CommonConstants {
     String PROVIDER = "provider";
 
     String CONSUMER = "consumer";
+    
+    String CALLBACK = "callback";
 
     String APPLICATION_KEY = "application";
 
@@ -240,6 +242,8 @@ public interface CommonConstants {
     String REMOTE_METADATA_STORAGE_TYPE = "remote";
 
     String INTERFACE_REGISTER_MODE = "interface";
+
+    String INSTANCE_REGISTER_MODE = "instance";
 
     String DEFAULT_REGISTER_MODE = "all";
 
@@ -639,4 +643,5 @@ public interface CommonConstants {
 
     String DUBBO_PACKABLE_METHOD_FACTORY = "dubbo.application.parameters." + PACKABLE_METHOD_FACTORY_KEY;
 
+    String DUBBO_MANUAL_REGISTER_KEY = "dubbo.application.manual-register";
 }

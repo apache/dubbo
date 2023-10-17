@@ -14,23 +14,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.protocol.rest.extension.resteasy.filter;
 
-package org.apache.dubbo.metrics.report;
-
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.jboss.resteasy.specimpl.BuiltResponse;
 
 /**
- * AbstractMetricsReporterFactory.
+ * wrapper resteasy  BuiltResponse
  */
-public abstract class AbstractMetricsReporterFactory implements MetricsReporterFactory {
+public class DubboBuiltResponse extends BuiltResponse {
 
-    private final ApplicationModel applicationModel;
+    // user reset entity
+    private boolean resetEntity;
 
-    public AbstractMetricsReporterFactory(ApplicationModel applicationModel) {
-        this.applicationModel = applicationModel;
+    public DubboBuiltResponse(Object entity, int status, Class<?> entityClass) {
+
+        this.entity = entity;
+        this.entityClass = entityClass;
+        this.status = status;
     }
 
-    protected ApplicationModel getApplicationModel() {
-        return applicationModel;
+
+    @Override
+    public void setEntity(Object entity) {
+        if (entity == null) {
+            return;
+        }
+
+        if (entity.equals(this.entity)) {
+            return;
+        }
+        //  reset entity true
+        this.resetEntity = true;
+        super.setEntity(entity);
+    }
+
+    public boolean isResetEntity() {
+        return resetEntity;
     }
 }

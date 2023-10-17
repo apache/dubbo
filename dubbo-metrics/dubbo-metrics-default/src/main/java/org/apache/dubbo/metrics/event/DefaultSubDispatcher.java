@@ -43,16 +43,16 @@ public final class DefaultSubDispatcher extends SimpleMetricsEventMulticaster {
         super.addListener(categoryOverall.getFinish().getEventFunc().apply(collector));
         super.addListener(categoryOverall.getError().getEventFunc().apply(collector));
 
-        super.addListener(new MetricsListener<RequestBeforeEvent>() {
+        super.addListener(new MetricsListener<RequestEvent>() {
 
             @Override
             public boolean isSupport(MetricsEvent event) {
-                return event instanceof RequestBeforeEvent;
+                return event instanceof RequestEvent && ((RequestEvent) event).isRequestErrorEvent();
             }
 
+            private final MetricsPlaceValue dynamicPlaceType = MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD);
             @Override
-            public void onEvent(RequestBeforeEvent event) {
-                MetricsPlaceValue dynamicPlaceType = MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD);
+            public void onEvent(RequestEvent event) {
                 MetricsSupport.increment(METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED, dynamicPlaceType, (MethodMetricsCollector) collector, event);
             }
         });
@@ -81,6 +81,7 @@ public final class DefaultSubDispatcher extends SimpleMetricsEventMulticaster {
                                 targetKey = key;
                             } else {
                                 targetKey = MetricsSupport.getMetricsKey((Throwable) throwableObj);
+                                MetricsSupport.increment(MetricsKey.METRIC_REQUESTS_TOTAL_FAILED, dynamicPlaceType, (MethodMetricsCollector) collector, event);
                             }
                             MetricsSupport.incrAndAddRt(targetKey, dynamicPlaceType, (MethodMetricsCollector) collector, event);
                         })),

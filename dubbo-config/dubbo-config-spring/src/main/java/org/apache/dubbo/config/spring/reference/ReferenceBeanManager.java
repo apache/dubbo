@@ -157,7 +157,7 @@ public class ReferenceBeanManager implements ApplicationContextAware {
      * @param referenceBean
      * @throws Exception
      */
-    private synchronized void initReferenceBean(ReferenceBean referenceBean) throws Exception {
+    public synchronized void initReferenceBean(ReferenceBean referenceBean) throws Exception {
 
         if (referenceBean.getReferenceConfig() != null) {
             return;
@@ -189,6 +189,7 @@ public class ReferenceBeanManager implements ApplicationContextAware {
 
             // register ReferenceConfig
             moduleModel.getConfigManager().addReference(referenceConfig);
+            moduleModel.getDeployer().setPending();
         }
 
         // associate referenceConfig to referenceBean
