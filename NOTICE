@@ -23,20 +23,6 @@ dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/protoc/DubboProto
 Maven Protocol Buffers Plugin
 =============================
 Copyright (c) 2016 Maven Protocol Buffers Plugin Authors. All rights reserved.
-Maven Protocol Buffers Plugin includes a binary distribution of WinRun4J,
-which is used to execute protoc plugins written in Java
-under 32-bit and 64-bit Windows operating systems.
-
-WinRun4J is licensed under the Common Public License (CPL).
-http://www.eclipse.org/legal/cpl-v10.html
-
-Additional information about WinRun4J is available on
-the project's home page:
-http://winrun4j.sourceforge.net/
-
-For information about the bundled versions of the binaries
-please read src/main/resources/winrun4j/README.txt
-inside this git repository.
 
 This product contains the following code copied from grpc-java-contrib:
 dubbo-compiler/src/main/java/org/apache/dubbo/gen/utils/ProtoTypeMap.java
