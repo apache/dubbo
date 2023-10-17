@@ -68,17 +68,18 @@ public final class {{className}} {
     {{#javaDoc}}
     {{{javaDoc}}}
     {{/javaDoc}}
-    private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
-    {{inputType}}.class, {{outputType}}.class, serviceDescriptor, MethodDescriptor.RpcType.UNARY,
-    obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
-    {{outputType}}::parseFrom);
 
     private static final StubMethodDescriptor {{methodName}}AsyncMethod = new StubMethodDescriptor("{{originMethodName}}",
     {{inputType}}.class, java.util.concurrent.CompletableFuture.class, serviceDescriptor, MethodDescriptor.RpcType.UNARY,
     obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
     {{outputType}}::parseFrom);
 
-    private static final StubMethodDescriptor {{methodName}}ProxyAsyncMethod = new StubMethodDescriptor("{{originMethodName}}Async",
+    private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
+    {{inputType}}.class, {{outputType}}.class, serviceDescriptor, MethodDescriptor.RpcType.UNARY,
+    obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
+    {{outputType}}::parseFrom);
+
+    private static final StubMethodDescriptor {{methodName}}ProxyAsyncMethod = new StubMethodDescriptor("{{originMethodName}}ProxyAsync",
     {{inputType}}.class, {{outputType}}.class, serviceDescriptor, MethodDescriptor.RpcType.UNARY,
     obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
     {{outputType}}::parseFrom);
