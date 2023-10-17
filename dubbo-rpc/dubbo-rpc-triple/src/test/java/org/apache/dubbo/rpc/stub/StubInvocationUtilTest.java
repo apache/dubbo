@@ -32,6 +32,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.lang.reflect.Type;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -78,6 +79,7 @@ class StubInvocationUtilTest {
         MethodDescriptor method = Mockito.mock(MethodDescriptor.class);
         when(method.getParameterClasses()).thenReturn(new Class[]{String.class});
         when(method.getMethodName()).thenReturn("sayHello");
+        when(method.getReturnTypes()).thenReturn(new Type[]{String.class,String.class});
         return method;
     }
 
