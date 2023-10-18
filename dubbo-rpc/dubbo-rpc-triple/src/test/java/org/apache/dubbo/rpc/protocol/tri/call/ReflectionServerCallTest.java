@@ -24,6 +24,7 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ReflectionMethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorService;
 import org.apache.dubbo.rpc.protocol.tri.HelloReply;
 import org.apache.dubbo.rpc.protocol.tri.stream.TripleServerStream;
@@ -46,6 +47,7 @@ class ReflectionServerCallTest {
         Invoker<?> invoker = Mockito.mock(Invoker.class);
         TripleServerStream serverStream = Mockito.mock(TripleServerStream.class);
         ProviderModel providerModel = Mockito.mock(ProviderModel.class);
+        ServiceMetadata serviceMetadata = new ServiceMetadata();
         Method method = DescriptorService.class.getMethod("sayHello", HelloReply.class);
         MethodDescriptor methodDescriptor = new ReflectionMethodDescriptor(method);
         URL url = Mockito.mock(URL.class);
@@ -53,6 +55,8 @@ class ReflectionServerCallTest {
             .thenReturn(url);
         when(url.getServiceModel())
             .thenReturn(providerModel);
+        when(providerModel.getServiceMetadata())
+            .thenReturn(serviceMetadata);
 
         String service = "testService";
         String methodName = "method";

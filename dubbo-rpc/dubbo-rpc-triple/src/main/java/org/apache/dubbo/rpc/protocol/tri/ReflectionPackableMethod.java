@@ -23,8 +23,8 @@ import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.ProtobufUtils;
 import org.apache.dubbo.config.Constants;
-import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.remoting.transport.CodecSupport;
+import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.Pack;
 import org.apache.dubbo.rpc.model.PackableMethod;
@@ -42,7 +42,6 @@ import java.util.Iterator;
 import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$ECHO;
-import static org.apache.dubbo.rpc.protocol.tri.TripleProtocol.METHOD_ATTR_PACK;
 
 public class ReflectionPackableMethod implements PackableMethod {
 
@@ -118,16 +117,10 @@ public class ReflectionPackableMethod implements PackableMethod {
     }
 
     public static ReflectionPackableMethod init(MethodDescriptor methodDescriptor, URL url) {
-        Object stored = methodDescriptor.getAttribute(METHOD_ATTR_PACK);
-        if (stored != null) {
-            return (ReflectionPackableMethod) stored;
-        }
-        final String serializeName = UrlUtils.serializationOrDefault(url);
-        final Collection<String> allSerialize = UrlUtils.allSerializations(url);
-        ReflectionPackableMethod reflectionPackableMethod = new ReflectionPackableMethod(
+        String serializeName = UrlUtils.serializationOrDefault(url);
+        Collection<String> allSerialize = UrlUtils.allSerializations(url);
+        return new ReflectionPackableMethod(
             methodDescriptor, url, serializeName, allSerialize);
-        methodDescriptor.addAttribute(METHOD_ATTR_PACK, reflectionPackableMethod);
-        return reflectionPackableMethod;
     }
 
     static boolean isStreamType(Class<?> type) {

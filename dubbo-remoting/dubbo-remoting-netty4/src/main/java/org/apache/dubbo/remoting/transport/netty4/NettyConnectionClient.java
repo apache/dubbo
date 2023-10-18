@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.WireProtocol;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
@@ -123,7 +124,7 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                 int heartbeat = UrlUtils.getHeartbeat(getUrl());
                 pipeline.addLast("client-idle-handler", new IdleStateHandler(heartbeat, 0, 0, MILLISECONDS));
 
-                pipeline.addLast("connectionHandler", connectionHandler);
+                pipeline.addLast(Constants.CONNECTION_HANDLER_NAME, connectionHandler);
 
                 NettyConfigOperator operator = new NettyConfigOperator(nettyChannel, getChannelHandler());
                 protocol.configClientPipeline(getUrl(), operator, nettySslContextOperator);
