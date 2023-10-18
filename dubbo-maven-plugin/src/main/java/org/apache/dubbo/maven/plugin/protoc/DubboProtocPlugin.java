@@ -126,15 +126,15 @@ public class DubboProtocPlugin {
     @Override
     public String toString() {
         return "DubboProtocPlugin{" +
-                "id='" + id + '\'' +
-                ", mainClass='" + mainClass + '\'' +
-                ", dubboVersion='" + dubboVersion + '\'' +
-                ", javaHome='" + javaHome + '\'' +
-                ", pluginDirectory=" + pluginDirectory +
-                ", resolvedJars=" + resolvedJars +
-                ", args=" + args +
-                ", jvmArgs=" + jvmArgs +
-                ", protocPlugin=" + protocPlugin +
-                '}';
+            "id='" + id + '\'' +
+            ", mainClass='" + mainClass + '\'' +
+            ", dubboVersion='" + dubboVersion + '\'' +
+            ", javaHome='" + javaHome + '\'' +
+            ", pluginDirectory=" + pluginDirectory +
+            ", resolvedJars=" + resolvedJars +
+            ", args=" + args +
+            ", jvmArgs=" + jvmArgs +
+            ", protocPlugin=" + protocPlugin +
+            '}';
     }
 }

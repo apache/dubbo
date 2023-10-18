@@ -31,7 +31,7 @@ public class LinuxDubboProtocPluginWrapper implements DubboProtocPluginWrapper {
     public File createProtocPlugin(DubboProtocPlugin dubboProtocPlugin, Log log) {
         List<File> resolvedJars = dubboProtocPlugin.getResolvedJars();
         createPluginDirectory(dubboProtocPlugin.getPluginDirectory());
-        File pluginExecutableFile =  new File(dubboProtocPlugin.getPluginDirectory(), dubboProtocPlugin.getPluginName());
+        File pluginExecutableFile = new File(dubboProtocPlugin.getPluginDirectory(), dubboProtocPlugin.getPluginName());
         final File javaLocation = new File(dubboProtocPlugin.getJavaHome(), "bin/java");
 
         if (log.isDebugEnabled()) {
@@ -60,7 +60,7 @@ public class LinuxDubboProtocPluginWrapper implements DubboProtocPluginWrapper {
             out.println("\"");
             out.println();
             out.println("\"" + javaLocation.getAbsolutePath() + "\" $JVMARGS -cp $CP "
-                    + dubboProtocPlugin.getMainClass() + " $ARGS");
+                + dubboProtocPlugin.getMainClass() + " $ARGS");
             out.println();
             boolean b = pluginExecutableFile.setExecutable(true);
             if (!b) {
@@ -78,7 +78,7 @@ public class LinuxDubboProtocPluginWrapper implements DubboProtocPluginWrapper {
         pluginDirectory.mkdirs();
         if (!pluginDirectory.isDirectory()) {
             throw new RuntimeException("Could not create protoc plugin directory: "
-                    + pluginDirectory.getAbsolutePath());
+                + pluginDirectory.getAbsolutePath());
         }
     }
 }

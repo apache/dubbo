@@ -35,27 +35,37 @@ public class WinDubboProtocPluginWrapper implements DubboProtocPluginWrapper {
 
     private String winJvmDataModel;
 
+    private static File findJvmLocation(final File javaHome, final String... paths) {
+        for (final String path : paths) {
+            final File jvmLocation = new File(javaHome, path);
+            if (jvmLocation.isFile()) {
+                return jvmLocation;
+            }
+        }
+        return null;
+    }
+
     @Override
     public File createProtocPlugin(DubboProtocPlugin dubboProtocPlugin, Log log) {
         createPluginDirectory(dubboProtocPlugin.getPluginDirectory());
         final File javaHome = new File(dubboProtocPlugin.getJavaHome());
         final File jvmLocation = findJvmLocation(javaHome,
-                "jre/bin/server/jvm.dll",
-                "bin/server/jvm.dll",
-                "jre/bin/client/jvm.dll",
-                "bin/client/jvm.dll");
+            "jre/bin/server/jvm.dll",
+            "bin/server/jvm.dll",
+            "jre/bin/client/jvm.dll",
+            "bin/client/jvm.dll");
         final File winRun4JIniFile = new File(dubboProtocPlugin.getPluginDirectory(), dubboProtocPlugin.getId() + ".ini");
 
         if (winJvmDataModel != null) {
             if (!(winJvmDataModel.equals(WIN_JVM_DATA_MODEL_32) || winJvmDataModel.equals(WIN_JVM_DATA_MODEL_64))) {
                 throw new RuntimeException("winJvmDataModel must be '32' or '64'");
             }
-        } else if (archDirectoryExists("amd64",dubboProtocPlugin.getJavaHome())) {
+        } else if (archDirectoryExists("amd64", dubboProtocPlugin.getJavaHome())) {
             winJvmDataModel = WIN_JVM_DATA_MODEL_64;
             if (log.isDebugEnabled()) {
                 log.debug("detected 64-bit JVM from directory structure");
             }
-        } else if (archDirectoryExists("i386",dubboProtocPlugin.getJavaHome())) {
+        } else if (archDirectoryExists("i386", dubboProtocPlugin.getJavaHome())) {
             winJvmDataModel = WIN_JVM_DATA_MODEL_32;
             if (log.isDebugEnabled()) {
                 log.debug("detected 32-bit JVM from directory structure");
@@ -100,21 +110,21 @@ public class WinDubboProtocPluginWrapper implements DubboProtocPluginWrapper {
             out.println("show.popup=false");
         } catch (IOException e) {
             throw new RuntimeException(
-                    "Could not write WinRun4J ini file: " + winRun4JIniFile.getAbsolutePath(), e);
+                "Could not write WinRun4J ini file: " + winRun4JIniFile.getAbsolutePath(), e);
         }
         final String executablePath = getWinrun4jExecutablePath();
         final URL url = Thread.currentThread().getContextClassLoader().getResource(executablePath);
         if (url == null) {
             throw new RuntimeException(
-                    "Could not locate WinRun4J executable at path: " + executablePath);
+                "Could not locate WinRun4J executable at path: " + executablePath);
         }
         File pluginExecutableFile = getPluginExecutableFile(dubboProtocPlugin);
         try {
-            FileUtils.copyURLToFile(url,pluginExecutableFile);
+            FileUtils.copyURLToFile(url, pluginExecutableFile);
             return pluginExecutableFile;
         } catch (IOException e) {
             throw new RuntimeException(
-                    "Could not copy WinRun4J executable to: " + pluginExecutableFile.getAbsolutePath(), e);
+                "Could not copy WinRun4J executable to: " + pluginExecutableFile.getAbsolutePath(), e);
         }
     }
 
@@ -122,24 +132,14 @@ public class WinDubboProtocPluginWrapper implements DubboProtocPluginWrapper {
         pluginDirectory.mkdirs();
         if (!pluginDirectory.isDirectory()) {
             throw new RuntimeException("Could not create protoc plugin directory: "
-                    + pluginDirectory.getAbsolutePath());
+                + pluginDirectory.getAbsolutePath());
         }
     }
 
-    private static File findJvmLocation(final File javaHome, final String... paths) {
-        for (final String path : paths) {
-            final File jvmLocation = new File(javaHome, path);
-            if (jvmLocation.isFile()) {
-                return jvmLocation;
-            }
-        }
-        return null;
-    }
-
-    private boolean archDirectoryExists(String arch,String javaHome) {
+    private boolean archDirectoryExists(String arch, String javaHome) {
         return javaHome != null
-                && (new File(javaHome, "jre/lib/" + arch).isDirectory()
-                || new File(javaHome, "lib/" + arch).isDirectory());
+            && (new File(javaHome, "jre/lib/" + arch).isDirectory()
+            || new File(javaHome, "lib/" + arch).isDirectory());
     }
 
     private String getWinrun4jExecutablePath() {
@@ -147,7 +147,7 @@ public class WinDubboProtocPluginWrapper implements DubboProtocPluginWrapper {
     }
 
     public File getPluginExecutableFile(DubboProtocPlugin dubboProtocPlugin) {
-        return new File(dubboProtocPlugin.getPluginDirectory(), "protoc-gen-" +dubboProtocPlugin.getId() + ".exe");
+        return new File(dubboProtocPlugin.getPluginDirectory(), "protoc-gen-" + dubboProtocPlugin.getId() + ".exe");
     }
 
 }

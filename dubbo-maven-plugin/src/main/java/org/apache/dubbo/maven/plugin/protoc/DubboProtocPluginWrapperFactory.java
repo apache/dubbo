@@ -28,7 +28,7 @@ public class DubboProtocPluginWrapperFactory {
     private final WinDubboProtocPluginWrapper winDubboProtocPluginWrapper = new WinDubboProtocPluginWrapper();
 
 
-    private Map<String, DubboProtocPluginWrapper> dubboProtocPluginWrappers = new HashMap<>();
+    private final Map<String, DubboProtocPluginWrapper> dubboProtocPluginWrappers = new HashMap<>();
 
 
     public DubboProtocPluginWrapperFactory() {
