@@ -180,7 +180,7 @@ public class AsyncRpcResult implements Result {
      */
     @Override
     public Result get() throws InterruptedException, ExecutionException {
-        if (executor != null && executor instanceof ThreadlessExecutor) {
+        if (executor instanceof ThreadlessExecutor) {
             ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
             try {
                 while (!responseFuture.isDone() && !threadlessExecutor.isShutdown()) {
@@ -196,7 +196,7 @@ public class AsyncRpcResult implements Result {
     @Override
     public Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         long deadline = System.nanoTime() + unit.toNanos(timeout);
-        if (executor != null && executor instanceof ThreadlessExecutor) {
+        if (executor instanceof ThreadlessExecutor) {
             ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
             try {
                 while (!responseFuture.isDone() && !threadlessExecutor.isShutdown()) {

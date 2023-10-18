@@ -47,11 +47,7 @@ public class LazyTargetInvocationHandler implements InvocationHandler {
         }
 
         if (target == null) {
-            synchronized (this) {
-                if (target == null) {
-                    target = lazyTargetSource.getTarget();
-                }
-            }
+            target = lazyTargetSource.getTarget();
         }
         if (method.getDeclaringClass().isInstance(target)) {
             try {
