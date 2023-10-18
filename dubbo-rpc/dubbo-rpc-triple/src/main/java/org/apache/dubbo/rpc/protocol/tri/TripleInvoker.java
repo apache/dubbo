@@ -62,9 +62,11 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 import io.netty.util.AsciiString;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -94,18 +96,22 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     private final TripleWriteQueue writeQueue = new TripleWriteQueue(256);
 
     private static final boolean setFutureWhenSync = Boolean.parseBoolean(System.getProperty(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true"));
+    private final PackableMethodFactory packableMethodFactory;
+    private final Map<MethodDescriptor, PackableMethod> packableMethodCache = new ConcurrentHashMap<>();
 
     public TripleInvoker(Class<T> serviceType,
-        URL url,
-        String acceptEncodings,
-        AbstractConnectionClient connectionClient,
-        Set<Invoker<?>> invokers,
-        ExecutorService streamExecutor) {
+                         URL url,
+                         String acceptEncodings,
+                         AbstractConnectionClient connectionClient,
+                         Set<Invoker<?>> invokers,
+                         ExecutorService streamExecutor) {
         super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY});
         this.invokers = invokers;
         this.connectionClient = connectionClient;
         this.acceptEncodings = acceptEncodings;
         this.streamExecutor = streamExecutor;
+        this.packableMethodFactory = url.getOrDefaultFrameworkModel().getExtensionLoader(PackableMethodFactory.class)
+            .getExtension(ConfigurationUtils.getGlobalConfiguration(url.getApplicationModel()).getString(DUBBO_PACKABLE_METHOD_FACTORY, DEFAULT_KEY));
     }
 
     private static AsciiString getSchemeFromUrl(URL url) {
@@ -175,7 +181,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         }
     }
 
-    private static boolean isSync(MethodDescriptor methodDescriptor, Invocation invocation){
+    private static boolean isSync(MethodDescriptor methodDescriptor, Invocation invocation) {
         if (!(invocation instanceof RpcInvocation)) {
             return false;
         }
@@ -230,7 +236,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         if (timeout <= 0) {
             return AsyncRpcResult.newDefaultAsyncResult(new RpcException(RpcException.TIMEOUT_TERMINATE,
                 "No time left for making the following call: " + invocation.getServiceName() + "."
-                    + RpcUtils.getMethodName(invocation)+ ", terminate directly."), invocation);
+                    + RpcUtils.getMethodName(invocation) + ", terminate directly."), invocation);
         }
         invocation.setAttachment(TIMEOUT_KEY, String.valueOf(timeout));
 
@@ -280,9 +286,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         if (methodDescriptor instanceof PackableMethod) {
             meta.packableMethod = (PackableMethod) methodDescriptor;
         } else {
-            meta.packableMethod = url.getOrDefaultFrameworkModel().getExtensionLoader(PackableMethodFactory.class)
-                .getExtension(ConfigurationUtils.getGlobalConfiguration(url.getApplicationModel()).getString(DUBBO_PACKABLE_METHOD_FACTORY, DEFAULT_KEY))
-                .create(methodDescriptor, url, TripleConstant.CONTENT_PROTO);
+            meta.packableMethod = packableMethodCache.computeIfAbsent(methodDescriptor,
+                (md) -> packableMethodFactory.create(md, url, TripleConstant.CONTENT_PROTO));
         }
         meta.convertNoLowerHeader = TripleProtocol.CONVERT_NO_LOWER_HEADER;
         meta.ignoreDefaultVersion = TripleProtocol.IGNORE_1_0_0_VERSION;
