@@ -377,7 +377,6 @@
             <version>${project.version}</version>
         </dependency>
 
-
         <!-- registry -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>

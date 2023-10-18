@@ -28,8 +28,8 @@
     <version>1.0.0</version>
 
     <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!--  System dependencies may cause problems in checkstyle. -->
@@ -37,7 +37,6 @@
         <checkstyle_unix.skip>true</checkstyle_unix.skip>
         <rat.skip>true</rat.skip>
         <jacoco.skip>true</jacoco.skip>
-
         <maven.deploy.skip>true</maven.deploy.skip>
 
         <junit_jupiter_version>5.9.0</junit_jupiter_version>

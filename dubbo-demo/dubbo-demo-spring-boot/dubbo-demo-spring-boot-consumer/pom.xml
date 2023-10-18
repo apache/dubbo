@@ -28,10 +28,6 @@
     <artifactId>dubbo-demo-spring-boot-consumer</artifactId>
 
     <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
-        <slf4j-log4j12.version>1.7.33</slf4j-log4j12.version>
-        <spring-boot.version>2.7.16</spring-boot.version>
         <skip_maven_deploy>true</skip_maven_deploy>
     </properties>
 
@@ -97,41 +93,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-autoconfigure</artifactId>
-            <version>${spring-boot.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-logging</artifactId>
-            <version>${spring-boot.version}</version>
-            <exclusions>
-                <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
-                <exclusion>
-                    <groupId>org.apache.logging.log4j</groupId>
-                    <artifactId>log4j-api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>${slf4j-log4j12.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-tracing-otel-zipkin-spring-boot-starter</artifactId>
             <version>${project.version}</version>
@@ -142,7 +103,6 @@
             <artifactId>dubbo-qos</artifactId>
             <version>${project.version}</version>
         </dependency>
-
     </dependencies>
 
     <build>

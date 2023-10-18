@@ -24,9 +24,6 @@
     </parent>
 
     <artifactId>dubbo-maven-plugin</artifactId>
-
-    <properties>
-    </properties>
     <description>Dubbo Maven Plugin</description>
     <packaging>maven-plugin</packaging>
 
@@ -43,7 +40,6 @@
             <version>3.9.1</version>
             <scope>provided</scope>
         </dependency>
-
 
         <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>
@@ -63,7 +59,6 @@
             <artifactId>dubbo-common</artifactId>
             <version>${project.version}</version>
         </dependency>
-
 
         <dependency>
             <groupId>commons-io</groupId>
@@ -106,16 +101,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>8</source>
-                    <target>8</target>
-                </configuration>
-            </plugin>
         </plugins>
-
     </build>
-
 </project>

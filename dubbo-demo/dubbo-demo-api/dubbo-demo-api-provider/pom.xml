@@ -32,7 +32,6 @@
 
     <properties>
         <skip_maven_deploy>true</skip_maven_deploy>
-        <slf4j-log4j12.version>1.7.33</slf4j-log4j12.version>
     </properties>
 
     <dependencies>
@@ -101,6 +100,5 @@
             <artifactId>dubbo-serialization-fastjson2</artifactId>
             <version>${project.version}</version>
         </dependency>
-
     </dependencies>
 </project>

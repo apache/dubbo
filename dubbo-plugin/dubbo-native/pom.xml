@@ -28,7 +28,6 @@
     <artifactId>dubbo-native</artifactId>
     <packaging>jar</packaging>
 
-
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
