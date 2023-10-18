@@ -18,21 +18,17 @@
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
 import org.apache.dubbo.remoting.api.connection.ConnectionHandler;
-import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http2.Http2GoAwayFrame;
 import io.netty.util.ReferenceCountUtil;
 
-public class TripleClientHandler extends ChannelDuplexHandler {
-
-    private final FrameworkModel frameworkModel;
+public class TripleGoAwayHandler extends ChannelDuplexHandler {
 
     private static final String CONNECTION_HANDLER_NAME = "connectionHandler";
 
-    public TripleClientHandler(FrameworkModel frameworkModel) {
-        this.frameworkModel = frameworkModel;
+    public TripleGoAwayHandler() {
     }
 
     @Override
