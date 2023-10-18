@@ -180,6 +180,7 @@ public class GenericImplFilter implements Filter, Filter.Listener {
                 }
             } else if (Dubbo2CompactUtils.isEnabled() && Dubbo2GenericExceptionUtils.isGenericExceptionClassLoaded()
                 && Dubbo2GenericExceptionUtils.getGenericExceptionClass().isAssignableFrom(appResponse.getException().getClass())) {
+                // TODO we should cast if is apache GenericException or not?
                 org.apache.dubbo.rpc.service.GenericException exception = (org.apache.dubbo.rpc.service.GenericException) appResponse.getException();
                 try {
                     String className = exception.getExceptionClass();
