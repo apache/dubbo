@@ -30,6 +30,10 @@ public interface IGreeter {
      */
     String echo(String request);
 
+    Integer echo(Integer request);
+
+    void echo();
+
     default CompletableFuture<String> echoAsync(String request) {
         return CompletableFuture.supplyAsync(() -> echo(request));
     }
