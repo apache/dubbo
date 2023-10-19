@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc.filter;
 import org.apache.dubbo.common.beanutil.JavaBeanAccessor;
 import org.apache.dubbo.common.beanutil.JavaBeanDescriptor;
 import org.apache.dubbo.common.beanutil.JavaBeanSerializeUtil;
+import org.apache.dubbo.common.compact.Dubbo2CompactUtils;
+import org.apache.dubbo.common.compact.Dubbo2GenericExceptionUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -176,8 +178,10 @@ public class GenericImplFilter implements Filter, Filter.Listener {
                 } catch (NoSuchMethodException e) {
                     throw new RpcException(e.getMessage(), e);
                 }
-            } else if (appResponse.getException() instanceof com.alibaba.dubbo.rpc.service.GenericException) {
-                com.alibaba.dubbo.rpc.service.GenericException exception = (com.alibaba.dubbo.rpc.service.GenericException) appResponse.getException();
+            } else if (Dubbo2CompactUtils.isEnabled() && Dubbo2GenericExceptionUtils.isGenericExceptionClassLoaded()
+                && Dubbo2GenericExceptionUtils.getGenericExceptionClass().isAssignableFrom(appResponse.getException().getClass())) {
+                // TODO we should cast if is apache GenericException or not?
+                org.apache.dubbo.rpc.service.GenericException exception = (org.apache.dubbo.rpc.service.GenericException) appResponse.getException();
                 try {
                     String className = exception.getExceptionClass();
                     DefaultSerializeClassChecker classChecker = moduleModel.getApplicationModel()

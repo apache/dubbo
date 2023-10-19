@@ -90,22 +90,7 @@ public class TestConsumerConfiguration {
         }
     }
 
-    public static abstract class Parent extends Ancestor {
-
-        private DemoService demoServiceFromParent;
-
-        public DemoService getDemoServiceFromParent() {
-            return demoServiceFromParent;
-        }
-
-        @com.alibaba.dubbo.config.annotation.Reference(version = "2.5.7", url = remoteURL, filter = "mymock", application = "dubbo-demo-application")
-        public void setDemoServiceFromParent(DemoService demoServiceFromParent) {
-            this.demoServiceFromParent = demoServiceFromParent;
-        }
-
-    }
-
-    public static class Child extends Parent {
+    public static class Child extends Ancestor {
 
         @Reference(version = "2.5.7", url = remoteURL, filter = "mymock", application = "dubbo-demo-application")
         private DemoService demoServiceFromChild;
