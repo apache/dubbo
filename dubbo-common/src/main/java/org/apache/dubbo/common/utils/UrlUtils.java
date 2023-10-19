@@ -271,9 +271,8 @@ public class UrlUtils {
                     Map<String, String> newUrls = newRegister.computeIfAbsent(name, k -> new HashMap<String, String>());
                     newUrls.put(serviceUrl, StringUtils.toQueryString(params));
                 }
-            } else {
-                newRegister.put(serviceName, serviceUrls);
             }
+            newRegister.put(serviceName, serviceUrls);
         }
 
         return newRegister;
