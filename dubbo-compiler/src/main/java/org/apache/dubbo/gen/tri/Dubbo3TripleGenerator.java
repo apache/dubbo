@@ -17,17 +17,12 @@
 package org.apache.dubbo.gen.tri;
 
 import org.apache.dubbo.gen.AbstractGenerator;
-
-import com.salesforce.jprotoc.ProtocPlugin;
+import org.apache.dubbo.gen.DubboGeneratorPlugin;
 
 public class Dubbo3TripleGenerator extends AbstractGenerator {
 
     public static void main(String[] args) {
-        if (args.length == 0) {
-            ProtocPlugin.generate(new Dubbo3TripleGenerator());
-        } else {
-            ProtocPlugin.debug(new Dubbo3TripleGenerator(), args[0]);
-        }
+        DubboGeneratorPlugin.generate(new Dubbo3TripleGenerator());
     }
 
     @Override

@@ -17,8 +17,7 @@
 package org.apache.dubbo.gen.grpc.reactive;
 
 import org.apache.dubbo.gen.AbstractGenerator;
-
-import com.salesforce.jprotoc.ProtocPlugin;
+import org.apache.dubbo.gen.DubboGeneratorPlugin;
 
 public class RxDubboGrpcGenerator extends AbstractGenerator {
     @Override
@@ -32,10 +31,6 @@ public class RxDubboGrpcGenerator extends AbstractGenerator {
     }
 
     public static void main(String[] args) {
-        if (args.length == 0) {
-            ProtocPlugin.generate(new RxDubboGrpcGenerator());
-        } else {
-            ProtocPlugin.debug(new RxDubboGrpcGenerator(), args[0]);
-        }
+        DubboGeneratorPlugin.generate(new RxDubboGrpcGenerator());
     }
 }

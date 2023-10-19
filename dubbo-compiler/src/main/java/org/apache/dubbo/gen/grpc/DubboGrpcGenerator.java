@@ -17,17 +17,13 @@
 package org.apache.dubbo.gen.grpc;
 
 import org.apache.dubbo.gen.AbstractGenerator;
+import org.apache.dubbo.gen.DubboGeneratorPlugin;
 
-import com.salesforce.jprotoc.ProtocPlugin;
 
 public class DubboGrpcGenerator extends AbstractGenerator {
 
     public static void main(String[] args) {
-        if (args.length == 0) {
-            ProtocPlugin.generate(new DubboGrpcGenerator());
-        } else {
-            ProtocPlugin.debug(new DubboGrpcGenerator(), args[0]);
-        }
+        DubboGeneratorPlugin.generate(new DubboGrpcGenerator());
     }
 
     @Override
