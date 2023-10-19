@@ -207,4 +207,8 @@ public class RedisMetadataReport extends AbstractMetadataReport {
         }
     }
 
+    @Override
+    public boolean registerServiceAppMapping(String serviceInterface, String defaultMappingGroup, String newConfigContent, Object ticket) {
+        throw new UnsupportedOperationException("Redis metadataReport implementation does not support registerServiceAppMapping() method.");
+    }
 }
