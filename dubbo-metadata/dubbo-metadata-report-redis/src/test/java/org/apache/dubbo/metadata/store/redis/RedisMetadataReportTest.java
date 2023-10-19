@@ -44,6 +44,8 @@ import java.util.Random;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.SYNC_REPORT_KEY;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static redis.embedded.RedisServer.newRedisServer;
 
 class RedisMetadataReportTest {
@@ -234,4 +236,10 @@ class RedisMetadataReportTest {
             }
         }
     }
+
+    @Test
+    void testRegisterServiceAppMapping()  {
+        assertThrows(UnsupportedOperationException.class, () ->redisMetadataReport.registerServiceAppMapping(any(), any(), any(), any()));
+    }
+
 }
