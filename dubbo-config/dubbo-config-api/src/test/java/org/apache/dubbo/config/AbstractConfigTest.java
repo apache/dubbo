@@ -898,29 +898,7 @@ class AbstractConfigTest {
     }
 
     @Test
-    void testRefreshNestedWithIdByExternal() {
-        try {
-            Map<String, String> external = new HashMap<>();
-            external.put("dubbo.outers.test.a1", "1");
-            external.put("dubbo.outers.test.b.b1", "11");
-            external.put("dubbo.outers.test.b.b2", "12");
-
-            ApplicationModel.defaultModel().modelEnvironment().initialize();
-            ApplicationModel.defaultModel().modelEnvironment().setExternalConfigMap(external);
-
-            OuterConfig outerConfig = new OuterConfig("test");
-            outerConfig.refresh();
-
-            Assertions.assertEquals(1, outerConfig.getA1());
-            Assertions.assertEquals(11, outerConfig.getB().getB1());
-            Assertions.assertEquals(12, outerConfig.getB().getB2());
-        } finally {
-            ApplicationModel.defaultModel().modelEnvironment().destroy();
-        }
-    }
-
-    @Test
-    void testRefreshNestedWithIdBySystemProperties() {
+    void testRefreshNestedWithId() {
         try {
             System.setProperty("dubbo.outers.test.a1", "1");
             System.setProperty("dubbo.outers.test.b.b1", "11");
@@ -943,7 +921,7 @@ class AbstractConfigTest {
     }
 
     @Test
-    void testRefreshNestedByProperties() {
+    void testRefreshNestedBySystemProperties() {
         try {
             Properties p = new Properties();
             p.put("dubbo.outer.a1", "1");
