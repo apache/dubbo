@@ -22,7 +22,9 @@ import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.common.Person;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
+import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
@@ -50,6 +52,7 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class MethodConfigTest {
     private static final String METHOD_NAME = "sayHello";
@@ -119,7 +122,7 @@ class MethodConfigTest {
     }
 
     @Test
-    void testName() throws Exception {
+    void testName() {
         MethodConfig method = new MethodConfig();
         method.setName("hello");
         assertThat(method.getName(), equalTo("hello"));
@@ -129,42 +132,42 @@ class MethodConfigTest {
     }
 
     @Test
-    void testStat() throws Exception {
+    void testStat() {
         MethodConfig method = new MethodConfig();
         method.setStat(10);
         assertThat(method.getStat(), equalTo(10));
     }
 
     @Test
-    void testRetry() throws Exception {
+    void testRetry() {
         MethodConfig method = new MethodConfig();
         method.setRetry(true);
         assertThat(method.isRetry(), is(true));
     }
 
     @Test
-    void testReliable() throws Exception {
+    void testReliable() {
         MethodConfig method = new MethodConfig();
         method.setReliable(true);
         assertThat(method.isReliable(), is(true));
     }
 
     @Test
-    void testExecutes() throws Exception {
+    void testExecutes() {
         MethodConfig method = new MethodConfig();
         method.setExecutes(10);
         assertThat(method.getExecutes(), equalTo(10));
     }
 
     @Test
-    void testDeprecated() throws Exception {
+    void testDeprecated() {
         MethodConfig method = new MethodConfig();
         method.setDeprecated(true);
         assertThat(method.getDeprecated(), is(true));
     }
 
     @Test
-    void testArguments() throws Exception {
+    void testArguments() {
         MethodConfig method = new MethodConfig();
         ArgumentConfig argument = new ArgumentConfig();
         method.setArguments(Collections.singletonList(argument));
@@ -173,14 +176,32 @@ class MethodConfigTest {
     }
 
     @Test
-    void testSticky() throws Exception {
+    void testSticky() {
         MethodConfig method = new MethodConfig();
         method.setSticky(true);
         assertThat(method.getSticky(), is(true));
     }
 
+    @Test
+    void testConvertMethodConfig2AsyncInfo() throws Exception {
+        MethodConfig methodConfig = new MethodConfig();
+        String methodName = "setName";
+        methodConfig.setOninvokeMethod(methodName);
+        methodConfig.setOnthrowMethod(methodName);
+        methodConfig.setOnreturnMethod(methodName);
+        methodConfig.setOninvoke(new Person());
+        methodConfig.setOnthrow(new Person());
+        methodConfig.setOnreturn(new Person());
+
+        AsyncMethodInfo methodInfo = methodConfig.convertMethodConfig2AsyncInfo();
+
+        assertEquals(methodInfo.getOninvokeMethod(), Person.class.getMethod(methodName, String.class));
+        assertEquals(methodInfo.getOnthrowMethod(), Person.class.getMethod(methodName, String.class));
+        assertEquals(methodInfo.getOnreturnMethod(), Person.class.getMethod(methodName, String.class));
+    }
+
     //@Test
-    public void testOnReturn() throws Exception {
+    void testOnReturn() {
         MethodConfig method = new MethodConfig();
         method.setOnreturn("on-return-object");
         assertThat(method.getOnreturn(), equalTo("on-return-object"));
@@ -193,72 +214,72 @@ class MethodConfigTest {
     }
 
     @Test
-    void testOnReturnMethod() throws Exception {
+    void testOnReturnMethod() {
         MethodConfig method = new MethodConfig();
         method.setOnreturnMethod("on-return-method");
         assertThat(method.getOnreturnMethod(), equalTo("on-return-method"));
         Map<String, String> attributes = new HashMap<>();
         MethodConfig.appendAttributes(attributes, method);
-        assertThat(attributes, hasEntry((Object) ON_RETURN_METHOD_ATTRIBUTE_KEY, (Object) "on-return-method"));
+        assertThat(attributes, hasEntry(ON_RETURN_METHOD_ATTRIBUTE_KEY, "on-return-method"));
         Map<String, String> parameters = new HashMap<String, String>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));
     }
 
     //@Test
-    public void testOnThrow() throws Exception {
+    void testOnThrow() {
         MethodConfig method = new MethodConfig();
         method.setOnthrow("on-throw-object");
-        assertThat(method.getOnthrow(), equalTo((Object) "on-throw-object"));
+        assertThat(method.getOnthrow(), equalTo("on-throw-object"));
         Map<String, String> attributes = new HashMap<>();
         MethodConfig.appendAttributes(attributes, method);
-        assertThat(attributes, hasEntry((Object) ON_THROW_INSTANCE_ATTRIBUTE_KEY, (Object) "on-throw-object"));
+        assertThat(attributes, hasEntry(ON_THROW_INSTANCE_ATTRIBUTE_KEY, "on-throw-object"));
         Map<String, String> parameters = new HashMap<String, String>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));
     }
 
     @Test
-    void testOnThrowMethod() throws Exception {
+    void testOnThrowMethod() {
         MethodConfig method = new MethodConfig();
         method.setOnthrowMethod("on-throw-method");
         assertThat(method.getOnthrowMethod(), equalTo("on-throw-method"));
         Map<String, String> attributes = new HashMap<>();
         MethodConfig.appendAttributes(attributes, method);
-        assertThat(attributes, hasEntry((Object) ON_THROW_METHOD_ATTRIBUTE_KEY, (Object) "on-throw-method"));
+        assertThat(attributes, hasEntry(ON_THROW_METHOD_ATTRIBUTE_KEY, "on-throw-method"));
         Map<String, String> parameters = new HashMap<String, String>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));
     }
 
     //@Test
-    public void testOnInvoke() throws Exception {
+    void testOnInvoke() {
         MethodConfig method = new MethodConfig();
         method.setOninvoke("on-invoke-object");
-        assertThat(method.getOninvoke(), equalTo((Object) "on-invoke-object"));
+        assertThat(method.getOninvoke(), equalTo("on-invoke-object"));
         Map<String, String> attributes = new HashMap<>();
         MethodConfig.appendAttributes(attributes, method);
-        assertThat(attributes, hasEntry((Object) ON_INVOKE_INSTANCE_ATTRIBUTE_KEY, (Object) "on-invoke-object"));
+        assertThat(attributes, hasEntry(ON_INVOKE_INSTANCE_ATTRIBUTE_KEY, "on-invoke-object"));
         Map<String, String> parameters = new HashMap<String, String>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));
     }
 
     @Test
-    void testOnInvokeMethod() throws Exception {
+    void testOnInvokeMethod() {
         MethodConfig method = new MethodConfig();
         method.setOninvokeMethod("on-invoke-method");
         assertThat(method.getOninvokeMethod(), equalTo("on-invoke-method"));
         Map<String, String> attributes = new HashMap<>();
         MethodConfig.appendAttributes(attributes, method);
-        assertThat(attributes, hasEntry((Object) ON_INVOKE_METHOD_ATTRIBUTE_KEY, (Object) "on-invoke-method"));
+        assertThat(attributes, hasEntry(ON_INVOKE_METHOD_ATTRIBUTE_KEY, "on-invoke-method"));
         Map<String, String> parameters = new HashMap<String, String>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));
     }
 
     @Test
-    void testReturn() throws Exception {
+    void testReturn() {
         MethodConfig method = new MethodConfig();
         method.setReturn(true);
         assertThat(method.isReturn(), is(true));
