@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -69,6 +70,11 @@ import static org.apache.dubbo.common.constants.CommonConstants.RECONNECT_TASK_P
 import static org.apache.dubbo.common.constants.CommonConstants.RECONNECT_TASK_TRY_COUNT;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTER_IP_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_NO_VALID_PROVIDER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_NOTIFY_EVENT;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_VALID_INSTANCE_THRESHOLD;
+import static org.apache.dubbo.common.constants.RegistryConstants.VALID_INSTANCE_THRESHOLD_CONSUMER_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.VALID_INSTANCE_THRESHOLD_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.VALID_INSTANCE_THRESHOLD_PROVIDER_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.rpc.cluster.Constants.CONSUMER_URL_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
@@ -370,6 +376,47 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     protected Map<String, String> getDirectoryMeta() {
         return Collections.emptyMap();
+    }
+
+    protected boolean testRefresh(BitList<Invoker<T>> invokers) {
+        DynamicConfiguration dynamicConfiguration = applicationModel.modelEnvironment().getDynamicConfiguration().orElse(null);
+        double threshold = 0D;
+        if (dynamicConfiguration != null && !invokers.isEmpty()) {
+            // Provider dynamic threshold config first.
+            // When the service is published or scaled down in large quantities, the threshold will be much lower than normal.
+            // In this case, the provider threshold will be used.
+            Invoker<T> invoker = invokers.get(0);
+            URL url = invoker.getUrl();
+            String thresholdConfig = dynamicConfiguration.getConfig(VALID_INSTANCE_THRESHOLD_PROVIDER_KEY, url.getRemoteApplication());
+            if (StringUtils.isBlank(thresholdConfig)) {
+                // Consumer dynamic threshold config second.
+                // Due to the special nature of the business, the consumer service needs to adjust the threshold,
+                // such as the core service wanting to adjust the threshold higher to ensure the success rate of the call.
+                String consumerApplicationName = applicationModel.getApplicationName();
+                thresholdConfig = dynamicConfiguration.getConfig(VALID_INSTANCE_THRESHOLD_CONSUMER_KEY, consumerApplicationName);
+            }
+            if (StringUtils.isBlank(thresholdConfig)) {
+                // Consumer static threshold config third.
+                // Priority: provider > consumer > default
+                thresholdConfig = getUrl().getParameter(VALID_INSTANCE_THRESHOLD_KEY, DEFAULT_VALID_INSTANCE_THRESHOLD);
+            }
+            threshold = Double.parseDouble(thresholdConfig);
+        }
+        if (threshold <= 0D || threshold >= 1D) {
+            return true;
+        }
+        BitList<Invoker<T>> copiedInvokers = invokers.clone();
+        List<Invoker<T>> copiedInvokersToReconnect = new ArrayList<>(invokersToReconnect);
+        List<Invoker<T>> copiedDisabledInvokers = new ArrayList<>(disabledInvokers);
+        refreshInvokers(copiedInvokers, copiedInvokersToReconnect);
+        refreshInvokers(copiedInvokers, copiedDisabledInvokers);
+        if (!validInvokers.isEmpty() && copiedInvokers.size() < validInvokers.size() * threshold) {
+            logger.warn(REGISTRY_FAILED_NOTIFY_EVENT, "", "",
+                String.format("Number of valid invokers before change: %s, after change: %s, less than threshold: %s",
+                    validInvokers.size(), copiedInvokers.size(), threshold));
+            return false;
+        }
+        return true;
     }
 
     private synchronized void refreshInvokerInternal() {

@@ -450,6 +450,12 @@
                     <![CDATA[ Enable empty protection on empty address notification, default true. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="valid-instance-threshold" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Valid instance threshold when received instance change event, default 0. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="protocol" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The preferred protocol to use, set protocol name. ]]></xsd:documentation>
@@ -688,6 +694,12 @@
             <xsd:annotation>
                 <xsd:documentation>
                     <![CDATA[ Enable empty protection on empty address notification, default true. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="valid-instance-threshold" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Valid instance threshold when received instance change event, default 0. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>

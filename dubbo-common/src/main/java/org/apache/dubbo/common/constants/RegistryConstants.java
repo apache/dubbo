@@ -143,4 +143,9 @@ public interface RegistryConstants {
     boolean DEFAULT_ENABLE_EMPTY_PROTECTION = false;
     String REGISTER_CONSUMER_URL_KEY = "register-consumer-url";
 
+    String VALID_INSTANCE_THRESHOLD_KEY = "valid-instance-threshold";
+    String DEFAULT_VALID_INSTANCE_THRESHOLD = "0";
+    String VALID_INSTANCE_THRESHOLD_CONSUMER_KEY = "valid-instance-consumer-threshold";
+    String VALID_INSTANCE_THRESHOLD_PROVIDER_KEY = "valid-instance-provider-threshold";
+
 }

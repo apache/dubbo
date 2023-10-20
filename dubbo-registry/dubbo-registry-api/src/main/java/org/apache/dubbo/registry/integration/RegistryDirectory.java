@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.integration;
 
+import org.apache.dubbo.common.Node;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
@@ -73,6 +74,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNS
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_FAILED_CONVERT_URL;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_EMPTY_ADDRESS;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_DESTROY_SERVICE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_NOTIFY_EVENT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNSUPPORTED_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.COMPATIBLE_CONFIG_KEY;
@@ -274,7 +276,6 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             } else {
                 localCachedInvokerUrls = new HashSet<>();
                 localCachedInvokerUrls.addAll(invokerUrls);//Cached invoker urls, convenient for comparison
-                this.cachedInvokerUrls = localCachedInvokerUrls;
             }
             if (invokerUrls.isEmpty()) {
                 return;
@@ -289,7 +290,8 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                 oldUrlInvokerMap = new LinkedHashMap<>(Math.round(1 + localUrlInvokerMap.size() / DEFAULT_HASHMAP_LOAD_FACTOR));
                 localUrlInvokerMap.forEach(oldUrlInvokerMap::put);
             }
-            Map<URL, Invoker<T>> newUrlInvokerMap = toInvokers(oldUrlInvokerMap, invokerUrls);// Translate url list to Invoker map
+            List<Invoker<T>> createdInvokers = new ArrayList<>();
+            Map<URL, Invoker<T>> newUrlInvokerMap = toInvokers(oldUrlInvokerMap, invokerUrls, createdInvokers);// Translate url list to Invoker map
 
             /*
              * If the calculation is wrong, it is not processed.
@@ -308,16 +310,23 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                     "", "urls to invokers error",
                     new IllegalStateException(
                         "urls to invokers error. invokerUrls.size :" +
-                            invokerUrls.size() + ", invoker.size :0. urls :" + invokerUrls.toString()));
+                            invokerUrls.size() + ", invoker.size :0. urls :" + invokerUrls));
 
                 return;
             }
 
             List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
             BitList<Invoker<T>> finalInvokers = multiGroup ? new BitList<>(toMergeInvokerList(newInvokers)) : new BitList<>(newInvokers);
+            if (!testRefresh(finalInvokers)) {
+                createdInvokers.forEach(Node::destroy);
+                logger.warn(REGISTRY_FAILED_NOTIFY_EVENT, "", "", "Destroy too many valid invokers, will discard event");
+                return;
+            }
             // pre-route and build cache
             refreshRouter(finalInvokers.clone(), () -> this.setInvokers(finalInvokers));
             this.urlInvokerMap = newUrlInvokerMap;
+            // change cached invoker urls after refresh success
+            this.cachedInvokerUrls = localCachedInvokerUrls;
 
             try {
                 destroyUnusedInvokers(oldUrlInvokerMap, newUrlInvokerMap); // Close the unused Invoker
@@ -401,7 +410,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
      * @param urls
      * @return invokers
      */
-    private Map<URL, Invoker<T>> toInvokers(Map<URL, Invoker<T>> oldUrlInvokerMap, List<URL> urls) {
+    private Map<URL, Invoker<T>> toInvokers(Map<URL, Invoker<T>> oldUrlInvokerMap, List<URL> urls, List<Invoker<T>> createdInvokers) {
         Map<URL, Invoker<T>> newUrlInvokerMap = new ConcurrentHashMap<>(urls == null ? 1 : (int) (urls.size() / 0.75f + 1));
         if (urls == null || urls.isEmpty()) {
             return newUrlInvokerMap;
@@ -428,6 +437,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                     }
                     if (enabled) {
                         invoker = protocol.refer(serviceType, url);
+                        createdInvokers.add(invoker);
                     }
                 } catch (Throwable t) {
 

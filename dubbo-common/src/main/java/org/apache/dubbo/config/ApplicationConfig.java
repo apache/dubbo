@@ -67,6 +67,7 @@ import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT_COMPATIBLE;
 import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER_MODE_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.VALID_INSTANCE_THRESHOLD_KEY;
 import static org.apache.dubbo.config.Constants.DEVELOPMENT_ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.PRODUCTION_ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.TEST_ENVIRONMENT;
@@ -241,6 +242,8 @@ public class ApplicationConfig extends AbstractConfig {
     private String registerMode;
 
     private Boolean enableEmptyProtection;
+
+    private String validInstanceThreshold;
 
     private String serializeCheckStatus;
 
@@ -639,6 +642,15 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setEnableEmptyProtection(Boolean enableEmptyProtection) {
         this.enableEmptyProtection = enableEmptyProtection;
+    }
+
+    @Parameter(key = VALID_INSTANCE_THRESHOLD_KEY)
+    public String getValidInstanceThreshold() {
+        return validInstanceThreshold;
+    }
+
+    public void setValidInstanceThreshold(String validInstanceThreshold) {
+        this.validInstanceThreshold = validInstanceThreshold;
     }
 
     @Parameter(excluded = true, key = APPLICATION_PROTOCOL_KEY)

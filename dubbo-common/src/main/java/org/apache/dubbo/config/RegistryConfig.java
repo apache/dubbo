@@ -29,6 +29,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KE
 import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER_MODE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.VALID_INSTANCE_THRESHOLD_KEY;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.PojoUtils.updatePropertyIfAbsent;
 
@@ -183,6 +184,8 @@ public class RegistryConfig extends AbstractConfig {
     private String registerMode;
 
     private Boolean enableEmptyProtection;
+
+    private String validInstanceThreshold;
 
     private String secure;
 
@@ -545,6 +548,15 @@ public class RegistryConfig extends AbstractConfig {
 
     public void setEnableEmptyProtection(Boolean enableEmptyProtection) {
         this.enableEmptyProtection = enableEmptyProtection;
+    }
+
+    @Parameter(key = VALID_INSTANCE_THRESHOLD_KEY)
+    public String getValidInstanceThreshold() {
+        return validInstanceThreshold;
+    }
+
+    public void setValidInstanceThreshold(String validInstanceThreshold) {
+        this.validInstanceThreshold = validInstanceThreshold;
     }
 
     @Override
