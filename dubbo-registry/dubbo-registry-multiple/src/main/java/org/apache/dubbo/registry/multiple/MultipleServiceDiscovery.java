@@ -16,15 +16,6 @@
  */
 package org.apache.dubbo.registry.multiple;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.function.Function;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
@@ -35,6 +26,16 @@ import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
 
 public class MultipleServiceDiscovery implements ServiceDiscovery {
     public static final String REGISTRY_PREFIX_KEY = "child.";
@@ -141,7 +142,15 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public MetadataInfo getLocalMetadata(String revision) {
-        throw new UnsupportedOperationException("Multiple registry implementation does not support getLocalMetadata() method.");
+        MetadataInfo metadataInfo = MetadataInfo.EMPTY;
+        for (ServiceDiscovery serviceDiscovery : serviceDiscoveries.values()) {
+            MetadataInfo remoteMetadata = serviceDiscovery.getLocalMetadata(revision);
+            if (!Objects.equals(MetadataInfo.EMPTY, remoteMetadata)) {
+                metadataInfo = remoteMetadata;
+                break;
+            }
+        }
+        return metadataInfo;
     }
 
     @Override
@@ -151,7 +160,15 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public MetadataInfo getRemoteMetadata(String revision, List<ServiceInstance> instances) {
-        throw new UnsupportedOperationException("Multiple registry implementation does not support getMetadata() method.");
+        MetadataInfo metadataInfo = MetadataInfo.EMPTY;
+        for (ServiceDiscovery serviceDiscovery : serviceDiscoveries.values()) {
+            MetadataInfo remoteMetadata = serviceDiscovery.getRemoteMetadata(revision, instances);
+            if (!Objects.equals(MetadataInfo.EMPTY, remoteMetadata)) {
+                metadataInfo = remoteMetadata;
+                break;
+            }
+        }
+        return metadataInfo;
     }
 
     @Override
