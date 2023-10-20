@@ -79,8 +79,8 @@ public class DubboAnnotationUtils {
         // 1. get from DubboService.interfaceName()
         String interfaceClassName = AnnotationUtils.getAttribute(attributes, "interfaceName");
         if (StringUtils.hasText(interfaceClassName)) {
-            if (GenericService.class.getName().equals(interfaceClassName) ||
-                com.alibaba.dubbo.rpc.service.GenericService.class.getName().equals(interfaceClassName)) {
+            if ("org.apache.dubbo.rpc.service.GenericService".equals(interfaceClassName) ||
+                "com.alibaba.dubbo.rpc.service.GenericService".equals(interfaceClassName)) {
                 throw new IllegalStateException("@Service interfaceName() cannot be GenericService: " + interfaceClassName);
             }
             return interfaceClassName;

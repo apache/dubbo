@@ -94,8 +94,8 @@ class AnnotationUtilsTest extends AbstractAnnotationProcessingTest {
         List<AnnotationMirror> annotations = getAnnotations(testType);
         Iterator<AnnotationMirror> iterator = annotations.iterator();
 
-        assertEquals(2, annotations.size());
-        assertEquals("com.alibaba.dubbo.config.annotation.Service", iterator.next().getAnnotationType().toString());
+        assertEquals(1, annotations.size());
+//        assertEquals("com.alibaba.dubbo.config.annotation.Service", iterator.next().getAnnotationType().toString());
         assertEquals("org.apache.dubbo.config.annotation.Service", iterator.next().getAnnotationType().toString());
 
         annotations = getAnnotations(testType, Service.class);
@@ -116,8 +116,8 @@ class AnnotationUtilsTest extends AbstractAnnotationProcessingTest {
         annotations = getAnnotations(testType, Override.class);
         assertEquals(0, annotations.size());
 
-        annotations = getAnnotations(testType, com.alibaba.dubbo.config.annotation.Service.class);
-        assertEquals(1, annotations.size());
+//        annotations = getAnnotations(testType, com.alibaba.dubbo.config.annotation.Service.class);
+//        assertEquals(1, annotations.size());
 
         assertTrue(getAnnotations(null, (Class) null).isEmpty());
         assertTrue(getAnnotations(null, (String) null).isEmpty());
@@ -132,22 +132,22 @@ class AnnotationUtilsTest extends AbstractAnnotationProcessingTest {
     void testGetAllAnnotations() {
 
         List<AnnotationMirror> annotations = getAllAnnotations(testType);
-        assertEquals(5, annotations.size());
+        assertEquals(4, annotations.size());
 
         annotations = getAllAnnotations(testType.asType(), annotation -> true);
-        assertEquals(5, annotations.size());
+        assertEquals(4, annotations.size());
 
         annotations = getAllAnnotations(processingEnv, TestServiceImpl.class);
-        assertEquals(5, annotations.size());
+        assertEquals(4, annotations.size());
 
         annotations = getAllAnnotations(testType.asType(), Service.class);
-        assertEquals(2, annotations.size());
+        assertEquals(3, annotations.size());
 
         annotations = getAllAnnotations(testType, Override.class);
         assertEquals(0, annotations.size());
 
-        annotations = getAllAnnotations(testType.asType(), com.alibaba.dubbo.config.annotation.Service.class);
-        assertEquals(2, annotations.size());
+//        annotations = getAllAnnotations(testType.asType(), com.alibaba.dubbo.config.annotation.Service.class);
+//        assertEquals(2, annotations.size());
 
         assertTrue(getAllAnnotations((Element) null, (Class) null).isEmpty());
         assertTrue(getAllAnnotations((TypeMirror) null, (String) null).isEmpty());
@@ -175,7 +175,7 @@ class AnnotationUtilsTest extends AbstractAnnotationProcessingTest {
     void testFindAnnotation() {
 
         assertEquals("org.apache.dubbo.config.annotation.Service", findAnnotation(testType, Service.class).getAnnotationType().toString());
-        assertEquals("com.alibaba.dubbo.config.annotation.Service", findAnnotation(testType, com.alibaba.dubbo.config.annotation.Service.class).getAnnotationType().toString());
+//        assertEquals("com.alibaba.dubbo.config.annotation.Service", findAnnotation(testType, com.alibaba.dubbo.config.annotation.Service.class).getAnnotationType().toString());
         assertEquals("javax.ws.rs.Path", findAnnotation(testType, Path.class).getAnnotationType().toString());
         assertEquals("javax.ws.rs.Path", findAnnotation(testType.asType(), Path.class).getAnnotationType().toString());
         assertEquals("javax.ws.rs.Path", findAnnotation(testType.asType(), Path.class.getTypeName()).getAnnotationType().toString());
@@ -225,7 +225,7 @@ class AnnotationUtilsTest extends AbstractAnnotationProcessingTest {
     @Test
     void testIsAnnotationPresent() {
         assertTrue(isAnnotationPresent(testType, "org.apache.dubbo.config.annotation.Service"));
-        assertTrue(isAnnotationPresent(testType, "com.alibaba.dubbo.config.annotation.Service"));
+//        assertTrue(isAnnotationPresent(testType, "com.alibaba.dubbo.config.annotation.Service"));
         assertTrue(isAnnotationPresent(testType, "javax.ws.rs.Path"));
     }
 }
