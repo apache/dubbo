@@ -923,11 +923,10 @@ class AbstractConfigTest {
     @Test
     void testRefreshNestedBySystemProperties() {
         try {
-            Properties p = new Properties();
+            Properties p = System.getProperties();
             p.put("dubbo.outer.a1", "1");
             p.put("dubbo.outer.b.b1", "11");
             p.put("dubbo.outer.b.b2", "12");
-            System.setProperties(p);
 
             ApplicationModel.defaultModel().modelEnvironment().initialize();
 
