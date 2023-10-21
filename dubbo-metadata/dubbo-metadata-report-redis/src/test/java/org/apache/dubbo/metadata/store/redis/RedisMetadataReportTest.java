@@ -17,35 +17,35 @@
 package org.apache.dubbo.metadata.store.redis;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.metadata.MappingChangedEvent;
+import org.apache.dubbo.metadata.MappingListener;
+import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.rpc.RpcException;
 
 import org.apache.commons.lang3.SystemUtils;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.*;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.embedded.RedisServer;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.SYNC_REPORT_KEY;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
+import static org.apache.dubbo.metadata.ServiceNameMapping.DEFAULT_MAPPING_GROUP;
+
 import static redis.embedded.RedisServer.newRedisServer;
 
 class RedisMetadataReportTest {
@@ -238,8 +238,57 @@ class RedisMetadataReportTest {
     }
 
     @Test
-    void testRegisterServiceAppMapping()  {
-        assertThrows(UnsupportedOperationException.class, () ->redisMetadataReport.registerServiceAppMapping(any(), any(), any(), any()));
+    void testRegisterServiceAppMapping() throws InterruptedException {
+        String serviceKey = "org.apache.dubbo.metadata.store.redis.RedisMetadata4TstService";
+        String appNames = "test1,test2";
+
+        CountDownLatch latch = new CountDownLatch(1);
+        MappingListener mappingListener=new MappingListener() {
+            @Override
+            public void onEvent(MappingChangedEvent event) {
+                Set<String> apps = event.getApps();
+                Assertions.assertEquals(apps.size(), 2);
+                Assertions.assertTrue(apps.contains("test1"));
+                Assertions.assertTrue(apps.contains("test2"));
+                latch.countDown();
+            }
+
+            @Override
+            public void stop() {
+
+            }
+        };
+        Set<String> serviceAppMapping = redisMetadataReport.getServiceAppMapping( serviceKey, mappingListener, registryUrl);
+        Assertions.assertTrue(serviceAppMapping.isEmpty());
+
+        ConfigItem configItem = redisMetadataReport.getConfigItem(serviceKey, DEFAULT_MAPPING_GROUP);
+        redisMetadataReport.registerServiceAppMapping(serviceKey, DEFAULT_MAPPING_GROUP, appNames, configItem.getTicket());
+        latch.await();
+        redisMetadataReport.removeServiceAppMappingListener(serviceKey,mappingListener);
+        Assertions.assertTrue(redisMetadataReport.listenerMap.isEmpty());
+    }
+
+
+    @Test
+    void testAppMetadata() {
+        String serviceKey = "org.apache.dubbo.metadata.store.redis.RedisMetadata4TstService";
+        String appName = "demo";
+        URL url = URL.valueOf("test://127.0.0.1:8888/" + serviceKey);
+
+        MetadataInfo metadataInfo = new MetadataInfo(appName);
+        metadataInfo.addService(url);
+        SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(appName, metadataInfo.calAndGetRevision());
+        MetadataInfo appMetadata = redisMetadataReport.getAppMetadata(identifier, Collections.emptyMap());
+        Assertions.assertNull(appMetadata);
+
+        redisMetadataReport.publishAppMetadata(identifier, metadataInfo);
+        appMetadata = redisMetadataReport.getAppMetadata(identifier, Collections.emptyMap());
+        Assertions.assertNotNull(appMetadata);
+        Assertions.assertEquals(appMetadata.toFullString(), metadataInfo.toFullString());
+        redisMetadataReport.unPublishAppMetadata(identifier, metadataInfo);
+        appMetadata = redisMetadataReport.getAppMetadata(identifier, Collections.emptyMap());
+        Assertions.assertNull(appMetadata);
+
     }
 
 }
