@@ -19,7 +19,6 @@ package org.apache.dubbo.registry.nacos.aot;
 import org.apache.dubbo.aot.api.MemberCategory;
 import org.apache.dubbo.aot.api.ReflectionTypeDescriberRegistrar;
 import org.apache.dubbo.aot.api.TypeDescriber;
-import com.alibaba.nacos.api.PropertyKeyConst;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
