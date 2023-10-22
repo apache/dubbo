@@ -54,7 +54,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 
-import static org.apache.dubbo.common.constants.CommonConstants.*;
+import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ZOOKEEPER_EXCEPTION;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_RESPONSE;
 import static org.apache.dubbo.metadata.MetadataConstants.META_DATA_STORE_TAG;
@@ -473,8 +476,9 @@ public class RedisMetadataReport extends AbstractMetadataReport {
             try {
                 running = false;
                 notifySub.unsubscribe(path);
-            } catch (Throwable t) {
-                logger.warn(t.getMessage(), t);
+            } catch (Throwable e) {
+                String msg = "Failed to unsubscribe " + path + ", cause: " + e.getMessage();
+                logger.error(TRANSPORT_FAILED_RESPONSE, "", "", msg, e);
             }
         }
     }
