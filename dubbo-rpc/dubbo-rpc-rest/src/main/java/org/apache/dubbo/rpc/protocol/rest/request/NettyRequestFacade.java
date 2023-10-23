@@ -77,6 +77,10 @@ public class NettyRequestFacade extends RequestFacade<FullHttpRequest> {
 
         List<String> values = headers.get(name);
 
+        if (values == null && name != null){
+            values = headers.get(name.toLowerCase());
+        }
+
         if (values == null || values.isEmpty()) {
             return null;
         } else {
