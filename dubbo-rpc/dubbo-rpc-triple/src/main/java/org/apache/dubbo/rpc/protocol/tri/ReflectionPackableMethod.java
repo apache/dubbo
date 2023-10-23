@@ -21,16 +21,17 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.common.utils.ProtobufUtils;
 import org.apache.dubbo.config.Constants;
-import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.remoting.transport.CodecSupport;
+import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.Pack;
 import org.apache.dubbo.rpc.model.PackableMethod;
-
-import com.google.protobuf.Message;
 import org.apache.dubbo.rpc.model.UnPack;
 import org.apache.dubbo.rpc.model.WrapperUnPack;
+
+import com.google.protobuf.Message;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -41,8 +42,6 @@ import java.util.Iterator;
 import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$ECHO;
-import static org.apache.dubbo.common.constants.CommonConstants.PROTOBUF_MESSAGE_CLASS_NAME;
-import static org.apache.dubbo.rpc.protocol.tri.TripleProtocol.METHOD_ATTR_PACK;
 
 public class ReflectionPackableMethod implements PackableMethod {
 
@@ -118,16 +117,10 @@ public class ReflectionPackableMethod implements PackableMethod {
     }
 
     public static ReflectionPackableMethod init(MethodDescriptor methodDescriptor, URL url) {
-        Object stored = methodDescriptor.getAttribute(METHOD_ATTR_PACK);
-        if (stored != null) {
-            return (ReflectionPackableMethod) stored;
-        }
-        final String serializeName = UrlUtils.serializationOrDefault(url);
-        final Collection<String> allSerialize = UrlUtils.allSerializations(url);
-        ReflectionPackableMethod reflectionPackableMethod = new ReflectionPackableMethod(
+        String serializeName = UrlUtils.serializationOrDefault(url);
+        Collection<String> allSerialize = UrlUtils.allSerializations(url);
+        return new ReflectionPackableMethod(
             methodDescriptor, url, serializeName, allSerialize);
-        methodDescriptor.addAttribute(METHOD_ATTR_PACK, reflectionPackableMethod);
-        return reflectionPackableMethod;
     }
 
     static boolean isStreamType(Class<?> type) {
@@ -152,7 +145,7 @@ public class ReflectionPackableMethod implements PackableMethod {
         if ($ECHO.equals(methodName)) {
             return true;
         }
-        boolean returnClassProtobuf = isProtobufClass(returnClass);
+        boolean returnClassProtobuf = ProtobufUtils.isProtobufClass(returnClass);
         // Response foo()
         if (parameterClasses.length == 0) {
             return !returnClassProtobuf;
@@ -164,7 +157,7 @@ public class ReflectionPackableMethod implements PackableMethod {
         // count normal and protobuf param
         for (int i = 0; i < parameterClasses.length; i++) {
             Class<?> parameterClass = parameterClasses[i];
-            if (isProtobufClass(parameterClass)) {
+            if (ProtobufUtils.isProtobufClass(parameterClass)) {
                 protobufParameterCount++;
             } else {
                 if (isStreamType(parameterClass)) {
@@ -246,7 +239,7 @@ public class ReflectionPackableMethod implements PackableMethod {
             if (TRI_ASYNC_RETURN_CLASS.equalsIgnoreCase(returnClass.getName())) {
                 Class<?> actualReturnClass = (Class<?>) ((ParameterizedType) methodDescriptor.getMethod()
                     .getGenericReturnType()).getActualTypeArguments()[0];
-                boolean actualReturnClassProtobuf = isProtobufClass(actualReturnClass);
+                boolean actualReturnClassProtobuf = ProtobufUtils.isProtobufClass(actualReturnClass);
                 if (actualReturnClassProtobuf && protobufParameterCount == 1) {
                     return false;
                 }
@@ -278,21 +271,6 @@ public class ReflectionPackableMethod implements PackableMethod {
 
     static boolean isRx(Class<?> clz) {
         return RX_RETURN_CLASS.equalsIgnoreCase(clz.getName());
-    }
-
-    static boolean isProtobufClass(Class<?> clazz) {
-        while (clazz != Object.class && clazz != null) {
-            Class<?>[] interfaces = clazz.getInterfaces();
-            if (interfaces.length > 0) {
-                for (Class<?> clazzInterface : interfaces) {
-                    if (PROTOBUF_MESSAGE_CLASS_NAME.equalsIgnoreCase(clazzInterface.getName())) {
-                        return true;
-                    }
-                }
-            }
-            clazz = clazz.getSuperclass();
-        }
-        return false;
     }
 
     private static String convertHessianFromWrapper(String serializeType) {

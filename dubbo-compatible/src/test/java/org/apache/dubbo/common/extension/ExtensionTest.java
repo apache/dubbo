@@ -17,9 +17,18 @@
 
 package org.apache.dubbo.common.extension;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.activate.ActivateExt1;
+import org.apache.dubbo.common.extension.activate.impl.OldActivateExt1Impl2;
+import org.apache.dubbo.common.extension.activate.impl.OldActivateExt1Impl3;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.junit.jupiter.api.Assertions.fail;
 
 class ExtensionTest {
@@ -40,5 +49,22 @@ class ExtensionTest {
         } catch (IllegalArgumentException expected) {
             fail();
         }
+    }
+
+    private <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
+        return ApplicationModel.defaultModel().getExtensionDirector().getExtensionLoader(type);
+    }
+
+    @Test
+    void testLoadActivateExtension() {
+        // test default
+        URL url = URL.valueOf("test://localhost/test")
+            .addParameter(GROUP_KEY, "old_group");
+        List<ActivateExt1> list = getExtensionLoader(ActivateExt1.class)
+            .getActivateExtension(url, new String[]{}, "old_group");
+        Assertions.assertEquals(2, list.size());
+        Assertions.assertTrue(list.get(0).getClass() == OldActivateExt1Impl2.class
+            || list.get(0).getClass() == OldActivateExt1Impl3.class);
+
     }
 }

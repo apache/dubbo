@@ -34,7 +34,6 @@ import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeterImpl;
 import org.apache.dubbo.rpc.protocol.tri.support.MockStreamObserver;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -85,7 +84,10 @@ class TripleProtocolTest {
 
         // 1. test unaryStream
         String REQUEST_MSG = "hello world";
+        Integer REQUEST_INT = 1024;
+        greeterProxy.echo();
         Assertions.assertEquals(REQUEST_MSG, greeterProxy.echo(REQUEST_MSG));
+        Assertions.assertEquals(REQUEST_INT, greeterProxy.echo(REQUEST_INT));
         Assertions.assertEquals(REQUEST_MSG, serviceImpl.echoAsync(REQUEST_MSG).get());
 
         // 2. test serverStream
@@ -117,4 +119,6 @@ class TripleProtocolTest {
         serviceRepository.destroy();
         System.out.println("serviceRepository destroyed");
     }
+
+
 }

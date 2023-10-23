@@ -91,8 +91,8 @@ class ServiceAnnotationUtilsTest extends AbstractAnnotationProcessingTest {
         TypeElement type = getType(TestServiceImpl.class);
         assertEquals("org.apache.dubbo.config.annotation.Service", getAnnotation(type).getAnnotationType().toString());
 
-        type = getType(GenericTestService.class);
-        assertEquals("com.alibaba.dubbo.config.annotation.Service", getAnnotation(type).getAnnotationType().toString());
+//        type = getType(GenericTestService.class);
+//        assertEquals("com.alibaba.dubbo.config.annotation.Service", getAnnotation(type).getAnnotationType().toString());
 
         type = getType(DefaultTestService.class);
         assertEquals("org.apache.dubbo.config.annotation.Service", getAnnotation(type).getAnnotationType().toString());

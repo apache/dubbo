@@ -19,6 +19,8 @@ package org.apache.dubbo.common.extension;
 import org.apache.dubbo.common.Extension;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.beans.support.InstantiationStrategy;
+import org.apache.dubbo.common.compact.Dubbo2ActivateUtils;
+import org.apache.dubbo.common.compact.Dubbo2CompactUtils;
 import org.apache.dubbo.common.context.Lifecycle;
 import org.apache.dubbo.common.extension.support.ActivateComparator;
 import org.apache.dubbo.common.extension.support.WrapperComparator;
@@ -47,6 +49,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.annotation.Annotation;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -366,9 +369,10 @@ public class ExtensionLoader<T> {
                             if (activate instanceof Activate) {
                                 activateGroup = ((Activate) activate).group();
                                 activateValue = ((Activate) activate).value();
-                            } else if (activate instanceof com.alibaba.dubbo.common.extension.Activate) {
-                                activateGroup = ((com.alibaba.dubbo.common.extension.Activate) activate).group();
-                                activateValue = ((com.alibaba.dubbo.common.extension.Activate) activate).value();
+                            } else if (Dubbo2CompactUtils.isEnabled() && Dubbo2ActivateUtils.isActivateLoaded()
+                             && Dubbo2ActivateUtils.getActivateClass().isAssignableFrom(activate.getClass())) {
+                                activateGroup = Dubbo2ActivateUtils.getGroup((Annotation) activate);
+                                activateValue = Dubbo2ActivateUtils.getValue((Annotation) activate);
                             } else {
                                 continue;
                             }
@@ -1004,16 +1008,18 @@ public class ExtensionLoader<T> {
     private void loadDirectory(Map<String, Class<?>> extensionClasses, LoadingStrategy strategy,
                                String type) throws InterruptedException {
         loadDirectoryInternal(extensionClasses, strategy, type);
-        try {
-            String oldType = type.replace("org.apache", "com.alibaba");
-            if (oldType.equals(type)) {
-                return;
-            }
-            //if class not found,skip try to load resources
-            ClassUtils.forName(oldType);
-            loadDirectoryInternal(extensionClasses, strategy, oldType);
-        } catch (ClassNotFoundException classNotFoundException) {
+        if (Dubbo2CompactUtils.isEnabled()) {
+            try {
+                String oldType = type.replace("org.apache", "com.alibaba");
+                if (oldType.equals(type)) {
+                    return;
+                }
+                //if class not found,skip try to load resources
+                ClassUtils.forName(oldType);
+                loadDirectoryInternal(extensionClasses, strategy, oldType);
+            } catch (ClassNotFoundException classNotFoundException) {
 
+            }
         }
     }
 
@@ -1273,8 +1279,9 @@ public class ExtensionLoader<T> {
 
         if (activate instanceof Activate) {
             onClass = ((Activate) activate).onClass();
-        } else if (activate instanceof com.alibaba.dubbo.common.extension.Activate) {
-            onClass = ((com.alibaba.dubbo.common.extension.Activate) activate).onClass();
+        } else if (Dubbo2CompactUtils.isEnabled() && Dubbo2ActivateUtils.isActivateLoaded()
+            && Dubbo2ActivateUtils.getActivateClass().isAssignableFrom(activate.getClass())) {
+            onClass = Dubbo2ActivateUtils.getOnClass(activate);
         }
 
         boolean isActive = true;
@@ -1322,10 +1329,10 @@ public class ExtensionLoader<T> {
         Activate activate = clazz.getAnnotation(Activate.class);
         if (activate != null) {
             cachedActivates.put(name, activate);
-        } else {
+        } else if (Dubbo2CompactUtils.isEnabled() && Dubbo2ActivateUtils.isActivateLoaded()){
             // support com.alibaba.dubbo.common.extension.Activate
-            com.alibaba.dubbo.common.extension.Activate oldActivate = clazz.getAnnotation(
-                com.alibaba.dubbo.common.extension.Activate.class);
+            Annotation oldActivate = clazz.getAnnotation(
+                Dubbo2ActivateUtils.getActivateClass());
             if (oldActivate != null) {
                 cachedActivates.put(name, oldActivate);
             }
