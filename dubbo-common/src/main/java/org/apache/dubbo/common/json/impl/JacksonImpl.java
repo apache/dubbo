@@ -18,6 +18,7 @@ package org.apache.dubbo.common.json.impl;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
@@ -64,6 +65,7 @@ public class JacksonImpl extends AbstractJSONImpl {
                 if (jacksonCache == null || !(jacksonCache instanceof JsonMapper)) {
                     jacksonCache = JsonMapper.builder()
                         .configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true)
+                        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                         .serializationInclusion(Include.NON_NULL)
                         .addModule(new JavaTimeModule())
                         .build();
