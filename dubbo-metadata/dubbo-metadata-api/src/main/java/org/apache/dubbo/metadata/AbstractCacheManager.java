@@ -51,7 +51,9 @@ public abstract class AbstractCacheManager<V> implements Disposable {
         try {
             cacheStore = FileCacheStoreFactory.getInstance(filePath, fileName, enableFileCache);
             Map<String, String> properties = cacheStore.loadCache(entrySize);
-            logger.info("Successfully loaded " + getName() + " cache from file " + fileName + ", entries " + properties.size());
+            if (logger.isDebugEnabled()) {
+                logger.debug("Successfully loaded " + getName() + " cache from file " + fileName + ", entries " + properties.size());
+            }
             for (Map.Entry<String, String> entry : properties.entrySet()) {
                 String key = entry.getKey();
                 String value = entry.getValue();
@@ -159,7 +161,9 @@ public abstract class AbstractCacheManager<V> implements Disposable {
                 cache.releaseLock();
             }
 
-            logger.info("Dumping " + cacheManager.getName() + " caches, latest entries " + properties.size());
+            if (logger.isDebugEnabled()) {
+                logger.debug("Dumping " + cacheManager.getName() + " caches, latest entries " + properties.size());
+            }
             cacheStore.refreshCache(properties, DEFAULT_COMMENT, maxFileSize);
         }
     }
