@@ -61,70 +61,6 @@ class AbstractConfigTest {
         SysProps.clear();
     }
 
-    //FIXME
-    /*@Test
-    public void testAppendProperties1() throws Exception {
-        try {
-            System.setProperty("dubbo.properties.i", "1");
-            System.setProperty("dubbo.properties.c", "c");
-            System.setProperty("dubbo.properties.b", "2");
-            System.setProperty("dubbo.properties.d", "3");
-            System.setProperty("dubbo.properties.f", "4");
-            System.setProperty("dubbo.properties.l", "5");
-            System.setProperty("dubbo.properties.s", "6");
-            System.setProperty("dubbo.properties.str", "dubbo");
-            System.setProperty("dubbo.properties.bool", "true");
-            PropertiesConfig config = new PropertiesConfig();
-            AbstractConfig.appendProperties(config);
-            Assertions.assertEquals(1, config.getI());
-            Assertions.assertEquals('c', config.getC());
-            Assertions.assertEquals((byte) 0x02, config.getB());
-            Assertions.assertEquals(3d, config.getD());
-            Assertions.assertEquals(4f, config.getF());
-            Assertions.assertEquals(5L, config.getL());
-            Assertions.assertEquals(6, config.getS());
-            Assertions.assertEquals("dubbo", config.getStr());
-            Assertions.assertTrue(config.isBool());
-        } finally {
-            System.clearProperty("dubbo.properties.i");
-            System.clearProperty("dubbo.properties.c");
-            System.clearProperty("dubbo.properties.b");
-            System.clearProperty("dubbo.properties.d");
-            System.clearProperty("dubbo.properties.f");
-            System.clearProperty("dubbo.properties.l");
-            System.clearProperty("dubbo.properties.s");
-            System.clearProperty("dubbo.properties.str");
-            System.clearProperty("dubbo.properties.bool");
-        }
-    }
-
-    @Test
-    void testAppendProperties2() throws Exception {
-        try {
-            System.setProperty("dubbo.properties.two.i", "2");
-            PropertiesConfig config = new PropertiesConfig("two");
-            AbstractConfig.appendProperties(config);
-            Assertions.assertEquals(2, config.getI());
-        } finally {
-            System.clearProperty("dubbo.properties.two.i");
-        }
-    }
-
-    @Test
-    void testAppendProperties3() throws Exception {
-        try {
-            Properties p = new Properties();
-            p.put("dubbo.properties.str", "dubbo");
-            ConfigUtils.setProperties(p);
-            PropertiesConfig config = new PropertiesConfig();
-            AbstractConfig.appendProperties(config);
-            Assertions.assertEquals("dubbo", config.getStr());
-        } finally {
-            System.clearProperty(Constants.DUBBO_PROPERTIES_KEY);
-            ConfigUtils.setProperties(null);
-        }
-    }*/
-
     @Test
     void testValidateProtocolConfig() {
         ProtocolConfig protocolConfig = new ProtocolConfig();
@@ -798,97 +734,6 @@ class AbstractConfigTest {
         }
     }
 
-    private static class PropertiesConfig extends AbstractConfig {
-        private char c;
-        private boolean bool;
-        private byte b;
-        private int i;
-        private long l;
-        private float f;
-        private double d;
-        private short s;
-        private String str;
-
-        PropertiesConfig() {
-        }
-
-        PropertiesConfig(String id) {
-            this.setId(id);
-        }
-
-        public char getC() {
-            return c;
-        }
-
-        public void setC(char c) {
-            this.c = c;
-        }
-
-        public boolean isBool() {
-            return bool;
-        }
-
-        public void setBool(boolean bool) {
-            this.bool = bool;
-        }
-
-        public byte getB() {
-            return b;
-        }
-
-        public void setB(byte b) {
-            this.b = b;
-        }
-
-        public int getI() {
-            return i;
-        }
-
-        public void setI(int i) {
-            this.i = i;
-        }
-
-        public long getL() {
-            return l;
-        }
-
-        public void setL(long l) {
-            this.l = l;
-        }
-
-        public float getF() {
-            return f;
-        }
-
-        public void setF(float f) {
-            this.f = f;
-        }
-
-        public double getD() {
-            return d;
-        }
-
-        public void setD(double d) {
-            this.d = d;
-        }
-
-        public String getStr() {
-            return str;
-        }
-
-        public void setStr(String str) {
-            this.str = str;
-        }
-
-        public short getS() {
-            return s;
-        }
-
-        public void setS(short s) {
-            this.s = s;
-        }
-    }
-
     private static class ParameterConfig {
         private int number;
         private String name;
@@ -1052,11 +897,65 @@ class AbstractConfigTest {
         }
     }
 
+    @Test
+    void testRefreshNestedWithId() {
+        try {
+            System.setProperty("dubbo.outers.test.a1", "1");
+            System.setProperty("dubbo.outers.test.b.b1", "11");
+            System.setProperty("dubbo.outers.test.b.b2", "12");
+
+            ApplicationModel.defaultModel().modelEnvironment().initialize();
+
+            OuterConfig outerConfig = new OuterConfig("test");
+            outerConfig.refresh();
+
+            Assertions.assertEquals(1, outerConfig.getA1());
+            Assertions.assertEquals(11, outerConfig.getB().getB1());
+            Assertions.assertEquals(12, outerConfig.getB().getB2());
+        } finally {
+            ApplicationModel.defaultModel().modelEnvironment().destroy();
+            System.clearProperty("dubbo.outers.test.a1");
+            System.clearProperty("dubbo.outers.test.b.b1");
+            System.clearProperty("dubbo.outers.test.b.b2");
+        }
+    }
+
+    @Test
+    void testRefreshNestedBySystemProperties() {
+        try {
+            Properties p = System.getProperties();
+            p.put("dubbo.outer.a1", "1");
+            p.put("dubbo.outer.b.b1", "11");
+            p.put("dubbo.outer.b.b2", "12");
+
+            ApplicationModel.defaultModel().modelEnvironment().initialize();
+
+            OuterConfig outerConfig = new OuterConfig();
+            outerConfig.refresh();
+
+            Assertions.assertEquals(1, outerConfig.getA1());
+            Assertions.assertEquals(11, outerConfig.getB().getB1());
+            Assertions.assertEquals(12, outerConfig.getB().getB2());
+        } finally {
+            ApplicationModel.defaultModel().modelEnvironment().destroy();
+            System.clearProperty("dubbo.outer.a1");
+            System.clearProperty("dubbo.outer.b.b1");
+            System.clearProperty("dubbo.outer.b.b2");
+        }
+    }
+
     private static class OuterConfig extends AbstractConfig {
         private Integer a1;
 
         @Nested
         private InnerConfig b;
+
+        OuterConfig() {
+        }
+
+        OuterConfig(String id) {
+            this.setId(id);
+        }
 
         public Integer getA1() {
             return a1;
