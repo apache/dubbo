@@ -22,7 +22,6 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
-import org.apache.dubbo.common.utils.MD5Utils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MappingChangedEvent;
 import org.apache.dubbo.metadata.MappingListener;
@@ -78,7 +77,6 @@ public class RedisMetadataReport extends AbstractMetadataReport {
     private int timeout;
     private String password;
     private final String root;
-    private MD5Utils md5Utils = new MD5Utils();
     protected ConcurrentMap<String, MappingDataListener> listenerMap = new ConcurrentHashMap<>();
     private String luaScript="local key = KEYS[1];\n" +
         "local field = ARGV[1];\n" +
@@ -432,8 +430,6 @@ public class RedisMetadataReport extends AbstractMetadataReport {
 
         private String path;
 
-        private volatile Jedis currentClient;
-
         private NotifySub notifySub;
 
         private volatile boolean running = true;
@@ -453,7 +449,6 @@ public class RedisMetadataReport extends AbstractMetadataReport {
             while (running) {
                 if (pool != null) {
                     try (Jedis jedis = pool.getResource()) {
-                        currentClient=jedis;
                         jedis.subscribe(notifySub, path);
                     }catch (Throwable e) {
                         String msg = "Failed to subscribe " + path + ", cause: " + e.getMessage();
