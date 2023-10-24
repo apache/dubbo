@@ -125,7 +125,9 @@ public class DubboContainerResponseContextImpl implements SuspendableContainerRe
     @Override
     public void setEntity(Object entity) {
         if (entity != null && jaxrsResponse.getEntity() != null) {
-            logger.debug("Dubbo container response context filter set entity ,before entity is: " + jaxrsResponse.getEntity() + "and after entity is: " + entity);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Dubbo container response context filter set entity ,before entity is: " + jaxrsResponse.getEntity() + "and after entity is: " + entity);
+            }
 
         }
         jaxrsResponse.setEntity(entity);
@@ -138,7 +140,9 @@ public class DubboContainerResponseContextImpl implements SuspendableContainerRe
     @Override
     public void setEntity(Object entity, Annotation[] annotations, MediaType mediaType) {
         if (entity != null && jaxrsResponse.getEntity() != null) {
-            logger.debug("Dubbo container response context filter set entity ,before entity is: " + jaxrsResponse.getEntity() + "and after entity is: " + entity);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Dubbo container response context filter set entity ,before entity is: " + jaxrsResponse.getEntity() + "and after entity is: " + entity);
+            }
         }
         jaxrsResponse.setEntity(entity);
         jaxrsResponse.setAnnotations(annotations);
