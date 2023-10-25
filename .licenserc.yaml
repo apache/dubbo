@@ -105,7 +105,7 @@ header:
     - 'dubbo-common/src/main/java/org/apache/dubbo/common/logger/helpers/FormattingTuple.java'
     - 'dubbo-common/src/main/java/org/apache/dubbo/common/logger/helpers/MessageFormatter.java'
     - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/protoc/DubboProtocCompilerMojo.java'
-    - 'dubbo-compiler/src/main/java/org/apache/dubbo/gen/utils/ProtoTypeMap.java'
+    - 'dubbo-plugin/dubbo-compiler/src/main/java/org/apache/dubbo/gen/utils/ProtoTypeMap.java'
 
   comment: on-failure
 

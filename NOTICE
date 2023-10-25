@@ -25,7 +25,7 @@ Maven Protocol Buffers Plugin
 Copyright (c) 2016 Maven Protocol Buffers Plugin Authors. All rights reserved.
 
 This product contains the following code copied from grpc-java-contrib:
-dubbo-compiler/src/main/java/org/apache/dubbo/gen/utils/ProtoTypeMap.java
+dubbo-plugin/dubbo-compiler/src/main/java/org/apache/dubbo/gen/utils/ProtoTypeMap.java
 Some portions of this file Copyright (c) 2019, Salesforce.com, Inc. and licensed under the BSD 3-Clause License
 
 grpc-java-contrib
