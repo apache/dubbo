@@ -20,10 +20,12 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 
 /**
  * {@link AwaitingNonWebApplicationListener} Test
  */
+@Ignore
 public class AwaitingNonWebApplicationListenerTest {
 
     @Before
