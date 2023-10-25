@@ -243,7 +243,6 @@
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-plugin-router-tag</artifactId>
             <version>${project.parent.version}</version>
-            <scope>test</scope>
         </dependency>
 
         <dependency>
