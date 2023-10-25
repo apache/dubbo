@@ -41,6 +41,8 @@ import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisPubSub;
+import redis.clients.jedis. Transaction;
+import redis.clients.jedis.util.JedisClusterCRC16;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,25 +80,6 @@ public class RedisMetadataReport extends AbstractMetadataReport {
     private String password;
     private final String root;
     protected ConcurrentMap<String, MappingDataListener> listenerMap = new ConcurrentHashMap<>();
-    private String luaScript="local key = KEYS[1];\n" +
-        "local field = ARGV[1];\n" +
-        "local oldValue = ARGV[2];\n" +
-        "local newValue = ARGV[3];\n" +
-        "local channel = ARGV[4];\n" +
-        "local valueExists = redis.call(\"HEXISTS\", key, field);\n" +
-        "if valueExists == 0 then\n" +
-        "    redis.call(\"HSET\", key, field, newValue);\n" +
-        "    redis.call(\"PUBLISH\", channel,newValue);\n" +
-        "    return nil;\n" +
-        "end;\n" +
-        "local currentValue = redis.call(\"HGET\", key, field);\n" +
-        "if currentValue == oldValue then\n" +
-        "    redis.call(\"HSET\", key, field, newValue);\n" +
-        "    redis.call(\"PUBLISH\", channel,newValue);\n" +
-        "    return nil;\n" +
-        "end;\n" +
-        "return \"FAIL\";\n";
-
 
     public RedisMetadataReport(URL url) {
         super(url);
@@ -269,24 +252,43 @@ public class RedisMetadataReport extends AbstractMetadataReport {
 
     private boolean storeMappingInCluster(String key, String field, String value,String ticket) {
         try (JedisCluster jedisCluster = new JedisCluster(jedisClusterNodes, timeout, timeout, 2, password, new GenericObjectPoolConfig<>())) {
-            Object result =jedisCluster.eval(luaScript, 1, key, field, ticket==null?"":ticket, value,buildPubSubKey(field));
-            return null==result;
+            Jedis jedis=jedisCluster.getConnectionFromSlot(JedisClusterCRC16.getSlot(key));
+            jedis.watch(key);
+            String oldValue = jedis.get(key);
+            if (null==oldValue||null==ticket||oldValue.equals(ticket)) {
+                Transaction transaction = jedis.multi();
+                transaction.hset(key,field,value);
+                List<Object> result=transaction.exec();
+                if(null!=result){
+                    jedisCluster.publish(buildPubSubKey(field),value);
+                    return true;
+                }
+            }
         } catch (Throwable e) {
             String msg = "Failed to put " + key + ":" + field + " to redis " + value + ", cause: " + e.getMessage();
             logger.error(TRANSPORT_FAILED_RESPONSE, "", "", msg, e);
             throw new RpcException(msg, e);
         }
+        return false;
     }
 
     private boolean storeMappingStandalone(String key, String field, String value,String ticket) {
         try (Jedis jedis = pool.getResource()) {
-            Object result = jedis.eval(luaScript, 1, key, field, ticket==null?"":ticket, value,buildPubSubKey(field));
-            return null==result;
+            jedis.watch(key);
+            String oldValue = jedis.get(key);
+            if (null==oldValue||null==ticket||oldValue.equals(ticket)) {
+                Transaction transaction = jedis.multi();
+                transaction.hset(key,field,value);
+                transaction.publish(buildPubSubKey(field),value);
+                List<Object> result=transaction.exec();
+                return null!=result;
+            }
         } catch (Throwable e) {
             String msg = "Failed to put " + key + ":" + field + " to redis " + value + ", cause: " + e.getMessage();
             logger.error(TRANSPORT_FAILED_RESPONSE, "", "", msg, e);
             throw new RpcException(msg, e);
         }
+        return false;
     }
 
     private String buildMappingKey(String defaultMappingGroup) {
