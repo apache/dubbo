@@ -253,16 +253,18 @@ public class RedisMetadataReport extends AbstractMetadataReport {
     private boolean storeMappingInCluster(String key, String field, String value,String ticket) {
         try (JedisCluster jedisCluster = new JedisCluster(jedisClusterNodes, timeout, timeout, 2, password, new GenericObjectPoolConfig<>())) {
             Jedis jedis=jedisCluster.getConnectionFromSlot(JedisClusterCRC16.getSlot(key));
+            jedis.watch(key);
             String oldValue = jedis.get(key);
             if (null==oldValue||null==ticket||oldValue.equals(ticket)) {
                 Transaction transaction = jedis.multi();
-                jedis.watch(key);
                 transaction.hset(key,field,value);
                 List<Object> result=transaction.exec();
                 if(null!=result){
                     jedisCluster.publish(buildPubSubKey(field),value);
                     return true;
                 }
+            }else{
+                jedis.unwatch();
             }
         } catch (Throwable e) {
             String msg = "Failed to put " + key + ":" + field + " to redis " + value + ", cause: " + e.getMessage();
@@ -274,15 +276,16 @@ public class RedisMetadataReport extends AbstractMetadataReport {
 
     private boolean storeMappingStandalone(String key, String field, String value,String ticket) {
         try (Jedis jedis = pool.getResource()) {
+            jedis.watch(key);
             String oldValue = jedis.get(key);
             if (null==oldValue||null==ticket||oldValue.equals(ticket)) {
                 Transaction transaction = jedis.multi();
-                jedis.watch(key);
                 transaction.hset(key,field,value);
                 transaction.publish(buildPubSubKey(field),value);
                 List<Object> result=transaction.exec();
                 return null!=result;
             }
+            jedis.unwatch();
         } catch (Throwable e) {
             String msg = "Failed to put " + key + ":" + field + " to redis " + value + ", cause: " + e.getMessage();
             logger.error(TRANSPORT_FAILED_RESPONSE, "", "", msg, e);
