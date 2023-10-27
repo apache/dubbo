@@ -258,7 +258,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                 appSubscriptionLock.lock();
                 ServiceInstancesChangedListener instancesChangedListener = serviceListeners.get(serviceNamesKey);
                 if (instancesChangedListener != null) {
-                    instancesChangedListener.removeListener(protocolServiceKey, listener);
+                    instancesChangedListener.removeListener(url.getServiceKey(), listener);
                     if (!instancesChangedListener.hasListeners()) {
                         instancesChangedListener.destroy();
                         serviceListeners.remove(serviceNamesKey);
