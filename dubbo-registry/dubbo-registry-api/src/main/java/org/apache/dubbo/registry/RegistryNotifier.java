@@ -68,7 +68,10 @@ public abstract class RegistryNotifier {
 
         // more than 10 calls && next execute time is in the future
         boolean delay = shouldDelay.get() && delta < 0;
-        if (delay) {
+        // when the scheduler is shutdown, no notification is sent
+        if (scheduler.isShutdown()) {
+            return;
+        } else if (delay) {
             scheduler.schedule(new NotificationTask(this, notifyTime), -delta, TimeUnit.MILLISECONDS);
         } else {
             // check if more than 10 calls
