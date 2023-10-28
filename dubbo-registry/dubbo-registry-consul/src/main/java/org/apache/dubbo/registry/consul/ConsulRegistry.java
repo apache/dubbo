@@ -355,7 +355,7 @@ public class ConsulRegistry extends FailbackRegistry {
         }
 
         private void processService() {
-            String service = url.getServiceKey();
+            String service = url.getServiceInterface();
             Response<List<HealthService>> response = getHealthServices(service, consulIndex, buildWatchTimeout(url));
             Long currentIndex = response.getConsulIndex();
             if (currentIndex != null && currentIndex > consulIndex) {
