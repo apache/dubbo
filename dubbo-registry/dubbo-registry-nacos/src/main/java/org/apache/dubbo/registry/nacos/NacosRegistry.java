@@ -742,4 +742,15 @@ public class NacosRegistry extends FailbackRegistry {
         }
     }
 
+    @Override
+    public void destroy() {
+        super.destroy();
+        try {
+            this.namingService.shutdown();
+        } catch (Throwable ignored) {
+            logger.warn(ignored.getMessage(), ignored);
+        }
+        logger.info("nacos registry shutdown");
+    }
+
 }
