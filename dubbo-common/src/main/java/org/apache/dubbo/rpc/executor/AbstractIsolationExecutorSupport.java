@@ -36,6 +36,7 @@ public abstract class AbstractIsolationExecutorSupport implements ExecutorSuppor
         this.frameworkServiceRepository = url.getOrDefaultFrameworkModel().getServiceRepository();
     }
 
+    @Override
     public Executor getExecutor(Object data) {
 
         ProviderModel providerModel = getProviderModel(data);

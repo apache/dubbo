@@ -29,6 +29,7 @@
     <description>The cluster module of dubbo project</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
+        <nashorn-core.version>15.4</nashorn-core.version>
     </properties>
     <dependencies>
         <dependency>
@@ -85,6 +86,12 @@
             <artifactId>dubbo-metrics-default</artifactId>
             <version>${project.parent.version}</version>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.openjdk.nashorn</groupId>
+            <artifactId>nashorn-core</artifactId>
+            <version>${nashorn-core.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

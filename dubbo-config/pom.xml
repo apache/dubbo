@@ -32,7 +32,6 @@
     <modules>
         <module>dubbo-config-api</module>
         <module>dubbo-config-spring</module>
-        <module>dubbo-config-spring6</module>
     </modules>
 
     <dependencies>
@@ -49,4 +48,22 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <modules>
+                <module>dubbo-config-spring6</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>jdk-version-ge-17</id>
+            <activation>
+                <jdk>17</jdk>
+            </activation>
+            <modules>
+                <module>dubbo-config-spring6</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>
