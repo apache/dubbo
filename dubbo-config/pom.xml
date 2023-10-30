@@ -59,7 +59,7 @@
         <profile>
             <id>jdk-version-ge-17</id>
             <activation>
-                <jdk>17</jdk>
+                <jdk>[17,)</jdk>
             </activation>
             <modules>
                 <module>dubbo-config-spring6</module>
