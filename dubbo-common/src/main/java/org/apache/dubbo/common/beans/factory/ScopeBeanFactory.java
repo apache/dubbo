@@ -155,11 +155,6 @@ public class ScopeBeanFactory {
         return bean;
     }
 
-    public <T> T initializeBean(T bean) {
-        this.initializeBean(null, bean);
-        return bean;
-    }
-
     private void initializeBean(String name, Object bean) {
         checkDestroyed();
         try {
