@@ -18,6 +18,7 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ProtobufUtils;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 
@@ -74,11 +75,18 @@ public class ReflectionServiceDescriptor implements ServiceDescriptor {
         }
 
         methods.forEach((methodName, methodList) -> {
+            //pb method not allow override
+            if (methodList.size() > 1) {
+                long pbMethodCount = methodList.stream().filter(methodDescriptor -> Arrays.stream(methodDescriptor.getParameterClasses()).anyMatch(ProtobufUtils::isProtobufClass)).count();
+                if (pbMethodCount > 0L) {
+                    throw new IllegalStateException("Protobuf method not allow override," + "method(" + interfaceName + "." + methodName + ").");
+                }
+            }
             Map<String, MethodDescriptor> descMap = descToMethods.computeIfAbsent(methodName, k -> new HashMap<>());
             // not support BI_STREAM and SERVER_STREAM at the same time, for example,
             // void foo(Request, StreamObserver<Response>)  ---> SERVER_STREAM
             // StreamObserver<Response> foo(StreamObserver<Request>)   ---> BI_STREAM
-            long streamMethodCount =  methodList.stream()
+            long streamMethodCount = methodList.stream()
                 .peek(methodModel -> descMap.put(methodModel.getParamDesc(), methodModel))
                 .map(MethodDescriptor::getRpcType)
                 .filter(rpcType -> rpcType == MethodDescriptor.RpcType.SERVER_STREAM
@@ -86,7 +94,7 @@ public class ReflectionServiceDescriptor implements ServiceDescriptor {
                 .count();
             if (streamMethodCount > 1L)
                 throw new IllegalStateException("Stream method could not be overloaded.There are " + streamMethodCount
-                    +" stream method signatures. method(" + methodName + ")");
+                    + " stream method signatures. method(" + methodName + ")");
         });
     }
 
