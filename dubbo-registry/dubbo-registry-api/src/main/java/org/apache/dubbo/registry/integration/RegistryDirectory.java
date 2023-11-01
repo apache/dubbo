@@ -60,13 +60,19 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ALIVE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CORE_THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_REGISTER_MODE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.QUEUES_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REFER_INVOKER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNSUPPORTED;
@@ -510,7 +516,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         if (providerUrl.hasParameter(MOCK_KEY) || providerUrl.getAnyMethodParameter(MOCK_KEY) != null) {
             providerUrl = providerUrl.removeParameter(MOCK_KEY);
         }
-
+        providerUrl = removeThreadParameter(providerUrl);
         if ((providerUrl.getPath() == null || providerUrl.getPath()
             .length() == 0) && DUBBO_PROTOCOL.equals(providerUrl.getProtocol())) { // Compatible version 1.0
             //fix by tony.chenl DUBBO-44
@@ -573,6 +579,34 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             }
         }
         return url;
+    }
+
+    private URL removeThreadParameter(URL providerUrl) {
+        // Remove threads key from provider
+        if (providerUrl.hasParameter(THREADS_KEY)) {
+            providerUrl = providerUrl.removeParameter(THREADS_KEY);
+        }
+        // Remove threadname key from provider
+        if (providerUrl.hasParameter(THREAD_NAME_KEY)) {
+            providerUrl = providerUrl.removeParameter(THREAD_NAME_KEY);
+        }
+        // Remove threadpool key from provider
+        if (providerUrl.hasParameter(THREADPOOL_KEY)) {
+            providerUrl = providerUrl.removeParameter(THREADPOOL_KEY);
+        }
+        // Remove corethreads key from provider
+        if (providerUrl.hasParameter(CORE_THREADS_KEY)) {
+            providerUrl = providerUrl.removeParameter(CORE_THREADS_KEY);
+        }
+        // Remove alive key from provider
+        if (providerUrl.hasParameter(ALIVE_KEY)) {
+            providerUrl = providerUrl.removeParameter(ALIVE_KEY);
+        }
+        // Remove queues key from provider
+        if (providerUrl.hasParameter(QUEUES_KEY)) {
+            providerUrl = providerUrl.removeParameter(QUEUES_KEY);
+        }
+        return providerUrl;
     }
 
     /**
