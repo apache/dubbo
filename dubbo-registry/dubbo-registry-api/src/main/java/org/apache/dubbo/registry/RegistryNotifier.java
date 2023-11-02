@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_DELAY_EXECUTE_TIMES;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_NOTIFY_EVENT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_NOTIFY_EVENT;
 
 public abstract class RegistryNotifier {
@@ -70,7 +71,9 @@ public abstract class RegistryNotifier {
         boolean delay = shouldDelay.get() && delta < 0;
         // when the scheduler is shutdown, no notification is sent
         if (scheduler.isShutdown()) {
-            logger.warn("Scheduler has been turned off, and no notifications are being sent.");
+            if (logger.isWarnEnabled()) {
+                logger.warn(COMMON_FAILED_NOTIFY_EVENT, "", "", "The notification scheduler has been turned off, and no notifications are being sent.");
+            }
             return;
         } else if (delay) {
             scheduler.schedule(new NotificationTask(this, notifyTime), -delta, TimeUnit.MILLISECONDS);
