@@ -27,7 +27,6 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring.version>6.0.11</spring.version>
         <spring-boot.version>3.0.9</spring-boot.version>
     </properties>
@@ -78,17 +77,20 @@
             <scope>test</scope>
             <exclusions>
                 <exclusion>
-                    <artifactId>junit-vintage-engine</artifactId>
-                    <groupId>org.junit.vintage</groupId>
+                    <artifactId>logback-classic</artifactId>
+                    <groupId>ch.qos.logback</groupId>
                 </exclusion>
-                <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
                 <exclusion>
+                    <artifactId>log4j-to-slf4j</artifactId>
                     <groupId>org.apache.logging.log4j</groupId>
-                    <artifactId>log4j-api</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
-
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>

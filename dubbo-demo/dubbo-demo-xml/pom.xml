@@ -44,7 +44,6 @@
         <module>dubbo-demo-spring-mvc-rest-provider</module>
     </modules>
 
-
     <build>
         <plugins>
             <plugin>

@@ -75,13 +75,13 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
 
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        startQosServer(invoker.getUrl());
+        startQosServer(invoker.getUrl(), true);
         return protocol.export(invoker);
     }
 
     @Override
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
-        startQosServer(url);
+        startQosServer(url, false);
         return protocol.refer(type, url);
     }
 
@@ -96,7 +96,7 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
         return protocol.getServers();
     }
 
-    private void startQosServer(URL url) throws RpcException {
+    private void startQosServer(URL url, boolean isServer) throws RpcException {
         boolean qosCheck = url.getParameter(QOS_CHECK, false);
 
         try {
@@ -134,13 +134,18 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
 
         } catch (Throwable throwable) {
             logger.warn(QOS_FAILED_START_SERVER, "", "", "Fail to start qos server: ", throwable);
-            try {
-                stopServer();
-            } catch (Throwable stop) {
-                logger.warn(QOS_FAILED_START_SERVER, "", "", "Fail to stop qos server: ", stop);
-            }
+
             if (qosCheck) {
-                throw new RpcException(throwable);
+                try {
+                    // Stop QoS Server to support re-start if Qos-Check is enabled
+                    stopServer();
+                } catch (Throwable stop) {
+                    logger.warn(QOS_FAILED_START_SERVER, "", "", "Fail to stop qos server: ", stop);
+                }
+                if (isServer) {
+                    // Only throws exception when export services
+                    throw new RpcException(throwable);
+                }
             }
         }
     }

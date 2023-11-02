@@ -24,7 +24,6 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>dubbo-metadata-definition-protobuf</artifactId>
 
-
     <dependencies>
         <dependency>
             <groupId>com.google.protobuf</groupId>

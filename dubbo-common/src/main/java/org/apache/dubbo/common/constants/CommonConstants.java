@@ -646,4 +646,8 @@ public interface CommonConstants {
     String SERVICE_DEPLOYER_ATTRIBUTE_KEY = "serviceDeployer";
 
     String DUBBO_MANUAL_REGISTER_KEY = "dubbo.application.manual-register";
+
+    String POD_NAMESPACE = "POD_NAMESPACE";
+
+    String CLUSTER_DOMAIN = "CLUSTER_DOMAIN";
 }

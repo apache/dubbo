@@ -66,6 +66,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_DOMAIN;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR_CHAR;
@@ -77,6 +78,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.MESH_ENABLE;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.POD_NAMESPACE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROXY_CLASS_REF;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SEMICOLON_SPLIT_PATTERN;
@@ -504,21 +506,21 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         // get pod namespace from env if annotation not present the provider namespace
         if (StringUtils.isEmpty(podNamespace)) {
-            if (StringUtils.isEmpty(System.getenv("POD_NAMESPACE"))) {
+            if (StringUtils.isEmpty(System.getenv(POD_NAMESPACE))) {
                 if (logger.isWarnEnabled()) {
                     logger.warn(CONFIG_FAILED_LOAD_ENV_VARIABLE, "", "", "Can not get env variable: POD_NAMESPACE, it may not be running in the K8S environment , " +
                             "finally use 'default' replace.");
                 }
                 podNamespace = "default";
             } else {
-                podNamespace = System.getenv("POD_NAMESPACE");
+                podNamespace = System.getenv(POD_NAMESPACE);
             }
         }
 
         // In mesh mode, providedBy equals K8S Service name.
         String providedBy = referenceParameters.get(PROVIDED_BY);
         // cluster_domain default is 'cluster.local',generally unchanged.
-        String clusterDomain = Optional.ofNullable(System.getenv("CLUSTER_DOMAIN")).orElse(DEFAULT_CLUSTER_DOMAIN);
+        String clusterDomain = Optional.ofNullable(System.getenv(CLUSTER_DOMAIN)).orElse(DEFAULT_CLUSTER_DOMAIN);
         // By VirtualService and DestinationRule, envoy will generate a new route rule,such as 'demo.default.svc.cluster.local:80',the default port is 80.
         Integer meshPort = Optional.ofNullable(getProviderPort()).orElse(DEFAULT_MESH_PORT);
         // DubboReference default is -1, process it.
