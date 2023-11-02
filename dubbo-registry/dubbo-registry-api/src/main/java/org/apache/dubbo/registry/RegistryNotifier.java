@@ -72,7 +72,7 @@ public abstract class RegistryNotifier {
         // when the scheduler is shutdown, no notification is sent
         if (scheduler.isShutdown()) {
             if (logger.isWarnEnabled()) {
-                logger.warn(COMMON_FAILED_NOTIFY_EVENT, "", "", "The notification scheduler has been turned off, and no notifications are being sent.");
+                logger.warn(COMMON_FAILED_NOTIFY_EVENT, "", "", "Notification scheduler is off, no notifications are sent.");
             }
             return;
         } else if (delay) {
