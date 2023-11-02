@@ -34,6 +34,7 @@
     <properties>
         <revision>3.3.0-beta.1-SNAPSHOT</revision>
         <maven_flatten_version>1.5.0</maven_flatten_version>
+        <slf4j_version>1.7.36</slf4j_version>
         <curator5_version>5.1.0</curator5_version>
         <zookeeper_version>3.8.1</zookeeper_version>
     </properties>
@@ -55,6 +56,20 @@
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-x-discovery</artifactId>
             <version>${curator5_version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>zookeeper</artifactId>
+                    <groupId>org.apache.zookeeper</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>slf4j-api</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>listenablefuture</artifactId>
+                    <groupId>com.google.guava</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.zookeeper</groupId>
@@ -62,55 +77,35 @@
             <version>${zookeeper_version}</version>
             <exclusions>
                 <exclusion>
-                    <groupId>io.netty</groupId>
-                    <artifactId>netty-handler</artifactId>
+                    <artifactId>logback-classic</artifactId>
+                    <groupId>ch.qos.logback</groupId>
                 </exclusion>
                 <exclusion>
+                    <artifactId>logback-core</artifactId>
+                    <groupId>ch.qos.logback</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>audience-annotations</artifactId>
+                    <groupId>org.apache.yetus</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>*</artifactId>
                     <groupId>io.netty</groupId>
-                    <artifactId>netty-transport-native-epoll</artifactId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>slf4j-api</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>commons-io</artifactId>
+                    <groupId>commons-io</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
-
         <dependency>
-            <groupId>com.github.spotbugs</groupId>
-            <artifactId>spotbugs-annotations</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-cli</groupId>
-            <artifactId>commons-cli</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-server</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-servlet</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-client</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>jline</groupId>
-            <artifactId>jline</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>io.dropwizard.metrics</groupId>
-            <artifactId>metrics-core</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.xerial.snappy</groupId>
-            <artifactId>snappy-java</artifactId>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j_version}</version>
         </dependency>
     </dependencies>
 
@@ -122,7 +117,7 @@
                 <version>${maven_flatten_version}</version>
                 <configuration>
                     <updatePomFile>true</updatePomFile>
-                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                    <flattenMode>oss</flattenMode>
                 </configuration>
                 <executions>
                     <execution>

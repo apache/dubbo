@@ -51,11 +51,12 @@
             <artifactId>dubbo-test-spring</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
-        </dependency>        <dependency>
-        <groupId>org.apache.curator</groupId>
-        <artifactId>curator-framework</artifactId>
-        <!--            <scope>test</scope>-->
-    </dependency>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-framework</artifactId>
+            <!--            <scope>test</scope>-->
+        </dependency>
         <dependency>
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-recipes</artifactId>
@@ -96,7 +97,8 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <useSystemClassLoader>true</useSystemClassLoader>
-                            <forkMode>once</forkMode>
+                            <forkCount>1</forkCount>
+                            <reuseForks>false</reuseForks>
                             <argLine>${argline} ${jacocoArgLine}
                                 --add-opens java.base/java.lang=ALL-UNNAMED
                                 --add-opens java.base/java.math=ALL-UNNAMED

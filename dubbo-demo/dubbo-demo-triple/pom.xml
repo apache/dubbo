@@ -32,9 +32,6 @@
 
     <properties>
         <skip_maven_deploy>true</skip_maven_deploy>
-        <source.level>1.8</source.level>
-        <target.level>1.8</target.level>
-        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
     </properties>
 
     <dependencies>
@@ -153,42 +150,14 @@
                 <artifactId>protobuf-maven-plugin</artifactId>
                 <version>${maven_protobuf_plugin_version}</version>
                 <configuration>
-                    <protocArtifact>com.google.protobuf:protoc:${protobuf-java_version}:exe:${os.detected.classifier}</protocArtifact>
+                    <protocArtifact>com.google.protobuf:protoc:${protobuf-protoc_version}:exe:${os.detected.classifier}</protocArtifact>
                     <pluginId>triple-java</pluginId>
-                    <outputDirectory>build/generated/source/proto/main/java</outputDirectory>
                 </configuration>
                 <executions>
                     <execution>
                         <goals>
                             <goal>compile</goal>
-                            <goal>test-compile</goal>
                         </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven-compiler-plugin.version}</version>
-                <configuration>
-                    <source>${source.level}</source>
-                    <target>${target.level}</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>build/generated/source/proto/main/java</source>
-                            </sources>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
