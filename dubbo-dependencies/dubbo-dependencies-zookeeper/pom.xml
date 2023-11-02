@@ -34,6 +34,7 @@
     <properties>
         <revision>3.3.0-beta.1-SNAPSHOT</revision>
         <maven_flatten_version>1.5.0</maven_flatten_version>
+        <slf4j_version>1.7.36</slf4j_version>
         <curator_version>4.3.0</curator_version>
         <zookeeper_version>3.4.14</zookeeper_version>
     </properties>
@@ -43,11 +44,60 @@
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-x-discovery</artifactId>
             <version>${curator_version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>zookeeper</artifactId>
+                    <groupId>org.apache.zookeeper</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>slf4j-api</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>listenablefuture</artifactId>
+                    <groupId>com.google.guava</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.zookeeper</groupId>
             <artifactId>zookeeper</artifactId>
             <version>${zookeeper_version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>slf4j-log4j12</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>log4j</artifactId>
+                    <groupId>log4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>spotbugs-annotations</artifactId>
+                    <groupId>com.github.spotbugs</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>audience-annotations</artifactId>
+                    <groupId>org.apache.yetus</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jline</artifactId>
+                    <groupId>jline</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>*</artifactId>
+                    <groupId>io.netty</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>slf4j-api</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j_version}</version>
         </dependency>
     </dependencies>
 
@@ -59,7 +109,7 @@
                 <version>${maven_flatten_version}</version>
                 <configuration>
                     <updatePomFile>true</updatePomFile>
-                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                    <flattenMode>oss</flattenMode>
                 </configuration>
                 <executions>
                     <execution>

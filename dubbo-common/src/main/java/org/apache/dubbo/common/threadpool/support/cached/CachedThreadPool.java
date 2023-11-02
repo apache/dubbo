@@ -22,6 +22,7 @@ import org.apache.dubbo.common.threadpool.MemorySafeLinkedBlockingQueue;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
 
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.SynchronousQueue;
@@ -53,10 +54,18 @@ public class CachedThreadPool implements ThreadPool {
         int threads = url.getParameter(THREADS_KEY, Integer.MAX_VALUE);
         int queues = url.getParameter(QUEUES_KEY, DEFAULT_QUEUES);
         int alive = url.getParameter(ALIVE_KEY, DEFAULT_ALIVE);
-        return new ThreadPoolExecutor(cores, threads, alive, TimeUnit.MILLISECONDS,
-                queues == 0 ? new SynchronousQueue<Runnable>() :
-                        (queues < 0 ? new MemorySafeLinkedBlockingQueue<Runnable>()
-                                : new LinkedBlockingQueue<Runnable>(queues)),
+
+        BlockingQueue<Runnable> blockingQueue;
+
+        if (queues == 0) {
+            blockingQueue = new SynchronousQueue<>();
+        } else if (queues < 0) {
+            blockingQueue = new MemorySafeLinkedBlockingQueue<>();
+        } else {
+            blockingQueue = new LinkedBlockingQueue<>(queues);
+        }
+
+        return new ThreadPoolExecutor(cores, threads, alive, TimeUnit.MILLISECONDS, blockingQueue,
                 new NamedInternalThreadFactory(name, true), new AbortPolicyWithReport(name, url));
     }
 }

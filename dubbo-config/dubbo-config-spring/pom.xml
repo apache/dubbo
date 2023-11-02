@@ -197,15 +197,20 @@
             <scope>test</scope>
             <exclusions>
                 <exclusion>
-                    <artifactId>junit-vintage-engine</artifactId>
-                    <groupId>org.junit.vintage</groupId>
+                    <artifactId>logback-classic</artifactId>
+                    <groupId>ch.qos.logback</groupId>
                 </exclusion>
-                <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
                 <exclusion>
+                    <artifactId>log4j-to-slf4j</artifactId>
                     <groupId>org.apache.logging.log4j</groupId>
-                    <artifactId>log4j-api</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <!-- Zookeeper dependencies for testing -->
@@ -214,12 +219,6 @@
             <artifactId>dubbo-registry-zookeeper</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.dubbo</groupId>
-                    <artifactId>dubbo-remoting-zookeeper</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -232,15 +231,11 @@
                     <groupId>com.google.guava</groupId>
                     <artifactId>guava</artifactId>
                 </exclusion>
-                <exclusion>
-                    <groupId>org.apache.dubbo</groupId>
-                    <artifactId>dubbo-remoting-zookeeper</artifactId>
-                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-remoting-zookeeper</artifactId>
+            <artifactId>dubbo-remoting-zookeeper-curator5</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>

@@ -26,6 +26,7 @@
     <packaging>pom</packaging>
     <name>${project.artifactId}</name>
     <description>The demo module of dubbo project</description>
+
     <properties>
         <skip_maven_deploy>true</skip_maven_deploy>
     </properties>
@@ -41,4 +42,10 @@
         <module>dubbo-demo-spring-boot</module>
     </modules>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+        </dependency>
+    </dependencies>
 </project>

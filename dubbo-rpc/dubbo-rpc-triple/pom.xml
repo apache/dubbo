@@ -69,6 +69,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
         </dependency>
@@ -90,6 +95,13 @@
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-native</artifactId>
             <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-compiler</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
     <build>
@@ -113,7 +125,7 @@
                 <version>${maven_protobuf_plugin_version}</version>
                 <configuration>
                     <protocArtifact>
-                        com.google.protobuf:protoc:${protobuf-java_version}:exe:${os.detected.classifier}
+                        com.google.protobuf:protoc:${protobuf-protoc_version}:exe:${os.detected.classifier}
                     </protocArtifact>
                     <protocPlugins>
                         <protocPlugin>

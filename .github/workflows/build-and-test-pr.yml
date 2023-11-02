@@ -13,9 +13,8 @@ env:
   VERSIONS_LIMIT: 4
   JACOCO_ENABLE: true
   CANDIDATE_VERSIONS: '
-    spring.version:4.3.30.RELEASE;
-    spring-boot.version:1.5.22.RELEASE;
-    spring-boot.version:2.4.1;
+    spring.version:5.3.24;
+    spring-boot.version:2.7.6;
     '
 
 jobs:
@@ -194,7 +193,7 @@ jobs:
           openssl rsautl -decrypt -in ${{ github.workspace }}/.tmp/encrypted-sonarcloud-token -out ${{ github.workspace }}/.tmp/decrypted-sonarcloud-token -inkey ${{ github.workspace }}/.tmp/rsa/rsa_private.pem
       - name: "Test with Maven with SonarCloud Scan"
         if: ${{ github.repository == 'apache/dubbo' }}
-        timeout-minutes: 70
+        timeout-minutes: 90
         env:
           # Needed to get some information about the pull request, if any
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -203,7 +202,7 @@ jobs:
           ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean test verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Pjacoco,jdk15ge-simple,'!jdk15ge',jacoco089 -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=apache -Dsonar.projectKey=apache_dubbo -DtrimStackTrace=false -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper -Dsonar.coverage.jacoco.xmlReportPaths=dubbo-test/dubbo-dependencies-all/target/site/jacoco-aggregate/jacoco.xml -Dsonar.login=${SONAR_TOKEN}
       - name: "Test with Maven without SonarCloud Scan"
         if: ${{ github.repository != 'apache/dubbo' }}
-        timeout-minutes: 70
+        timeout-minutes: 90
         run: |
           ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean test verify -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Pjacoco,jdk15ge-simple,'!jdk15ge',jacoco089 -DtrimStackTrace=false -Dmaven.wagon.http.retryHandler.count=5 -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper
       - name: "Upload coverage result"
@@ -417,10 +416,10 @@ jobs:
 
       - name: "Setup Zookeeper environment"
         run: |
-          wget https://dlcdn.apache.org/zookeeper/zookeeper-3.7.1/apache-zookeeper-3.7.1-bin.tar.gz
-          tar -zxvf apache-zookeeper-3.7.1-bin.tar.gz
-          mv apache-zookeeper-3.7.1-bin/conf/zoo_sample.cfg apache-zookeeper-3.7.1-bin/conf/zoo.cfg
-          apache-zookeeper-3.7.1-bin/bin/zkServer.sh start
+          wget https://dlcdn.apache.org/zookeeper/zookeeper-3.8.3/apache-zookeeper-3.8.3-bin.tar.gz
+          tar -zxvf apache-zookeeper-3.8.3-bin.tar.gz
+          mv apache-zookeeper-3.8.3-bin/conf/zoo_sample.cfg apache-zookeeper-3.8.3-bin/conf/zoo.cfg
+          apache-zookeeper-3.8.3-bin/bin/zkServer.sh start
 
       - name: "Check environment"
         run: |
