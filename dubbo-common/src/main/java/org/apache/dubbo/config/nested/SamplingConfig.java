@@ -18,6 +18,9 @@ package org.apache.dubbo.config.nested;
 
 import java.io.Serializable;
 
+/**
+ * Configuration for the sampling.
+ */
 public class SamplingConfig implements Serializable {
 
     /**

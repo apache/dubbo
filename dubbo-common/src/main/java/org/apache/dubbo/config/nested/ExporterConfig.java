@@ -24,11 +24,20 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Configuration for the exporter.
+ */
 public class ExporterConfig implements Serializable {
 
+    /**
+     * Configuration for the Zipkin.
+     */
     @Nested
     private ZipkinConfig zipkinConfig;
 
+    /**
+     * Configuration for the OTLP.
+     */
     @Nested
     private OtlpConfig otlpConfig;
 

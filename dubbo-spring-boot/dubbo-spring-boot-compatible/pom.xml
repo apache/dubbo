@@ -37,6 +37,7 @@
     <modules>
         <module>autoconfigure</module>
         <module>actuator</module>
+        <module>metadata</module>
     </modules>
 
     <profiles>

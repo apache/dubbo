@@ -100,7 +100,6 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         uniqueConfigTypes.add(ModuleConfig.class);
     }
 
-
     public AbstractConfigManager(ScopeModel scopeModel, Collection<Class<? extends AbstractConfig>> supportedConfigTypes) {
         this.scopeModel = scopeModel;
         this.applicationModel = ScopeModelUtil.getApplicationModel(scopeModel);
@@ -567,7 +566,6 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         return ConfigurationUtils.getSubIds(environment.getConfigurationMaps(), prefix);
     }
 
-
     protected <T extends AbstractConfig> void checkDefaultAndValidateConfigs(Class<T> configType) {
         try {
             if (shouldAddDefaultConfig(configType)) {
@@ -644,11 +642,9 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         return this.getDefaultConfigs(clazz).isEmpty();
     }
 
-
     public void refreshAll() {
 
     }
-
 
     /**
      * In some scenario,  we may need to add and remove ServiceConfig or ReferenceConfig dynamically.
