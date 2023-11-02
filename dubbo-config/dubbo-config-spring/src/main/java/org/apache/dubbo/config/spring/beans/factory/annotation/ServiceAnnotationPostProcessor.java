@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
+import org.apache.dubbo.common.compact.Dubbo2CompactUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.AnnotationUtils;
@@ -105,14 +106,27 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
 
     public static final String BEAN_NAME = "dubboServiceAnnotationPostProcessor";
 
-    private final static List<Class<? extends Annotation>> serviceAnnotationTypes = asList(
-            // @since 2.7.7 Add the @DubboService , the issue : https://github.com/apache/dubbo/issues/6007
-            DubboService.class,
-            // @since 2.7.0 the substitute @com.alibaba.dubbo.config.annotation.Service
-            Service.class,
-            // @since 2.7.3 Add the compatibility for legacy Dubbo's @Service , the issue : https://github.com/apache/dubbo/issues/4330
-            com.alibaba.dubbo.config.annotation.Service.class
-    );
+    private final static List<Class<? extends Annotation>> serviceAnnotationTypes = loadServiceAnnotationTypes();
+
+    private static List<Class<? extends Annotation>> loadServiceAnnotationTypes() {
+        if (Dubbo2CompactUtils.isEnabled() && Dubbo2CompactUtils.isServiceClassLoaded()) {
+            return asList(
+                // @since 2.7.7 Add the @DubboService , the issue : https://github.com/apache/dubbo/issues/6007
+                DubboService.class,
+                // @since 2.7.0 the substitute @com.alibaba.dubbo.config.annotation.Service
+                Service.class,
+                // @since 2.7.3 Add the compatibility for legacy Dubbo's @Service , the issue : https://github.com/apache/dubbo/issues/4330
+                Dubbo2CompactUtils.getServiceClass()
+            );
+        } else {
+            return asList(
+                // @since 2.7.7 Add the @DubboService , the issue : https://github.com/apache/dubbo/issues/6007
+                DubboService.class,
+                // @since 2.7.0 the substitute @com.alibaba.dubbo.config.annotation.Service
+                Service.class
+            );
+        }
+    }
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 

@@ -19,6 +19,7 @@ package org.apache.dubbo.generic;
 
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.compact.Dubbo2CompactUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
@@ -109,12 +110,13 @@ class GenericServiceTest {
         Exporter<DemoService> exporter = protocol.export(proxyFactory.getInvoker(server, DemoService.class, url));
 
         // simulate normal invoke
-        ReferenceConfig<com.alibaba.dubbo.rpc.service.GenericService> oldReferenceConfig = new ReferenceConfig<>();
+        ReferenceConfig oldReferenceConfig = new ReferenceConfig<>();
         oldReferenceConfig.setGeneric(true);
         oldReferenceConfig.setInterface(DemoService.class.getName());
         oldReferenceConfig.refresh();
         Invoker invoker = protocol.refer(oldReferenceConfig.getInterfaceClass(), url);
-        com.alibaba.dubbo.rpc.service.GenericService client = (com.alibaba.dubbo.rpc.service.GenericService) proxyFactory.getProxy(invoker, true);
+        GenericService client = (GenericService) proxyFactory.getProxy(invoker, true);
+        Assertions.assertInstanceOf(Dubbo2CompactUtils.getGenericServiceClass(), client);
 
         Object result = client.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{"haha"});
         Assertions.assertEquals("hello haha", result);

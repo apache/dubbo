@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.compact.Dubbo2CompactUtils;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.RegexProperties;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -227,7 +228,8 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     public static Class<?> determineInterfaceClass(String generic, String interfaceName, ClassLoader classLoader) {
         if (ProtocolUtils.isGeneric(generic)) {
-            return com.alibaba.dubbo.rpc.service.GenericService.class;
+            return Dubbo2CompactUtils.isEnabled() && Dubbo2CompactUtils.isGenericServiceClassLoaded() ?
+                Dubbo2CompactUtils.getGenericServiceClass() : GenericService.class;
         }
         try {
             if (StringUtils.isNotEmpty(interfaceName)) {
