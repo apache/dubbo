@@ -57,7 +57,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_REDIS_EXCEPTION;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_RESPONSE;
 import static org.apache.dubbo.metadata.MetadataConstants.META_DATA_STORE_TAG;
 import static org.apache.dubbo.metadata.ServiceNameMapping.DEFAULT_MAPPING_GROUP;
@@ -235,7 +234,7 @@ public class RedisMetadataReport extends AbstractMetadataReport {
 
             return storeMapping(pathKey, serviceInterface, newConfigContent,(String)ticket);
         } catch (Exception e) {
-            logger.warn(REGISTRY_REDIS_EXCEPTION, "", "", "redis publishConfigCas failed.", e);
+            logger.warn(TRANSPORT_FAILED_RESPONSE, "", "", "redis publishConfigCas failed.", e);
             return false;
         }
     }
