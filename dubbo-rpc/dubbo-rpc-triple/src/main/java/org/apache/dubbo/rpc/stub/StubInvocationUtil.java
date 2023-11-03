@@ -68,6 +68,11 @@ public class StubInvocationUtil {
         //When there are multiple MethodDescriptors with the same method name, the return type will be wrong
         rpcInvocation.setReturnType(methodDescriptor.getReturnClass());
         Type[] returnTypes = methodDescriptor.getReturnTypes();
+        //If this MethodDescriptor from an async method, its return class should be CompletableFuture.
+        //If this MethodDescriptor from a sync method, its return class is real return type.
+        //The definition of returnTypes:
+        //returnTypes[0], the concrete type.
+        //returnTypes[1], the parameterized type.
         returnTypes[0] = methodDescriptor.getReturnClass();
         returnTypes[1] = methodDescriptor.getReturnClass();
         rpcInvocation.setReturnTypes(returnTypes);
