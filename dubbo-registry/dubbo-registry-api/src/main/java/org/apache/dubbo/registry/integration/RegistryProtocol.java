@@ -20,11 +20,13 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
@@ -64,8 +66,11 @@ import org.apache.dubbo.rpc.protocol.InvokerWrapper;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -77,46 +82,32 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.BACKGROUND_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE;
-import static org.apache.dubbo.common.constants.CommonConstants.EXTRA_KEYS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.HIDE_KEY_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.IPV6_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PACKABLE_METHOD_FACTORY_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_FILE_CACHE_ENABLED;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_PROTOCOL_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.FilterConstants.VALIDATION_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNSUPPORTED_CATEGORY;
-import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
-import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
-import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
-import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
 import static org.apache.dubbo.common.constants.RegistryConstants.ALL_CATEGORIES;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.OVERRIDE_PROTOCOL;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER_MODE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
@@ -129,9 +120,6 @@ import static org.apache.dubbo.registry.Constants.PROVIDER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
 import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
-import static org.apache.dubbo.registry.Constants.SIMPLIFIED_KEY;
-import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
-import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 import static org.apache.dubbo.remoting.Constants.CHECK_KEY;
 import static org.apache.dubbo.remoting.Constants.CODEC_KEY;
 import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
@@ -140,7 +128,6 @@ import static org.apache.dubbo.remoting.Constants.PREFER_SERIALIZATION_KEY;
 import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
 import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
-import static org.apache.dubbo.rpc.Constants.INTERFACES;
 import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.CONSUMER_URL_KEY;
@@ -177,18 +164,6 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     private HashedWheelTimer retryTimer = new HashedWheelTimer(new NamedThreadFactory("DubboReexportTimer", true), DEFAULT_REGISTRY_RETRY_PERIOD, TimeUnit.MILLISECONDS, 128);
     private FrameworkModel frameworkModel;
     private ExporterFactory exporterFactory;
-
-    //Filter the parameters that do not need to be output in url(Starting with .)
-    private static String[] getFilteredKeys(URL url) {
-        Map<String, String> params = url.getParameters();
-        if (CollectionUtils.isNotEmptyMap(params)) {
-            return params.keySet().stream()
-                .filter(k -> k.startsWith(HIDE_KEY_PREFIX))
-                .toArray(String[]::new);
-        } else {
-            return new String[0];
-        }
-    }
 
     public RegistryProtocol() {
     }
@@ -274,7 +249,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
         // url to registry
         final Registry registry = getRegistry(registryUrl);
-        final URL registeredProviderUrl = getUrlToRegistry(providerUrl, registryUrl);
+        final URL registeredProviderUrl = getUrlToRegistry(providerUrl);
 
         // decide if we need to delay publish (provider itself and registry should both need to register)
         boolean register = providerUrl.getParameter(REGISTER_KEY, true) && registryUrl.getParameter(REGISTER_KEY, true);
@@ -332,10 +307,8 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
         ReferenceCountExporter<?> exporter = exporterFactory.createExporter(providerUrlKey, () -> protocol.export(invokerDelegate));
         return (ExporterChangeableWrapper<T>) bounds.computeIfAbsent(providerUrlKey, _k -> new ConcurrentHashMap<>())
-            .computeIfAbsent(registryUrlKey, s -> {
-                return new ExporterChangeableWrapper<>(
-                    (ReferenceCountExporter<T>) exporter, originInvoker);
-            });
+            .computeIfAbsent(registryUrlKey, s -> new ExporterChangeableWrapper<>(
+                (ReferenceCountExporter<T>) exporter, originInvoker));
     }
 
     public <T> void reExport(Exporter<T> exporter, URL newInvokerUrl) {
@@ -370,7 +343,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         URL registeredUrl = exporter.getRegisterUrl();
 
         URL registryUrl = getRegistryUrl(originInvoker);
-        URL newProviderUrl = getUrlToRegistry(newInvokerUrl, registryUrl);
+        URL newProviderUrl = getUrlToRegistry(newInvokerUrl);
 
         // update local exporter
         Invoker<T> invokerDelegate = new InvokerDelegate<T>(originInvoker, newInvokerUrl);
@@ -463,28 +436,48 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
      * @param providerUrl
      * @return url to registry.
      */
-    private URL getUrlToRegistry(final URL providerUrl, final URL registryUrl) {
-        //The address you see at the registry
-        if (!registryUrl.getParameter(SIMPLIFIED_KEY, false)) {
-            return providerUrl.removeParameters(getFilteredKeys(providerUrl)).removeParameters(
-                MONITOR_KEY, BIND_IP_KEY, BIND_PORT_KEY, QOS_ENABLE, QOS_HOST, QOS_PORT, ACCEPT_FOREIGN_IP, VALIDATION_KEY,
-                INTERFACES, REGISTER_MODE_KEY, PID_KEY, REGISTRY_LOCAL_FILE_CACHE_ENABLED, EXECUTOR_MANAGEMENT_MODE, BACKGROUND_KEY, ANYHOST_KEY);
-        } else {
-            String extraKeys = registryUrl.getParameter(EXTRA_KEYS_KEY, "");
-            // if path is not the same as interface name then we should keep INTERFACE_KEY,
-            // otherwise, the registry structure of zookeeper would be '/dubbo/path/providers',
-            // but what we expect is '/dubbo/interface/providers'
-            if (!providerUrl.getPath().equals(providerUrl.getParameter(INTERFACE_KEY))) {
-                if (StringUtils.isNotEmpty(extraKeys)) {
-                    extraKeys += ",";
-                }
-                extraKeys += INTERFACE_KEY;
+    private URL getUrlToRegistry(final URL providerUrl) {
+        ExtensionLoader<RegistryParameterCustomizer> loader = providerUrl.getOrDefaultApplicationModel().getExtensionLoader(RegistryParameterCustomizer.class);
+        Map<String, String> extraParameter = new HashMap<>(providerUrl.getParameters());
+        Set<String> parametersIncludedList = new HashSet<>();
+        Set<String> parametersExcludedList = new HashSet<>();
+        Set<String> prefixIncludedList = new HashSet<>();
+        Set<String> prefixExcludedList = new HashSet<>();
+        for (RegistryParameterCustomizer customizer : loader.getSupportedExtensionInstances()) {
+            if (CollectionUtils.isNotEmptyMap(customizer.getExtraParameter())) {
+                extraParameter.putAll(customizer.getExtraParameter());
+                // default include extra keys
+                parametersIncludedList.addAll(customizer.getExtraParameter().keySet());
             }
-            String[] paramsToRegistry = getParamsToRegistry(DEFAULT_REGISTER_PROVIDER_KEYS
-                , COMMA_SPLIT_PATTERN.split(extraKeys));
-            return URL.valueOf(providerUrl, paramsToRegistry, providerUrl.getParameter(METHODS_KEY, (String[]) null));
+            if (ArrayUtils.isNotEmpty(customizer.parametersIncluded())) {
+                parametersIncludedList.addAll(Arrays.asList(customizer.parametersIncluded()));
+            }
+            if (ArrayUtils.isNotEmpty(customizer.parametersExcluded())) {
+                parametersExcludedList.addAll(Arrays.asList(customizer.parametersExcluded()));
+            }
+            if (ArrayUtils.isNotEmpty(customizer.prefixesIncluded())) {
+                prefixIncludedList.addAll(Arrays.asList(customizer.prefixesIncluded()));
+            }
+            if (ArrayUtils.isNotEmpty(customizer.prefixesExcluded())) {
+                prefixExcludedList.addAll(Arrays.asList(customizer.prefixesExcluded()));
+            }
         }
-
+        Iterator<Map.Entry<String, String>> iterator = extraParameter.entrySet().iterator();
+        while (iterator.hasNext()) {
+            String key = iterator.next().getKey();
+            // Remove exclude key first
+            if (parametersExcludedList.contains(key) || prefixExcludedList.stream().anyMatch(key::startsWith)) {
+                iterator.remove();
+                continue;
+            }
+            // Keep include key second
+            if (parametersIncludedList.contains(key) || prefixIncludedList.stream().anyMatch(key::startsWith)) {
+                continue;
+            }
+            // Remove other unused key
+            iterator.remove();
+        }
+        return providerUrl.clearParameters().addParameters(extraParameter);
     }
 
     private URL getSubscribedOverrideUrl(URL registeredProviderUrl) {
@@ -514,14 +507,12 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
      */
     private String getProviderUrlKey(final Invoker<?> originInvoker) {
         URL providerUrl = getProviderUrl(originInvoker);
-        String key = providerUrl.removeParameters(DYNAMIC_KEY, ENABLED_KEY).toFullString();
-        return key;
+        return providerUrl.removeParameters(DYNAMIC_KEY, ENABLED_KEY).toFullString();
     }
 
     private String getRegistryUrlKey(final Invoker<?> originInvoker) {
         URL registryUrl = getRegistryUrl(originInvoker);
-        String key = registryUrl.removeParameters(DYNAMIC_KEY, ENABLED_KEY).toFullString();
-        return key;
+        return registryUrl.removeParameters(DYNAMIC_KEY, ENABLED_KEY).toFullString();
     }
 
     @Override
@@ -682,7 +673,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                         // already removed
                         continue;
                     }
-                    if (moduleModel.getServiceRepository().getExportedServices().size() > 0) {
+                    if (moduleModel.getServiceRepository().getExportedServices().isEmpty()) {
                         moduleModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
                             .removeListener(applicationName + CONFIGURATORS_SUFFIX,
                                 getProviderConfigurationListener(moduleModel));
@@ -1049,7 +1040,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                                 }
                                 if (applicationModel.modelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
                                     for (ModuleModel moduleModel : applicationModel.getPubModuleModels()) {
-                                        if (moduleModel.getServiceRepository().getExportedServices().size() > 0) {
+                                        if (moduleModel.getServiceRepository().getExportedServices().isEmpty()) {
                                             moduleModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
                                                 .removeListener(subscribeUrl.getServiceKey() + CONFIGURATORS_SUFFIX,
                                                     serviceConfigurationListeners.remove(subscribeUrl.getServiceKey()));
