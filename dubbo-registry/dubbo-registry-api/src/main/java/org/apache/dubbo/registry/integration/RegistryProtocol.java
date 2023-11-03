@@ -474,7 +474,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                 continue;
             }
             // Remove other unused key
-            iterator.remove();
+            // TODO for compatible,it need call iterator.remove();
         }
         return providerUrl.clearParameters().addParameters(extraParameter);
     }
