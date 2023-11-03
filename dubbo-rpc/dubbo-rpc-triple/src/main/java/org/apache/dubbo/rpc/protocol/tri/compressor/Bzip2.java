@@ -17,13 +17,14 @@
 
 package org.apache.dubbo.rpc.protocol.tri.compressor;
 
-import org.apache.dubbo.rpc.RpcException;
-
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.dubbo.rpc.RpcException;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 
 /**
@@ -57,6 +58,15 @@ public class Bzip2 implements Compressor, DeCompressor {
         }
 
         return out.toByteArray();
+    }
+
+    @Override
+    public OutputStream decorate(OutputStream outputStream) {
+        try {
+            return new BZip2CompressorOutputStream(outputStream);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Override

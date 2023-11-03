@@ -87,6 +87,9 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     private Boolean background;
     private Boolean exportAsync;
     private Boolean referAsync;
+
+    private boolean registryInteracted;
+
     private CompletableFuture<?> exportFuture;
     private CompletableFuture<?> referFuture;
 
@@ -439,6 +442,10 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                 exportedServices.add(sc);
             }
         }
+
+        if (serviceConfig.hasRegistrySpecified()) {
+            registryInteracted = true;
+        }
     }
 
     private void registerServiceInternal(ServiceConfigBase sc) {
@@ -578,4 +585,13 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         this.initialize();
     }
 
+    @Override
+    public boolean hasRegistryInteraction() {
+        return registryInteracted;
+    }
+
+    @Override
+    public ApplicationDeployer getApplicationDeployer() {
+        return applicationDeployer;
+    }
 }

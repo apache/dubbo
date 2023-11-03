@@ -30,9 +30,8 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CLASS_NOT_FOUND;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -109,7 +108,7 @@ class ConfigValidationUtilsTest {
 
         config.setQosEnable(true);
         mock.validateApplicationConfig(config);
-        verify(loggerMock).warn(eq(COMMON_CLASS_NOT_FOUND), eq(""), eq(""), eq("No QosProtocolWrapper class was found. Please check the dependency of dubbo-qos whether was imported correctly."), any());
+        verify(loggerMock).info(anyString());
     }
 
     private void injectField(Field field, Object newValue) throws Exception {

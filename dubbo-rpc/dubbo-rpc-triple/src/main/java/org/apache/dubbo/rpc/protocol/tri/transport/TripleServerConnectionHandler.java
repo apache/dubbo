@@ -17,17 +17,16 @@
 
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
-import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
-import io.netty.handler.codec.http2.Http2Error;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
+import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
 import io.netty.handler.codec.http2.Http2ChannelDuplexHandler;
+import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2GoAwayFrame;
 import io.netty.handler.codec.http2.Http2PingFrame;
 import io.netty.util.ReferenceCountUtil;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -74,6 +73,10 @@ public class TripleServerConnectionHandler extends Http2ChannelDuplexHandler {
         super.channelInactive(ctx);
         //reset all active stream on connection close
         forEachActiveStream(stream -> {
+            //ignore remote side close
+            if (!stream.state().remoteSideOpen()) {
+                return true;
+            }
             DefaultHttp2ResetFrame resetFrame = new DefaultHttp2ResetFrame(Http2Error.NO_ERROR).stream(stream);
             ctx.fireChannelRead(resetFrame);
             return true;

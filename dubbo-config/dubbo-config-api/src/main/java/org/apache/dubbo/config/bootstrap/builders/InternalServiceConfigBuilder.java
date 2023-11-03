@@ -51,7 +51,7 @@ import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 public class InternalServiceConfigBuilder<T> {
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
-    private static final Set<String> UNACCEPTABLE_PROTOCOL = Stream.of("rest", "grpc").collect(Collectors.toSet());
+    private static final Set<String> ACCEPTABLE_PROTOCOL = Stream.of("dubbo", "tri", "injvm").collect(Collectors.toSet());
 
     private final ApplicationModel applicationModel;
     private String  protocol;
@@ -112,19 +112,20 @@ public class InternalServiceConfigBuilder<T> {
      */
     private String getRelatedOrDefaultProtocol() {
         String protocol = "";
-        // <dubbo:consumer/>
-        List<ModuleModel> moduleModels = applicationModel.getPubModuleModels();
-        protocol = moduleModels.stream()
-            .map(ModuleModel::getConfigManager)
-            .map(ModuleConfigManager::getConsumers)
-            .filter(CollectionUtils::isNotEmpty)
-            .flatMap(Collection::stream)
-            .map(ConsumerConfig::getProtocol)
-            .filter(StringUtils::isNotEmpty)
-            .filter(p -> !UNACCEPTABLE_PROTOCOL.contains(p))
-            .findFirst()
-            .orElse("");
+        // <dubbo:protocol/>
+        if (StringUtils.isEmpty(protocol)) {
+            Collection<ProtocolConfig> protocols = applicationModel.getApplicationConfigManager().getProtocols();
+            if (CollectionUtils.isNotEmpty(protocols)) {
+                protocol = protocols.stream()
+                    .map(ProtocolConfig::getName)
+                    .filter(StringUtils::isNotEmpty)
+                    .filter(p -> ACCEPTABLE_PROTOCOL.contains(p))
+                    .findFirst()
+                    .orElse("");
+            }
+        }
         // <dubbo:provider/>
+        List<ModuleModel> moduleModels = applicationModel.getPubModuleModels();
         if (StringUtils.isEmpty(protocol)) {
             Stream<ProviderConfig> providerConfigStream = moduleModels.stream()
                 .map(ModuleModel::getConfigManager)
@@ -145,21 +146,9 @@ public class InternalServiceConfigBuilder<T> {
                     }
                 })
                 .filter(StringUtils::isNotEmpty)
-                .filter(p -> !UNACCEPTABLE_PROTOCOL.contains(p))
+                .filter(p -> ACCEPTABLE_PROTOCOL.contains(p))
                 .findFirst()
                 .orElse("");
-        }
-        // <dubbo:protocol/>
-        if (StringUtils.isEmpty(protocol)) {
-            Collection<ProtocolConfig> protocols = applicationModel.getApplicationConfigManager().getProtocols();
-            if (CollectionUtils.isNotEmpty(protocols)) {
-                protocol = protocols.stream()
-                    .map(ProtocolConfig::getName)
-                    .filter(StringUtils::isNotEmpty)
-                    .filter(p -> !UNACCEPTABLE_PROTOCOL.contains(p))
-                    .findFirst()
-                    .orElse("");
-            }
         }
         // <dubbo:application/>
         if (StringUtils.isEmpty(protocol)) {
@@ -171,7 +160,18 @@ public class InternalServiceConfigBuilder<T> {
                 }
             }
         }
-        return StringUtils.isNotEmpty(protocol) && !UNACCEPTABLE_PROTOCOL.contains(protocol) ? protocol : DUBBO_PROTOCOL;
+        // <dubbo:consumer/>
+        protocol = moduleModels.stream()
+            .map(ModuleModel::getConfigManager)
+            .map(ModuleConfigManager::getConsumers)
+            .filter(CollectionUtils::isNotEmpty)
+            .flatMap(Collection::stream)
+            .map(ConsumerConfig::getProtocol)
+            .filter(StringUtils::isNotEmpty)
+            .filter(p -> ACCEPTABLE_PROTOCOL.contains(p))
+            .findFirst()
+            .orElse("");
+        return StringUtils.isNotEmpty(protocol) && ACCEPTABLE_PROTOCOL.contains(protocol) ? protocol : DUBBO_PROTOCOL;
     }
 
     public InternalServiceConfigBuilder<T> protocol(String protocol) {
@@ -254,7 +254,11 @@ public class InternalServiceConfigBuilder<T> {
         logger.info("Using " + this.protocol + " protocol to export "+interfaceClass.getName()+" service on port " + protocolConfig.getPort());
 
         applicationModel.getApplicationConfigManager().getProtocol(this.protocol)
-            .ifPresent(protocolConfig::mergeProtocol);
+            .ifPresent(p -> {
+                protocolConfig.mergeProtocol(p);
+                // clear extra protocols possibly merged from global ProtocolConfig
+                protocolConfig.setExtProtocol(null);
+            });
 
         ApplicationConfig applicationConfig = getApplicationConfig();
 

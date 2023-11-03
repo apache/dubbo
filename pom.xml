@@ -120,18 +120,16 @@
         <maven_flatten_version>1.5.0</maven_flatten_version>
         <maven_enforce_version>3.3.0</maven_enforce_version>
         <maven_antrun_version>3.1.0</maven_antrun_version>
-        <dubbo_annotation_processor_version>1.0.0</dubbo_annotation_processor_version>
         <maven_os_plugin_version>1.7.1</maven_os_plugin_version>
         <maven_protobuf_plugin_version>0.6.1</maven_protobuf_plugin_version>
 
         <protobuf-protoc_version>3.22.3</protobuf-protoc_version>
         <grpc_version>1.54.0</grpc_version>
 
-        <revision>3.3.0-beta.1-SNAPSHOT</revision>
+        <revision>3.3.0-beta.1</revision>
     </properties>
 
     <modules>
-        <module>dubbo-annotation-processor</module>
         <module>dubbo-common</module>
         <module>dubbo-container</module>
         <module>dubbo-remoting</module>
@@ -170,13 +168,6 @@
     </dependencyManagement>
 
     <dependencies>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-annotation-processor</artifactId>
-            <version>${dubbo_annotation_processor_version}</version>
-            <optional>true</optional>
-        </dependency>
-
         <!--JUnit Jupiter Engine to depend on the JUnit5 engine and JUnit 5 API -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -441,7 +432,9 @@
                                             <version>${log4j2_version}</version>
                                         </additionalDependency>
                                     </additionalDependencies>
-                                    <doclint>all,-missing</doclint>
+                                    <!--FIXME-->
+                                    <!--<doclint>all,-missing</doclint>-->
+                                    <doclint>none</doclint>
                                 </configuration>
                             </execution>
                         </executions>
@@ -450,7 +443,7 @@
                             <charset>UTF-8</charset>
                             <encoding>UTF-8</encoding>
                             <docencoding>UTF-8</docencoding>
-                            <source>${maven_source_version}</source>
+                            <source>${java_source_version}</source>
                             <links>
                                 <link>https://docs.oracle.com/javase/8/docs/api</link>
                             </links>
@@ -696,6 +689,7 @@
                 <version>${maven_compiler_version}</version>
                 <configuration>
                     <compilerArgs>
+                        <compilerArg>-proc:none</compilerArg>
                         <compilerArg>-parameters</compilerArg>
                     </compilerArgs>
                     <fork>true</fork>

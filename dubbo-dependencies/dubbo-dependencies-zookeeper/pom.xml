@@ -32,7 +32,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <revision>3.3.0-beta.1-SNAPSHOT</revision>
+        <revision>3.3.0-beta.1</revision>
         <maven_flatten_version>1.5.0</maven_flatten_version>
         <slf4j_version>1.7.36</slf4j_version>
         <curator_version>4.3.0</curator_version>
