@@ -126,7 +126,7 @@
         <protobuf-protoc_version>3.22.3</protobuf-protoc_version>
         <grpc_version>1.54.0</grpc_version>
 
-        <revision>3.3.0-beta.1</revision>
+        <revision>3.3.0-beta.2-SNAPSHOT</revision>
     </properties>
 
     <modules>
