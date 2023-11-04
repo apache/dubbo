@@ -22,9 +22,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-
 
 /**
  * Register some infrastructure beans if not exists.
@@ -34,7 +31,7 @@ import org.springframework.context.ApplicationContextAware;
  * @see org.springframework.context.support.PostProcessorRegistrationDelegate#invokeBeanFactoryPostProcessors(
  *org.springframework.beans.factory.config.ConfigurableListableBeanFactory, java.util.List)
  */
-public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware {
+public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegistryPostProcessor {
 
     /**
      * The bean name of {@link ReferenceAnnotationBeanPostProcessor}
@@ -42,7 +39,6 @@ public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegist
     public static final String BEAN_NAME = "dubboInfraBeanRegisterPostProcessor";
 
     private BeanDefinitionRegistry registry;
-    private ApplicationContext applicationContext;
 
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
@@ -70,8 +66,4 @@ public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegist
         }
     }
 
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
-    }
 }
