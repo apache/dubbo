@@ -69,6 +69,7 @@ import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT_COMPATIBLE;
 import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER_MODE_KEY;
+import static org.apache.dubbo.config.Constants.DEFAULT_APP_NAME;
 import static org.apache.dubbo.config.Constants.DEFAULT_NATIVE_COMPILER;
 import static org.apache.dubbo.config.Constants.DEVELOPMENT_ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.PRODUCTION_ENVIRONMENT;
@@ -83,8 +84,6 @@ public class ApplicationConfig extends AbstractConfig {
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(ApplicationConfig.class);
 
     private static final long serialVersionUID = 5508512956753757169L;
-
-    private static final String DEFAULT_NAME_PREFIX = "DUBBO_APP_";
 
     /**
      * Application name
@@ -766,9 +765,8 @@ public class ApplicationConfig extends AbstractConfig {
         super.refresh();
         appendEnvironmentProperties();
         if (StringUtils.isEmpty(getName())) {
-            String defaultName = DEFAULT_NAME_PREFIX + UUID.randomUUID();
-            this.setName(defaultName);
-            LOGGER.info("No application name was set, '" + defaultName + "' will be used as the default application name," +
+            this.setName(DEFAULT_APP_NAME);
+            LOGGER.warn("No application name was set, '" + DEFAULT_APP_NAME + "' will be used as the default application name," +
                 " it's highly recommended to set a unique and customized name for it can be critical for some service governance features.");
         }
     }
