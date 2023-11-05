@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MappingChangedEvent;
@@ -56,6 +56,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.QUEUES_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_RESPONSE;
 import static org.apache.dubbo.metadata.MetadataConstants.META_DATA_STORE_TAG;
@@ -76,8 +77,7 @@ public class RedisMetadataReport extends AbstractMetadataReport {
     private int timeout;
     private String password;
     private final String root;
-    protected ConcurrentHashMap<String, MappingDataListener> listenerMap = new ConcurrentHashMap<>();
-
+    protected MappingDataListener mappingDataListener;
 
     public RedisMetadataReport(URL url) {
         super(url);
@@ -252,13 +252,13 @@ public class RedisMetadataReport extends AbstractMetadataReport {
         try (JedisCluster jedisCluster = new JedisCluster(jedisClusterNodes, timeout, timeout, 2, password, new GenericObjectPoolConfig<>())) {
             Jedis jedis=jedisCluster.getConnectionFromSlot(JedisClusterCRC16.getSlot(key));
             jedis.watch(key);
-            String oldValue = jedis.get(key);
+            String oldValue = jedis.hget(key,field);
             if (null==oldValue||null==ticket||oldValue.equals(ticket)) {
                 Transaction transaction = jedis.multi();
                 transaction.hset(key,field,value);
                 List<Object> result=transaction.exec();
                 if(null!=result){
-                    jedisCluster.publish(buildPubSubKey(field),value);
+                    jedisCluster.publish(buildPubSubKey(),field);
                     return true;
                 }
             }else{
@@ -275,11 +275,11 @@ public class RedisMetadataReport extends AbstractMetadataReport {
     private boolean storeMappingStandalone(String key, String field, String value,String ticket) {
         try (Jedis jedis = pool.getResource()) {
             jedis.watch(key);
-            String oldValue = jedis.get(key);
+            String oldValue = jedis.hget(key,field);
             if (null==oldValue||null==ticket||oldValue.equals(ticket)) {
                 Transaction transaction = jedis.multi();
                 transaction.hset(key,field,value);
-                transaction.publish(buildPubSubKey(field),value);
+                transaction.publish(buildPubSubKey(),field);
                 List<Object> result=transaction.exec();
                 return null!=result;
             }
@@ -296,8 +296,8 @@ public class RedisMetadataReport extends AbstractMetadataReport {
         return this.root + GROUP_CHAR_SEPARATOR + defaultMappingGroup;
     }
 
-    private String buildPubSubKey(String serviceKey) {
-        return buildMappingKey(DEFAULT_MAPPING_GROUP) + GROUP_CHAR_SEPARATOR + serviceKey;
+    private String buildPubSubKey() {
+        return buildMappingKey(DEFAULT_MAPPING_GROUP) + GROUP_CHAR_SEPARATOR + QUEUES_KEY;
     }
 
     @Override
@@ -338,28 +338,29 @@ public class RedisMetadataReport extends AbstractMetadataReport {
 
     @Override
     public void removeServiceAppMappingListener(String serviceKey, MappingListener listener) {
-        if (null != listenerMap.get(serviceKey)) {
-            MappingDataListener mappingDataListener=listenerMap.get(serviceKey);
+        if (null != mappingDataListener) {
             NotifySub notifySub=mappingDataListener.getNotifySub();
-            notifySub.removeListener(listener);
+            notifySub.removeListener(serviceKey,listener);
             if(notifySub.isEmpty()){
                 mappingDataListener.shutdown();
-                listenerMap.remove(serviceKey,mappingDataListener);
             }
         }
     }
 
     @Override
     public Set<String> getServiceAppMapping(String serviceKey, MappingListener listener, URL url) {
-        if (null == listenerMap.get(serviceKey)) {
-            NotifySub notifySub = new NotifySub(serviceKey);
-            notifySub.addListener(listener);
-            MappingDataListener dataListener = new MappingDataListener(buildPubSubKey(serviceKey), notifySub);
-            ConcurrentHashMapUtils.computeIfAbsent(listenerMap, serviceKey
-                , k -> dataListener);
-            dataListener.start();
+        if(null==mappingDataListener){
+            synchronized (this){
+                if(null==mappingDataListener) {
+                    mappingDataListener = new MappingDataListener(buildPubSubKey());
+                    mappingDataListener.getNotifySub().addListener(serviceKey, listener);
+                    mappingDataListener.start();
+                }else{
+                    mappingDataListener.getNotifySub().addListener(serviceKey,listener);
+                }
+            }
         }else{
-            listenerMap.get(serviceKey).getNotifySub().addListener(listener);
+            mappingDataListener.getNotifySub().addListener(serviceKey,listener);
         }
         return this.getServiceAppMapping(serviceKey, url);
     }
@@ -387,21 +388,28 @@ public class RedisMetadataReport extends AbstractMetadataReport {
         this.deleteMetadata(identifier);
     }
 
-    private static class NotifySub extends JedisPubSub {
+    //for test
+    public MappingDataListener getMappingDataListener() {
+        return mappingDataListener;
+    }
 
-        private String serviceKey;
-        private Set<MappingListener> listeners = new HashSet<>();
+    class NotifySub extends JedisPubSub {
 
-        public NotifySub(String serviceKey) {
-            this.serviceKey = serviceKey;
+        private Map<String,Set<MappingListener>> listeners = new ConcurrentHashMap<>();
+
+        public void addListener(String key,MappingListener listener) {
+            Set<MappingListener> listenerSet=listeners.computeIfAbsent(key,k-> new ConcurrentHashSet<>());
+            listenerSet.add(listener);
         }
 
-        public void addListener(MappingListener listener) {
-            this.listeners.add(listener);
-        }
-
-        public void removeListener(MappingListener listener) {
-            this.listeners.remove(listener);
+        public void removeListener(String serviceKey, MappingListener listener) {
+            Set<MappingListener> listenerSet=this.listeners.get(serviceKey);
+            if(listenerSet!=null){
+                listenerSet.remove(listener);
+                if(listenerSet.isEmpty()){
+                    this.listeners.remove(serviceKey);
+                }
+            }
         }
 
         public Boolean isEmpty(){
@@ -410,12 +418,14 @@ public class RedisMetadataReport extends AbstractMetadataReport {
 
         @Override
         public void onMessage(String key, String msg) {
-            logger.info("sub from redis " + key + " message:" + msg);
-            MappingChangedEvent mappingChangedEvent = new MappingChangedEvent(serviceKey, getAppNames(msg));
-            if(!listeners.isEmpty()){
-                listeners.forEach(listener -> listener.onEvent(mappingChangedEvent));
+            logger.info("sub from redis:" + key + " message:" + msg);
+            String applicationNames=getMappingData(buildMappingKey(DEFAULT_MAPPING_GROUP),msg);
+            MappingChangedEvent mappingChangedEvent = new MappingChangedEvent(msg, getAppNames(applicationNames));
+            if(!listeners.get(msg).isEmpty()){
+                for (MappingListener mappingListener : listeners.get(msg)) {
+                    mappingListener.onEvent(mappingChangedEvent);
+                }
             }
-
         }
 
         @Override
@@ -429,17 +439,17 @@ public class RedisMetadataReport extends AbstractMetadataReport {
         }
     }
 
-    private class MappingDataListener extends Thread {
+    class MappingDataListener extends Thread {
 
         private String path;
 
         private NotifySub notifySub;
+        // for test
+        protected volatile boolean running = true;
 
-        private volatile boolean running = true;
-
-        public MappingDataListener(String path, NotifySub notifySub) {
-            this.path = path;
-            this.notifySub = notifySub;
+        public MappingDataListener(String path) {
+            this.path=path;
+            this.notifySub = new NotifySub();
         }
 
 

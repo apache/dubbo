@@ -246,18 +246,29 @@ class RedisMetadataReportTest {
 
     @Test
     void testRegisterServiceAppMapping() throws InterruptedException {
-        String serviceKey = "org.apache.dubbo.metadata.store.redis.RedisMetadata4TstService";
-        String appNames = "test1,test2";
+        String serviceKey1= "org.apache.dubbo.metadata.store.redis.RedisMetadata4TstService";
+        String serviceKey2= "org.apache.dubbo.metadata.store.redis.RedisMetadata4TstService2";
 
-        CountDownLatch latch = new CountDownLatch(1);
+        String appNames1 = "test1";
+        String appNames2 = "test1,test2";
+        CountDownLatch latch = new CountDownLatch(2);
+        CountDownLatch latch2 = new CountDownLatch(2);
+
         MappingListener mappingListener=new MappingListener() {
             @Override
             public void onEvent(MappingChangedEvent event) {
                 Set<String> apps = event.getApps();
-                Assertions.assertEquals(apps.size(), 2);
-                Assertions.assertTrue(apps.contains("test1"));
-                Assertions.assertTrue(apps.contains("test2"));
-                latch.countDown();
+                if(apps.size()==1){
+                    Assertions.assertTrue(apps.contains("test1"));
+                }else{
+                    Assertions.assertTrue(apps.contains("test1"));
+                    Assertions.assertTrue(apps.contains("test2"));
+                }
+                if(serviceKey1.equals(event.getServiceKey())){
+                    latch.countDown();
+                }else if(serviceKey2.equals(event.getServiceKey())){
+                    latch2.countDown();
+                }
             }
 
             @Override
@@ -265,14 +276,41 @@ class RedisMetadataReportTest {
 
             }
         };
-        Set<String> serviceAppMapping = redisMetadataReport.getServiceAppMapping( serviceKey, mappingListener, registryUrl);
+
+        Set<String> serviceAppMapping = redisMetadataReport.getServiceAppMapping( serviceKey1, mappingListener, registryUrl);
+
         Assertions.assertTrue(serviceAppMapping.isEmpty());
 
-        ConfigItem configItem = redisMetadataReport.getConfigItem(serviceKey, DEFAULT_MAPPING_GROUP);
-        redisMetadataReport.registerServiceAppMapping(serviceKey, DEFAULT_MAPPING_GROUP, appNames, configItem.getTicket());
+        ConfigItem configItem = redisMetadataReport.getConfigItem(serviceKey1, DEFAULT_MAPPING_GROUP);
+
+        redisMetadataReport.registerServiceAppMapping(serviceKey1, DEFAULT_MAPPING_GROUP, appNames1, configItem.getTicket());
+         configItem = redisMetadataReport.getConfigItem(serviceKey1, DEFAULT_MAPPING_GROUP);
+
+        redisMetadataReport.registerServiceAppMapping(serviceKey1, DEFAULT_MAPPING_GROUP, appNames2, configItem.getTicket());
+
         latch.await();
-        redisMetadataReport.removeServiceAppMappingListener(serviceKey,mappingListener);
-        Assertions.assertTrue(redisMetadataReport.listenerMap.isEmpty());
+
+        serviceAppMapping = redisMetadataReport.getServiceAppMapping( serviceKey2, mappingListener, registryUrl);
+
+        Assertions.assertTrue(serviceAppMapping.isEmpty());
+
+        configItem = redisMetadataReport.getConfigItem(serviceKey2, DEFAULT_MAPPING_GROUP);
+
+        redisMetadataReport.registerServiceAppMapping(serviceKey2, DEFAULT_MAPPING_GROUP, appNames1, configItem.getTicket());
+        configItem = redisMetadataReport.getConfigItem(serviceKey2, DEFAULT_MAPPING_GROUP);
+        redisMetadataReport.registerServiceAppMapping(serviceKey2, DEFAULT_MAPPING_GROUP, appNames2, configItem.getTicket());
+
+        latch2.await();
+        RedisMetadataReport.MappingDataListener mappingDataListener=redisMetadataReport.getMappingDataListener();
+        Assertions.assertTrue(mappingDataListener.running);
+        Assertions.assertTrue(!mappingDataListener.getNotifySub().isEmpty());
+
+        redisMetadataReport.removeServiceAppMappingListener(serviceKey1,mappingListener);
+        Assertions.assertTrue(mappingDataListener.running);
+        Assertions.assertTrue(!mappingDataListener.getNotifySub().isEmpty());
+        redisMetadataReport.removeServiceAppMappingListener(serviceKey2,mappingListener);
+        Assertions.assertTrue(!mappingDataListener.running);
+        Assertions.assertTrue(mappingDataListener.getNotifySub().isEmpty());
     }
 
 
@@ -295,7 +333,6 @@ class RedisMetadataReportTest {
         redisMetadataReport.unPublishAppMetadata(identifier, metadataInfo);
         appMetadata = redisMetadataReport.getAppMetadata(identifier, Collections.emptyMap());
         Assertions.assertNull(appMetadata);
-
     }
 
 }
