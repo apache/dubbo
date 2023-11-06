@@ -136,6 +136,9 @@
         <jprotoc_version>1.2.2</jprotoc_version>
         <protobuf-java_version>3.22.3</protobuf-java_version>
         <grpc_version>1.54.0</grpc_version>
+        <spotless-maven-plugin.version>2.39.0</spotless-maven-plugin.version>
+        <spotless.action>check</spotless.action>
+        <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
         <revision>3.2.8-SNAPSHOT</revision>
     </properties>
 
@@ -604,6 +607,59 @@
             <properties>
                 <maven_jacoco_version>0.8.9</maven_jacoco_version>
             </properties>
+        </profile>
+
+        <profile>
+            <id>java11+</id>
+            <activation>
+                <jdk>[11,)</jdk>
+            </activation>
+            <build>
+                <!--- newer versions of plugins requires JDK 11 -->
+                <plugins>
+                    <plugin>
+                        <groupId>com.diffplug.spotless</groupId>
+                        <artifactId>spotless-maven-plugin</artifactId>
+                        <version>${spotless-maven-plugin.version}</version>
+                        <configuration>
+                            <java>
+                                <palantirJavaFormat />
+                                <removeUnusedImports />
+                                <importOrder>
+                                    <file>dubbo-importorder.txt</file>
+                                </importOrder>
+                                <licenseHeader>
+                                    <file>checkstyle-header.txt</file>
+                                </licenseHeader>
+                            </java>
+                            <pom>
+                                <sortPom>
+                                    <expandEmptyElements>false</expandEmptyElements>
+                                    <spaceBeforeCloseEmptyElement>true</spaceBeforeCloseEmptyElement>
+                                </sortPom>
+                            </pom>
+                            <upToDateChecking>
+                                <enabled>true</enabled>
+                            </upToDateChecking>
+                        </configuration>
+                        <dependencies>
+                            <dependency>
+                                <groupId>com.alibaba</groupId>
+                                <artifactId>dubbo-shared-resources</artifactId>
+                                <version>${dubbo-shared-resources.version}</version>
+                            </dependency>
+                        </dependencies>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>${spotless.action}</goal>
+                                </goals>
+                                <phase>process-sources</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 
