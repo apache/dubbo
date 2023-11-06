@@ -99,6 +99,7 @@ public class ApplicationModel extends ScopeModel {
     }
 
     protected ApplicationModel(FrameworkModel frameworkModel, boolean isInternal) {
+        // 调用父类的ScopeModel传递参数
         super(frameworkModel, ExtensionScope.APPLICATION, isInternal);
         synchronized (instLock) {
             Assert.notNull(frameworkModel, "FrameworkModel can not be null");
@@ -107,8 +108,9 @@ public class ApplicationModel extends ScopeModel {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info(getDesc() + " is created");
             }
+            // 初始化应用程序
             initialize();
-
+            // 初始化模块数据
             this.internalModule = new ModuleModel(this, true);
             this.serviceRepository = new ServiceRepository(this);
 
@@ -134,6 +136,7 @@ public class ApplicationModel extends ScopeModel {
 
     // already synchronized in constructor
     private void initApplicationExts() {
+        // 这个货站实现一共有两个 ConfigManager 和 Environment
         Set<ApplicationExt> exts = this.getExtensionLoader(ApplicationExt.class).getSupportedExtensionInstances();
         for (ApplicationExt ext : exts) {
             ext.initialize();

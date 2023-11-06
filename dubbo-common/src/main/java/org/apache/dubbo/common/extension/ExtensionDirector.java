@@ -86,20 +86,20 @@ public class ExtensionDirector implements ExtensionAccessor {
             scope = annotation.scope();
             extensionScopeMap.put(type, scope);
         }
-
+        // 如果扩展为SELF 自给自足, 为每个作用域创建一个实例,用于特殊的SPI扩展, 如{@link ExtensionInjector}
         if (loader == null && scope == ExtensionScope.SELF) {
             // create an instance in self scope
             loader = createExtensionLoader0(type);
         }
 
-        // 2. find in parent
+        // 2. find in parent 判断父加载器是否存在,
         if (loader == null) {
             if (this.parent != null) {
                 loader = this.parent.getExtensionLoader(type);
             }
         }
 
-        // 3. create it
+        // 3. create it 创建类加载器
         if (loader == null) {
             loader = createExtensionLoader(type);
         }

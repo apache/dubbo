@@ -40,6 +40,8 @@ public class TypeDefinitionBuilder {
     public static List<TypeBuilder> BUILDERS;
 
     public static void initBuilders(FrameworkModel model) {
+        //这个地方会解析出四种类型 TypeBuilder的所有子类都会被解析出来
+        //查看这个文件: META-INF/dubbo/internal/org.apache.dubbo.metadata.definition.builder.TypeBuilder
         Set<TypeBuilder> tbs = model.getExtensionLoader(TypeBuilder.class).getSupportedExtensionInstances();
         BUILDERS = new ArrayList<>(tbs);
     }

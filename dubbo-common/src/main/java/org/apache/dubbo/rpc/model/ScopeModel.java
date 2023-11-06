@@ -43,6 +43,7 @@ public abstract class ScopeModel implements ExtensionAccessor {
 
     /**
      * The internal id is used to represent the hierarchy of the model tree, such as:
+     * 内部id用来表示模型树的层次结构
      * <ol>
      *     <li>1</li>
      *     FrameworkModel (index=1)
@@ -81,6 +82,12 @@ public abstract class ScopeModel implements ExtensionAccessor {
 
     protected final Object instLock = new Object();
 
+    /**
+     * 如果是框架容器: parent= null scope = FRAMEWORK  isInternal = false(是否内部域)
+     * @param parent
+     * @param scope
+     * @param isInternal
+     */
     protected ScopeModel(ScopeModel parent, ExtensionScope scope, boolean isInternal) {
         this.parent = parent;
         this.scope = scope;
@@ -98,11 +105,17 @@ public abstract class ScopeModel implements ExtensionAccessor {
      */
     protected void initialize() {
         synchronized (instLock) {
+            // 初始化ExtensionDirector是一个作用域扩展加载程序管理器
+            // ExtensionDirector支持多个级别,子级可以继承父级的扩展实例
+            //查找和创建扩展实例的方法类似于java的classloader
             this.extensionDirector = new ExtensionDirector(parent != null ? parent.getExtensionDirector() : null, scope, this);
+            //设置一些策略让用户拓展-再初始化以前或者初始化之后调用,类似与spirng的
             this.extensionDirector.addExtensionPostProcessor(new ScopeModelAwareExtensionProcessor(this));
+            // 内部共享bean
             this.beanFactory = new ScopeBeanFactory(parent != null ? parent.getBeanFactory() : null, extensionDirector);
 
             // Add Framework's ClassLoader by default
+            //将当前的类加载器存入类加载器集合中
             ClassLoader dubboClassLoader = ScopeModel.class.getClassLoader();
             if (dubboClassLoader != null) {
                 this.addClassLoader(dubboClassLoader);

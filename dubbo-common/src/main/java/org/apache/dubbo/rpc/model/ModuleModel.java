@@ -58,6 +58,7 @@ public class ModuleModel extends ScopeModel {
         synchronized (instLock) {
             Assert.notNull(applicationModel, "ApplicationModel can not be null");
             this.applicationModel = applicationModel;
+            // 添加模块信息
             applicationModel.addModule(this, isInternal);
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info(getDesc() + " is created");

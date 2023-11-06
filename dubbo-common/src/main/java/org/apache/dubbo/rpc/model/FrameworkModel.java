@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
 
 /**
  * Model of dubbo framework, it can be shared with multiple applications.
+ *
  */
 public class FrameworkModel extends ScopeModel {
 
@@ -51,6 +52,9 @@ public class FrameworkModel extends ScopeModel {
 
     private static final Object globalLock = new Object();
 
+    /**
+     *
+     */
     private volatile static FrameworkModel defaultInstance;
 
     private static final List<FrameworkModel> allInstances = new CopyOnWriteArrayList<>();
@@ -74,32 +78,40 @@ public class FrameworkModel extends ScopeModel {
 
     /**
      * Use {@link FrameworkModel#newModel()} to create a new model
+     * 构造方法
      */
     public FrameworkModel() {
+        // null 代表顶层容器, 作用域是框架, 不是内部作用域
         super(null, ExtensionScope.FRAMEWORK, false);
+        // 加一把锁,全局锁
         synchronized (globalLock) {
+            //加一把锁,实例锁,有必要吗,TODO:后面看一下
             synchronized (instLock) {
+                // 如果是框架类型默认应该是1
                 this.setInternalId(String.valueOf(index.getAndIncrement()));
                 // register FrameworkModel instance early
                 allInstances.add(this);
                 if (LOGGER.isInfoEnabled()) {
                     LOGGER.info(getDesc() + " is created");
                 }
+                // 初始化框架领域模型对象,父类的初始化方法
                 initialize();
-
+                // 初始化
                 TypeDefinitionBuilder.initBuilders(this);
-
+                //框架服务存储仓库对象,用于快速的查找服务提供者的信息
                 serviceRepository = new FrameworkServiceRepository(this);
-
+                // @see: dubbo-common=org.apache.dubbo.common.CommonScopeModelInitializer
+                // 设置通用的初始化类加载器
                 ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader = this.getExtensionLoader(ScopeModelInitializer.class);
                 Set<ScopeModelInitializer> initializers = initializerExtensionLoader.getSupportedExtensionInstances();
                 for (ScopeModelInitializer initializer : initializers) {
                     initializer.initializeFrameworkModel(this);
                 }
-
+                //创建应用模型
                 internalApplicationModel = new ApplicationModel(this, true);
                 internalApplicationModel.getApplicationConfigManager().setApplication(
                     new ApplicationConfig(internalApplicationModel, CommonConstants.DUBBO_INTERNAL_APPLICATION));
+                //设置模型名称
                 internalApplicationModel.setModelName(CommonConstants.DUBBO_INTERNAL_APPLICATION);
             }
         }
@@ -171,6 +183,9 @@ public class FrameworkModel extends ScopeModel {
      * will return a broken model, maybe cause unpredictable problem.
      * Recommendation: Avoid using the default model as much as possible.
      * @return the global default FrameworkModel
+     * 在销毁默认 FrameworkModel 期间，FrameworkModel.defaultModel() 或 ApplicationModel.defaultModel()
+     * 将返回损坏的模型，可能会导致不可预测的问题。
+     * 建议：尽可能避免使用默认模型。 @return全局默认的FrameworkModel
      */
     public static FrameworkModel defaultModel() {
         FrameworkModel instance = defaultInstance;
@@ -243,6 +258,7 @@ public class FrameworkModel extends ScopeModel {
 
     void addApplication(ApplicationModel applicationModel) {
         // can not add new application if it's destroying
+        //检测当前的对象是否被销毁,如果被销毁直接抛出异常
         checkDestroyed();
         synchronized (instLock) {
             if (!this.applicationModels.contains(applicationModel)) {
@@ -312,7 +328,9 @@ public class FrameworkModel extends ScopeModel {
     }
 
     private static void resetDefaultFrameworkModel() {
+        //全局悲观锁,同一个时刻只能有一个线程进行重置工作
         synchronized (globalLock) {
+            // 如果默认实例已经被创建并且没有被销毁,那么不执行下面的流程
             if (defaultInstance != null && !defaultInstance.isDestroyed()) {
                 return;
             }

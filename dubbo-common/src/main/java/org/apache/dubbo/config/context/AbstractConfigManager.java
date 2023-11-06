@@ -110,12 +110,14 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
 
     @Override
     public void initialize() throws IllegalStateException {
+        // 乐观锁判断是否被初始化
         if (!initialized.compareAndSet(false, true)) {
             return;
         }
         CompositeConfiguration configuration = scopeModel.modelEnvironment().getConfiguration();
 
         // dubbo.config.mode
+        // 获取配置的模式,覆写,新老配置等等
         String configModeStr = (String) configuration.getProperty(ConfigKeys.DUBBO_CONFIG_MODE);
         try {
             if (StringUtils.hasText(configModeStr)) {
