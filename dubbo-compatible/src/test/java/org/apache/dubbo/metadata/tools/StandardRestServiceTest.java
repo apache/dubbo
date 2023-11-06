@@ -20,9 +20,9 @@ import org.apache.dubbo.metadata.rest.RestService;
 import org.apache.dubbo.metadata.rest.StandardRestService;
 import org.apache.dubbo.metadata.rest.User;
 
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
+
+import org.junit.jupiter.api.Test;
 
 /**
  * The test case for {@link StandardRestService}

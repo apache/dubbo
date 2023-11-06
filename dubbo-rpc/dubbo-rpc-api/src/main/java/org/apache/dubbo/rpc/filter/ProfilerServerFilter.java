@@ -44,8 +44,9 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_TIMEOU
 
 @Activate(group = PROVIDER, order = Integer.MIN_VALUE)
 public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
-    private final static String CLIENT_IP_KEY = "client_ip";
-    private final static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ProfilerServerFilter.class);
+    private static final String CLIENT_IP_KEY = "client_ip";
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(ProfilerServerFilter.class);
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -53,7 +54,8 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
             ProfilerEntry bizProfiler;
             Object localInvokeProfiler = invocation.get(Profiler.PROFILER_KEY);
             if (localInvokeProfiler instanceof ProfilerEntry) {
-                bizProfiler = Profiler.enter((ProfilerEntry) localInvokeProfiler, "Receive request. Local server invoke begin.");
+                bizProfiler = Profiler.enter(
+                        (ProfilerEntry) localInvokeProfiler, "Receive request. Local server invoke begin.");
             } else {
                 bizProfiler = Profiler.start("Receive request. Server invoke begin.");
             }
@@ -86,6 +88,7 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
             }
         }
     }
+
     private void addAdaptiveResponse(Result appResponse, Invocation invocation) {
         String adaptiveLoadAttachment = invocation.getAttachment(Constants.ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY);
         if (StringUtils.isNotEmpty(adaptiveLoadAttachment)) {
@@ -93,9 +96,13 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
 
             StringBuilder sb = new StringBuilder(64);
             sb.append("curTime:").append(System.currentTimeMillis());
-            sb.append(COMMA_SEPARATOR).append("load:").append(operatingSystemMXBean.getSystemLoadAverage() * 100 / operatingSystemMXBean.getAvailableProcessors() );
+            sb.append(COMMA_SEPARATOR)
+                    .append("load:")
+                    .append(operatingSystemMXBean.getSystemLoadAverage()
+                            * 100
+                            / operatingSystemMXBean.getAvailableProcessors());
 
-            appResponse.setAttachment(Constants.ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY,sb.toString());
+            appResponse.setAttachment(Constants.ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY, sb.toString());
         }
     }
 
@@ -103,23 +110,38 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
         Long timeout = RpcUtils.convertToNumber(invocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY));
 
         if (timeout == null) {
-            timeout = (long) invoker.getUrl().getMethodPositiveParameter(RpcUtils.getMethodName(invocation), TIMEOUT_KEY, DEFAULT_TIMEOUT);
+            timeout = (long) invoker.getUrl()
+                    .getMethodPositiveParameter(RpcUtils.getMethodName(invocation), TIMEOUT_KEY, DEFAULT_TIMEOUT);
         }
         long usage = profiler.getEndTime() - profiler.getStartTime();
         if (((usage / (1000_000L * ProfilerSwitch.getWarnPercent())) > timeout) && timeout != -1) {
 
             StringBuilder attachment = new StringBuilder();
             invocation.foreachAttachment((entry) -> {
-                attachment.append(entry.getKey()).append("=").append(entry.getValue()).append(";\n");
+                attachment
+                        .append(entry.getKey())
+                        .append("=")
+                        .append(entry.getValue())
+                        .append(";\n");
             });
 
-            logger.warn(PROXY_TIMEOUT_RESPONSE, "", "",
-                String.format("[Dubbo-Provider] execute service %s#%s cost %d.%06d ms, this invocation almost (maybe already) timeout. Timeout: %dms\n" +
-                        "client: %s\n" +
-                        "invocation context:\n%s" +
-                        "thread info: \n%s",
-                    invocation.getTargetServiceUniqueName(), RpcUtils.getMethodName(invocation), usage / 1000_000, usage % 1000_000, timeout,
-                    invocation.get(CLIENT_IP_KEY), attachment, Profiler.buildDetail(profiler)));
+            logger.warn(
+                    PROXY_TIMEOUT_RESPONSE,
+                    "",
+                    "",
+                    String.format(
+                            "[Dubbo-Provider] execute service %s#%s cost %d.%06d ms, this invocation almost (maybe already) timeout. Timeout: %dms\n"
+                                    + "client: %s\n"
+                                    + "invocation context:\n%s"
+                                    + "thread info: \n%s",
+                            invocation.getTargetServiceUniqueName(),
+                            RpcUtils.getMethodName(invocation),
+                            usage / 1000_000,
+                            usage % 1000_000,
+                            timeout,
+                            invocation.get(CLIENT_IP_KEY),
+                            attachment,
+                            Profiler.buildDetail(profiler)));
         }
     }
 }

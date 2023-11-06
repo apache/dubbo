@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.router.xds.rule;
 
-
-
 public class XdsRouteRule {
 
     private final HttpRequestMatch match;
@@ -29,7 +27,6 @@ public class XdsRouteRule {
         this.route = route;
     }
 
-
     public HttpRequestMatch getMatch() {
         return match;
     }
@@ -37,5 +34,4 @@ public class XdsRouteRule {
     public HTTPRouteDestination getRoute() {
         return route;
     }
-
 }

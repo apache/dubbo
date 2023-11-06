@@ -19,13 +19,13 @@ package org.apache.dubbo.common.extension;
 import org.apache.dubbo.common.extension.adaptive.HasAdaptiveExt;
 import org.apache.dubbo.common.utils.IOUtils;
 
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -44,7 +44,7 @@ class AdaptiveClassCodeGeneratorTest {
         try (InputStream inputStream = url.openStream()) {
             String content = IOUtils.read(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
             // in Windows platform content get from resource contains \r delimiter
-            content = content.replaceAll("\r","");
+            content = content.replaceAll("\r", "");
             assertTrue(content.contains(value));
         }
     }

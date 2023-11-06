@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.serialize;
 
 import org.apache.dubbo.common.URL;
@@ -30,6 +29,6 @@ public interface MultipleSerialization {
 
     void serialize(URL url, String serializeType, Class<?> clz, Object obj, OutputStream os) throws IOException;
 
-    Object deserialize(URL url, String serializeType, Class<?> clz, InputStream os) throws IOException, ClassNotFoundException;
-
+    Object deserialize(URL url, String serializeType, Class<?> clz, InputStream os)
+            throws IOException, ClassNotFoundException;
 }

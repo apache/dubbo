@@ -66,6 +66,7 @@ public class ConfigCenterConfig extends AbstractConfig {
      * The default value is CommonConstants.DUBBO
      */
     private String group;
+
     private String username;
     private String password;
 
@@ -112,8 +113,7 @@ public class ConfigCenterConfig extends AbstractConfig {
 
     private Map<String, String> appExternalConfiguration;
 
-    public ConfigCenterConfig() {
-    }
+    public ConfigCenterConfig() {}
 
     public ConfigCenterConfig(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -332,5 +332,4 @@ public class ConfigCenterConfig extends AbstractConfig {
             this.parameters.putAll(parameters);
         }
     }
-
 }

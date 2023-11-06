@@ -56,16 +56,17 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
     private Set<PenetrateAttachmentSelector> supportedSelectors;
 
     public ConsumerContextFilter(ApplicationModel applicationModel) {
-        ExtensionLoader<PenetrateAttachmentSelector> selectorExtensionLoader = applicationModel.getExtensionLoader(PenetrateAttachmentSelector.class);
+        ExtensionLoader<PenetrateAttachmentSelector> selectorExtensionLoader =
+                applicationModel.getExtensionLoader(PenetrateAttachmentSelector.class);
         supportedSelectors = selectorExtensionLoader.getSupportedExtensionInstances();
     }
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         RpcContext.getServiceContext()
-            .setInvoker(invoker)
-            .setInvocation(invocation)
-            .setLocalAddress(NetUtils.getLocalHost(), 0);
+                .setInvoker(invoker)
+                .setInvocation(invocation)
+                .setLocalAddress(NetUtils.getLocalHost(), 0);
 
         RpcContext context = RpcContext.getClientAttachment();
         context.setAttachment(REMOTE_APPLICATION_KEY, invoker.getUrl().getApplication());
@@ -75,15 +76,18 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
 
         if (CollectionUtils.isNotEmpty(supportedSelectors)) {
             for (PenetrateAttachmentSelector supportedSelector : supportedSelectors) {
-                Map<String, Object> selected = supportedSelector.select(invocation, RpcContext.getClientAttachment(), RpcContext.getServerAttachment());
+                Map<String, Object> selected = supportedSelector.select(
+                        invocation, RpcContext.getClientAttachment(), RpcContext.getServerAttachment());
                 if (CollectionUtils.isNotEmptyMap(selected)) {
                     ((RpcInvocation) invocation).addObjectAttachments(selected);
                 }
             }
         } else {
-            ((RpcInvocation) invocation).addObjectAttachments(RpcContext.getServerAttachment().getObjectAttachments());
+            ((RpcInvocation) invocation)
+                    .addObjectAttachments(RpcContext.getServerAttachment().getObjectAttachments());
         }
-        Map<String, Object> contextAttachments = RpcContext.getClientAttachment().getObjectAttachments();
+        Map<String, Object> contextAttachments =
+                RpcContext.getClientAttachment().getObjectAttachments();
         if (CollectionUtils.isNotEmptyMap(contextAttachments)) {
             /**
              * invocation.addAttachmentsIfAbsent(context){@link RpcInvocation#addAttachmentsIfAbsent(Map)}should not be used here,
@@ -106,9 +110,12 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
 
                 TimeoutCountDown timeoutCountDown = (TimeoutCountDown) countDown;
                 if (timeoutCountDown.isExpired()) {
-                    return AsyncRpcResult.newDefaultAsyncResult(new RpcException(RpcException.TIMEOUT_TERMINATE,
-                        "No time left for making the following call: " + invocation.getServiceName() + "."
-                            + RpcUtils.getMethodName(invocation) + ", terminate directly."), invocation);
+                    return AsyncRpcResult.newDefaultAsyncResult(
+                            new RpcException(
+                                    RpcException.TIMEOUT_TERMINATE,
+                                    "No time left for making the following call: " + invocation.getServiceName() + "."
+                                            + RpcUtils.getMethodName(invocation) + ", terminate directly."),
+                            invocation);
                 }
             }
         }
@@ -135,14 +142,15 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
             RpcInvocation rpcInvocation = (RpcInvocation) invocation;
             if (rpcInvocation.getInvokeMode() != null) {
                 // clear service context if not in sync mode
-                if (rpcInvocation.getInvokeMode() == InvokeMode.ASYNC || rpcInvocation.getInvokeMode() == InvokeMode.FUTURE) {
+                if (rpcInvocation.getInvokeMode() == InvokeMode.ASYNC
+                        || rpcInvocation.getInvokeMode() == InvokeMode.FUTURE) {
                     RpcContext.removeServiceContext();
                 }
             }
         }
         // server context must not be removed because user might use it on callback.
-        // So the clear of is delayed til the start of the next rpc call, see RpcContext.removeServerContext(); in invoke() above
+        // So the clear of is delayed til the start of the next rpc call, see RpcContext.removeServerContext(); in
+        // invoke() above
         // RpcContext.removeServerContext();
     }
-
 }

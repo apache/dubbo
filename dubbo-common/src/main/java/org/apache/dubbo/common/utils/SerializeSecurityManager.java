@@ -24,7 +24,8 @@ import java.util.Objects;
 import java.util.Set;
 
 public class SerializeSecurityManager {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SerializeSecurityManager.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(SerializeSecurityManager.class);
 
     private final Set<String> allowedPrefix = new ConcurrentHashSet<>();
 

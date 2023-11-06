@@ -94,7 +94,7 @@ public abstract class AbstractConfig implements Serializable {
     /**
      * The suffix container
      */
-    private static final String[] SUFFIXES = new String[]{"Config", "Bean", "ConfigBase"};
+    private static final String[] SUFFIXES = new String[] {"Config", "Bean", "ConfigBase"};
 
     /**
      * The config id
@@ -177,11 +177,13 @@ public abstract class AbstractConfig implements Serializable {
         appendParameters0(parameters, config, prefix, false);
     }
 
-    private static void appendParameters0(Map<String, String> parameters, Object config, String prefix, boolean asParameters) {
+    private static void appendParameters0(
+            Map<String, String> parameters, Object config, String prefix, boolean asParameters) {
         if (config == null) {
             return;
         }
-        // If asParameters=false, it means append attributes, ignore @Parameter annotation's attributes except 'append' and 'attribute'
+        // If asParameters=false, it means append attributes, ignore @Parameter annotation's attributes except 'append'
+        // and 'attribute'
 
         // How to select the appropriate one from multiple getter methods of the property?
         // e.g. Using String getGeneric() or Boolean isGeneric()? Judge by field type ?
@@ -228,7 +230,7 @@ public abstract class AbstractConfig implements Serializable {
                             String pre = parameters.get(key);
                             if (pre != null && pre.length() > 0) {
                                 str = pre + "," + str;
-                                //Remove duplicate values
+                                // Remove duplicate values
                                 Set<String> set = StringUtils.splitToSet(str, ',');
                                 str = StringUtils.join(set, ",");
                             }
@@ -292,7 +294,7 @@ public abstract class AbstractConfig implements Serializable {
 
     private static void invokeSetParameters(Class c, Object o, Map map) {
         try {
-            Method method = findMethodByMethodSignature(c, "setParameters", new String[]{Map.class.getName()});
+            Method method = findMethodByMethodSignature(c, "setParameters", new String[] {Map.class.getName()});
             if (method != null && isParametersSetter(method)) {
                 method.invoke(o, map);
             }
@@ -317,27 +319,29 @@ public abstract class AbstractConfig implements Serializable {
     private static boolean isParametersGetter(Method method) {
         String name = method.getName();
         return ("getParameters".equals(name)
-            && Modifier.isPublic(method.getModifiers())
-            && method.getParameterTypes().length == 0
-            && method.getReturnType() == Map.class);
+                && Modifier.isPublic(method.getModifiers())
+                && method.getParameterTypes().length == 0
+                && method.getReturnType() == Map.class);
     }
 
     private static boolean isParametersSetter(Method method) {
         return ("setParameters".equals(method.getName())
-            && Modifier.isPublic(method.getModifiers())
-            && method.getParameterCount() == 1
-            && Map.class == method.getParameterTypes()[0]
-            && method.getReturnType() == void.class);
+                && Modifier.isPublic(method.getModifiers())
+                && method.getParameterCount() == 1
+                && Map.class == method.getParameterTypes()[0]
+                && method.getReturnType() == void.class);
     }
 
     private static boolean isNestedGetter(Object obj, Method method) {
         String name = method.getName();
         boolean isGetter = (name.startsWith("get") || name.startsWith("is"))
-            && !"get".equals(name) && !"is".equals(name)
-            && !"getClass".equals(name) && !"getObject".equals(name)
-            && Modifier.isPublic(method.getModifiers())
-            && method.getParameterTypes().length == 0
-            && (!method.getReturnType().isPrimitive() && !isSimpleType(method.getReturnType()));
+                && !"get".equals(name)
+                && !"is".equals(name)
+                && !"getClass".equals(name)
+                && !"getObject".equals(name)
+                && Modifier.isPublic(method.getModifiers())
+                && method.getParameterTypes().length == 0
+                && (!method.getReturnType().isPrimitive() && !isSimpleType(method.getReturnType()));
 
         if (!isGetter) {
             return false;
@@ -351,11 +355,11 @@ public abstract class AbstractConfig implements Serializable {
 
     private static boolean isNestedSetter(Object obj, Method method) {
         boolean isSetter = method.getName().startsWith("set")
-            && !"set".equals(method.getName())
-            && Modifier.isPublic(method.getModifiers())
-            && method.getParameterCount() == 1
-            && method.getParameterTypes()[0] != null
-            && (!method.getParameterTypes()[0].isPrimitive() && !isSimpleType(method.getParameterTypes()[0]));
+                && !"set".equals(method.getName())
+                && Modifier.isPublic(method.getModifiers())
+                && method.getParameterCount() == 1
+                && method.getParameterTypes()[0] != null
+                && (!method.getParameterTypes()[0].isPrimitive() && !isSimpleType(method.getParameterTypes()[0]));
 
         if (!isSetter) {
             return false;
@@ -431,7 +435,8 @@ public abstract class AbstractConfig implements Serializable {
 
     protected void checkScopeModel(ScopeModel scopeModel) {
         if (!(scopeModel instanceof ApplicationModel)) {
-            throw new IllegalArgumentException("Invalid scope model, expect to be a ApplicationModel but got: " + scopeModel);
+            throw new IllegalArgumentException(
+                    "Invalid scope model, expect to be a ApplicationModel but got: " + scopeModel);
         }
     }
 
@@ -456,9 +461,9 @@ public abstract class AbstractConfig implements Serializable {
      */
     protected void postProcessAfterScopeModelChanged(ScopeModel oldScopeModel, ScopeModel newScopeModel) {
         // remove this config from old ConfigManager
-//        if (oldScopeModel != null && oldScopeModel instanceof ApplicationModel) {
-//           ((ApplicationModel)oldScopeModel).getApplicationConfigManager().removeConfig(this);
-//        }
+        //        if (oldScopeModel != null && oldScopeModel instanceof ApplicationModel) {
+        //           ((ApplicationModel)oldScopeModel).getApplicationConfigManager().removeConfig(this);
+        //        }
     }
 
     protected <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
@@ -487,11 +492,11 @@ public abstract class AbstractConfig implements Serializable {
         Method[] methods = annotationClass.getMethods();
         for (Method method : methods) {
             if (method.getDeclaringClass() != Object.class
-                && method.getDeclaringClass() != Annotation.class
-                && method.getReturnType() != void.class
-                && method.getParameterTypes().length == 0
-                && Modifier.isPublic(method.getModifiers())
-                && !Modifier.isStatic(method.getModifiers())) {
+                    && method.getDeclaringClass() != Annotation.class
+                    && method.getReturnType() != void.class
+                    && method.getParameterTypes().length == 0
+                    && Modifier.isPublic(method.getModifiers())
+                    && !Modifier.isStatic(method.getModifiers())) {
                 try {
                     String property = method.getName();
                     if ("interfaceClass".equals(property) || "interfaceName".equals(property)) {
@@ -612,7 +617,8 @@ public abstract class AbstractConfig implements Serializable {
             return;
         }
 
-        List<Method> methods = MethodUtils.getMethods(this.getClass(), method -> method.getDeclaringClass() != Object.class);
+        List<Method> methods =
+                MethodUtils.getMethods(this.getClass(), method -> method.getDeclaringClass() != Object.class);
         for (Method method : methods) {
             try {
                 Method getterMethod;
@@ -661,7 +667,8 @@ public abstract class AbstractConfig implements Serializable {
                     }
 
                     // if mode is OVERRIDE_IF_ABSENT, put all old map entries to new map, will override the same key
-                    // if mode is OVERRIDE_ALL, put all keyed entries not in new map from old map to new map (ignore the same key appeared in old map)
+                    // if mode is OVERRIDE_ALL, put all keyed entries not in new map from old map to new map (ignore the
+                    // same key appeared in old map)
                     if (overrideAll) {
                         oldMap.forEach(newMap::putIfAbsent);
                     } else {
@@ -674,7 +681,12 @@ public abstract class AbstractConfig implements Serializable {
                 }
 
             } catch (Throwable t) {
-                logger.error(COMMON_FAILED_OVERRIDE_FIELD, "", "", "Failed to override field value of config bean: " + this, t);
+                logger.error(
+                        COMMON_FAILED_OVERRIDE_FIELD,
+                        "",
+                        "",
+                        "Failed to override field value of config bean: " + this,
+                        t);
                 throw new IllegalStateException("Failed to override field value of config bean: " + this, t);
             }
         }
@@ -690,7 +702,12 @@ public abstract class AbstractConfig implements Serializable {
                 preProcessRefresh();
                 refreshWithPrefixes(getPrefixes(), getConfigMode());
             } catch (Exception e) {
-                logger.error(COMMON_FAILED_OVERRIDE_FIELD, "", "", "Failed to override field value of config bean: " + this, e);
+                logger.error(
+                        COMMON_FAILED_OVERRIDE_FIELD,
+                        "",
+                        "",
+                        "Failed to override field value of config bean: " + this,
+                        e);
                 throw new IllegalStateException("Failed to override field value of config bean: " + this, e);
             }
 
@@ -729,9 +746,9 @@ public abstract class AbstractConfig implements Serializable {
                     idOrName = "[name=" + name + "]";
                 }
             }
-            logger.debug("Refreshing " + this.getClass().getSimpleName() + idOrName +
-                " with prefix [" + preferredPrefix +
-                "], extracted props: " + subProperties);
+            logger.debug("Refreshing " + this.getClass().getSimpleName() + idOrName + " with prefix ["
+                    + preferredPrefix + "], extracted props: "
+                    + subProperties);
         }
 
         assignProperties(this, environment, subProperties, subPropsConfiguration, configMode);
@@ -740,7 +757,12 @@ public abstract class AbstractConfig implements Serializable {
         processExtraRefresh(preferredPrefix, subPropsConfiguration);
     }
 
-    private void assignProperties(Object obj, Environment environment, Map<String, String> properties, InmemoryConfiguration configuration, ConfigMode configMode) {
+    private void assignProperties(
+            Object obj,
+            Environment environment,
+            Map<String, String> properties,
+            InmemoryConfiguration configuration,
+            ConfigMode configMode) {
         // if old one (this) contains non-null value, do not override
         boolean overrideIfAbsent = configMode == ConfigMode.OVERRIDE_IF_ABSENT;
 
@@ -748,7 +770,8 @@ public abstract class AbstractConfig implements Serializable {
         boolean overrideAll = configMode == ConfigMode.OVERRIDE_ALL;
 
         // loop methods, get override value and set the new value back to method
-        List<Method> methods = MethodUtils.getMethods(obj.getClass(), method -> method.getDeclaringClass() != Object.class);
+        List<Method> methods =
+                MethodUtils.getMethods(obj.getClass(), method -> method.getDeclaringClass() != Object.class);
         for (Method method : methods) {
             if (MethodUtils.isSetter(method)) {
                 String propertyName = extractPropertyName(method.getName());
@@ -763,22 +786,26 @@ public abstract class AbstractConfig implements Serializable {
 
                 try {
                     String value = StringUtils.trim(configuration.getString(kebabPropertyName));
-                    // isTypeMatch() is called to avoid duplicate and incorrect update, for example, we have two 'setGeneric' methods in ReferenceConfig.
+                    // isTypeMatch() is called to avoid duplicate and incorrect update, for example, we have two
+                    // 'setGeneric' methods in ReferenceConfig.
                     if (StringUtils.hasText(value)
-                        && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value)
-                        && !isIgnoredAttribute(obj.getClass(), propertyName)) {
+                            && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value)
+                            && !isIgnoredAttribute(obj.getClass(), propertyName)) {
                         value = environment.resolvePlaceholders(value);
                         if (StringUtils.hasText(value)) {
-                            Object arg = ClassUtils.convertPrimitive(ScopeModelUtil.getFrameworkModel(getScopeModel()), method.getParameterTypes()[0], value);
+                            Object arg = ClassUtils.convertPrimitive(
+                                    ScopeModelUtil.getFrameworkModel(getScopeModel()),
+                                    method.getParameterTypes()[0],
+                                    value);
                             if (arg != null) {
                                 method.invoke(obj, arg);
                             }
                         }
                     }
                 } catch (Exception e) {
-                    logger.info("Failed to override the property " + method.getName() + " in " +
-                        obj.getClass().getSimpleName() +
-                        ", please make sure every property has getter/setter method provided.");
+                    logger.info("Failed to override the property " + method.getName() + " in "
+                            + obj.getClass().getSimpleName()
+                            + ", please make sure every property has getter/setter method provided.");
                 }
             } else if (isParametersSetter(method)) {
                 String propertyName = extractPropertyName(method.getName());
@@ -816,7 +843,8 @@ public abstract class AbstractConfig implements Serializable {
                 }
 
                 // if mode is OVERRIDE_IF_ABSENT, put all old map entries to new map, will override the same key
-                // if mode is OVERRIDE_ALL, put all keyed entries not in new map from old map to new map (ignore the same key appeared in old map)
+                // if mode is OVERRIDE_ALL, put all keyed entries not in new map from old map to new map (ignore the
+                // same key appeared in old map)
                 // if mode is others, override with new map
                 if (overrideIfAbsent) {
                     newMap.putAll(oldMap);
@@ -835,7 +863,10 @@ public abstract class AbstractConfig implements Serializable {
                     assignProperties(inner, environment, subProperties, subPropsConfiguration, configMode);
                     method.invoke(obj, inner);
                 } catch (ReflectiveOperationException e) {
-                    throw new IllegalStateException("Cannot assign nested class when refreshing config: " + obj.getClass().getName(), e);
+                    throw new IllegalStateException(
+                            "Cannot assign nested class when refreshing config: "
+                                    + obj.getClass().getName(),
+                            e);
                 }
             }
         }
@@ -931,8 +962,7 @@ public abstract class AbstractConfig implements Serializable {
      * @see AbstractConfig#getMetaData()
      * @see AbstractConfig#appendAttributes(Map, Object)
      */
-    protected void checkDefault() {
-    }
+    protected void checkDefault() {}
 
     @Parameter(excluded = true, attribute = false)
     public boolean isRefreshed() {
@@ -1040,7 +1070,7 @@ public abstract class AbstractConfig implements Serializable {
                     hashCode = 31 * hashCode + value.hashCode();
                 }
             } catch (Exception ignored) {
-                //ignored
+                // ignored
             }
         }
 

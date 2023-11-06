@@ -16,12 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
-import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelOption;
-import io.netty.handler.codec.http.HttpObjectAggregator;
-import io.netty.handler.codec.http.HttpRequestDecoder;
-import io.netty.handler.codec.http.HttpResponseEncoder;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
@@ -39,6 +33,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelOption;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpRequestDecoder;
+import io.netty.handler.codec.http.HttpResponseEncoder;
 
 import static org.apache.dubbo.common.constants.CommonConstants.BACKLOG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
@@ -67,7 +68,6 @@ public class NettyHttpRestServer implements RestProtocolServer {
 
     private final Map<String, Object> attributes = new ConcurrentHashMap<>();
 
-
     @Override
     public String getAddress() {
         return address;
@@ -82,7 +82,6 @@ public class NettyHttpRestServer implements RestProtocolServer {
     @Override
     public void close() {
         server.stop();
-
     }
 
     @Override
@@ -119,15 +118,18 @@ public class NettyHttpRestServer implements RestProtocolServer {
             @Override
             public List<ChannelHandler> getUnSharedHandlers(URL url) {
                 return Arrays.asList(
-                    //  add SslServerTlsHandler
-                    new SslServerTlsHandler(url),
-                    new HttpRequestDecoder(
-                        url.getParameter(RestConstant.MAX_INITIAL_LINE_LENGTH_PARAM, RestConstant.MAX_INITIAL_LINE_LENGTH),
-                        url.getParameter(RestConstant.MAX_HEADER_SIZE_PARAM, RestConstant.MAX_HEADER_SIZE),
-                        url.getParameter(RestConstant.MAX_CHUNK_SIZE_PARAM, RestConstant.MAX_CHUNK_SIZE)),
-                    new HttpObjectAggregator(url.getParameter(RestConstant.MAX_REQUEST_SIZE_PARAM, RestConstant.MAX_REQUEST_SIZE)),
-                    new HttpResponseEncoder(), new RestHttpRequestDecoder(url, serviceDeployer))
-                    ;
+                        //  add SslServerTlsHandler
+                        new SslServerTlsHandler(url),
+                        new HttpRequestDecoder(
+                                url.getParameter(
+                                        RestConstant.MAX_INITIAL_LINE_LENGTH_PARAM,
+                                        RestConstant.MAX_INITIAL_LINE_LENGTH),
+                                url.getParameter(RestConstant.MAX_HEADER_SIZE_PARAM, RestConstant.MAX_HEADER_SIZE),
+                                url.getParameter(RestConstant.MAX_CHUNK_SIZE_PARAM, RestConstant.MAX_CHUNK_SIZE)),
+                        new HttpObjectAggregator(
+                                url.getParameter(RestConstant.MAX_REQUEST_SIZE_PARAM, RestConstant.MAX_REQUEST_SIZE)),
+                        new HttpResponseEncoder(),
+                        new RestHttpRequestDecoder(url, serviceDeployer));
             }
         };
     }
@@ -140,7 +142,8 @@ public class NettyHttpRestServer implements RestProtocolServer {
      */
     protected Map<ChannelOption, Object> getChildChannelOptionMap(URL url) {
         Map<ChannelOption, Object> channelOption = new HashMap<>();
-        channelOption.put(ChannelOption.SO_KEEPALIVE, url.getParameter(Constants.KEEP_ALIVE_KEY, Constants.DEFAULT_KEEP_ALIVE));
+        channelOption.put(
+                ChannelOption.SO_KEEPALIVE, url.getParameter(Constants.KEEP_ALIVE_KEY, Constants.DEFAULT_KEEP_ALIVE));
         return channelOption;
     }
 
@@ -155,7 +158,9 @@ public class NettyHttpRestServer implements RestProtocolServer {
 
         options.put(ChannelOption.SO_REUSEADDR, Boolean.TRUE);
         options.put(ChannelOption.TCP_NODELAY, Boolean.TRUE);
-        options.put(ChannelOption.SO_BACKLOG, url.getPositiveParameter(BACKLOG_KEY, org.apache.dubbo.remoting.Constants.DEFAULT_BACKLOG));
+        options.put(
+                ChannelOption.SO_BACKLOG,
+                url.getPositiveParameter(BACKLOG_KEY, org.apache.dubbo.remoting.Constants.DEFAULT_BACKLOG));
         options.put(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         return options;
     }
@@ -185,6 +190,4 @@ public class NettyHttpRestServer implements RestProtocolServer {
     private void registerExtension(URL url) {
         serviceDeployer.registerExtension(url);
     }
-
-
 }

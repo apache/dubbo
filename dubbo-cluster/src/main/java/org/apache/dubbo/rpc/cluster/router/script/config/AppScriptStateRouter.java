@@ -45,7 +45,8 @@ import static org.apache.dubbo.rpc.cluster.Constants.RUNTIME_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.TYPE_KEY;
 
 public class AppScriptStateRouter<T> extends AbstractStateRouter<T> implements ConfigurationListener {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AppScriptStateRouter.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(AppScriptStateRouter.class);
     private static final String RULE_SUFFIX = ".script-router";
 
     private ScriptRule scriptRule;
@@ -57,15 +58,19 @@ public class AppScriptStateRouter<T> extends AbstractStateRouter<T> implements C
     }
 
     @Override
-    protected BitList<Invoker<T>> doRoute(BitList<Invoker<T>> invokers,
-                                          URL url,
-                                          Invocation invocation,
-                                          boolean needToPrintMessage,
-                                          Holder<RouterSnapshotNode<T>> routerSnapshotNodeHolder,
-                                          Holder<String> messageHolder) throws RpcException {
+    protected BitList<Invoker<T>> doRoute(
+            BitList<Invoker<T>> invokers,
+            URL url,
+            Invocation invocation,
+            boolean needToPrintMessage,
+            Holder<RouterSnapshotNode<T>> routerSnapshotNodeHolder,
+            Holder<String> messageHolder)
+            throws RpcException {
         if (scriptRouter == null || !scriptRule.isValid() || !scriptRule.isEnabled()) {
             if (needToPrintMessage) {
-                messageHolder.set("Directly return from script router. Reason: Invokers from previous router is empty or script is not enabled. Script rule is: " + (scriptRule == null ? "null" : scriptRule.getRawRule()));
+                messageHolder.set(
+                        "Directly return from script router. Reason: Invokers from previous router is empty or script is not enabled. Script rule is: "
+                                + (scriptRule == null ? "null" : scriptRule.getRawRule()));
             }
             return invokers;
         }
@@ -82,8 +87,8 @@ public class AppScriptStateRouter<T> extends AbstractStateRouter<T> implements C
     @Override
     public synchronized void process(ConfigChangedEvent event) {
         if (logger.isDebugEnabled()) {
-            logger.debug("Notification of script rule change, type is: " + event.getChangeType() + ", raw rule is:\n " +
-                event.getContent());
+            logger.debug("Notification of script rule change, type is: " + event.getChangeType() + ", raw rule is:\n "
+                    + event.getContent());
         }
 
         try {
@@ -91,16 +96,22 @@ public class AppScriptStateRouter<T> extends AbstractStateRouter<T> implements C
                 this.scriptRule = null;
             } else {
                 this.scriptRule = ScriptRule.parse(event.getContent());
-                URL scriptUrl = getUrl()
-                    .addParameter(TYPE_KEY, isEmpty(scriptRule.getType()) ? DEFAULT_SCRIPT_TYPE_KEY : scriptRule.getType())
-                    .addParameterAndEncoded(RULE_KEY, scriptRule.getScript())
-                    .addParameter(FORCE_KEY, scriptRule.isForce())
-                    .addParameter(RUNTIME_KEY, scriptRule.isRuntime());
+                URL scriptUrl = getUrl().addParameter(
+                                TYPE_KEY,
+                                isEmpty(scriptRule.getType()) ? DEFAULT_SCRIPT_TYPE_KEY : scriptRule.getType())
+                        .addParameterAndEncoded(RULE_KEY, scriptRule.getScript())
+                        .addParameter(FORCE_KEY, scriptRule.isForce())
+                        .addParameter(RUNTIME_KEY, scriptRule.isRuntime());
                 scriptRouter = new ScriptStateRouter<>(scriptUrl);
             }
         } catch (Exception e) {
-            logger.error(CLUSTER_TAG_ROUTE_INVALID, "Failed to parse the raw tag router rule", "", "Failed to parse the raw tag router rule and it will not take effect, please check if the " +
-                "rule matches with the template, the raw rule is:\n ", e);
+            logger.error(
+                    CLUSTER_TAG_ROUTE_INVALID,
+                    "Failed to parse the raw tag router rule",
+                    "",
+                    "Failed to parse the raw tag router rule and it will not take effect, please check if the "
+                            + "rule matches with the template, the raw rule is:\n ",
+                    e);
         }
     }
 
@@ -115,8 +126,12 @@ public class AppScriptStateRouter<T> extends AbstractStateRouter<T> implements C
         String providerApplication = url.getRemoteApplication();
 
         if (isEmpty(providerApplication)) {
-            logger.error(CLUSTER_TAG_ROUTE_EMPTY, "tag router get providerApplication is empty", "", "TagRouter must getConfig from or subscribe to a specific application, but the application " +
-                "in this TagRouter is not specified.");
+            logger.error(
+                    CLUSTER_TAG_ROUTE_EMPTY,
+                    "tag router get providerApplication is empty",
+                    "",
+                    "TagRouter must getConfig from or subscribe to a specific application, but the application "
+                            + "in this TagRouter is not specified.");
             return;
         }
 

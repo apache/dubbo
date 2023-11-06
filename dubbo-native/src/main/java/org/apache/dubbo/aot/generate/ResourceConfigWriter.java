@@ -38,15 +38,26 @@ public class ResourceConfigWriter {
         writer.writeObject(attributes);
     }
 
-    private Map<String, Object> toAttributes(List<ResourcePatternDescriber> includes, List<ResourcePatternDescriber> excludes) {
+    private Map<String, Object> toAttributes(
+            List<ResourcePatternDescriber> includes, List<ResourcePatternDescriber> excludes) {
         Map<String, Object> attributes = new LinkedHashMap<>();
-        addIfNotEmpty(attributes, "includes", includes.stream().distinct().map(this::toAttributes).collect(Collectors.toList()));
-        addIfNotEmpty(attributes, "excludes", excludes.stream().distinct().map(this::toAttributes).collect(Collectors.toList()));
+        addIfNotEmpty(
+                attributes,
+                "includes",
+                includes.stream().distinct().map(this::toAttributes).collect(Collectors.toList()));
+        addIfNotEmpty(
+                attributes,
+                "excludes",
+                excludes.stream().distinct().map(this::toAttributes).collect(Collectors.toList()));
         return attributes;
     }
 
-    private void handleResourceBundles(Map<String, Object> attributes, Set<ResourceBundleDescriber> resourceBundleDescribers) {
-        addIfNotEmpty(attributes, "bundles", resourceBundleDescribers.stream().map(this::toAttributes).collect(Collectors.toList()));
+    private void handleResourceBundles(
+            Map<String, Object> attributes, Set<ResourceBundleDescriber> resourceBundleDescribers) {
+        addIfNotEmpty(
+                attributes,
+                "bundles",
+                resourceBundleDescribers.stream().map(this::toAttributes).collect(Collectors.toList()));
     }
 
     private Map<String, Object> toAttributes(ResourceBundleDescriber describer) {

@@ -19,5 +19,4 @@ package org.apache.dubbo.config.utils.service;
 /**
  *
  */
-public class FooServiceImpl implements FooService {
-}
+public class FooServiceImpl implements FooService {}

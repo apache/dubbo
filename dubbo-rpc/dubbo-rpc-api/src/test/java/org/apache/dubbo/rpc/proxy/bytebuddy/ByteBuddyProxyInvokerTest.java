@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.proxy.bytebuddy;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.proxy.RemoteService;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -28,11 +29,13 @@ class ByteBuddyProxyInvokerTest {
     void testNewInstance() throws Throwable {
         URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");
         RemoteService proxy = Mockito.mock(RemoteService.class);
-        ByteBuddyProxyInvoker<RemoteService> invoker = ByteBuddyProxyInvoker.newInstance(proxy, RemoteService.class, url);
-        invoker.doInvoke(proxy, "sayHello", new Class[]{String.class}, new Object[]{"test"});
+        ByteBuddyProxyInvoker<RemoteService> invoker =
+                ByteBuddyProxyInvoker.newInstance(proxy, RemoteService.class, url);
+        invoker.doInvoke(proxy, "sayHello", new Class[] {String.class}, new Object[] {"test"});
         Mockito.verify(proxy, Mockito.times(1)).sayHello("test");
 
-        Assertions.assertThrows(IllegalArgumentException.class,
-            () -> invoker.doInvoke(proxy, "equals", new Class[]{String.class}, new Object[]{"test", "test2"}));
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> invoker.doInvoke(proxy, "equals", new Class[] {String.class}, new Object[] {"test", "test2"}));
     }
 }

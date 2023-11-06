@@ -35,5 +35,4 @@ public @interface Menu {
     String desc() default "";
 
     int order() default 0;
-
 }

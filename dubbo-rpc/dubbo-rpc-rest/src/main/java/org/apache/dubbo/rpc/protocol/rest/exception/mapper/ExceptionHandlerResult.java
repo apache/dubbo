@@ -20,9 +20,7 @@ public class ExceptionHandlerResult {
     private int status;
     private Object entity;
 
-    public ExceptionHandlerResult() {
-
-    }
+    public ExceptionHandlerResult() {}
 
     public ExceptionHandlerResult setStatus(int status) {
         this.status = status;
@@ -48,9 +46,6 @@ public class ExceptionHandlerResult {
 
     @Override
     public String toString() {
-        return "ExceptionHandlerResult{" +
-            "status=" + status +
-            ", entity=" + entity +
-            '}';
+        return "ExceptionHandlerResult{" + "status=" + status + ", entity=" + entity + '}';
     }
 }

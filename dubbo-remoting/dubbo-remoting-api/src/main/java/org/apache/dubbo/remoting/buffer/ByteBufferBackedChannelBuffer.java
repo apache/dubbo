@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.remoting.buffer;
 
 import java.io.IOException;
@@ -53,12 +52,10 @@ public class ByteBufferBackedChannelBuffer extends AbstractChannelBuffer {
         }
     }
 
-
     @Override
     public int capacity() {
         return capacity;
     }
-
 
     @Override
     public ChannelBuffer copy(int index, int length) {
@@ -69,20 +66,16 @@ public class ByteBufferBackedChannelBuffer extends AbstractChannelBuffer {
             throw new IndexOutOfBoundsException();
         }
 
-        ByteBuffer dst = buffer.isDirect()
-                ? ByteBuffer.allocateDirect(length)
-                : ByteBuffer.allocate(length);
+        ByteBuffer dst = buffer.isDirect() ? ByteBuffer.allocateDirect(length) : ByteBuffer.allocate(length);
         dst.put(src);
         dst.clear();
         return new ByteBufferBackedChannelBuffer(dst);
     }
 
-
     @Override
     public byte getByte(int index) {
         return buffer.get(index);
     }
-
 
     @Override
     public void getBytes(int index, byte[] dst, int dstIndex, int length) {
@@ -95,7 +88,6 @@ public class ByteBufferBackedChannelBuffer extends AbstractChannelBuffer {
         data.get(dst, dstIndex, length);
     }
 
-
     @Override
     public void getBytes(int index, ByteBuffer dst) {
         ByteBuffer data = buffer.duplicate();
@@ -107,7 +99,6 @@ public class ByteBufferBackedChannelBuffer extends AbstractChannelBuffer {
         }
         dst.put(data);
     }
-
 
     @Override
     public void getBytes(int index, ChannelBuffer dst, int dstIndex, int length) {
@@ -124,7 +115,6 @@ public class ByteBufferBackedChannelBuffer extends AbstractChannelBuffer {
         }
     }
 
-
     @Override
     public void getBytes(int index, OutputStream out, int length) throws IOException {
         if (length == 0) {
@@ -140,18 +130,15 @@ public class ByteBufferBackedChannelBuffer extends AbstractChannelBuffer {
         }
     }
 
-
     @Override
     public boolean isDirect() {
         return buffer.isDirect();
     }
 
-
     @Override
     public void setByte(int index, int value) {
         buffer.put(index, (byte) value);
     }
-
 
     @Override
     public void setBytes(int index, byte[] src, int srcIndex, int length) {
@@ -160,14 +147,12 @@ public class ByteBufferBackedChannelBuffer extends AbstractChannelBuffer {
         data.put(src, srcIndex, length);
     }
 
-
     @Override
     public void setBytes(int index, ByteBuffer src) {
         ByteBuffer data = buffer.duplicate();
         data.limit(index + src.remaining()).position(index);
         data.put(src);
     }
-
 
     @Override
     public void setBytes(int index, ChannelBuffer src, int srcIndex, int length) {
@@ -184,7 +169,6 @@ public class ByteBufferBackedChannelBuffer extends AbstractChannelBuffer {
         }
     }
 
-
     @Override
     public ByteBuffer toByteBuffer(int index, int length) {
         if (index == 0 && length == capacity()) {
@@ -193,7 +177,6 @@ public class ByteBufferBackedChannelBuffer extends AbstractChannelBuffer {
             return ((ByteBuffer) buffer.duplicate().position(index).limit(index + length)).slice();
         }
     }
-
 
     @Override
     public int setBytes(int index, InputStream in, int length) throws IOException {
@@ -235,18 +218,15 @@ public class ByteBufferBackedChannelBuffer extends AbstractChannelBuffer {
         return readBytes;
     }
 
-
     @Override
     public byte[] array() {
         return buffer.array();
     }
 
-
     @Override
     public boolean hasArray() {
         return buffer.hasArray();
     }
-
 
     @Override
     public int arrayOffset() {

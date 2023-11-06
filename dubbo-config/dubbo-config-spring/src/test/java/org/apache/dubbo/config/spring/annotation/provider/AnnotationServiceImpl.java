@@ -33,5 +33,4 @@ public class AnnotationServiceImpl implements DemoService {
     public Box getBox() {
         return null;
     }
-
 }

@@ -123,10 +123,10 @@ public class ServiceDefinition implements Serializable {
             return false;
         }
         ServiceDefinition that = (ServiceDefinition) o;
-        return Objects.equals(getCanonicalName(), that.getCanonicalName()) &&
-                Objects.equals(getCodeSource(), that.getCodeSource()) &&
-                Objects.equals(getMethods(), that.getMethods()) &&
-                Objects.equals(getTypes(), that.getTypes());
+        return Objects.equals(getCanonicalName(), that.getCanonicalName())
+                && Objects.equals(getCodeSource(), that.getCodeSource())
+                && Objects.equals(getMethods(), that.getMethods())
+                && Objects.equals(getTypes(), that.getTypes());
     }
 
     @Override

@@ -42,8 +42,7 @@ public interface NotifyListener {
      */
     void notify(List<URL> urls);
 
-    default void addServiceListener(ServiceInstancesChangedListener instanceListener) {
-    }
+    default void addServiceListener(ServiceInstancesChangedListener instanceListener) {}
 
     default ServiceInstancesChangedListener getServiceListener() {
         return null;
@@ -52,5 +51,4 @@ public interface NotifyListener {
     default URL getConsumerUrl() {
         return null;
     }
-
 }

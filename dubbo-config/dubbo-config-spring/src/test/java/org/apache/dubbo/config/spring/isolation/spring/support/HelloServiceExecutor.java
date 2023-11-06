@@ -24,8 +24,12 @@ import java.util.concurrent.TimeUnit;
 
 public class HelloServiceExecutor extends ThreadPoolExecutor {
     public HelloServiceExecutor() {
-        super(100, 100, 60, TimeUnit.SECONDS, new LinkedBlockingDeque<>(),
-            new NamedThreadFactory("HelloServiceExecutor"));
+        super(
+                100,
+                100,
+                60,
+                TimeUnit.SECONDS,
+                new LinkedBlockingDeque<>(),
+                new NamedThreadFactory("HelloServiceExecutor"));
     }
-
 }

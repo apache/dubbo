@@ -46,11 +46,12 @@ public class ConsumerModel extends ServiceModel {
      * @param serviceKey  Name of the service.
      * @param proxyObject Proxy object.
      */
-    public ConsumerModel(String serviceKey,
-                         Object proxyObject,
-                         ServiceDescriptor serviceDescriptor,
-                         Map<String, AsyncMethodInfo> methodConfigs,
-                         ClassLoader interfaceClassLoader) {
+    public ConsumerModel(
+            String serviceKey,
+            Object proxyObject,
+            ServiceDescriptor serviceDescriptor,
+            Map<String, AsyncMethodInfo> methodConfigs,
+            ClassLoader interfaceClassLoader) {
 
         super(proxyObject, serviceKey, serviceDescriptor, null, interfaceClassLoader);
         Assert.notEmptyString(serviceKey, "Service name can't be null or blank");
@@ -58,12 +59,13 @@ public class ConsumerModel extends ServiceModel {
         this.methodConfigs = methodConfigs == null ? new HashMap<>() : methodConfigs;
     }
 
-    public ConsumerModel(String serviceKey,
-                         Object proxyObject,
-                         ServiceDescriptor serviceDescriptor,
-                         ServiceMetadata metadata,
-                         Map<String, AsyncMethodInfo> methodConfigs,
-                         ClassLoader interfaceClassLoader) {
+    public ConsumerModel(
+            String serviceKey,
+            Object proxyObject,
+            ServiceDescriptor serviceDescriptor,
+            ServiceMetadata metadata,
+            Map<String, AsyncMethodInfo> methodConfigs,
+            ClassLoader interfaceClassLoader) {
 
         super(proxyObject, serviceKey, serviceDescriptor, null, metadata, interfaceClassLoader);
         Assert.notEmptyString(serviceKey, "Service name can't be null or blank");
@@ -71,13 +73,14 @@ public class ConsumerModel extends ServiceModel {
         this.methodConfigs = methodConfigs == null ? new HashMap<>() : methodConfigs;
     }
 
-    public ConsumerModel(String serviceKey,
-                         Object proxyObject,
-                         ServiceDescriptor serviceDescriptor,
-                         ModuleModel moduleModel,
-                         ServiceMetadata metadata,
-                         Map<String, AsyncMethodInfo> methodConfigs,
-                         ClassLoader interfaceClassLoader) {
+    public ConsumerModel(
+            String serviceKey,
+            Object proxyObject,
+            ServiceDescriptor serviceDescriptor,
+            ModuleModel moduleModel,
+            ServiceMetadata metadata,
+            Map<String, AsyncMethodInfo> methodConfigs,
+            ClassLoader interfaceClassLoader) {
         super(proxyObject, serviceKey, serviceDescriptor, moduleModel, metadata, interfaceClassLoader);
 
         Assert.notEmptyString(serviceKey, "Service name can't be null or blank");
@@ -102,7 +105,7 @@ public class ConsumerModel extends ServiceModel {
         if (getProxyObject() == null) {
             Class<?> serviceInterfaceClass = getServiceInterfaceClass();
             if (serviceInterfaceClass != null) {
-                interfaceList = new Class[]{serviceInterfaceClass};
+                interfaceList = new Class[] {serviceInterfaceClass};
             } else {
                 interfaceList = new Class[0];
             }
@@ -133,7 +136,9 @@ public class ConsumerModel extends ServiceModel {
      * @return method model
      */
     public ConsumerMethodModel getMethodModel(String method) {
-        Optional<Map.Entry<Method, ConsumerMethodModel>> consumerMethodModelEntry = methodModels.entrySet().stream().filter(entry -> entry.getKey().getName().equals(method)).findFirst();
+        Optional<Map.Entry<Method, ConsumerMethodModel>> consumerMethodModelEntry = methodModels.entrySet().stream()
+                .filter(entry -> entry.getKey().getName().equals(method))
+                .findFirst();
         return consumerMethodModelEntry.map(Map.Entry::getValue).orElse(null);
     }
 
@@ -144,9 +149,10 @@ public class ConsumerModel extends ServiceModel {
      */
     public ConsumerMethodModel getMethodModel(String method, String[] argsType) {
         Optional<ConsumerMethodModel> consumerMethodModel = methodModels.entrySet().stream()
-            .filter(entry -> entry.getKey().getName().equals(method))
-            .map(Map.Entry::getValue).filter(methodModel -> Arrays.equals(argsType, methodModel.getParameterTypes()))
-            .findFirst();
+                .filter(entry -> entry.getKey().getName().equals(method))
+                .map(Map.Entry::getValue)
+                .filter(methodModel -> Arrays.equals(argsType, methodModel.getParameterTypes()))
+                .findFirst();
         return consumerMethodModel.orElse(null);
     }
 
@@ -171,7 +177,9 @@ public class ConsumerModel extends ServiceModel {
             return false;
         }
         ConsumerModel that = (ConsumerModel) o;
-        return Objects.equals(apps, that.apps) && Objects.equals(methodConfigs, that.methodConfigs) && Objects.equals(methodModels, that.methodModels);
+        return Objects.equals(apps, that.apps)
+                && Objects.equals(methodConfigs, that.methodConfigs)
+                && Objects.equals(methodModels, that.methodModels);
     }
 
     @Override

@@ -18,5 +18,4 @@ package org.apache.dubbo.common.extension.ext10_multi_names.impl;
 
 import org.apache.dubbo.common.extension.ext10_multi_names.Ext10MultiNames;
 
-public class Ext10MultiNamesImpl implements Ext10MultiNames {
-}
+public class Ext10MultiNamesImpl implements Ext10MultiNames {}

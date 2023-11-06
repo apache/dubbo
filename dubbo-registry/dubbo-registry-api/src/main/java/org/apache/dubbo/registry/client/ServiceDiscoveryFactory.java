@@ -47,7 +47,8 @@ public interface ServiceDiscoveryFactory {
      */
     static ServiceDiscoveryFactory getExtension(URL registryURL) {
         String protocol = registryURL.getProtocol();
-        ExtensionLoader<ServiceDiscoveryFactory> loader = registryURL.getOrDefaultApplicationModel().getExtensionLoader(ServiceDiscoveryFactory.class);
+        ExtensionLoader<ServiceDiscoveryFactory> loader =
+                registryURL.getOrDefaultApplicationModel().getExtensionLoader(ServiceDiscoveryFactory.class);
         return loader.getOrDefaultExtension(protocol);
     }
 }

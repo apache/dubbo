@@ -21,17 +21,17 @@ import org.apache.dubbo.rpc.AdaptiveMetrics;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class AdaptiveLoadBalanceTest extends LoadBalanceBaseTest {
@@ -74,12 +74,12 @@ class AdaptiveLoadBalanceTest extends LoadBalanceBaseTest {
         Assertions.assertEquals(sumInvoker1 + sumInvoker2 + sumInvoker3, loop, "select failed!");
     }
 
-    private String buildServiceKey(Invoker invoker){
+    private String buildServiceKey(Invoker invoker) {
         URL url = invoker.getUrl();
         return url.getAddress() + ":" + invocation.getProtocolServiceKey();
     }
 
-    private AdaptiveMetrics getAdaptiveMetricsInstance(){
+    private AdaptiveMetrics getAdaptiveMetricsInstance() {
         if (adaptiveMetrics == null) {
             adaptiveMetrics = scopeModel.getBeanFactory().getBean(AdaptiveMetrics.class);
         }
@@ -109,7 +109,7 @@ class AdaptiveLoadBalanceTest extends LoadBalanceBaseTest {
                 sumInvoker1++;
                 metricsMap.put("rt", "10");
                 metricsMap.put("load", "10");
-                metricsMap.put("curTime", String.valueOf(System.currentTimeMillis()-10));
+                metricsMap.put("curTime", String.valueOf(System.currentTimeMillis() - 10));
                 getAdaptiveMetricsInstance().addConsumerSuccess(idKey);
             }
 
@@ -117,29 +117,29 @@ class AdaptiveLoadBalanceTest extends LoadBalanceBaseTest {
                 sumInvoker2++;
                 metricsMap.put("rt", "100");
                 metricsMap.put("load", "40");
-                metricsMap.put("curTime", String.valueOf(System.currentTimeMillis()-100));
+                metricsMap.put("curTime", String.valueOf(System.currentTimeMillis() - 100));
                 getAdaptiveMetricsInstance().addConsumerSuccess(idKey);
             }
 
             if (selected.getUrl().getProtocol().equals("test5")) {
                 metricsMap.put("rt", "5000");
-                metricsMap.put("load", "400");//400%
+                metricsMap.put("load", "400"); // 400%
                 metricsMap.put("curTime", String.valueOf(System.currentTimeMillis() - 5000));
 
                 getAdaptiveMetricsInstance().addErrorReq(idKey);
                 sumInvoker5++;
             }
-            getAdaptiveMetricsInstance().setProviderMetrics(idKey,metricsMap);
-
+            getAdaptiveMetricsInstance().setProviderMetrics(idKey, metricsMap);
         }
         Map<Invoker<LoadBalanceBaseTest>, Integer> weightMap = weightInvokersSR.stream()
-            .collect(Collectors.toMap(Function.identity(), e -> Integer.valueOf(e.getUrl().getParameter("weight"))));
+                .collect(Collectors.toMap(
+                        Function.identity(), e -> Integer.valueOf(e.getUrl().getParameter("weight"))));
         Integer totalWeight = weightMap.values().stream().reduce(0, Integer::sum);
         // max deviation = expectWeightValue * 2
         int expectWeightValue = loop / totalWeight;
         int maxDeviation = expectWeightValue * 2;
         double beta = 0.5;
-        //this EMA is an approximate value
+        // this EMA is an approximate value
         double ewma1 = beta * 50 + (1 - beta) * 10;
         double ewma2 = beta * 50 + (1 - beta) * 100;
         double ewma5 = beta * 50 + (1 - beta) * 5000;
@@ -147,21 +147,25 @@ class AdaptiveLoadBalanceTest extends LoadBalanceBaseTest {
         AtomicInteger weight1 = new AtomicInteger();
         AtomicInteger weight2 = new AtomicInteger();
         AtomicInteger weight5 = new AtomicInteger();
-        weightMap.forEach((k, v) ->{
-            if (k.getUrl().getProtocol().equals("test1")){
+        weightMap.forEach((k, v) -> {
+            if (k.getUrl().getProtocol().equals("test1")) {
                 weight1.set(v);
-            }
-            else if (k.getUrl().getProtocol().equals("test2")){
+            } else if (k.getUrl().getProtocol().equals("test2")) {
                 weight2.set(v);
-            }
-            else if (k.getUrl().getProtocol().equals("test5")){
+            } else if (k.getUrl().getProtocol().equals("test5")) {
                 weight5.set(v);
             }
         });
 
         Assertions.assertEquals(sumInvoker1 + sumInvoker2 + sumInvoker5, loop, "select failed!");
-        Assertions.assertTrue(Math.abs(sumInvoker1 / (weightMap.get(weightInvoker1) * ewma1) - expectWeightValue) < maxDeviation, "select failed!");
-        Assertions.assertTrue(Math.abs(sumInvoker2 / (weightMap.get(weightInvoker2) * ewma2) - expectWeightValue) < maxDeviation, "select failed!");
-        Assertions.assertTrue(Math.abs(sumInvoker5 / (weightMap.get(weightInvoker5) * ewma5) - expectWeightValue) < maxDeviation, "select failed!");
+        Assertions.assertTrue(
+                Math.abs(sumInvoker1 / (weightMap.get(weightInvoker1) * ewma1) - expectWeightValue) < maxDeviation,
+                "select failed!");
+        Assertions.assertTrue(
+                Math.abs(sumInvoker2 / (weightMap.get(weightInvoker2) * ewma2) - expectWeightValue) < maxDeviation,
+                "select failed!");
+        Assertions.assertTrue(
+                Math.abs(sumInvoker5 / (weightMap.get(weightInvoker5) * ewma5) - expectWeightValue) < maxDeviation,
+                "select failed!");
     }
 }

@@ -17,18 +17,18 @@
 package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.rpc.RpcException;
-
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionHandler;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Answers;
-import org.mockito.internal.util.collections.Sets;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 
 import java.util.LinkedList;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Answers;
+import org.mockito.internal.util.collections.Sets;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
@@ -64,7 +64,6 @@ class RpcExceptionMapperTest {
         RpcException rpcException = new RpcException();
         Object response = exceptionMapper.result(rpcException);
 
-
         assertThat(response, not(nullValue()));
         assertThat(response, instanceOf(String.class));
     }
@@ -80,12 +79,9 @@ class RpcExceptionMapperTest {
         String value = "value";
         restConstraintViolation.setValue(value);
 
-
         Assertions.assertEquals(message, restConstraintViolation.getMessage());
         Assertions.assertEquals(path, restConstraintViolation.getPath());
         Assertions.assertEquals(value, restConstraintViolation.getValue());
-
-
     }
 
     @Test
@@ -93,20 +89,16 @@ class RpcExceptionMapperTest {
 
         ViolationReport violationReport = new ViolationReport();
 
-
         RestConstraintViolation restConstraintViolation = new RestConstraintViolation("path", "message", "value");
 
         violationReport.addConstraintViolation(restConstraintViolation);
 
         Assertions.assertEquals(1, violationReport.getConstraintViolations().size());
 
-
         violationReport = new ViolationReport();
 
         violationReport.setConstraintViolations(new LinkedList<>());
 
         Assertions.assertEquals(0, violationReport.getConstraintViolations().size());
-
-
     }
 }

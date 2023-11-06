@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metadata.rest;
 
-
 import org.apache.dubbo.metadata.MetadataConstants;
 
 import java.util.ArrayList;
@@ -55,11 +54,9 @@ public class PathUtil {
             }
         }
 
-
         for (ArgInfo pathArgInfo : pathArgInfos) {
             strings.set(pathArgInfo.getUrlSplitIndex(), String.valueOf(args.get(pathArgInfo.getIndex())));
         }
-
 
         String pat = SEPARATOR;
 
@@ -77,9 +74,7 @@ public class PathUtil {
         }
 
         return pat;
-
     }
-
 
     /**
      * parse pathVariable index from url by annotation info
@@ -107,7 +102,6 @@ public class PathUtil {
                 }
             }
         }
-
     }
 
     public static class PathPair {
@@ -115,7 +109,6 @@ public class PathUtil {
         String value;
 
         ArgInfo argInfo;
-
 
         public PathPair(ArgInfo argInfo) {
             this.argInfo = argInfo;
@@ -135,10 +128,9 @@ public class PathUtil {
         }
 
         public boolean match(String value) {
-            return getPatten().equals(value)// for : {id}
-                || (value.startsWith(getLeftPatten()) && value.endsWith(getRightPatten()));// for : {id: \d+}
+            return getPatten().equals(value) // for : {id}
+                    || (value.startsWith(getLeftPatten()) && value.endsWith(getRightPatten())); // for : {id: \d+}
         }
-
 
         public String getValue() {
             return value;
@@ -153,5 +145,3 @@ public class PathUtil {
         }
     }
 }
-
-

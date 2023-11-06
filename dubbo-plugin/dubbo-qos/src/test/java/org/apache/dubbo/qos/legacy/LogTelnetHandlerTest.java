@@ -50,5 +50,4 @@ class LogTelnetHandlerTest {
         String result = log.telnet(mockChannel, "100");
         assertTrue(result.contains("CURRENT LOG APPENDER"));
     }
-
 }

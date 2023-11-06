@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.demo.rest.api;
 
-
-import po.User;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
@@ -29,8 +26,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
+
 import java.util.List;
 import java.util.Map;
+
+import po.User;
 
 /**
  *
@@ -42,7 +42,6 @@ import java.util.Map;
  *
  *  the path annotation must present in class & method
  */
-
 @Path("/jaxrs/demo/service")
 public interface JaxRsRestDemoService {
     @GET
@@ -57,10 +56,6 @@ public interface JaxRsRestDemoService {
     @Path("/say")
     String sayHello(String name);
 
-
-
-
-
     @POST
     @Path("/testFormBody")
     Long testFormBody(@FormParam("number") Long number);
@@ -69,8 +64,6 @@ public interface JaxRsRestDemoService {
     @Path("/testJavaBeanBody")
     @Consumes({MediaType.APPLICATION_JSON})
     User testJavaBeanBody(User user);
-
-
 
     @GET
     @Path("/primitive")
@@ -115,6 +108,4 @@ public interface JaxRsRestDemoService {
     @Path("/headerInt")
     @Consumes({MediaType.TEXT_PLAIN})
     int headerInt(@HeaderParam("header") int header);
-
-
 }

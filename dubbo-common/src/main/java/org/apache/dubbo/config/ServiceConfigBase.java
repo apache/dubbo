@@ -51,7 +51,6 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 
     private static final long serialVersionUID = 3033787999037024738L;
 
-
     /**
      * The interface class of the exported service
      */
@@ -81,7 +80,6 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
      * whether it is a GenericService
      */
     protected volatile String generic;
-
 
     public ServiceConfigBase() {
         serviceMetadata = new ServiceMetadata();
@@ -145,14 +143,15 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         }
         if (!interfaceClass.isInstance(ref)) {
             throw new IllegalStateException("The class "
-                + getClassDesc(ref.getClass()) + " unimplemented interface "
-                + getClassDesc(interfaceClass) + "!");
+                    + getClassDesc(ref.getClass()) + " unimplemented interface "
+                    + getClassDesc(interfaceClass) + "!");
         }
     }
 
     private String getClassDesc(Class clazz) {
         ClassLoader classLoader = clazz.getClassLoader();
-        return clazz.getName() + "[classloader=" + classLoader.getClass().getName() + "@" + classLoader.hashCode() + "]";
+        return clazz.getName() + "[classloader=" + classLoader.getClass().getName() + "@" + classLoader.hashCode()
+                + "]";
     }
 
     public Optional<String> getContextPath(ProtocolConfig protocolConfig) {
@@ -173,8 +172,8 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         convertProviderIdToProvider();
         if (provider == null) {
             provider = getModuleConfigManager()
-                .getDefaultProvider()
-                .orElseThrow(() -> new IllegalStateException("Default provider is not initialized"));
+                    .getDefaultProvider()
+                    .orElseThrow(() -> new IllegalStateException("Default provider is not initialized"));
         }
         // try set properties from `dubbo.service` if not set in current config
         refreshWithPrefixes(super.getPrefixes(), ConfigMode.OVERRIDE_IF_ABSENT);
@@ -228,8 +227,9 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 
     protected void convertProviderIdToProvider() {
         if (provider == null && StringUtils.hasText(providerIds)) {
-            provider = getModuleConfigManager().getProvider(providerIds)
-                .orElseThrow(() -> new IllegalStateException("Provider config not found: " + providerIds));
+            provider = getModuleConfigManager()
+                    .getProvider(providerIds)
+                    .orElseThrow(() -> new IllegalStateException("Provider config not found: " + providerIds));
         }
     }
 
@@ -267,8 +267,8 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         }
         try {
             if (StringUtils.isNotEmpty(interfaceName)) {
-                this.interfaceClass = Class.forName(interfaceName, true, Thread.currentThread()
-                    .getContextClassLoader());
+                this.interfaceClass = Class.forName(
+                        interfaceName, true, Thread.currentThread().getContextClassLoader());
             }
         } catch (ClassNotFoundException t) {
             throw new IllegalStateException(t.getMessage(), t);
@@ -284,7 +284,6 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     public void setInterfaceClass(Class<?> interfaceClass) {
         setInterface(interfaceClass);
     }
-
 
     public void setInterface(Class<?> interfaceClass) {
         // rest protocol  allow  set impl class
@@ -393,7 +392,9 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 
     @Override
     public String getVersion() {
-        return StringUtils.isEmpty(this.version) ? (provider != null ? provider.getVersion() : this.version) : this.version;
+        return StringUtils.isEmpty(this.version)
+                ? (provider != null ? provider.getVersion() : this.version)
+                : this.version;
     }
 
     @Override

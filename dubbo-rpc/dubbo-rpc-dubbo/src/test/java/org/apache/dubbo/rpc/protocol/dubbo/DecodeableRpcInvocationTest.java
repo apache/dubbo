@@ -36,10 +36,10 @@ import org.apache.dubbo.rpc.protocol.PermittedSerializationKeeper;
 import org.apache.dubbo.rpc.protocol.dubbo.decode.MockChannel;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 
+import java.io.IOException;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
@@ -55,7 +55,8 @@ class DecodeableRpcInvocationTest {
     void test() throws Exception {
         // Simulate the data called by the client(The called data is stored in invocation and written to the buffer)
         URL url = new ServiceConfigURL("dubbo", "127.0.0.1", 9103, DemoService.class.getName(), VERSION_KEY, "1.0.0");
-        RpcInvocation inv = new RpcInvocation(null, "sayHello", DemoService.class.getName(), "", new Class<?>[]{String.class}, new String[]{"yug"});
+        RpcInvocation inv = new RpcInvocation(
+                null, "sayHello", DemoService.class.getName(), "", new Class<?>[] {String.class}, new String[] {"yug"});
         inv.setObjectAttachment(PATH_KEY, url.getPath());
         inv.setObjectAttachment(VERSION_KEY, url.getVersion());
         inv.setObjectAttachment(DUBBO_VERSION_KEY, DUBBO_VERSION);
@@ -68,27 +69,37 @@ class DecodeableRpcInvocationTest {
 
         FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
-        applicationModel.getDefaultModule().getServiceRepository().registerService(DemoService.class.getName(), DemoService.class);
-        frameworkModel.getBeanFactory().getBean(PermittedSerializationKeeper.class)
-            .registerService(url);
+        applicationModel
+                .getDefaultModule()
+                .getServiceRepository()
+                .registerService(DemoService.class.getName(), DemoService.class);
+        frameworkModel
+                .getBeanFactory()
+                .getBean(PermittedSerializationKeeper.class)
+                .registerService(url);
 
         // Simulate the server to decode
         Channel channel = new MockChannel();
         Request request = new Request(1);
         ChannelBufferInputStream is = new ChannelBufferInputStream(buffer, buffer.readableBytes());
-        DecodeableRpcInvocation decodeableRpcInvocation = new DecodeableRpcInvocation(frameworkModel, channel, request, is, proto);
+        DecodeableRpcInvocation decodeableRpcInvocation =
+                new DecodeableRpcInvocation(frameworkModel, channel, request, is, proto);
         decodeableRpcInvocation.decode();
 
-        // Verify that the decodeableRpcInvocation data decoded by the server is consistent with the invocation data of the client
+        // Verify that the decodeableRpcInvocation data decoded by the server is consistent with the invocation data of
+        // the client
         Assertions.assertEquals(request.getVersion(), DUBBO_VERSION);
         Assertions.assertEquals(decodeableRpcInvocation.getObjectAttachment(DUBBO_VERSION_KEY), DUBBO_VERSION);
-        Assertions.assertEquals(decodeableRpcInvocation.getObjectAttachment(VERSION_KEY), inv.getObjectAttachment(VERSION_KEY));
-        Assertions.assertEquals(decodeableRpcInvocation.getObjectAttachment(PATH_KEY), inv.getObjectAttachment(PATH_KEY));
+        Assertions.assertEquals(
+                decodeableRpcInvocation.getObjectAttachment(VERSION_KEY), inv.getObjectAttachment(VERSION_KEY));
+        Assertions.assertEquals(
+                decodeableRpcInvocation.getObjectAttachment(PATH_KEY), inv.getObjectAttachment(PATH_KEY));
         Assertions.assertEquals(decodeableRpcInvocation.getMethodName(), inv.getMethodName());
         Assertions.assertEquals(decodeableRpcInvocation.getParameterTypesDesc(), inv.getParameterTypesDesc());
         Assertions.assertArrayEquals(decodeableRpcInvocation.getParameterTypes(), inv.getParameterTypes());
         Assertions.assertArrayEquals(decodeableRpcInvocation.getArguments(), inv.getArguments());
-        Assertions.assertTrue(CollectionUtils.mapEquals(decodeableRpcInvocation.getObjectAttachments(), inv.getObjectAttachments()));
+        Assertions.assertTrue(
+                CollectionUtils.mapEquals(decodeableRpcInvocation.getObjectAttachments(), inv.getObjectAttachments()));
         Assertions.assertEquals(decodeableRpcInvocation.getTargetServiceUniqueName(), inv.getTargetServiceUniqueName());
 
         frameworkModel.destroy();

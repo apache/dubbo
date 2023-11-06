@@ -16,14 +16,6 @@
  */
 package org.apache.dubbo.configcenter.support.apollo;
 
-import com.ctrip.framework.apollo.Config;
-import com.ctrip.framework.apollo.ConfigChangeListener;
-import com.ctrip.framework.apollo.ConfigFile;
-import com.ctrip.framework.apollo.ConfigService;
-import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
-import com.ctrip.framework.apollo.enums.ConfigSourceType;
-import com.ctrip.framework.apollo.enums.PropertyChangeType;
-import com.ctrip.framework.apollo.model.ConfigChange;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
@@ -43,6 +35,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.Collectors;
+
+import com.ctrip.framework.apollo.Config;
+import com.ctrip.framework.apollo.ConfigChangeListener;
+import com.ctrip.framework.apollo.ConfigFile;
+import com.ctrip.framework.apollo.ConfigService;
+import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
+import com.ctrip.framework.apollo.enums.ConfigSourceType;
+import com.ctrip.framework.apollo.enums.PropertyChangeType;
+import com.ctrip.framework.apollo.model.ConfigChange;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
@@ -67,7 +68,8 @@ import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
  * Please see http://dubbo.apache.org/zh-cn/docs/user/configuration/config-center.html for details.
  */
 public class ApolloDynamicConfiguration implements DynamicConfiguration {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ApolloDynamicConfiguration.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(ApolloDynamicConfiguration.class);
     private static final String APOLLO_ENV_KEY = "env";
     private static final String APOLLO_ADDR_KEY = "apollo.meta";
     private static final String APOLLO_CLUSTER_KEY = "apollo.cluster";
@@ -84,7 +86,8 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
     ApolloDynamicConfiguration(URL url, ApplicationModel applicationModel) {
         this.url = url;
         this.applicationModel = applicationModel;
-        // Instead of using Dubbo's configuration, I would suggest use the original configuration method Apollo provides.
+        // Instead of using Dubbo's configuration, I would suggest use the original configuration method Apollo
+        // provides.
         String configEnv = url.getParameter(APOLLO_ENV_KEY);
         String configAddr = getAddressWithProtocolPrefix(url);
         String configCluster = url.getParameter(CLUSTER_KEY);
@@ -111,15 +114,18 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
         boolean check = url.getParameter(CHECK_KEY, true);
         if (dubboConfig.getSourceType() != ConfigSourceType.REMOTE) {
             if (check) {
-                throw new IllegalStateException("Failed to connect to config center, the config center is Apollo, " +
-                    "the address is: " + (StringUtils.isNotEmpty(configAddr) ? configAddr : configEnv));
+                throw new IllegalStateException("Failed to connect to config center, the config center is Apollo, "
+                        + "the address is: " + (StringUtils.isNotEmpty(configAddr) ? configAddr : configEnv));
             } else {
                 // 5-1 Failed to connect to configuration center.
 
-                logger.warn(CONFIG_FAILED_CONNECT_REGISTRY, "configuration server offline", "",
-                    "Failed to connect to config center, the config center is Apollo, " +
-                    "the address is: " + (StringUtils.isNotEmpty(configAddr) ? configAddr : configEnv) +
-                    ", will use the local cache value instead before eventually the connection is established.");
+                logger.warn(
+                        CONFIG_FAILED_CONNECT_REGISTRY,
+                        "configuration server offline",
+                        "",
+                        "Failed to connect to config center, the config center is Apollo, " + "the address is: "
+                                + (StringUtils.isNotEmpty(configAddr) ? configAddr : configEnv)
+                                + ", will use the local cache value instead before eventually the connection is established.");
             }
         }
     }
@@ -129,7 +135,11 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
         try {
             listeners.clear();
         } catch (UnsupportedOperationException e) {
-            logger.warn(CONFIG_FAILED_CLOSE_CONNECT_APOLLO, "", "", "Failed to close connect from config center, the config center is Apollo");
+            logger.warn(
+                    CONFIG_FAILED_CLOSE_CONNECT_APOLLO,
+                    "",
+                    "",
+                    "Failed to close connect from config center, the config center is Apollo");
         }
     }
 
@@ -137,13 +147,13 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
         String address = url.getBackupAddress();
         if (StringUtils.isNotEmpty(address)) {
             address = Arrays.stream(COMMA_SPLIT_PATTERN.split(address))
-                .map(addr -> {
-                    if (addr.startsWith(APOLLO_PROTOCOL_PREFIX)) {
-                        return addr;
-                    }
-                    return APOLLO_PROTOCOL_PREFIX + addr;
-                })
-                .collect(Collectors.joining(","));
+                    .map(addr -> {
+                        if (addr.startsWith(APOLLO_PROTOCOL_PREFIX)) {
+                            return addr;
+                        }
+                        return APOLLO_PROTOCOL_PREFIX + addr;
+                    })
+                    .collect(Collectors.joining(","));
         }
         return address;
     }
@@ -200,7 +210,8 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
             return dubboConfigFile.getContent();
         }
         if (group.equals(url.getApplication())) {
-            return ConfigService.getConfigFile(APOLLO_APPLICATION_KEY, ConfigFileFormat.Properties).getContent();
+            return ConfigService.getConfigFile(APOLLO_APPLICATION_KEY, ConfigFileFormat.Properties)
+                    .getContent();
         }
 
         ConfigFile configFile = ConfigService.getConfigFile(group, ConfigFileFormat.Properties);
@@ -235,24 +246,33 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
 
         private Set<ConfigurationListener> listeners = new CopyOnWriteArraySet<>();
 
-        ApolloListener() {
-        }
+        ApolloListener() {}
 
         @Override
         public void onChange(com.ctrip.framework.apollo.model.ConfigChangeEvent changeEvent) {
             for (String key : changeEvent.changedKeys()) {
                 ConfigChange change = changeEvent.getChange(key);
                 if ("".equals(change.getNewValue())) {
-                    logger.warn(CONFIG_NOT_EFFECT_EMPTY_RULE_APOLLO, "", "", "an empty rule is received for " + key + ", the current working rule is " +
-                        change.getOldValue() + ", the empty rule will not take effect.");
+                    logger.warn(
+                            CONFIG_NOT_EFFECT_EMPTY_RULE_APOLLO,
+                            "",
+                            "",
+                            "an empty rule is received for " + key + ", the current working rule is "
+                                    + change.getOldValue() + ", the empty rule will not take effect.");
                     return;
                 }
 
-                ConfigChangedEvent event = new ConfigChangedEvent(key, change.getNamespace(), change.getNewValue(), getChangeType(change));
+                ConfigChangedEvent event =
+                        new ConfigChangedEvent(key, change.getNamespace(), change.getNewValue(), getChangeType(change));
                 listeners.forEach(listener -> listener.process(event));
 
-                MetricsEventBus.publish(ConfigCenterEvent.toChangeEvent(applicationModel, event.getKey(), event.getGroup(),
-                    ConfigCenterEvent.APOLLO_PROTOCOL, ConfigChangeType.ADDED.name(), SELF_INCREMENT_SIZE));
+                MetricsEventBus.publish(ConfigCenterEvent.toChangeEvent(
+                        applicationModel,
+                        event.getKey(),
+                        event.getGroup(),
+                        ConfigCenterEvent.APOLLO_PROTOCOL,
+                        ConfigChangeType.ADDED.name(),
+                        SELF_INCREMENT_SIZE));
             }
         }
 
@@ -275,5 +295,4 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
             return listeners != null && listeners.size() > 0;
         }
     }
-
 }

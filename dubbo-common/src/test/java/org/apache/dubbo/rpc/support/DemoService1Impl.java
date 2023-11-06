@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.support;
 
 import org.apache.dubbo.common.stream.StreamObserver;
 
-public class DemoService1Impl implements DemoService1{
+public class DemoService1Impl implements DemoService1 {
     @Override
     public StreamObserver<String> sayHello(StreamObserver<String> request) {
         request.onNext("BI_STREAM");

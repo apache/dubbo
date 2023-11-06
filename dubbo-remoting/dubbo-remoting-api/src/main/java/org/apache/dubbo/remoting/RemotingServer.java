@@ -54,5 +54,4 @@ public interface RemotingServer extends Endpoint, Resetable, IdleSensible {
 
     @Deprecated
     void reset(org.apache.dubbo.common.Parameters parameters);
-
 }

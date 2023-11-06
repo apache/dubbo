@@ -18,14 +18,14 @@ package org.apache.dubbo.common.config;
 
 import org.apache.dubbo.common.beanutil.JavaBeanAccessor;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NoSuchElementException;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NoSuchElementException;
 
 /**
  * Unit test of class InmemoryConfiguration, and interface Configuration.
@@ -82,7 +82,6 @@ class InmemoryConfigurationTest {
         Assertions.assertNotNull(memConfig.getInternalProperty(MOCK_THREE_KEY));
         Assertions.assertNull(memConfig.getInternalProperty(MOCK_ONE_KEY));
         Assertions.assertNull(memConfig.getInternalProperty(MOCK_TWO_KEY));
-
     }
 
     @Test
@@ -155,8 +154,5 @@ class InmemoryConfigurationTest {
      * Clean.
      */
     @AfterEach
-    public void clean() {
-
-    }
-
+    public void clean() {}
 }

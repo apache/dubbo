@@ -19,6 +19,8 @@ package org.apache.dubbo.config.spring.reference.localcall;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.api.HelloService;
 
+import java.net.InetSocketAddress;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -29,13 +31,14 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.net.InetSocketAddress;
-
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(locations = {"classpath:/org/apache/dubbo/config/spring/reference/localcall/local-call-provider.xml",
-        "classpath:/org/apache/dubbo/config/spring/reference/localcall/local-call-consumer.xml"})
+@ContextConfiguration(
+        locations = {
+            "classpath:/org/apache/dubbo/config/spring/reference/localcall/local-call-provider.xml",
+            "classpath:/org/apache/dubbo/config/spring/reference/localcall/local-call-consumer.xml"
+        })
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
 class LocalCallTest {
 
@@ -53,7 +56,7 @@ class LocalCallTest {
     private HelloService helloService;
 
     @Autowired
-    //@Qualifier("localHelloService")
+    // @Qualifier("localHelloService")
     private HelloService localHelloService;
 
     @Test
@@ -61,11 +64,11 @@ class LocalCallTest {
         // see also: org.apache.dubbo.rpc.protocol.injvm.InjvmInvoker.doInvoke
         // InjvmInvoker set remote address to 127.0.0.1:0
         String result = helloService.sayHello("world");
-        Assertions.assertEquals("Hello world, response from provider: " + InetSocketAddress.createUnresolved("127.0.0.1", 0), result);
+        Assertions.assertEquals(
+                "Hello world, response from provider: " + InetSocketAddress.createUnresolved("127.0.0.1", 0), result);
 
         // direct call local service, the remote address is null
         String originResult = localHelloService.sayHello("world");
         Assertions.assertEquals("Hello world, response from provider: null", originResult);
     }
-
 }

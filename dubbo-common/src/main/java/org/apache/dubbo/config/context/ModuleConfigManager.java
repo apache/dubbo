@@ -62,9 +62,15 @@ public class ModuleConfigManager extends AbstractConfigManager implements Module
     private final Map<String, AbstractInterfaceConfig> serviceConfigCache = new ConcurrentHashMap<>();
     private final ConfigManager applicationConfigManager;
 
-
     public ModuleConfigManager(ModuleModel moduleModel) {
-        super(moduleModel, Arrays.asList(ModuleConfig.class, ServiceConfigBase.class, ReferenceConfigBase.class, ProviderConfig.class, ConsumerConfig.class));
+        super(
+                moduleModel,
+                Arrays.asList(
+                        ModuleConfig.class,
+                        ServiceConfigBase.class,
+                        ReferenceConfigBase.class,
+                        ProviderConfig.class,
+                        ConsumerConfig.class));
         applicationConfigManager = moduleModel.getApplicationModel().getApplicationConfigManager();
     }
 
@@ -188,11 +194,11 @@ public class ModuleConfigManager extends AbstractConfigManager implements Module
         this.serviceConfigCache.clear();
     }
 
-
     @Override
     protected <C extends AbstractConfig> Optional<C> findDuplicatedConfig(Map<String, C> configsMap, C config) {
         // check duplicated configs
-        // special check service and reference config by unique service name, speed up the processing of large number of instances
+        // special check service and reference config by unique service name, speed up the processing of large number of
+        // instances
         if (config instanceof ReferenceConfigBase || config instanceof ServiceConfigBase) {
             C existedConfig = (C) findDuplicatedInterfaceConfig((AbstractInterfaceConfig) config);
             if (existedConfig != null) {
@@ -230,7 +236,8 @@ public class ModuleConfigManager extends AbstractConfigManager implements Module
             uniqueServiceName = serviceConfig.getUniqueServiceName();
             configCache = serviceConfigCache;
         } else {
-            throw new IllegalArgumentException("Illegal type of parameter 'config' : " + config.getClass().getName());
+            throw new IllegalArgumentException(
+                    "Illegal type of parameter 'config' : " + config.getClass().getName());
         }
 
         AbstractInterfaceConfig prevConfig = configCache.putIfAbsent(uniqueServiceName, config);
@@ -248,10 +255,10 @@ public class ModuleConfigManager extends AbstractConfigManager implements Module
             }
 
             String configType = config.getClass().getSimpleName();
-            String msg = "Found multiple " + configType + "s with unique service name [" +
-                uniqueServiceName + "], previous: " + prevConfig + ", later: " + config + ". " +
-                "There can only be one instance of " + configType + " with the same triple (group, interface, version). " +
-                "If multiple instances are required for the same interface, please use a different group or version.";
+            String msg = "Found multiple " + configType + "s with unique service name [" + uniqueServiceName
+                    + "], previous: " + prevConfig + ", later: " + config + ". " + "There can only be one instance of "
+                    + configType + " with the same triple (group, interface, version). "
+                    + "If multiple instances are required for the same interface, please use a different group or version.";
 
             if (logger.isWarnEnabled() && duplicatedConfigs.add(config)) {
                 logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", msg);
@@ -273,7 +280,8 @@ public class ModuleConfigManager extends AbstractConfigManager implements Module
             uniqueServiceName = serviceConfig.getUniqueServiceName();
             configCache = serviceConfigCache;
         } else {
-            throw new IllegalArgumentException("Illegal type of parameter 'config' : " + config.getClass().getName());
+            throw new IllegalArgumentException(
+                    "Illegal type of parameter 'config' : " + config.getClass().getName());
         }
         configCache.remove(uniqueServiceName, config);
     }
@@ -294,7 +302,6 @@ public class ModuleConfigManager extends AbstractConfigManager implements Module
         checkDefaultAndValidateConfigs(ConsumerConfig.class);
         checkDefaultAndValidateConfigs(ModuleConfig.class);
     }
-
 
     //
     // Delegate read application configs

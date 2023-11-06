@@ -16,11 +16,6 @@
  */
 package org.apache.dubbo.registry.xds.util;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -28,6 +23,11 @@ import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.registry.xds.util.protocol.AbstractProtocol;
 import org.apache.dubbo.registry.xds.util.protocol.DeltaResource;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import io.envoyproxy.envoy.config.core.v3.Node;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryRequest;
@@ -85,12 +85,15 @@ public class AdsObserver {
         protected DiscoveryRequest buildAck(DiscoveryResponse response) {
             // for ACK
             return DiscoveryRequest.newBuilder()
-                .setNode(adsObserver.node)
-                .setTypeUrl(response.getTypeUrl())
-                .setVersionInfo(response.getVersionInfo())
-                .setResponseNonce(response.getNonce())
-                .addAllResourceNames(adsObserver.observedResources.get(response.getTypeUrl()).getResourceNamesList())
-                .build();
+                    .setNode(adsObserver.node)
+                    .setTypeUrl(response.getTypeUrl())
+                    .setVersionInfo(response.getVersionInfo())
+                    .setResponseNonce(response.getNonce())
+                    .addAllResourceNames(adsObserver
+                            .observedResources
+                            .get(response.getTypeUrl())
+                            .getResourceNamesList())
+                    .build();
         }
 
         @Override
@@ -107,8 +110,11 @@ public class AdsObserver {
     }
 
     private void triggerReConnectTask() {
-        ScheduledExecutorService scheduledFuture = applicationModel.getFrameworkModel().getBeanFactory()
-            .getBean(FrameworkExecutorRepository.class).getSharedScheduledExecutor();
+        ScheduledExecutorService scheduledFuture = applicationModel
+                .getFrameworkModel()
+                .getBeanFactory()
+                .getBean(FrameworkExecutorRepository.class)
+                .getSharedScheduledExecutor();
         scheduledFuture.schedule(this::recover, 3, TimeUnit.SECONDS);
     }
 
@@ -120,7 +126,11 @@ public class AdsObserver {
                 observedResources.values().forEach(requestObserver::onNext);
                 return;
             } else {
-                logger.error(REGISTRY_ERROR_REQUEST_XDS, "", "", "Recover failed for xDS connection. Will retry. Create channel failed.");
+                logger.error(
+                        REGISTRY_ERROR_REQUEST_XDS,
+                        "",
+                        "",
+                        "Recover failed for xDS connection. Will retry. Create channel failed.");
             }
         } catch (Exception e) {
             logger.error(REGISTRY_ERROR_REQUEST_XDS, "", "", "Recover failed for xDS connection. Will retry.", e);

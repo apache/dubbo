@@ -22,10 +22,11 @@ import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.qos.api.PermissionLevel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-@Cmd(name = "gracefulShutdown",
-    summary = "Gracefully shutdown servers",
-    example = {"gracefulShutdown"},
-    requiredPermissionLevel = PermissionLevel.PRIVATE)
+@Cmd(
+        name = "gracefulShutdown",
+        summary = "Gracefully shutdown servers",
+        example = {"gracefulShutdown"},
+        requiredPermissionLevel = PermissionLevel.PRIVATE)
 public class GracefulShutdown implements BaseCommand {
     private final Offline offline;
     private final FrameworkModel frameworkModel;
@@ -38,7 +39,7 @@ public class GracefulShutdown implements BaseCommand {
     @Override
     public String execute(CommandContext commandContext, String[] args) {
         for (org.apache.dubbo.rpc.GracefulShutdown gracefulShutdown :
-            org.apache.dubbo.rpc.GracefulShutdown.getGracefulShutdowns(frameworkModel)) {
+                org.apache.dubbo.rpc.GracefulShutdown.getGracefulShutdowns(frameworkModel)) {
             gracefulShutdown.readonly();
         }
         offline.execute(commandContext, new String[0]);

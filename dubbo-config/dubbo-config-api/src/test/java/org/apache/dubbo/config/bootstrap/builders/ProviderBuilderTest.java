@@ -187,12 +187,30 @@ class ProviderBuilderTest {
     @Test
     void build() {
         ProviderBuilder builder = new ProviderBuilder();
-        builder.host("host").port(8080).contextPath("contextpath").threadPool("mockthreadpool")
-                .threads(2).ioThreads(3).queues(4).accepts(5).codec("mockcodec")
-                .charset("utf-8").payload(6).buffer(1024).transporter("mocktransporter").exchanger("mockexchanger")
-                .dispatcher("mockdispatcher").networker("networker").server("server").client("client")
-                .telnet("mocktelnethandler").prompt("prompt").status("mockstatuschecker").wait(Integer.valueOf(1000))
-                .isDefault(true).id("id");
+        builder.host("host")
+                .port(8080)
+                .contextPath("contextpath")
+                .threadPool("mockthreadpool")
+                .threads(2)
+                .ioThreads(3)
+                .queues(4)
+                .accepts(5)
+                .codec("mockcodec")
+                .charset("utf-8")
+                .payload(6)
+                .buffer(1024)
+                .transporter("mocktransporter")
+                .exchanger("mockexchanger")
+                .dispatcher("mockdispatcher")
+                .networker("networker")
+                .server("server")
+                .client("client")
+                .telnet("mocktelnethandler")
+                .prompt("prompt")
+                .status("mockstatuschecker")
+                .wait(Integer.valueOf(1000))
+                .isDefault(true)
+                .id("id");
 
         ProviderConfig config = builder.build();
         ProviderConfig config2 = builder.build();

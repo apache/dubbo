@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.config;
 
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
@@ -78,7 +77,9 @@ public final class ConfigurationUtils {
      * @return
      */
     public static Configuration getSystemConfiguration(ScopeModel scopeModel) {
-        return getScopeModelOrDefaultApplicationModel(scopeModel).modelEnvironment().getSystemConfiguration();
+        return getScopeModelOrDefaultApplicationModel(scopeModel)
+                .modelEnvironment()
+                .getSystemConfiguration();
     }
 
     /**
@@ -87,7 +88,9 @@ public final class ConfigurationUtils {
      * @return
      */
     public static Configuration getEnvConfiguration(ScopeModel scopeModel) {
-        return getScopeModelOrDefaultApplicationModel(scopeModel).modelEnvironment().getEnvironmentConfiguration();
+        return getScopeModelOrDefaultApplicationModel(scopeModel)
+                .modelEnvironment()
+                .getEnvironmentConfiguration();
     }
 
     /**
@@ -97,9 +100,10 @@ public final class ConfigurationUtils {
      *
      * @return
      */
-
     public static Configuration getGlobalConfiguration(ScopeModel scopeModel) {
-        return getScopeModelOrDefaultApplicationModel(scopeModel).modelEnvironment().getConfiguration();
+        return getScopeModelOrDefaultApplicationModel(scopeModel)
+                .modelEnvironment()
+                .getConfiguration();
     }
 
     public static Configuration getDynamicGlobalConfiguration(ScopeModel scopeModel) {
@@ -168,7 +172,8 @@ public final class ConfigurationUtils {
     public static String getCachedDynamicProperty(ScopeModel realScopeModel, String key, String defaultValue) {
         ScopeModel scopeModel = getScopeModelOrDefaultApplicationModel(realScopeModel);
         ConfigurationCache configurationCache = scopeModel.getBeanFactory().getBean(ConfigurationCache.class);
-        String value = configurationCache.computeIfAbsent(key, _k -> ConfigurationUtils.getDynamicProperty(scopeModel, _k, ""));
+        String value = configurationCache.computeIfAbsent(
+                key, _k -> ConfigurationUtils.getDynamicProperty(scopeModel, _k, ""));
         return StringUtils.isEmpty(value) ? defaultValue : value;
     }
 
@@ -206,26 +211,24 @@ public final class ConfigurationUtils {
         } else {
             Properties properties = new Properties();
             properties.load(new StringReader(content));
-            properties.stringPropertyNames().forEach(
-                k -> {
-                    boolean deny = false;
-                    for (String key : securityKey) {
-                        if (k.contains(key)) {
-                            deny = true;
-                            break;
-                        }
+            properties.stringPropertyNames().forEach(k -> {
+                boolean deny = false;
+                for (String key : securityKey) {
+                    if (k.contains(key)) {
+                        deny = true;
+                        break;
                     }
-                    if (!deny) {
-                        map.put(k, properties.getProperty(k));
-                    }
-                });
+                }
+                if (!deny) {
+                    map.put(k, properties.getProperty(k));
+                }
+            });
         }
         return map;
     }
 
     public static boolean isEmptyValue(Object value) {
-        return value == null ||
-            value instanceof String && StringUtils.isBlank((String) value);
+        return value == null || value instanceof String && StringUtils.isBlank((String) value);
     }
 
     /**
@@ -248,7 +251,8 @@ public final class ConfigurationUtils {
      * @param <V>
      * @return
      */
-    public static <V extends Object> Map<String, V> getSubProperties(Collection<Map<String, V>> configMaps, String prefix) {
+    public static <V extends Object> Map<String, V> getSubProperties(
+            Collection<Map<String, V>> configMaps, String prefix) {
         Map<String, V> map = new LinkedHashMap<>();
         for (Map<String, V> configMap : configMaps) {
             getSubProperties(configMap, prefix, map);
@@ -260,7 +264,8 @@ public final class ConfigurationUtils {
         return getSubProperties(configMap, prefix, null);
     }
 
-    private static <V extends Object> Map<String, V> getSubProperties(Map<String, V> configMap, String prefix, Map<String, V> resultMap) {
+    private static <V extends Object> Map<String, V> getSubProperties(
+            Map<String, V> configMap, String prefix, Map<String, V> resultMap) {
         if (!prefix.endsWith(".")) {
             prefix += ".";
         }
@@ -278,8 +283,8 @@ public final class ConfigurationUtils {
                 String key = entry.getKey();
                 V val = entry.getValue();
                 if (StringUtils.startsWithIgnoreCase(key, prefix)
-                    && key.length() > prefix.length()
-                    && !ConfigurationUtils.isEmptyValue(val)) {
+                        && key.length() > prefix.length()
+                        && !ConfigurationUtils.isEmptyValue(val)) {
 
                     String k = key.substring(prefix.length());
                     // convert camelCase/snake_case to kebab-case
@@ -318,8 +323,8 @@ public final class ConfigurationUtils {
         for (Map.Entry<String, V> entry : copy.entrySet()) {
             String key = entry.getKey();
             if (StringUtils.startsWithIgnoreCase(key, prefix)
-                && key.length() > prefix.length()
-                && !ConfigurationUtils.isEmptyValue(entry.getValue())) {
+                    && key.length() > prefix.length()
+                    && !ConfigurationUtils.isEmptyValue(entry.getValue())) {
                 return true;
             }
         }
@@ -358,8 +363,8 @@ public final class ConfigurationUtils {
                 String key = entry.getKey();
                 V val = entry.getValue();
                 if (StringUtils.startsWithIgnoreCase(key, prefix)
-                    && key.length() > prefix.length()
-                    && !ConfigurationUtils.isEmptyValue(val)) {
+                        && key.length() > prefix.length()
+                        && !ConfigurationUtils.isEmptyValue(val)) {
 
                     String k = key.substring(prefix.length());
                     int endIndex = k.indexOf(".");
@@ -381,8 +386,10 @@ public final class ConfigurationUtils {
      * @return non-null
      * @see 2.7.4
      */
-    public static DynamicConfigurationFactory getDynamicConfigurationFactory(ExtensionAccessor extensionAccessor, String name) {
-        ExtensionLoader<DynamicConfigurationFactory> loader = extensionAccessor.getExtensionLoader(DynamicConfigurationFactory.class);
+    public static DynamicConfigurationFactory getDynamicConfigurationFactory(
+            ExtensionAccessor extensionAccessor, String name) {
+        ExtensionLoader<DynamicConfigurationFactory> loader =
+                extensionAccessor.getExtensionLoader(DynamicConfigurationFactory.class);
         return loader.getOrDefaultExtension(name);
     }
 
@@ -423,7 +430,10 @@ public final class ConfigurationUtils {
      */
     @Deprecated
     public static Configuration getDynamicGlobalConfiguration() {
-        return ApplicationModel.defaultModel().getDefaultModule().modelEnvironment().getDynamicGlobalConfiguration();
+        return ApplicationModel.defaultModel()
+                .getDefaultModule()
+                .modelEnvironment()
+                .getDynamicGlobalConfiguration();
     }
 
     /**
@@ -485,5 +495,4 @@ public final class ConfigurationUtils {
     public static int get(String property, int defaultValue) {
         return get(ApplicationModel.defaultModel(), property, defaultValue);
     }
-
 }

@@ -25,6 +25,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -56,37 +57,47 @@ public class JAXRSServiceRestMetadataResolver extends AbstractServiceRestMetadat
     }
 
     @Override
-    protected boolean supports(ProcessingEnvironment processingEnv, TypeElement serviceType,
-                               TypeElement serviceInterfaceType, ExecutableElement method) {
-        return isAnnotationPresent(method, PATH_ANNOTATION_CLASS_NAME) ||
-                isAnnotationPresent(method, HTTP_METHOD_ANNOTATION_CLASS_NAME);
+    protected boolean supports(
+            ProcessingEnvironment processingEnv,
+            TypeElement serviceType,
+            TypeElement serviceInterfaceType,
+            ExecutableElement method) {
+        return isAnnotationPresent(method, PATH_ANNOTATION_CLASS_NAME)
+                || isAnnotationPresent(method, HTTP_METHOD_ANNOTATION_CLASS_NAME);
     }
 
     @Override
-    protected String resolveRequestPath(ProcessingEnvironment processingEnv, TypeElement serviceType, ExecutableElement method) {
+    protected String resolveRequestPath(
+            ProcessingEnvironment processingEnv, TypeElement serviceType, ExecutableElement method) {
         String pathFromType = getPathValue(processingEnv, serviceType);
         String pathFromMethod = getPathValue(method);
         return buildPath(pathFromType, pathFromMethod);
     }
 
     @Override
-    protected String resolveRequestMethod(ProcessingEnvironment processingEnv, TypeElement serviceType, ExecutableElement method) {
+    protected String resolveRequestMethod(
+            ProcessingEnvironment processingEnv, TypeElement serviceType, ExecutableElement method) {
         AnnotationMirror annotation = findMetaAnnotation(method, HTTP_METHOD_ANNOTATION_CLASS_NAME);
         return getValue(annotation);
     }
 
     @Override
-    protected void processProduces(ProcessingEnvironment processingEnv, TypeElement serviceType,
-                                   ExecutableElement method, Set<String> produces) {
+    protected void processProduces(
+            ProcessingEnvironment processingEnv,
+            TypeElement serviceType,
+            ExecutableElement method,
+            Set<String> produces) {
         addAnnotationValues(method, PRODUCES_ANNOTATION_CLASS_NAME, produces);
     }
 
     @Override
-    protected void processConsumes(ProcessingEnvironment processingEnv, TypeElement serviceType,
-                                   ExecutableElement method, Set<String> consumes) {
+    protected void processConsumes(
+            ProcessingEnvironment processingEnv,
+            TypeElement serviceType,
+            ExecutableElement method,
+            Set<String> consumes) {
         addAnnotationValues(method, CONSUMES_ANNOTATION_CLASS_NAME, consumes);
     }
-
 
     private void addAnnotationValues(Element element, String annotationAttributeName, Set<String> result) {
         AnnotationMirror annotation = findAnnotation(element, annotationAttributeName);

@@ -43,7 +43,7 @@ class ConfigScopeModelInitializerTest {
     }
 
     @Test
-    void test(){
+    void test() {
         Assertions.assertNotNull(applicationModel.getDeployer());
         Assertions.assertNotNull(moduleModel.getDeployer());
     }

@@ -14,14 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.config;
-
-import com.alibaba.dubbo.config.ProviderConfig;
-import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import com.alibaba.dubbo.config.ProviderConfig;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -88,7 +87,6 @@ class ProviderConfigTest {
         assertThat(provider.getContextpath(), equalTo("/context-path"));
         assertThat(parameters, not(hasKey("/context-path")));
     }
-
 
     @Test
     void testThreads() throws Exception {

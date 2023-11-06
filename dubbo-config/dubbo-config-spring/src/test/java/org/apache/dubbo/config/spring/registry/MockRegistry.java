@@ -56,9 +56,7 @@ public class MockRegistry implements Registry {
     }
 
     @Override
-    public void destroy() {
-
-    }
+    public void destroy() {}
 
     @Override
     public void register(URL url) {

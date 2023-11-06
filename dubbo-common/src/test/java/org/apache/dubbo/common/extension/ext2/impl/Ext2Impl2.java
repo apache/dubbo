@@ -28,5 +28,4 @@ public class Ext2Impl2 implements Ext2 {
     public String bang(URL url, int i) {
         return "bang2";
     }
-
 }

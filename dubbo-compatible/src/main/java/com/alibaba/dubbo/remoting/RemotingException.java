@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.remoting;
 
 import org.apache.dubbo.remoting.Channel;
@@ -44,11 +43,12 @@ public class RemotingException extends org.apache.dubbo.remoting.RemotingExcepti
         super(channel, message, cause);
     }
 
-    public RemotingException(InetSocketAddress localAddress, InetSocketAddress remoteAddress, String message, Throwable cause) {
+    public RemotingException(
+            InetSocketAddress localAddress, InetSocketAddress remoteAddress, String message, Throwable cause) {
         super(localAddress, remoteAddress, message, cause);
     }
 
-    public RemotingException(Exception e){
+    public RemotingException(Exception e) {
         super(null, e.getMessage());
     }
 }

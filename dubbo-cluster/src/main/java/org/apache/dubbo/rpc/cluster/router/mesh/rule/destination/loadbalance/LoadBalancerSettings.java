@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.loadbalance;
-
 
 public class LoadBalancerSettings {
     private SimpleLB simple;
@@ -40,9 +38,6 @@ public class LoadBalancerSettings {
 
     @Override
     public String toString() {
-        return "LoadBalancerSettings{" +
-                "simple=" + simple +
-                ", consistentHash=" + consistentHash +
-                '}';
+        return "LoadBalancerSettings{" + "simple=" + simple + ", consistentHash=" + consistentHash + '}';
     }
 }

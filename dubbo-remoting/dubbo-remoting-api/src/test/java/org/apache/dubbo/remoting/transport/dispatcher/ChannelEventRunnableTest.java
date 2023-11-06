@@ -19,12 +19,12 @@ package org.apache.dubbo.remoting.transport.dispatcher;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 
+import java.util.Arrays;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-
-import java.util.Arrays;
 
 /**
  * {@link ChannelEventRunnable}
@@ -38,11 +38,16 @@ class ChannelEventRunnableTest {
 
         Channel channel = Mockito.mock(Channel.class);
         ChannelHandler handler = Mockito.mock(ChannelHandler.class);
-        ChannelEventRunnable connectRunnable = new ChannelEventRunnable(channel, handler, ChannelEventRunnable.ChannelState.CONNECTED);
-        ChannelEventRunnable disconnectRunnable = new ChannelEventRunnable(channel, handler, ChannelEventRunnable.ChannelState.DISCONNECTED);
-        ChannelEventRunnable sentRunnable = new ChannelEventRunnable(channel, handler, ChannelEventRunnable.ChannelState.SENT);
-        ChannelEventRunnable receivedRunnable = new ChannelEventRunnable(channel, handler, ChannelEventRunnable.ChannelState.RECEIVED, "");
-        ChannelEventRunnable caughtRunnable = new ChannelEventRunnable(channel, handler, ChannelEventRunnable.ChannelState.CAUGHT, new RuntimeException());
+        ChannelEventRunnable connectRunnable =
+                new ChannelEventRunnable(channel, handler, ChannelEventRunnable.ChannelState.CONNECTED);
+        ChannelEventRunnable disconnectRunnable =
+                new ChannelEventRunnable(channel, handler, ChannelEventRunnable.ChannelState.DISCONNECTED);
+        ChannelEventRunnable sentRunnable =
+                new ChannelEventRunnable(channel, handler, ChannelEventRunnable.ChannelState.SENT);
+        ChannelEventRunnable receivedRunnable =
+                new ChannelEventRunnable(channel, handler, ChannelEventRunnable.ChannelState.RECEIVED, "");
+        ChannelEventRunnable caughtRunnable = new ChannelEventRunnable(
+                channel, handler, ChannelEventRunnable.ChannelState.CAUGHT, new RuntimeException());
 
         connectRunnable.run();
         disconnectRunnable.run();
@@ -56,7 +61,9 @@ class ChannelEventRunnableTest {
         Mockito.verify(handler, Mockito.times(1)).connected(channelArgumentCaptor.capture());
         Mockito.verify(handler, Mockito.times(1)).disconnected(channelArgumentCaptor.capture());
         Mockito.verify(handler, Mockito.times(1)).sent(channelArgumentCaptor.capture(), Mockito.any());
-        Mockito.verify(handler, Mockito.times(1)).received(channelArgumentCaptor.capture(), objectArgumentCaptor.capture());
-        Mockito.verify(handler, Mockito.times(1)).caught(channelArgumentCaptor.capture(), throwableArgumentCaptor.capture());
+        Mockito.verify(handler, Mockito.times(1))
+                .received(channelArgumentCaptor.capture(), objectArgumentCaptor.capture());
+        Mockito.verify(handler, Mockito.times(1))
+                .caught(channelArgumentCaptor.capture(), throwableArgumentCaptor.capture());
     }
 }

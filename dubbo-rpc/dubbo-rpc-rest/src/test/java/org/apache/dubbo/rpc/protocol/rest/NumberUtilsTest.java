@@ -18,12 +18,13 @@ package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 import org.apache.dubbo.rpc.protocol.rest.util.NumberUtils;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class NumberUtilsTest {
     void testParseNumber(String numberStr) {
@@ -62,8 +63,6 @@ public class NumberUtilsTest {
         BigInteger f = NumberUtils.parseNumber(numberStr, BigInteger.class);
 
         Assertions.assertEquals(1, f.intValue());
-
-
     }
 
     @Test
@@ -77,32 +76,32 @@ public class NumberUtilsTest {
 
         Assertions.assertArrayEquals(except, bytes);
 
-        except = new byte[]{49};
+        except = new byte[] {49};
         bytes = (byte[]) DataParseUtils.objectTextConvertToByteArray(Byte.valueOf("1"));
 
         Assertions.assertArrayEquals(except, bytes);
 
-        except = new byte[]{49};
+        except = new byte[] {49};
         bytes = (byte[]) DataParseUtils.objectTextConvertToByteArray(Short.valueOf("1"));
 
         Assertions.assertArrayEquals(except, bytes);
 
-        except = new byte[]{49};
+        except = new byte[] {49};
         bytes = (byte[]) DataParseUtils.objectTextConvertToByteArray(Long.valueOf("1"));
 
         Assertions.assertArrayEquals(except, bytes);
 
-        except = new byte[]{49};
+        except = new byte[] {49};
         bytes = (byte[]) DataParseUtils.objectTextConvertToByteArray(BigDecimal.valueOf(1));
 
         Assertions.assertArrayEquals(except, bytes);
 
-        except = new byte[]{116, 114, 117, 101};
+        except = new byte[] {116, 114, 117, 101};
         bytes = (byte[]) DataParseUtils.objectTextConvertToByteArray(Boolean.TRUE);
 
         Assertions.assertArrayEquals(except, bytes);
 
-        except = new byte[]{116, 114, 117, 101};
+        except = new byte[] {116, 114, 117, 101};
         bytes = (byte[]) DataParseUtils.objectTextConvertToByteArray(true);
 
         Assertions.assertArrayEquals(except, bytes);
@@ -111,8 +110,6 @@ public class NumberUtilsTest {
 
         except = User.getInstance().toString().getBytes(StandardCharsets.UTF_8);
         Assertions.assertArrayEquals(except, bytes);
-
-
     }
 
     @Test
@@ -121,9 +118,7 @@ public class NumberUtilsTest {
         testParseNumber("0X0001");
         testParseNumber("0x0001");
         testParseNumber("#1");
-
     }
-
 
     @Test
     void testUnHexNumber() {
@@ -160,18 +155,14 @@ public class NumberUtilsTest {
 
         Assertions.assertThrowsExactly(IllegalArgumentException.class, () -> {
             Object abc = NumberUtils.parseNumber("abc", Object.class);
-
         });
 
         Assertions.assertThrowsExactly(IllegalArgumentException.class, () -> {
             Object abc = NumberUtils.parseNumber(null, Object.class);
-
         });
 
         Assertions.assertThrowsExactly(IllegalArgumentException.class, () -> {
             Object abc = NumberUtils.parseNumber("1", null);
-
         });
     }
-
 }

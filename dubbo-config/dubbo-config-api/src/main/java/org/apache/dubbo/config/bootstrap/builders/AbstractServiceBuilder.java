@@ -30,7 +30,7 @@ import java.util.concurrent.Executor;
  * @since 2.7
  */
 public abstract class AbstractServiceBuilder<T extends AbstractServiceConfig, B extends AbstractServiceBuilder<T, B>>
-    extends AbstractInterfaceBuilder<T, B> {
+        extends AbstractInterfaceBuilder<T, B> {
 
     /**
      * The service version
@@ -88,6 +88,7 @@ public abstract class AbstractServiceBuilder<T extends AbstractServiceConfig, B 
      * The protocol list the service will export with
      */
     protected List<ProtocolConfig> protocols;
+
     protected String protocolIds;
 
     // max allowed execute times

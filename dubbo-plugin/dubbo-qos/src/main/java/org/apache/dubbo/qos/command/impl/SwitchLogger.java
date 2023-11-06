@@ -19,13 +19,14 @@ package org.apache.dubbo.qos.command.impl;
 import org.apache.dubbo.common.logger.Level;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.qos.api.BaseCommand;
-import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.qos.api.Cmd;
+import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-@Cmd(name = "switchLogger", summary = "Switch logger", example = {
-    "switchLogger slf4j"
-})
+@Cmd(
+        name = "switchLogger",
+        summary = "Switch logger",
+        example = {"switchLogger slf4j"})
 public class SwitchLogger implements BaseCommand {
     private final FrameworkModel frameworkModel;
 

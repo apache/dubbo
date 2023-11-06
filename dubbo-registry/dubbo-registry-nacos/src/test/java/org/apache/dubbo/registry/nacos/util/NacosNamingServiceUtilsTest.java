@@ -16,26 +16,26 @@
  */
 package org.apache.dubbo.registry.nacos.util;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metadata.report.MetadataReport;
+import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.nacos.MockNamingService;
+import org.apache.dubbo.registry.nacos.NacosNamingServiceWrapper;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.metadata.report.MetadataReport;
-import org.apache.dubbo.registry.client.ServiceInstance;
-import org.apache.dubbo.registry.nacos.MockNamingService;
-import org.apache.dubbo.registry.nacos.NacosNamingServiceWrapper;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import static com.alibaba.nacos.client.constant.Constants.HealthCheck.DOWN;
 import static com.alibaba.nacos.client.constant.Constants.HealthCheck.UP;
@@ -83,7 +83,6 @@ class NacosNamingServiceUtilsTest {
         Assertions.assertNotNull(namingService);
     }
 
-
     @Test
     void testRetryCreate() throws NacosException {
         try (MockedStatic<NacosFactory> nacosFactoryMockedStatic = Mockito.mockStatic(NacosFactory.class)) {
@@ -94,13 +93,15 @@ class NacosNamingServiceUtilsTest {
                     return atomicInteger.incrementAndGet() > 10 ? UP : DOWN;
                 }
             };
-            nacosFactoryMockedStatic.when(() -> NacosFactory.createNamingService((Properties) any())).thenReturn(mock);
-
+            nacosFactoryMockedStatic
+                    .when(() -> NacosFactory.createNamingService((Properties) any()))
+                    .thenReturn(mock);
 
             URL url = URL.valueOf("nacos://127.0.0.1:8848")
-                .addParameter("nacos.retry", 5)
-                .addParameter("nacos.retry-wait", 10);
-            Assertions.assertThrows(IllegalStateException.class, () -> NacosNamingServiceUtils.createNamingService(url));
+                    .addParameter("nacos.retry", 5)
+                    .addParameter("nacos.retry-wait", 10);
+            Assertions.assertThrows(
+                    IllegalStateException.class, () -> NacosNamingServiceUtils.createNamingService(url));
 
             try {
                 NacosNamingServiceUtils.createNamingService(url);
@@ -119,13 +120,14 @@ class NacosNamingServiceUtilsTest {
                     return DOWN;
                 }
             };
-            nacosFactoryMockedStatic.when(() -> NacosFactory.createNamingService((Properties) any())).thenReturn(mock);
-
+            nacosFactoryMockedStatic
+                    .when(() -> NacosFactory.createNamingService((Properties) any()))
+                    .thenReturn(mock);
 
             URL url = URL.valueOf("nacos://127.0.0.1:8848")
-                .addParameter("nacos.retry", 5)
-                .addParameter("nacos.retry-wait", 10)
-                .addParameter("nacos.check", "false");
+                    .addParameter("nacos.retry", 5)
+                    .addParameter("nacos.retry-wait", 10)
+                    .addParameter("nacos.check", "false");
             try {
                 NacosNamingServiceUtils.createNamingService(url);
             } catch (Throwable t) {
@@ -153,13 +155,15 @@ class NacosNamingServiceUtilsTest {
                     return UP;
                 }
             };
-            nacosFactoryMockedStatic.when(() -> NacosFactory.createNamingService((Properties) any())).thenReturn(mock);
-
+            nacosFactoryMockedStatic
+                    .when(() -> NacosFactory.createNamingService((Properties) any()))
+                    .thenReturn(mock);
 
             URL url = URL.valueOf("nacos://127.0.0.1:8848")
-                .addParameter("nacos.retry", 5)
-                .addParameter("nacos.retry-wait", 10);
-            Assertions.assertThrows(IllegalStateException.class, () -> NacosNamingServiceUtils.createNamingService(url));
+                    .addParameter("nacos.retry", 5)
+                    .addParameter("nacos.retry-wait", 10);
+            Assertions.assertThrows(
+                    IllegalStateException.class, () -> NacosNamingServiceUtils.createNamingService(url));
 
             try {
                 NacosNamingServiceUtils.createNamingService(url);

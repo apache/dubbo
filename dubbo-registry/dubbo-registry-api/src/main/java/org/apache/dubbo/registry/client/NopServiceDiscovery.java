@@ -32,19 +32,13 @@ public class NopServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     @Override
-    public void doRegister(ServiceInstance serviceInstance) throws RuntimeException {
-
-    }
+    public void doRegister(ServiceInstance serviceInstance) throws RuntimeException {}
 
     @Override
-    public void doUnregister(ServiceInstance serviceInstance) {
-
-    }
+    public void doUnregister(ServiceInstance serviceInstance) {}
 
     @Override
-    public void doDestroy() throws Exception {
-
-    }
+    public void doDestroy() throws Exception {}
 
     @Override
     public Set<String> getServices() {

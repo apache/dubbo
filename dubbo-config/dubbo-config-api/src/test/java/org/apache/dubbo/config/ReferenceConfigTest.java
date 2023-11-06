@@ -49,23 +49,6 @@ import org.apache.dubbo.rpc.protocol.injvm.InjvmInvoker;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
 
-import demo.MultiClassLoaderService;
-import demo.MultiClassLoaderServiceImpl;
-import demo.MultiClassLoaderServiceRequest;
-import demo.MultiClassLoaderServiceResult;
-import javassist.CannotCompileException;
-import javassist.CtClass;
-import javassist.NotFoundException;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledForJreRange;
-import org.junit.jupiter.api.condition.JRE;
-import org.mockito.Mockito;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -84,6 +67,23 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import javassist.CannotCompileException;
+import javassist.CtClass;
+import javassist.NotFoundException;
+
+import demo.MultiClassLoaderService;
+import demo.MultiClassLoaderServiceImpl;
+import demo.MultiClassLoaderServiceRequest;
+import demo.MultiClassLoaderServiceResult;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
+import org.mockito.Mockito;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_VERSION_KEY;
@@ -245,11 +245,12 @@ class ReferenceConfigTest {
         referenceConfig.setRegistry(registry);
 
         DubboBootstrap dubboBootstrap = DubboBootstrap.newInstance(FrameworkModel.defaultModel());
-        dubboBootstrap.application(applicationConfig)
-            .reference(referenceConfig)
-            .registry(registry)
-            .module(moduleConfig)
-            .initialize();
+        dubboBootstrap
+                .application(applicationConfig)
+                .reference(referenceConfig)
+                .registry(registry)
+                .module(moduleConfig)
+                .initialize();
 
         referenceConfig.init();
 
@@ -259,135 +260,200 @@ class ReferenceConfigTest {
         Assertions.assertEquals(CONSUMER_SIDE, serviceMetadata.getAttachments().get(SIDE_KEY));
 
         // verify additional interface parameter
-        Assertions.assertEquals(DemoService.class.getName(), serviceMetadata.getAttachments().get(INTERFACE_KEY));
+        Assertions.assertEquals(
+                DemoService.class.getName(), serviceMetadata.getAttachments().get(INTERFACE_KEY));
 
         // verify additional metadata-type parameter
-        Assertions.assertEquals(DEFAULT_METADATA_STORAGE_TYPE, serviceMetadata.getAttachments().get(METADATA_KEY));
+        Assertions.assertEquals(
+                DEFAULT_METADATA_STORAGE_TYPE, serviceMetadata.getAttachments().get(METADATA_KEY));
 
         // verify additional register.ip parameter
-        Assertions.assertEquals(NetUtils.getLocalHost(), serviceMetadata.getAttachments().get(REGISTER_IP_KEY));
+        Assertions.assertEquals(
+                NetUtils.getLocalHost(), serviceMetadata.getAttachments().get(REGISTER_IP_KEY));
 
         // verify additional runtime parameters
-        Assertions.assertEquals(Version.getProtocolVersion(), serviceMetadata.getAttachments().get(DUBBO_VERSION_KEY));
-        Assertions.assertEquals(Version.getVersion(), serviceMetadata.getAttachments().get(RELEASE_KEY));
+        Assertions.assertEquals(
+                Version.getProtocolVersion(), serviceMetadata.getAttachments().get(DUBBO_VERSION_KEY));
+        Assertions.assertEquals(
+                Version.getVersion(), serviceMetadata.getAttachments().get(RELEASE_KEY));
         Assertions.assertTrue(serviceMetadata.getAttachments().containsKey(TIMESTAMP_KEY));
-        Assertions.assertEquals(String.valueOf(ConfigUtils.getPid()), serviceMetadata.getAttachments().get(PID_KEY));
+        Assertions.assertEquals(
+                String.valueOf(ConfigUtils.getPid()),
+                serviceMetadata.getAttachments().get(PID_KEY));
 
         // verify additional application config
-        Assertions.assertEquals(applicationConfig.getName(), serviceMetadata.getAttachments().get(APPLICATION_KEY));
-        Assertions.assertEquals(applicationConfig.getOwner(), serviceMetadata.getAttachments().get("owner"));
-        Assertions.assertEquals(applicationConfig.getVersion(),
-            serviceMetadata.getAttachments().get(APPLICATION_VERSION_KEY));
-        Assertions.assertEquals(applicationConfig.getOrganization(),
-            serviceMetadata.getAttachments().get("organization"));
-        Assertions.assertEquals(applicationConfig.getArchitecture(),
-            serviceMetadata.getAttachments().get("architecture"));
-        Assertions.assertEquals(applicationConfig.getEnvironment(),
-            serviceMetadata.getAttachments().get("environment"));
-        Assertions.assertEquals(applicationConfig.getCompiler(), serviceMetadata.getAttachments().get("compiler"));
-        Assertions.assertEquals(applicationConfig.getLogger(), serviceMetadata.getAttachments().get("logger"));
+        Assertions.assertEquals(
+                applicationConfig.getName(), serviceMetadata.getAttachments().get(APPLICATION_KEY));
+        Assertions.assertEquals(
+                applicationConfig.getOwner(), serviceMetadata.getAttachments().get("owner"));
+        Assertions.assertEquals(
+                applicationConfig.getVersion(), serviceMetadata.getAttachments().get(APPLICATION_VERSION_KEY));
+        Assertions.assertEquals(
+                applicationConfig.getOrganization(),
+                serviceMetadata.getAttachments().get("organization"));
+        Assertions.assertEquals(
+                applicationConfig.getArchitecture(),
+                serviceMetadata.getAttachments().get("architecture"));
+        Assertions.assertEquals(
+                applicationConfig.getEnvironment(),
+                serviceMetadata.getAttachments().get("environment"));
+        Assertions.assertEquals(
+                applicationConfig.getCompiler(),
+                serviceMetadata.getAttachments().get("compiler"));
+        Assertions.assertEquals(
+                applicationConfig.getLogger(), serviceMetadata.getAttachments().get("logger"));
         Assertions.assertFalse(serviceMetadata.getAttachments().containsKey("registries"));
         Assertions.assertFalse(serviceMetadata.getAttachments().containsKey("registry.ids"));
         Assertions.assertFalse(serviceMetadata.getAttachments().containsKey("monitor"));
-        Assertions.assertEquals(applicationConfig.getDumpDirectory(),
-            serviceMetadata.getAttachments().get(DUMP_DIRECTORY));
-        Assertions.assertEquals(applicationConfig.getQosEnable().toString(),
-            serviceMetadata.getAttachments().get(QOS_ENABLE));
-        Assertions.assertEquals(applicationConfig.getQosHost(),
-            serviceMetadata.getAttachments().get(QOS_HOST));
-        Assertions.assertEquals(applicationConfig.getQosPort().toString(),
-            serviceMetadata.getAttachments().get(QOS_PORT));
-        Assertions.assertEquals(applicationConfig.getQosAcceptForeignIp().toString(),
-            serviceMetadata.getAttachments().get(ACCEPT_FOREIGN_IP));
-        Assertions.assertEquals(applicationConfig.getParameters().get("key1"),
-            serviceMetadata.getAttachments().get("key1"));
-        Assertions.assertEquals(applicationConfig.getParameters().get("key2"),
-            serviceMetadata.getAttachments().get("key2"));
-        Assertions.assertEquals(applicationConfig.getShutwait(),
-            serviceMetadata.getAttachments().get("shutwait"));
-        Assertions.assertEquals(applicationConfig.getMetadataType(),
-            serviceMetadata.getAttachments().get(METADATA_KEY));
-        Assertions.assertEquals(applicationConfig.getRegisterConsumer().toString(),
-            serviceMetadata.getAttachments().get("register.consumer"));
-        Assertions.assertEquals(applicationConfig.getRepository(),
-            serviceMetadata.getAttachments().get("repository"));
-        Assertions.assertEquals(applicationConfig.getEnableFileCache().toString(),
-            serviceMetadata.getAttachments().get(REGISTRY_LOCAL_FILE_CACHE_ENABLED));
-        Assertions.assertEquals(applicationConfig.getMetadataServicePort().toString(),
-            serviceMetadata.getAttachments().get(METADATA_SERVICE_PORT_KEY));
-        Assertions.assertEquals(applicationConfig.getMetadataServiceProtocol().toString(),
-            serviceMetadata.getAttachments().get(METADATA_SERVICE_PROTOCOL_KEY));
-        Assertions.assertEquals(applicationConfig.getLivenessProbe(),
-            serviceMetadata.getAttachments().get(LIVENESS_PROBE_KEY));
-        Assertions.assertEquals(applicationConfig.getReadinessProbe(),
-            serviceMetadata.getAttachments().get(READINESS_PROBE_KEY));
-        Assertions.assertEquals(applicationConfig.getStartupProbe(),
-            serviceMetadata.getAttachments().get(STARTUP_PROBE));
+        Assertions.assertEquals(
+                applicationConfig.getDumpDirectory(),
+                serviceMetadata.getAttachments().get(DUMP_DIRECTORY));
+        Assertions.assertEquals(
+                applicationConfig.getQosEnable().toString(),
+                serviceMetadata.getAttachments().get(QOS_ENABLE));
+        Assertions.assertEquals(
+                applicationConfig.getQosHost(), serviceMetadata.getAttachments().get(QOS_HOST));
+        Assertions.assertEquals(
+                applicationConfig.getQosPort().toString(),
+                serviceMetadata.getAttachments().get(QOS_PORT));
+        Assertions.assertEquals(
+                applicationConfig.getQosAcceptForeignIp().toString(),
+                serviceMetadata.getAttachments().get(ACCEPT_FOREIGN_IP));
+        Assertions.assertEquals(
+                applicationConfig.getParameters().get("key1"),
+                serviceMetadata.getAttachments().get("key1"));
+        Assertions.assertEquals(
+                applicationConfig.getParameters().get("key2"),
+                serviceMetadata.getAttachments().get("key2"));
+        Assertions.assertEquals(
+                applicationConfig.getShutwait(),
+                serviceMetadata.getAttachments().get("shutwait"));
+        Assertions.assertEquals(
+                applicationConfig.getMetadataType(),
+                serviceMetadata.getAttachments().get(METADATA_KEY));
+        Assertions.assertEquals(
+                applicationConfig.getRegisterConsumer().toString(),
+                serviceMetadata.getAttachments().get("register.consumer"));
+        Assertions.assertEquals(
+                applicationConfig.getRepository(),
+                serviceMetadata.getAttachments().get("repository"));
+        Assertions.assertEquals(
+                applicationConfig.getEnableFileCache().toString(),
+                serviceMetadata.getAttachments().get(REGISTRY_LOCAL_FILE_CACHE_ENABLED));
+        Assertions.assertEquals(
+                applicationConfig.getMetadataServicePort().toString(),
+                serviceMetadata.getAttachments().get(METADATA_SERVICE_PORT_KEY));
+        Assertions.assertEquals(
+                applicationConfig.getMetadataServiceProtocol().toString(),
+                serviceMetadata.getAttachments().get(METADATA_SERVICE_PROTOCOL_KEY));
+        Assertions.assertEquals(
+                applicationConfig.getLivenessProbe(),
+                serviceMetadata.getAttachments().get(LIVENESS_PROBE_KEY));
+        Assertions.assertEquals(
+                applicationConfig.getReadinessProbe(),
+                serviceMetadata.getAttachments().get(READINESS_PROBE_KEY));
+        Assertions.assertEquals(
+                applicationConfig.getStartupProbe(),
+                serviceMetadata.getAttachments().get(STARTUP_PROBE));
 
         // verify additional module config
-        Assertions.assertEquals(moduleConfig.getName(), serviceMetadata.getAttachments().get("module"));
+        Assertions.assertEquals(
+                moduleConfig.getName(), serviceMetadata.getAttachments().get("module"));
         Assertions.assertFalse(serviceMetadata.getAttachments().containsKey("monitor"));
-        Assertions.assertEquals(moduleConfig.getOrganization(),
-            serviceMetadata.getAttachments().get("module.organization"));
-        Assertions.assertEquals(moduleConfig.getOwner(), serviceMetadata.getAttachments().get("module.owner"));
+        Assertions.assertEquals(
+                moduleConfig.getOrganization(), serviceMetadata.getAttachments().get("module.organization"));
+        Assertions.assertEquals(
+                moduleConfig.getOwner(), serviceMetadata.getAttachments().get("module.owner"));
         Assertions.assertFalse(serviceMetadata.getAttachments().containsKey("registries"));
-        Assertions.assertEquals(moduleConfig.getVersion(), serviceMetadata.getAttachments().get("module.version"));
+        Assertions.assertEquals(
+                moduleConfig.getVersion(), serviceMetadata.getAttachments().get("module.version"));
 
         // verify additional consumer config
-        Assertions.assertEquals(consumerConfig.getClient(), serviceMetadata.getAttachments().get("client"));
-        Assertions.assertEquals(consumerConfig.getThreadpool(), serviceMetadata.getAttachments().get("threadpool"));
-        Assertions.assertEquals(consumerConfig.getCorethreads().toString(),
-            serviceMetadata.getAttachments().get("corethreads"));
-        Assertions.assertEquals(consumerConfig.getQueues().toString(),
-            serviceMetadata.getAttachments().get("queues"));
-        Assertions.assertEquals(consumerConfig.getThreads().toString(),
-            serviceMetadata.getAttachments().get("threads"));
-        Assertions.assertEquals(consumerConfig.getShareconnections().toString(),
-            serviceMetadata.getAttachments().get("shareconnections"));
-        Assertions.assertEquals(consumerConfig.getUrlMergeProcessor(),
-            serviceMetadata.getAttachments().get(URL_MERGE_PROCESSOR_KEY));
+        Assertions.assertEquals(
+                consumerConfig.getClient(), serviceMetadata.getAttachments().get("client"));
+        Assertions.assertEquals(
+                consumerConfig.getThreadpool(), serviceMetadata.getAttachments().get("threadpool"));
+        Assertions.assertEquals(
+                consumerConfig.getCorethreads().toString(),
+                serviceMetadata.getAttachments().get("corethreads"));
+        Assertions.assertEquals(
+                consumerConfig.getQueues().toString(),
+                serviceMetadata.getAttachments().get("queues"));
+        Assertions.assertEquals(
+                consumerConfig.getThreads().toString(),
+                serviceMetadata.getAttachments().get("threads"));
+        Assertions.assertEquals(
+                consumerConfig.getShareconnections().toString(),
+                serviceMetadata.getAttachments().get("shareconnections"));
+        Assertions.assertEquals(
+                consumerConfig.getUrlMergeProcessor(),
+                serviceMetadata.getAttachments().get(URL_MERGE_PROCESSOR_KEY));
         Assertions.assertFalse(serviceMetadata.getAttachments().containsKey(REFER_THREAD_NUM_KEY));
         Assertions.assertFalse(serviceMetadata.getAttachments().containsKey(REFER_BACKGROUND_KEY));
 
         // verify additional reference config
-        Assertions.assertEquals(referenceConfig.getClient(), serviceMetadata.getAttachments().get("client"));
-        Assertions.assertEquals(referenceConfig.getGeneric(), serviceMetadata.getAttachments().get("generic"));
-        Assertions.assertEquals(referenceConfig.getProtocol(), serviceMetadata.getAttachments().get("protocol"));
-        Assertions.assertEquals(referenceConfig.isInit().toString(), serviceMetadata.getAttachments().get("init"));
-        Assertions.assertEquals(referenceConfig.getLazy().toString(), serviceMetadata.getAttachments().get("lazy"));
-        Assertions.assertEquals(referenceConfig.isInjvm().toString(), serviceMetadata.getAttachments().get("injvm"));
-        Assertions.assertEquals(referenceConfig.getReconnect(), serviceMetadata.getAttachments().get("reconnect"));
-        Assertions.assertEquals(referenceConfig.getSticky().toString(), serviceMetadata.getAttachments().get("sticky"));
-        Assertions.assertEquals(referenceConfig.getStub(), serviceMetadata.getAttachments().get("stub"));
-        Assertions.assertEquals(referenceConfig.getProvidedBy(), serviceMetadata.getAttachments().get("provided-by"));
-        Assertions.assertEquals(referenceConfig.getRouter(), serviceMetadata.getAttachments().get("router"));
-        Assertions.assertEquals(referenceConfig.getReferAsync().toString(),
-            serviceMetadata.getAttachments().get(REFER_ASYNC_KEY));
+        Assertions.assertEquals(
+                referenceConfig.getClient(), serviceMetadata.getAttachments().get("client"));
+        Assertions.assertEquals(
+                referenceConfig.getGeneric(), serviceMetadata.getAttachments().get("generic"));
+        Assertions.assertEquals(
+                referenceConfig.getProtocol(), serviceMetadata.getAttachments().get("protocol"));
+        Assertions.assertEquals(
+                referenceConfig.isInit().toString(),
+                serviceMetadata.getAttachments().get("init"));
+        Assertions.assertEquals(
+                referenceConfig.getLazy().toString(),
+                serviceMetadata.getAttachments().get("lazy"));
+        Assertions.assertEquals(
+                referenceConfig.isInjvm().toString(),
+                serviceMetadata.getAttachments().get("injvm"));
+        Assertions.assertEquals(
+                referenceConfig.getReconnect(), serviceMetadata.getAttachments().get("reconnect"));
+        Assertions.assertEquals(
+                referenceConfig.getSticky().toString(),
+                serviceMetadata.getAttachments().get("sticky"));
+        Assertions.assertEquals(
+                referenceConfig.getStub(), serviceMetadata.getAttachments().get("stub"));
+        Assertions.assertEquals(
+                referenceConfig.getProvidedBy(),
+                serviceMetadata.getAttachments().get("provided-by"));
+        Assertions.assertEquals(
+                referenceConfig.getRouter(), serviceMetadata.getAttachments().get("router"));
+        Assertions.assertEquals(
+                referenceConfig.getReferAsync().toString(),
+                serviceMetadata.getAttachments().get(REFER_ASYNC_KEY));
 
         // verify additional method config
         Assertions.assertFalse(serviceMetadata.getAttachments().containsKey("name"));
-        Assertions.assertEquals(methodConfig.getStat().toString(),
-            serviceMetadata.getAttachments().get("sayName.stat"));
-        Assertions.assertEquals(methodConfig.getRetries().toString(),
-            serviceMetadata.getAttachments().get("sayName.retries"));
+        Assertions.assertEquals(
+                methodConfig.getStat().toString(),
+                serviceMetadata.getAttachments().get("sayName.stat"));
+        Assertions.assertEquals(
+                methodConfig.getRetries().toString(),
+                serviceMetadata.getAttachments().get("sayName.retries"));
         Assertions.assertFalse(serviceMetadata.getAttachments().containsKey("sayName.reliable"));
-        Assertions.assertEquals(methodConfig.getExecutes().toString(),
-            serviceMetadata.getAttachments().get("sayName.executes"));
-        Assertions.assertEquals(methodConfig.getDeprecated().toString(),
-            serviceMetadata.getAttachments().get("sayName.deprecated"));
+        Assertions.assertEquals(
+                methodConfig.getExecutes().toString(),
+                serviceMetadata.getAttachments().get("sayName.executes"));
+        Assertions.assertEquals(
+                methodConfig.getDeprecated().toString(),
+                serviceMetadata.getAttachments().get("sayName.deprecated"));
         Assertions.assertFalse(serviceMetadata.getAttachments().containsKey("sayName.stick"));
-        Assertions.assertEquals(methodConfig.isReturn().toString(),
-            serviceMetadata.getAttachments().get("sayName.return"));
+        Assertions.assertEquals(
+                methodConfig.isReturn().toString(),
+                serviceMetadata.getAttachments().get("sayName.return"));
         Assertions.assertFalse(serviceMetadata.getAttachments().containsKey("sayName.service"));
         Assertions.assertFalse(serviceMetadata.getAttachments().containsKey("sayName.service.id"));
         Assertions.assertFalse(serviceMetadata.getAttachments().containsKey("sayName.parent.prefix"));
 
         // verify additional revision and methods parameter
-        Assertions.assertEquals(Version.getVersion(referenceConfig.getInterfaceClass(), referenceConfig.getVersion()),
-            serviceMetadata.getAttachments().get(REVISION_KEY));
+        Assertions.assertEquals(
+                Version.getVersion(referenceConfig.getInterfaceClass(), referenceConfig.getVersion()),
+                serviceMetadata.getAttachments().get(REVISION_KEY));
         Assertions.assertTrue(serviceMetadata.getAttachments().containsKey(METHODS_KEY));
-        Assertions.assertEquals(DemoService.class.getMethods().length,
-            StringUtils.split((String) serviceMetadata.getAttachments().get(METHODS_KEY), ',').length);
+        Assertions.assertEquals(
+                DemoService.class.getMethods().length,
+                StringUtils.split((String) serviceMetadata.getAttachments().get(METHODS_KEY), ',').length);
 
         dubboBootstrap.stop();
     }
@@ -410,27 +476,32 @@ class ReferenceConfigTest {
         referenceConfig.setCheck(false);
 
         DubboBootstrap dubboBootstrap = DubboBootstrap.newInstance(FrameworkModel.defaultModel());
-        dubboBootstrap.application(applicationConfig)
-            .reference(referenceConfig)
-            .initialize();
+        dubboBootstrap.application(applicationConfig).reference(referenceConfig).initialize();
 
         referenceConfig.init();
         Assertions.assertTrue(referenceConfig.getInvoker() instanceof ScopeClusterInvoker);
         ScopeClusterInvoker<?> scopeClusterInvoker = (ScopeClusterInvoker<?>) referenceConfig.getInvoker();
         Invoker<?> mockInvoker = scopeClusterInvoker.getInvoker();
         Assertions.assertTrue(mockInvoker instanceof MockClusterInvoker);
-        Invoker<?> withCount = ((MockClusterInvoker<?>) mockInvoker).getDirectory().getAllInvokers().get(0);
+        Invoker<?> withCount = ((MockClusterInvoker<?>) mockInvoker)
+                .getDirectory()
+                .getAllInvokers()
+                .get(0);
 
         Assertions.assertTrue(withCount instanceof ReferenceCountInvokerWrapper);
         Invoker<?> withFilter = ((ReferenceCountInvokerWrapper<?>) withCount).getInvoker();
         Assertions.assertTrue(withFilter instanceof ListenerInvokerWrapper
-            || withFilter instanceof FilterChainBuilder.CallbackRegistrationInvoker);
+                || withFilter instanceof FilterChainBuilder.CallbackRegistrationInvoker);
         if (withFilter instanceof ListenerInvokerWrapper) {
-            Assertions.assertTrue(((ListenerInvokerWrapper<?>) (((ReferenceCountInvokerWrapper<?>) withCount).getInvoker())).getInvoker() instanceof InjvmInvoker);
+            Assertions.assertTrue(
+                    ((ListenerInvokerWrapper<?>) (((ReferenceCountInvokerWrapper<?>) withCount).getInvoker()))
+                                    .getInvoker()
+                            instanceof InjvmInvoker);
         }
         if (withFilter instanceof FilterChainBuilder.CallbackRegistrationInvoker) {
             Invoker filterInvoker = ((FilterChainBuilder.CallbackRegistrationInvoker) withFilter).getFilterInvoker();
-            FilterChainBuilder.CopyOfFilterChainNode filterInvoker1 = (FilterChainBuilder.CopyOfFilterChainNode) filterInvoker;
+            FilterChainBuilder.CopyOfFilterChainNode filterInvoker1 =
+                    (FilterChainBuilder.CopyOfFilterChainNode) filterInvoker;
             ListenerInvokerWrapper originalInvoker = (ListenerInvokerWrapper) filterInvoker1.getOriginalInvoker();
             Invoker invoker = originalInvoker.getInvoker();
             Assertions.assertTrue(invoker instanceof InjvmInvoker);
@@ -476,17 +547,13 @@ class ReferenceConfigTest {
 
         referenceConfig.setRegistry(registry);
 
-        dubboBootstrap
-            .application(applicationConfig)
-            .reference(referenceConfig)
-            .initialize();
+        dubboBootstrap.application(applicationConfig).reference(referenceConfig).initialize();
 
         referenceConfig.init();
         Assertions.assertTrue(referenceConfig.getInvoker() instanceof MigrationInvoker);
 
         dubboBootstrap.destroy();
     }
-
 
     /**
      * Verify that the remote url is directly configured for remote reference
@@ -517,18 +584,19 @@ class ReferenceConfigTest {
 
         referenceConfig.setUrl("dubbo://127.0.0.1:20880");
 
-        dubboBootstrap
-            .application(applicationConfig)
-            .reference(referenceConfig)
-            .initialize();
+        dubboBootstrap.application(applicationConfig).reference(referenceConfig).initialize();
 
         referenceConfig.init();
         Assertions.assertTrue(referenceConfig.getInvoker() instanceof ScopeClusterInvoker);
         Invoker scopeClusterInvoker = referenceConfig.getInvoker();
         Assertions.assertTrue(((ScopeClusterInvoker) scopeClusterInvoker).getInvoker() instanceof MockClusterInvoker);
-        Assertions.assertEquals(Boolean.TRUE, ((ScopeClusterInvoker) scopeClusterInvoker).getInvoker().getUrl().getAttribute(PEER_KEY));
+        Assertions.assertEquals(
+                Boolean.TRUE,
+                ((ScopeClusterInvoker) scopeClusterInvoker)
+                        .getInvoker()
+                        .getUrl()
+                        .getAttribute(PEER_KEY));
         dubboBootstrap.destroy();
-
     }
 
     /**
@@ -560,15 +628,11 @@ class ReferenceConfigTest {
 
         referenceConfig.setUrl(registryUrl1);
 
-        dubboBootstrap
-            .application(applicationConfig)
-            .reference(referenceConfig)
-            .initialize();
+        dubboBootstrap.application(applicationConfig).reference(referenceConfig).initialize();
 
         referenceConfig.init();
         Assertions.assertTrue(referenceConfig.getInvoker() instanceof MigrationInvoker);
         dubboBootstrap.destroy();
-
     }
 
     /**
@@ -612,10 +676,7 @@ class ReferenceConfigTest {
 
         referenceConfig.setRegistries(registryConfigs);
 
-        dubboBootstrap
-            .application(applicationConfig)
-            .reference(referenceConfig)
-            .initialize();
+        dubboBootstrap.application(applicationConfig).reference(referenceConfig).initialize();
 
         referenceConfig.init();
         Assertions.assertTrue(referenceConfig.getInvoker() instanceof ZoneAwareClusterInvoker);
@@ -653,8 +714,8 @@ class ReferenceConfigTest {
             System.setProperty("java.net.preferIPv4Stack", "true");
             demoService.export();
             rc.get();
-            Assertions.assertFalse(LOCAL_PROTOCOL.equalsIgnoreCase(
-                rc.getInvoker().getUrl().getProtocol()));
+            Assertions.assertFalse(
+                    LOCAL_PROTOCOL.equalsIgnoreCase(rc.getInvoker().getUrl().getProtocol()));
         } finally {
             System.clearProperty("java.net.preferIPv4Stack");
             rc.destroy();
@@ -695,12 +756,16 @@ class ReferenceConfigTest {
 
         try {
             System.setProperty("java.net.preferIPv4Stack", "true");
-            ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+            ProxyFactory proxy =
+                    ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
             DemoService service = new DemoServiceImpl();
             URL url = URL.valueOf("injvm://127.0.0.1/DemoService")
-                .addParameter(INTERFACE_KEY, DemoService.class.getName()).setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
+                    .addParameter(INTERFACE_KEY, DemoService.class.getName())
+                    .setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
             url = url.addParameter(EXPORTER_LISTENER_KEY, LOCAL_PROTOCOL);
-            Protocol protocolSPI = ApplicationModel.defaultModel().getExtensionLoader(Protocol.class).getAdaptiveExtension();
+            Protocol protocolSPI = ApplicationModel.defaultModel()
+                    .getExtensionLoader(Protocol.class)
+                    .getAdaptiveExtension();
             protocolSPI.export(proxy.getInvoker(service, DemoService.class, url));
             demoService = rc.get();
             success = true;
@@ -710,11 +775,9 @@ class ReferenceConfigTest {
             rc.destroy();
             InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).destroy();
             System.clearProperty("java.net.preferIPv4Stack");
-
         }
         Assertions.assertTrue(success);
         Assertions.assertNotNull(demoService);
-
     }
 
     @Test
@@ -761,11 +824,9 @@ class ReferenceConfigTest {
             rc.destroy();
             sc.unexport();
             System.clearProperty("java.net.preferIPv4Stack");
-
         }
         Assertions.assertTrue(success);
         Assertions.assertNotNull(demoService);
-
     }
 
     @Test
@@ -779,13 +840,12 @@ class ReferenceConfigTest {
         consumerConfig.setAsync(true);
         consumerConfig.setActives(10);
         config.setConsumer(consumerConfig);
-        config.setAsync(false);// override
+        config.setAsync(false); // override
 
         metaData = config.getMetaData();
         Assertions.assertEquals(2, metaData.size());
         Assertions.assertEquals(String.valueOf(consumerConfig.getActives()), metaData.get("actives"));
         Assertions.assertEquals(String.valueOf(config.isAsync()), metaData.get("async"));
-
     }
 
     @Test
@@ -803,7 +863,6 @@ class ReferenceConfigTest {
         }
         long end = System.currentTimeMillis();
         System.out.println("ReferenceConfig get prefixes cost: " + (end - start));
-
     }
 
     @Test
@@ -814,18 +873,20 @@ class ReferenceConfigTest {
         referenceConfig.setGeneric("true");
 
         DubboBootstrap.getInstance()
-            .application("demo app")
-            .reference(referenceConfig)
-            .initialize();
+                .application("demo app")
+                .reference(referenceConfig)
+                .initialize();
 
         Assertions.assertEquals(GenericService.class, referenceConfig.getInterfaceClass());
     }
 
-
     @Test
     void testLargeReferences() throws InterruptedException {
         int amount = 10000;
-        ModuleConfigManager configManager = DubboBootstrap.getInstance().getApplicationModel().getDefaultModule().getConfigManager();
+        ModuleConfigManager configManager = DubboBootstrap.getInstance()
+                .getApplicationModel()
+                .getDefaultModule()
+                .getConfigManager();
 
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("test-app");
@@ -850,7 +911,8 @@ class ReferenceConfigTest {
                 end = amount;
             }
             int finalEnd = end;
-            System.out.println(String.format("start thread %s: range: %s - %s, count: %s", i, start, end, (end - start)));
+            System.out.println(
+                    String.format("start thread %s: range: %s - %s, count: %s", i, start, end, (end - start)));
             executorService.submit(() -> {
                 testInitReferences(start, finalEnd, applicationConfig, metadataReportConfig, configCenterConfig);
             });
@@ -864,16 +926,20 @@ class ReferenceConfigTest {
         Assertions.assertEquals(amount, configManager.getReferences().size());
         Assertions.assertTrue(cost < 1000, "Init large references too slowly: " + cost);
 
-        //test equals
+        // test equals
         testSearchReferences();
-
     }
 
     private void testSearchReferences() {
         long t1 = System.currentTimeMillis();
-        Collection<ReferenceConfigBase<?>> references = DubboBootstrap.getInstance().getApplicationModel().getDefaultModule().getConfigManager().getReferences();
-        List<ReferenceConfigBase<?>> results = references.stream().filter(rc -> rc.equals(references.iterator().next()))
-            .collect(Collectors.toList());
+        Collection<ReferenceConfigBase<?>> references = DubboBootstrap.getInstance()
+                .getApplicationModel()
+                .getDefaultModule()
+                .getConfigManager()
+                .getReferences();
+        List<ReferenceConfigBase<?>> results = references.stream()
+                .filter(rc -> rc.equals(references.iterator().next()))
+                .collect(Collectors.toList());
         long t2 = System.currentTimeMillis();
         long cost = t2 - t1;
         System.out.println("Search large references cost: " + cost + "ms");
@@ -881,7 +947,12 @@ class ReferenceConfigTest {
         Assertions.assertTrue(cost < 1000, "Search large references too slowly: " + cost);
     }
 
-    private long testInitReferences(int start, int end, ApplicationConfig applicationConfig, MetadataReportConfig metadataReportConfig, ConfigCenterConfig configCenterConfig) {
+    private long testInitReferences(
+            int start,
+            int end,
+            ApplicationConfig applicationConfig,
+            MetadataReportConfig metadataReportConfig,
+            ConfigCenterConfig configCenterConfig) {
         // test add large number of references
         long t1 = System.currentTimeMillis();
         try {
@@ -893,7 +964,7 @@ class ReferenceConfigTest {
                 referenceConfig.setConfigCenter(configCenterConfig);
                 DubboBootstrap.getInstance().reference(referenceConfig);
 
-                //ApplicationModel.defaultModel().getConfigManager().getConfigCenters();
+                // ApplicationModel.defaultModel().getConfigManager().getConfigCenters();
             }
         } catch (Throwable e) {
             e.printStackTrace();
@@ -935,7 +1006,11 @@ class ReferenceConfigTest {
         serviceConfig.setRef(demoService);
         serviceConfig.export();
 
-        String basePath = DemoService.class.getProtectionDomain().getCodeSource().getLocation().getFile();
+        String basePath = DemoService.class
+                .getProtectionDomain()
+                .getCodeSource()
+                .getLocation()
+                .getFile();
         basePath = URLDecoder.decode(basePath, "UTF-8");
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         TestClassLoader classLoader1 = new TestClassLoader(classLoader, basePath);
@@ -956,7 +1031,8 @@ class ReferenceConfigTest {
         for (Class<?> anInterface : demoService1.getClass().getInterfaces()) {
             Assertions.assertNotEquals(DemoService.class, anInterface);
         }
-        Assertions.assertTrue(Arrays.stream(demoService1.getClass().getInterfaces()).anyMatch((clazz) -> clazz.getClassLoader().equals(classLoader1)));
+        Assertions.assertTrue(Arrays.stream(demoService1.getClass().getInterfaces())
+                .anyMatch((clazz) -> clazz.getClassLoader().equals(classLoader1)));
 
         java.lang.reflect.Method callBean1 = demoService1.getClass().getDeclaredMethod("callInnerClass");
         callBean1.setAccessible(true);
@@ -975,7 +1051,8 @@ class ReferenceConfigTest {
         for (Class<?> anInterface : demoService2.getClass().getInterfaces()) {
             Assertions.assertNotEquals(DemoService.class, anInterface);
         }
-        Assertions.assertTrue(Arrays.stream(demoService2.getClass().getInterfaces()).anyMatch((clazz) -> clazz.getClassLoader().equals(classLoader2)));
+        Assertions.assertTrue(Arrays.stream(demoService2.getClass().getInterfaces())
+                .anyMatch((clazz) -> clazz.getClassLoader().equals(classLoader2)));
 
         java.lang.reflect.Method callBean2 = demoService2.getClass().getDeclaredMethod("callInnerClass");
         callBean2.setAccessible(true);
@@ -996,7 +1073,11 @@ class ReferenceConfigTest {
     @DisabledForJreRange(min = JRE.JAVA_16)
     public void testDifferentClassLoaderRequest() throws Exception {
         FrameworkModel frameworkModel = FrameworkModel.defaultModel();
-        String basePath = DemoService.class.getProtectionDomain().getCodeSource().getLocation().getFile();
+        String basePath = DemoService.class
+                .getProtectionDomain()
+                .getCodeSource()
+                .getLocation()
+                .getFile();
         basePath = java.net.URLDecoder.decode(basePath, "UTF-8");
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         TestClassLoader1 classLoader1 = new TestClassLoader1(basePath);
@@ -1017,7 +1098,8 @@ class ReferenceConfigTest {
         AtomicReference innerRequestReference = new AtomicReference();
         AtomicReference innerResultReference = new AtomicReference();
         innerResultReference.set(resultClazzCustom1.getDeclaredConstructor().newInstance());
-        Constructor<?> declaredConstructor = clazz1impl.getDeclaredConstructor(AtomicReference.class, AtomicReference.class);
+        Constructor<?> declaredConstructor =
+                clazz1impl.getDeclaredConstructor(AtomicReference.class, AtomicReference.class);
 
         ServiceConfig serviceConfig = new ServiceConfig<>();
         serviceConfig.setInterfaceClassLoader(classLoader1);
@@ -1044,11 +1126,13 @@ class ReferenceConfigTest {
 
         java.lang.reflect.Method callBean1 = object1.getClass().getDeclaredMethod("call", requestClazzOrigin);
         callBean1.setAccessible(true);
-        Object result1 = callBean1.invoke(object1, requestClazzCustom2.getDeclaredConstructor().newInstance());
+        Object result1 = callBean1.invoke(
+                object1, requestClazzCustom2.getDeclaredConstructor().newInstance());
 
         Assertions.assertEquals(resultClazzCustom3, result1.getClass());
         Assertions.assertNotEquals(classLoader2, result1.getClass().getClassLoader());
-        Assertions.assertEquals(classLoader1, innerRequestReference.get().getClass().getClassLoader());
+        Assertions.assertEquals(
+                classLoader1, innerRequestReference.get().getClass().getClassLoader());
 
         Thread.currentThread().setContextClassLoader(classLoader1);
         callBean1.invoke(object1, requestClazzCustom2.getDeclaredConstructor().newInstance());
@@ -1067,8 +1151,7 @@ class ReferenceConfigTest {
         applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("Test"));
 
         ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
-        ClassLoader classLoader = new ClassLoader(originClassLoader) {
-        };
+        ClassLoader classLoader = new ClassLoader(originClassLoader) {};
         Thread.currentThread().setContextClassLoader(classLoader);
 
         ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>(applicationModel.newModule());
@@ -1111,14 +1194,28 @@ class ReferenceConfigTest {
         return cls.toClass(classLoader, JavassistCompiler.class.getProtectionDomain());
     }
 
-    @Reference(methods = {@Method(name = "sayHello", timeout = 1300, retries = 4, loadbalance = "random", async = true,
-        actives = 3, executes = 5, deprecated = true, sticky = true, oninvoke = "instance.i", onthrow = "instance.t", onreturn = "instance.r", cache = "c", validation = "v",
-        arguments = {@Argument(index = 24, callback = true, type = "sss")})})
+    @Reference(
+            methods = {
+                @Method(
+                        name = "sayHello",
+                        timeout = 1300,
+                        retries = 4,
+                        loadbalance = "random",
+                        async = true,
+                        actives = 3,
+                        executes = 5,
+                        deprecated = true,
+                        sticky = true,
+                        oninvoke = "instance.i",
+                        onthrow = "instance.t",
+                        onreturn = "instance.r",
+                        cache = "c",
+                        validation = "v",
+                        arguments = {@Argument(index = 24, callback = true, type = "sss")})
+            })
     private InnerTest innerTest;
 
-    private class InnerTest {
-
-    }
+    private class InnerTest {}
 
     private static class TestClassLoader extends ClassLoader {
         private String basePath;
@@ -1145,7 +1242,8 @@ class ReferenceConfigTest {
                 return loadedClass;
             } else {
                 try {
-                    if (name.equals("org.apache.dubbo.config.api.DemoService") || name.equals("org.apache.dubbo.config.api.DemoService$InnerClass")) {
+                    if (name.equals("org.apache.dubbo.config.api.DemoService")
+                            || name.equals("org.apache.dubbo.config.api.DemoService$InnerClass")) {
                         Class<?> aClass = this.findClass(name);
                         if (resolve) {
                             this.resolveClass(aClass);
@@ -1159,7 +1257,6 @@ class ReferenceConfigTest {
                 }
             }
         }
-
 
         public byte[] loadClassData(String className) throws IOException {
             className = className.replaceAll("\\.", "/");
@@ -1216,7 +1313,6 @@ class ReferenceConfigTest {
             }
         }
 
-
         public byte[] loadClassData(String className) throws IOException {
             className = className.replaceAll("\\.", "/");
             String path = basePath + File.separator + className + ".class";
@@ -1269,7 +1365,6 @@ class ReferenceConfigTest {
             }
         }
 
-
         public byte[] loadClassData(String className) throws IOException {
             className = className.replaceAll("\\.", "/");
             String path = basePath + File.separator + className + ".class";
@@ -1283,5 +1378,4 @@ class ReferenceConfigTest {
             return classBytes;
         }
     }
-
 }

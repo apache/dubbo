@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.support.merger;
 
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.rpc.cluster.ProviderURLMergeProcessor;
@@ -59,38 +58,36 @@ class DefaultProviderURLMergeProcessorTest {
     @Test
     void testMergeUrl() {
         URL providerURL = URL.valueOf("dubbo://localhost:55555");
-        providerURL = providerURL.setPath("path")
-            .setUsername("username")
-            .setPassword("password");
+        providerURL = providerURL.setPath("path").setUsername("username").setPassword("password");
 
         providerURL = URLBuilder.from(providerURL)
-            .addParameter(GROUP_KEY, "dubbo")
-            .addParameter(VERSION_KEY, "1.2.3")
-            .addParameter(DUBBO_VERSION_KEY, "2.3.7")
-            .addParameter(THREADPOOL_KEY, "fixed")
-            .addParameter(THREADS_KEY, Integer.MAX_VALUE)
-            .addParameter(THREAD_NAME_KEY, "test")
-            .addParameter(CORE_THREADS_KEY, Integer.MAX_VALUE)
-            .addParameter(QUEUES_KEY, Integer.MAX_VALUE)
-            .addParameter(ALIVE_KEY, Integer.MAX_VALUE)
-            .addParameter(DEFAULT_KEY_PREFIX + THREADS_KEY, Integer.MAX_VALUE)
-            .addParameter(DEFAULT_KEY_PREFIX + THREADPOOL_KEY, "fixed")
-            .addParameter(DEFAULT_KEY_PREFIX + CORE_THREADS_KEY, Integer.MAX_VALUE)
-            .addParameter(DEFAULT_KEY_PREFIX + QUEUES_KEY, Integer.MAX_VALUE)
-            .addParameter(DEFAULT_KEY_PREFIX + ALIVE_KEY, Integer.MAX_VALUE)
-            .addParameter(DEFAULT_KEY_PREFIX + THREAD_NAME_KEY, "test")
-            .addParameter(APPLICATION_KEY, "provider")
-            .addParameter(REFERENCE_FILTER_KEY, "filter1,filter2")
-            .addParameter(TAG_KEY, "TTT")
-            .build();
+                .addParameter(GROUP_KEY, "dubbo")
+                .addParameter(VERSION_KEY, "1.2.3")
+                .addParameter(DUBBO_VERSION_KEY, "2.3.7")
+                .addParameter(THREADPOOL_KEY, "fixed")
+                .addParameter(THREADS_KEY, Integer.MAX_VALUE)
+                .addParameter(THREAD_NAME_KEY, "test")
+                .addParameter(CORE_THREADS_KEY, Integer.MAX_VALUE)
+                .addParameter(QUEUES_KEY, Integer.MAX_VALUE)
+                .addParameter(ALIVE_KEY, Integer.MAX_VALUE)
+                .addParameter(DEFAULT_KEY_PREFIX + THREADS_KEY, Integer.MAX_VALUE)
+                .addParameter(DEFAULT_KEY_PREFIX + THREADPOOL_KEY, "fixed")
+                .addParameter(DEFAULT_KEY_PREFIX + CORE_THREADS_KEY, Integer.MAX_VALUE)
+                .addParameter(DEFAULT_KEY_PREFIX + QUEUES_KEY, Integer.MAX_VALUE)
+                .addParameter(DEFAULT_KEY_PREFIX + ALIVE_KEY, Integer.MAX_VALUE)
+                .addParameter(DEFAULT_KEY_PREFIX + THREAD_NAME_KEY, "test")
+                .addParameter(APPLICATION_KEY, "provider")
+                .addParameter(REFERENCE_FILTER_KEY, "filter1,filter2")
+                .addParameter(TAG_KEY, "TTT")
+                .build();
 
         URL consumerURL = new URLBuilder(DUBBO_PROTOCOL, "localhost", 55555)
-            .addParameter(PID_KEY, "1234")
-            .addParameter(THREADPOOL_KEY, "foo")
-            .addParameter(APPLICATION_KEY, "consumer")
-            .addParameter(REFERENCE_FILTER_KEY, "filter3")
-            .addParameter(TAG_KEY, "UUU")
-            .build();
+                .addParameter(PID_KEY, "1234")
+                .addParameter(THREADPOOL_KEY, "foo")
+                .addParameter(APPLICATION_KEY, "consumer")
+                .addParameter(REFERENCE_FILTER_KEY, "filter3")
+                .addParameter(TAG_KEY, "UUU")
+                .build();
 
         URL url = providerURLMergeProcessor.mergeUrl(providerURL, consumerURL.getParameters());
 
@@ -126,10 +123,12 @@ class DefaultProviderURLMergeProcessorTest {
     @Test
     void testUseProviderParams() {
         // present in both local and remote, but uses remote value.
-        URL localURL = URL.valueOf("dubbo://localhost:20880/DemoService?version=local&group=local&dubbo=local&release=local" +
-            "&methods=local&tag=local&timestamp=local");
-        URL remoteURL = URL.valueOf("dubbo://localhost:20880/DemoService?version=remote&group=remote&dubbo=remote&release=remote" +
-            "&methods=remote&tag=remote&timestamp=remote");
+        URL localURL =
+                URL.valueOf("dubbo://localhost:20880/DemoService?version=local&group=local&dubbo=local&release=local"
+                        + "&methods=local&tag=local&timestamp=local");
+        URL remoteURL = URL.valueOf(
+                "dubbo://localhost:20880/DemoService?version=remote&group=remote&dubbo=remote&release=remote"
+                        + "&methods=remote&tag=remote&timestamp=remote");
         URL mergedUrl = providerURLMergeProcessor.mergeUrl(remoteURL, localURL.getParameters());
 
         Assertions.assertEquals(remoteURL.getVersion(), mergedUrl.getVersion());
@@ -141,8 +140,8 @@ class DefaultProviderURLMergeProcessorTest {
         Assertions.assertEquals(remoteURL.getParameter(TAG_KEY), mergedUrl.getParameter(TAG_KEY));
 
         // present in local url but not in remote url, parameters of remote url is empty
-        localURL = URL.valueOf("dubbo://localhost:20880/DemoService?version=local&group=local&dubbo=local&release=local" +
-            "&methods=local&tag=local&timestamp=local");
+        localURL = URL.valueOf("dubbo://localhost:20880/DemoService?version=local&group=local&dubbo=local&release=local"
+                + "&methods=local&tag=local&timestamp=local");
         remoteURL = URL.valueOf("dubbo://localhost:20880/DemoService");
         mergedUrl = providerURLMergeProcessor.mergeUrl(remoteURL, localURL.getParameters());
 
@@ -155,8 +154,8 @@ class DefaultProviderURLMergeProcessorTest {
         Assertions.assertNull(mergedUrl.getParameter(TAG_KEY));
 
         // present in local url but not in remote url
-        localURL = URL.valueOf("dubbo://localhost:20880/DemoService?version=local&group=local&dubbo=local&release=local" +
-            "&methods=local&tag=local&timestamp=local");
+        localURL = URL.valueOf("dubbo://localhost:20880/DemoService?version=local&group=local&dubbo=local&release=local"
+                + "&methods=local&tag=local&timestamp=local");
         remoteURL = URL.valueOf("dubbo://localhost:20880/DemoService?key=value");
         mergedUrl = providerURLMergeProcessor.mergeUrl(remoteURL, localURL.getParameters());
 

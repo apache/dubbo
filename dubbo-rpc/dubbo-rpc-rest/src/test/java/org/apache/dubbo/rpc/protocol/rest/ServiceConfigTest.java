@@ -32,16 +32,19 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 import org.apache.dubbo.rpc.protocol.rest.mvc.SpringControllerService;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-
 public class ServiceConfigTest {
 
-    private final Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("rest");
-    private final ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-    private final ModuleServiceRepository repository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
+    private final Protocol protocol =
+            ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("rest");
+    private final ProxyFactory proxy =
+            ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+    private final ModuleServiceRepository repository =
+            ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
 
     @AfterEach
     public void tearDown() {
@@ -53,13 +56,15 @@ public class ServiceConfigTest {
     void testControllerService() throws Exception {
 
         int availablePort = NetUtils.getAvailablePort();
-        URL url = URL.valueOf("rest://127.0.0.1:" + availablePort + "/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.mvc.SpringControllerService");
+        URL url = URL.valueOf("rest://127.0.0.1:" + availablePort
+                + "/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.mvc.SpringControllerService");
 
         SpringControllerService server = new SpringControllerService();
 
         url = this.registerProvider(url, server, SpringControllerService.class);
 
-        Exporter<SpringControllerService> exporter = protocol.export(proxy.getInvoker(server, SpringControllerService.class, url));
+        Exporter<SpringControllerService> exporter =
+                protocol.export(proxy.getInvoker(server, SpringControllerService.class, url));
 
         OKHttpRestClient okHttpRestClient = new OKHttpRestClient(new HttpClientConfig());
 
@@ -71,20 +76,13 @@ public class ServiceConfigTest {
 
         byte[] body = okHttpRestClient.send(requestTemplate).get().getBody();
 
-
         Assertions.assertEquals("dubbo", new String(body));
         exporter.unexport();
     }
 
-
     private URL registerProvider(URL url, Object impl, Class<?> interfaceClass) {
         ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
-        ProviderModel providerModel = new ProviderModel(
-            url.getServiceKey(),
-            impl,
-            serviceDescriptor,
-            null,
-            null);
+        ProviderModel providerModel = new ProviderModel(url.getServiceKey(), impl, serviceDescriptor, null, null);
         repository.registerProvider(providerModel);
         return url.setServiceModel(providerModel);
     }

@@ -32,13 +32,13 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.RpcInvocation;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -55,7 +55,7 @@ class CacheTest {
 
     @AfterEach
     public void tearDown() {
-//        ApplicationModel.defaultModel().getConfigManager().clear();
+        //        ApplicationModel.defaultModel().getConfigManager().clear();
     }
 
     private void testCache(String type) throws Exception {
@@ -129,16 +129,25 @@ class CacheTest {
 
     @Test
     void testCacheProvider() {
-        CacheFactory cacheFactory = ExtensionLoader.getExtensionLoader(CacheFactory.class).getAdaptiveExtension();
+        CacheFactory cacheFactory =
+                ExtensionLoader.getExtensionLoader(CacheFactory.class).getAdaptiveExtension();
 
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("findCache.cache", "threadlocal");
-        URL url = new ServiceConfigURL("dubbo", "127.0.0.1", 29582, "org.apache.dubbo.config.cache.CacheService", parameters);
+        URL url = new ServiceConfigURL(
+                "dubbo", "127.0.0.1", 29582, "org.apache.dubbo.config.cache.CacheService", parameters);
 
-        Invocation invocation = new RpcInvocation("findCache", CacheService.class.getName(), "", new Class[]{String.class}, new String[]{"0"}, null, null, null);
+        Invocation invocation = new RpcInvocation(
+                "findCache",
+                CacheService.class.getName(),
+                "",
+                new Class[] {String.class},
+                new String[] {"0"},
+                null,
+                null,
+                null);
 
         Cache cache = cacheFactory.getCache(url, invocation);
         assertTrue(cache instanceof ThreadLocalCache);
     }
-
 }

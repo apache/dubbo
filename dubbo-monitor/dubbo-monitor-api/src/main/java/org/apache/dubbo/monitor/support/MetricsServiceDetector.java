@@ -30,5 +30,4 @@ public class MetricsServiceDetector implements BuiltinServiceDetector {
     public Class<?> getService() {
         return MetricsService.class;
     }
-
 }

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
@@ -40,6 +39,10 @@ import org.apache.dubbo.rpc.protocol.tri.transport.TripleServerConnectionHandler
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleTailHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -50,10 +53,6 @@ import io.netty.handler.codec.http2.Http2Settings;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.flush.FlushConsolidationHandler;
 import io.netty.handler.logging.LogLevel;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.HEADER_FILTER_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_ENABLE_PUSH_KEY;
@@ -107,32 +106,34 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
             headFilters = Collections.emptyList();
         }
         final Http2FrameCodec codec = TripleHttp2FrameCodecBuilder.forServer()
-            .customizeConnection((connection) -> connection.remote().flowController(new TriHttp2RemoteFlowController(connection, url.getOrDefaultApplicationModel())))
-            .gracefulShutdownTimeoutMillis(10000)
-            .initialSettings(new Http2Settings().headerTableSize(
-                    config.getInt(H2_SETTINGS_HEADER_TABLE_SIZE_KEY, DEFAULT_SETTING_HEADER_LIST_SIZE))
-                .maxConcurrentStreams(
-                    config.getInt(H2_SETTINGS_MAX_CONCURRENT_STREAMS_KEY, Integer.MAX_VALUE))
-                .initialWindowSize(
-                    config.getInt(H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY, DEFAULT_WINDOW_INIT_SIZE))
-                .maxFrameSize(config.getInt(H2_SETTINGS_MAX_FRAME_SIZE_KEY, DEFAULT_MAX_FRAME_SIZE))
-                .maxHeaderListSize(config.getInt(H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY,
-                    DEFAULT_MAX_HEADER_LIST_SIZE)))
-            .frameLogger(SERVER_LOGGER)
-            .build();
-        ExecutorSupport executorSupport = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel()).getExecutorSupport(url);
+                .customizeConnection((connection) -> connection
+                        .remote()
+                        .flowController(
+                                new TriHttp2RemoteFlowController(connection, url.getOrDefaultApplicationModel())))
+                .gracefulShutdownTimeoutMillis(10000)
+                .initialSettings(new Http2Settings()
+                        .headerTableSize(
+                                config.getInt(H2_SETTINGS_HEADER_TABLE_SIZE_KEY, DEFAULT_SETTING_HEADER_LIST_SIZE))
+                        .maxConcurrentStreams(config.getInt(H2_SETTINGS_MAX_CONCURRENT_STREAMS_KEY, Integer.MAX_VALUE))
+                        .initialWindowSize(config.getInt(H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY, DEFAULT_WINDOW_INIT_SIZE))
+                        .maxFrameSize(config.getInt(H2_SETTINGS_MAX_FRAME_SIZE_KEY, DEFAULT_MAX_FRAME_SIZE))
+                        .maxHeaderListSize(
+                                config.getInt(H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY, DEFAULT_MAX_HEADER_LIST_SIZE)))
+                .frameLogger(SERVER_LOGGER)
+                .build();
+        ExecutorSupport executorSupport = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel())
+                .getExecutorSupport(url);
         codec.connection().local().flowController().frameWriter(codec.encoder().frameWriter());
         TripleWriteQueue writeQueue = new TripleWriteQueue();
-        final Http2MultiplexHandler handler = new Http2MultiplexHandler(
-            new ChannelInitializer<Http2StreamChannel>() {
-                @Override
-                protected void initChannel(Http2StreamChannel ch) {
-                    final ChannelPipeline p = ch.pipeline();
-                    p.addLast(new TripleCommandOutBoundHandler());
-                    p.addLast(new TripleHttp2FrameServerHandler(frameworkModel, executorSupport,
-                        headFilters, ch, writeQueue));
-                }
-            });
+        final Http2MultiplexHandler handler = new Http2MultiplexHandler(new ChannelInitializer<Http2StreamChannel>() {
+            @Override
+            protected void initChannel(Http2StreamChannel ch) {
+                final ChannelPipeline p = ch.pipeline();
+                p.addLast(new TripleCommandOutBoundHandler());
+                p.addLast(new TripleHttp2FrameServerHandler(
+                        frameworkModel, executorSupport, headFilters, ch, writeQueue));
+            }
+        });
         List<ChannelHandler> handlers = new ArrayList<>();
         handlers.add(new ChannelHandlerPretender(codec));
         handlers.add(new ChannelHandlerPretender(new FlushConsolidationHandler(64, true)));
@@ -140,28 +141,28 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
         handlers.add(new ChannelHandlerPretender(handler));
         handlers.add(new ChannelHandlerPretender(new TripleTailHandler()));
         operator.configChannelHandler(handlers);
-
-
     }
 
     @Override
     public void configClientPipeline(URL url, ChannelOperator operator, ContextOperator contextOperator) {
         Configuration config = ConfigurationUtils.getGlobalConfiguration(url.getOrDefaultApplicationModel());
         final Http2FrameCodec codec = TripleHttp2FrameCodecBuilder.forClient()
-            .customizeConnection((connection) -> connection.remote().flowController(new TriHttp2RemoteFlowController(connection, url.getOrDefaultApplicationModel())))
-            .gracefulShutdownTimeoutMillis(10000)
-            .initialSettings(new Http2Settings().headerTableSize(
-                    config.getInt(H2_SETTINGS_HEADER_TABLE_SIZE_KEY, DEFAULT_SETTING_HEADER_LIST_SIZE))
-                .pushEnabled(config.getBoolean(H2_SETTINGS_ENABLE_PUSH_KEY, false))
-                .maxConcurrentStreams(
-                    config.getInt(H2_SETTINGS_MAX_CONCURRENT_STREAMS_KEY, Integer.MAX_VALUE))
-                .initialWindowSize(
-                    config.getInt(H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY, DEFAULT_WINDOW_INIT_SIZE))
-                .maxFrameSize(config.getInt(H2_SETTINGS_MAX_FRAME_SIZE_KEY, DEFAULT_MAX_FRAME_SIZE))
-                .maxHeaderListSize(config.getInt(H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY,
-                    DEFAULT_MAX_HEADER_LIST_SIZE)))
-            .frameLogger(CLIENT_LOGGER)
-            .build();
+                .customizeConnection((connection) -> connection
+                        .remote()
+                        .flowController(
+                                new TriHttp2RemoteFlowController(connection, url.getOrDefaultApplicationModel())))
+                .gracefulShutdownTimeoutMillis(10000)
+                .initialSettings(new Http2Settings()
+                        .headerTableSize(
+                                config.getInt(H2_SETTINGS_HEADER_TABLE_SIZE_KEY, DEFAULT_SETTING_HEADER_LIST_SIZE))
+                        .pushEnabled(config.getBoolean(H2_SETTINGS_ENABLE_PUSH_KEY, false))
+                        .maxConcurrentStreams(config.getInt(H2_SETTINGS_MAX_CONCURRENT_STREAMS_KEY, Integer.MAX_VALUE))
+                        .initialWindowSize(config.getInt(H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY, DEFAULT_WINDOW_INIT_SIZE))
+                        .maxFrameSize(config.getInt(H2_SETTINGS_MAX_FRAME_SIZE_KEY, DEFAULT_MAX_FRAME_SIZE))
+                        .maxHeaderListSize(
+                                config.getInt(H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY, DEFAULT_MAX_HEADER_LIST_SIZE)))
+                .frameLogger(CLIENT_LOGGER)
+                .build();
         codec.connection().local().flowController().frameWriter(codec.encoder().frameWriter());
         List<ChannelHandler> handlers = new ArrayList<>();
         handlers.add(new ChannelHandlerPretender(codec));

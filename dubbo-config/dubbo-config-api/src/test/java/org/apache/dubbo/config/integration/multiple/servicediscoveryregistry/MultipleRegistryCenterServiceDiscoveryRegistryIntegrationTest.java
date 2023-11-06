@@ -30,18 +30,18 @@ import org.apache.dubbo.registry.client.metadata.MetadataServiceDelegation;
 import org.apache.dubbo.test.check.registrycenter.config.ZookeeperConfig;
 import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 import static org.apache.dubbo.config.integration.Constants.MULTIPLE_CONFIG_CENTER_SERVICE_DISCOVERY_REGISTRY;
 
@@ -50,12 +50,14 @@ import static org.apache.dubbo.config.integration.Constants.MULTIPLE_CONFIG_CENT
  */
 class MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest implements IntegrationTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest.class);
 
     /**
      * Define the provider application name.
      */
-    public static String PROVIDER_APPLICATION_NAME = "multiple-registry-center-provider-for-service-discovery-registry-protocol";
+    public static String PROVIDER_APPLICATION_NAME =
+            "multiple-registry-center-provider-for-service-discovery-registry-protocol";
 
     /**
      * Define the protocol's name.
@@ -111,16 +113,16 @@ class MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest implements I
         ports.add(ZookeeperConfig.DEFAULT_CLIENT_PORT_2);
 
         DubboBootstrap.getInstance()
-            .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
-            .protocol(new ProtocolConfig(PROTOCOL_NAME, PROTOCOL_PORT))
-            .service(serviceConfig);
+                .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
+                .protocol(new ProtocolConfig(PROTOCOL_NAME, PROTOCOL_PORT))
+                .service(serviceConfig);
         // ---------------initialize--------------- //
-        registryServiceListener = (MultipleRegistryCenterServiceDiscoveryRegistryRegistryServiceListener) ExtensionLoader
-            .getExtensionLoader(RegistryServiceListener.class).getExtension(MULTIPLE_CONFIG_CENTER_SERVICE_DISCOVERY_REGISTRY);
+        registryServiceListener = (MultipleRegistryCenterServiceDiscoveryRegistryRegistryServiceListener)
+                ExtensionLoader.getExtensionLoader(RegistryServiceListener.class)
+                        .getExtension(MULTIPLE_CONFIG_CENTER_SERVICE_DISCOVERY_REGISTRY);
         // RegistryServiceListener is not null
         Assertions.assertNotNull(registryServiceListener);
         registryServiceListener.getStorage().clear();
-
     }
 
     /**
@@ -149,7 +151,8 @@ class MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest implements I
         beforeExport();
         DubboBootstrap.getInstance().start();
         afterExport();
-        ReferenceConfig<MultipleRegistryCenterServiceDiscoveryRegistryService> referenceConfig = new ReferenceConfig<>();
+        ReferenceConfig<MultipleRegistryCenterServiceDiscoveryRegistryService> referenceConfig =
+                new ReferenceConfig<>();
         referenceConfig.setInterface(MultipleRegistryCenterServiceDiscoveryRegistryService.class);
         referenceConfig.get().hello("Dubbo in multiple registry center");
         afterInvoke();
@@ -168,18 +171,23 @@ class MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest implements I
         // All register center has been registered and subscribed
         for (int port : ports) {
             Assertions.assertTrue(registryServiceListener.getStorage().contains(HOST, port));
-            ServiceDiscoveryRegistryInfoWrapper serviceDiscoveryRegistryInfoWrapper = registryServiceListener.getStorage().get(HOST, port);
+            ServiceDiscoveryRegistryInfoWrapper serviceDiscoveryRegistryInfoWrapper =
+                    registryServiceListener.getStorage().get(HOST, port);
             // check if it's registered
             Assertions.assertTrue(serviceDiscoveryRegistryInfoWrapper.isRegistered());
             // check if it's subscribed
             Assertions.assertFalse(serviceDiscoveryRegistryInfoWrapper.isSubscribed());
-            MetadataServiceDelegation metadataService = DubboBootstrap.getInstance().getApplicationModel().getBeanFactory().getBean(MetadataServiceDelegation.class);
+            MetadataServiceDelegation metadataService = DubboBootstrap.getInstance()
+                    .getApplicationModel()
+                    .getBeanFactory()
+                    .getBean(MetadataServiceDelegation.class);
             // check if the count of exported urls is right or not
             Assertions.assertEquals(metadataService.getExportedURLs().size(), 1);
             // check the exported url is right or not.
-            Assertions.assertTrue(metadataService.getExportedURLs()
-                .first()
-                .contains(MultipleRegistryCenterServiceDiscoveryRegistryService.class.getName()));
+            Assertions.assertTrue(metadataService
+                    .getExportedURLs()
+                    .first()
+                    .contains(MultipleRegistryCenterServiceDiscoveryRegistryService.class.getName()));
             // check the count of metadatainfo is right or not.
             Assertions.assertEquals(2, metadataService.getMetadataInfos().size());
         }
@@ -188,9 +196,7 @@ class MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest implements I
     /**
      * There are some checkpoints need to check after invoked as follow:
      */
-    private void afterInvoke() {
-
-    }
+    private void afterInvoke() {}
 
     @AfterEach
     public void tearDown() throws IOException {

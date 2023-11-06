@@ -22,7 +22,6 @@ public class ParameterTypesComparator {
 
     private Class[] parameterTypes;
 
-
     public ParameterTypesComparator(Class[] parameterTypes) {
         this.parameterTypes = parameterTypes;
     }
@@ -40,10 +39,7 @@ public class ParameterTypesComparator {
         return Arrays.hashCode(parameterTypes);
     }
 
-
     public static ParameterTypesComparator getInstance(Class[] parameterTypes) {
         return new ParameterTypesComparator(parameterTypes);
     }
-
-
 }

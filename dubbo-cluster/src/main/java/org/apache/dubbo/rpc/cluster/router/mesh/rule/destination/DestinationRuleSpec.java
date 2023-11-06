@@ -14,11 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.destination;
 
 import java.util.List;
-
 
 public class DestinationRuleSpec {
     private String host;
@@ -51,10 +49,9 @@ public class DestinationRuleSpec {
 
     @Override
     public String toString() {
-        return "DestinationRuleSpec{" +
-                "host='" + host + '\'' +
-                ", subsets=" + subsets +
-                ", trafficPolicy=" + trafficPolicy +
-                '}';
+        return "DestinationRuleSpec{" + "host='"
+                + host + '\'' + ", subsets="
+                + subsets + ", trafficPolicy="
+                + trafficPolicy + '}';
     }
 }

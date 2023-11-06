@@ -19,18 +19,21 @@ package org.apache.dubbo.metadata.rest;
 import org.apache.dubbo.metadata.rest.jaxrs.JAXRSServiceRestMetadataResolver;
 import org.apache.dubbo.metadata.rest.springmvc.SpringMvcServiceRestMetadataResolver;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+
 public class NoAnnotationApiDemoResolverTest {
-    private JAXRSServiceRestMetadataResolver jaxrsServiceRestMetadataResolver = new JAXRSServiceRestMetadataResolver(ApplicationModel.defaultModel());
-    private SpringMvcServiceRestMetadataResolver springMvcServiceRestMetadataResolver = new SpringMvcServiceRestMetadataResolver(ApplicationModel.defaultModel());
+    private JAXRSServiceRestMetadataResolver jaxrsServiceRestMetadataResolver =
+            new JAXRSServiceRestMetadataResolver(ApplicationModel.defaultModel());
+    private SpringMvcServiceRestMetadataResolver springMvcServiceRestMetadataResolver =
+            new SpringMvcServiceRestMetadataResolver(ApplicationModel.defaultModel());
 
     @Test
     void testNoAnnotationApiResolver() {
@@ -60,5 +63,3 @@ interface NoAnnotationApiDemo {
 
     String test(String test);
 }
-
-

@@ -45,7 +45,6 @@ public class DestinationSubset<T> {
 
     public void setEndpoints(Set<Endpoint> endpoints) {
         this.endpoints = endpoints;
-
     }
 
     public BitList<Invoker<T>> getInvokers() {

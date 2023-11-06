@@ -21,9 +21,9 @@ import org.apache.dubbo.metadata.rest.SpringRestService;
 import org.apache.dubbo.metadata.rest.StandardRestService;
 import org.apache.dubbo.metadata.rest.User;
 
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
+
+import org.junit.jupiter.api.Test;
 
 /**
  * {@link RestService} Test
@@ -35,8 +35,6 @@ class RestServiceTest {
     @Test
     void test() throws IOException {
         Compiler compiler = new Compiler();
-        compiler.compile(User.class, RestService.class,
-                StandardRestService.class,
-                SpringRestService.class);
+        compiler.compile(User.class, RestService.class, StandardRestService.class, SpringRestService.class);
     }
 }

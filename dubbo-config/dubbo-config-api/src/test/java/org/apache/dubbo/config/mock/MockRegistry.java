@@ -57,25 +57,19 @@ public class MockRegistry implements Registry {
      * @see org.apache.dubbo.common.Node#destroy()
      */
     @Override
-    public void destroy() {
-
-    }
+    public void destroy() {}
 
     /*
      * @see org.apache.dubbo.registry.RegistryService#register(org.apache.dubbo.common.URL)
      */
     @Override
-    public void register(URL url) {
-
-    }
+    public void register(URL url) {}
 
     /*
      * @see org.apache.dubbo.registry.RegistryService#unregister(org.apache.dubbo.common.URL)
      */
     @Override
-    public void unregister(URL url) {
-
-    }
+    public void unregister(URL url) {}
 
     /*
      * @see org.apache.dubbo.registry.RegistryService#subscribe(org.apache.dubbo.common.URL, org.apache.dubbo.registry.NotifyListener)
@@ -85,9 +79,7 @@ public class MockRegistry implements Registry {
         this.subscribedUrl = url;
         List<URL> urls = new ArrayList<URL>();
 
-        urls.add(url.setProtocol("mockprotocol")
-                .removeParameter(CATEGORY_KEY)
-                .addParameter(METHODS_KEY, "sayHello"));
+        urls.add(url.setProtocol("mockprotocol").removeParameter(CATEGORY_KEY).addParameter(METHODS_KEY, "sayHello"));
 
         listener.notify(urls);
     }
@@ -96,9 +88,7 @@ public class MockRegistry implements Registry {
      * @see org.apache.dubbo.registry.RegistryService#unsubscribe(org.apache.dubbo.common.URL, org.apache.dubbo.registry.NotifyListener)
      */
     @Override
-    public void unsubscribe(URL url, NotifyListener listener) {
-
-    }
+    public void unsubscribe(URL url, NotifyListener listener) {}
 
     /*
      * @see org.apache.dubbo.registry.RegistryService#lookup(org.apache.dubbo.common.URL)
@@ -107,5 +97,4 @@ public class MockRegistry implements Registry {
     public List<URL> lookup(URL url) {
         return null;
     }
-
 }

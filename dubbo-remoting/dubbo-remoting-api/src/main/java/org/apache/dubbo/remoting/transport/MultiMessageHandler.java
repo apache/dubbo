@@ -30,7 +30,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERR
  */
 public class MultiMessageHandler extends AbstractChannelHandlerDelegate {
 
-    protected static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MultiMessageHandler.class);
+    protected static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(MultiMessageHandler.class);
 
     public MultiMessageHandler(ChannelHandler handler) {
         super(handler);
@@ -45,11 +46,21 @@ public class MultiMessageHandler extends AbstractChannelHandlerDelegate {
                 try {
                     handler.received(channel, obj);
                 } catch (Throwable t) {
-                    logger.error(INTERNAL_ERROR, "unknown error in remoting module", "", "MultiMessageHandler received fail.", t);
+                    logger.error(
+                            INTERNAL_ERROR,
+                            "unknown error in remoting module",
+                            "",
+                            "MultiMessageHandler received fail.",
+                            t);
                     try {
                         handler.caught(channel, t);
                     } catch (Throwable t1) {
-                        logger.error(INTERNAL_ERROR, "unknown error in remoting module", "", "MultiMessageHandler caught fail.", t1);
+                        logger.error(
+                                INTERNAL_ERROR,
+                                "unknown error in remoting module",
+                                "",
+                                "MultiMessageHandler caught fail.",
+                                t1);
                     }
                 }
             }

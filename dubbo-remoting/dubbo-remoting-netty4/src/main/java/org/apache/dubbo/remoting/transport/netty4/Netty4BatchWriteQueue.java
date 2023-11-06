@@ -16,16 +16,17 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelPromise;
-import io.netty.channel.EventLoop;
 import org.apache.dubbo.common.BatchExecutorQueue;
 import org.apache.dubbo.remoting.exchange.support.MultiMessage;
 
 import java.util.LinkedList;
 import java.util.Queue;
+
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelPromise;
+import io.netty.channel.EventLoop;
 
 /**
  * netty4 batch write queue
@@ -73,7 +74,7 @@ public class Netty4BatchWriteQueue extends BatchExecutorQueue<Netty4BatchWriteQu
             public void operationComplete(ChannelFuture future) throws Exception {
                 ChannelPromise cp;
                 while ((cp = promises.poll()) != null) {
-                    if (future.isSuccess()){
+                    if (future.isSuccess()) {
                         cp.setSuccess();
                     } else {
                         cp.setFailure(future.cause());
@@ -98,6 +99,5 @@ public class Netty4BatchWriteQueue extends BatchExecutorQueue<Netty4BatchWriteQu
             this.originMessage = originMessage;
             this.channelPromise = channelPromise;
         }
-
     }
 }

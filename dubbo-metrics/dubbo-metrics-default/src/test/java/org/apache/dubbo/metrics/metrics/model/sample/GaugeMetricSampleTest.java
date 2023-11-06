@@ -14,21 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.metrics.model.sample;
 
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.ToDoubleFunction;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 class GaugeMetricSampleTest {
 
@@ -53,7 +52,8 @@ class GaugeMetricSampleTest {
 
     @Test
     void test() {
-        GaugeMetricSample<?> sample = new GaugeMetricSample<>(name, description, tags, category, baseUnit, value, apply);
+        GaugeMetricSample<?> sample =
+                new GaugeMetricSample<>(name, description, tags, category, baseUnit, value, apply);
         Assertions.assertEquals(sample.getName(), name);
         Assertions.assertEquals(sample.getDescription(), description);
         Assertions.assertEquals(sample.getTags(), tags);

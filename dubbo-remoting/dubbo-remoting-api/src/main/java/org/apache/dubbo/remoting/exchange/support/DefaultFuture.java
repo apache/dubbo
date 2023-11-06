@@ -61,7 +61,9 @@ public class DefaultFuture extends CompletableFuture<Object> {
      */
     private static final Map<Long, DefaultFuture> FUTURES = new ConcurrentHashMap<>();
 
-    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(() -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true), 30, TimeUnit.MILLISECONDS), DefaultFuture::destroy);
+    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(
+            () -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true), 30, TimeUnit.MILLISECONDS),
+            DefaultFuture::destroy);
 
     // invoke id.
     private final Long id;
@@ -162,10 +164,14 @@ public class DefaultFuture extends CompletableFuture<Object> {
                         try {
                             future.get(restTime, TimeUnit.MILLISECONDS);
                         } catch (java.util.concurrent.TimeoutException ignore) {
-                            logger.warn(PROTOCOL_TIMEOUT_SERVER, "", "",
-                                "Trying to close channel " + channel + ", but response is not received in "
-                                + timeout + "ms, and the request id is " + future.id);
-                        } catch (Throwable ignore) {}
+                            logger.warn(
+                                    PROTOCOL_TIMEOUT_SERVER,
+                                    "",
+                                    "",
+                                    "Trying to close channel " + channel + ", but response is not received in "
+                                            + timeout + "ms, and the request id is " + future.id);
+                        } catch (Throwable ignore) {
+                        }
                     }
                     if (!future.isDone()) {
                         respInactive(channel, future);
@@ -178,9 +184,11 @@ public class DefaultFuture extends CompletableFuture<Object> {
     private static void respInactive(Channel channel, DefaultFuture future) {
         Response disconnectResponse = new Response(future.getId());
         disconnectResponse.setStatus(Response.CHANNEL_INACTIVE);
-        disconnectResponse.setErrorMessage("Channel " +
-            channel + " is inactive. Directly return the unFinished request : " +
-            (logger.isDebugEnabled() ? future.getRequest() : future.getRequest().copyWithoutData()));
+        disconnectResponse.setErrorMessage("Channel " + channel
+                + " is inactive. Directly return the unFinished request : "
+                + (logger.isDebugEnabled()
+                        ? future.getRequest()
+                        : future.getRequest().copyWithoutData()));
         DefaultFuture.received(channel, disconnectResponse);
     }
 
@@ -200,11 +208,18 @@ public class DefaultFuture extends CompletableFuture<Object> {
                 future.doReceived(response);
                 shutdownExecutorIfNeeded(future);
             } else {
-                logger.warn(PROTOCOL_TIMEOUT_SERVER, "", "", "The timeout response finally returned at "
-                    + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()))
-                    + ", response status is " + response.getStatus()
-                    + (channel == null ? "" : ", channel: " + channel.getLocalAddress()
-                    + " -> " + channel.getRemoteAddress()) + ", please check provider side for detailed result.");
+                logger.warn(
+                        PROTOCOL_TIMEOUT_SERVER,
+                        "",
+                        "",
+                        "The timeout response finally returned at "
+                                + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()))
+                                + ", response status is " + response.getStatus()
+                                + (channel == null
+                                        ? ""
+                                        : ", channel: " + channel.getLocalAddress() + " -> "
+                                                + channel.getRemoteAddress())
+                                + ", please check provider side for detailed result.");
             }
         } finally {
             CHANNELS.remove(response.getId());
@@ -242,10 +257,11 @@ public class DefaultFuture extends CompletableFuture<Object> {
         if (res.getStatus() == Response.OK) {
             this.complete(res.getResult());
         } else if (res.getStatus() == Response.CLIENT_TIMEOUT || res.getStatus() == Response.SERVER_TIMEOUT) {
-            this.completeExceptionally(new TimeoutException(res.getStatus() == Response.SERVER_TIMEOUT, channel, res.getErrorMessage()));
-        } else if(res.getStatus() == Response.SERIALIZATION_ERROR){
+            this.completeExceptionally(
+                    new TimeoutException(res.getStatus() == Response.SERVER_TIMEOUT, channel, res.getErrorMessage()));
+        } else if (res.getStatus() == Response.SERIALIZATION_ERROR) {
             this.completeExceptionally(new SerializationException(res.getErrorMessage()));
-        }else {
+        } else {
             this.completeExceptionally(new RemotingException(channel, res.getErrorMessage()));
         }
     }
@@ -276,17 +292,20 @@ public class DefaultFuture extends CompletableFuture<Object> {
 
     private String getTimeoutMessage(boolean scan) {
         long nowTimestamp = System.currentTimeMillis();
-        return (sent > 0 && sent - start < timeout ? "Waiting server-side response timeout" : "Sending request timeout in client-side")
-            + (scan ? " by scan timer" : "") + ". start time: "
-            + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(start))) + ", end time: "
-            + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(nowTimestamp))) + ","
-            + (sent > 0 ? " client elapsed: " + (sent - start)
-            + " ms, server elapsed: " + (nowTimestamp - sent)
-            : " elapsed: " + (nowTimestamp - start)) + " ms, timeout: "
-            + timeout + " ms, request: " + (logger.isDebugEnabled() ? request : request.copyWithoutData()) + ", channel: " + channel.getLocalAddress()
-            + " -> " + channel.getRemoteAddress();
+        return (sent > 0 && sent - start < timeout
+                        ? "Waiting server-side response timeout"
+                        : "Sending request timeout in client-side")
+                + (scan ? " by scan timer" : "") + ". start time: "
+                + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(start))) + ", end time: "
+                + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(nowTimestamp))) + ","
+                + (sent > 0
+                        ? " client elapsed: " + (sent - start) + " ms, server elapsed: " + (nowTimestamp - sent)
+                        : " elapsed: " + (nowTimestamp - start))
+                + " ms, timeout: "
+                + timeout + " ms, request: " + (logger.isDebugEnabled() ? request : request.copyWithoutData())
+                + ", channel: " + channel.getLocalAddress()
+                + " -> " + channel.getRemoteAddress();
     }
-
 
     private static class TimeoutCheckTask implements TimerTask {
 

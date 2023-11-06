@@ -20,7 +20,6 @@ import org.apache.dubbo.metadata.rest.User;
 
 import java.util.List;
 
-
 /**
  * DemoService
  */
@@ -33,5 +32,4 @@ public interface DemoService {
     List<User> getUsers(List<User> users);
 
     int echo(int i);
-
 }

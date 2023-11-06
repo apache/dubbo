@@ -23,16 +23,16 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.zookeeper.ZookeeperInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.x.discovery.ServiceDiscovery;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_STORAGE_TYPE_PROPERTY_NAME;
@@ -67,7 +67,8 @@ class CuratorFrameworkUtilsTest {
     @Test
     void testBuildServiceDiscovery() throws Exception {
         CuratorFramework curatorFramework = CuratorFrameworkUtils.buildCuratorFramework(registryUrl, null);
-        ServiceDiscovery<ZookeeperInstance> discovery = CuratorFrameworkUtils.buildServiceDiscovery(curatorFramework, ROOT_PATH.getParameterValue(registryUrl));
+        ServiceDiscovery<ZookeeperInstance> discovery =
+                CuratorFrameworkUtils.buildServiceDiscovery(curatorFramework, ROOT_PATH.getParameterValue(registryUrl));
         Assertions.assertNotNull(discovery);
         discovery.close();
         curatorFramework.getZookeeperClient().close();
@@ -75,14 +76,17 @@ class CuratorFrameworkUtilsTest {
 
     @Test
     void testBuild() {
-        ServiceInstance dubboServiceInstance = new DefaultServiceInstance("A", "127.0.0.1", 8888, ApplicationModel.defaultModel());
+        ServiceInstance dubboServiceInstance =
+                new DefaultServiceInstance("A", "127.0.0.1", 8888, ApplicationModel.defaultModel());
         Map<String, String> metadata = dubboServiceInstance.getMetadata();
         metadata.put(METADATA_STORAGE_TYPE_PROPERTY_NAME, "remote");
         metadata.put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, "111");
         metadata.put("site", "dubbo");
 
-        // convert {org.apache.dubbo.registry.client.ServiceInstance} to {org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance>}
-        org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance> curatorServiceInstance = CuratorFrameworkUtils.build(dubboServiceInstance);
+        // convert {org.apache.dubbo.registry.client.ServiceInstance} to
+        // {org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance>}
+        org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance> curatorServiceInstance =
+                CuratorFrameworkUtils.build(dubboServiceInstance);
         Assertions.assertEquals(curatorServiceInstance.getId(), dubboServiceInstance.getAddress());
         Assertions.assertEquals(curatorServiceInstance.getName(), dubboServiceInstance.getServiceName());
         Assertions.assertEquals(curatorServiceInstance.getAddress(), dubboServiceInstance.getHost());
@@ -93,14 +97,16 @@ class CuratorFrameworkUtilsTest {
         Assertions.assertEquals(payload.getMetadata(), metadata);
         Assertions.assertEquals(payload.getName(), dubboServiceInstance.getServiceName());
 
-        // convert {org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance>} to {org.apache.dubbo.registry.client.ServiceInstance}
+        // convert {org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance>} to
+        // {org.apache.dubbo.registry.client.ServiceInstance}
         ServiceInstance serviceInstance = CuratorFrameworkUtils.build(registryUrl, curatorServiceInstance);
         Assertions.assertEquals(serviceInstance, dubboServiceInstance);
 
-        // convert {Collection<org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance>>} to {List<org.apache.dubbo.registry.client.ServiceInstance>}
-        List<ServiceInstance> serviceInstances = CuratorFrameworkUtils.build(registryUrl, Arrays.asList(curatorServiceInstance));
+        // convert {Collection<org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance>>} to
+        // {List<org.apache.dubbo.registry.client.ServiceInstance>}
+        List<ServiceInstance> serviceInstances =
+                CuratorFrameworkUtils.build(registryUrl, Arrays.asList(curatorServiceInstance));
         Assertions.assertNotNull(serviceInstances);
         Assertions.assertEquals(serviceInstances.get(0), dubboServiceInstance);
     }
-
 }

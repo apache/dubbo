@@ -60,8 +60,10 @@ public class TagRouterRule extends AbstractRouterRule {
 
         Object tags = map.get(TAGS_KEY);
         if (tags != null && List.class.isAssignableFrom(tags.getClass())) {
-            tagRouterRule.setTags(((List<Map<String, Object>>) tags).stream()
-                .map(objMap -> Tag.parseFromMap(objMap, tagRouterRule.getVersion())).collect(Collectors.toList()));
+            tagRouterRule.setTags(((List<Map<String, Object>>) tags)
+                    .stream()
+                            .map(objMap -> Tag.parseFromMap(objMap, tagRouterRule.getVersion()))
+                            .collect(Collectors.toList()));
         }
 
         return tagRouterRule;
@@ -75,45 +77,49 @@ public class TagRouterRule extends AbstractRouterRule {
         BitList<? extends Invoker<?>> invokers = router.getInvokers();
 
         // for tags with 'addresses` field set and 'match' field not set
-        tags.stream().filter(tag -> CollectionUtils.isNotEmpty(tag.getAddresses())).forEach(tag -> {
-            tagnameToAddresses.put(tag.getName(), new HashSet<>(tag.getAddresses()));
-            tag.getAddresses().forEach(addr -> {
-                Set<String> tagNames = addressToTagnames.computeIfAbsent(addr, k -> new HashSet<>());
-                tagNames.add(tag.getName());
-            });
-        });
+        tags.stream()
+                .filter(tag -> CollectionUtils.isNotEmpty(tag.getAddresses()))
+                .forEach(tag -> {
+                    tagnameToAddresses.put(tag.getName(), new HashSet<>(tag.getAddresses()));
+                    tag.getAddresses().forEach(addr -> {
+                        Set<String> tagNames = addressToTagnames.computeIfAbsent(addr, k -> new HashSet<>());
+                        tagNames.add(tag.getName());
+                    });
+                });
 
         if (this.getVersion() != null && this.getVersion().startsWith(RULE_VERSION_V30)) {
             // for tags with 'match` field set and 'addresses' field not set
             if (CollectionUtils.isNotEmpty(invokers)) {
-                tags.stream().filter(tag -> CollectionUtils.isEmpty(tag.getAddresses())).forEach(tag -> {
-                    Set<String> addresses = new HashSet<>();
-                    List<ParamMatch> paramMatchers = tag.getMatch();
-                    invokers.forEach(invoker -> {
-                        boolean isMatch = true;
-                        for (ParamMatch matcher : paramMatchers) {
-                            if (!matcher.isMatch(invoker.getUrl().getOriginalParameter(matcher.getKey()))) {
-                                isMatch = false;
-                                break;
+                tags.stream()
+                        .filter(tag -> CollectionUtils.isEmpty(tag.getAddresses()))
+                        .forEach(tag -> {
+                            Set<String> addresses = new HashSet<>();
+                            List<ParamMatch> paramMatchers = tag.getMatch();
+                            invokers.forEach(invoker -> {
+                                boolean isMatch = true;
+                                for (ParamMatch matcher : paramMatchers) {
+                                    if (!matcher.isMatch(invoker.getUrl().getOriginalParameter(matcher.getKey()))) {
+                                        isMatch = false;
+                                        break;
+                                    }
+                                }
+                                if (isMatch) {
+                                    addresses.add(invoker.getUrl().getAddress());
+                                }
+                            });
+                            if (CollectionUtils.isNotEmpty(addresses)) { // null means tag not set
+                                tagnameToAddresses.put(tag.getName(), addresses);
                             }
-                        }
-                        if (isMatch) {
-                            addresses.add(invoker.getUrl().getAddress());
-                        }
-                    });
-                    if (CollectionUtils.isNotEmpty(addresses)) {// null means tag not set
-                        tagnameToAddresses.put(tag.getName(), addresses);
-                    }
-                });
+                        });
             }
         }
     }
 
     public Set<String> getAddresses() {
         return tagnameToAddresses.entrySet().stream()
-            .filter(entry -> CollectionUtils.isNotEmpty(entry.getValue()))
-            .flatMap(entry -> entry.getValue().stream())
-            .collect(Collectors.toSet());
+                .filter(entry -> CollectionUtils.isNotEmpty(entry.getValue()))
+                .flatMap(entry -> entry.getValue().stream())
+                .collect(Collectors.toSet());
     }
 
     public List<String> getTagNames() {
@@ -123,7 +129,6 @@ public class TagRouterRule extends AbstractRouterRule {
     public Map<String, Set<String>> getAddressToTagnames() {
         return addressToTagnames;
     }
-
 
     public Map<String, Set<String>> getTagnameToAddresses() {
         return tagnameToAddresses;

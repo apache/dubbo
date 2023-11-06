@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.spring.boot.env;
 
+import java.util.HashMap;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.boot.SpringApplication;
@@ -24,8 +26,6 @@ import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
 import org.springframework.mock.env.MockEnvironment;
-
-import java.util.HashMap;
 
 /**
  * {@link DubboDefaultPropertiesEnvironmentPostProcessor} Test

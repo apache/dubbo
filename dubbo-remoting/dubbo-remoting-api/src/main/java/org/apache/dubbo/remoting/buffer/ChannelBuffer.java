@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.remoting.buffer;
 
 import java.io.IOException;
@@ -953,7 +952,5 @@ public interface ChannelBuffer extends Comparable<ChannelBuffer> {
      * If this buffer is backed by an NIO direct buffer,
      * in some scenarios it may be necessary to manually release.
      */
-    default void release() {
-
-    }
+    default void release() {}
 }

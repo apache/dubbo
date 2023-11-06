@@ -72,7 +72,8 @@ public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements Telne
                 } else {
                     buf.append("Command: ");
                     buf.append(command);
-                    buf.append(" disabled for security reasons, please enable support by listing the commands through 'telnet'");
+                    buf.append(
+                            " disabled for security reasons, please enable support by listing the commands through 'telnet'");
                 }
             } else {
                 buf.append("Unsupported command: ");
@@ -101,5 +102,4 @@ public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements Telne
         }
         return false;
     }
-
 }

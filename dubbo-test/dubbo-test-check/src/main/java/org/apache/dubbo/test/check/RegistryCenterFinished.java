@@ -29,12 +29,11 @@ public class RegistryCenterFinished extends AbstractRegistryCenterTestExecutionL
     public void testPlanExecutionFinished(TestPlan testPlan) {
         super.testPlanExecutionFinished(testPlan);
         try {
-            if(needRegistryCenter(testPlan)){
+            if (needRegistryCenter(testPlan)) {
                 GlobalRegistryCenter.shutdown();
             }
         } catch (Throwable cause) {
-            throw new IllegalStateException("Failed to terminate zookeeper instance in unit test",cause);
+            throw new IllegalStateException("Failed to terminate zookeeper instance in unit test", cause);
         }
     }
-
 }

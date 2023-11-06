@@ -16,15 +16,6 @@
  */
 package org.apache.dubbo.registry.kubernetes;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -39,6 +30,15 @@ import org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst;
 import org.apache.dubbo.registry.kubernetes.util.KubernetesConfigUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
+
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 import io.fabric8.kubernetes.api.model.EndpointAddress;
 import io.fabric8.kubernetes.api.model.EndpointPort;
@@ -70,15 +70,18 @@ public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
 
     private final boolean enableRegister;
 
-    public final static String KUBERNETES_PROPERTIES_KEY = "io.dubbo/metadata";
+    public static final String KUBERNETES_PROPERTIES_KEY = "io.dubbo/metadata";
 
-    private final static ConcurrentHashMap<String, AtomicLong> SERVICE_UPDATE_TIME = new ConcurrentHashMap<>(64);
+    private static final ConcurrentHashMap<String, AtomicLong> SERVICE_UPDATE_TIME = new ConcurrentHashMap<>(64);
 
-    private final static ConcurrentHashMap<String, SharedIndexInformer<Service>> SERVICE_INFORMER = new ConcurrentHashMap<>(64);
+    private static final ConcurrentHashMap<String, SharedIndexInformer<Service>> SERVICE_INFORMER =
+            new ConcurrentHashMap<>(64);
 
-    private final static ConcurrentHashMap<String, SharedIndexInformer<Pod>> PODS_INFORMER = new ConcurrentHashMap<>(64);
+    private static final ConcurrentHashMap<String, SharedIndexInformer<Pod>> PODS_INFORMER =
+            new ConcurrentHashMap<>(64);
 
-    private final static ConcurrentHashMap<String, SharedIndexInformer<Endpoints>> ENDPOINTS_INFORMER = new ConcurrentHashMap<>(64);
+    private static final ConcurrentHashMap<String, SharedIndexInformer<Endpoints>> ENDPOINTS_INFORMER =
+            new ConcurrentHashMap<>(64);
 
     public KubernetesServiceDiscovery(ApplicationModel applicationModel, URL registryURL) {
         super(applicationModel, registryURL);
@@ -96,11 +99,11 @@ public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
             availableAccess = false;
         }
         if (!availableAccess) {
-            String message = "Unable to access api server. " +
-                    "Please check your url config." +
-                    " Master URL: " + config.getMasterUrl() +
-                    " Hostname: " + currentHostname;
-            logger.error(REGISTRY_UNABLE_ACCESS_KUBERNETES,"","",message);
+            String message = "Unable to access api server. " + "Please check your url config."
+                    + " Master URL: "
+                    + config.getMasterUrl() + " Hostname: "
+                    + currentHostname;
+            logger.error(REGISTRY_UNABLE_ACCESS_KUBERNETES, "", "", message);
         } else {
             KubernetesMeshEnvListener.injectKubernetesEnv(kubernetesClient, namespace);
         }
@@ -127,15 +130,15 @@ public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
                     .pods()
                     .inNamespace(namespace)
                     .withName(currentHostname)
-                    .edit(pod ->
-                            new PodBuilder(pod)
-                                    .editOrNewMetadata()
-                                    .addToAnnotations(KUBERNETES_PROPERTIES_KEY, JsonUtils.toJson(serviceInstance.getMetadata()))
-                                    .endMetadata()
-                                    .build());
+                    .edit(pod -> new PodBuilder(pod)
+                            .editOrNewMetadata()
+                            .addToAnnotations(
+                                    KUBERNETES_PROPERTIES_KEY, JsonUtils.toJson(serviceInstance.getMetadata()))
+                            .endMetadata()
+                            .build());
             if (logger.isInfoEnabled()) {
-                logger.info("Write Current Service Instance Metadata to Kubernetes pod. " +
-                        "Current pod name: " + currentHostname);
+                logger.info("Write Current Service Instance Metadata to Kubernetes pod. " + "Current pod name: "
+                        + currentHostname);
             }
         }
     }
@@ -144,7 +147,8 @@ public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
      * Comparing to {@link AbstractServiceDiscovery#doUpdate(ServiceInstance, ServiceInstance)}, unregister() is unnecessary here.
      */
     @Override
-    public void doUpdate(ServiceInstance oldServiceInstance, ServiceInstance newServiceInstance) throws RuntimeException {
+    public void doUpdate(ServiceInstance oldServiceInstance, ServiceInstance newServiceInstance)
+            throws RuntimeException {
         reportMetadata(newServiceInstance.getServiceMetadata());
         this.doRegister(newServiceInstance);
     }
@@ -156,26 +160,21 @@ public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
                     .pods()
                     .inNamespace(namespace)
                     .withName(currentHostname)
-                    .edit(pod ->
-                            new PodBuilder(pod)
-                                    .editOrNewMetadata()
-                                    .removeFromAnnotations(KUBERNETES_PROPERTIES_KEY)
-                                    .endMetadata()
-                                    .build());
+                    .edit(pod -> new PodBuilder(pod)
+                            .editOrNewMetadata()
+                            .removeFromAnnotations(KUBERNETES_PROPERTIES_KEY)
+                            .endMetadata()
+                            .build());
             if (logger.isInfoEnabled()) {
-                logger.info("Remove Current Service Instance from Kubernetes pod. Current pod name: " + currentHostname);
+                logger.info(
+                        "Remove Current Service Instance from Kubernetes pod. Current pod name: " + currentHostname);
             }
         }
     }
 
     @Override
     public Set<String> getServices() {
-        return kubernetesClient
-                .services()
-                .inNamespace(namespace)
-                .list()
-                .getItems()
-                .stream()
+        return kubernetesClient.services().inNamespace(namespace).list().getItems().stream()
                 .map(service -> service.getMetadata().getName())
                 .collect(Collectors.toSet());
     }
@@ -203,7 +202,8 @@ public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     @Override
-    public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
+    public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
+            throws NullPointerException, IllegalArgumentException {
         listener.getServiceNames().forEach(serviceName -> {
             SERVICE_UPDATE_TIME.put(serviceName, new AtomicLong(0L));
 
@@ -227,8 +227,8 @@ public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
                     @Override
                     public void onAdd(Endpoints endpoints) {
                         if (logger.isDebugEnabled()) {
-                            logger.debug("Received Endpoint Event. Event type: added. Current pod name: " + currentHostname +
-                                    ". Endpoints is: " + endpoints);
+                            logger.debug("Received Endpoint Event. Event type: added. Current pod name: "
+                                    + currentHostname + ". Endpoints is: " + endpoints);
                         }
                         notifyServiceChanged(serviceName, listener, toServiceInstance(endpoints, serviceName));
                     }
@@ -236,8 +236,8 @@ public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
                     @Override
                     public void onUpdate(Endpoints oldEndpoints, Endpoints newEndpoints) {
                         if (logger.isDebugEnabled()) {
-                            logger.debug("Received Endpoint Event. Event type: updated. Current pod name: " + currentHostname +
-                                    ". The new Endpoints is: " + newEndpoints);
+                            logger.debug("Received Endpoint Event. Event type: updated. Current pod name: "
+                                    + currentHostname + ". The new Endpoints is: " + newEndpoints);
                         }
                         notifyServiceChanged(serviceName, listener, toServiceInstance(newEndpoints, serviceName));
                     }
@@ -245,8 +245,8 @@ public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
                     @Override
                     public void onDelete(Endpoints endpoints, boolean deletedFinalStateUnknown) {
                         if (logger.isDebugEnabled()) {
-                            logger.debug("Received Endpoint Event. Event type: deleted. Current pod name: " + currentHostname +
-                                    ". Endpoints is: " + endpoints);
+                            logger.debug("Received Endpoint Event. Event type: deleted. Current pod name: "
+                                    + currentHostname + ". Endpoints is: " + endpoints);
                         }
                         notifyServiceChanged(serviceName, listener, toServiceInstance(endpoints, serviceName));
                     }
@@ -269,16 +269,16 @@ public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
                     @Override
                     public void onAdd(Pod pod) {
                         if (logger.isDebugEnabled()) {
-                            logger.debug("Received Pods Event. Event type: added. Current pod name: " + currentHostname +
-                                    ". Pod is: " + pod);
+                            logger.debug("Received Pods Event. Event type: added. Current pod name: " + currentHostname
+                                    + ". Pod is: " + pod);
                         }
                     }
 
                     @Override
                     public void onUpdate(Pod oldPod, Pod newPod) {
                         if (logger.isDebugEnabled()) {
-                            logger.debug("Received Pods Event. Event type: updated. Current pod name: " + currentHostname +
-                                    ". new Pod is: " + newPod);
+                            logger.debug("Received Pods Event. Event type: updated. Current pod name: "
+                                    + currentHostname + ". new Pod is: " + newPod);
                         }
 
                         notifyServiceChanged(serviceName, listener, getInstances(serviceName));
@@ -287,8 +287,8 @@ public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
                     @Override
                     public void onDelete(Pod pod, boolean deletedFinalStateUnknown) {
                         if (logger.isDebugEnabled()) {
-                            logger.debug("Received Pods Event. Event type: deleted. Current pod name: " + currentHostname +
-                                    ". Pod is: " + pod);
+                            logger.debug("Received Pods Event. Event type: deleted. Current pod name: "
+                                    + currentHostname + ". Pod is: " + pod);
                         }
                     }
                 });
@@ -301,43 +301,40 @@ public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
                 .services()
                 .inNamespace(namespace)
                 .withName(serviceName)
-                .inform(
-                        new ResourceEventHandler<Service>() {
-                            @Override
-                            public void onAdd(Service service) {
-                                if (logger.isDebugEnabled()) {
-                                    logger.debug("Received Service Added Event. " +
-                                            "Current pod name: " + currentHostname);
-                                }
-                            }
-
-                            @Override
-                            public void onUpdate(Service oldService, Service newService) {
-                                if (logger.isDebugEnabled()) {
-                                    logger.debug("Received Service Update Event. Update Pods Watcher. Current pod name: " + currentHostname +
-                                            ". The new Service is: " + newService);
-                                }
-                                if (PODS_INFORMER.containsKey(serviceName)) {
-                                    PODS_INFORMER.get(serviceName).close();
-                                    PODS_INFORMER.remove(serviceName);
-                                }
-                                watchPods(listener, serviceName);
-                            }
-
-                            @Override
-                            public void onDelete(Service service, boolean deletedFinalStateUnknown) {
-                                if (logger.isDebugEnabled()) {
-                                    logger.debug("Received Service Delete Event. " +
-                                            "Current pod name: " + currentHostname);
-                                }
-                            }
+                .inform(new ResourceEventHandler<Service>() {
+                    @Override
+                    public void onAdd(Service service) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("Received Service Added Event. " + "Current pod name: " + currentHostname);
                         }
-                );
+                    }
+
+                    @Override
+                    public void onUpdate(Service oldService, Service newService) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("Received Service Update Event. Update Pods Watcher. Current pod name: "
+                                    + currentHostname + ". The new Service is: " + newService);
+                        }
+                        if (PODS_INFORMER.containsKey(serviceName)) {
+                            PODS_INFORMER.get(serviceName).close();
+                            PODS_INFORMER.remove(serviceName);
+                        }
+                        watchPods(listener, serviceName);
+                    }
+
+                    @Override
+                    public void onDelete(Service service, boolean deletedFinalStateUnknown) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("Received Service Delete Event. " + "Current pod name: " + currentHostname);
+                        }
+                    }
+                });
 
         SERVICE_INFORMER.put(serviceName, serviceInformer);
     }
 
-    private void notifyServiceChanged(String serviceName, ServiceInstancesChangedListener listener, List<ServiceInstance> serviceInstanceList) {
+    private void notifyServiceChanged(
+            String serviceName, ServiceInstancesChangedListener listener, List<ServiceInstance> serviceInstanceList) {
         long receivedTime = System.nanoTime();
 
         ServiceInstancesChangedEvent event;
@@ -355,10 +352,11 @@ public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
         }
 
         if (logger.isInfoEnabled()) {
-            logger.info("Discard Service Instance Data. " +
-                    "Possible Cause: Newer message has been processed or Failed to update time record by CAS. " +
-                    "Current Data received time: " + receivedTime + ". " +
-                    "Newer Data received time: " + lastUpdateTime + ".");
+            logger.info("Discard Service Instance Data. "
+                    + "Possible Cause: Newer message has been processed or Failed to update time record by CAS. "
+                    + "Current Data received time: "
+                    + receivedTime + ". " + "Newer Data received time: "
+                    + lastUpdateTime + ".");
         }
     }
 
@@ -368,7 +366,11 @@ public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     private Map<String, String> getServiceSelector(String serviceName) {
-        Service service = kubernetesClient.services().inNamespace(namespace).withName(serviceName).get();
+        Service service = kubernetesClient
+                .services()
+                .inNamespace(namespace)
+                .withName(serviceName)
+                .get();
         if (service == null) {
             return null;
         }
@@ -380,26 +382,17 @@ public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
         if (serviceSelector == null) {
             return new LinkedList<>();
         }
-        Map<String, Pod> pods = kubernetesClient
-                .pods()
-                .inNamespace(namespace)
-                .withLabels(serviceSelector)
-                .list()
-                .getItems()
-                .stream()
-                .collect(
-                        Collectors.toMap(
-                                pod -> pod.getMetadata().getName(),
-                                pod -> pod));
+        Map<String, Pod> pods =
+                kubernetesClient.pods().inNamespace(namespace).withLabels(serviceSelector).list().getItems().stream()
+                        .collect(Collectors.toMap(pod -> pod.getMetadata().getName(), pod -> pod));
 
         List<ServiceInstance> instances = new LinkedList<>();
         Set<Integer> instancePorts = new HashSet<>();
 
         for (EndpointSubset endpointSubset : endpoints.getSubsets()) {
-            instancePorts.addAll(
-                    endpointSubset.getPorts()
-                            .stream().map(EndpointPort::getPort)
-                            .collect(Collectors.toSet()));
+            instancePorts.addAll(endpointSubset.getPorts().stream()
+                    .map(EndpointPort::getPort)
+                    .collect(Collectors.toSet()));
         }
 
         for (EndpointSubset endpointSubset : endpoints.getSubsets()) {
@@ -407,21 +400,31 @@ public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
                 Pod pod = pods.get(address.getTargetRef().getName());
                 String ip = address.getIp();
                 if (pod == null) {
-                    logger.warn(REGISTRY_UNABLE_MATCH_KUBERNETES, "", "", "Unable to match Kubernetes Endpoint address with Pod. " +
-                        "EndpointAddress Hostname: " + address.getTargetRef().getName());
+                    logger.warn(
+                            REGISTRY_UNABLE_MATCH_KUBERNETES,
+                            "",
+                            "",
+                            "Unable to match Kubernetes Endpoint address with Pod. " + "EndpointAddress Hostname: "
+                                    + address.getTargetRef().getName());
                     continue;
                 }
                 instancePorts.forEach(port -> {
-                    ServiceInstance serviceInstance = new DefaultServiceInstance(serviceName, ip, port, ScopeModelUtil.getApplicationModel(getUrl().getScopeModel()));
+                    ServiceInstance serviceInstance = new DefaultServiceInstance(
+                            serviceName, ip, port, ScopeModelUtil.getApplicationModel(getUrl().getScopeModel()));
 
                     String properties = pod.getMetadata().getAnnotations().get(KUBERNETES_PROPERTIES_KEY);
                     if (StringUtils.isNotEmpty(properties)) {
                         serviceInstance.getMetadata().putAll(JsonUtils.toJavaObject(properties, Map.class));
                         instances.add(serviceInstance);
                     } else {
-                        logger.warn(REGISTRY_UNABLE_FIND_SERVICE_KUBERNETES, "", "", "Unable to find Service Instance metadata in Pod Annotations. " +
-                                "Possibly cause: provider has not been initialized successfully. " +
-                                "EndpointAddress Hostname: " + address.getTargetRef().getName());
+                        logger.warn(
+                                REGISTRY_UNABLE_FIND_SERVICE_KUBERNETES,
+                                "",
+                                "",
+                                "Unable to find Service Instance metadata in Pod Annotations. "
+                                        + "Possibly cause: provider has not been initialized successfully. "
+                                        + "EndpointAddress Hostname: "
+                                        + address.getTargetRef().getName());
                     }
                 });
             }

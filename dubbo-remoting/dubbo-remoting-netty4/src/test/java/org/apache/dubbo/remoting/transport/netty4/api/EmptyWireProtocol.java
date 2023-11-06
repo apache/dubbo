@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.api.ProtocolDetector;
 import org.apache.dubbo.remoting.api.WireProtocol;
 import org.apache.dubbo.remoting.api.pu.ChannelOperator;
-
 import org.apache.dubbo.remoting.api.ssl.ContextOperator;
 
 public class EmptyWireProtocol implements WireProtocol {
@@ -30,17 +29,11 @@ public class EmptyWireProtocol implements WireProtocol {
     }
 
     @Override
-    public void configServerProtocolHandler(URL url, ChannelOperator operator) {
-
-    }
+    public void configServerProtocolHandler(URL url, ChannelOperator operator) {}
 
     @Override
-    public void configClientPipeline(URL url, ChannelOperator operator, ContextOperator contextOperator) {
-
-    }
+    public void configClientPipeline(URL url, ChannelOperator operator, ContextOperator contextOperator) {}
 
     @Override
-    public void close() {
-
-    }
+    public void close() {}
 }

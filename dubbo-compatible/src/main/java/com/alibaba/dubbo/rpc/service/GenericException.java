@@ -14,17 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.rpc.service;
-
 
 @Deprecated
 public class GenericException extends org.apache.dubbo.rpc.service.GenericException {
 
     private static final long serialVersionUID = -1182299763306599962L;
 
-    public GenericException() {
-    }
+    public GenericException() {}
 
     public GenericException(String exceptionMessage) {
         super(exceptionMessage);

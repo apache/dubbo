@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.spring.boot.observability.autoconfigure.exporter.zipkin;
 
 import org.springframework.http.HttpEntity;
@@ -71,6 +70,5 @@ class ZipkinRestTemplateSender extends HttpSender {
                 callback.onError(ex);
             }
         }
-
     }
 }

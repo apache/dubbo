@@ -14,21 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.reactive;
 
 import org.apache.dubbo.reactive.handler.OneToManyMethodHandler;
-import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
+
+import java.util.concurrent.CompletableFuture;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.mockito.ArgumentMatchers.any;
 
 /**
  * Unit test for OneToManyMethodHandler
@@ -45,9 +40,9 @@ public final class OneToManyMethodHandlerTest {
     @Test
     void testInvoke() {
         String request = "1,2,3,4,5,6,7";
-        OneToManyMethodHandler<String, String> handler = new OneToManyMethodHandler<>(requestMono ->
-            requestMono.flatMapMany(r -> Flux.fromArray(r.split(","))));
-        CompletableFuture<?> future = handler.invoke(new Object[]{request, creator.getResponseObserver()});
+        OneToManyMethodHandler<String, String> handler =
+                new OneToManyMethodHandler<>(requestMono -> requestMono.flatMapMany(r -> Flux.fromArray(r.split(","))));
+        CompletableFuture<?> future = handler.invoke(new Object[] {request, creator.getResponseObserver()});
         Assertions.assertTrue(future.isDone());
         Assertions.assertEquals(7, creator.getNextCounter().get());
         Assertions.assertEquals(0, creator.getErrorCounter().get());
@@ -57,17 +52,17 @@ public final class OneToManyMethodHandlerTest {
     @Test
     void testError() {
         String request = "1,2,3,4,5,6,7";
-        OneToManyMethodHandler<String, String> handler = new OneToManyMethodHandler<>(requestMono ->
-            Flux.create(emitter -> {
-                for (int i = 0; i < 10; i++) {
-                    if (i == 6) {
-                        emitter.error(new Throwable());
-                    } else {
-                        emitter.next(String.valueOf(i));
+        OneToManyMethodHandler<String, String> handler =
+                new OneToManyMethodHandler<>(requestMono -> Flux.create(emitter -> {
+                    for (int i = 0; i < 10; i++) {
+                        if (i == 6) {
+                            emitter.error(new Throwable());
+                        } else {
+                            emitter.next(String.valueOf(i));
+                        }
                     }
-                }
-            }));
-        CompletableFuture<?> future = handler.invoke(new Object[]{request, creator.getResponseObserver()});
+                }));
+        CompletableFuture<?> future = handler.invoke(new Object[] {request, creator.getResponseObserver()});
         Assertions.assertTrue(future.isDone());
         Assertions.assertEquals(6, creator.getNextCounter().get());
         Assertions.assertEquals(1, creator.getErrorCounter().get());

@@ -35,5 +35,4 @@ public interface Validation {
      */
     @Adaptive(VALIDATION_KEY)
     Validator getValidator(URL url);
-
 }

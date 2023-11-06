@@ -19,5 +19,4 @@ package org.apache.dubbo.graalvm.demo;
 public interface DemoService {
 
     String sayHello(String name);
-
 }

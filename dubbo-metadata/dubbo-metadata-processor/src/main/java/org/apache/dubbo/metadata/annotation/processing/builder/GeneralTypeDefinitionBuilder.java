@@ -21,6 +21,7 @@ import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
+
 import java.util.Map;
 
 import static org.apache.dubbo.metadata.annotation.processing.util.FieldUtils.getNonStaticFields;
@@ -40,7 +41,8 @@ public class GeneralTypeDefinitionBuilder implements DeclaredTypeDefinitionBuild
     }
 
     @Override
-    public TypeDefinition build(ProcessingEnvironment processingEnv, DeclaredType type, Map<String, TypeDefinition> typeCache) {
+    public TypeDefinition build(
+            ProcessingEnvironment processingEnv, DeclaredType type, Map<String, TypeDefinition> typeCache) {
 
         String typeName = type.toString();
 
@@ -49,7 +51,8 @@ public class GeneralTypeDefinitionBuilder implements DeclaredTypeDefinitionBuild
         return buildProperties(processingEnv, typeElement, typeCache);
     }
 
-    protected TypeDefinition buildProperties(ProcessingEnvironment processingEnv, TypeElement type, Map<String, TypeDefinition> typeCache) {
+    protected TypeDefinition buildProperties(
+            ProcessingEnvironment processingEnv, TypeElement type, Map<String, TypeDefinition> typeCache) {
         TypeDefinition definition = new TypeDefinition(type.toString());
         getNonStaticFields(type).forEach(field -> {
             String fieldName = field.getSimpleName().toString();

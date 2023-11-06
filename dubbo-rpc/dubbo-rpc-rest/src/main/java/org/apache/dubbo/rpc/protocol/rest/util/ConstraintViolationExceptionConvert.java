@@ -25,16 +25,14 @@ import javax.validation.ConstraintViolationException;
 
 public class ConstraintViolationExceptionConvert {
 
-
-
     public static Object handleConstraintViolationException(RpcException rpcException) {
         ConstraintViolationException cve = (ConstraintViolationException) rpcException.getCause();
         ViolationReport report = new ViolationReport();
         for (ConstraintViolation<?> cv : cve.getConstraintViolations()) {
             report.addConstraintViolation(new RestConstraintViolation(
-                cv.getPropertyPath().toString(),
-                cv.getMessage(),
-                cv.getInvalidValue() == null ? "null" : cv.getInvalidValue().toString()));
+                    cv.getPropertyPath().toString(),
+                    cv.getMessage(),
+                    cv.getInvalidValue() == null ? "null" : cv.getInvalidValue().toString()));
         }
         return report;
     }

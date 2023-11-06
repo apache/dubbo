@@ -14,11 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.extension.support;
 
 import org.apache.dubbo.common.extension.Activate;
 
 @Activate
-public class Order0Filter2 implements Order0Filter0 {
-}
+public class Order0Filter2 implements Order0Filter0 {}

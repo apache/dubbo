@@ -26,7 +26,6 @@ import java.util.Map;
  * 1. get extra attributes from underlying infrastructures related to the instance on which Dubbo is currently deploying.
  * 2. get configurations from third-party systems which maybe useful for a specific component.
  */
-
 @SPI(scope = ExtensionScope.APPLICATION)
 public interface InfraAdapter {
 
@@ -43,5 +42,4 @@ public interface InfraAdapter {
      * @return
      */
     String getAttribute(String key);
-
 }

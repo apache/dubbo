@@ -23,6 +23,9 @@ import org.apache.dubbo.spring.boot.actuate.endpoint.metadata.DubboReferencesMet
 import org.apache.dubbo.spring.boot.actuate.endpoint.metadata.DubboServicesMetadata;
 import org.apache.dubbo.spring.boot.actuate.endpoint.metadata.DubboShutdownMetadata;
 
+import java.util.Map;
+import java.util.SortedMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,9 +36,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.async.DeferredResult;
-
-import java.util.Map;
-import java.util.SortedMap;
 
 /**
  * {@link MvcEndpoint} to expose Dubbo Metadata
@@ -76,37 +76,49 @@ public class DubboMvcEndpoint extends EndpointMvcAdapter {
         super(dubboEndpoint);
     }
 
-
-    @RequestMapping(value = DUBBO_SHUTDOWN_ENDPOINT_URI, method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(
+            value = DUBBO_SHUTDOWN_ENDPOINT_URI,
+            method = RequestMethod.POST,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public DeferredResult shutdown() throws Exception {
         Map<String, Object> shutdownCountData = dubboShutdownMetadata.shutdown();
         return new DeferredResult(null, shutdownCountData);
     }
 
-    @RequestMapping(value = DUBBO_CONFIGS_ENDPOINT_URI, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(
+            value = DUBBO_CONFIGS_ENDPOINT_URI,
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public Map<String, Map<String, Map<String, Object>>> configs() {
         return dubboConfigsMetadata.configs();
     }
 
-
-    @RequestMapping(value = DUBBO_SERVICES_ENDPOINT_URI, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(
+            value = DUBBO_SERVICES_ENDPOINT_URI,
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public Map<String, Map<String, Object>> services() {
         return dubboServicesMetadata.services();
     }
 
-    @RequestMapping(value = DUBBO_REFERENCES_ENDPOINT_URI, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(
+            value = DUBBO_REFERENCES_ENDPOINT_URI,
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public Map<String, Map<String, Object>> references() {
         return dubboReferencesMetadata.references();
     }
 
-    @RequestMapping(value = DUBBO_PROPERTIES_ENDPOINT_URI, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(
+            value = DUBBO_PROPERTIES_ENDPOINT_URI,
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public SortedMap<String, Object> properties() {
         return dubboPropertiesMetadata.properties();
-
     }
 }

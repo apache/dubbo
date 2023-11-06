@@ -20,14 +20,15 @@ import org.apache.dubbo.metadata.annotation.processing.AbstractAnnotationProcess
 import org.apache.dubbo.metadata.annotation.processing.model.Model;
 import org.apache.dubbo.metadata.tools.TestServiceImpl;
 
-import org.junit.jupiter.api.Test;
-
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+
 import java.util.List;
 import java.util.Set;
+
+import org.junit.jupiter.api.Test;
 
 import static javax.lang.model.element.Modifier.PRIVATE;
 import static javax.lang.model.util.ElementFilter.fieldsIn;
@@ -52,8 +53,7 @@ class MemberUtilsTest extends AbstractAnnotationProcessingTest {
     private TypeElement testType;
 
     @Override
-    protected void addCompiledClasses(Set<Class<?>> classesToBeCompiled) {
-    }
+    protected void addCompiledClasses(Set<Class<?>> classesToBeCompiled) {}
 
     @Override
     protected void beforeEach() {

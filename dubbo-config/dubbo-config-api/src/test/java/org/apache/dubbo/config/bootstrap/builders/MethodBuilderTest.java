@@ -19,10 +19,10 @@ package org.apache.dubbo.config.bootstrap.builders;
 import org.apache.dubbo.config.ArgumentConfig;
 import org.apache.dubbo.config.MethodConfig;
 
+import java.util.Collections;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.Collections;
 
 class MethodBuilderTest {
 
@@ -160,10 +160,23 @@ class MethodBuilderTest {
     void build() {
         ArgumentConfig argument = new ArgumentConfig();
         MethodBuilder builder = new MethodBuilder();
-        builder.name("name").stat(1).retry(true).reliable(false).executes(2).deprecated(true).sticky(false)
-                .isReturn(true).oninvoke("on-invoke-object").oninvokeMethod("on-invoke-method").service("service")
-                .onreturn("on-return-object").onreturnMethod("on-return-method").serviceId("serviceId")
-                .onthrow("on-throw-object").onthrowMethod("on-throw-method").addArgument(argument);
+        builder.name("name")
+                .stat(1)
+                .retry(true)
+                .reliable(false)
+                .executes(2)
+                .deprecated(true)
+                .sticky(false)
+                .isReturn(true)
+                .oninvoke("on-invoke-object")
+                .oninvokeMethod("on-invoke-method")
+                .service("service")
+                .onreturn("on-return-object")
+                .onreturnMethod("on-return-method")
+                .serviceId("serviceId")
+                .onthrow("on-throw-object")
+                .onthrowMethod("on-throw-method")
+                .addArgument(argument);
 
         MethodConfig config = builder.build();
         MethodConfig config2 = builder.build();

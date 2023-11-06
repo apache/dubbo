@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metadata.report;
 
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.metadata.MappingListener;
@@ -42,11 +41,9 @@ public interface MetadataReport {
     /**
      * Application Metadata -- START
      **/
-    default void publishAppMetadata(SubscriberMetadataIdentifier identifier, MetadataInfo metadataInfo) {
-    }
+    default void publishAppMetadata(SubscriberMetadataIdentifier identifier, MetadataInfo metadataInfo) {}
 
-    default void unPublishAppMetadata(SubscriberMetadataIdentifier identifier, MetadataInfo metadataInfo) {
-    }
+    default void unPublishAppMetadata(SubscriberMetadataIdentifier identifier, MetadataInfo metadataInfo) {}
 
     default MetadataInfo getAppMetadata(SubscriberMetadataIdentifier identifier, Map<String, String> instanceMetadata) {
         return null;
@@ -73,7 +70,8 @@ public interface MetadataReport {
         return new ConfigItem();
     }
 
-    default boolean registerServiceAppMapping(String serviceInterface, String defaultMappingGroup, String newConfigContent, Object ticket) {
+    default boolean registerServiceAppMapping(
+            String serviceInterface, String defaultMappingGroup, String newConfigContent, Object ticket) {
         return false;
     }
 
@@ -81,9 +79,7 @@ public interface MetadataReport {
         return false;
     }
 
-    default void removeServiceAppMappingListener(String serviceKey, MappingListener listener) {
-
-    }
+    default void removeServiceAppMappingListener(String serviceKey, MappingListener listener) {}
 
     /**
      * Service<-->Application Mapping -- START
@@ -99,5 +95,4 @@ public interface MetadataReport {
     boolean shouldReportDefinition();
 
     boolean shouldReportMetadata();
-
 }

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -30,19 +29,20 @@ import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
 import java.net.InetSocketAddress;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_TIMEOUT_SERVER;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_TIMEOUT_SERVER;
 
 public abstract class AbstractServerCallListener implements AbstractServerCall.Listener {
 
-    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(AbstractServerCallListener.class);
+    private static final ErrorTypeAwareLogger LOGGER =
+            LoggerFactory.getErrorTypeAwareLogger(AbstractServerCallListener.class);
     public final CancellationContext cancellationContext;
     final RpcInvocation invocation;
     final Invoker<?> invoker;
     final ServerCallToObserverAdapter<Object> responseObserver;
 
-    public AbstractServerCallListener(RpcInvocation invocation, Invoker<?> invoker,
-        ServerCallToObserverAdapter<Object> responseObserver) {
+    public AbstractServerCallListener(
+            RpcInvocation invocation, Invoker<?> invoker, ServerCallToObserverAdapter<Object> responseObserver) {
         this.invocation = invocation;
         this.invoker = invoker;
         this.cancellationContext = responseObserver.cancellationContext;
@@ -51,11 +51,10 @@ public abstract class AbstractServerCallListener implements AbstractServerCall.L
 
     public void invoke() {
         RpcContext.restoreCancellationContext(cancellationContext);
-        InetSocketAddress remoteAddress = (InetSocketAddress) invocation.getAttributes()
-            .remove(AbstractServerCall.REMOTE_ADDRESS_KEY);
+        InetSocketAddress remoteAddress =
+                (InetSocketAddress) invocation.getAttributes().remove(AbstractServerCall.REMOTE_ADDRESS_KEY);
         RpcContext.getServiceContext().setRemoteAddress(remoteAddress);
-        String remoteApp = (String) invocation.getAttributes()
-            .remove(TripleHeaderEnum.CONSUMER_APP_NAME_KEY);
+        String remoteApp = (String) invocation.getAttributes().remove(TripleHeaderEnum.CONSUMER_APP_NAME_KEY);
         if (null != remoteApp) {
             RpcContext.getServiceContext().setRemoteApplicationName(remoteApp);
             invocation.setAttachmentIfAbsent(REMOTE_APPLICATION_KEY, remoteApp);
@@ -75,11 +74,13 @@ public abstract class AbstractServerCallListener implements AbstractServerCall.L
                 }
                 final long cost = System.currentTimeMillis() - stInMillis;
                 if (responseObserver.isTimeout(cost)) {
-                    LOGGER.error(PROTOCOL_TIMEOUT_SERVER, "", "", String.format(
-                        "Invoke timeout at server side, ignored to send response. service=%s method=%s cost=%s",
-                        invocation.getTargetServiceUniqueName(),
-                        invocation.getMethodName(),
-                        cost));
+                    LOGGER.error(
+                            PROTOCOL_TIMEOUT_SERVER,
+                            "",
+                            "",
+                            String.format(
+                                    "Invoke timeout at server side, ignored to send response. service=%s method=%s cost=%s",
+                                    invocation.getTargetServiceUniqueName(), invocation.getMethodName(), cost));
                     responseObserver.onCompleted(TriRpcStatus.DEADLINE_EXCEEDED);
                     return;
                 }
@@ -92,7 +93,6 @@ public abstract class AbstractServerCallListener implements AbstractServerCall.L
             RpcContext.removeContext();
         }
     }
-
 
     protected void doOnResponseHasException(Throwable t) {
         responseObserver.onError(t);

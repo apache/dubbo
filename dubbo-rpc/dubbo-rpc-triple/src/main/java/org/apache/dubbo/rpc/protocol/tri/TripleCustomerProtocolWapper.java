@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.utils.Assert;
@@ -53,7 +52,6 @@ public class TripleCustomerProtocolWapper {
         }
         return length;
     }
-
 
     public static int readRawVarint32(ByteBuffer byteBuffer) {
         int val = 0;
@@ -140,39 +138,32 @@ public class TripleCustomerProtocolWapper {
             byte[] serializeTypeBytes = serializeType.getBytes(StandardCharsets.UTF_8);
             byte[] serializeTypeLengthVarIntEncodeBytes = varIntEncode(serializeTypeBytes.length);
             totalSize += serializeTypeTagBytes.length
-                + serializeTypeLengthVarIntEncodeBytes.length
-                + serializeTypeBytes.length;
+                    + serializeTypeLengthVarIntEncodeBytes.length
+                    + serializeTypeBytes.length;
 
             int dataTag = makeTag(2, 2);
             if (data != null) {
-                totalSize += varIntComputeLength(dataTag)
-                    + varIntComputeLength(data.length)
-                    + data.length;
+                totalSize += varIntComputeLength(dataTag) + varIntComputeLength(data.length) + data.length;
             }
 
             int typeTag = makeTag(3, 2);
             byte[] typeTagBytes = varIntEncode(typeTag);
             byte[] typeBytes = type.getBytes(StandardCharsets.UTF_8);
             byte[] typeLengthVarIntEncodeBytes = varIntEncode(typeBytes.length);
-            totalSize += typeTagBytes.length
-                + typeLengthVarIntEncodeBytes.length
-                + typeBytes.length;
+            totalSize += typeTagBytes.length + typeLengthVarIntEncodeBytes.length + typeBytes.length;
 
             ByteBuffer byteBuffer = ByteBuffer.allocate(totalSize);
             byteBuffer
-                .put(serializeTypeTagBytes)
-                .put(serializeTypeLengthVarIntEncodeBytes)
-                .put(serializeTypeBytes);
+                    .put(serializeTypeTagBytes)
+                    .put(serializeTypeLengthVarIntEncodeBytes)
+                    .put(serializeTypeBytes);
             if (data != null) {
                 byteBuffer
-                    .put(varIntEncode(dataTag))
-                    .put(varIntEncode(data.length))
-                    .put(data);
+                        .put(varIntEncode(dataTag))
+                        .put(varIntEncode(data.length))
+                        .put(data);
             }
-            byteBuffer
-                .put(typeTagBytes)
-                .put(typeLengthVarIntEncodeBytes)
-                .put(typeBytes);
+            byteBuffer.put(typeTagBytes).put(typeLengthVarIntEncodeBytes).put(typeBytes);
             return byteBuffer.array();
         }
 
@@ -214,7 +205,6 @@ public class TripleCustomerProtocolWapper {
         }
     }
 
-
     public static final class TripleRequestWrapper {
 
         private String serializeType;
@@ -235,8 +225,7 @@ public class TripleCustomerProtocolWapper {
             return argTypes;
         }
 
-        public TripleRequestWrapper() {
-        }
+        public TripleRequestWrapper() {}
 
         public static TripleRequestWrapper parseFrom(byte[] data) {
             TripleRequestWrapper tripleRequestWrapper = new TripleRequestWrapper();
@@ -280,8 +269,8 @@ public class TripleCustomerProtocolWapper {
             byte[] serializeTypeBytes = serializeType.getBytes(StandardCharsets.UTF_8);
             byte[] serializeTypeLengthVarIntEncodeBytes = varIntEncode(serializeTypeBytes.length);
             totalSize += serializeTypeTagBytes.length
-                + serializeTypeLengthVarIntEncodeBytes.length
-                + serializeTypeBytes.length;
+                    + serializeTypeLengthVarIntEncodeBytes.length
+                    + serializeTypeBytes.length;
 
             int argTypeTag = makeTag(3, 2);
             if (CollectionUtils.isNotEmpty(argTypes)) {
@@ -302,17 +291,14 @@ public class TripleCustomerProtocolWapper {
 
             ByteBuffer byteBuffer = ByteBuffer.allocate(totalSize);
             byteBuffer
-                .put(serializeTypeTagBytes)
-                .put(serializeTypeLengthVarIntEncodeBytes)
-                .put(serializeTypeBytes);
+                    .put(serializeTypeTagBytes)
+                    .put(serializeTypeLengthVarIntEncodeBytes)
+                    .put(serializeTypeBytes);
 
             if (CollectionUtils.isNotEmpty(args)) {
                 byte[] argTagBytes = varIntEncode(argTag);
                 for (byte[] arg : args) {
-                    byteBuffer
-                        .put(argTagBytes)
-                        .put(varIntEncode(arg.length))
-                        .put(arg);
+                    byteBuffer.put(argTagBytes).put(varIntEncode(arg.length)).put(arg);
                 }
             }
 
@@ -321,14 +307,13 @@ public class TripleCustomerProtocolWapper {
                 for (String argType : argTypes) {
                     byte[] argTypeBytes = argType.getBytes(StandardCharsets.UTF_8);
                     byteBuffer
-                        .put(argTypeTagBytes)
-                        .put(varIntEncode(argTypeBytes.length))
-                        .put(argTypeBytes);
+                            .put(argTypeTagBytes)
+                            .put(varIntEncode(argTypeBytes.length))
+                            .put(argTypeBytes);
                 }
             }
             return byteBuffer.array();
         }
-
 
         public static final class Builder {
 
@@ -378,8 +363,8 @@ public class TripleCustomerProtocolWapper {
             }
             TripleRequestWrapper that = (TripleRequestWrapper) o;
             return Objects.equals(serializeType, that.serializeType)
-                && Objects.equals(args, that.args)
-                && Objects.equals(argTypes, that.argTypes);
+                    && Objects.equals(args, that.args)
+                    && Objects.equals(argTypes, that.argTypes);
         }
 
         @Override

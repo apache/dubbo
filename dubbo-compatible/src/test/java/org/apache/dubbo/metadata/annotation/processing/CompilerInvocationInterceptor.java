@@ -18,28 +18,31 @@ package org.apache.dubbo.metadata.annotation.processing;
 
 import org.apache.dubbo.metadata.tools.Compiler;
 
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.InvocationInterceptor;
-import org.junit.jupiter.api.extension.ReflectiveInvocationContext;
-
 import java.lang.reflect.Method;
 import java.util.LinkedHashSet;
 import java.util.Set;
+
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.InvocationInterceptor;
+import org.junit.jupiter.api.extension.ReflectiveInvocationContext;
 
 import static org.apache.dubbo.metadata.annotation.processing.AbstractAnnotationProcessingTest.testInstanceHolder;
 
 public class CompilerInvocationInterceptor implements InvocationInterceptor {
 
     @Override
-    public void interceptTestMethod(Invocation<Void> invocation,
-                                    ReflectiveInvocationContext<Method> invocationContext,
-                                    ExtensionContext extensionContext) throws Throwable {
+    public void interceptTestMethod(
+            Invocation<Void> invocation,
+            ReflectiveInvocationContext<Method> invocationContext,
+            ExtensionContext extensionContext)
+            throws Throwable {
         Set<Class<?>> classesToBeCompiled = new LinkedHashSet<>();
         AbstractAnnotationProcessingTest abstractAnnotationProcessingTest = testInstanceHolder.get();
         classesToBeCompiled.add(getClass());
         abstractAnnotationProcessingTest.addCompiledClasses(classesToBeCompiled);
         Compiler compiler = new Compiler();
-        compiler.processors(new AnnotationProcessingTestProcessor(abstractAnnotationProcessingTest, invocation, invocationContext, extensionContext));
+        compiler.processors(new AnnotationProcessingTestProcessor(
+                abstractAnnotationProcessingTest, invocation, invocationContext, extensionContext));
         compiler.compile(classesToBeCompiled.toArray(new Class[0]));
     }
 }

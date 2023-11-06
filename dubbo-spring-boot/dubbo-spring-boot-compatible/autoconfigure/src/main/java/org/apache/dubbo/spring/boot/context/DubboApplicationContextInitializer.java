@@ -46,5 +46,4 @@ public class DubboApplicationContextInitializer implements ApplicationContextIni
     public int getOrder() {
         return HIGHEST_PRECEDENCE;
     }
-
 }

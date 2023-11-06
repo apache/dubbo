@@ -39,5 +39,4 @@ public class LfuCacheFactory extends AbstractCacheFactory {
     protected Cache createCache(URL url) {
         return new LfuCache(url);
     }
-
 }

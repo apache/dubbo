@@ -21,7 +21,6 @@ import java.io.Serializable;
 /**
  * RpcMessage.
  */
-
 public class RpcMessage implements Serializable {
     private static final long serialVersionUID = -5148079121106659095L;
 
@@ -55,5 +54,4 @@ public class RpcMessage implements Serializable {
     public Object[] getArguments() {
         return mArguments;
     }
-
 }

@@ -36,6 +36,9 @@ import org.apache.dubbo.test.common.api.DemoService;
 import org.apache.dubbo.test.common.impl.DemoServiceImpl;
 import org.apache.dubbo.test.spring.context.MockSpringInitCustomizer;
 
+import java.util.Collection;
+import java.util.Map;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -45,9 +48,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.Collection;
-import java.util.Map;
 
 public class SpringJavaConfigBeanTest {
 
@@ -60,7 +60,7 @@ public class SpringJavaConfigBeanTest {
     }
 
     @AfterAll
-    public static void afterAll(){
+    public static void afterAll() {
         DubboBootstrap.reset();
     }
 
@@ -106,8 +106,10 @@ public class SpringJavaConfigBeanTest {
             Assertions.assertEquals(2346, protocolConfig.getPort());
             Assertions.assertEquals(MY_PROTOCOL_ID, protocolConfig.getId());
 
-            ModuleConfigManager moduleConfigManager = applicationModel.getDefaultModule().getConfigManager();
-            ConsumerConfig consumerConfig = moduleConfigManager.getDefaultConsumer().get();
+            ModuleConfigManager moduleConfigManager =
+                    applicationModel.getDefaultModule().getConfigManager();
+            ConsumerConfig consumerConfig =
+                    moduleConfigManager.getDefaultConsumer().get();
             Assertions.assertEquals(1000, consumerConfig.getTimeout());
             Assertions.assertEquals("demo", consumerConfig.getGroup());
             Assertions.assertEquals(false, consumerConfig.isCheck());
@@ -125,7 +127,7 @@ public class SpringJavaConfigBeanTest {
             Assertions.assertEquals(5, referenceConfig.getRetries());
 
             DemoService referProxy = (DemoService) referenceConfig.get();
-            Assertions.assertTrue( referProxy instanceof DemoService);
+            Assertions.assertTrue(referProxy instanceof DemoService);
             String result = referProxy.sayHello("dubbo");
             Assertions.assertEquals("Hello dubbo", result);
 
@@ -134,9 +136,7 @@ public class SpringJavaConfigBeanTest {
         } finally {
             consumerContext.close();
         }
-
     }
-
 
     @EnableDubbo(scanBasePackages = "")
     @Configuration
@@ -183,7 +183,6 @@ public class SpringJavaConfigBeanTest {
         public ReferenceBean<DemoService> demoService() {
             return new ReferenceBean<>();
         }
-
     }
 
     @Configuration

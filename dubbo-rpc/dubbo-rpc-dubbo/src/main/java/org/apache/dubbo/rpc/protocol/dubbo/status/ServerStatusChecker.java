@@ -57,5 +57,4 @@ public class ServerStatusChecker implements StatusChecker {
         }
         return new Status(level, buf.toString());
     }
-
 }

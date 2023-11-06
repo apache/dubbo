@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.merger;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -69,13 +68,17 @@ public class MergerFactory implements ScopeModelAware {
     }
 
     private void loadMergers() {
-        Set<String> names = scopeModel.getExtensionLoader(Merger.class)
-            .getSupportedExtensions();
+        Set<String> names = scopeModel.getExtensionLoader(Merger.class).getSupportedExtensions();
         for (String name : names) {
             Merger m = scopeModel.getExtensionLoader(Merger.class).getExtension(name);
             Class<?> actualTypeArg = getActualTypeArgument(m.getClass());
             if (actualTypeArg == null) {
-                logger.warn(CLUSTER_FAILED_LOAD_MERGER,"load merger config failed","","Failed to get actual type argument from merger " + m.getClass().getName());
+                logger.warn(
+                        CLUSTER_FAILED_LOAD_MERGER,
+                        "load merger config failed",
+                        "",
+                        "Failed to get actual type argument from merger "
+                                + m.getClass().getName());
                 continue;
             }
             MERGER_CACHE.putIfAbsent(actualTypeArg, m);
@@ -94,7 +97,7 @@ public class MergerFactory implements ScopeModelAware {
             ParameterizedType mergerType;
             for (Type it : interfaceTypes) {
                 if (it instanceof ParameterizedType
-                    && (mergerType = ((ParameterizedType) it)).getRawType() == Merger.class) {
+                        && (mergerType = ((ParameterizedType) it)).getRawType() == Merger.class) {
                     Type typeArg = mergerType.getActualTypeArguments()[0];
                     return TypeUtils.getRawClass(typeArg);
                 }

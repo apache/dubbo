@@ -28,11 +28,11 @@ import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
 
@@ -48,20 +48,28 @@ class StaticDirectoryTest {
 
     @Test
     void testStaticDirectory() {
-        StateRouter router = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl(" => " + " host = " + NetUtils.getLocalHost()));
+        StateRouter router = new ConditionStateRouterFactory()
+                .getRouter(String.class, getRouteUrl(" => " + " host = " + NetUtils.getLocalHost()));
         List<StateRouter> routers = new ArrayList<StateRouter>();
         routers.add(router);
         List<Invoker<String>> originInvokers = new ArrayList<Invoker<String>>();
-        Invoker<String> invoker1 = new MockInvoker<String>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"), true);
-        Invoker<String> invoker2 = new MockInvoker<String>(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880/com.foo.BarService"), true);
-        Invoker<String> invoker3 = new MockInvoker<String>(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880/com.foo.BarService"), true);
+        Invoker<String> invoker1 =
+                new MockInvoker<String>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"), true);
+        Invoker<String> invoker2 = new MockInvoker<String>(
+                URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880/com.foo.BarService"), true);
+        Invoker<String> invoker3 = new MockInvoker<String>(
+                URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880/com.foo.BarService"), true);
         originInvokers.add(invoker1);
         originInvokers.add(invoker2);
         originInvokers.add(invoker3);
         BitList<Invoker<String>> invokers = new BitList<>(originInvokers);
 
-
-        List<Invoker<String>> filteredInvokers = router.route(invokers.clone(), URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation(), false, new Holder<>());
+        List<Invoker<String>> filteredInvokers = router.route(
+                invokers.clone(),
+                URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"),
+                new RpcInvocation(),
+                false,
+                new Holder<>());
         ApplicationModel.defaultModel().getBeanFactory().registerBean(MetricsDispatcher.class);
         StaticDirectory<String> staticDirectory = new StaticDirectory<>(filteredInvokers);
         boolean isAvailable = staticDirectory.isAvailable();

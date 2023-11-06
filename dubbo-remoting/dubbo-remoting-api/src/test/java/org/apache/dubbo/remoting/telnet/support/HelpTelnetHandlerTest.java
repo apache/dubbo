@@ -37,13 +37,11 @@ class HelpTelnetHandlerTest {
         Assertions.assertTrue(helpTelnetHandler.telnet(channel, "").contains(prompt));
 
         // "help" command output
-        String demoOutput =
-                "Command:\r\n" +
-                "    help [command]\r\n" +
-                "Summary:\r\n" +
-                "    Show help.\r\n" +
-                "Detail:\r\n" +
-                "    Show help.";
-        Assertions.assertEquals(helpTelnetHandler.telnet(channel, "help"),demoOutput);
+        String demoOutput = "Command:\r\n" + "    help [command]\r\n"
+                + "Summary:\r\n"
+                + "    Show help.\r\n"
+                + "Detail:\r\n"
+                + "    Show help.";
+        Assertions.assertEquals(helpTelnetHandler.telnet(channel, "help"), demoOutput);
     }
 }

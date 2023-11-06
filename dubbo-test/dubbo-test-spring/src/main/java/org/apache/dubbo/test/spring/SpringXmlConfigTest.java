@@ -44,7 +44,7 @@ public class SpringXmlConfigTest {
     }
 
     @AfterAll
-    public static void afterAll(){
+    public static void afterAll() {
         DubboBootstrap.reset();
         providerContext.close();
     }
@@ -83,6 +83,5 @@ public class SpringXmlConfigTest {
                 applicationContext.close();
             }
         }
-
     }
 }

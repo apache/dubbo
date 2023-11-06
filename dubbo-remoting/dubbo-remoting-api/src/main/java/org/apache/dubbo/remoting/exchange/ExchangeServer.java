@@ -40,5 +40,4 @@ public interface ExchangeServer extends RemotingServer {
      * @return channel
      */
     ExchangeChannel getExchangeChannel(InetSocketAddress remoteAddress);
-
 }

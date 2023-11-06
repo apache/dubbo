@@ -16,10 +16,10 @@
  */
 package org.apache.dubbo.common.json.impl;
 
-import com.alibaba.fastjson2.JSONWriter;
-
 import java.lang.reflect.Type;
 import java.util.List;
+
+import com.alibaba.fastjson2.JSONWriter;
 
 public class FastJson2Impl extends AbstractJSONImpl {
     @Override
@@ -37,4 +37,3 @@ public class FastJson2Impl extends AbstractJSONImpl {
         return com.alibaba.fastjson2.JSON.toJSONString(obj, JSONWriter.Feature.WriteEnumsUsingName);
     }
 }
-

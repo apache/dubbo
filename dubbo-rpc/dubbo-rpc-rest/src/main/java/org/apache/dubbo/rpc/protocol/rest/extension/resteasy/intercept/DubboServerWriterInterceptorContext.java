@@ -18,26 +18,48 @@ package org.apache.dubbo.rpc.protocol.rest.extension.resteasy.intercept;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.jboss.resteasy.core.interception.ServerWriterInterceptorContext;
-import org.jboss.resteasy.spi.HttpRequest;
-import org.jboss.resteasy.spi.ResteasyProviderFactory;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.WriterInterceptor;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
+import org.jboss.resteasy.core.interception.ServerWriterInterceptorContext;
+import org.jboss.resteasy.spi.HttpRequest;
+import org.jboss.resteasy.spi.ResteasyProviderFactory;
+
 public class DubboServerWriterInterceptorContext extends ServerWriterInterceptorContext {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DubboServerWriterInterceptorContext.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(DubboServerWriterInterceptorContext.class);
 
-    public DubboServerWriterInterceptorContext(WriterInterceptor[] interceptors, ResteasyProviderFactory providerFactory, Object entity, Class type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> headers, OutputStream outputStream, HttpRequest request) {
-        super(interceptors, providerFactory, entity, type, genericType, annotations, mediaType, headers, outputStream, request);
+    public DubboServerWriterInterceptorContext(
+            WriterInterceptor[] interceptors,
+            ResteasyProviderFactory providerFactory,
+            Object entity,
+            Class type,
+            Type genericType,
+            Annotation[] annotations,
+            MediaType mediaType,
+            MultivaluedMap<String, Object> headers,
+            OutputStream outputStream,
+            HttpRequest request) {
+        super(
+                interceptors,
+                providerFactory,
+                entity,
+                type,
+                genericType,
+                annotations,
+                mediaType,
+                headers,
+                outputStream,
+                request);
     }
-
 
     @Override
     public void proceed() throws IOException, WebApplicationException {
@@ -47,7 +69,8 @@ public class DubboServerWriterInterceptorContext extends ServerWriterInterceptor
             return;
         } else {
 
-            logger.debug("Dubbo server writer intercept  context WriterInterceptor: " + interceptors[index].getClass().getName());
+            logger.debug("Dubbo server writer intercept  context WriterInterceptor: "
+                    + interceptors[index].getClass().getName());
             interceptors[index++].aroundWriteTo(this);
         }
     }

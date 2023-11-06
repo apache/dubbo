@@ -14,20 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.constants.CommonConstants;
-
-import io.netty.handler.codec.http2.Http2Headers;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public enum TripleHeaderEnum {
+import io.netty.handler.codec.http2.Http2Headers;
 
+public enum TripleHeaderEnum {
     AUTHORITY_KEY(":authority"),
     PATH_KEY(":path"),
     HTTP_STATUS_KEY("http-status"),
@@ -47,7 +45,6 @@ public enum TripleHeaderEnum {
     TRI_HEADER_CONVERT("tri-header-convert"),
 
     TRI_EXCEPTION_CODE("tri-exception-code"),
-
     ;
 
     static final Map<String, TripleHeaderEnum> enumMap = new HashMap<>();
@@ -69,7 +66,6 @@ public enum TripleHeaderEnum {
         for (Http2Headers.PseudoHeaderName value : Http2Headers.PseudoHeaderName.values()) {
             excludeAttachmentsSet.add(value.value().toString());
         }
-
     }
 
     private final String header;

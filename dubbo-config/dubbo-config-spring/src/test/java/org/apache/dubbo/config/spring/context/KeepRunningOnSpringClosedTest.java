@@ -31,10 +31,10 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 class KeepRunningOnSpringClosedTest {
 
     @Test
-    void test(){
+    void test() {
 
         // set KeepRunningOnSpringClosed flag for next spring context
-        DubboSpringInitCustomizerHolder.get().addCustomizer(context-> {
+        DubboSpringInitCustomizerHolder.get().addCustomizer(context -> {
             context.setKeepRunningOnSpringClosed(true);
         });
 
@@ -42,8 +42,7 @@ class KeepRunningOnSpringClosedTest {
         try {
             String resourcePath = "org/apache/dubbo/config/spring";
             providerContext = new ClassPathXmlApplicationContext(
-                resourcePath + "/demo-provider.xml",
-                resourcePath + "/demo-provider-properties.xml");
+                    resourcePath + "/demo-provider.xml", resourcePath + "/demo-provider-properties.xml");
             providerContext.start();
 
             // Expect 1: dubbo application state is STARTED after spring context start finish.
@@ -56,7 +55,8 @@ class KeepRunningOnSpringClosedTest {
             ModuleDeployer moduleDeployer = moduleModel.getDeployer();
             Assertions.assertTrue(moduleDeployer.isStarted());
 
-            ApplicationDeployer applicationDeployer = moduleModel.getApplicationModel().getDeployer();
+            ApplicationDeployer applicationDeployer =
+                    moduleModel.getApplicationModel().getDeployer();
             Assertions.assertEquals(DeployState.STARTED, applicationDeployer.getState());
             Assertions.assertEquals(true, applicationDeployer.isStarted());
             Assertions.assertEquals(false, applicationDeployer.isStopped());
@@ -65,7 +65,8 @@ class KeepRunningOnSpringClosedTest {
             // close spring context
             providerContext.close();
 
-            // Expect 2: dubbo application will not be destroyed after closing spring context cause setKeepRunningOnSpringClosed(true)
+            // Expect 2: dubbo application will not be destroyed after closing spring context cause
+            // setKeepRunningOnSpringClosed(true)
             Assertions.assertEquals(DeployState.STARTED, applicationDeployer.getState());
             Assertions.assertEquals(true, applicationDeployer.isStarted());
             Assertions.assertEquals(false, applicationDeployer.isStopped());

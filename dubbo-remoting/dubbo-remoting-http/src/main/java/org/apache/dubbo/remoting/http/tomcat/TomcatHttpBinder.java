@@ -27,5 +27,4 @@ public class TomcatHttpBinder implements HttpBinder {
     public HttpServer bind(URL url, HttpHandler handler) {
         return new TomcatHttpServer(url, handler);
     }
-
 }

@@ -37,7 +37,7 @@ public class ClearTelnetHandler implements TelnetHandler {
             if (!StringUtils.isNumber(message)) {
                 return "Illegal lines " + message + ", must be integer.";
             }
-            lines = Math.min(MAX_LINES,Integer.parseInt(message));
+            lines = Math.min(MAX_LINES, Integer.parseInt(message));
         }
         StringBuilder buf = new StringBuilder();
         for (int i = 0; i < lines; i++) {
@@ -45,5 +45,4 @@ public class ClearTelnetHandler implements TelnetHandler {
         }
         return buf.toString();
     }
-
 }

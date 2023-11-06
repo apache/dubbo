@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.stream;
 
 /**
@@ -24,7 +23,6 @@ package org.apache.dubbo.common.stream;
  * @param <T> type of message
  */
 public interface StreamObserver<T> {
-
 
     /**
      * onNext

@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.aot.generate;
 
-
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -38,7 +37,7 @@ public class ResourceConfigMetadataRepository {
 
     public ResourceConfigMetadataRepository registerIncludesPatterns(String... patterns) {
         for (String pattern : patterns) {
-            registerIncludesPattern(new ResourcePatternDescriber(pattern,null));
+            registerIncludesPattern(new ResourcePatternDescriber(pattern, null));
         }
         return this;
     }

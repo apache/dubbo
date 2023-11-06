@@ -27,9 +27,10 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERR
  * inspired by Netty
  */
 public abstract class ReferenceCountedResource implements AutoCloseable {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ReferenceCountedResource.class);
-    private static final AtomicLongFieldUpdater<ReferenceCountedResource> COUNTER_UPDATER
-        = AtomicLongFieldUpdater.newUpdater(ReferenceCountedResource.class, "counter");
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(ReferenceCountedResource.class);
+    private static final AtomicLongFieldUpdater<ReferenceCountedResource> COUNTER_UPDATER =
+            AtomicLongFieldUpdater.newUpdater(ReferenceCountedResource.class, "counter");
 
     private volatile long counter = 1;
 
@@ -70,10 +71,8 @@ public abstract class ReferenceCountedResource implements AutoCloseable {
         release();
     }
 
-
     /**
      * This method will be invoked when counter reaches 0, override this method to destroy materials related to the specific resource.
      */
     protected abstract void destroy();
-
 }

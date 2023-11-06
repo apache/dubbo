@@ -21,8 +21,6 @@ import org.apache.dubbo.remoting.http.RestClient;
 import org.apache.dubbo.remoting.http.RestResult;
 import org.apache.dubbo.remoting.http.config.HttpClientConfig;
 
-import org.apache.commons.io.IOUtils;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -33,6 +31,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPOutputStream;
 
+import org.apache.commons.io.IOUtils;
 
 public class URLConnectionRestClient implements RestClient {
     private final HttpClientConfig clientConfig;
@@ -61,7 +60,6 @@ public class URLConnectionRestClient implements RestClient {
                     connection.addRequestProperty(field, value);
                 }
             }
-
 
             // writeBody
 
@@ -103,20 +101,15 @@ public class URLConnectionRestClient implements RestClient {
     }
 
     @Override
-    public void close() {
-
-    }
+    public void close() {}
 
     @Override
-    public void close(int timeout) {
-
-    }
+    public void close(int timeout) {}
 
     @Override
     public boolean isClosed() {
         return true;
     }
-
 
     private RestResult getRestResultFromConnection(HttpURLConnection connection) {
 
@@ -149,13 +142,11 @@ public class URLConnectionRestClient implements RestClient {
             @Override
             public String getMessage() throws IOException {
                 return appendErrorMessage(connection.getResponseMessage(), new String(getErrorResponse()));
-
             }
         };
     }
 
     private void prepareConnection(HttpURLConnection connection, String httpMethod) throws IOException {
-
 
         connection.setDoInput(true);
 
@@ -165,9 +156,10 @@ public class URLConnectionRestClient implements RestClient {
             connection.setInstanceFollowRedirects(false);
         }
 
-
-        if ("POST".equals(httpMethod) || "PUT".equals(httpMethod) ||
-            "PATCH".equals(httpMethod) || "DELETE".equals(httpMethod)) {
+        if ("POST".equals(httpMethod)
+                || "PUT".equals(httpMethod)
+                || "PATCH".equals(httpMethod)
+                || "DELETE".equals(httpMethod)) {
             connection.setDoOutput(true);
         } else {
             connection.setDoOutput(false);
@@ -175,5 +167,4 @@ public class URLConnectionRestClient implements RestClient {
 
         connection.setRequestMethod(httpMethod);
     }
-
 }

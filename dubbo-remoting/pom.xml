@@ -16,35 +16,35 @@
   limitations under the License.
   -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-parent</artifactId>
-        <version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
-    <artifactId>dubbo-remoting</artifactId>
-    <packaging>pom</packaging>
-    <name>${project.artifactId}</name>
-    <description>The remoting module of dubbo project</description>
-    <properties>
-        <skip_maven_deploy>false</skip_maven_deploy>
-    </properties>
-    <modules>
-        <module>dubbo-remoting-api</module>
-        <module>dubbo-remoting-http</module>
-        <module>dubbo-remoting-netty</module>
-        <module>dubbo-remoting-zookeeper</module>
-        <module>dubbo-remoting-zookeeper-curator5</module>
-        <module>dubbo-remoting-netty4</module>
-    </modules>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.dubbo</groupId>
+    <artifactId>dubbo-parent</artifactId>
+    <version>${revision}</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <artifactId>dubbo-remoting</artifactId>
+  <packaging>pom</packaging>
+  <name>${project.artifactId}</name>
+  <description>The remoting module of dubbo project</description>
+  <modules>
+    <module>dubbo-remoting-api</module>
+    <module>dubbo-remoting-http</module>
+    <module>dubbo-remoting-netty</module>
+    <module>dubbo-remoting-zookeeper</module>
+    <module>dubbo-remoting-zookeeper-curator5</module>
+    <module>dubbo-remoting-netty4</module>
+  </modules>
+  <properties>
+    <skip_maven_deploy>false</skip_maven_deploy>
+  </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-test-check</artifactId>
-            <version>${project.parent.version}</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-test-check</artifactId>
+      <version>${project.parent.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 </project>

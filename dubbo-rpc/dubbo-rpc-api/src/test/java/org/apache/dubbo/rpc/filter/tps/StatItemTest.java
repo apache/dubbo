@@ -16,13 +16,13 @@
  */
 package org.apache.dubbo.rpc.filter.tps;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -70,14 +70,13 @@ class StatItemTest {
         CountDownLatch startLatch = new CountDownLatch(1);
         for (int i = 0; i < threadNum; i++) {
             taskList.add(new Task(statItem, startLatch, stopLatch));
-
         }
         startLatch.countDown();
         stopLatch.await();
 
-        Assertions.assertEquals(taskList.stream().map(Task::getCount).reduce(Integer::sum).get(), 100);
+        Assertions.assertEquals(
+                taskList.stream().map(Task::getCount).reduce(Integer::sum).get(), 100);
     }
-
 
     static class Task implements Runnable {
         private final StatItem statItem;
