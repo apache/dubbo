@@ -41,7 +41,7 @@
     </modules>
 
     <properties>
-        <spring-boot.version>2.7.16</spring-boot.version>
+        <spring-boot.version>2.7.17</spring-boot.version>
         <!-- Spring boot buddy is lower than the delivery dependency package version and can only show the defined dependency version -->
         <byte-buddy.version>1.14.9</byte-buddy.version>
         <slf4j-log4j12_version>1.7.33</slf4j-log4j12_version>

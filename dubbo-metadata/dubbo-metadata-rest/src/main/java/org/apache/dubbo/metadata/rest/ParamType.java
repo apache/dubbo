@@ -37,12 +37,12 @@ public enum ParamType {
     PATH(addSupportTypes(JAXRSClassConstants.PATH_PARAM_ANNOTATION_CLASS,
         SpringMvcClassConstants.PATH_VARIABLE_ANNOTATION_CLASS)),
 
-    FORM(addSupportTypes(JAXRSClassConstants.FORM_PARAM_ANNOTATION_CLASS,
+    FORM(addSupportTypes(JAXRSClassConstants.FORM_PARAM_ANNOTATION_CLASS, JAXRSClassConstants.FORM_BODY_ANNOTATION_CLASS,
         SpringMvcClassConstants.REQUEST_BODY_ANNOTATION_CLASS)),
 
     PROVIDER_BODY(addSupportTypes(
         JAXRSClassConstants.REST_EASY_BODY_ANNOTATION_CLASS, JAXRSClassConstants.FORM_PARAM_ANNOTATION_CLASS,
-        SpringMvcClassConstants.REQUEST_BODY_ANNOTATION_CLASS, BodyTag.class)),
+        SpringMvcClassConstants.REQUEST_BODY_ANNOTATION_CLASS, BodyTag.class, JAXRSClassConstants.FORM_BODY_ANNOTATION_CLASS)),
 
     PROVIDER_NO_ANNOTATION(addSupportTypes(NoAnnotationTag.class)),
 

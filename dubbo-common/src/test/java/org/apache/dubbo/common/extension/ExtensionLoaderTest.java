@@ -24,8 +24,6 @@ import org.apache.dubbo.common.convert.StringToIntegerConverter;
 import org.apache.dubbo.common.extension.activate.ActivateExt1;
 import org.apache.dubbo.common.extension.activate.impl.ActivateExt1Impl1;
 import org.apache.dubbo.common.extension.activate.impl.GroupActivateExtImpl;
-import org.apache.dubbo.common.extension.activate.impl.OldActivateExt1Impl2;
-import org.apache.dubbo.common.extension.activate.impl.OldActivateExt1Impl3;
 import org.apache.dubbo.common.extension.activate.impl.OrderActivateExtImpl1;
 import org.apache.dubbo.common.extension.activate.impl.OrderActivateExtImpl2;
 import org.apache.dubbo.common.extension.activate.impl.ValueActivateExtImpl;
@@ -567,14 +565,6 @@ class ExtensionLoaderTest {
             .getActivateExtension(url, new String[]{}, "group1");
         Assertions.assertEquals(1, list.size());
         assertSame(list.get(0).getClass(), GroupActivateExtImpl.class);
-
-        // test old @Activate group
-        url = url.addParameter(GROUP_KEY, "old_group");
-        list = getExtensionLoader(ActivateExt1.class)
-            .getActivateExtension(url, new String[]{}, "old_group");
-        Assertions.assertEquals(2, list.size());
-        Assertions.assertTrue(list.get(0).getClass() == OldActivateExt1Impl2.class
-            || list.get(0).getClass() == OldActivateExt1Impl3.class);
 
         // test value
         url = url.removeParameter(GROUP_KEY);

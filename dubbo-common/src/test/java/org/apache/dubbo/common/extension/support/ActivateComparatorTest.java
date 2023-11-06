@@ -41,21 +41,18 @@ class ActivateComparatorTest {
         Filter2 f2 = new Filter2();
         Filter3 f3 = new Filter3();
         Filter4 f4 = new Filter4();
-        OldFilter5 f5 = new OldFilter5();
         List<Class<?>> filters = new ArrayList<>();
         filters.add(f1.getClass());
         filters.add(f2.getClass());
         filters.add(f3.getClass());
         filters.add(f4.getClass());
-        filters.add(f5.getClass());
 
         Collections.sort(filters, activateComparator);
 
         Assertions.assertEquals(f4.getClass(), filters.get(0));
-        Assertions.assertEquals(f5.getClass(), filters.get(1));
-        Assertions.assertEquals(f3.getClass(), filters.get(2));
-        Assertions.assertEquals(f2.getClass(), filters.get(3));
-        Assertions.assertEquals(f1.getClass(), filters.get(4));
+        Assertions.assertEquals(f3.getClass(), filters.get(1));
+        Assertions.assertEquals(f2.getClass(), filters.get(2));
+        Assertions.assertEquals(f1.getClass(), filters.get(3));
     }
 
     @Test

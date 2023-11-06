@@ -5,6 +5,7 @@ jax-rs.matrix-param = org.apache.dubbo.metadata.rest.jaxrs.MatrixParamParameterP
 jax-rs.header-param = org.apache.dubbo.metadata.rest.jaxrs.HeaderParamParameterProcessor
 jax-rs.default-value-param = org.apache.dubbo.metadata.rest.jaxrs.DefaultValueParameterProcessor
 jax-rs.body = org.apache.dubbo.metadata.rest.jaxrs.BodyParameterProcessor
+jax-rs.form-body = org.apache.dubbo.metadata.rest.jaxrs.FormBodyParameterProcessor
 jax-rs.path-param = org.apache.dubbo.metadata.rest.jaxrs.PathParamParameterProcessor
 
 # Spring Web MVC's implementations

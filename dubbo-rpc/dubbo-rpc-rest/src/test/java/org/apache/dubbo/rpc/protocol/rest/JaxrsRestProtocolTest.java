@@ -756,7 +756,7 @@ class JaxrsRestProtocolTest {
 
             URL url = this.registerProvider(exportUrl, server, DemoService.class);
 
-            URL nettyUrl = url.addParameter(org.apache.dubbo.remoting.Constants.PAYLOAD_KEY, 1024);
+            URL nettyUrl = url.addParameter(org.apache.dubbo.remoting.Constants.PAYLOAD_KEY,  1024);
 
             Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
 
@@ -795,6 +795,23 @@ class JaxrsRestProtocolTest {
         exporter.unexport();
     }
 
+    @Test
+    void testFormBody() {
+        DemoService server = new DemoServiceImpl();
+
+        URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+        URL nettyUrl = url.addParameter(SERVER_KEY, SERVER);
+
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+
+        User user = demoService.formBody(User.getInstance());
+
+        Assertions.assertEquals("formBody",user.getName());
+        exporter.unexport();
+    }
 
     private URL registerProvider(URL url, Object impl, Class<?> interfaceClass) {
         ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
