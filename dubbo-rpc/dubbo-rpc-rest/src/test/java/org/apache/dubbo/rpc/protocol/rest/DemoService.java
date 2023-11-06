@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.rest;
 
 
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
+import org.jboss.resteasy.annotations.Form;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
@@ -143,10 +144,14 @@ public interface DemoService {
 
     @POST
     @Path("/stringMap")
-    Map<String, User> stringMap(Map<String,User> userMap);
+    Map<String, User> stringMap(Map<String, User> userMap);
 
     @POST
     @Path("/map")
-    Map<User, User> userMap(Map<User,User> userMap);
+    Map<User, User> userMap(Map<User, User> userMap);
+
+    @POST
+    @Path("/formBody")
+    User formBody(@Form User user);
 
 }

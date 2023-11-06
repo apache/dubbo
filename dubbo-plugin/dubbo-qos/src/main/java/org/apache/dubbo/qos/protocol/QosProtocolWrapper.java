@@ -153,7 +153,9 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
     /*package*/ void stopServer() {
         if (hasStarted.compareAndSet(true, false)) {
             Server server = frameworkModel.getBeanFactory().getBean(Server.class);
-            server.stop();
+            if (server.isStarted()) {
+                server.stop();
+            }
         }
     }
 }

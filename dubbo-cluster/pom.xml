@@ -88,9 +88,8 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.openjdk.nashorn</groupId>
-            <artifactId>nashorn-core</artifactId>
-            <version>${nashorn-core.version}</version>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-integration-test</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -99,4 +98,26 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <!--
+            https://github.com/openjdk/nashorn
+            Nashorn used to be part of the JDK until Java 14.
+            This project provides a standalone version of Nashorn suitable for use with Java 11 and later.
+        -->
+        <profile>
+            <id>nashorn-jdk11</id>
+            <activation>
+                <jdk>[11,)</jdk>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.openjdk.nashorn</groupId>
+                    <artifactId>nashorn-core</artifactId>
+                    <version>${nashorn-core.version}</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>

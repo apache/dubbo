@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata.rest;
 
+import org.apache.dubbo.common.compact.Dubbo2CompactUtils;
 import org.apache.dubbo.common.utils.MethodComparator;
 import org.apache.dubbo.common.utils.ServiceAnnotationResolver;
 import org.apache.dubbo.config.annotation.DubboService;
@@ -91,8 +92,12 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
     }
 
     protected final boolean isServiceAnnotationPresent(Class<?> serviceType) {
-        return isAnyAnnotationPresent(serviceType, DubboService.class, Service.class,
-            com.alibaba.dubbo.config.annotation.Service.class);
+        if (Dubbo2CompactUtils.isEnabled() && Dubbo2CompactUtils.isServiceClassLoaded()) {
+            return isAnyAnnotationPresent(serviceType, DubboService.class, Service.class,
+                Dubbo2CompactUtils.getServiceClass());
+        } else {
+            return isAnyAnnotationPresent(serviceType, DubboService.class, Service.class);
+        }
     }
 
     /**

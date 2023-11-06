@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.proxy;
 
+import org.apache.dubbo.common.compact.Dubbo2CompactUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
@@ -82,8 +83,16 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
                 // ignore
             }
 
-            if (GenericService.class.equals(invoker.getInterface()) || !GenericService.class.isAssignableFrom(invoker.getInterface())) {
-                interfaces.add(com.alibaba.dubbo.rpc.service.GenericService.class);
+            if (GenericService.class.isAssignableFrom(invoker.getInterface()) &&
+                Dubbo2CompactUtils.isEnabled() && Dubbo2CompactUtils.isGenericServiceClassLoaded()) {
+                interfaces.add(Dubbo2CompactUtils.getGenericServiceClass());
+            }
+            if (!GenericService.class.isAssignableFrom(invoker.getInterface())) {
+                if (Dubbo2CompactUtils.isEnabled() && Dubbo2CompactUtils.isGenericServiceClassLoaded()) {
+                    interfaces.add(Dubbo2CompactUtils.getGenericServiceClass());
+                } else {
+                    interfaces.add(org.apache.dubbo.rpc.service.GenericService.class);
+                }
             }
         }
 

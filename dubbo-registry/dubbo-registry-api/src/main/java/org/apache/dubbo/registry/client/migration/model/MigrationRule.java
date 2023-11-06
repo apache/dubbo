@@ -166,9 +166,8 @@ public class MigrationRule {
          */
         if (step == null) {
             // initial step : APPLICATION_FIRST
-            step = MigrationStep.APPLICATION_FIRST;
-            step = Enum.valueOf(MigrationStep.class,
-                consumerURL.getParameter(MIGRATION_STEP_KEY, getDefaultStep(consumerURL, step.name())));
+            return Enum.valueOf(MigrationStep.class,
+                consumerURL.getParameter(MIGRATION_STEP_KEY, getDefaultStep(consumerURL, MigrationStep.APPLICATION_FIRST.name())));
         }
 
         return step;

@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 
+import org.apache.dubbo.common.compact.Dubbo2CompactUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ArrayUtils;
@@ -121,7 +122,16 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
      * {@link DubboReference @DubboReference} has been supported since 2.7.7
      */
     public ReferenceAnnotationBeanPostProcessor() {
-        super(DubboReference.class, Reference.class, com.alibaba.dubbo.config.annotation.Reference.class);
+        super(loadAnnotationTypes());
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Class<? extends Annotation>[] loadAnnotationTypes() {
+        if (Dubbo2CompactUtils.isEnabled() && Dubbo2CompactUtils.isReferenceClassLoaded()) {
+            return (Class<? extends Annotation>[])new Class<?>[]{DubboReference.class, Reference.class, Dubbo2CompactUtils.getReferenceClass()};
+        } else {
+            return (Class<? extends Annotation>[])new Class<?>[]{DubboReference.class, Reference.class};
+        }
     }
 
     @Override

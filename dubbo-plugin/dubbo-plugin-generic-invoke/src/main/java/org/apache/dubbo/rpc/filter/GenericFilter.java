@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc.filter;
 import org.apache.dubbo.common.beanutil.JavaBeanAccessor;
 import org.apache.dubbo.common.beanutil.JavaBeanDescriptor;
 import org.apache.dubbo.common.beanutil.JavaBeanSerializeUtil;
+import org.apache.dubbo.common.compact.Dubbo2CompactUtils;
+import org.apache.dubbo.common.compact.Dubbo2GenericExceptionUtils;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
@@ -291,16 +293,23 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                 generic = getGenericValueFromRpcContext();
             }
 
-            if (appResponse.hasException()) {
+            if (appResponse.hasException() &&
+                Dubbo2CompactUtils.isEnabled() && Dubbo2GenericExceptionUtils.isGenericExceptionClassLoaded()) {
                 Throwable appException = appResponse.getException();
                 if (appException instanceof GenericException) {
                     GenericException tmp = (GenericException) appException;
-                    appException = new com.alibaba.dubbo.rpc.service.GenericException(tmp.getMessage(), tmp.getCause(),
+                    GenericException recreated = Dubbo2GenericExceptionUtils.newGenericException(tmp.getMessage(), tmp.getCause(),
                         tmp.getExceptionClass(), tmp.getExceptionMessage());
+                    if (recreated != null) {
+                        appException = recreated;
+                    }
                     appException.setStackTrace(tmp.getStackTrace());
                 }
-                if (!(appException instanceof com.alibaba.dubbo.rpc.service.GenericException)) {
-                    appException = new com.alibaba.dubbo.rpc.service.GenericException(appException);
+                if (!(Dubbo2GenericExceptionUtils.getGenericExceptionClass().isAssignableFrom(appException.getClass()))) {
+                    GenericException recreated = Dubbo2GenericExceptionUtils.newGenericException(appException);
+                    if (recreated != null) {
+                        appException = recreated;
+                    }
                 }
                 appResponse.setException(appException);
             }

@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.rpc;
 
+import org.apache.dubbo.common.compact.Dubbo2CompactUtils;
+import org.apache.dubbo.rpc.support.Dubbo2RpcExceptionUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -85,12 +88,14 @@ public class AppResponse implements Result {
             } catch (Exception e) {
                 // ignore
             }
-            if ((exception instanceof RpcException) && !(exception instanceof com.alibaba.dubbo.rpc.RpcException)) {
-                com.alibaba.dubbo.rpc.RpcException recreated =
-                    new com.alibaba.dubbo.rpc.RpcException(((RpcException) exception).getCode(),
-                        exception.getMessage(), exception.getCause());
-                recreated.setStackTrace(exception.getStackTrace());
-                throw recreated;
+            if (Dubbo2CompactUtils.isEnabled() && Dubbo2RpcExceptionUtils.isRpcExceptionClassLoaded()
+                && (exception instanceof RpcException) && !Dubbo2RpcExceptionUtils.getRpcExceptionClass().isAssignableFrom(exception.getClass())) {
+                RpcException recreated = Dubbo2RpcExceptionUtils.newRpcException(((RpcException) exception).getCode(),
+                    exception.getMessage(), exception.getCause());
+                if (recreated != null) {
+                    recreated.setStackTrace(exception.getStackTrace());
+                    throw recreated;
+                }
             }
             throw exception;
         }

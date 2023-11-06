@@ -649,6 +649,9 @@ public interface CommonConstants {
 
     String DUBBO_MANUAL_REGISTER_KEY = "dubbo.application.manual-register";
 
+    String DUBBO2_COMPACT_ENABLE = "dubbo.compact.enable";
+
+
     String POD_NAMESPACE = "POD_NAMESPACE";
 
     String CLUSTER_DOMAIN = "CLUSTER_DOMAIN";
