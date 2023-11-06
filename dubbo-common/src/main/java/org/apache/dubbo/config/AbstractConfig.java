@@ -73,6 +73,7 @@ import static org.apache.dubbo.config.Constants.PARAMETERS;
 
 /**
  * Utility methods and public methods for parsing configuration
+ * 抽象的配置,最顶层的服务配置类型,封装着解析配置的实用方法和公共方法,服务id,服务标签,服务参数
  *
  * @export
  */
@@ -420,11 +421,17 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     public final void setScopeModel(ScopeModel scopeModel) {
+        //初次调用服务信息配置不会走到这里
+        //DubboBootstrap.getInstance()方法二次调用会走到这里的逻辑
         if (scopeModel != null && this.scopeModel != scopeModel) {
+            //检查 ScopeModel 参数是否合法，合法的参数是不能为空并且必须是 ApplicationModel 类型或者子类型
             checkScopeModel(scopeModel);
+            //初始化这个对象
             ScopeModel oldScopeModel = this.scopeModel;
+
             this.scopeModel = scopeModel;
             // reinitialize spi extension and change referenced config's scope model
+            // 被子类重写的方法初始化spi扩展点的时候
             this.postProcessAfterScopeModelChanged(oldScopeModel, this.scopeModel);
         }
     }
@@ -449,6 +456,10 @@ public abstract class AbstractConfig implements Serializable {
      *     this.providerConfig.setScopeModel(scopeModel);
      *   }
      * }
+     * 当 ScopeModel 模型对象发生了改变，上面调用了 postProcessAfterScopeModelChanged 方法来通知模型对象改变的时候要执行的
+     * 操作，根据多态重写的逻辑我们从实现类的 postProcessAfterScopeModelChanged 来看，在下面的调用链路中部分父类型并
+     * 未实现 postProcessAfterScopeModelChanged 方法我们就直接忽略了。
+     * 第一个被调用到的是 ServiceConfig 类型的 postProcessAfterScopeModelChanged 方法。
      * </pre>
      *
      * @param oldScopeModel

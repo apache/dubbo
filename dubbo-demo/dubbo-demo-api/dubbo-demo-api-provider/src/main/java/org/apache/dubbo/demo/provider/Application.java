@@ -33,15 +33,23 @@ public class Application {
     }
 
     private static void startWithBootstrap() {
+        // 代码方式启动dubbo服务
         ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
+        // 设置接口
         service.setInterface(DemoService.class);
+        // 设置实际引用
         service.setRef(new DemoServiceImpl());
-
+        // dubbo启动器
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
+        // 启动服务
         bootstrap.application(new ApplicationConfig("dubbo-demo-api-provider"))
+            //设置注册中心
             .registry(new RegistryConfig(REGISTRY_URL))
+            //设置协议
             .protocol(new ProtocolConfig(CommonConstants.DUBBO, -1))
+            //设置服务
             .service(service)
+            //启动服务
             .start()
             .await();
     }

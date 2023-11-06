@@ -18,6 +18,23 @@ package org.apache.dubbo.common.extension;
 
 /**
  * Uniform accessor for extension
+ * ExtensionAccessor 扩展的统一访问器
+ * • 用于获取扩展加载管理器 ExtensionDirector 对象
+ * • 获取扩展对象 ExtensionLoader
+ * • 根据扩展名字获取具体扩展对象
+ * • 获取自适应扩展对象
+ * • 获取默认扩展对象
+ * • ScopeModel 模型对象的公共抽象父类型
+ * • 内部 id 用于表示模型树的层次结构
+ * • 公共模型名称，可以被用户设置
+ * • 描述信息
+ * • 类加载器管理
+ * • 父模型管理 parent
+ * • 当前模型的所属域 ExtensionScope 有:FRAMEWORK(框架)，APPLICATION (应用)，MODULE(模块)，SELF(自给自足，为每个作用域创建一个实例，
+ * 用于特殊的 SPI 扩展，如 ExtensionInjector)
+ * • 具体的扩展加载程序管理器对象的管理:ExtensionDirector
+ * • 域 Bean 工厂管理，一个内部共享的 Bean 工厂 ScopeBeanFactory
+ * • 等等
  */
 public interface ExtensionAccessor {
 

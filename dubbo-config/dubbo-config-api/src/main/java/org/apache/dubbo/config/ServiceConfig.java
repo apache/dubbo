@@ -119,6 +119,13 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 import static org.apache.dubbo.rpc.support.ProtocolUtils.isGeneric;
 
+/**
+ * 这个类 型是我们出现的第一个服务配置实现类型，服务配置实现类已经从父类型中继 承了这么多的属性，
+ * 这里主要为实现服务提供了一些配置如服务的协议配置， 服务的代理工厂 JavassistProxyFactory 是将生成导出服务代理的 ProxyFactory实现，
+ * 是其默认实现，服务提供者模型，是否导出服务，导出的服务列表，服务
+ * 监听器等等。
+ * @param <T>
+ */
 public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     private static final long serialVersionUID = 7868244018230856253L;
@@ -177,7 +184,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     @Override
     protected void postProcessAfterScopeModelChanged(ScopeModel oldScopeModel, ScopeModel newScopeModel) {
         super.postProcessAfterScopeModelChanged(oldScopeModel, newScopeModel);
+        // 初始化当前协议的对象,通过拓展机制获取Protocol类型的对象
         protocolSPI = this.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        // 设置当前代理工厂对象,通过扩展机制获取ProxyFactory类型的对象
         proxyFactory = this.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
     }
 

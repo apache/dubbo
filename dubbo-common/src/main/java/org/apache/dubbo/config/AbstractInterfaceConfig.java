@@ -59,7 +59,9 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMET
 
 /**
  * AbstractDefaultConfig
- *
+ *这个类型是对服务接口的建模， 主要的配置信息有暴漏服务的接口名字，服务接口的版本号，
+ * 客户/提供方将引 用的远程服务分组，服务元数据，服务接口的本地 impl 类名，服务监控配置，
+ * 对于生成动态代理的策略，可以选择两种策略:jdk 和 javassist，容错类型等等 配置。
  * @export
  */
 public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
@@ -227,16 +229,21 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected void postProcessAfterScopeModelChanged(ScopeModel oldScopeModel, ScopeModel newScopeModel) {
         super.postProcessAfterScopeModelChanged(oldScopeModel, newScopeModel);
         // change referenced config's scope model
+        //获取应用模型对象
         ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(getScopeModel());
+        //为配置中心对象设置 ApplicationModel 类型对象(初次启动阶段配置中心配置对象为 空)
         if (this.configCenter != null && this.configCenter.getScopeModel() != applicationModel) {
             this.configCenter.setScopeModel(applicationModel);
         }
+        //为元数据配置对象设置 ApplicationModel 类型对象(初次启动阶段数据配置配置对象为 空)
         if (this.metadataReportConfig != null && this.metadataReportConfig.getScopeModel() != applicationModel) {
             this.metadataReportConfig.setScopeModel(applicationModel);
         }
+        //为MonitorConfig 服务监控配置对象设置 ApplicationModel 类型对象(初次启动阶段数据配置配置对象为空)
         if (this.monitor != null && this.monitor.getScopeModel() != applicationModel) {
             this.monitor.setScopeModel(applicationModel);
         }
+        //如果注册中心配置列表不为空则为每个注册中心配置设置一个 ApplicationModel 类型对象(初次启动阶段注册中心对象都为空)
         if (CollectionUtils.isNotEmpty(this.registries)) {
             this.registries.forEach(registryConfig -> {
                 if (registryConfig.getScopeModel() != applicationModel) {
