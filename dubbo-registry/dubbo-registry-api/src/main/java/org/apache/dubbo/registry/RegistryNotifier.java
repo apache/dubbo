@@ -35,7 +35,7 @@ public abstract class RegistryNotifier {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RegistryNotifier.class);
     private volatile long lastExecuteTime;
     private volatile long lastEventTime;
-
+    private final URL url;
     private Object rawAddresses;
     private long delayTime;
 
@@ -51,6 +51,7 @@ public abstract class RegistryNotifier {
     }
 
     public RegistryNotifier(URL registryUrl, long delayTime, ScheduledExecutorService scheduler) {
+        this.url = registryUrl;
         this.delayTime = delayTime;
         if (scheduler == null) {
             this.scheduler = registryUrl.getOrDefaultFrameworkModel().getBeanFactory()
@@ -72,7 +73,7 @@ public abstract class RegistryNotifier {
         // when the scheduler is shutdown, no notification is sent
         if (scheduler.isShutdown()) {
             if (logger.isWarnEnabled()) {
-                logger.warn(COMMON_FAILED_NOTIFY_EVENT, "", "", "Notification scheduler is off, no notifications are sent.");
+                logger.warn(COMMON_FAILED_NOTIFY_EVENT, "", "", "Notification scheduler is off, no notifications are sent. Registry URL:  " + url);
             }
             return;
         } else if (delay) {
