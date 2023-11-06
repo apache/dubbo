@@ -25,7 +25,7 @@
 
     <properties>
       <maven.deploy.skip>true</maven.deploy.skip>
-        <spotless-maven-plugin.version>2.39.0</spotless-maven-plugin.version>
+        <spotless-maven-plugin.version>2.40.0</spotless-maven-plugin.version>
         <spotless.action>check</spotless.action>
         <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     </properties>
