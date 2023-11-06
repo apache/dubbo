@@ -42,5 +42,4 @@ public interface ExporterListener {
      * @see org.apache.dubbo.rpc.Exporter#unexport()
      */
     void unexported(Exporter<?> exporter);
-
 }

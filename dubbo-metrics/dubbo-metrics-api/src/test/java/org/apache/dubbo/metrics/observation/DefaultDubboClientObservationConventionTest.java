@@ -24,10 +24,10 @@ import io.micrometer.common.KeyValues;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-
 public class DefaultDubboClientObservationConventionTest {
 
-    static DubboClientObservationConvention dubboClientObservationConvention = DefaultDubboClientObservationConvention.getInstance();
+    static DubboClientObservationConvention dubboClientObservationConvention =
+            DefaultDubboClientObservationConvention.getInstance();
 
     @Test
     void testGetName() {
@@ -49,7 +49,8 @@ public class DefaultDubboClientObservationConventionTest {
         KeyValues keyValues = dubboClientObservationConvention.getLowCardinalityKeyValues(context);
 
         Assertions.assertEquals("testMethod", ObservationConventionUtils.getValueForKey(keyValues, "rpc.method"));
-        Assertions.assertEquals("targetServiceName1", ObservationConventionUtils.getValueForKey(keyValues, "rpc.service"));
+        Assertions.assertEquals(
+                "targetServiceName1", ObservationConventionUtils.getValueForKey(keyValues, "rpc.service"));
         Assertions.assertEquals("apache_dubbo", ObservationConventionUtils.getValueForKey(keyValues, "rpc.system"));
     }
 
@@ -67,6 +68,4 @@ public class DefaultDubboClientObservationConventionTest {
         String contextualName = convention.getContextualName(context);
         Assertions.assertEquals("com.example.TestService/testMethod", contextualName);
     }
-
-
 }

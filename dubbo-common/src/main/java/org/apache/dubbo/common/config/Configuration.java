@@ -74,9 +74,12 @@ public interface Configuration {
             return convert(Integer.class, key, defaultValue);
         } catch (NumberFormatException e) {
             // 0-2 Property type mismatch.
-            interfaceLevelLogger.error(COMMON_PROPERTY_TYPE_MISMATCH, "typo in property value",
-                "This property requires an integer value.",
-                "Actual Class: " + getClass().getName(), e);
+            interfaceLevelLogger.error(
+                    COMMON_PROPERTY_TYPE_MISMATCH,
+                    "typo in property value",
+                    "This property requires an integer value.",
+                    "Actual Class: " + getClass().getName(),
+                    e);
 
             throw new IllegalStateException('\'' + key + "' doesn't map to a Integer object", e);
         }
@@ -99,7 +102,8 @@ public interface Configuration {
         try {
             return convert(Boolean.class, key, defaultValue);
         } catch (Exception e) {
-            throw new IllegalStateException("Try to get " + '\'' + key + "' failed, maybe because this key doesn't map to a Boolean object", e);
+            throw new IllegalStateException(
+                    "Try to get " + '\'' + key + "' failed, maybe because this key doesn't map to a Boolean object", e);
         }
     }
 
@@ -149,7 +153,6 @@ public interface Configuration {
     default boolean containsKey(String key) {
         return !isEmptyValue(getProperty(key));
     }
-
 
     default <T> T convert(Class<T> cls, String key, T defaultValue) {
         // we only process String properties for now

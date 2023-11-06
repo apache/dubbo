@@ -56,11 +56,14 @@ public class PerformanceUtils {
 
     public static List<String> getEnvironment() {
         List<String> environment = new ArrayList<String>();
-        environment.add("OS: " + System.getProperty("os.name") + " " + System.getProperty("os.version") + " " + System.getProperty("os.arch", ""));
+        environment.add("OS: " + System.getProperty("os.name") + " " + System.getProperty("os.version") + " "
+                + System.getProperty("os.arch", ""));
         environment.add("CPU: " + Runtime.getRuntime().availableProcessors() + " cores");
-        environment.add("JVM: " + System.getProperty("java.vm.name") + " " + System.getProperty("java.runtime.version"));
-        environment.add("Memory: " + DecimalFormat.getIntegerInstance().format(Runtime.getRuntime().totalMemory())
-                + " bytes (Max: " + DecimalFormat.getIntegerInstance().format(Runtime.getRuntime().maxMemory()) + " bytes)");
+        environment.add(
+                "JVM: " + System.getProperty("java.vm.name") + " " + System.getProperty("java.runtime.version"));
+        environment.add("Memory: "
+                + DecimalFormat.getIntegerInstance().format(Runtime.getRuntime().totalMemory()) + " bytes (Max: "
+                + DecimalFormat.getIntegerInstance().format(Runtime.getRuntime().maxMemory()) + " bytes)");
         NetworkInterface ni = PerformanceUtils.getNetworkInterface();
         if (ni != null) {
             environment.add("Network: " + ni.getDisplayName());
@@ -122,5 +125,4 @@ public class PerformanceUtils {
         }
         return null;
     }
-
 }

@@ -59,6 +59,7 @@ class RpcInvocationTest {
         rpcInvocation.addInvokedInvoker(invoker3);
         rpcInvocation.addInvokedInvoker(invoker3);
 
-        Assertions.assertEquals(Arrays.asList(invoker1, invoker2, invoker3, invoker3), rpcInvocation.getInvokedInvokers());
+        Assertions.assertEquals(
+                Arrays.asList(invoker1, invoker2, invoker3, invoker3), rpcInvocation.getInvokedInvokers());
     }
 }

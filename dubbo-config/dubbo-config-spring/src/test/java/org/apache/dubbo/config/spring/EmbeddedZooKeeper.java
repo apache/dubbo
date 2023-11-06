@@ -1,11 +1,12 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,16 +19,17 @@ package org.apache.dubbo.config.spring;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.test.common.utils.TestSocketUtils;
-import org.apache.zookeeper.server.ServerConfig;
-import org.apache.zookeeper.server.ZooKeeperServerMain;
-import org.apache.zookeeper.server.quorum.QuorumPeerConfig;
-import org.springframework.context.SmartLifecycle;
-import org.springframework.util.ErrorHandler;
 
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.Properties;
 import java.util.UUID;
+
+import org.apache.zookeeper.server.ServerConfig;
+import org.apache.zookeeper.server.ZooKeeperServerMain;
+import org.apache.zookeeper.server.quorum.QuorumPeerConfig;
+import org.springframework.context.SmartLifecycle;
+import org.springframework.util.ErrorHandler;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TESTING_INIT_ZOOKEEPER_SERVER_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TESTING_REGISTRY_FAILED_TO_STOP_ZOOKEEPER;
@@ -187,7 +189,11 @@ public class EmbeddedZooKeeper implements SmartLifecycle {
                 zkServerThread = null;
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                logger.warn(TESTING_REGISTRY_FAILED_TO_STOP_ZOOKEEPER, "", "", "Interrupted while waiting for embedded ZooKeeper to exit");
+                logger.warn(
+                        TESTING_REGISTRY_FAILED_TO_STOP_ZOOKEEPER,
+                        "",
+                        "",
+                        "Interrupted while waiting for embedded ZooKeeper to exit");
                 // abandoning zk thread
                 zkServerThread = null;
             }
@@ -222,8 +228,7 @@ public class EmbeddedZooKeeper implements SmartLifecycle {
         public void run() {
             try {
                 Properties properties = new Properties();
-                File file = new File(System.getProperty("java.io.tmpdir")
-                    + File.separator + UUID.randomUUID());
+                File file = new File(System.getProperty("java.io.tmpdir") + File.separator + UUID.randomUUID());
                 file.deleteOnExit();
                 properties.setProperty("dataDir", file.getAbsolutePath());
                 properties.setProperty("clientPort", String.valueOf(clientPort));
@@ -240,10 +245,14 @@ public class EmbeddedZooKeeper implements SmartLifecycle {
                 if (errorHandler != null) {
                     errorHandler.handleError(e);
                 } else {
-                    logger.error(TESTING_INIT_ZOOKEEPER_SERVER_ERROR, "ZooKeeper server error", "", "Exception running embedded ZooKeeper.", e);
+                    logger.error(
+                            TESTING_INIT_ZOOKEEPER_SERVER_ERROR,
+                            "ZooKeeper server error",
+                            "",
+                            "Exception running embedded ZooKeeper.",
+                            e);
                 }
             }
         }
     }
-
 }

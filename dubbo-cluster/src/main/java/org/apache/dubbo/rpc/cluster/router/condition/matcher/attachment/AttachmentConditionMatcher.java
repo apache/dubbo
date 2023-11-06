@@ -38,7 +38,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAIL
  */
 @Activate
 public class AttachmentConditionMatcher extends AbstractConditionMatcher {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AttachmentConditionMatcher.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(AttachmentConditionMatcher.class);
     private static final Pattern ATTACHMENTS_PATTERN = Pattern.compile("attachments\\[(.+)\\]");
 
     public AttachmentConditionMatcher(String key, ModuleModel model) {
@@ -56,20 +57,21 @@ public class AttachmentConditionMatcher extends AbstractConditionMatcher {
                 return DOES_NOT_FOUND_VALUE;
             }
 
-            //extract the argument index
+            // extract the argument index
             String attachmentKey = matcher.group(1);
             if (StringUtils.isEmpty(attachmentKey)) {
                 return DOES_NOT_FOUND_VALUE;
             }
 
-            //extract the argument value
+            // extract the argument value
             return invocation.getAttachment(attachmentKey);
         } catch (Exception e) {
-            logger.warn(CLUSTER_FAILED_EXEC_CONDITION_ROUTER,
-                "condition state router attachment match failed",
-                "",
-                "Invalid match condition: " + key,
-                e);
+            logger.warn(
+                    CLUSTER_FAILED_EXEC_CONDITION_ROUTER,
+                    "condition state router attachment match failed",
+                    "",
+                    "Invalid match condition: " + key,
+                    e);
         }
         return DOES_NOT_FOUND_VALUE;
     }

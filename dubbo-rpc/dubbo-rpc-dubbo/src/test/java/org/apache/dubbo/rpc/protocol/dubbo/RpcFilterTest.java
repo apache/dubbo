@@ -32,8 +32,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class RpcFilterTest {
-    private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-    private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+    private Protocol protocol =
+            ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+    private ProxyFactory proxy =
+            ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
     @AfterEach
     public void after() {
@@ -44,8 +46,12 @@ class RpcFilterTest {
     void testRpcFilter() throws Exception {
         DemoService service = new DemoServiceImpl();
         int port = NetUtils.getAvailablePort();
-        URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/org.apache.dubbo.rpc.protocol.dubbo.support.DemoService?service.filter=echo");
-        ApplicationModel.defaultModel().getDefaultModule().getServiceRepository().registerService(DemoService.class);
+        URL url = URL.valueOf("dubbo://127.0.0.1:" + port
+                + "/org.apache.dubbo.rpc.protocol.dubbo.support.DemoService?service.filter=echo");
+        ApplicationModel.defaultModel()
+                .getDefaultModule()
+                .getServiceRepository()
+                .registerService(DemoService.class);
         url = url.setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
         protocol.export(proxy.getInvoker(service, DemoService.class, url));
         service = proxy.getProxy(protocol.refer(DemoService.class, url));
@@ -56,5 +62,4 @@ class RpcFilterTest {
         Assertions.assertEquals(echo.$echo("abcdefg"), "abcdefg");
         Assertions.assertEquals(echo.$echo(1234), 1234);
     }
-
 }

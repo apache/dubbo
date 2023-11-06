@@ -19,5 +19,4 @@ package org.apache.dubbo.config.spring.api;
 public interface Box {
 
     String getName();
-
 }

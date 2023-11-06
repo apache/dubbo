@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
-class LruCacheFactoryTest extends AbstractCacheFactoryTest{
+class LruCacheFactoryTest extends AbstractCacheFactoryTest {
     @Test
     void testLruCacheFactory() throws Exception {
         Cache cache = super.constructCache();

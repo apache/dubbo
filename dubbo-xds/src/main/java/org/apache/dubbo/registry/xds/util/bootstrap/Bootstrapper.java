@@ -16,13 +16,15 @@
  */
 package org.apache.dubbo.registry.xds.util.bootstrap;
 
-import io.envoyproxy.envoy.config.core.v3.Node;
-import io.grpc.ChannelCredentials;
 import org.apache.dubbo.registry.xds.XdsInitializationException;
 
 import javax.annotation.Nullable;
+
 import java.util.List;
 import java.util.Map;
+
+import io.envoyproxy.envoy.config.core.v3.Node;
+import io.grpc.ChannelCredentials;
 
 public abstract class Bootstrapper {
 
@@ -40,7 +42,6 @@ public abstract class Bootstrapper {
         abstract boolean useProtocolV3();
 
         abstract boolean ignoreResourceDeletion();
-
     }
 
     public abstract static class CertificateProviderInfo {
@@ -66,8 +67,7 @@ public abstract class Bootstrapper {
 
             abstract Builder certProviders(@Nullable Map<String, CertificateProviderInfo> certProviders);
 
-            abstract Builder serverListenerResourceNameTemplate(
-                @Nullable String serverListenerResourceNameTemplate);
+            abstract Builder serverListenerResourceNameTemplate(@Nullable String serverListenerResourceNameTemplate);
 
             abstract BootstrapInfo build();
         }

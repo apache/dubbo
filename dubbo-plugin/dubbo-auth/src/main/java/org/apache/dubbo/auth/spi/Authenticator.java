@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.auth.spi;
 
-
 import org.apache.dubbo.auth.exception.RpcAuthenticationException;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
@@ -32,7 +31,6 @@ public interface Authenticator {
      * @param url
      */
     void sign(Invocation invocation, URL url);
-
 
     /**
      * verify the signature of the request is valid or not

@@ -17,5 +17,7 @@
 package org.apache.dubbo.service;
 
 public enum Type {
-    High, Normal, Lower
+    High,
+    Normal,
+    Lower
 }

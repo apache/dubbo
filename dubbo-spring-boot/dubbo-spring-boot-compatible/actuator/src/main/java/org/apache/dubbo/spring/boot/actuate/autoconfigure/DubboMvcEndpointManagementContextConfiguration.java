@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.spring.boot.actuate.autoconfigure;
 
-
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.mvc.DubboMvcEndpoint;
 
@@ -34,9 +33,7 @@ import org.springframework.context.annotation.Bean;
  * @since 2.7.0
  */
 @ManagementContextConfiguration
-@ConditionalOnClass(name = {
-        "org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter"
-})
+@ConditionalOnClass(name = {"org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter"})
 @ConditionalOnWebApplication
 public class DubboMvcEndpointManagementContextConfiguration {
 

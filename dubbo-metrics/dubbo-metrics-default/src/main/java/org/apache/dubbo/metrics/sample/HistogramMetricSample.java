@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.sample;
 
 import org.apache.dubbo.metrics.model.MetricsCategory;
@@ -28,7 +27,13 @@ public class HistogramMetricSample extends MetricSample {
         super(name, description, tags, Type.TIMER, category);
     }
 
-    public HistogramMetricSample(String name, String description, Map<String, String> tags, Type type, MetricsCategory category, String baseUnit) {
+    public HistogramMetricSample(
+            String name,
+            String description,
+            Map<String, String> tags,
+            Type type,
+            MetricsCategory category,
+            String baseUnit) {
         super(name, description, tags, type, category, baseUnit);
     }
 }

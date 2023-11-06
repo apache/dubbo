@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,10 +30,10 @@ class TLadderTest {
         ladder.addItem("3");
         ladder.addItem("4");
         String result = ladder.rendering();
-        String expected = "1" + System.lineSeparator() +
-                "  `-2" + System.lineSeparator() +
-                "    `-3" + System.lineSeparator() +
-                "      `-4" + System.lineSeparator();
+        String expected = "1" + System.lineSeparator() + "  `-2"
+                + System.lineSeparator() + "    `-3"
+                + System.lineSeparator() + "      `-4"
+                + System.lineSeparator();
         assertThat(result, equalTo(expected));
         System.out.println(result);
     }

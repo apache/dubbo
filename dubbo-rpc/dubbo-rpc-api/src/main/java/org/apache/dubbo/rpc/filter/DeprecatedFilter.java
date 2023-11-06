@@ -52,7 +52,12 @@ public class DeprecatedFilter implements Filter {
         if (!LOGGED.contains(key)) {
             LOGGED.add(key);
             if (invoker.getUrl().getMethodParameter(RpcUtils.getMethodName(invocation), DEPRECATED_KEY, false)) {
-                LOGGER.error(COMMON_UNSUPPORTED_INVOKER, "", "", "The service method " + invoker.getInterface().getName() + "." + getMethodSignature(invocation) + " is DEPRECATED! Declare from " + invoker.getUrl());
+                LOGGER.error(
+                        COMMON_UNSUPPORTED_INVOKER,
+                        "",
+                        "",
+                        "The service method " + invoker.getInterface().getName() + "." + getMethodSignature(invocation)
+                                + " is DEPRECATED! Declare from " + invoker.getUrl());
             }
         }
         return invoker.invoke(invocation);
@@ -76,5 +81,4 @@ public class DeprecatedFilter implements Filter {
         buf.append(')');
         return buf.toString();
     }
-
 }

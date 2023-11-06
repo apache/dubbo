@@ -32,10 +32,9 @@ import java.util.Comparator;
  */
 public class MethodComparator implements Comparator<Method> {
 
-    public final static MethodComparator INSTANCE = new MethodComparator();
+    public static final MethodComparator INSTANCE = new MethodComparator();
 
-    private MethodComparator() {
-    }
+    private MethodComparator() {}
 
     @Override
     public int compare(Method m1, Method m2) {

@@ -36,9 +36,14 @@ public class RequestHeaderParameterProcessor extends AbstractRequestAnnotationPa
     }
 
     @Override
-    protected void process(String name, String defaultValue, Annotation annotation, Parameter parameter,
-                           int parameterIndex, Method method, RestMethodMetadata restMethodMetadata) {
+    protected void process(
+            String name,
+            String defaultValue,
+            Annotation annotation,
+            Parameter parameter,
+            int parameterIndex,
+            Method method,
+            RestMethodMetadata restMethodMetadata) {
         restMethodMetadata.getRequest().addHeader(name, defaultValue);
     }
-
 }

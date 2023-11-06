@@ -64,6 +64,5 @@ public abstract class AbstractDubboConfigBinder implements DubboConfigBinder {
         if (environment instanceof ConfigurableEnvironment) {
             this.propertySources = ((ConfigurableEnvironment) environment).getPropertySources();
         }
-
     }
 }

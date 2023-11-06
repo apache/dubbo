@@ -91,5 +91,4 @@ public class DubboEndpointAnnotationAutoConfiguration {
     public DubboShutdownEndpoint dubboShutdownEndpoint() {
         return new DubboShutdownEndpoint();
     }
-
 }

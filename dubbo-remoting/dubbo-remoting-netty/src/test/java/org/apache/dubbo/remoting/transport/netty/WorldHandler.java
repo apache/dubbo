@@ -32,5 +32,4 @@ public class WorldHandler implements Replier<World> {
     public Object reply(ExchangeChannel channel, World msg) throws RemotingException {
         return new Hello("hello," + msg.getName());
     }
-
 }

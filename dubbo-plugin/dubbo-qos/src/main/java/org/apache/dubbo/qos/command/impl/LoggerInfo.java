@@ -19,19 +19,22 @@ package org.apache.dubbo.qos.command.impl;
 import org.apache.dubbo.common.logger.Level;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.qos.api.BaseCommand;
-import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.qos.api.Cmd;
+import org.apache.dubbo.qos.api.CommandContext;
 
-@Cmd(name = "loggerInfo", summary = "Print logger info", example = {
-    "loggerInfo"
-})
+@Cmd(
+        name = "loggerInfo",
+        summary = "Print logger info",
+        example = {"loggerInfo"})
 public class LoggerInfo implements BaseCommand {
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        String availableAdapters = String.join(", ", LoggerFactory.getAvailableAdapter().toArray(new String[0]));
+        String availableAdapters =
+                String.join(", ", LoggerFactory.getAvailableAdapter().toArray(new String[0]));
         String currentAdapter = LoggerFactory.getCurrentAdapter();
         Level level = LoggerFactory.getLevel();
 
-        return "Available logger adapters: [" + availableAdapters + "]. Current Adapter: [" + currentAdapter + "]. Log level: " + level.name();
+        return "Available logger adapters: [" + availableAdapters + "]. Current Adapter: [" + currentAdapter
+                + "]. Log level: " + level.name();
     }
 }

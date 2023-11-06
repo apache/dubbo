@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept;
 
-
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.PathUtil;
@@ -32,7 +31,7 @@ import java.util.List;
 /**
  *  resolve method args from path
  */
-@Activate(value = RestConstant.PATH_INTERCEPT,order = 4)
+@Activate(value = RestConstant.PATH_INTERCEPT, order = 4)
 public class PathVariableIntercept implements HttpConnectionPreBuildIntercept {
 
     @Override
@@ -44,11 +43,10 @@ public class PathVariableIntercept implements HttpConnectionPreBuildIntercept {
         List<ArgInfo> argInfos = restMethodMetadata.getArgInfos();
 
         // path variable parse
-        String path = PathUtil.resolvePathVariable(restMethodMetadata.getRequest().getPath(), argInfos, Arrays.asList(connectionCreateContext.getInvocation().getArguments()));
+        String path = PathUtil.resolvePathVariable(
+                restMethodMetadata.getRequest().getPath(),
+                argInfos,
+                Arrays.asList(connectionCreateContext.getInvocation().getArguments()));
         requestTemplate.path(path);
-
-
     }
-
-
 }

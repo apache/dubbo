@@ -114,42 +114,54 @@ public class RouterSnapshotNode<T> {
 
     public String toString(int level) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("[ ")
-            .append(name)
-            .append(' ')
-            .append("(Input: ").append(beforeSize).append(") ")
-            .append("(Current Node Output: ").append(nodeOutputSize).append(") ")
-            .append("(Chain Node Output: ").append(chainOutputSize).append(')')
-            .append(routerMessage == null ? "" : " Router message: ")
-            .append(routerMessage == null ? "" : routerMessage)
-            .append(" ] ");
+        stringBuilder
+                .append("[ ")
+                .append(name)
+                .append(' ')
+                .append("(Input: ")
+                .append(beforeSize)
+                .append(") ")
+                .append("(Current Node Output: ")
+                .append(nodeOutputSize)
+                .append(") ")
+                .append("(Chain Node Output: ")
+                .append(chainOutputSize)
+                .append(')')
+                .append(routerMessage == null ? "" : " Router message: ")
+                .append(routerMessage == null ? "" : routerMessage)
+                .append(" ] ");
         if (level == 1) {
-            stringBuilder.append("Input: ")
-                .append(CollectionUtils.isEmpty(inputInvokers) ? "Empty" :
-                        inputInvokers.subList(0, Math.min(5, inputInvokers.size()))
-                            .stream()
-                            .map(Invoker::getUrl)
-                            .map(URL::getAddress)
-                            .collect(Collectors.joining(",")))
-                .append(" -> ");
+            stringBuilder
+                    .append("Input: ")
+                    .append(
+                            CollectionUtils.isEmpty(inputInvokers)
+                                    ? "Empty"
+                                    : inputInvokers.subList(0, Math.min(5, inputInvokers.size())).stream()
+                                            .map(Invoker::getUrl)
+                                            .map(URL::getAddress)
+                                            .collect(Collectors.joining(",")))
+                    .append(" -> ");
 
-            stringBuilder.append("Chain Node Output: ")
-                .append(CollectionUtils.isEmpty(chainOutputInvokers) ? "Empty" :
-                    chainOutputInvokers.subList(0, Math.min(5, chainOutputInvokers.size()))
-                        .stream()
-                        .map(Invoker::getUrl)
-                        .map(URL::getAddress)
-                        .collect(Collectors.joining(",")));
+            stringBuilder
+                    .append("Chain Node Output: ")
+                    .append(
+                            CollectionUtils.isEmpty(chainOutputInvokers)
+                                    ? "Empty"
+                                    : chainOutputInvokers.subList(0, Math.min(5, chainOutputInvokers.size())).stream()
+                                            .map(Invoker::getUrl)
+                                            .map(URL::getAddress)
+                                            .collect(Collectors.joining(",")));
         } else {
-            stringBuilder.append("Current Node Output: ")
-                .append(CollectionUtils.isEmpty(nodeOutputInvokers) ? "Empty" :
-                    nodeOutputInvokers.subList(0, Math.min(5, nodeOutputInvokers.size()))
-                        .stream()
-                        .map(Invoker::getUrl)
-                        .map(URL::getAddress)
-                        .collect(Collectors.joining(",")));
+            stringBuilder
+                    .append("Current Node Output: ")
+                    .append(
+                            CollectionUtils.isEmpty(nodeOutputInvokers)
+                                    ? "Empty"
+                                    : nodeOutputInvokers.subList(0, Math.min(5, nodeOutputInvokers.size())).stream()
+                                            .map(Invoker::getUrl)
+                                            .map(URL::getAddress)
+                                            .collect(Collectors.joining(",")));
         }
-
 
         if (nodeOutputInvokers != null && nodeOutputInvokers.size() > 5) {
             stringBuilder.append("...");

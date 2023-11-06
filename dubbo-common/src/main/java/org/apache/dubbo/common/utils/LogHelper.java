@@ -20,8 +20,7 @@ import org.apache.dubbo.common.logger.Logger;
 
 public class LogHelper {
 
-    private LogHelper() {
-    }
+    private LogHelper() {}
 
     public static void trace(Logger logger, String msg) {
         if (logger == null) {
@@ -172,5 +171,4 @@ public class LogHelper {
             logger.error(msg, e);
         }
     }
-
 }

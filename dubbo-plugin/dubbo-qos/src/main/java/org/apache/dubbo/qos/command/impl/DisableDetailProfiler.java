@@ -20,14 +20,15 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.profiler.ProfilerSwitch;
 import org.apache.dubbo.qos.api.BaseCommand;
-import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.qos.api.Cmd;
+import org.apache.dubbo.qos.api.CommandContext;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_PROFILER_DISABLED;
 
 @Cmd(name = "disableDetailProfiler", summary = "Disable Dubbo Invocation Profiler.")
 public class DisableDetailProfiler implements BaseCommand {
-    private final static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DisableDetailProfiler.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(DisableDetailProfiler.class);
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.remoting.buffer;
 
 import java.nio.ByteBuffer;
@@ -25,8 +24,7 @@ public final class ChannelBuffers {
 
     public static final int DEFAULT_CAPACITY = 256;
 
-    private ChannelBuffers() {
-    }
+    private ChannelBuffers() {}
 
     public static ChannelBuffer dynamicBuffer() {
         return dynamicBuffer(DEFAULT_CAPACITY);
@@ -36,8 +34,7 @@ public final class ChannelBuffers {
         return new DynamicChannelBuffer(capacity);
     }
 
-    public static ChannelBuffer dynamicBuffer(int capacity,
-                                              ChannelBufferFactory factory) {
+    public static ChannelBuffer dynamicBuffer(int capacity, ChannelBufferFactory factory) {
         return new DynamicChannelBuffer(capacity, factory);
     }
 
@@ -86,8 +83,7 @@ public final class ChannelBuffers {
             return EMPTY_BUFFER;
         }
 
-        ChannelBuffer buffer = new ByteBufferBackedChannelBuffer(
-            ByteBuffer.allocateDirect(capacity));
+        ChannelBuffer buffer = new ByteBufferBackedChannelBuffer(ByteBuffer.allocateDirect(capacity));
         buffer.clear();
         return buffer;
     }
@@ -176,5 +172,4 @@ public final class ChannelBuffers {
 
         return aLen - bLen;
     }
-
 }

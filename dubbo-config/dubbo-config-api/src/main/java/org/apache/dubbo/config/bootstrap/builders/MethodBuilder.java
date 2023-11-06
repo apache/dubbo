@@ -107,6 +107,7 @@ public class MethodBuilder extends AbstractMethodBuilder<MethodConfig, MethodBui
      * These properties come from MethodConfig's parent Config module, they will neither be collected directly from xml or API nor be delivered to url
      */
     private String service;
+
     private String serviceId;
 
     public MethodBuilder name(String name) {

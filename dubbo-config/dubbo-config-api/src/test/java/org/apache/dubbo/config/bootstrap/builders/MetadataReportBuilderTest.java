@@ -18,11 +18,11 @@ package org.apache.dubbo.config.bootstrap.builders;
 
 import org.apache.dubbo.config.MetadataReportConfig;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class MetadataReportBuilderTest {
 
@@ -126,9 +126,17 @@ class MetadataReportBuilderTest {
     @Test
     void build() {
         MetadataReportBuilder builder = new MetadataReportBuilder();
-        builder.address("address").username("username").password("password").timeout(1000).group("group")
-                .retryTimes(1).retryPeriod(2).cycleReport(true).syncReport(false)
-                .appendParameter("default.num", "one").id("id");
+        builder.address("address")
+                .username("username")
+                .password("password")
+                .timeout(1000)
+                .group("group")
+                .retryTimes(1)
+                .retryPeriod(2)
+                .cycleReport(true)
+                .syncReport(false)
+                .appendParameter("default.num", "one")
+                .id("id");
 
         MetadataReportConfig config = builder.build();
         MetadataReportConfig config2 = builder.build();

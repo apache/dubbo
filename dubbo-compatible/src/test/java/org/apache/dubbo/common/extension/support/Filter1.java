@@ -19,5 +19,4 @@ package org.apache.dubbo.common.extension.support;
 import org.apache.dubbo.common.extension.Activate;
 
 @Activate
-public class Filter1 implements Filter0{
-}
+public class Filter1 implements Filter0 {}

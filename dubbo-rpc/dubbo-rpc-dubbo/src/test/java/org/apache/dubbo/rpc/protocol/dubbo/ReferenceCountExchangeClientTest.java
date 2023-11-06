@@ -28,12 +28,6 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,13 +35,20 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.LAZY_REQUEST_WITH_WARNING_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.SHARE_CONNECTIONS_KEY;
 
 class ReferenceCountExchangeClientTest {
 
-    public static ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+    public static ProxyFactory proxy =
+            ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
     Exporter<?> demoExporter;
     Exporter<?> helloExporter;
     Invoker<IDemoService> demoServiceInvoker;
@@ -59,8 +60,7 @@ class ReferenceCountExchangeClientTest {
     String errorMsg = "safe guard client , should not be called ,must have a bug";
 
     @BeforeAll
-    public static void setUpBeforeClass() throws Exception {
-    }
+    public static void setUpBeforeClass() throws Exception {}
 
     @AfterAll
     public static void tearDownAfterClass() {
@@ -76,12 +76,13 @@ class ReferenceCountExchangeClientTest {
     }
 
     public static <T> Exporter<T> export(T instance, Class<T> type, URL url) {
-        return ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME).export(proxy.getInvoker(instance, type, url));
+        return ExtensionLoader.getExtensionLoader(Protocol.class)
+                .getExtension(DubboProtocol.NAME)
+                .export(proxy.getInvoker(instance, type, url));
     }
 
     @BeforeEach
-    public void setUp() throws Exception {
-    }
+    public void setUp() throws Exception {}
 
     /**
      * test connection sharing
@@ -174,7 +175,8 @@ class ReferenceCountExchangeClientTest {
             Assertions.fail();
         }
 
-        // client has been replaced with lazy client, close status is false because a new lazy client's exchange client is null.
+        // client has been replaced with lazy client, close status is false because a new lazy client's exchange client
+        // is null.
         Assertions.assertFalse(client.isClosed(), "client status close");
         // invoker status is available because the default value of associated lazy client's initial state is true.
         Assertions.assertTrue(helloServiceInvoker.isAvailable(), "invoker status unavailable");
@@ -283,7 +285,8 @@ class ReferenceCountExchangeClientTest {
     }
 
     private List<ExchangeClient> getInvokerClientList(Invoker<?> invoker) {
-        @SuppressWarnings("rawtypes") DubboInvoker dInvoker = (DubboInvoker) invoker;
+        @SuppressWarnings("rawtypes")
+        DubboInvoker dInvoker = (DubboInvoker) invoker;
         try {
             Field clientField = DubboInvoker.class.getDeclaredField("clientsProvider");
             clientField.setAccessible(true);

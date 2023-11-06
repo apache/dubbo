@@ -23,5 +23,4 @@ class ByteBuddyProxyFactoryTest extends AbstractProxyTest {
     static {
         factory = new ByteBuddyProxyFactory();
     }
-
 }

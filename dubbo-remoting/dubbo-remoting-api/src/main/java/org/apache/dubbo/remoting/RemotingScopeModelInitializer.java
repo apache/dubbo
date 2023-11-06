@@ -33,30 +33,34 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FA
  */
 public class RemotingScopeModelInitializer implements ScopeModelInitializer {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RemotingScopeModelInitializer.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(RemotingScopeModelInitializer.class);
 
     @Override
-    public void initializeFrameworkModel(FrameworkModel frameworkModel) {
-
-    }
+    public void initializeFrameworkModel(FrameworkModel frameworkModel) {}
 
     @Override
     public void initializeApplicationModel(ApplicationModel applicationModel) {
         applicationModel.addDestroyListener(m -> {
             // destroy zookeeper clients if any
             try {
-                List<ZookeeperTransporter> transporters = applicationModel.getExtensionLoader(ZookeeperTransporter.class).getLoadedExtensionInstances();
+                List<ZookeeperTransporter> transporters = applicationModel
+                        .getExtensionLoader(ZookeeperTransporter.class)
+                        .getLoadedExtensionInstances();
                 for (ZookeeperTransporter zkTransporter : transporters) {
                     zkTransporter.destroy();
                 }
             } catch (Exception e) {
-                logger.error(TRANSPORT_FAILED_DESTROY_ZOOKEEPER, "", "", "Error encountered while destroying ZookeeperTransporter: " + e.getMessage(), e);
+                logger.error(
+                        TRANSPORT_FAILED_DESTROY_ZOOKEEPER,
+                        "",
+                        "",
+                        "Error encountered while destroying ZookeeperTransporter: " + e.getMessage(),
+                        e);
             }
         });
     }
 
     @Override
-    public void initializeModuleModel(ModuleModel moduleModel) {
-
-    }
+    public void initializeModuleModel(ModuleModel moduleModel) {}
 }

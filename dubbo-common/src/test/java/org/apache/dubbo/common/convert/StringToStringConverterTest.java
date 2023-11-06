@@ -35,7 +35,8 @@ class StringToStringConverterTest {
 
     @BeforeEach
     public void init() {
-        converter = (StringToStringConverter) getExtensionLoader(Converter.class).getExtension("string-to-string");
+        converter =
+                (StringToStringConverter) getExtensionLoader(Converter.class).getExtension("string-to-string");
     }
 
     @Test

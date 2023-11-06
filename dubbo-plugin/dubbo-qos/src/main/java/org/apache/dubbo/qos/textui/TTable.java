@@ -44,9 +44,7 @@ public class TTable implements TComponent {
     private int padding;
 
     public TTable(ColumnDefine[] columnDefineArray) {
-        this.columnDefineArray = null == columnDefineArray
-                ? new ColumnDefine[0]
-                : columnDefineArray;
+        this.columnDefineArray = null == columnDefineArray ? new ColumnDefine[0] : columnDefineArray;
     }
 
     public TTable(int columnNum) {
@@ -55,7 +53,6 @@ public class TTable implements TComponent {
             columnDefineArray[index] = new ColumnDefine();
         }
     }
-
 
     @Override
     public String rendering() {
@@ -74,33 +71,26 @@ public class TTable implements TComponent {
             final boolean isLastRow = rowIndex == rowCount - 1;
 
             // print first separation line
-            if (isFirstRow
-                    && border.has(Border.BORDER_OUTER_TOP)) {
+            if (isFirstRow && border.has(Border.BORDER_OUTER_TOP)) {
                 tableSB.append(drawSeparationLine(widthCacheArray)).append(System.lineSeparator());
             }
 
             // print inner separation lines
-            if (!isFirstRow
-                    && border.has(Border.BORDER_INNER_H)) {
+            if (!isFirstRow && border.has(Border.BORDER_INNER_H)) {
                 tableSB.append(drawSeparationLine(widthCacheArray)).append(System.lineSeparator());
             }
 
             // draw one line
             tableSB.append(drawRow(widthCacheArray, rowIndex));
 
-
             // print ending separation line
-            if (isLastRow
-                    && border.has(Border.BORDER_OUTER_BOTTOM)) {
+            if (isLastRow && border.has(Border.BORDER_OUTER_BOTTOM)) {
                 tableSB.append(drawSeparationLine(widthCacheArray)).append(System.lineSeparator());
             }
-
         }
-
 
         return tableSB.toString();
     }
-
 
     private String drawRow(int[] widthCacheArray, int rowIndex) {
 
@@ -115,22 +105,18 @@ public class TTable implements TComponent {
 
                 for (int colIndex = 0; colIndex < getColumnCount(); colIndex++) {
 
-
                     final int width = widthCacheArray[colIndex];
                     final boolean isFirstColOfRow = colIndex == 0;
                     final boolean isLastColOfRow = colIndex == widthCacheArray.length - 1;
 
                     final String borderChar;
-                    if (isFirstColOfRow
-                            && border.has(Border.BORDER_OUTER_LEFT)) {
+                    if (isFirstColOfRow && border.has(Border.BORDER_OUTER_LEFT)) {
                         borderChar = "|";
-                    } else if (!isFirstColOfRow
-                            && border.has(Border.BORDER_INNER_V)) {
+                    } else if (!isFirstColOfRow && border.has(Border.BORDER_INNER_V)) {
                         borderChar = "|";
                     } else {
                         borderChar = EMPTY_STRING;
                     }
-
 
                     if (null == scannerArray[colIndex]) {
                         scannerArray[colIndex] = new Scanner(
@@ -159,7 +145,6 @@ public class TTable implements TComponent {
                         }
                         segmentSB.append(System.lineSeparator());
                     }
-
                 }
 
                 if (hasNextLine) {
@@ -176,13 +161,10 @@ public class TTable implements TComponent {
                 }
             }
         }
-
     }
 
     private String getData(int rowIndex, ColumnDefine columnDefine) {
-        return columnDefine.getRowCount() <= rowIndex
-                ? EMPTY_STRING
-                : columnDefine.rows.get(rowIndex);
+        return columnDefine.getRowCount() <= rowIndex ? EMPTY_STRING : columnDefine.rows.get(rowIndex);
     }
 
     private String getDataFormat(ColumnDefine columnDefine, int width, String data) {
@@ -245,23 +227,19 @@ public class TTable implements TComponent {
             final boolean isFirstCol = colIndex == 0;
             final boolean isLastCol = colIndex == lastCol;
 
-            if (isFirstCol
-                    && border.has(Border.BORDER_OUTER_LEFT)) {
+            if (isFirstCol && border.has(Border.BORDER_OUTER_LEFT)) {
                 separationLineSB.append('+');
             }
 
-            if (!isFirstCol
-                    && border.has(Border.BORDER_INNER_V)) {
+            if (!isFirstCol && border.has(Border.BORDER_INNER_V)) {
                 separationLineSB.append('+');
             }
 
             separationLineSB.append(repeat("-", width + 2 * padding));
 
-            if (isLastCol
-                    && border.has(Border.BORDER_OUTER_RIGHT)) {
+            if (isLastCol && border.has(Border.BORDER_OUTER_RIGHT)) {
                 separationLineSB.append('+');
             }
-
         }
         return separationLineSB.toString();
     }
@@ -274,8 +252,7 @@ public class TTable implements TComponent {
         if (null != columnDataArray) {
             for (int index = 0; index < columnDefineArray.length; index++) {
                 final ColumnDefine columnDefine = columnDefineArray[index];
-                if (index < columnDataArray.length
-                        && null != columnDataArray[index]) {
+                if (index < columnDataArray.length && null != columnDataArray[index]) {
                     columnDefine.rows.add(replaceTab(columnDataArray[index].toString()));
                 } else {
                     columnDefine.rows.add(EMPTY_STRING);
@@ -285,7 +262,6 @@ public class TTable implements TComponent {
 
         return this;
     }
-
 
     /**
      * alignment
@@ -376,7 +352,6 @@ public class TTable implements TComponent {
         public int getRowCount() {
             return rows.size();
         }
-
     }
 
     /**
@@ -397,7 +372,6 @@ public class TTable implements TComponent {
     public int getColumnCount() {
         return columnDefineArray.length;
     }
-
 
     /**
      * replace tab to four spaces
@@ -476,7 +450,8 @@ public class TTable implements TComponent {
         /**
          * outer border
          */
-        public static final int BORDER_OUTER = BORDER_OUTER_TOP | BORDER_OUTER_BOTTOM | BORDER_OUTER_LEFT | BORDER_OUTER_RIGHT;
+        public static final int BORDER_OUTER =
+                BORDER_OUTER_TOP | BORDER_OUTER_BOTTOM | BORDER_OUTER_LEFT | BORDER_OUTER_RIGHT;
 
         /**
          * inner border
@@ -533,9 +508,7 @@ public class TTable implements TComponent {
         public Border remove(int border) {
             return set(get() ^ border);
         }
-
     }
-
 
     public static String wrap(String string, int width) {
         final StringBuilder sb = new StringBuilder();
@@ -558,9 +531,7 @@ public class TTable implements TComponent {
             }
 
             sb.append(c);
-
         }
         return sb.toString();
     }
-
 }

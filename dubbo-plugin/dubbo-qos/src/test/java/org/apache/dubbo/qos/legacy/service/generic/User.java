@@ -27,8 +27,7 @@ public class User implements Serializable {
 
     private String name;
 
-    public User() {
-    }
+    public User() {}
 
     public User(String name) {
         this.name = name;
@@ -61,5 +60,4 @@ public class User implements Serializable {
         }
         return false;
     }
-
 }

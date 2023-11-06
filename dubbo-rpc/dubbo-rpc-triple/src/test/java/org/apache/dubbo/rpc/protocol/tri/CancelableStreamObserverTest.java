@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.rpc.CancellationContext;
@@ -28,19 +27,13 @@ class CancelableStreamObserverTest {
     void setCancellationContext() {
         CancelableStreamObserver<Object> observer = new CancelableStreamObserver<Object>() {
             @Override
-            public void onNext(Object data) {
-
-            }
+            public void onNext(Object data) {}
 
             @Override
-            public void onError(Throwable throwable) {
-
-            }
+            public void onError(Throwable throwable) {}
 
             @Override
-            public void onCompleted() {
-
-            }
+            public void onCompleted() {}
         };
         CancellationContext cancellationContext = new CancellationContext();
         observer.setCancellationContext(cancellationContext);
@@ -49,6 +42,5 @@ class CancelableStreamObserverTest {
     }
 
     @Test
-    void cancel() {
-    }
+    void cancel() {}
 }

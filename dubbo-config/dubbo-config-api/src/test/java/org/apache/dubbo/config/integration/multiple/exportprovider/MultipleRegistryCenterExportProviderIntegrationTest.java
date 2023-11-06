@@ -35,6 +35,8 @@ import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 
+import java.io.IOException;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,14 +44,13 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-
 /**
  * The testcases are only for checking the core process of exporting provider.
  */
 class MultipleRegistryCenterExportProviderIntegrationTest implements IntegrationTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(MultipleRegistryCenterExportProviderIntegrationTest.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(MultipleRegistryCenterExportProviderIntegrationTest.class);
 
     /**
      * Define the provider application name.
@@ -107,11 +108,11 @@ class MultipleRegistryCenterExportProviderIntegrationTest implements Integration
 
         // initailize bootstrap
         DubboBootstrap.getInstance()
-            .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
-            .protocol(new ProtocolConfig(PROTOCOL_NAME, PROTOCOL_PORT))
-            .service(serviceConfig)
-            .registry(new RegistryConfig(ZookeeperRegistryCenterConfig.getConnectionAddress1()))
-            .registry(new RegistryConfig(ZookeeperRegistryCenterConfig.getConnectionAddress2()));
+                .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
+                .protocol(new ProtocolConfig(PROTOCOL_NAME, PROTOCOL_PORT))
+                .service(serviceConfig)
+                .registry(new RegistryConfig(ZookeeperRegistryCenterConfig.getConnectionAddress1()))
+                .registry(new RegistryConfig(ZookeeperRegistryCenterConfig.getConnectionAddress2()));
     }
 
     /**
@@ -124,18 +125,15 @@ class MultipleRegistryCenterExportProviderIntegrationTest implements Integration
      * </ul>
      */
     private void beforeExport() {
-        registryProtocolListener = (MultipleRegistryCenterExportProviderRegistryProtocolListener) ExtensionLoader
-            .getExtensionLoader(RegistryProtocolListener.class)
-            .getExtension(SPI_NAME);
-        exporterListener = (MultipleRegistryCenterExportProviderExporterListener) ExtensionLoader
-            .getExtensionLoader(ExporterListener.class)
-            .getExtension(SPI_NAME);
-        filter = (MultipleRegistryCenterExportProviderFilter) ExtensionLoader
-            .getExtensionLoader(Filter.class)
-            .getExtension(SPI_NAME);
-        serviceListener = (MultipleRegistryCenterExportProviderServiceListener) ExtensionLoader
-            .getExtensionLoader(ServiceListener.class)
-            .getExtension(SPI_NAME);
+        registryProtocolListener = (MultipleRegistryCenterExportProviderRegistryProtocolListener)
+                ExtensionLoader.getExtensionLoader(RegistryProtocolListener.class)
+                        .getExtension(SPI_NAME);
+        exporterListener = (MultipleRegistryCenterExportProviderExporterListener)
+                ExtensionLoader.getExtensionLoader(ExporterListener.class).getExtension(SPI_NAME);
+        filter = (MultipleRegistryCenterExportProviderFilter)
+                ExtensionLoader.getExtensionLoader(Filter.class).getExtension(SPI_NAME);
+        serviceListener = (MultipleRegistryCenterExportProviderServiceListener)
+                ExtensionLoader.getExtensionLoader(ServiceListener.class).getExtension(SPI_NAME);
         // ---------------checkpoints--------------- //
         // ServiceConfig isn't exported
         Assertions.assertFalse(serviceConfig.isExported());
@@ -180,8 +178,9 @@ class MultipleRegistryCenterExportProviderIntegrationTest implements Integration
         // The exported service is only one
         Assertions.assertEquals(serviceListener.getExportedServices().size(), 1);
         // The exported service is MultipleRegistryCenterExportProviderService
-        Assertions.assertEquals(serviceListener.getExportedServices().get(0).getInterfaceClass(),
-            MultipleRegistryCenterExportProviderService.class);
+        Assertions.assertEquals(
+                serviceListener.getExportedServices().get(0).getInterfaceClass(),
+                MultipleRegistryCenterExportProviderService.class);
         // The MultipleRegistryCenterExportProviderService is exported
         Assertions.assertTrue(serviceListener.getExportedServices().get(0).isExported());
         // The exported exporter are three
@@ -197,7 +196,8 @@ class MultipleRegistryCenterExportProviderIntegrationTest implements Integration
         // The best way to verify this issue is to check if the exported service (or provider)
         // has been registered in the path of /dubbo/mapping/****
         // FixME We should check if the exported service (or provider) has been registered in multiple registry centers.
-        //  However, the registered exporter are override in RegistryProtocol#export, so there is only the first registry center
+        //  However, the registered exporter are override in RegistryProtocol#export, so there is only the first
+        // registry center
         //  that can register the mapping relationship. This is really a problem that needs to be fix.
         //  Now, we are discussing the solution for this issue.
         //  For this testcase, we still check the only exported service (or provider).
@@ -206,13 +206,15 @@ class MultipleRegistryCenterExportProviderIntegrationTest implements Integration
         // registryKey: the registryKey is the default cluster, CommonConstants.DEFAULT_KEY
         // key: The exported interface's name
         // group: the group is "mapping", ServiceNameMapping.DEFAULT_MAPPING_GROUP
-        ConfigItem configItem = ApplicationModel.defaultModel().getBeanFactory().getBean(MetadataReportInstance.class).getMetadataReport(CommonConstants.DEFAULT_KEY)
-            .getConfigItem(serviceConfig.getInterface()
-                , ServiceNameMapping.DEFAULT_MAPPING_GROUP);
+        ConfigItem configItem = ApplicationModel.defaultModel()
+                .getBeanFactory()
+                .getBean(MetadataReportInstance.class)
+                .getMetadataReport(CommonConstants.DEFAULT_KEY)
+                .getConfigItem(serviceConfig.getInterface(), ServiceNameMapping.DEFAULT_MAPPING_GROUP);
         // Check if the exported service (provider) is registered
         Assertions.assertNotNull(configItem);
         // Check if registered service (provider)'s name is right
-        Assertions.assertEquals(PROVIDER_APPLICATION_NAME,configItem.getContent());
+        Assertions.assertEquals(PROVIDER_APPLICATION_NAME, configItem.getContent());
         // Check if registered service (provider)'s version exists
         Assertions.assertNotNull(configItem.getTicket());
     }

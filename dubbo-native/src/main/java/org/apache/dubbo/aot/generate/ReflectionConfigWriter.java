@@ -55,7 +55,10 @@ public class ReflectionConfigWriter {
     }
 
     private void handleFields(Map<String, Object> attributes, Set<FieldDescriber> fieldDescribers) {
-        addIfNotEmpty(attributes, "fields", fieldDescribers.stream().map(this::toAttributes).collect(Collectors.toList()));
+        addIfNotEmpty(
+                attributes,
+                "fields",
+                fieldDescribers.stream().map(this::toAttributes).collect(Collectors.toList()));
     }
 
     private Map<String, Object> toAttributes(FieldDescriber describer) {
@@ -65,12 +68,20 @@ public class ReflectionConfigWriter {
     }
 
     private void handleExecutables(Map<String, Object> attributes, Set<ExecutableDescriber> executableDescribers) {
-        addIfNotEmpty(attributes, "methods", executableDescribers.stream()
-            .filter(h -> h.getMode().equals(ExecutableMode.INVOKE))
-            .map(this::toAttributes).collect(Collectors.toList()));
-        addIfNotEmpty(attributes, "queriedMethods", executableDescribers.stream()
-            .filter(h -> h.getMode().equals(ExecutableMode.INTROSPECT))
-            .map(this::toAttributes).collect(Collectors.toList()));
+        addIfNotEmpty(
+                attributes,
+                "methods",
+                executableDescribers.stream()
+                        .filter(h -> h.getMode().equals(ExecutableMode.INVOKE))
+                        .map(this::toAttributes)
+                        .collect(Collectors.toList()));
+        addIfNotEmpty(
+                attributes,
+                "queriedMethods",
+                executableDescribers.stream()
+                        .filter(h -> h.getMode().equals(ExecutableMode.INTROSPECT))
+                        .map(this::toAttributes)
+                        .collect(Collectors.toList()));
     }
 
     private Map<String, Object> toAttributes(ExecutableDescriber describer) {
@@ -82,48 +93,47 @@ public class ReflectionConfigWriter {
 
     private void handleCategories(Map<String, Object> attributes, Set<MemberCategory> categories) {
         categories.forEach(category -> {
-                switch (category) {
-                    case PUBLIC_FIELDS:
-                        attributes.put("allPublicFields", true);
-                        break;
-                    case DECLARED_FIELDS:
-                        attributes.put("allDeclaredFields", true);
-                        break;
-                    case INTROSPECT_PUBLIC_CONSTRUCTORS:
-                        attributes.put("queryAllPublicConstructors", true);
-                        break;
-                    case INTROSPECT_DECLARED_CONSTRUCTORS:
-                        attributes.put("queryAllDeclaredConstructors", true);
-                        break;
-                    case INVOKE_PUBLIC_CONSTRUCTORS:
-                        attributes.put("allPublicConstructors", true);
-                        break;
-                    case INVOKE_DECLARED_CONSTRUCTORS:
-                        attributes.put("allDeclaredConstructors", true);
-                        break;
-                    case INTROSPECT_PUBLIC_METHODS:
-                        attributes.put("queryAllPublicMethods", true);
-                        break;
-                    case INTROSPECT_DECLARED_METHODS:
-                        attributes.put("queryAllDeclaredMethods", true);
-                        break;
-                    case INVOKE_PUBLIC_METHODS:
-                        attributes.put("allPublicMethods", true);
-                        break;
-                    case INVOKE_DECLARED_METHODS:
-                        attributes.put("allDeclaredMethods", true);
-                        break;
-                    case PUBLIC_CLASSES:
-                        attributes.put("allPublicClasses", true);
-                        break;
-                    case DECLARED_CLASSES:
-                        attributes.put("allDeclaredClasses", true);
-                        break;
-                    default:
-                        break;
-                }
+            switch (category) {
+                case PUBLIC_FIELDS:
+                    attributes.put("allPublicFields", true);
+                    break;
+                case DECLARED_FIELDS:
+                    attributes.put("allDeclaredFields", true);
+                    break;
+                case INTROSPECT_PUBLIC_CONSTRUCTORS:
+                    attributes.put("queryAllPublicConstructors", true);
+                    break;
+                case INTROSPECT_DECLARED_CONSTRUCTORS:
+                    attributes.put("queryAllDeclaredConstructors", true);
+                    break;
+                case INVOKE_PUBLIC_CONSTRUCTORS:
+                    attributes.put("allPublicConstructors", true);
+                    break;
+                case INVOKE_DECLARED_CONSTRUCTORS:
+                    attributes.put("allDeclaredConstructors", true);
+                    break;
+                case INTROSPECT_PUBLIC_METHODS:
+                    attributes.put("queryAllPublicMethods", true);
+                    break;
+                case INTROSPECT_DECLARED_METHODS:
+                    attributes.put("queryAllDeclaredMethods", true);
+                    break;
+                case INVOKE_PUBLIC_METHODS:
+                    attributes.put("allPublicMethods", true);
+                    break;
+                case INVOKE_DECLARED_METHODS:
+                    attributes.put("allDeclaredMethods", true);
+                    break;
+                case PUBLIC_CLASSES:
+                    attributes.put("allPublicClasses", true);
+                    break;
+                case DECLARED_CLASSES:
+                    attributes.put("allDeclaredClasses", true);
+                    break;
+                default:
+                    break;
             }
-        );
+        });
     }
 
     private void addIfNotEmpty(Map<String, Object> attributes, String name, Object value) {

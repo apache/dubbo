@@ -29,6 +29,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.Elements;
+
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -61,18 +62,21 @@ import static org.apache.dubbo.metadata.annotation.processing.util.ServiceAnnota
  */
 public abstract class AbstractServiceRestMetadataResolver implements ServiceRestMetadataResolver {
 
-    private final static ThreadLocal<Map<String, Object>> threadLocalCache = withInitial(HashMap::new);
+    private static final ThreadLocal<Map<String, Object>> threadLocalCache = withInitial(HashMap::new);
 
-    private final static Map<String, List<AnnotatedMethodParameterProcessor>> parameterProcessorsMap = loadAnnotatedMethodParameterProcessors();
+    private static final Map<String, List<AnnotatedMethodParameterProcessor>> parameterProcessorsMap =
+            loadAnnotatedMethodParameterProcessors();
 
     private final String processorName = getClass().getSimpleName();
 
     @Override
-    public final ServiceRestMetadata resolve(ProcessingEnvironment processingEnv,
-                                             TypeElement serviceType,
-                                             Set<? extends TypeElement> annotations) {
+    public final ServiceRestMetadata resolve(
+            ProcessingEnvironment processingEnv, TypeElement serviceType, Set<? extends TypeElement> annotations) {
 
-        info("%s is processing the service type[%s] with annotations[%s]", processorName, serviceType,
+        info(
+                "%s is processing the service type[%s] with annotations[%s]",
+                processorName,
+                serviceType,
                 annotations.stream().map(t -> "@" + t.toString()).collect(Collectors.joining(",")));
 
         ServiceRestMetadata serviceRestMetadata = new ServiceRestMetadata();
@@ -88,14 +92,16 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
 
             TypeElement serviceInterfaceType = elements.getTypeElement(serviceInterfaceName);
 
-            List<? extends ExecutableElement> serviceMethods = new LinkedList<>(getPublicNonStaticMethods(serviceInterfaceType, Object.class));
+            List<? extends ExecutableElement> serviceMethods =
+                    new LinkedList<>(getPublicNonStaticMethods(serviceInterfaceType, Object.class));
 
             // Sorts
             sort(serviceMethods, ExecutableElementComparator.INSTANCE);
 
             serviceMethods.forEach(serviceMethod -> {
-                resolveRestMethodMetadata(processingEnv, serviceType, serviceInterfaceType, serviceMethod, serviceRestMetadata)
-                    .ifPresent(serviceRestMetadata.getMeta()::add);
+                resolveRestMethodMetadata(
+                                processingEnv, serviceType, serviceInterfaceType, serviceMethod, serviceRestMetadata)
+                        .ifPresent(serviceRestMetadata.getMeta()::add);
             });
 
         } finally {
@@ -107,25 +113,29 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         return serviceRestMetadata;
     }
 
-    protected Optional<RestMethodMetadata> resolveRestMethodMetadata(ProcessingEnvironment processingEnv,
-                                                                     TypeElement serviceType,
-                                                                     TypeElement serviceInterfaceType,
-                                                                     ExecutableElement serviceMethod,
-                                                                     ServiceRestMetadata serviceRestMetadata) {
+    protected Optional<RestMethodMetadata> resolveRestMethodMetadata(
+            ProcessingEnvironment processingEnv,
+            TypeElement serviceType,
+            TypeElement serviceInterfaceType,
+            ExecutableElement serviceMethod,
+            ServiceRestMetadata serviceRestMetadata) {
 
-        ExecutableElement restCapableMethod = findRestCapableMethod(processingEnv, serviceType, serviceInterfaceType, serviceMethod);
+        ExecutableElement restCapableMethod =
+                findRestCapableMethod(processingEnv, serviceType, serviceInterfaceType, serviceMethod);
 
         if (restCapableMethod == null) { // if can't be found
             return empty();
         }
 
-        String requestPath = resolveRequestPath(processingEnv, serviceType, restCapableMethod); // requestPath is required
+        String requestPath =
+                resolveRequestPath(processingEnv, serviceType, restCapableMethod); // requestPath is required
 
         if (requestPath == null) {
             return empty();
         }
 
-        String requestMethod = resolveRequestMethod(processingEnv, serviceType, restCapableMethod); // requestMethod is required
+        String requestMethod =
+                resolveRequestMethod(processingEnv, serviceType, restCapableMethod); // requestMethod is required
 
         if (requestMethod == null) {
             return empty();
@@ -172,10 +182,11 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
      * @param serviceMethod
      * @return <code>null</code> if can't be found
      */
-    private ExecutableElement findRestCapableMethod(ProcessingEnvironment processingEnv,
-                                                    TypeElement serviceType,
-                                                    TypeElement serviceInterfaceType,
-                                                    ExecutableElement serviceMethod) {
+    private ExecutableElement findRestCapableMethod(
+            ProcessingEnvironment processingEnv,
+            TypeElement serviceType,
+            TypeElement serviceInterfaceType,
+            ExecutableElement serviceMethod) {
         // try to judge the override first
         ExecutableElement overrideMethod = getOverrideMethod(processingEnv, serviceType, serviceMethod);
         if (supports(processingEnv, serviceType, serviceInterfaceType, overrideMethod)) {
@@ -192,11 +203,11 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
      * @param method        the method may be declared on the interface or class
      * @return if supports, return <code>true</code>, or <code>false</code>
      */
-    protected abstract boolean supports(ProcessingEnvironment processingEnv,
-                                        TypeElement serviceType,
-                                        TypeElement serviceInterfaceType,
-                                        ExecutableElement method);
-
+    protected abstract boolean supports(
+            ProcessingEnvironment processingEnv,
+            TypeElement serviceType,
+            TypeElement serviceInterfaceType,
+            ExecutableElement method);
 
     /**
      * Post-Process for {@link RestMethodMetadata}, sub-type could override this method for further works
@@ -206,23 +217,25 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
      * @param method        The public method of <code>serviceType</code>
      * @param metadata      {@link RestMethodMetadata} maybe updated
      */
-    protected void postProcessRestMethodMetadata(ProcessingEnvironment processingEnv, TypeElement serviceType,
-                                                 ExecutableElement method, RestMethodMetadata metadata) {
-    }
+    protected void postProcessRestMethodMetadata(
+            ProcessingEnvironment processingEnv,
+            TypeElement serviceType,
+            ExecutableElement method,
+            RestMethodMetadata metadata) {}
 
-    protected abstract String resolveRequestPath(ProcessingEnvironment processingEnv, TypeElement serviceType,
-                                                 ExecutableElement method);
+    protected abstract String resolveRequestPath(
+            ProcessingEnvironment processingEnv, TypeElement serviceType, ExecutableElement method);
 
-    protected abstract String resolveRequestMethod(ProcessingEnvironment processingEnv, TypeElement serviceType,
-                                                   ExecutableElement method);
+    protected abstract String resolveRequestMethod(
+            ProcessingEnvironment processingEnv, TypeElement serviceType, ExecutableElement method);
 
-    protected MethodDefinition resolveMethodDefinition(ProcessingEnvironment processingEnv, TypeElement serviceType,
-                                                       ExecutableElement method) {
+    protected MethodDefinition resolveMethodDefinition(
+            ProcessingEnvironment processingEnv, TypeElement serviceType, ExecutableElement method) {
         return build(processingEnv, method, new HashMap<>());
     }
 
-    protected void processAnnotatedMethodParameters(ExecutableElement method, TypeElement type,
-                                                    RestMethodMetadata metadata) {
+    protected void processAnnotatedMethodParameters(
+            ExecutableElement method, TypeElement type, RestMethodMetadata metadata) {
         List<? extends VariableElement> methodParameters = method.getParameters();
         int size = methodParameters.size();
         for (int i = 0; i < size; i++) {
@@ -233,24 +246,32 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         }
     }
 
-    protected void processAnnotatedMethodParameter(VariableElement parameter, int parameterIndex,
-                                                   ExecutableElement method, TypeElement serviceType,
-                                                   RestMethodMetadata metadata) {
+    protected void processAnnotatedMethodParameter(
+            VariableElement parameter,
+            int parameterIndex,
+            ExecutableElement method,
+            TypeElement serviceType,
+            RestMethodMetadata metadata) {
 
         parameter.getAnnotationMirrors().forEach(annotation -> {
             String annotationType = annotation.getAnnotationType().toString();
-            parameterProcessorsMap.getOrDefault(annotationType, emptyList())
-                .forEach(parameterProcessor -> {
-                    parameterProcessor.process(annotation, parameter, parameterIndex, method, metadata);
-                });
+            parameterProcessorsMap.getOrDefault(annotationType, emptyList()).forEach(parameterProcessor -> {
+                parameterProcessor.process(annotation, parameter, parameterIndex, method, metadata);
+            });
         });
     }
 
-    protected abstract void processProduces(ProcessingEnvironment processingEnv, TypeElement serviceType,
-                                            ExecutableElement method, Set<String> produces);
+    protected abstract void processProduces(
+            ProcessingEnvironment processingEnv,
+            TypeElement serviceType,
+            ExecutableElement method,
+            Set<String> produces);
 
-    protected abstract void processConsumes(ProcessingEnvironment processingEnv, TypeElement serviceType,
-                                            ExecutableElement method, Set<String> consumes);
+    protected abstract void processConsumes(
+            ProcessingEnvironment processingEnv,
+            TypeElement serviceType,
+            ExecutableElement method,
+            Set<String> consumes);
 
     protected static final void put(String name, Object value) {
         Map<String, Object> cache = getCache();
@@ -269,14 +290,15 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
     private static Map<String, List<AnnotatedMethodParameterProcessor>> loadAnnotatedMethodParameterProcessors() {
         Map<String, List<AnnotatedMethodParameterProcessor>> parameterProcessorsMap = new LinkedHashMap<>();
 
-//        load(AnnotatedMethodParameterProcessor.class, AnnotatedMethodParameterProcessor.class.getClassLoader())
+        //        load(AnnotatedMethodParameterProcessor.class,
+        // AnnotatedMethodParameterProcessor.class.getClassLoader())
 
         ApplicationModel.defaultModel()
                 .getExtensionLoader(AnnotatedMethodParameterProcessor.class)
                 .getSupportedExtensionInstances()
                 .forEach(processor -> {
-                    List<AnnotatedMethodParameterProcessor> processors =
-                            parameterProcessorsMap.computeIfAbsent(processor.getAnnotationType(), k -> new LinkedList<>());
+                    List<AnnotatedMethodParameterProcessor> processors = parameterProcessorsMap.computeIfAbsent(
+                            processor.getAnnotationType(), k -> new LinkedList<>());
                     processors.add(processor);
                 });
 

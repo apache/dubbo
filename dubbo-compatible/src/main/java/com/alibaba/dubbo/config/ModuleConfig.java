@@ -14,14 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.config;
 
 @Deprecated
 public class ModuleConfig extends org.apache.dubbo.config.ModuleConfig {
 
-    public ModuleConfig() {
-    }
+    public ModuleConfig() {}
 
     public ModuleConfig(String name) {
         super(name);

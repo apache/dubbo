@@ -23,6 +23,4 @@ import org.apache.dubbo.common.extension.SPI;
  * Rest  response filter will be invoked when  response is written to channel
  */
 @SPI(scope = ExtensionScope.FRAMEWORK)
-public interface RestResponseFilter extends RestFilter {
-
-}
+public interface RestResponseFilter extends RestFilter {}

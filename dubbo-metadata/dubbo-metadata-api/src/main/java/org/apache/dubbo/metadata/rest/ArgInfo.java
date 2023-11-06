@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metadata.rest;
 
-
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 
@@ -73,8 +72,7 @@ public class ArgInfo {
         this.actualType = parameter.getParameterizedType();
     }
 
-    public ArgInfo() {
-    }
+    public ArgInfo() {}
 
     public int getIndex() {
         return index;
@@ -114,7 +112,6 @@ public class ArgInfo {
     public void setParamType(Class paramType) {
         this.paramType = paramType;
     }
-
 
     public int getUrlSplitIndex() {
         return urlSplitIndex;
@@ -165,15 +162,14 @@ public class ArgInfo {
 
     @Override
     public String toString() {
-        return "ArgInfo{" +
-            "index=" + index +
-            ", annotationNameAttribute='" + annotationNameAttribute + '\'' +
-            ", paramAnnotationType=" + paramAnnotationType +
-            ", paramType=" + paramType +
-            ", paramName='" + paramName + '\'' +
-            ", urlSplitIndex=" + urlSplitIndex +
-            ", defaultValue=" + defaultValue +
-            ", formContentType=" + formContentType +
-            '}';
+        return "ArgInfo{" + "index="
+                + index + ", annotationNameAttribute='"
+                + annotationNameAttribute + '\'' + ", paramAnnotationType="
+                + paramAnnotationType + ", paramType="
+                + paramType + ", paramName='"
+                + paramName + '\'' + ", urlSplitIndex="
+                + urlSplitIndex + ", defaultValue="
+                + defaultValue + ", formContentType="
+                + formContentType + '}';
     }
 }

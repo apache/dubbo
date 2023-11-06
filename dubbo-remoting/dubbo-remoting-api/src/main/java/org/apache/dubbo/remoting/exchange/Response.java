@@ -95,8 +95,7 @@ public class Response {
 
     private Object mResult;
 
-    public Response() {
-    }
+    public Response() {}
 
     public Response(long id) {
         mId = id;

@@ -1,11 +1,12 @@
 /*
- * Copyright 2002-2023 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.aot.generate;
-
 
 import java.io.IOException;
 import java.io.Writer;
@@ -23,7 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-
 
 /**
  * Very basic json writer for the purposes of translating runtime hints to native
@@ -53,7 +51,6 @@ class BasicJsonWriter {
     public BasicJsonWriter(Writer writer) {
         this(writer, "  ");
     }
-
 
     /**
      * Write an object with the specified attributes. Each attribute is
@@ -86,8 +83,12 @@ class BasicJsonWriter {
         if (attributes.isEmpty()) {
             this.writer.print("{ }");
         } else {
-            this.writer.println("{").indented(writeAll(attributes.entrySet().iterator(),
-                entry -> writeAttribute(entry.getKey(), entry.getValue()))).print("}");
+            this.writer
+                    .println("{")
+                    .indented(writeAll(
+                            attributes.entrySet().iterator(),
+                            entry -> writeAttribute(entry.getKey(), entry.getValue())))
+                    .print("}");
         }
         if (newLine) {
             this.writer.println();
@@ -98,8 +99,10 @@ class BasicJsonWriter {
         if (items.isEmpty()) {
             this.writer.print("[ ]");
         } else {
-            this.writer.println("[")
-                .indented(writeAll(items.iterator(), this::writeValue)).print("]");
+            this.writer
+                    .println("[")
+                    .indented(writeAll(items.iterator(), this::writeValue))
+                    .print("]");
         }
         if (newLine) {
             this.writer.println();
@@ -143,7 +146,6 @@ class BasicJsonWriter {
         return "\"" + name + "\"";
     }
 
-
     private static String escape(CharSequence input) {
         StringBuilder builder = new StringBuilder();
         input.chars().forEach(c -> {
@@ -169,7 +171,6 @@ class BasicJsonWriter {
         });
         return builder.toString();
     }
-
 
     static class IndentingWriter extends Writer {
 
@@ -282,7 +283,5 @@ class BasicJsonWriter {
         public void close() throws IOException {
             this.out.close();
         }
-
     }
-
 }

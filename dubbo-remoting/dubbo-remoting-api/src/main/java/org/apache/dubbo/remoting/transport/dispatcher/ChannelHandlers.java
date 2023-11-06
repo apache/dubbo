@@ -26,8 +26,7 @@ public class ChannelHandlers {
 
     private static ChannelHandlers INSTANCE = new ChannelHandlers();
 
-    protected ChannelHandlers() {
-    }
+    protected ChannelHandlers() {}
 
     public static ChannelHandler wrap(ChannelHandler handler, URL url) {
         return ChannelHandlers.getInstance().wrapInternal(handler, url);
@@ -42,7 +41,9 @@ public class ChannelHandlers {
     }
 
     protected ChannelHandler wrapInternal(ChannelHandler handler, URL url) {
-        return new MultiMessageHandler(new HeartbeatHandler(url.getOrDefaultFrameworkModel().getExtensionLoader(Dispatcher.class)
-                .getAdaptiveExtension().dispatch(handler, url)));
+        return new MultiMessageHandler(new HeartbeatHandler(url.getOrDefaultFrameworkModel()
+                .getExtensionLoader(Dispatcher.class)
+                .getAdaptiveExtension()
+                .dispatch(handler, url)));
     }
 }

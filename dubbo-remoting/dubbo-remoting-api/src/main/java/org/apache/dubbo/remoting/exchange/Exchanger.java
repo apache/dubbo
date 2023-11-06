@@ -52,5 +52,4 @@ public interface Exchanger {
      */
     @Adaptive({Constants.EXCHANGER_KEY})
     ExchangeClient connect(URL url, ExchangeHandler handler) throws RemotingException;
-
 }

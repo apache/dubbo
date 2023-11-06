@@ -33,15 +33,16 @@ import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import javax.script.ScriptEngineManager;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import javax.script.ScriptEngineManager;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_CONNECTIVITY_VALIDATION;
 import static org.apache.dubbo.rpc.cluster.Constants.RUNTIME_KEY;
@@ -57,7 +58,8 @@ class FileRouterEngineTest {
     Invocation invocation;
     StaticDirectory<FileRouterEngineTest> dic;
     Result result = new AppResponse();
-    private StateRouterFactory routerFactory = ExtensionLoader.getExtensionLoader(StateRouterFactory.class).getAdaptiveExtension();
+    private StateRouterFactory routerFactory =
+            ExtensionLoader.getExtensionLoader(StateRouterFactory.class).getAdaptiveExtension();
 
     @BeforeAll
     public static void setUpBeforeClass() throws Exception {
@@ -85,8 +87,7 @@ class FileRouterEngineTest {
         initInvokers(url, true, false);
         initDic(url);
 
-        MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(
-                dic, url);
+        MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(dic, url);
         for (int i = 0; i < 100; i++) {
             sinvoker.invoke(invocation);
             Invoker<FileRouterEngineTest> invoker = sinvoker.getSelectedInvoker();
@@ -102,8 +103,7 @@ class FileRouterEngineTest {
         initInvokers(url);
         initDic(url);
 
-        MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(
-                dic, url);
+        MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(dic, url);
         for (int i = 0; i < 100; i++) {
             sinvoker.invoke(invocation);
             Invoker<FileRouterEngineTest> invoker = sinvoker.getSelectedInvoker();
@@ -120,8 +120,7 @@ class FileRouterEngineTest {
             initInvokers(url, true, true);
             initDic(url);
 
-            MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(
-                    dic, url);
+            MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(dic, url);
             for (int i = 0; i < 100; i++) {
                 sinvoker.invoke(invocation);
                 Invoker<FileRouterEngineTest> invoker = sinvoker.getSelectedInvoker();
@@ -132,8 +131,7 @@ class FileRouterEngineTest {
             initInvocation("method2");
             initInvokers(url, true, true);
             initDic(url);
-            MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(
-                    dic, url);
+            MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(dic, url);
             for (int i = 0; i < 100; i++) {
                 sinvoker.invoke(invocation);
                 Invoker<FileRouterEngineTest> invoker = sinvoker.getSelectedInvoker();
@@ -143,7 +141,10 @@ class FileRouterEngineTest {
     }
 
     private URL initUrl(String filename) {
-        filename = getClass().getClassLoader().getResource(getClass().getPackage().getName().replace('.', '/') + "/" + filename).toString();
+        filename = getClass()
+                .getClassLoader()
+                .getResource(getClass().getPackage().getName().replace('.', '/') + "/" + filename)
+                .toString();
         URL url = URL.valueOf(filename);
         url = url.addParameter(RUNTIME_KEY, true);
         return url;
@@ -172,10 +173,13 @@ class FileRouterEngineTest {
 
     private void initDic(URL url) {
         // FIXME: this exposes the design flaw in RouterChain
-        URL dicInitUrl = URL.valueOf("consumer://localhost:20880/org.apache.dubbo.rpc.cluster.router.file.FileRouterEngineTest?application=FileRouterEngineTest");
+        URL dicInitUrl = URL.valueOf(
+                "consumer://localhost:20880/org.apache.dubbo.rpc.cluster.router.file.FileRouterEngineTest?application=FileRouterEngineTest");
         dic = new StaticDirectory<>(dicInitUrl, invokers);
         dic.buildRouterChain();
-        dic.getRouterChain().getCurrentChain().setHeadStateRouter(routerFactory.getRouter(FileRouterEngineTest.class, url));
+        dic.getRouterChain()
+                .getCurrentChain()
+                .setHeadStateRouter(routerFactory.getRouter(FileRouterEngineTest.class, url));
     }
 
     static class MockClusterInvoker<T> extends AbstractClusterInvoker<T> {
@@ -190,8 +194,8 @@ class FileRouterEngineTest {
         }
 
         @Override
-        protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers,
-                                  LoadBalance loadbalance) throws RpcException {
+        protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance)
+                throws RpcException {
             Invoker<T> invoker = select(loadbalance, invocation, invokers, null);
             selectedInvoker = invoker;
             return null;

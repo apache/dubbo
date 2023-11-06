@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.service;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -23,14 +22,14 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.TriRpcStatus;
 
-import io.grpc.health.v1.DubboHealthTriple;
-import io.grpc.health.v1.HealthCheckRequest;
-import io.grpc.health.v1.HealthCheckResponse;
-
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import io.grpc.health.v1.DubboHealthTriple;
+import io.grpc.health.v1.HealthCheckRequest;
+import io.grpc.health.v1.HealthCheckResponse;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_CLOSED_SERVER;
 
@@ -48,22 +47,20 @@ public class TriHealthImpl extends DubboHealthTriple.HealthImplBase {
     // user-defined equals() doesn't confuse our book-keeping of the StreamObservers.  Constructing
     // such Multimap would require extra lines and the end result is not significantly simpler, thus I
     // would rather not have the Guava collections dependency.
-    private final HashMap<String, IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean>> watchers = new HashMap<>();
+    private final HashMap<String, IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean>> watchers =
+            new HashMap<>();
     // Indicates if future status changes should be ignored.
     private boolean terminal;
 
     public TriHealthImpl() {
         // Copy of what Go and C++ do.
-        statusMap.put(HealthStatusManager.SERVICE_NAME_ALL_SERVICES,
-            HealthCheckResponse.ServingStatus.SERVING);
+        statusMap.put(HealthStatusManager.SERVICE_NAME_ALL_SERVICES, HealthCheckResponse.ServingStatus.SERVING);
     }
 
-    private static HealthCheckResponse getResponseForWatch(
-        HealthCheckResponse.ServingStatus recordedStatus) {
+    private static HealthCheckResponse getResponseForWatch(HealthCheckResponse.ServingStatus recordedStatus) {
         return HealthCheckResponse.newBuilder()
-            .setStatus(recordedStatus == null ? HealthCheckResponse.ServingStatus.SERVICE_UNKNOWN
-                : recordedStatus)
-            .build();
+                .setStatus(recordedStatus == null ? HealthCheckResponse.ServingStatus.SERVICE_UNKNOWN : recordedStatus)
+                .build();
     }
 
     @Override
@@ -72,19 +69,18 @@ public class TriHealthImpl extends DubboHealthTriple.HealthImplBase {
         if (status != null) {
             return HealthCheckResponse.newBuilder().setStatus(status).build();
         }
-        throw TriRpcStatus.NOT_FOUND.withDescription("unknown service " + request.getService())
-            .asException();
+        throw TriRpcStatus.NOT_FOUND
+                .withDescription("unknown service " + request.getService())
+                .asException();
     }
 
     @Override
-    public void watch(HealthCheckRequest request,
-                      StreamObserver<HealthCheckResponse> responseObserver) {
+    public void watch(HealthCheckRequest request, StreamObserver<HealthCheckResponse> responseObserver) {
         final String service = request.getService();
         synchronized (watchLock) {
             HealthCheckResponse.ServingStatus status = statusMap.get(service);
             responseObserver.onNext(getResponseForWatch(status));
-            IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean> serviceWatchers = watchers.get(
-                service);
+            IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean> serviceWatchers = watchers.get(service);
             if (serviceWatchers == null) {
                 serviceWatchers = new IdentityHashMap<>();
                 watchers.put(service, serviceWatchers);
@@ -93,8 +89,7 @@ public class TriHealthImpl extends DubboHealthTriple.HealthImplBase {
         }
         RpcContext.getCancellationContext().addListener(context -> {
             synchronized (watchLock) {
-                IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean> serviceWatchers = watchers.get(
-                    service);
+                IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean> serviceWatchers = watchers.get(service);
                 if (serviceWatchers != null) {
                     serviceWatchers.remove(responseObserver);
                     if (serviceWatchers.isEmpty()) {
@@ -150,8 +145,7 @@ public class TriHealthImpl extends DubboHealthTriple.HealthImplBase {
 
     private void notifyWatchers(String service, HealthCheckResponse.ServingStatus status) {
         HealthCheckResponse response = getResponseForWatch(status);
-        IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean> serviceWatchers = watchers.get(
-            service);
+        IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean> serviceWatchers = watchers.get(service);
         if (serviceWatchers != null) {
             for (StreamObserver<HealthCheckResponse> responseObserver : serviceWatchers.keySet()) {
                 responseObserver.onNext(response);

@@ -1,11 +1,12 @@
 /*
- * Copyright 2012-2019 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,46 +26,45 @@ import org.apache.maven.plugins.annotations.Parameter;
  */
 abstract class FilterableDependency {
 
-	/**
-	 * The groupId of the artifact to exclude.
-	 */
-	@Parameter(required = true)
-	private String groupId;
+    /**
+     * The groupId of the artifact to exclude.
+     */
+    @Parameter(required = true)
+    private String groupId;
 
-	/**
-	 * The artifactId of the artifact to exclude.
-	 */
-	@Parameter(required = true)
-	private String artifactId;
+    /**
+     * The artifactId of the artifact to exclude.
+     */
+    @Parameter(required = true)
+    private String artifactId;
 
-	/**
-	 * The classifier of the artifact to exclude.
-	 */
-	@Parameter
-	private String classifier;
+    /**
+     * The classifier of the artifact to exclude.
+     */
+    @Parameter
+    private String classifier;
 
-	String getGroupId() {
-		return this.groupId;
-	}
+    String getGroupId() {
+        return this.groupId;
+    }
 
-	void setGroupId(String groupId) {
-		this.groupId = groupId;
-	}
+    void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
 
-	String getArtifactId() {
-		return this.artifactId;
-	}
+    String getArtifactId() {
+        return this.artifactId;
+    }
 
-	void setArtifactId(String artifactId) {
-		this.artifactId = artifactId;
-	}
+    void setArtifactId(String artifactId) {
+        this.artifactId = artifactId;
+    }
 
-	String getClassifier() {
-		return this.classifier;
-	}
+    String getClassifier() {
+        return this.classifier;
+    }
 
-	void setClassifier(String classifier) {
-		this.classifier = classifier;
-	}
-
+    void setClassifier(String classifier) {
+        this.classifier = classifier;
+    }
 }

@@ -20,13 +20,13 @@ import org.apache.dubbo.rpc.cluster.router.xds.rule.HTTPRouteDestination;
 import org.apache.dubbo.rpc.cluster.router.xds.rule.HttpRequestMatch;
 import org.apache.dubbo.rpc.cluster.router.xds.rule.XdsRouteRule;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -41,7 +41,6 @@ public class RdsRouteRuleManagerTest {
         RdsRouteRuleManager.getRdsListeners().clear();
     }
 
-
     @Test
     public void subscribeRdsTest() {
         RdsRouteRuleManager manager = new RdsRouteRuleManager();
@@ -50,20 +49,15 @@ public class RdsRouteRuleManagerTest {
         for (int i = 0; i < subscribeNum; i++) {
             manager.subscribeRds(domain, new XdsRouteRuleListener() {
                 @Override
-                public void onRuleChange(String appName, List<XdsRouteRule> xdsRouteRules) {
-
-                }
+                public void onRuleChange(String appName, List<XdsRouteRule> xdsRouteRules) {}
 
                 @Override
-                public void clearRule(String appName) {
-
-                }
+                public void clearRule(String appName) {}
             });
         }
         assertNotNull(RdsRouteRuleManager.getRdsListeners().get(domain));
         assertEquals(RdsRouteRuleManager.getRuleListeners().get(domain).size(), subscribeNum);
     }
-
 
     @Test
     public void unsubscribeRdsTest() {
@@ -71,14 +65,10 @@ public class RdsRouteRuleManagerTest {
         String domain = "testApp";
         XdsRouteRuleListener listener = new XdsRouteRuleListener() {
             @Override
-            public void onRuleChange(String appName, List<XdsRouteRule> xdsRouteRules) {
-
-            }
+            public void onRuleChange(String appName, List<XdsRouteRule> xdsRouteRules) {}
 
             @Override
-            public void clearRule(String appName) {
-
-            }
+            public void clearRule(String appName) {}
         };
         manager.subscribeRds(domain, listener);
         assertNotNull(RdsRouteRuleManager.getRdsListeners().get(domain));
@@ -89,15 +79,13 @@ public class RdsRouteRuleManagerTest {
         assertNull(RdsRouteRuleManager.getRuleListeners().get(domain));
     }
 
-
     @Test
     public void notifyRuleChangeTest() {
 
         Map<String, List<XdsRouteRule>> cacheData = new HashMap<>();
         String domain = "testApp";
         List<XdsRouteRule> xdsRouteRules = new ArrayList<>();
-        XdsRouteRule rule = new XdsRouteRule(new HttpRequestMatch(null, null),
-            new HTTPRouteDestination());
+        XdsRouteRule rule = new XdsRouteRule(new HttpRequestMatch(null, null), new HTTPRouteDestination());
         xdsRouteRules.add(rule);
 
         XdsRouteRuleListener listener = new XdsRouteRuleListener() {
@@ -135,5 +123,4 @@ public class RdsRouteRuleManagerTest {
         manager.notifyRuleChange(domain, new ArrayList<>());
         assertNull(cacheData.get(domain));
     }
-
 }

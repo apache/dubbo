@@ -31,12 +31,11 @@ public class CollectionTypeModel {
 
     private Collection<String> strings; // The composite element is simple type
 
-    private List<Color> colors;     // The composite element is Enum type
+    private List<Color> colors; // The composite element is Enum type
 
-    private Queue<PrimitiveTypeModel> primitiveTypeModels;  // The composite element is POJO type
+    private Queue<PrimitiveTypeModel> primitiveTypeModels; // The composite element is POJO type
 
-    private Deque<Model> models;  // The composite element is hierarchical POJO type
+    private Deque<Model> models; // The composite element is hierarchical POJO type
 
     private Set<Model[]> modelArrays; // The composite element is hierarchical POJO type
-
 }

@@ -14,22 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.reactive;
 
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.reactive.handler.ManyToOneMethodHandler;
-import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.mockito.ArgumentMatchers.any;
 
 /**
  * Unit test for ManyToOneMethodHandler
@@ -43,8 +38,8 @@ public final class ManyToOneMethodHandlerTest {
     void init() throws ExecutionException, InterruptedException {
         creator = new CreateObserverAdapter();
         ManyToOneMethodHandler<String, String> handler = new ManyToOneMethodHandler<>(requestFlux ->
-            requestFlux.map(Integer::valueOf).reduce(Integer::sum).map(String::valueOf));
-        CompletableFuture<StreamObserver<String>> future = handler.invoke(new Object[]{creator.getResponseObserver()});
+                requestFlux.map(Integer::valueOf).reduce(Integer::sum).map(String::valueOf));
+        CompletableFuture<StreamObserver<String>> future = handler.invoke(new Object[] {creator.getResponseObserver()});
         requestObserver = future.get();
     }
 

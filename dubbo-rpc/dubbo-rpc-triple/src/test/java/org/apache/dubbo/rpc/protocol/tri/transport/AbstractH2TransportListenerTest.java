@@ -14,8 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.transport;
+
+import java.util.Map;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpMethod;
@@ -23,8 +24,6 @@ import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2Headers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.Map;
 
 import static io.netty.handler.codec.http.HttpScheme.HTTPS;
 
@@ -34,30 +33,21 @@ class AbstractH2TransportListenerTest {
     void headersToMap() {
         AbstractH2TransportListener listener = new AbstractH2TransportListener() {
             @Override
-            public void onHeader(Http2Headers headers, boolean endStream) {
-
-            }
+            public void onHeader(Http2Headers headers, boolean endStream) {}
 
             @Override
-            public void onData(ByteBuf data, boolean endStream) {
-
-            }
+            public void onData(ByteBuf data, boolean endStream) {}
 
             @Override
-            public void cancelByRemote(long errorCode) {
-
-            }
+            public void cancelByRemote(long errorCode) {}
         };
         DefaultHttp2Headers headers = new DefaultHttp2Headers();
-        headers.scheme(HTTPS.name())
-            .path("/foo.bar")
-            .method(HttpMethod.POST.asciiName());
+        headers.scheme(HTTPS.name()).path("/foo.bar").method(HttpMethod.POST.asciiName());
         headers.set("foo", "bar");
         final Map<String, Object> map = listener.headersToMap(headers, () -> null);
         Assertions.assertEquals(4, map.size());
     }
 
     @Test
-    void filterReservedHeaders() {
-    }
+    void filterReservedHeaders() {}
 }

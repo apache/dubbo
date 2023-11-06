@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.auth.exception;
 
-
 import org.apache.dubbo.auth.model.AccessKeyPair;
 
 /**
@@ -25,12 +24,9 @@ import org.apache.dubbo.auth.model.AccessKeyPair;
 public class AccessKeyNotFoundException extends Exception {
     private static final long serialVersionUID = 7106108446396804404L;
 
-    public AccessKeyNotFoundException() {
-    }
+    public AccessKeyNotFoundException() {}
 
     public AccessKeyNotFoundException(String message) {
         super(message);
     }
-
-
 }

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.report;
 
 import org.apache.dubbo.common.URL;
@@ -32,6 +31,13 @@ import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import io.micrometer.core.instrument.FunctionCounter;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -44,13 +50,6 @@ import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.core.instrument.binder.system.UptimeMetrics;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
 import static org.apache.dubbo.common.constants.MetricsConstants.COLLECTOR_SYNC_PERIOD_KEY;
@@ -67,6 +66,7 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     private final AtomicBoolean initialized = new AtomicBoolean(false);
 
     protected final URL url;
+
     @SuppressWarnings("rawtypes")
     protected final List<MetricsCollector> collectors = new ArrayList<>();
     // Avoid instances being gc due to weak references
@@ -103,7 +103,6 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
         compositeRegistry.add(registry);
     }
 
-
     protected ApplicationModel getApplicationModel() {
         return applicationModel;
     }
@@ -115,7 +114,8 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
             new JvmMemoryMetrics().bindTo(compositeRegistry);
 
             @SuppressWarnings("java:S2095")
-            // Do not change JvmGcMetrics to try-with-resources as the JvmGcMetrics will not be available after (auto-)closing.
+            // Do not change JvmGcMetrics to try-with-resources as the JvmGcMetrics will not be available after
+            // (auto-)closing.
             // See https://github.com/micrometer-metrics/micrometer/issues/1492
             JvmGcMetrics jvmGcMetrics = new JvmGcMetrics();
             jvmGcMetrics.bindTo(compositeRegistry);
@@ -148,7 +148,8 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
 
             NamedThreadFactory threadFactory = new NamedThreadFactory("metrics-collector-sync-job", true);
             collectorSyncJobExecutor = Executors.newScheduledThreadPool(1, threadFactory);
-            collectorSyncJobExecutor.scheduleWithFixedDelay(this::resetIfSamplesChanged, DEFAULT_SCHEDULE_INITIAL_DELAY, collectSyncPeriod, TimeUnit.SECONDS);
+            collectorSyncJobExecutor.scheduleWithFixedDelay(
+                    this::resetIfSamplesChanged, DEFAULT_SCHEDULE_INITIAL_DELAY, collectSyncPeriod, TimeUnit.SECONDS);
         }
     }
 
@@ -165,7 +166,12 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
                 try {
                     registerSample(sample);
                 } catch (Exception e) {
-                    logger.error(COMMON_METRICS_COLLECTOR_EXCEPTION, "", "", "error occurred when synchronize metrics collector.", e);
+                    logger.error(
+                            COMMON_METRICS_COLLECTOR_EXCEPTION,
+                            "",
+                            "",
+                            "error occurred when synchronize metrics collector.",
+                            e);
                 }
             }
         });
@@ -192,17 +198,17 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     @SuppressWarnings({"rawtypes"})
     private void registerCounterSample(CounterMetricSample sample) {
         FunctionCounter.builder(sample.getName(), sample.getValue(), Number::doubleValue)
-            .description(sample.getDescription())
-            .tags(getTags(sample))
-            .register(compositeRegistry);
+                .description(sample.getDescription())
+                .tags(getTags(sample))
+                .register(compositeRegistry);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void registerGaugeSample(GaugeMetricSample sample) {
         Gauge.builder(sample.getName(), sample.getValue(), sample.getApply())
-            .description(sample.getDescription())
-            .tags(getTags(sample))
-            .register(compositeRegistry);
+                .description(sample.getDescription())
+                .tags(getTags(sample))
+                .register(compositeRegistry);
     }
 
     private static List<Tag> getTags(MetricSample gaugeSample) {

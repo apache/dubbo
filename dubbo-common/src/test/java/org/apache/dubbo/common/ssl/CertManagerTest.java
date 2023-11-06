@@ -28,6 +28,7 @@ import org.mockito.Mockito;
 class CertManagerTest {
     private FrameworkModel frameworkModel;
     private URL url;
+
     @BeforeEach
     void setup() {
         FirstCertProvider.setProviderCert(null);

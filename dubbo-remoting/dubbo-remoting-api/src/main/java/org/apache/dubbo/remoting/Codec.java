@@ -58,5 +58,4 @@ public interface Codec {
      */
     @Adaptive({Constants.CODEC_KEY})
     Object decode(Channel channel, InputStream input) throws IOException;
-
 }

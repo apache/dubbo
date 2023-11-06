@@ -21,12 +21,12 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 
-import org.springframework.beans.factory.annotation.InjectionMetadata;
-import org.springframework.stereotype.Component;
-
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import org.springframework.beans.factory.annotation.InjectionMetadata;
+import org.springframework.stereotype.Component;
 
 /**
  * {@link DubboReference} Metadata
@@ -46,7 +46,6 @@ public class DubboReferencesMetadata extends AbstractDubboMetadata {
         referencesMetadata.putAll(buildReferencesMetadata(beanPostProcessor.getInjectedMethodReferenceBeanMap()));
 
         return referencesMetadata;
-
     }
 
     private Map<String, Map<String, Object>> buildReferencesMetadata(
@@ -64,17 +63,15 @@ public class DubboReferencesMetadata extends AbstractDubboMetadata {
             Map<String, Object> beanMetadata = null;
             if (referenceConfig != null) {
                 beanMetadata = resolveBeanMetadata(referenceConfig);
-                //beanMetadata.put("invoker", resolveBeanMetadata(referenceBean.get()));
+                // beanMetadata.put("invoker", resolveBeanMetadata(referenceBean.get()));
             } else {
                 // referenceBean is not initialized
                 beanMetadata = new LinkedHashMap<>();
             }
 
             referencesMetadata.put(String.valueOf(injectedElement.getMember()), beanMetadata);
-
         }
 
         return referencesMetadata;
     }
-
 }

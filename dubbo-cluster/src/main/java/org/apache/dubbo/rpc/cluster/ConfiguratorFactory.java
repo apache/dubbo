@@ -36,5 +36,4 @@ public interface ConfiguratorFactory {
      */
     @Adaptive(CommonConstants.PROTOCOL_KEY)
     Configurator getConfigurator(URL url);
-
 }

@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,6 +24,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.junit.jupiter.api.Test;
 
 import static java.util.Arrays.asList;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -185,7 +185,8 @@ class StringUtilsTest {
 
     @Test
     void testExceptionToString() throws Exception {
-        assertThat(StringUtils.toString(new RuntimeException("abc")), containsString("java.lang.RuntimeException: abc"));
+        assertThat(
+                StringUtils.toString(new RuntimeException("abc")), containsString("java.lang.RuntimeException: abc"));
     }
 
     @Test
@@ -275,7 +276,6 @@ class StringUtilsTest {
         assertEquals(ofSet("1", "2", "3", "4"), values);
     }
 
-
     @Test
     void testTranslate() throws Exception {
         String s = "16314";
@@ -287,7 +287,7 @@ class StringUtilsTest {
     void testIsContains() throws Exception {
         assertThat(StringUtils.isContains("a,b, c", "b"), is(true));
         assertThat(StringUtils.isContains("", "b"), is(false));
-        assertThat(StringUtils.isContains(new String[]{"a", "b", "c"}, "b"), is(true));
+        assertThat(StringUtils.isContains(new String[] {"a", "b", "c"}, "b"), is(true));
         assertThat(StringUtils.isContains((String[]) null, null), is(false));
 
         assertTrue(StringUtils.isContains("abc", 'a'));
@@ -318,7 +318,6 @@ class StringUtilsTest {
         assertThat(StringUtils.isNumeric("123.", true), is(true));
         assertThat(StringUtils.isNumeric(".123", true), is(true));
         assertThat(StringUtils.isNumeric("..123", true), is(false));
-
     }
 
     @Test
@@ -340,7 +339,7 @@ class StringUtilsTest {
         assertEquals("ab-cd-ef", StringUtils.camelToSplitName("abCdEf", "-"));
         assertEquals("ab-cd-ef", StringUtils.camelToSplitName("AbCdEf", "-"));
         assertEquals("abcdef", StringUtils.camelToSplitName("abcdef", "-"));
-        //assertEquals("name", StringUtils.camelToSplitName("NAME", "-"));
+        // assertEquals("name", StringUtils.camelToSplitName("NAME", "-"));
 
         assertEquals("ab-cd-ef", StringUtils.camelToSplitName("ab-cd-ef", "-"));
         assertEquals("ab-cd-ef", StringUtils.camelToSplitName("Ab-Cd-Ef", "-"));
@@ -348,7 +347,7 @@ class StringUtilsTest {
         assertEquals("AB_CD_EF", StringUtils.camelToSplitName("AB_CD_EF", "-"));
 
         assertEquals("ab.cd.ef", StringUtils.camelToSplitName("AbCdEf", "."));
-        //assertEquals("ab.cd.ef", StringUtils.camelToSplitName("ab-cd-ef", "."));
+        // assertEquals("ab.cd.ef", StringUtils.camelToSplitName("ab-cd-ef", "."));
     }
 
     @Test
@@ -381,7 +380,7 @@ class StringUtilsTest {
 
     @Test
     void testToArgumentString() throws Exception {
-        String s = StringUtils.toArgumentString(new Object[]{"a", 0, Collections.singletonMap("enabled", true)});
+        String s = StringUtils.toArgumentString(new Object[] {"a", 0, Collections.singletonMap("enabled", true)});
         assertThat(s, containsString("a,"));
         assertThat(s, containsString("0,"));
         assertThat(s, containsString("{\"enabled\":true}"));
@@ -463,7 +462,6 @@ class StringUtilsTest {
         blankValueMap.put("client", "");
         str = StringUtils.encodeParameters(nullValueMap);
         assertEquals("[]", str);
-
     }
 
     private void assertEqualsWithoutSpaces(String expect, String actual) {
@@ -500,6 +498,5 @@ class StringUtilsTest {
         assertTrue(startsWithIgnoreCase("dubbo.application.name", "dubbo.application."));
         assertTrue(startsWithIgnoreCase("dubbo.Application.name", "dubbo.application."));
         assertTrue(startsWithIgnoreCase("Dubbo.application.name", "dubbo.application."));
-
     }
 }

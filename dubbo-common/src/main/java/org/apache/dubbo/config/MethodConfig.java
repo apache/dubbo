@@ -128,6 +128,7 @@ public class MethodConfig extends AbstractMethodConfig {
      * These properties come from MethodConfig's parent Config module, they will neither be collected directly from xml or API nor be delivered to url
      */
     private String service;
+
     private String serviceId;
 
     /**
@@ -135,9 +136,7 @@ public class MethodConfig extends AbstractMethodConfig {
      */
     private String parentPrefix;
 
-
-    public MethodConfig() {
-    }
+    public MethodConfig() {}
 
     public MethodConfig(ModuleModel moduleModel) {
         super(moduleModel);
@@ -237,14 +236,13 @@ public class MethodConfig extends AbstractMethodConfig {
         if (argument.getIndex() != null && argument.getIndex() >= 0) {
             String prefix = argument.getIndex() + ".";
             Environment environment = getScopeModel().modelEnvironment();
-            List<java.lang.reflect.Method> methods = MethodUtils.getMethods(argument.getClass(),
-                method -> method.getDeclaringClass() != Object.class);
+            List<java.lang.reflect.Method> methods =
+                    MethodUtils.getMethods(argument.getClass(), method -> method.getDeclaringClass() != Object.class);
             for (java.lang.reflect.Method method : methods) {
                 if (MethodUtils.isSetter(method)) {
                     String propertyName = extractPropertyName(method.getName());
                     // ignore attributes: 'index' / 'type'
-                    if (StringUtils.isEquals(propertyName, "index") ||
-                        StringUtils.isEquals(propertyName, "type")) {
+                    if (StringUtils.isEquals(propertyName, "index") || StringUtils.isEquals(propertyName, "type")) {
                         continue;
                     }
                     // convert camelCase/snake_case to kebab-case
@@ -252,29 +250,35 @@ public class MethodConfig extends AbstractMethodConfig {
 
                     try {
                         String value = StringUtils.trim(subPropsConfiguration.getString(kebabPropertyName));
-                        if (StringUtils.hasText(value) && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value)) {
+                        if (StringUtils.hasText(value)
+                                && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value)) {
                             value = environment.resolvePlaceholders(value);
-                            method.invoke(argument, ClassUtils.convertPrimitive(ScopeModelUtil.getFrameworkModel(getScopeModel()), method.getParameterTypes()[0], value));
+                            method.invoke(
+                                    argument,
+                                    ClassUtils.convertPrimitive(
+                                            ScopeModelUtil.getFrameworkModel(getScopeModel()),
+                                            method.getParameterTypes()[0],
+                                            value));
                         }
                     } catch (Exception e) {
-                        logger.info("Failed to override the property " + method.getName() + " in " +
-                            this.getClass().getSimpleName() +
-                            ", please make sure every property has getter/setter method provided.");
+                        logger.info("Failed to override the property " + method.getName() + " in "
+                                + this.getClass().getSimpleName()
+                                + ", please make sure every property has getter/setter method provided.");
                     }
                 }
             }
         }
     }
 
-
     public AsyncMethodInfo convertMethodConfig2AsyncInfo() {
         if ((getOninvoke() == null && getOnreturn() == null && getOnthrow() == null)) {
             return null;
         }
 
-        //check config conflict
+        // check config conflict
         if (Boolean.FALSE.equals(isReturn()) && (getOnreturn() != null || getOnthrow() != null)) {
-            throw new IllegalStateException("method config error : return attribute must be set true when on-return or on-throw has been set.");
+            throw new IllegalStateException(
+                    "method config error : return attribute must be set true when on-return or on-throw has been set.");
         }
 
         AsyncMethodInfo asyncMethodInfo = new AsyncMethodInfo();
@@ -339,9 +343,9 @@ public class MethodConfig extends AbstractMethodConfig {
     public void setName(String name) {
         this.name = name;
         // FIXME, add id strategy in ConfigManager
-//        if (StringUtils.isEmpty(id)) {
-//            id = name;
-//        }
+        //        if (StringUtils.isEmpty(id)) {
+        //            id = name;
+        //        }
     }
 
     public Integer getStat() {

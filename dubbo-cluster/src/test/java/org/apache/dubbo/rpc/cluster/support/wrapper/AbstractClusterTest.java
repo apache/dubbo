@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.support.wrapper;
 
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.rpc.Invocation;
@@ -30,12 +29,12 @@ import org.apache.dubbo.rpc.cluster.filter.FilterChainBuilder;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
@@ -51,16 +50,9 @@ class AbstractClusterTest {
         parameters.put(INTERFACE_KEY, DemoService.class.getName());
         parameters.put("registry", "zookeeper");
         parameters.put(REFERENCE_FILTER_KEY, "demo");
-        ServiceConfigURL url = new ServiceConfigURL("registry",
-            "127.0.0.1",
-            2181,
-            "org.apache.dubbo.registry.RegistryService",
-            parameters);
-        URL consumerUrl = new ServiceConfigURL("dubbo",
-            "127.0.0.1",
-            20881,
-            DemoService.class.getName(),
-            parameters);
+        ServiceConfigURL url = new ServiceConfigURL(
+                "registry", "127.0.0.1", 2181, "org.apache.dubbo.registry.RegistryService", parameters);
+        URL consumerUrl = new ServiceConfigURL("dubbo", "127.0.0.1", 20881, DemoService.class.getName(), parameters);
         consumerUrl = consumerUrl.setScopeModel(ApplicationModel.defaultModel().getInternalModule());
         Directory<?> directory = mock(Directory.class);
         when(directory.getUrl()).thenReturn(url);
@@ -68,10 +60,9 @@ class AbstractClusterTest {
         DemoCluster demoCluster = new DemoCluster();
         Invoker<?> invoker = demoCluster.join(directory, true);
         Assertions.assertTrue(invoker instanceof AbstractCluster.ClusterFilterInvoker);
-        Assertions.assertTrue(((AbstractCluster.ClusterFilterInvoker<?>) invoker).getFilterInvoker()
-            instanceof FilterChainBuilder.ClusterCallbackRegistrationInvoker);
-
-
+        Assertions.assertTrue(
+                ((AbstractCluster.ClusterFilterInvoker<?>) invoker).getFilterInvoker()
+                        instanceof FilterChainBuilder.ClusterCallbackRegistrationInvoker);
     }
 
     static class DemoCluster extends AbstractCluster {
@@ -102,6 +93,4 @@ class AbstractClusterTest {
             return null;
         }
     }
-
-
 }

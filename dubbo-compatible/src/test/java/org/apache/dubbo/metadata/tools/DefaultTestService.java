@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metadata.tools;
 
-
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.metadata.annotation.processing.model.Model;
 
@@ -27,11 +26,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @since 2.7.6
  */
-@Service(
-        interfaceName = "org.apache.dubbo.metadata.tools.TestService",
-        version = "1.0.0",
-        group = "default"
-)
+@Service(interfaceName = "org.apache.dubbo.metadata.tools.TestService", version = "1.0.0", group = "default")
 public class DefaultTestService implements TestService {
 
     private String name;

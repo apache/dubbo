@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.system;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -35,14 +34,15 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CLASS
  */
 public class OperatingSystemBeanManager {
 
-    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(OperatingSystemBeanManager.class);
+    private static final ErrorTypeAwareLogger LOGGER =
+            LoggerFactory.getErrorTypeAwareLogger(OperatingSystemBeanManager.class);
 
     /**
      * com.ibm for J9
      * com.sun for HotSpot
      */
-    private static final List<String> OPERATING_SYSTEM_BEAN_CLASS_NAMES = Arrays.asList(
-        "com.sun.management.OperatingSystemMXBean", "com.ibm.lang.management.OperatingSystemMXBean");
+    private static final List<String> OPERATING_SYSTEM_BEAN_CLASS_NAMES =
+            Arrays.asList("com.sun.management.OperatingSystemMXBean", "com.ibm.lang.management.OperatingSystemMXBean");
 
     private static final OperatingSystemMXBean OPERATING_SYSTEM_BEAN;
 
@@ -59,8 +59,7 @@ public class OperatingSystemBeanManager {
         PROCESS_CPU_USAGE_METHOD = deduceMethod("getProcessCpuLoad");
     }
 
-    private OperatingSystemBeanManager() {
-    }
+    private OperatingSystemBeanManager() {}
 
     public static OperatingSystemMXBean getOperatingSystemBean() {
         return OPERATING_SYSTEM_BEAN;
@@ -79,7 +78,12 @@ public class OperatingSystemBeanManager {
             try {
                 return Class.forName(className);
             } catch (ClassNotFoundException e) {
-                LOGGER.warn(COMMON_CLASS_NOT_FOUND, "", "", "[OperatingSystemBeanManager] Failed to load operating system bean class.", e);
+                LOGGER.warn(
+                        COMMON_CLASS_NOT_FOUND,
+                        "",
+                        "",
+                        "[OperatingSystemBeanManager] Failed to load operating system bean class.",
+                        e);
             }
         }
         return null;

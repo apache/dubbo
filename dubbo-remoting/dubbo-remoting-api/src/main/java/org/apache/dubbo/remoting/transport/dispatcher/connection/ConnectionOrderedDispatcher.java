@@ -31,5 +31,4 @@ public class ConnectionOrderedDispatcher implements Dispatcher {
     public ChannelHandler dispatch(ChannelHandler handler, URL url) {
         return new ConnectionOrderedChannelHandler(handler, url);
     }
-
 }

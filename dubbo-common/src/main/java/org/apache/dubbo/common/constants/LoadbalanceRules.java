@@ -52,5 +52,4 @@ public interface LoadbalanceRules {
     String ADAPTIVE = "adaptive";
 
     String EMPTY = "";
-
 }

@@ -16,11 +16,6 @@
  */
 package org.apache.dubbo.config.spring.util;
 
-import org.springframework.core.annotation.AnnotationAttributes;
-import org.springframework.core.env.Environment;
-import org.springframework.core.env.PropertyResolver;
-import org.springframework.util.ClassUtils;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
@@ -32,6 +27,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.PropertyResolver;
+import org.springframework.util.ClassUtils;
 
 import static java.lang.String.valueOf;
 import static java.util.Arrays.asList;
@@ -50,7 +50,8 @@ public abstract class AnnotationUtils {
     /**
      * The class name of AnnotatedElementUtils that is introduced since Spring Framework 4
      */
-    public static final String ANNOTATED_ELEMENT_UTILS_CLASS_NAME = "org.springframework.core.annotation.AnnotatedElementUtils";
+    public static final String ANNOTATED_ELEMENT_UTILS_CLASS_NAME =
+            "org.springframework.core.annotation.AnnotatedElementUtils";
 
     private static final Map<Integer, Boolean> annotatedElementUtilsPresentCache = new ConcurrentHashMap<>();
 
@@ -63,8 +64,11 @@ public abstract class AnnotationUtils {
      * @param ignoreAttributeNames the attribute names of annotation should be ignored
      * @return non-null
      */
-    public static Map<String, Object> getAttributes(Annotation annotation, PropertyResolver propertyResolver,
-                                                    boolean ignoreDefaultValue, String... ignoreAttributeNames) {
+    public static Map<String, Object> getAttributes(
+            Annotation annotation,
+            PropertyResolver propertyResolver,
+            boolean ignoreDefaultValue,
+            String... ignoreAttributeNames) {
         return getAttributes(annotation, propertyResolver, false, false, ignoreDefaultValue, ignoreAttributeNames);
     }
 
@@ -76,8 +80,10 @@ public abstract class AnnotationUtils {
      * @param ignoreAttributeNames the attribute names of annotation should be ignored
      * @return non-null
      */
-    public static Map<String, Object> getAttributes(Map<String, Object> annotationAttributes,
-                                                    PropertyResolver propertyResolver, String... ignoreAttributeNames) {
+    public static Map<String, Object> getAttributes(
+            Map<String, Object> annotationAttributes,
+            PropertyResolver propertyResolver,
+            String... ignoreAttributeNames) {
 
         Set<String> ignoreAttributeNamesSet = new HashSet<>(Arrays.asList(ignoreAttributeNames));
 
@@ -121,14 +127,17 @@ public abstract class AnnotationUtils {
      * @param ignoreAttributeNames   the attribute names of annotation should be ignored
      * @return
      */
-    public static Map<String, Object> getAttributes(Annotation annotation,
-                                                    PropertyResolver propertyResolver,
-                                                    boolean classValuesAsString,
-                                                    boolean nestedAnnotationsAsMap,
-                                                    boolean ignoreDefaultValue,
-                                                    String... ignoreAttributeNames) {
+    public static Map<String, Object> getAttributes(
+            Annotation annotation,
+            PropertyResolver propertyResolver,
+            boolean classValuesAsString,
+            boolean nestedAnnotationsAsMap,
+            boolean ignoreDefaultValue,
+            String... ignoreAttributeNames) {
 
-        Map<String, Object> annotationAttributes = org.springframework.core.annotation.AnnotationUtils.getAnnotationAttributes(annotation, classValuesAsString, nestedAnnotationsAsMap);
+        Map<String, Object> annotationAttributes =
+                org.springframework.core.annotation.AnnotationUtils.getAnnotationAttributes(
+                        annotation, classValuesAsString, nestedAnnotationsAsMap);
 
         String[] actualIgnoreAttributeNames = ignoreAttributeNames;
 
@@ -225,8 +234,8 @@ public abstract class AnnotationUtils {
      * @return non-null
      * @see #getAnnotationAttributes(Annotation, PropertyResolver, boolean, String...)
      */
-    public static AnnotationAttributes getAnnotationAttributes(Annotation annotation, boolean ignoreDefaultValue,
-                                                               String... ignoreAttributeNames) {
+    public static AnnotationAttributes getAnnotationAttributes(
+            Annotation annotation, boolean ignoreDefaultValue, String... ignoreAttributeNames) {
         return getAnnotationAttributes(annotation, null, ignoreDefaultValue, ignoreAttributeNames);
     }
 
@@ -248,14 +257,20 @@ public abstract class AnnotationUtils {
      * @see #getAttributes(Annotation, PropertyResolver, boolean, String...)
      * @see #getAnnotationAttributes(AnnotatedElement, Class, PropertyResolver, boolean, String...)
      */
-    public static AnnotationAttributes getAnnotationAttributes(Annotation annotation,
-                                                               PropertyResolver propertyResolver,
-                                                               boolean classValuesAsString,
-                                                               boolean nestedAnnotationsAsMap,
-                                                               boolean ignoreDefaultValue,
-                                                               String... ignoreAttributeNames) {
-        return fromMap(getAttributes(annotation, propertyResolver, classValuesAsString, nestedAnnotationsAsMap,
-            ignoreDefaultValue, ignoreAttributeNames));
+    public static AnnotationAttributes getAnnotationAttributes(
+            Annotation annotation,
+            PropertyResolver propertyResolver,
+            boolean classValuesAsString,
+            boolean nestedAnnotationsAsMap,
+            boolean ignoreDefaultValue,
+            String... ignoreAttributeNames) {
+        return fromMap(getAttributes(
+                annotation,
+                propertyResolver,
+                classValuesAsString,
+                nestedAnnotationsAsMap,
+                ignoreDefaultValue,
+                ignoreAttributeNames));
     }
 
     /**
@@ -269,9 +284,13 @@ public abstract class AnnotationUtils {
      * @see #getAttributes(Annotation, PropertyResolver, boolean, String...)
      * @see #getAnnotationAttributes(AnnotatedElement, Class, PropertyResolver, boolean, String...)
      */
-    public static AnnotationAttributes getAnnotationAttributes(Annotation annotation, PropertyResolver propertyResolver,
-                                                               boolean ignoreDefaultValue, String... ignoreAttributeNames) {
-        return getAnnotationAttributes(annotation, propertyResolver, false, false, ignoreDefaultValue, ignoreAttributeNames);
+    public static AnnotationAttributes getAnnotationAttributes(
+            Annotation annotation,
+            PropertyResolver propertyResolver,
+            boolean ignoreDefaultValue,
+            String... ignoreAttributeNames) {
+        return getAnnotationAttributes(
+                annotation, propertyResolver, false, false, ignoreDefaultValue, ignoreAttributeNames);
     }
 
     /**
@@ -284,16 +303,24 @@ public abstract class AnnotationUtils {
      * @param ignoreAttributeNames the attribute names of annotation should be ignored
      * @return if <code>annotatedElement</code> can't be found in <code>annotatedElement</code>, return <code>null</code>
      */
-    public static AnnotationAttributes getAnnotationAttributes(AnnotatedElement annotatedElement,
-                                                               Class<? extends Annotation> annotationType,
-                                                               PropertyResolver propertyResolver,
-                                                               boolean classValuesAsString,
-                                                               boolean nestedAnnotationsAsMap,
-                                                               boolean ignoreDefaultValue,
-                                                               String... ignoreAttributeNames) {
+    public static AnnotationAttributes getAnnotationAttributes(
+            AnnotatedElement annotatedElement,
+            Class<? extends Annotation> annotationType,
+            PropertyResolver propertyResolver,
+            boolean classValuesAsString,
+            boolean nestedAnnotationsAsMap,
+            boolean ignoreDefaultValue,
+            String... ignoreAttributeNames) {
         Annotation annotation = annotatedElement.getAnnotation(annotationType);
-        return annotation == null ? null : getAnnotationAttributes(annotation, propertyResolver,
-            classValuesAsString, nestedAnnotationsAsMap, ignoreDefaultValue, ignoreAttributeNames);
+        return annotation == null
+                ? null
+                : getAnnotationAttributes(
+                        annotation,
+                        propertyResolver,
+                        classValuesAsString,
+                        nestedAnnotationsAsMap,
+                        ignoreDefaultValue,
+                        ignoreAttributeNames);
     }
 
     /**
@@ -311,14 +338,22 @@ public abstract class AnnotationUtils {
      * @param ignoreAttributeNames the attribute names of annotation should be ignored
      * @return if <code>annotatedElement</code> can't be found in <code>annotatedElement</code>, return <code>null</code>
      */
-    public static AnnotationAttributes getAnnotationAttributes(AnnotatedElement annotatedElement,
-                                                               Class<? extends Annotation> annotationType,
-                                                               PropertyResolver propertyResolver,
-                                                               boolean ignoreDefaultValue,
-                                                               boolean tryMergedAnnotation,
-                                                               String... ignoreAttributeNames) {
-        return getAnnotationAttributes(annotatedElement, annotationType, propertyResolver,
-            false, false, ignoreDefaultValue, tryMergedAnnotation, ignoreAttributeNames);
+    public static AnnotationAttributes getAnnotationAttributes(
+            AnnotatedElement annotatedElement,
+            Class<? extends Annotation> annotationType,
+            PropertyResolver propertyResolver,
+            boolean ignoreDefaultValue,
+            boolean tryMergedAnnotation,
+            String... ignoreAttributeNames) {
+        return getAnnotationAttributes(
+                annotatedElement,
+                annotationType,
+                propertyResolver,
+                false,
+                false,
+                ignoreDefaultValue,
+                tryMergedAnnotation,
+                ignoreAttributeNames);
     }
 
     /**
@@ -343,25 +378,38 @@ public abstract class AnnotationUtils {
      * @param ignoreAttributeNames   the attribute names of annotation should be ignored
      * @return if <code>annotatedElement</code> can't be found in <code>annotatedElement</code>, return <code>null</code>
      */
-    public static AnnotationAttributes getAnnotationAttributes(AnnotatedElement annotatedElement,
-                                                               Class<? extends Annotation> annotationType,
-                                                               PropertyResolver propertyResolver,
-                                                               boolean classValuesAsString,
-                                                               boolean nestedAnnotationsAsMap,
-                                                               boolean ignoreDefaultValue,
-                                                               boolean tryMergedAnnotation,
-                                                               String... ignoreAttributeNames) {
+    public static AnnotationAttributes getAnnotationAttributes(
+            AnnotatedElement annotatedElement,
+            Class<? extends Annotation> annotationType,
+            PropertyResolver propertyResolver,
+            boolean classValuesAsString,
+            boolean nestedAnnotationsAsMap,
+            boolean ignoreDefaultValue,
+            boolean tryMergedAnnotation,
+            String... ignoreAttributeNames) {
 
         AnnotationAttributes attributes = null;
 
         if (tryMergedAnnotation) {
-            attributes = tryGetMergedAnnotationAttributes(annotatedElement, annotationType, propertyResolver,
-                classValuesAsString, nestedAnnotationsAsMap, ignoreDefaultValue, ignoreAttributeNames);
+            attributes = tryGetMergedAnnotationAttributes(
+                    annotatedElement,
+                    annotationType,
+                    propertyResolver,
+                    classValuesAsString,
+                    nestedAnnotationsAsMap,
+                    ignoreDefaultValue,
+                    ignoreAttributeNames);
         }
 
         if (attributes == null) {
-            attributes = getAnnotationAttributes(annotatedElement, annotationType, propertyResolver,
-                classValuesAsString, nestedAnnotationsAsMap, ignoreDefaultValue, ignoreAttributeNames);
+            attributes = getAnnotationAttributes(
+                    annotatedElement,
+                    annotationType,
+                    propertyResolver,
+                    classValuesAsString,
+                    nestedAnnotationsAsMap,
+                    ignoreDefaultValue,
+                    ignoreAttributeNames);
         }
 
         return attributes;
@@ -381,24 +429,36 @@ public abstract class AnnotationUtils {
      *                               Annotation instances
      * @return If current version of Spring Framework is below 4.2, return <code>null</code>
      */
-    public static Annotation tryGetMergedAnnotation(AnnotatedElement annotatedElement,
-                                                    Class<? extends Annotation> annotationType,
-                                                    boolean classValuesAsString,
-                                                    boolean nestedAnnotationsAsMap) {
+    public static Annotation tryGetMergedAnnotation(
+            AnnotatedElement annotatedElement,
+            Class<? extends Annotation> annotationType,
+            boolean classValuesAsString,
+            boolean nestedAnnotationsAsMap) {
 
         Annotation mergedAnnotation = null;
 
         ClassLoader classLoader = annotationType.getClassLoader();
 
-        if (annotatedElementUtilsPresentCache.computeIfAbsent(System.identityHashCode(classLoader),
-            (_k) -> ClassUtils.isPresent(ANNOTATED_ELEMENT_UTILS_CLASS_NAME, classLoader))) {
+        if (annotatedElementUtilsPresentCache.computeIfAbsent(
+                System.identityHashCode(classLoader),
+                (_k) -> ClassUtils.isPresent(ANNOTATED_ELEMENT_UTILS_CLASS_NAME, classLoader))) {
             Class<?> annotatedElementUtilsClass = resolveClassName(ANNOTATED_ELEMENT_UTILS_CLASS_NAME, classLoader);
             // getMergedAnnotation method appears in the Spring Framework 4.2
-            Method getMergedAnnotationMethod = findMethod(annotatedElementUtilsClass, "getMergedAnnotation",
-                AnnotatedElement.class, Class.class, boolean.class, boolean.class);
+            Method getMergedAnnotationMethod = findMethod(
+                    annotatedElementUtilsClass,
+                    "getMergedAnnotation",
+                    AnnotatedElement.class,
+                    Class.class,
+                    boolean.class,
+                    boolean.class);
             if (getMergedAnnotationMethod != null) {
-                mergedAnnotation = (Annotation) invokeMethod(getMergedAnnotationMethod, null,
-                    annotatedElement, annotationType, classValuesAsString, nestedAnnotationsAsMap);
+                mergedAnnotation = (Annotation) invokeMethod(
+                        getMergedAnnotationMethod,
+                        null,
+                        annotatedElement,
+                        annotationType,
+                        classValuesAsString,
+                        nestedAnnotationsAsMap);
             }
         }
 
@@ -422,16 +482,24 @@ public abstract class AnnotationUtils {
      * @param ignoreAttributeNames   the attribute names of annotation should be ignored
      * @return If the specified annotation type is not found, return <code>null</code>
      */
-    public static AnnotationAttributes tryGetMergedAnnotationAttributes(AnnotatedElement annotatedElement,
-                                                                        Class<? extends Annotation> annotationType,
-                                                                        PropertyResolver propertyResolver,
-                                                                        boolean classValuesAsString,
-                                                                        boolean nestedAnnotationsAsMap,
-                                                                        boolean ignoreDefaultValue,
-                                                                        String... ignoreAttributeNames) {
-        Annotation annotation = tryGetMergedAnnotation(annotatedElement, annotationType, classValuesAsString, nestedAnnotationsAsMap);
-        return annotation == null ? null : getAnnotationAttributes(annotation, propertyResolver,
-            classValuesAsString, nestedAnnotationsAsMap, ignoreDefaultValue, ignoreAttributeNames);
+    public static AnnotationAttributes tryGetMergedAnnotationAttributes(
+            AnnotatedElement annotatedElement,
+            Class<? extends Annotation> annotationType,
+            PropertyResolver propertyResolver,
+            boolean classValuesAsString,
+            boolean nestedAnnotationsAsMap,
+            boolean ignoreDefaultValue,
+            String... ignoreAttributeNames) {
+        Annotation annotation =
+                tryGetMergedAnnotation(annotatedElement, annotationType, classValuesAsString, nestedAnnotationsAsMap);
+        return annotation == null
+                ? null
+                : getAnnotationAttributes(
+                        annotation,
+                        propertyResolver,
+                        classValuesAsString,
+                        nestedAnnotationsAsMap,
+                        ignoreDefaultValue,
+                        ignoreAttributeNames);
     }
-
 }

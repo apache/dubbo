@@ -42,7 +42,8 @@ class CuratorZookeeperTransporterTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        zookeeperClient = new CuratorZookeeperTransporter().connect(URL.valueOf(zookeeperConnectionAddress1 + "/service"));
+        zookeeperClient =
+                new CuratorZookeeperTransporter().connect(URL.valueOf(zookeeperConnectionAddress1 + "/service"));
         curatorZookeeperTransporter = new CuratorZookeeperTransporter();
     }
 
@@ -51,5 +52,4 @@ class CuratorZookeeperTransporterTest {
         assertThat(zookeeperClient, not(nullValue()));
         zookeeperClient.close();
     }
-
 }

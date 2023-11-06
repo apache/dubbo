@@ -1,32 +1,19 @@
-// Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.dubbo.common.utils;
 
 import static java.lang.Character.MIN_HIGH_SURROGATE;
@@ -41,17 +28,17 @@ import static java.lang.Character.MIN_SUPPLEMENTARY_CODE_POINT;
 public final class Utf8Utils {
 
     private Utf8Utils() {
-        //empty
+        // empty
     }
 
     public static int decodeUtf8(byte[] srcBytes, int srcIdx, int srcSize, char[] destChars, int destIdx) {
         // Bitwise OR combines the sign bits so any negative value fails the check.
         if ((srcIdx | srcSize | srcBytes.length - srcIdx - srcSize) < 0
                 || (destIdx | destChars.length - destIdx - srcSize) < 0) {
-            String exMsg = String.format("buffer srcBytes.length=%d, srcIdx=%d, srcSize=%d, destChars.length=%d, " +
-                    "destIdx=%d", srcBytes.length, srcIdx, srcSize, destChars.length, destIdx);
-            throw new ArrayIndexOutOfBoundsException(
-                    exMsg);
+            String exMsg = String.format(
+                    "buffer srcBytes.length=%d, srcIdx=%d, srcSize=%d, destChars.length=%d, " + "destIdx=%d",
+                    srcBytes.length, srcIdx, srcSize, destChars.length, destIdx);
+            throw new ArrayIndexOutOfBoundsException(exMsg);
         }
 
         int offset = srcIdx;
@@ -93,11 +80,7 @@ public final class Utf8Utils {
                     throw new IllegalArgumentException("invalid UTF-8.");
                 }
                 DecodeUtil.handleThreeBytesSafe(
-                        byte1,
-                        /* byte2 */ srcBytes[offset++],
-                        /* byte3 */ srcBytes[offset++],
-                        destChars,
-                        destIdx++);
+                        byte1, /* byte2 */ srcBytes[offset++], /* byte3 */ srcBytes[offset++], destChars, destIdx++);
             } else {
                 if (offset >= limit - 2) {
                     throw new IllegalArgumentException("invalid UTF-8.");
@@ -114,7 +97,6 @@ public final class Utf8Utils {
         }
         return destIdx - destIdx0;
     }
-
 
     private static class DecodeUtil {
 
@@ -173,14 +155,13 @@ public final class Utf8Utils {
             }
         }
 
-        private static void handleFourBytesSafe(byte byte1, byte byte2, byte byte3, byte byte4, char[] resultArr,
-                                                int resultPos) {
+        private static void handleFourBytesSafe(
+                byte byte1, byte byte2, byte byte3, byte byte4, char[] resultArr, int resultPos) {
             checkUtf8(byte1, byte2, byte3, byte4);
-            int codepoint =
-                    ((byte1 & 0x07) << 18)
-                            | (trailingByteValue(byte2) << 12)
-                            | (trailingByteValue(byte3) << 6)
-                            | trailingByteValue(byte4);
+            int codepoint = ((byte1 & 0x07) << 18)
+                    | (trailingByteValue(byte2) << 12)
+                    | (trailingByteValue(byte3) << 6)
+                    | trailingByteValue(byte4);
 
             resultArr[resultPos] = DecodeUtil.highSurrogate(codepoint);
             resultArr[resultPos + 1] = DecodeUtil.lowSurrogate(codepoint);
@@ -217,13 +198,11 @@ public final class Utf8Utils {
         }
 
         private static char highSurrogate(int codePoint) {
-            return (char)
-                    ((MIN_HIGH_SURROGATE - (MIN_SUPPLEMENTARY_CODE_POINT >>> 10)) + (codePoint >>> 10));
+            return (char) ((MIN_HIGH_SURROGATE - (MIN_SUPPLEMENTARY_CODE_POINT >>> 10)) + (codePoint >>> 10));
         }
 
         private static char lowSurrogate(int codePoint) {
             return (char) (MIN_LOW_SURROGATE + (codePoint & 0x3ff));
         }
     }
-
 }

@@ -37,11 +37,13 @@ import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_STICKY_KEY;
  */
 public class SimpleRegistryExporter {
 
-    private static final Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+    private static final Protocol protocol =
+            ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
-    private static final ProxyFactory PROXY_FACTORY = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+    private static final ProxyFactory PROXY_FACTORY =
+            ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
-    public synchronized static Exporter<RegistryService> exportIfAbsent(int port) {
+    public static synchronized Exporter<RegistryService> exportIfAbsent(int port) {
         try {
             new ServerSocket(port).close();
             return export(port);
@@ -55,7 +57,9 @@ public class SimpleRegistryExporter {
     }
 
     public static Exporter<RegistryService> export(int port, RegistryService registryService) {
-        return protocol.export(PROXY_FACTORY.getInvoker(registryService, RegistryService.class,
+        return protocol.export(PROXY_FACTORY.getInvoker(
+                registryService,
+                RegistryService.class,
                 new URLBuilder(DUBBO_PROTOCOL, NetUtils.getLocalHost(), port, RegistryService.class.getName())
                         .setPath(RegistryService.class.getName())
                         .addParameter(INTERFACE_KEY, RegistryService.class.getName())
@@ -66,5 +70,4 @@ public class SimpleRegistryExporter {
                         .addParameter("unsubscribe.1.callback", "false")
                         .build()));
     }
-
 }

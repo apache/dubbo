@@ -40,9 +40,9 @@ public class SingleRegistryCenterExportProviderRegistryProtocolListener implemen
     @Override
     public void onExport(RegistryProtocol registryProtocol, Exporter<?> exporter) {
         if (registryProtocol instanceof InterfaceCompatibleRegistryProtocol
-            && exporter != null
-            && exporter.getInvoker() != null
-            && exporter.getInvoker().getInterface().equals(SingleRegistryCenterExportProviderService.class)) {
+                && exporter != null
+                && exporter.getInvoker() != null
+                && exporter.getInvoker().getInterface().equals(SingleRegistryCenterExportProviderService.class)) {
             this.exported = true;
         }
     }
@@ -51,16 +51,13 @@ public class SingleRegistryCenterExportProviderRegistryProtocolListener implemen
      * {@inheritDoc}
      */
     @Override
-    public void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker, URL url, URL registryURL) {
-
-    }
+    public void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker, URL url, URL registryURL) {}
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void onDestroy() {
-    }
+    public void onDestroy() {}
 
     /**
      * Returns if this exporter is exported.

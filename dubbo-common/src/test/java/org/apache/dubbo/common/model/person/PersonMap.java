@@ -42,4 +42,3 @@ public class PersonMap extends HashMap<String, String> {
         this.personName = personName;
     }
 }
-

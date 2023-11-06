@@ -18,6 +18,7 @@ package org.apache.dubbo.metadata.annotation.processing.util;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
+
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -78,7 +79,8 @@ public interface ServiceAnnotationUtils {
      */
     String VERSION_ATTRIBUTE_NAME = "version";
 
-    Set<String> SUPPORTED_ANNOTATION_TYPES = unmodifiableSet(new LinkedHashSet<>(asList(DUBBO_SERVICE_ANNOTATION_TYPE, SERVICE_ANNOTATION_TYPE, LEGACY_SERVICE_ANNOTATION_TYPE)));
+    Set<String> SUPPORTED_ANNOTATION_TYPES = unmodifiableSet(new LinkedHashSet<>(
+            asList(DUBBO_SERVICE_ANNOTATION_TYPE, SERVICE_ANNOTATION_TYPE, LEGACY_SERVICE_ANNOTATION_TYPE)));
 
     static boolean isServiceAnnotationPresent(TypeElement annotatedType) {
         return SUPPORTED_ANNOTATION_TYPES.stream()
@@ -106,7 +108,8 @@ public interface ServiceAnnotationUtils {
         }
 
         if (matchedAnnotationMirror == null) {
-            throw new IllegalArgumentException("The annotated element must be annotated any of " + SUPPORTED_ANNOTATION_TYPES);
+            throw new IllegalArgumentException(
+                    "The annotated element must be annotated any of " + SUPPORTED_ANNOTATION_TYPES);
         }
 
         return matchedAnnotationMirror;

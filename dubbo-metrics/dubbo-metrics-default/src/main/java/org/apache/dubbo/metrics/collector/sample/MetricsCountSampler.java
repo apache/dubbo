@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.collector.sample;
 
 import org.apache.dubbo.metrics.model.Metric;
@@ -28,5 +27,4 @@ public interface MetricsCountSampler<S, K, M extends Metric> extends MetricsSamp
     void inc(S source, K metricName);
 
     Optional<ConcurrentMap<M, AtomicLong>> getCount(K metricName);
-
 }

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.logger.Logger;
@@ -77,15 +76,16 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
                 if (logger.isDebugEnabled()) {
                     int heartbeat = channel.getUrl().getParameter(Constants.HEARTBEAT_KEY, 0);
                     logger.debug("Received heartbeat from remote channel " + channel.getRemoteAddress()
-                        + ", cause: The channel has no data-transmission exceeds a heartbeat period"
-                        + (heartbeat > 0 ? ": " + heartbeat + "ms" : ""));
+                            + ", cause: The channel has no data-transmission exceeds a heartbeat period"
+                            + (heartbeat > 0 ? ": " + heartbeat + "ms" : ""));
                 }
             }
             return;
         }
         if (isHeartbeatResponse(message)) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Receive heartbeat response in thread " + Thread.currentThread().getName());
+                logger.debug("Receive heartbeat response in thread "
+                        + Thread.currentThread().getName());
             }
             return;
         }

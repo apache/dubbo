@@ -18,14 +18,14 @@ package org.apache.dubbo.common.threadpool.manager;
 
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import static org.awaitility.Awaitility.await;
 
@@ -56,7 +56,7 @@ class FrameworkExecutorRepositoryTest {
         ExecutorService sharedExecutor = frameworkExecutorRepository.getSharedExecutor();
         CountDownLatch latch = new CountDownLatch(3);
         CountDownLatch latch1 = new CountDownLatch(1);
-        sharedExecutor.execute(()->{
+        sharedExecutor.execute(() -> {
             latch.countDown();
             try {
                 latch1.await();
@@ -64,7 +64,7 @@ class FrameworkExecutorRepositoryTest {
                 throw new RuntimeException(e);
             }
         });
-        sharedExecutor.execute(()->{
+        sharedExecutor.execute(() -> {
             latch.countDown();
             try {
                 latch1.await();
@@ -72,7 +72,7 @@ class FrameworkExecutorRepositoryTest {
                 throw new RuntimeException(e);
             }
         });
-        sharedExecutor.submit(()->{
+        sharedExecutor.submit(() -> {
             latch.countDown();
             try {
                 latch1.await();
@@ -81,10 +81,10 @@ class FrameworkExecutorRepositoryTest {
             }
         });
 
-        await().until(()->latch.getCount() == 0);
-        Assertions.assertEquals(3, ((ThreadPoolExecutor)sharedExecutor).getActiveCount());
+        await().until(() -> latch.getCount() == 0);
+        Assertions.assertEquals(3, ((ThreadPoolExecutor) sharedExecutor).getActiveCount());
         latch1.countDown();
-        await().until(()->((ThreadPoolExecutor)sharedExecutor).getActiveCount() == 0);
-        Assertions.assertEquals(3, ((ThreadPoolExecutor)sharedExecutor).getCompletedTaskCount());
+        await().until(() -> ((ThreadPoolExecutor) sharedExecutor).getActiveCount() == 0);
+        Assertions.assertEquals(3, ((ThreadPoolExecutor) sharedExecutor).getCompletedTaskCount());
     }
 }

@@ -38,9 +38,12 @@ import org.springframework.context.ApplicationEventPublisherAware;
  *
  * @export
  */
-public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean, DisposableBean,
-        ApplicationContextAware, BeanNameAware, ApplicationEventPublisherAware {
-
+public class ServiceBean<T> extends ServiceConfig<T>
+        implements InitializingBean,
+                DisposableBean,
+                ApplicationContextAware,
+                BeanNameAware,
+                ApplicationEventPublisherAware {
 
     private static final long serialVersionUID = 213195494150089726L;
 
@@ -104,7 +107,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 setPath(getInterface());
             }
         }
-        //register service bean
+        // register service bean
         ModuleModel moduleModel = DubboBeanUtils.getModuleModel(applicationContext);
         moduleModel.getConfigManager().addService(this);
         moduleModel.getDeployer().setPending();

@@ -45,7 +45,8 @@ public class ConfigZookeeperInitializer extends ZookeeperInitializer {
      * @throws DubboTestException when an exception occurred
      */
     private void updateConfig(ZookeeperContext context, int clientPort, int adminServerPort) throws DubboTestException {
-        Path zookeeperConf = Paths.get(context.getSourceFile().getParent().toString(),
+        Path zookeeperConf = Paths.get(
+                context.getSourceFile().getParent().toString(),
                 String.valueOf(clientPort),
                 context.getUnpackedDirectory(),
                 "conf");
@@ -63,13 +64,18 @@ public class ConfigZookeeperInitializer extends ZookeeperInitializer {
                     logger.info("It is creating the data directory...");
                     Files.createDirectories(dataDir);
                 } catch (IOException e) {
-                    throw new RuntimeException(String.format("Failed to create the data directory to save zookeeper binary file, file path:%s", context.getSourceFile()), e);
+                    throw new RuntimeException(
+                            String.format(
+                                    "Failed to create the data directory to save zookeeper binary file, file path:%s",
+                                    context.getSourceFile()),
+                            e);
                 }
             }
             properties.setProperty("dataDir", dataDir.toString());
             FileOutputStream oFile = null;
             try {
-                oFile = new FileOutputStream(Paths.get(zookeeperConf.toString(), "zoo.cfg").toFile());
+                oFile = new FileOutputStream(
+                        Paths.get(zookeeperConf.toString(), "zoo.cfg").toFile());
                 properties.store(oFile, "");
             } finally {
                 try {
@@ -78,9 +84,8 @@ public class ConfigZookeeperInitializer extends ZookeeperInitializer {
                     throw new DubboTestException("Failed to close file", e);
                 }
             }
-            logger.info("The configuration information of zoo.cfg are as below,\n" +
-                    "which located in " + zooSample.getAbsolutePath() + "\n" +
-                    propertiesToString(properties));
+            logger.info("The configuration information of zoo.cfg are as below,\n" + "which located in "
+                    + zooSample.getAbsolutePath() + "\n" + propertiesToString(properties));
         } catch (IOException e) {
             throw new DubboTestException(String.format("Failed to update %s file", zooSample), e);
         }
@@ -95,13 +100,18 @@ public class ConfigZookeeperInitializer extends ZookeeperInitializer {
                     logger.info("It is creating the log directory...");
                     Files.createDirectories(logDir);
                 } catch (IOException e) {
-                    throw new RuntimeException(String.format("Failed to create the log directory to save zookeeper binary file, file path:%s", context.getSourceFile()), e);
+                    throw new RuntimeException(
+                            String.format(
+                                    "Failed to create the log directory to save zookeeper binary file, file path:%s",
+                                    context.getSourceFile()),
+                            e);
                 }
             }
             properties.setProperty("zookeeper.log.dir", logDir.toString());
             FileOutputStream oFile = null;
             try {
-                oFile = new FileOutputStream(Paths.get(zookeeperConf.toString(), "log4j.properties").toFile());
+                oFile = new FileOutputStream(
+                        Paths.get(zookeeperConf.toString(), "log4j.properties").toFile());
                 properties.store(oFile, "");
             } finally {
                 try {
@@ -110,9 +120,8 @@ public class ConfigZookeeperInitializer extends ZookeeperInitializer {
                     throw new DubboTestException("Failed to close file", e);
                 }
             }
-            logger.info("The configuration information of log4j.properties are as below,\n" +
-                    "which located in " + log4j.getAbsolutePath() + "\n" +
-                    propertiesToString(properties));
+            logger.info("The configuration information of log4j.properties are as below,\n" + "which located in "
+                    + log4j.getAbsolutePath() + "\n" + propertiesToString(properties));
         } catch (IOException e) {
             throw new DubboTestException(String.format("Failed to update %s file", zooSample), e);
         }

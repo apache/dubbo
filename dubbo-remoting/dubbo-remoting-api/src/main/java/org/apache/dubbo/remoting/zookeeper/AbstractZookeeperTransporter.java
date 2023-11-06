@@ -55,13 +55,15 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
         // address format: {[username:password@]address}
         List<String> addressList = getURLBackupAddress(url);
         // The field define the zookeeper server , including protocol, host, port, username, password
-        if ((zookeeperClient = fetchAndUpdateZookeeperClientCache(addressList)) != null && zookeeperClient.isConnected()) {
+        if ((zookeeperClient = fetchAndUpdateZookeeperClientCache(addressList)) != null
+                && zookeeperClient.isConnected()) {
             logger.info("find valid zookeeper client from the cache for address: " + url);
             return zookeeperClient;
         }
         // avoid creating too many connections， so add lock
         synchronized (zookeeperClientMap) {
-            if ((zookeeperClient = fetchAndUpdateZookeeperClientCache(addressList)) != null && zookeeperClient.isConnected()) {
+            if ((zookeeperClient = fetchAndUpdateZookeeperClientCache(addressList)) != null
+                    && zookeeperClient.isConnected()) {
                 logger.info("find valid zookeeper client from the cache for address: " + url);
                 return zookeeperClient;
             }
@@ -165,8 +167,14 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
             parameterMap.put(RemotingConstants.BACKUP_KEY, url.getParameter(RemotingConstants.BACKUP_KEY));
         }
 
-        return new ServiceConfigURL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(),
-                ZookeeperTransporter.class.getName(), parameterMap);
+        return new ServiceConfigURL(
+                url.getProtocol(),
+                url.getUsername(),
+                url.getPassword(),
+                url.getHost(),
+                url.getPort(),
+                ZookeeperTransporter.class.getName(),
+                parameterMap);
     }
 
     /**

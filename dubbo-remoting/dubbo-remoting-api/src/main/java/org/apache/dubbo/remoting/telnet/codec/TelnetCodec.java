@@ -48,18 +48,17 @@ public class TelnetCodec extends TransportCodec {
 
     private static final String HISTORY_INDEX_KEY = "telnet.history.index";
 
-    private static final byte[] UP = new byte[]{27, 91, 65};
+    private static final byte[] UP = new byte[] {27, 91, 65};
 
-    private static final byte[] DOWN = new byte[]{27, 91, 66};
+    private static final byte[] DOWN = new byte[] {27, 91, 66};
 
-    private static final List<?> ENTER = Arrays.asList(
-        new byte[]{'\r', '\n'} /* Windows Enter */,
-        new byte[]{'\n'} /* Linux Enter */);
+    private static final List<?> ENTER =
+            Arrays.asList(new byte[] {'\r', '\n'} /* Windows Enter */, new byte[] {'\n'} /* Linux Enter */);
 
     private static final List<?> EXIT = Arrays.asList(
-        new byte[]{3} /* Windows Ctrl+C */,
-        new byte[]{-1, -12, -1, -3, 6} /* Linux Ctrl+C */,
-        new byte[]{-1, -19, -1, -3, 6} /* Linux Pause */);
+            new byte[] {3} /* Windows Ctrl+C */,
+            new byte[] {-1, -12, -1, -3, 6} /* Linux Ctrl+C */,
+            new byte[] {-1, -19, -1, -3, 6} /* Linux Pause */);
 
     private static Charset getCharset(Channel channel) {
         if (channel != null) {
@@ -115,8 +114,9 @@ public class TelnetCodec extends TransportCodec {
                 } else if (i < message.length - 2) {
                     i = i + 2;
                 }
-            } else if (b == -1 && i < message.length - 2
-                && (message[i + 1] == -3 || message[i + 1] == -5)) { // handshake
+            } else if (b == -1
+                    && i < message.length - 2
+                    && (message[i + 1] == -3 || message[i + 1] == -5)) { // handshake
                 i = i + 2;
             } else {
                 copy[index++] = message[i];
@@ -179,7 +179,9 @@ public class TelnetCodec extends TransportCodec {
         if (message[message.length - 1] == '\b') { // Windows backspace echo
             try {
                 boolean isDoubleChar = message.length >= 3 && message[message.length - 3] < 0; // double byte char
-                channel.send(new String(isDoubleChar ? new byte[]{32, 32, 8, 8} : new byte[]{32, 8}, getCharset(channel).name()));
+                channel.send(new String(
+                        isDoubleChar ? new byte[] {32, 32, 8, 8} : new byte[] {32, 8},
+                        getCharset(channel).name()));
             } catch (RemotingException e) {
                 throw new IOException(StringUtils.toString(e));
             }
@@ -189,7 +191,8 @@ public class TelnetCodec extends TransportCodec {
         for (Object command : EXIT) {
             if (isEquals(message, (byte[]) command)) {
                 if (logger.isInfoEnabled()) {
-                    logger.info(new Exception("Close channel " + channel + " on exit command: " + Arrays.toString((byte[]) command)));
+                    logger.info(new Exception(
+                            "Close channel " + channel + " on exit command: " + Arrays.toString((byte[]) command)));
                 }
                 channel.close();
                 return null;
@@ -295,5 +298,4 @@ public class TelnetCodec extends TransportCodec {
         }
         return result;
     }
-
 }

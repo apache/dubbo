@@ -20,10 +20,10 @@ import org.apache.dubbo.common.logger.Level;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerAdapter;
 
+import java.io.File;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.config.Configurator;
-
-import java.io.File;
 
 public class Log4j2LoggerAdapter implements LoggerAdapter {
     public static final String NAME = "log4j2";

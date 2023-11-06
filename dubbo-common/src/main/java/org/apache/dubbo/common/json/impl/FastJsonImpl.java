@@ -16,10 +16,10 @@
  */
 package org.apache.dubbo.common.json.impl;
 
-import com.alibaba.fastjson.serializer.SerializerFeature;
-
 import java.lang.reflect.Type;
 import java.util.List;
+
+import com.alibaba.fastjson.serializer.SerializerFeature;
 
 public class FastJsonImpl extends AbstractJSONImpl {
 
@@ -37,5 +37,4 @@ public class FastJsonImpl extends AbstractJSONImpl {
     public String toJson(Object obj) {
         return com.alibaba.fastjson.JSON.toJSONString(obj, SerializerFeature.DisableCircularReferenceDetect);
     }
-
 }

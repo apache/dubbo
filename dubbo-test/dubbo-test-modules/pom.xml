@@ -15,36 +15,34 @@
   See the License for the specific language governing permissions and
   limitations under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <artifactId>dubbo-test</artifactId>
-        <groupId>org.apache.dubbo</groupId>
-        <version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.dubbo</groupId>
+    <artifactId>dubbo-test</artifactId>
+    <version>${revision}</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
 
-    <artifactId>dubbo-test-modules</artifactId>
-    <description>Check if dependencies configured properly</description>
+  <artifactId>dubbo-test-modules</artifactId>
+  <description>Check if dependencies configured properly</description>
 
-    <properties>
-        <skip_maven_deploy>true</skip_maven_deploy>
-        <dom4j_version>2.1.4</dom4j_version>
-    </properties>
+  <properties>
+    <skip_maven_deploy>true</skip_maven_deploy>
+    <dom4j_version>2.1.4</dom4j_version>
+  </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.dom4j</groupId>
-            <artifactId>dom4j</artifactId>
-            <version>${dom4j_version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-common</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    </dependencies>
+  <dependencies>
+    <dependency>
+      <groupId>org.dom4j</groupId>
+      <artifactId>dom4j</artifactId>
+      <version>${dom4j_version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-common</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
 </project>

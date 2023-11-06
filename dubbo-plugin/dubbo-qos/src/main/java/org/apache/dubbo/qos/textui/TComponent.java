@@ -25,5 +25,4 @@ public interface TComponent {
      * render
      */
     String rendering();
-
 }

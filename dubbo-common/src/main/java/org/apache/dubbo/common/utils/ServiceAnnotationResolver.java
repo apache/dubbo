@@ -77,10 +77,9 @@ public class ServiceAnnotationResolver {
         }
 
         if (serviceAnnotation == null) {
-            throw new IllegalArgumentException(format("Any annotation of [%s] can't be annotated in the service type[%s].",
-                    SERVICE_ANNOTATION_CLASSES,
-                    serviceType.getName()
-            ));
+            throw new IllegalArgumentException(format(
+                    "Any annotation of [%s] can't be annotated in the service type[%s].",
+                    SERVICE_ANNOTATION_CLASSES, serviceType.getName()));
         }
 
         return serviceAnnotation;

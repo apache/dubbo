@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.threadpool;
 
 import org.apache.dubbo.common.resource.GlobalResourcesRepository;
@@ -50,9 +49,11 @@ public class MemoryLimitCalculator {
             // notice: refresh may be called for more than once because there is no lock
             refresh();
             if (refreshStarted.compareAndSet(false, true)) {
-                ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-Memory-Calculator"));
+                ScheduledExecutorService scheduledExecutorService =
+                        Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-Memory-Calculator"));
                 // check every 50 ms to improve performance
-                scheduledExecutorService.scheduleWithFixedDelay(MemoryLimitCalculator::refresh, 50, 50, TimeUnit.MILLISECONDS);
+                scheduledExecutorService.scheduleWithFixedDelay(
+                        MemoryLimitCalculator::refresh, 50, 50, TimeUnit.MILLISECONDS);
                 GlobalResourcesRepository.registerGlobalDisposable(() -> {
                     refreshStarted.set(false);
                     scheduledExecutorService.shutdown();

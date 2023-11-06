@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.test.common.impl;
 
-
 import org.apache.dubbo.test.common.api.GreetingService;
 
 /**

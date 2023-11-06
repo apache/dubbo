@@ -1,11 +1,12 @@
 /*
- * Copyright 2012-2022 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,21 +16,13 @@
  */
 package org.apache.dubbo.maven.plugin.aot;
 
-
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
-import org.apache.maven.toolchain.ToolchainManager;
-
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -44,6 +37,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
+import org.apache.maven.toolchain.ToolchainManager;
 
 /**
  * Abstract base class for AOT processing MOJOs.
@@ -84,7 +85,6 @@ public abstract class AbstractAotMojo extends AbstractDependencyFilterMojo {
     @Parameter(property = "dubbo.aot.jvmArguments")
     private String jvmArguments;
 
-
     /**
      * Arguments that should be provided to the AOT compile process. On command line, make
      * sure to wrap multiple values between quotes.
@@ -109,9 +109,11 @@ public abstract class AbstractAotMojo extends AbstractDependencyFilterMojo {
 
     protected void generateAotAssets(URL[] classPath, String processorClassName, String... arguments) throws Exception {
         List<String> command = CommandLineBuilder.forMainClass(processorClassName)
-            .withSystemProperties(this.systemPropertyVariables)
-            .withJvmArguments(new RunArguments(this.jvmArguments).asArray()).withClasspath(classPath)
-            .withArguments(arguments).build();
+                .withSystemProperties(this.systemPropertyVariables)
+                .withJvmArguments(new RunArguments(this.jvmArguments).asArray())
+                .withClasspath(classPath)
+                .withArguments(arguments)
+                .build();
         if (getLog().isDebugEnabled()) {
             getLog().debug("Generating AOT assets using command: " + command);
         }
@@ -121,10 +123,11 @@ public abstract class AbstractAotMojo extends AbstractDependencyFilterMojo {
     }
 
     protected final void compileSourceFiles(URL[] classPath, File sourcesDirectory, File outputDirectory)
-        throws Exception {
+            throws Exception {
         List<File> sourceFiles;
         try (Stream<Path> pathStream = Files.walk(sourcesDirectory.toPath())) {
-            sourceFiles = pathStream.filter(Files::isRegularFile).map(Path::toFile).collect(Collectors.toList());
+            sourceFiles =
+                    pathStream.filter(Files::isRegularFile).map(Path::toFile).collect(Collectors.toList());
         }
         if (sourceFiles.isEmpty()) {
             return;
@@ -141,8 +144,7 @@ public abstract class AbstractAotMojo extends AbstractDependencyFilterMojo {
             if (releaseVersion != null) {
                 options.add("--release");
                 options.add(releaseVersion);
-            }
-            else {
+            } else {
                 options.add("--source");
                 options.add(compilerConfiguration.getSourceMajorVersion());
                 options.add("--target");
@@ -151,7 +153,8 @@ public abstract class AbstractAotMojo extends AbstractDependencyFilterMojo {
             options.addAll(new RunArguments(this.compilerArguments).getArgs());
             Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(sourceFiles);
             Errors errors = new Errors();
-            JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, errors, options, null, compilationUnits);
+            JavaCompiler.CompilationTask task =
+                    compiler.getTask(null, fileManager, errors, options, null, compilationUnits);
             boolean result = task.call();
             if (!result || errors.hasReportedErrors()) {
                 throw new IllegalStateException("Unable to compile generated source" + errors);
@@ -160,7 +163,7 @@ public abstract class AbstractAotMojo extends AbstractDependencyFilterMojo {
     }
 
     protected final List<URL> getClassPath(File[] directories, ArtifactsFilter... artifactFilters)
-        throws MojoExecutionException {
+            throws MojoExecutionException {
         List<URL> urls = new ArrayList<>();
         Arrays.stream(directories).map(this::toURL).forEach(urls::add);
         urls.addAll(getDependencyURLs(artifactFilters));
@@ -176,7 +179,8 @@ public abstract class AbstractAotMojo extends AbstractDependencyFilterMojo {
             files = pathStream.filter(Files::isRegularFile).collect(Collectors.toList());
         }
         for (Path file : files) {
-            String relativeFileName = file.subpath(from.getNameCount(), file.getNameCount()).toString();
+            String relativeFileName =
+                    file.subpath(from.getNameCount(), file.getNameCount()).toString();
             getLog().debug("Copying '" + relativeFileName + "' to " + to);
             Path target = to.resolve(relativeFileName);
             Files.createDirectories(target.getParent());
@@ -213,7 +217,5 @@ public abstract class AbstractAotMojo extends AbstractDependencyFilterMojo {
         public String toString() {
             return this.message.toString();
         }
-
     }
-
 }

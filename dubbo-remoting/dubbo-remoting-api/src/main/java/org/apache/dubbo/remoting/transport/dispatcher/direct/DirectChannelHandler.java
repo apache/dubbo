@@ -47,5 +47,4 @@ public class DirectChannelHandler extends WrappedChannelHandler {
             handler.received(channel, message);
         }
     }
-
 }

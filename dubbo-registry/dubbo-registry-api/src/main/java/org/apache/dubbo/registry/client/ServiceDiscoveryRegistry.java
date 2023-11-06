@@ -92,12 +92,14 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     public ServiceDiscoveryRegistry(URL registryURL, ApplicationModel applicationModel) {
         super(registryURL);
         this.serviceDiscovery = createServiceDiscovery(registryURL);
-        this.serviceNameMapping = (AbstractServiceNameMapping) ServiceNameMapping.getDefaultExtension(registryURL.getScopeModel());
+        this.serviceNameMapping =
+                (AbstractServiceNameMapping) ServiceNameMapping.getDefaultExtension(registryURL.getScopeModel());
         super.applicationModel = applicationModel;
     }
 
     // Currently, for test purpose
-    protected ServiceDiscoveryRegistry(URL registryURL, ServiceDiscovery serviceDiscovery, ServiceNameMapping serviceNameMapping) {
+    protected ServiceDiscoveryRegistry(
+            URL registryURL, ServiceDiscovery serviceDiscovery, ServiceNameMapping serviceNameMapping) {
         super(registryURL);
         this.serviceDiscovery = serviceDiscovery;
         this.serviceNameMapping = (AbstractServiceNameMapping) serviceNameMapping;
@@ -114,8 +116,9 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      * @return non-null
      */
     protected ServiceDiscovery createServiceDiscovery(URL registryURL) {
-        return getServiceDiscovery(registryURL.addParameter(INTERFACE_KEY, ServiceDiscovery.class.getName())
-            .removeParameter(REGISTRY_TYPE_KEY));
+        return getServiceDiscovery(registryURL
+                .addParameter(INTERFACE_KEY, ServiceDiscovery.class.getName())
+                .removeParameter(REGISTRY_TYPE_KEY));
     }
 
     /**
@@ -141,7 +144,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         }
 
         if (!acceptable(providerURL)) {
-            logger.info("URL " + providerURL + " will not be registered to Registry. Registry " + this.getUrl() + " does not accept service of this protocol type.");
+            logger.info("URL " + providerURL + " will not be registered to Registry. Registry " + this.getUrl()
+                    + " does not accept service of this protocol type.");
             return false;
         }
 
@@ -200,7 +204,6 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
         String key = ServiceNameMapping.buildMappingKey(url);
 
-
         if (mappingByUrl == null) {
             Lock mappingLock = serviceNameMapping.getMappingLock(key);
             try {
@@ -210,18 +213,27 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                     MappingListener mappingListener = new DefaultMappingListener(url, mappingByUrl, listener);
                     mappingByUrl = serviceNameMapping.getAndListen(this.getUrl(), url, mappingListener);
                     synchronized (mappingListeners) {
-                        mappingListeners.computeIfAbsent(url.getProtocolServiceKey(), (k) -> new ConcurrentHashSet<>())
-                            .add(mappingListener);
+                        mappingListeners
+                                .computeIfAbsent(url.getProtocolServiceKey(), (k) -> new ConcurrentHashSet<>())
+                                .add(mappingListener);
                     }
                 } catch (Exception e) {
-                    logger.warn(INTERNAL_ERROR, "", "", "Cannot find app mapping for service " + url.getServiceInterface() + ", will not migrate.", e);
+                    logger.warn(
+                            INTERNAL_ERROR,
+                            "",
+                            "",
+                            "Cannot find app mapping for service " + url.getServiceInterface() + ", will not migrate.",
+                            e);
                 }
 
                 if (CollectionUtils.isEmpty(mappingByUrl)) {
-                    logger.info("No interface-apps mapping found in local cache, stop subscribing, will automatically wait for mapping listener callback: " + url);
-//                if (check) {
-//                    throw new IllegalStateException("Should has at least one way to know which services this interface belongs to, subscription url: " + url);
-//                }
+                    logger.info(
+                            "No interface-apps mapping found in local cache, stop subscribing, will automatically wait for mapping listener callback: "
+                                    + url);
+                    //                if (check) {
+                    //                    throw new IllegalStateException("Should has at least one way to know which
+                    // services this interface belongs to, subscription url: " + url);
+                    //                }
                     return;
                 }
             } finally {
@@ -259,10 +271,9 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             Set<MappingListener> keyedListeners = mappingListeners.get(protocolServiceKey);
             if (keyedListeners != null) {
                 List<MappingListener> matched = keyedListeners.stream()
-                    .filter(mappingListener ->
-                        mappingListener instanceof DefaultMappingListener
-                            && (Objects.equals(((DefaultMappingListener) mappingListener).getListener(), listener)))
-                    .collect(Collectors.toList());
+                        .filter(mappingListener -> mappingListener instanceof DefaultMappingListener
+                                && (Objects.equals(((DefaultMappingListener) mappingListener).getListener(), listener)))
+                        .collect(Collectors.toList());
                 for (MappingListener mappingListener : matched) {
                     serviceNameMapping.stopListen(url, mappingListener);
                     keyedListeners.remove(mappingListener);
@@ -299,7 +310,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     @Override
     public boolean isAvailable() {
-        //serviceDiscovery isAvailable has a default method, which can be used as a reference when implementing
+        // serviceDiscovery isAvailable has a default method, which can be used as a reference when implementing
         return serviceDiscovery.isAvailable();
     }
 
@@ -326,7 +337,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         serviceNames = toTreeSet(serviceNames);
         String serviceNamesKey = toStringKeys(serviceNames);
         String serviceKey = url.getServiceKey();
-        logger.info(String.format("Trying to subscribe from apps %s for service key %s, ", serviceNamesKey, serviceKey));
+        logger.info(
+                String.format("Trying to subscribe from apps %s for service key %s, ", serviceNamesKey, serviceKey));
 
         // register ServiceInstancesChangedListener
         Lock appSubscriptionLock = getAppSubscription(serviceNamesKey);
@@ -338,7 +350,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                 for (String serviceName : serviceNames) {
                     List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
                     if (CollectionUtils.isNotEmpty(serviceInstances)) {
-                        serviceInstancesChangedListener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
+                        serviceInstancesChangedListener.onEvent(
+                                new ServiceInstancesChangedEvent(serviceName, serviceInstances));
                     }
                 }
                 serviceListeners.put(serviceNamesKey, serviceInstancesChangedListener);
@@ -349,14 +362,16 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                 serviceInstancesChangedListener.addListenerAndNotify(url, listener);
                 ServiceInstancesChangedListener finalServiceInstancesChangedListener = serviceInstancesChangedListener;
 
-                String serviceDiscoveryName = url.getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY, url.getProtocol());
+                String serviceDiscoveryName =
+                        url.getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY, url.getProtocol());
 
-                MetricsEventBus.post(RegistryEvent.toSsEvent(url.getApplicationModel(), serviceKey, Collections.singletonList(serviceDiscoveryName)),
-                    () -> {
-                        serviceDiscovery.addServiceInstancesChangedListener(finalServiceInstancesChangedListener);
-                        return null;
-                    }
-                );
+                MetricsEventBus.post(
+                        RegistryEvent.toSsEvent(
+                                url.getApplicationModel(), serviceKey, Collections.singletonList(serviceDiscoveryName)),
+                        () -> {
+                            serviceDiscovery.addServiceInstancesChangedListener(finalServiceInstancesChangedListener);
+                            return null;
+                        });
             } else {
                 logger.info(String.format("Listener of %s has been destroyed by another thread.", serviceNamesKey));
                 serviceListeners.remove(serviceNamesKey);
@@ -398,7 +413,11 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             logger.info("Received mapping notification from meta server, " + event);
 
             if (stopped) {
-                logger.warn(INTERNAL_ERROR, "", "", "Listener has been stopped, ignore mapping notification, check why listener is not removed.");
+                logger.warn(
+                        INTERNAL_ERROR,
+                        "",
+                        "",
+                        "Listener has been stopped, ignore mapping notification, check why listener is not removed.");
                 return;
             }
             Set<String> newApps = event.getApps();
@@ -408,7 +427,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                 return;
             }
 
-            logger.info("Mapping of service " + event.getServiceKey() + "changed from " + tempOldApps + " to " + newApps);
+            logger.info(
+                    "Mapping of service " + event.getServiceKey() + "changed from " + tempOldApps + " to " + newApps);
 
             Lock mappingLock = serviceNameMapping.getMappingLock(event.getServiceKey());
             try {
@@ -424,7 +444,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                     if (!tempOldApps.contains(newAppName)) {
                         serviceNameMapping.removeCachedMapping(ServiceNameMapping.buildMappingKey(url));
                         serviceNameMapping.putCachedMapping(ServiceNameMapping.buildMappingKey(url), newApps);
-                        // old instance listener related to old app list that needs to be destroyed after subscribe refresh.
+                        // old instance listener related to old app list that needs to be destroyed after subscribe
+                        // refresh.
                         ServiceInstancesChangedListener oldListener = listener.getServiceListener();
                         if (oldListener != null) {
                             String appKey = toStringKeys(toTreeSet(tempOldApps));

@@ -37,6 +37,7 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+
 /**
  * {@link EnableDubbo} Test
  *
@@ -113,7 +114,6 @@ class EnableDubboTest {
 
         // Test multiple binding
         Assertions.assertEquals("N/A", registryConfig.getAddress());
-
     }
 
     @EnableDubbo(scanBasePackages = "org.apache.dubbo.config.spring.context.annotation.provider")
@@ -134,17 +134,11 @@ class EnableDubboTest {
                 }
 
                 @Override
-                public void commit(TransactionStatus status) throws TransactionException {
-
-                }
+                public void commit(TransactionStatus status) throws TransactionException {}
 
                 @Override
-                public void rollback(TransactionStatus status) throws TransactionException {
-
-                }
+                public void rollback(TransactionStatus status) throws TransactionException {}
             };
         }
     }
-
-
 }

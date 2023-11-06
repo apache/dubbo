@@ -1,11 +1,12 @@
 /*
- * Copyright 2012-2022 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,8 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.maven.plugin.aot;
+
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
@@ -26,15 +35,6 @@ import org.apache.maven.shared.artifact.filter.collection.AbstractArtifactFeatur
 import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
 import org.apache.maven.shared.artifact.filter.collection.FilterArtifacts;
-
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.StringTokenizer;
 
 /**
  * A base mojo filtering the dependencies of the project.
@@ -97,13 +97,12 @@ public abstract class AbstractDependencyFilterMojo extends AbstractMojo {
     }
 
     protected final Set<Artifact> filterDependencies(Set<Artifact> dependencies, ArtifactsFilter... additionalFilters)
-        throws MojoExecutionException {
+            throws MojoExecutionException {
         try {
             Set<Artifact> filtered = new LinkedHashSet<>(dependencies);
             filtered.retainAll(getFilters(additionalFilters).filter(dependencies));
             return filtered;
-        }
-        catch (ArtifactFilterException ex) {
+        } catch (ArtifactFilterException ex) {
             throw new MojoExecutionException(ex.getMessage(), ex);
         }
     }
@@ -111,8 +110,7 @@ public abstract class AbstractDependencyFilterMojo extends AbstractMojo {
     protected URL toURL(File file) {
         try {
             return file.toURI().toURL();
-        }
-        catch (MalformedURLException ex) {
+        } catch (MalformedURLException ex) {
             throw new IllegalStateException("Invalid URL for " + file, ex);
         }
     }
@@ -165,8 +163,5 @@ public abstract class AbstractDependencyFilterMojo extends AbstractMojo {
         protected String getArtifactFeature(Artifact artifact) {
             return artifact.getScope();
         }
-
     }
-
 }
-

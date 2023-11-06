@@ -1,11 +1,12 @@
 /*
- * Copyright 2002-2022 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,13 +16,13 @@
  */
 package org.apache.dubbo.test.common.utils;
 
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.security.SecureRandom;
+import org.apache.dubbo.common.utils.Assert;
 
 import javax.net.ServerSocketFactory;
 
-import org.apache.dubbo.common.utils.Assert;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.security.SecureRandom;
 
 /**
  * Simple utility for finding available TCP ports on {@code localhost} for use in
@@ -58,8 +59,7 @@ public class TestSocketUtils {
 
     private static final TestSocketUtils INSTANCE = new TestSocketUtils();
 
-    private TestSocketUtils() {
-    }
+    private TestSocketUtils() {}
 
     /**
      * Find an available TCP port randomly selected from the range [1024, 65535].
@@ -70,7 +70,6 @@ public class TestSocketUtils {
         return INSTANCE.findAvailableTcpPortInternal();
     }
 
-
     /**
      * Internal implementation of {@link #findAvailableTcpPort()}.
      * <p>Package-private solely for testing purposes.
@@ -79,12 +78,13 @@ public class TestSocketUtils {
         int candidatePort;
         int searchCounter = 0;
         do {
-            Assert.assertTrue(++searchCounter <= MAX_ATTEMPTS, String.format(
-                "Could not find an available TCP port in the range [%d, %d] after %d attempts",
-                PORT_RANGE_MIN, PORT_RANGE_MAX, MAX_ATTEMPTS));
+            Assert.assertTrue(
+                    ++searchCounter <= MAX_ATTEMPTS,
+                    String.format(
+                            "Could not find an available TCP port in the range [%d, %d] after %d attempts",
+                            PORT_RANGE_MIN, PORT_RANGE_MAX, MAX_ATTEMPTS));
             candidatePort = PORT_RANGE_MIN + random.nextInt(PORT_RANGE_PLUS_ONE);
-        }
-        while (!isPortAvailable(candidatePort));
+        } while (!isPortAvailable(candidatePort));
 
         return candidatePort;
     }
@@ -95,14 +95,12 @@ public class TestSocketUtils {
      */
     boolean isPortAvailable(int port) {
         try {
-            ServerSocket serverSocket = ServerSocketFactory.getDefault()
-                .createServerSocket(port, 1, InetAddress.getByName("localhost"));
+            ServerSocket serverSocket =
+                    ServerSocketFactory.getDefault().createServerSocket(port, 1, InetAddress.getByName("localhost"));
             serverSocket.close();
             return true;
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             return false;
         }
     }
-
 }

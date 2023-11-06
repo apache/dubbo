@@ -22,10 +22,9 @@ import org.apache.dubbo.rpc.RpcException;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-
 public class CountInvokerListener implements InvokerListener {
 
-    private final static AtomicInteger counter = new AtomicInteger(0);
+    private static final AtomicInteger counter = new AtomicInteger(0);
 
     @Override
     public void referred(Invoker<?> invoker) throws RpcException {
@@ -34,9 +33,7 @@ public class CountInvokerListener implements InvokerListener {
     }
 
     @Override
-    public void destroyed(Invoker<?> invoker) {
-
-    }
+    public void destroyed(Invoker<?> invoker) {}
 
     public static int getCounter() {
         return counter.get();

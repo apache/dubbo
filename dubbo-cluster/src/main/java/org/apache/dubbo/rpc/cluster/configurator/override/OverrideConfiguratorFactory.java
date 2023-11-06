@@ -30,5 +30,4 @@ public class OverrideConfiguratorFactory implements ConfiguratorFactory {
     public Configurator getConfigurator(URL url) {
         return new OverrideConfigurator(url);
     }
-
 }

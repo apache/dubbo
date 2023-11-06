@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.json.impl;
 
+import java.lang.reflect.Type;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -23,9 +25,6 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
-import java.lang.reflect.Type;
-import java.util.List;
 
 public class JacksonImpl extends AbstractJSONImpl {
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -44,7 +43,8 @@ public class JacksonImpl extends AbstractJSONImpl {
     @Override
     public <T> List<T> toJavaList(String json, Class<T> clazz) {
         try {
-            return getJackson().readValue(json, getJackson().getTypeFactory().constructCollectionType(List.class, clazz));
+            return getJackson()
+                    .readValue(json, getJackson().getTypeFactory().constructCollectionType(List.class, clazz));
         } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
             throw new IllegalArgumentException(e);
         }
@@ -64,11 +64,11 @@ public class JacksonImpl extends AbstractJSONImpl {
             synchronized (this) {
                 if (jacksonCache == null || !(jacksonCache instanceof JsonMapper)) {
                     jacksonCache = JsonMapper.builder()
-                        .configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true)
-                        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                        .serializationInclusion(Include.NON_NULL)
-                        .addModule(new JavaTimeModule())
-                        .build();
+                            .configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true)
+                            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                            .serializationInclusion(Include.NON_NULL)
+                            .addModule(new JavaTimeModule())
+                            .build();
                 }
             }
         }

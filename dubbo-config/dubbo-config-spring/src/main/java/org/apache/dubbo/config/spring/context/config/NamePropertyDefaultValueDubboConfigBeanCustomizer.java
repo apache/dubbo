@@ -20,11 +20,11 @@ import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.spring.beans.factory.config.DubboConfigDefaultPropertyValueBeanPostProcessor;
 import org.apache.dubbo.config.spring.util.ObjectUtils;
 
-import org.springframework.util.ReflectionUtils;
-
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+
+import org.springframework.util.ReflectionUtils;
 
 import static org.springframework.beans.BeanUtils.getPropertyDescriptor;
 
@@ -71,7 +71,8 @@ public class NamePropertyDefaultValueDubboConfigBeanCustomizer implements DubboC
 
             Method setNameMethod = propertyDescriptor.getWriteMethod();
             if (setNameMethod != null) { // "setName" and "getName" methods are present
-                if (Arrays.equals(ObjectUtils.of(String.class), setNameMethod.getParameterTypes())) { // the param type is String
+                if (Arrays.equals(
+                        ObjectUtils.of(String.class), setNameMethod.getParameterTypes())) { // the param type is String
                     // set bean name to the value of the "name" property
                     ReflectionUtils.invokeMethod(setNameMethod, dubboConfigBean, beanName);
                 }

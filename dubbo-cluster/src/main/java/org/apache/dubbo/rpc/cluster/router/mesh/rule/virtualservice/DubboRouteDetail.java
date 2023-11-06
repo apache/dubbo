@@ -14,13 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice;
 
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.destination.DubboRouteDestination;
 
 import java.util.List;
-
 
 public class DubboRouteDetail {
     private String name;
@@ -53,10 +51,6 @@ public class DubboRouteDetail {
 
     @Override
     public String toString() {
-        return "DubboRouteDetail{" +
-                "name='" + name + '\'' +
-                ", match=" + match +
-                ", route=" + route +
-                '}';
+        return "DubboRouteDetail{" + "name='" + name + '\'' + ", match=" + match + ", route=" + route + '}';
     }
 }

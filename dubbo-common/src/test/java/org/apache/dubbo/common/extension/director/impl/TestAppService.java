@@ -66,7 +66,5 @@ public class TestAppService extends BaseTestService implements FooAppService {
     }
 
     @Override
-    public void process(URL url) {
-
-    }
+    public void process(URL url) {}
 }

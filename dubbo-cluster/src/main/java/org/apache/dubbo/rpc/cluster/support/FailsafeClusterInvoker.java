@@ -38,19 +38,26 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_ERRO
  *
  */
 public class FailsafeClusterInvoker<T> extends AbstractClusterInvoker<T> {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(FailsafeClusterInvoker.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(FailsafeClusterInvoker.class);
 
     public FailsafeClusterInvoker(Directory<T> directory) {
         super(directory);
     }
 
     @Override
-    public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
+    public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance)
+            throws RpcException {
         try {
             Invoker<T> invoker = select(loadbalance, invocation, invokers, null);
             return invokeWithContext(invoker, invocation);
         } catch (Throwable e) {
-            logger.error(CLUSTER_ERROR_RESPONSE,"Failsafe for provider exception","","Failsafe ignore exception: " + e.getMessage(),e);
+            logger.error(
+                    CLUSTER_ERROR_RESPONSE,
+                    "Failsafe for provider exception",
+                    "",
+                    "Failsafe ignore exception: " + e.getMessage(),
+                    e);
             return AsyncRpcResult.newDefaultAsyncResult(null, null, invocation); // ignore
         }
     }

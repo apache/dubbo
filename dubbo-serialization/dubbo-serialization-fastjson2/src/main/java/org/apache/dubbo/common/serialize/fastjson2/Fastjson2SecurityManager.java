@@ -24,12 +24,12 @@ import org.apache.dubbo.common.utils.SerializeCheckStatus;
 import org.apache.dubbo.common.utils.SerializeSecurityManager;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import com.alibaba.fastjson2.filter.ContextAutoTypeBeforeHandler;
-import com.alibaba.fastjson2.util.TypeUtils;
-
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.alibaba.fastjson2.filter.ContextAutoTypeBeforeHandler;
+import com.alibaba.fastjson2.util.TypeUtils;
 
 import static com.alibaba.fastjson2.util.TypeUtils.loadClass;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNTRUSTED_SERIALIZE_CLASS;
@@ -38,7 +38,8 @@ import static org.apache.dubbo.common.utils.SerializeCheckStatus.STRICT;
 public class Fastjson2SecurityManager implements AllowClassNotifyListener {
     private volatile Handler securityFilter;
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(Fastjson2SecurityManager.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(Fastjson2SecurityManager.class);
 
     private final SerializeSecurityManager securityManager;
 
@@ -53,27 +54,46 @@ public class Fastjson2SecurityManager implements AllowClassNotifyListener {
     public Fastjson2SecurityManager(FrameworkModel frameworkModel) {
         securityManager = frameworkModel.getBeanFactory().getOrRegisterBean(SerializeSecurityManager.class);
         securityManager.registerListener(this);
-        securityFilter = new Handler(AllowClassNotifyListener.DEFAULT_STATUS, securityManager, true, new String[0], new ConcurrentHashSet<>());
+        securityFilter = new Handler(
+                AllowClassNotifyListener.DEFAULT_STATUS,
+                securityManager,
+                true,
+                new String[0],
+                new ConcurrentHashSet<>());
     }
 
     @Override
     public synchronized void notifyPrefix(Set<String> allowedList, Set<String> disAllowedList) {
         this.allowedList = allowedList;
         this.disAllowedList = disAllowedList;
-        this.securityFilter = new Handler(this.status, this.securityManager, this.checkSerializable, this.allowedList.toArray(new String[0]), this.disAllowedList);
+        this.securityFilter = new Handler(
+                this.status,
+                this.securityManager,
+                this.checkSerializable,
+                this.allowedList.toArray(new String[0]),
+                this.disAllowedList);
     }
 
     @Override
     public synchronized void notifyCheckStatus(SerializeCheckStatus status) {
         this.status = status;
-        this.securityFilter = new Handler(this.status, this.securityManager, this.checkSerializable, this.allowedList.toArray(new String[0]), this.disAllowedList);
+        this.securityFilter = new Handler(
+                this.status,
+                this.securityManager,
+                this.checkSerializable,
+                this.allowedList.toArray(new String[0]),
+                this.disAllowedList);
     }
 
     @Override
     public synchronized void notifyCheckSerializable(boolean checkSerializable) {
         this.checkSerializable = checkSerializable;
-        this.securityFilter = new Handler(this.status, this.securityManager, this.checkSerializable, this.allowedList.toArray(new String[0]), this.disAllowedList);
-
+        this.securityFilter = new Handler(
+                this.status,
+                this.securityManager,
+                this.checkSerializable,
+                this.allowedList.toArray(new String[0]),
+                this.disAllowedList);
     }
 
     public Handler getSecurityFilter() {
@@ -89,7 +109,12 @@ public class Fastjson2SecurityManager implements AllowClassNotifyListener {
 
         final boolean checkSerializable;
 
-        public Handler(SerializeCheckStatus status, SerializeSecurityManager serializeSecurityManager, boolean checkSerializable, String[] acceptNames, Set<String> disAllowedList) {
+        public Handler(
+                SerializeCheckStatus status,
+                SerializeSecurityManager serializeSecurityManager,
+                boolean checkSerializable,
+                String[] acceptNames,
+                Set<String> disAllowedList) {
             super(true, acceptNames);
             this.status = status;
             this.serializeSecurityManager = serializeSecurityManager;
@@ -108,9 +133,9 @@ public class Fastjson2SecurityManager implements AllowClassNotifyListener {
 
             // 2. check if in strict mode
             if (status == STRICT) {
-                String msg = "[Serialization Security] Serialized class " + typeName + " is not in allow list. " +
-                    "Current mode is `STRICT`, will disallow to deserialize it by default. " +
-                    "Please add it into security/serialize.allowlist or follow FAQ to configure it.";
+                String msg = "[Serialization Security] Serialized class " + typeName + " is not in allow list. "
+                        + "Current mode is `STRICT`, will disallow to deserialize it by default. "
+                        + "Please add it into security/serialize.allowlist or follow FAQ to configure it.";
                 if (serializeSecurityManager.getWarnedClasses().add(typeName)) {
                     logger.error(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "", msg);
                 }
@@ -121,12 +146,17 @@ public class Fastjson2SecurityManager implements AllowClassNotifyListener {
             // 3. try load
             Class<?> localClass = loadClassDirectly(typeName);
             if (localClass != null) {
-                if (status == SerializeCheckStatus.WARN && serializeSecurityManager.getWarnedClasses().add(typeName)) {
-                    logger.warn(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "",
-                        "[Serialization Security] Serialized class " + localClass.getName() + " is not in allow list. " +
-                            "Current mode is `WARN`, will allow to deserialize it by default. " +
-                            "Dubbo will set to `STRICT` mode by default in the future. " +
-                            "Please add it into security/serialize.allowlist or follow FAQ to configure it.");
+                if (status == SerializeCheckStatus.WARN
+                        && serializeSecurityManager.getWarnedClasses().add(typeName)) {
+                    logger.warn(
+                            PROTOCOL_UNTRUSTED_SERIALIZE_CLASS,
+                            "",
+                            "",
+                            "[Serialization Security] Serialized class " + localClass.getName()
+                                    + " is not in allow list. "
+                                    + "Current mode is `WARN`, will allow to deserialize it by default. "
+                                    + "Dubbo will set to `STRICT` mode by default in the future. "
+                                    + "Please add it into security/serialize.allowlist or follow FAQ to configure it.");
                 }
                 return localClass;
             }
@@ -148,9 +178,9 @@ public class Fastjson2SecurityManager implements AllowClassNotifyListener {
 
             if (clazz == null && checkIfDisAllow(typeName)) {
                 clazz = DenyClass.class;
-                String msg = "[Serialization Security] Serialized class " + typeName + " is in disAllow list. " +
-                    "Current mode is `WARN`, will disallow to deserialize it by default. " +
-                    "Please add it into security/serialize.allowlist or follow FAQ to configure it.";
+                String msg = "[Serialization Security] Serialized class " + typeName + " is in disAllow list. "
+                        + "Current mode is `WARN`, will disallow to deserialize it by default. "
+                        + "Please add it into security/serialize.allowlist or follow FAQ to configure it.";
                 if (serializeSecurityManager.getWarnedClasses().add(typeName)) {
                     logger.warn(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "", msg);
                 }
@@ -177,7 +207,6 @@ public class Fastjson2SecurityManager implements AllowClassNotifyListener {
 
             return clazz;
         }
-
     }
 
     private static class DenyClass {

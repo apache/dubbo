@@ -47,5 +47,4 @@ public interface RegistryFactory {
      */
     @Adaptive({PROTOCOL_KEY})
     Registry getRegistry(URL url);
-
 }

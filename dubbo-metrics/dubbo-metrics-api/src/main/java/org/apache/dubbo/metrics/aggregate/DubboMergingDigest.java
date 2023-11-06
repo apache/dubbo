@@ -1,5 +1,5 @@
 /*
- * Licensed to Ted Dunning under one or more
+ * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
@@ -14,16 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.aggregate;
 
-
 import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
-
-import com.tdunning.math.stats.Centroid;
-import com.tdunning.math.stats.ScaleFunction;
-import com.tdunning.math.stats.Sort;
-import com.tdunning.math.stats.TDigest;
 
 import java.nio.ByteBuffer;
 import java.util.AbstractCollection;
@@ -34,6 +27,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import com.tdunning.math.stats.Centroid;
+import com.tdunning.math.stats.ScaleFunction;
+import com.tdunning.math.stats.Sort;
+import com.tdunning.math.stats.TDigest;
 
 /**
  * Maintains a t-digest by collecting new points in a buffer that is then sorted occasionally and merged
@@ -103,7 +101,6 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
     private final double[] tempWeight;
     private final double[] tempMean;
     private List<List<Double>> tempData = null;
-
 
     // array used for sorting the temp centroids.  This is a field
     // to avoid allocations during operation
@@ -334,8 +331,15 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
         }
         if (force || unmergedWeight.get() > 0) {
             // note that we run the merge in reverse every other merge to avoid left-to-right bias in merging
-            merge(tempMean, tempWeight, tempUsed.get(), tempData, order, unmergedWeight.get(),
-                useAlternatingSort & mergeCount % 2 == 1, compression);
+            merge(
+                    tempMean,
+                    tempWeight,
+                    tempUsed.get(),
+                    tempData,
+                    order,
+                    unmergedWeight.get(),
+                    useAlternatingSort & mergeCount % 2 == 1,
+                    compression);
             mergeCount++;
             tempUsed.set(0);
             unmergedWeight.set(0);
@@ -345,9 +349,15 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
         }
     }
 
-    private void merge(double[] incomingMean, double[] incomingWeight, int incomingCount,
-                       List<List<Double>> incomingData, int[] incomingOrder,
-                       double unmergedWeight, boolean runBackwards, double compression) {
+    private void merge(
+            double[] incomingMean,
+            double[] incomingWeight,
+            int incomingCount,
+            List<List<Double>> incomingData,
+            int[] incomingOrder,
+            double unmergedWeight,
+            boolean runBackwards,
+            double compression) {
         // when our incoming buffer fills up, we combine our existing centroids with the incoming data,
         // and then reduce the centroids by merging if possible
         assert lastUsedCell.get() <= 0 || weight[0] == 1;
@@ -376,7 +386,6 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
             Sort.reverse(incomingOrder, 0, incomingCount);
         }
 
-
         // start by copying the least incoming value to the normal buffer
         lastUsedCell.set(0);
         mean[lastUsedCell.get()] = incomingMean[incomingOrder[0]];
@@ -400,7 +409,8 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
             if (useWeightLimit) {
                 double q0 = wSoFar / totalWeight;
                 double q2 = (wSoFar + proposedWeight) / totalWeight;
-                addThis = proposedWeight <= totalWeight * Math.min(scale.max(q0, normalizer), scale.max(q2, normalizer));
+                addThis =
+                        proposedWeight <= totalWeight * Math.min(scale.max(q0, normalizer), scale.max(q2, normalizer));
             } else {
                 addThis = projectedW <= wLimit;
             }
@@ -413,7 +423,10 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
                 // next point will fit
                 // so merge into existing centroid
                 weight[lastUsedCell.get()] += incomingWeight[ix];
-                mean[lastUsedCell.get()] = mean[lastUsedCell.get()] + (incomingMean[ix] - mean[lastUsedCell.get()]) * incomingWeight[ix] / weight[lastUsedCell.get()];
+                mean[lastUsedCell.get()] = mean[lastUsedCell.get()]
+                        + (incomingMean[ix] - mean[lastUsedCell.get()])
+                                * incomingWeight[ix]
+                                / weight[lastUsedCell.get()];
                 incomingWeight[ix] = 0;
 
                 if (data != null) {
@@ -792,7 +805,8 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
     }
 
     public enum Encoding {
-        VERBOSE_ENCODING(1), SMALL_ENCODING(2);
+        VERBOSE_ENCODING(1),
+        SMALL_ENCODING(2);
 
         private final int code;
 
@@ -818,13 +832,13 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
     @Override
     public void asSmallBytes(ByteBuffer buf) {
         compress();
-        buf.putInt(DubboMergingDigest.Encoding.SMALL_ENCODING.code);    // 4
-        buf.putDouble(min);                          // + 8
-        buf.putDouble(max);                          // + 8
-        buf.putFloat((float) publicCompression);           // + 4
-        buf.putShort((short) mean.length);           // + 2
-        buf.putShort((short) tempMean.length);       // + 2
-        buf.putShort((short) lastUsedCell.get());          // + 2 = 30
+        buf.putInt(DubboMergingDigest.Encoding.SMALL_ENCODING.code); // 4
+        buf.putDouble(min); // + 8
+        buf.putDouble(max); // + 8
+        buf.putFloat((float) publicCompression); // + 4
+        buf.putShort((short) mean.length); // + 2
+        buf.putShort((short) tempMean.length); // + 2
+        buf.putShort((short) lastUsedCell.get()); // + 2 = 30
         for (int i = 0; i < lastUsedCell.get(); i++) {
             buf.putFloat((float) weight[i]);
             buf.putFloat((float) mean[i]);
@@ -834,10 +848,9 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
     @Override
     public String toString() {
         return "MergingDigest"
-            + "-" + getScaleFunction()
-            + "-" + (useWeightLimit ? "weight" : "kSize")
-            + "-" + (useAlternatingSort ? "alternating" : "stable")
-            + "-" + (useTwoLevelCompression ? "twoLevel" : "oneLevel");
+                + "-" + getScaleFunction()
+                + "-" + (useWeightLimit ? "weight" : "kSize")
+                + "-" + (useAlternatingSort ? "alternating" : "stable")
+                + "-" + (useTwoLevelCompression ? "twoLevel" : "oneLevel");
     }
-
 }

@@ -57,7 +57,10 @@ class PortTelnetTest {
         given(mockInvoker.getInterface()).willReturn(DemoService.class);
         given(mockInvoker.getUrl()).willReturn(URL.valueOf("dubbo://127.0.0.1:" + availablePort + "/demo"));
 
-        frameworkModel.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME).export(mockInvoker);
+        frameworkModel
+                .getExtensionLoader(Protocol.class)
+                .getExtension(DubboProtocol.NAME)
+                .export(mockInvoker);
     }
 
     @AfterEach
@@ -75,7 +78,7 @@ class PortTelnetTest {
         ExchangeClient client1 = Exchangers.connect("dubbo://127.0.0.1:" + availablePort + "/demo");
         ExchangeClient client2 = Exchangers.connect("dubbo://127.0.0.1:" + availablePort + "/demo");
         Thread.sleep(100);
-        String result = port.execute(mockCommandContext, new String[]{"-l", availablePort + ""});
+        String result = port.execute(mockCommandContext, new String[] {"-l", availablePort + ""});
         String client1Addr = client1.getLocalAddress().toString();
         String client2Addr = client2.getLocalAddress().toString();
         System.out.printf("Result: %s %n", result);
@@ -87,7 +90,7 @@ class PortTelnetTest {
 
     @Test
     void testListDetail() throws RemotingException {
-        String result = port.execute(mockCommandContext, new String[]{"-l"});
+        String result = port.execute(mockCommandContext, new String[] {"-l"});
         assertEquals("dubbo://127.0.0.1:" + availablePort + "", result);
     }
 
@@ -99,13 +102,13 @@ class PortTelnetTest {
 
     @Test
     void testErrorMessage() throws RemotingException {
-        String result = port.execute(mockCommandContext, new String[]{"a"});
+        String result = port.execute(mockCommandContext, new String[] {"a"});
         assertEquals("Illegal port a, must be integer.", result);
     }
 
     @Test
     void testNoPort() throws RemotingException {
-        String result = port.execute(mockCommandContext, new String[]{"-l", "20880"});
+        String result = port.execute(mockCommandContext, new String[] {"-l", "20880"});
         assertEquals("No such port 20880", result);
     }
 }

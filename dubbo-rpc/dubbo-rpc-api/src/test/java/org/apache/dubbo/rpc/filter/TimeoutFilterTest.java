@@ -41,7 +41,9 @@ class TimeoutFilterTest {
 
         Invoker invoker = Mockito.mock(Invoker.class);
         when(invoker.invoke(any(Invocation.class))).thenReturn(new AppResponse("result"));
-        when(invoker.getUrl()).thenReturn(URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&timeout=" + timeout));
+        when(invoker.getUrl())
+                .thenReturn(
+                        URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&timeout=" + timeout));
 
         Invocation invocation = Mockito.mock(Invocation.class);
         when(invocation.getMethodName()).thenReturn("testInvokeWithoutTimeout");
@@ -62,6 +64,5 @@ class TimeoutFilterTest {
 
         Result result = timeoutFilter.invoke(invoker, invocation);
         Assertions.assertEquals("Dubbo", result.getValue());
-
     }
 }

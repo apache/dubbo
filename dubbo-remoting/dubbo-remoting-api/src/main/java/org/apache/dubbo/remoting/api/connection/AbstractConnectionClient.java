@@ -32,7 +32,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERR
 
 public abstract class AbstractConnectionClient extends AbstractClient {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractConnectionClient.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(AbstractConnectionClient.class);
 
     protected WireProtocol protocol;
 
@@ -44,8 +45,8 @@ public abstract class AbstractConnectionClient extends AbstractClient {
 
     private volatile long counter;
 
-    private static final AtomicLongFieldUpdater<AbstractConnectionClient> COUNTER_UPDATER
-            = AtomicLongFieldUpdater.newUpdater(AbstractConnectionClient.class, "counter");
+    private static final AtomicLongFieldUpdater<AbstractConnectionClient> COUNTER_UPDATER =
+            AtomicLongFieldUpdater.newUpdater(AbstractConnectionClient.class, "counter");
 
     protected AbstractConnectionClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
@@ -142,5 +143,4 @@ public abstract class AbstractConnectionClient extends AbstractClient {
     public long getCounter() {
         return COUNTER_UPDATER.get(this);
     }
-
 }

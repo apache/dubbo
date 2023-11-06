@@ -46,7 +46,8 @@ public class ConsumerSignFilter implements Filter {
         URL url = invoker.getUrl();
         boolean shouldAuth = url.getParameter(Constants.SERVICE_AUTH, false);
         if (shouldAuth) {
-            Authenticator authenticator = applicationModel.getExtensionLoader(Authenticator.class)
+            Authenticator authenticator = applicationModel
+                    .getExtensionLoader(Authenticator.class)
                     .getExtension(url.getParameter(Constants.AUTHENTICATOR, Constants.DEFAULT_AUTHENTICATOR));
             authenticator.sign(invocation, url);
         }

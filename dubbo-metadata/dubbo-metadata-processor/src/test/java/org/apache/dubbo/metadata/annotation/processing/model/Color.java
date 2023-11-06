@@ -22,7 +22,6 @@ package org.apache.dubbo.metadata.annotation.processing.model;
  * @since 2.7.6
  */
 public enum Color {
-
     RED(1),
     YELLOW(2),
     BLUE(3);
@@ -35,9 +34,7 @@ public enum Color {
 
     @Override
     public String toString() {
-        return "Color{" +
-                "value=" + value +
-                "} " + super.toString();
+        return "Color{" + "value=" + value + "} " + super.toString();
     }
 
     public int getValue() {
