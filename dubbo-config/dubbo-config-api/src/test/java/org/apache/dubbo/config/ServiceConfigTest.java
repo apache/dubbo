@@ -734,6 +734,5 @@ class ServiceConfigTest {
         } catch (Exception e) {
             Assertions.assertEquals(EXPECT_RESPONSE_MSG, e.getMessage());
         }
-
     }
 }
