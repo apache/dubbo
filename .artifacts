@@ -107,6 +107,7 @@ dubbo-spring-boot-actuator
 dubbo-spring-boot-actuator-compatible
 dubbo-spring-boot-autoconfigure
 dubbo-spring-boot-autoconfigure-compatible
+dubbo-spring-boot-configuration-metadata-compatible
 dubbo-spring-boot-compatible
 dubbo-observability-spring-boot-starters
 dubbo-observability-spring-boot-autoconfigure
