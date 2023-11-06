@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -163,7 +164,32 @@ class MeshRuleRouterTest {
         "          route:\n" +
         "            - destination: {host: demo, subset: testing}\n" +
         "  hosts: [demo]\n";
-
+    private final static String THROW_EXCEPTION_ENABLED_RULE = "apiVersion: service.dubbo.apache.org/v1alpha1\n" +
+            "kind: VirtualService\n" +
+            "metadata: { name: demo-route }\n" +
+            "spec:\n" +
+            "  dubbo:\n" +
+            "    - throwExceptionIfNotMatched: true\n" +
+            "      routedetail:\n" +
+            "        - match:\n" +
+            "            - attachments: \n" +
+            "                dubboContext: {trafficLabel: {regex: xxx}}\n" +
+            "          name: xxx-project\n" +
+            "          route:\n" +
+            "            - destination: {host: demo, subset: isolation}\n" +
+            "        - match:\n" +
+            "            - attachments: \n" +
+            "                dubboContext: {trafficLabel: {regex: testing-trunk}}\n" +
+            "          name: testing-trunk\n" +
+            "          route:\n" +
+            "            - destination: {host: demo, subset: testing-trunk}\n" +
+            "        - match:\n" +
+            "            - attachments: \n" +
+            "                dubboContext: {trafficLabel: {regex: testing}}\n" +
+            "          name: testing\n" +
+            "          route:\n" +
+            "            - destination: {host: demo, subset: testing}\n" +
+            "  hosts: [demo]\n";
     private ModuleModel originModel;
     private ModuleModel moduleModel;
     private MeshRuleManager meshRuleManager;
@@ -381,5 +407,65 @@ class MeshRuleRouterTest {
         invokers.removeAll(Arrays.asList(isolation, testingTrunk, testing));
         assertEquals(invokers, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null));
 
+    }
+
+    @Test
+    void testNotMatchedRouteWhenThrowExceptionEnabled() {
+        StandardMeshRuleRouter<Object> meshRuleRouter = new StandardMeshRuleRouter<>(url);
+
+        Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
+        List<Map<String, Object>> rules = new LinkedList<>();
+        rules.add(yaml.load(rule1));
+        rules.add(yaml.load(THROW_EXCEPTION_ENABLED_RULE));
+        meshRuleRouter.onRuleChange("app1", rules);
+
+        Invoker<Object> isolation = createInvoker(new HashMap<String, String>() {{
+            put("env-sign", "xxx");
+            put("tag1", "hello");
+        }});
+        Invoker<Object> testingTrunk = createInvoker(Collections.singletonMap("env-sign", "yyy"));
+        Invoker<Object> testing = createInvoker(Collections.singletonMap("env-sign", "zzz"));
+
+        BitList<Invoker<Object>> invokers = new BitList<>(Arrays.asList(isolation, testingTrunk, testing));
+        meshRuleRouter.notify(invokers);
+
+        RpcInvocation rpcInvocation = new RpcInvocation();
+        // No route matched, should throw RuntimeException
+        assertThrows(RuntimeException.class, () -> meshRuleRouter.doRoute(invokers.clone(), null, rpcInvocation, true, null, new Holder<>()));
+    }
+
+    @Test
+    void testMatchedRouteWhenThrowExceptionEnabled() {
+        StandardMeshRuleRouter<Object> meshRuleRouter = new StandardMeshRuleRouter<>(url);
+
+        Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
+        List<Map<String, Object>> rules = new LinkedList<>();
+        rules.add(yaml.load(rule1));
+        rules.add(yaml.load(THROW_EXCEPTION_ENABLED_RULE));
+        meshRuleRouter.onRuleChange("app1", rules);
+
+        Invoker<Object> isolation = createInvoker(new HashMap<String, String>() {{
+            put("env-sign", "xxx");
+            put("tag1", "hello");
+        }});
+        Invoker<Object> testingTrunk = createInvoker(Collections.singletonMap("env-sign", "yyy"));
+        Invoker<Object> testing = createInvoker(Collections.singletonMap("env-sign", "zzz"));
+
+        BitList<Invoker<Object>> invokers = new BitList<>(Arrays.asList(isolation, testingTrunk, testing));
+        meshRuleRouter.notify(invokers);
+
+        RpcInvocation rpcInvocation = new RpcInvocation();
+        rpcInvocation.setAttachment("trafficLabel", "xxx");
+        BitList<Invoker<Object>> invokerList = meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null);
+        assertEquals(1, invokerList.size());
+        assertEquals(isolation, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).get(0));
+
+        rpcInvocation.setAttachment("trafficLabel", "testing-trunk");
+        assertEquals(1, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).size());
+        assertEquals(testingTrunk, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).get(0));
+
+        rpcInvocation.setAttachment("trafficLabel", "testing");
+        assertEquals(1, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).size());
+        assertEquals(testing, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).get(0));
     }
 }
