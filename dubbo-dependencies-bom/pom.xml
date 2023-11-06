@@ -191,6 +191,7 @@
     <spotless-maven-plugin.version>2.40.0</spotless-maven-plugin.version>
     <spotless.action>check</spotless.action>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
+    <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
     <revision>3.2.8-SNAPSHOT</revision>
   </properties>
 
@@ -967,7 +968,9 @@
             <version>${spotless-maven-plugin.version}</version>
             <configuration>
               <java>
-                <palantirJavaFormat />
+                <palantirJavaFormat>
+                  <version>${palantirJavaFormat.version}</version>
+                </palantirJavaFormat>
                 <removeUnusedImports />
                 <importOrder>
                   <file>dubbo-importorder.txt</file>
