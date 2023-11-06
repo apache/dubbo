@@ -77,7 +77,7 @@ public class RedisMetadataReport extends AbstractMetadataReport {
     private int timeout;
     private String password;
     private final String root;
-    protected MappingDataListener mappingDataListener;
+    protected volatile MappingDataListener mappingDataListener;
 
     public RedisMetadataReport(URL url) {
         super(url);
@@ -352,9 +352,10 @@ public class RedisMetadataReport extends AbstractMetadataReport {
         if(null==mappingDataListener){
             synchronized (this){
                 if(null==mappingDataListener) {
-                    mappingDataListener = new MappingDataListener(buildPubSubKey());
-                    mappingDataListener.getNotifySub().addListener(serviceKey, listener);
-                    mappingDataListener.start();
+                    MappingDataListener dataListener = new MappingDataListener(buildPubSubKey());
+                    dataListener.getNotifySub().addListener(serviceKey, listener);
+                    dataListener.start();
+                    mappingDataListener=dataListener;
                 }else{
                     mappingDataListener.getNotifySub().addListener(serviceKey,listener);
                 }
@@ -443,13 +444,12 @@ public class RedisMetadataReport extends AbstractMetadataReport {
 
         private String path;
 
-        private NotifySub notifySub;
+        private final NotifySub notifySub = new NotifySub();;
         // for test
         protected volatile boolean running = true;
 
         public MappingDataListener(String path) {
             this.path=path;
-            this.notifySub = new NotifySub();
         }
 
 
