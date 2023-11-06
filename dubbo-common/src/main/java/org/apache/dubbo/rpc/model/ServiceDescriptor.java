@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.model;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -54,4 +55,5 @@ public interface ServiceDescriptor {
 
     List<MethodDescriptor> getMethods(String methodName);
 
+    Map<String, List<MethodDescriptor>> getMethods();
 }

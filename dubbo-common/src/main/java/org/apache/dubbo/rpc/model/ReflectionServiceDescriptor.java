@@ -18,7 +18,6 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.ProtobufUtils;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 
@@ -75,13 +74,6 @@ public class ReflectionServiceDescriptor implements ServiceDescriptor {
         }
 
         methods.forEach((methodName, methodList) -> {
-            //pb method not allow override
-            if (methodList.size() > 1) {
-                long pbMethodCount = methodList.stream().filter(methodDescriptor -> Arrays.stream(methodDescriptor.getParameterClasses()).anyMatch(ProtobufUtils::isProtobufClass)).count();
-                if (pbMethodCount > 0L) {
-                    throw new IllegalStateException("Protobuf method not allow override," + "method(" + interfaceName + "." + methodName + ").");
-                }
-            }
             Map<String, MethodDescriptor> descMap = descToMethods.computeIfAbsent(methodName, k -> new HashMap<>());
             // not support BI_STREAM and SERVER_STREAM at the same time, for example,
             // void foo(Request, StreamObserver<Response>)  ---> SERVER_STREAM
@@ -125,6 +117,11 @@ public class ReflectionServiceDescriptor implements ServiceDescriptor {
             return methods.get(params);
         }
         return null;
+    }
+
+    @Override
+    public Map<String, List<MethodDescriptor>> getMethods() {
+        return methods;
     }
 
     /**

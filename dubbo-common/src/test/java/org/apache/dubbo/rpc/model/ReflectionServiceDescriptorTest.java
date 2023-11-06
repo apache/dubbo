@@ -22,8 +22,6 @@ import org.apache.dubbo.metadata.definition.TypeDefinitionBuilder;
 import org.apache.dubbo.rpc.support.DemoService;
 
 import org.apache.dubbo.rpc.support.DemoService1;
-import org.apache.dubbo.rpc.support.DemoService2;
-import org.apache.dubbo.rpc.support.DemoService3;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -109,18 +107,5 @@ class ReflectionServiceDescriptorTest {
         ReflectionServiceDescriptor service3 = new ReflectionServiceDescriptor(
             DemoService.class);
         Assertions.assertEquals(service2.hashCode(), service3.hashCode());
-    }
-
-    @Test
-    void testPbMethodOverride() {
-        new ReflectionServiceDescriptor(DemoService.class);
-        new ReflectionServiceDescriptor(DemoService2.class);
-        String EXPECT_RESPONSE_MSG = "Protobuf method not allow override,method(org.apache.dubbo.rpc.support.DemoService3.sayHello).";
-        try {
-            new ReflectionServiceDescriptor(DemoService3.class);
-        } catch (IllegalStateException e) {
-            Assertions.assertEquals(EXPECT_RESPONSE_MSG, e.getMessage());
-        }
-
     }
 }

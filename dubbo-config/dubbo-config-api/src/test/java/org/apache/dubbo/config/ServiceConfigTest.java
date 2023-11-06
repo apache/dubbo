@@ -20,12 +20,18 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.api.DemoService;
+import org.apache.dubbo.config.api.DemoService1;
+import org.apache.dubbo.config.api.DemoService2;
+import org.apache.dubbo.config.api.DemoService3;
 import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.mock.MockProtocol2;
 import org.apache.dubbo.config.mock.MockRegistryFactory2;
 import org.apache.dubbo.config.mock.MockServiceListener;
 import org.apache.dubbo.config.mock.TestProxyFactory;
+import org.apache.dubbo.config.provider.impl.DemoService1Impl;
+import org.apache.dubbo.config.provider.impl.DemoService2Impl;
+import org.apache.dubbo.config.provider.impl.DemoService3Impl;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.metadata.MappingListener;
 import org.apache.dubbo.metadata.ServiceNameMapping;
@@ -698,5 +704,36 @@ class ServiceConfigTest {
         } catch (Throwable t) {
             Assertions.fail(t);
         }
+    }
+
+    @Test
+    void testTriplePbMethodOverride() {
+        ServiceConfig<DemoService1> serviceConfig1 = new ServiceConfig<>();
+        serviceConfig1.setInterface(DemoService1.class);
+        serviceConfig1.setRef(new DemoService1Impl());
+        serviceConfig1.setProtocol(new ProtocolConfig() {{
+            setName("tri");
+        }});
+        serviceConfig1.refresh();
+        ServiceConfig<DemoService2> serviceConfig2 = new ServiceConfig<>();
+        serviceConfig2.setInterface(DemoService2.class);
+        serviceConfig2.setRef(new DemoService2Impl());
+        serviceConfig2.setProtocol(new ProtocolConfig() {{
+            setName("tri");
+        }});
+        serviceConfig2.refresh();
+        String EXPECT_RESPONSE_MSG = "Triple protocol's protobuf method not allow override,method(org.apache.dubbo.config.api.DemoService3.sayHello).";
+        try {
+            ServiceConfig<DemoService3> serviceConfig3 = new ServiceConfig<>();
+            serviceConfig3.setInterface(DemoService3.class);
+            serviceConfig3.setRef(new DemoService3Impl());
+            serviceConfig3.setProtocol(new ProtocolConfig() {{
+                setName("tri");
+            }});
+            serviceConfig3.refresh();
+        } catch (Exception e) {
+            Assertions.assertEquals(EXPECT_RESPONSE_MSG, e.getMessage());
+        }
+
     }
 }

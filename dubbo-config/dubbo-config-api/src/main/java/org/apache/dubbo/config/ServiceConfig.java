@@ -32,6 +32,7 @@ import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.ProtobufUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
@@ -49,6 +50,7 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.ServerService;
 import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
@@ -72,6 +74,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
@@ -472,10 +475,38 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 throw new IllegalStateException("The stub implementation class " + stubClass.getName() + " not implement interface " + interfaceName);
             }
         }
+        checkTripleMethodOverride();
         checkStubAndLocal(interfaceClass);
         ConfigValidationUtils.checkMock(interfaceClass, this);
         ConfigValidationUtils.validateServiceConfig(this);
         postProcessConfig();
+    }
+
+    private void checkTripleMethodOverride() {
+        boolean hasTriProtocol = false;
+        if (protocols != null) {
+            for (ProtocolConfig protocol : protocols) {
+                if (protocol.getName().equals(CommonConstants.TRIPLE)) {
+                    hasTriProtocol = true;
+                    break;
+                }
+            }
+        }
+        if (hasTriProtocol && !(ref instanceof ServerService)) {
+            ServiceDescriptor serviceDescriptor = getScopeModel().getServiceRepository().registerService(getInterfaceClass());
+            serviceDescriptor.getMethods().forEach((methodName, methodList) -> {
+                //fix Server stream create two method
+                List<MethodDescriptor> tmpMethodList = methodList.stream().filter(md -> md.getRpcType() != MethodDescriptor.RpcType.SERVER_STREAM && md.getRpcType() != MethodDescriptor.RpcType.BI_STREAM).collect(Collectors.toList());
+                //triple protocol pb method not allow override
+                if (tmpMethodList.size() > 1) {
+                    long pbMethodCount = tmpMethodList.stream()
+                        .filter(methodDescriptor -> Arrays.stream(methodDescriptor.getParameterClasses()).anyMatch(ProtobufUtils::isProtobufClass)).count();
+                    if (pbMethodCount > 0L) {
+                        throw new IllegalStateException("Triple protocol's protobuf method not allow override," + "method(" + interfaceName + "." + methodName + ").");
+                    }
+                }
+            });
+        }
     }
 
     @Override

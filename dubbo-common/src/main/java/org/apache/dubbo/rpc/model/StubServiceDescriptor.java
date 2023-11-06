@@ -105,6 +105,11 @@ public class StubServiceDescriptor implements ServiceDescriptor {
         return null;
     }
 
+    @Override
+    public Map<String, List<MethodDescriptor>> getMethods() {
+        return methods;
+    }
+
     public List<MethodDescriptor> getMethods(String methodName) {
         return methods.get(methodName);
     }
