@@ -25,34 +25,37 @@ import org.apache.dubbo.config.support.Nested;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**
- * TracingConfig
+ * Configuration for tracing.
  */
 public class TracingConfig extends AbstractConfig {
 
     private static final long serialVersionUID = -9089919311611546383L;
 
+    /**
+     * Indicates whether the feature is enabled (default is false).
+     */
     private Boolean enabled = false;
 
     /**
-     * Sampling configuration.
+     * Configuration for sampling.
      */
     @Nested
     private SamplingConfig sampling = new SamplingConfig();
 
     /**
-     * Baggage configuration.
+     * Configuration for baggage.
      */
     @Nested
     private BaggageConfig baggage = new BaggageConfig();
 
     /**
-     * Propagation configuration.
+     * Configuration for propagation.
      */
     @Nested
     private PropagationConfig propagation = new PropagationConfig();
 
     /**
-     * Exporter configuration.
+     * Configuration for the tracing exporter.
      */
     @Nested
     private ExporterConfig tracingExporter = new ExporterConfig();

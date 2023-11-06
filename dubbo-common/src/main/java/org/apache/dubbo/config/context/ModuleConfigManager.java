@@ -62,7 +62,6 @@ public class ModuleConfigManager extends AbstractConfigManager implements Module
     private final Map<String, AbstractInterfaceConfig> serviceConfigCache = new ConcurrentHashMap<>();
     private final ConfigManager applicationConfigManager;
 
-
     public ModuleConfigManager(ModuleModel moduleModel) {
         super(moduleModel, Arrays.asList(ModuleConfig.class, ServiceConfigBase.class, ReferenceConfigBase.class, ProviderConfig.class, ConsumerConfig.class));
         applicationConfigManager = moduleModel.getApplicationModel().getApplicationConfigManager();
@@ -188,7 +187,6 @@ public class ModuleConfigManager extends AbstractConfigManager implements Module
         this.serviceConfigCache.clear();
     }
 
-
     @Override
     protected <C extends AbstractConfig> Optional<C> findDuplicatedConfig(Map<String, C> configsMap, C config) {
         // check duplicated configs
@@ -294,7 +292,6 @@ public class ModuleConfigManager extends AbstractConfigManager implements Module
         checkDefaultAndValidateConfigs(ConsumerConfig.class);
         checkDefaultAndValidateConfigs(ModuleConfig.class);
     }
-
 
     //
     // Delegate read application configs

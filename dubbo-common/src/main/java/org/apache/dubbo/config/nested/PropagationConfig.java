@@ -18,6 +18,9 @@ package org.apache.dubbo.config.nested;
 
 import java.io.Serializable;
 
+/**
+ * Configuration for the propagation.
+ */
 public class PropagationConfig implements Serializable {
 
     public static final String B3 = "B3";

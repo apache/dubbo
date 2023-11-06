@@ -22,8 +22,14 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Configuration for the baggage.
+ */
 public class BaggageConfig implements Serializable {
 
+    /**
+     * Whether baggage is enabled or not.
+     */
     private Boolean enabled = true;
 
     /**

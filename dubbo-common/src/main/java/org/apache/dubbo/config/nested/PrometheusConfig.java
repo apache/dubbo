@@ -20,6 +20,9 @@ import org.apache.dubbo.config.support.Nested;
 
 import java.io.Serializable;
 
+/**
+ * Configuration for the prometheus.
+ */
 public class PrometheusConfig implements Serializable {
 
     /**
@@ -29,7 +32,7 @@ public class PrometheusConfig implements Serializable {
     private Exporter exporter;
 
     /**
-     * Prometheus Pushgateway configuration
+     * Prometheus push gateway configuration
      */
     @Nested
     private Pushgateway pushgateway;
