@@ -623,6 +623,40 @@
                         <version>${spotless-maven-plugin.version}</version>
                         <configuration>
                             <java>
+                                <excludes>
+                                    <exclude>src/main/java/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/common/timer/HashedWheelTimer.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/common/timer/Timeout.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/common/timer/Timer.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/common/timer/TimerTask.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/common/utils/CIDRUtils.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/common/utils/Utf8Utils.java</exclude>
+                                    <exclude>src/test/java/org/apache/dubbo/config/spring/EmbeddedZooKeeper.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/test/common/utils/TestSocketUtils.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/rpc/protocol/tri/TriHttp2RemoteFlowController.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/common/threadpool/serial/SerializingExecutor.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/AbstractAotMojo.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/AbstractDependencyFilterMojo.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/CommandLineBuilder.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/DependencyFilter.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/Exclude.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/ExcludeFilter.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/FilterableDependency.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/Include.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/IncludeFilter.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/JavaCompilerPluginConfiguration.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/JavaExecutable.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/JavaProcessExecutor.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/MatchingGroupIdFilter.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/RunArguments.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/RunProcess.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/aot/generate/BasicJsonWriter.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/aot/generate/ExecutableMode.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/aot/generate/MemberCategory.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/metrics/aggregate/DubboMergingDigest.java</exclude>
+                                    <exclude>src/main/java/org/apache/dubbo/metrics/aggregate/DubboAbstractTDigest.java</exclude>
+                                </excludes>
                                 <palantirJavaFormat />
                                 <removeUnusedImports />
                                 <importOrder>
