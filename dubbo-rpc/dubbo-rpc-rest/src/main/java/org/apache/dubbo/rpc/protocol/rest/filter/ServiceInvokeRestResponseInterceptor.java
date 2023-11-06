@@ -30,6 +30,11 @@ public class ServiceInvokeRestResponseInterceptor implements RestResponseInterce
     @Override
     public void intercept(RestInterceptContext restInterceptContext) throws Exception {
 
-        writeResult(restInterceptContext.getResponse(), restInterceptContext.getRequestFacade(), restInterceptContext.getUrl(), restInterceptContext.getResult(), restInterceptContext.getRpcInvocation().getReturnType());
+        writeResult(
+                restInterceptContext.getResponse(),
+                restInterceptContext.getRequestFacade(),
+                restInterceptContext.getUrl(),
+                restInterceptContext.getResult(),
+                restInterceptContext.getRpcInvocation().getReturnType());
     }
 }

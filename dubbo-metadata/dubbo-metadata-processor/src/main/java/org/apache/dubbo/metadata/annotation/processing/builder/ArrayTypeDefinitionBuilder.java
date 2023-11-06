@@ -21,6 +21,7 @@ import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeMirror;
+
 import java.lang.reflect.Array;
 import java.util.Map;
 
@@ -39,12 +40,12 @@ public class ArrayTypeDefinitionBuilder implements TypeBuilder<ArrayType> {
     }
 
     @Override
-    public TypeDefinition build(ProcessingEnvironment processingEnv, ArrayType type, Map<String, TypeDefinition> typeCache) {
+    public TypeDefinition build(
+            ProcessingEnvironment processingEnv, ArrayType type, Map<String, TypeDefinition> typeCache) {
         TypeDefinition typeDefinition = new TypeDefinition(type.toString());
         TypeMirror componentType = type.getComponentType();
         TypeDefinition subTypeDefinition = TypeDefinitionBuilder.build(processingEnv, componentType, typeCache);
-        typeDefinition.getItems()
-                .add(subTypeDefinition.getType());
+        typeDefinition.getItems().add(subTypeDefinition.getType());
         return typeDefinition;
     }
 

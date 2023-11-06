@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.logger.Logger;
@@ -43,15 +42,16 @@ public class StubMethodDescriptor implements MethodDescriptor, PackableMethod {
     private final UnPack requestUnpack;
     private final UnPack responseUnpack;
 
-    public StubMethodDescriptor(String methodName,
-        Class<?> requestClass,
-        Class<?> responseClass,
-        StubServiceDescriptor serviceDescriptor,
-        RpcType rpcType,
-        Pack requestPack,
-        Pack responsePack,
-        UnPack requestUnpack,
-        UnPack responseUnpack) {
+    public StubMethodDescriptor(
+            String methodName,
+            Class<?> requestClass,
+            Class<?> responseClass,
+            StubServiceDescriptor serviceDescriptor,
+            RpcType rpcType,
+            Pack requestPack,
+            Pack responsePack,
+            UnPack requestUnpack,
+            UnPack responseUnpack) {
         this.methodName = methodName;
         this.serviceDescriptor = serviceDescriptor;
         this.rpcType = rpcType;
@@ -59,14 +59,14 @@ public class StubMethodDescriptor implements MethodDescriptor, PackableMethod {
         this.responsePack = responsePack;
         this.responseUnpack = responseUnpack;
         this.requestUnpack = requestUnpack;
-        this.parameterClasses = new Class<?>[]{requestClass};
+        this.parameterClasses = new Class<?>[] {requestClass};
         this.returnClass = responseClass;
         this.paramDesc = ReflectUtils.getDesc(parameterClasses);
-        this.compatibleParamSignatures = Stream.of(parameterClasses).map(Class::getName).toArray(String[]::new);
-        this.returnTypes = new Type[]{responseClass, responseClass};
+        this.compatibleParamSignatures =
+                Stream.of(parameterClasses).map(Class::getName).toArray(String[]::new);
+        this.returnTypes = new Type[] {responseClass, responseClass};
         serviceDescriptor.addMethod(this);
     }
-
 
     @Override
     public String getMethodName() {

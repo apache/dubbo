@@ -22,17 +22,16 @@ import org.apache.dubbo.common.logger.log4j.Log4jLoggerAdapter;
 import org.apache.dubbo.common.logger.log4j2.Log4j2LoggerAdapter;
 import org.apache.dubbo.common.logger.slf4j.Slf4jLoggerAdapter;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.stream.Stream;
+
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.stream.Stream;
-
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-
 
 class LoggerTest {
 
@@ -42,8 +41,7 @@ class LoggerTest {
                 Arguments.of(JdkLoggerAdapter.class),
                 Arguments.of(Log4jLoggerAdapter.class),
                 Arguments.of(Slf4jLoggerAdapter.class),
-                Arguments.of(Log4j2LoggerAdapter.class)
-        );
+                Arguments.of(Log4j2LoggerAdapter.class));
     }
 
     @ParameterizedTest
@@ -76,7 +74,7 @@ class LoggerTest {
         logger.debug("debug", new Exception("debug"));
         logger.trace("trace", new Exception("trace"));
 
-        logger.error("error:{}","arg1", new Exception("error"));
+        logger.error("error:{}", "arg1", new Exception("error"));
         logger.warn("warn:{}", "arg1", new Exception("warn"));
         logger.info("info:{}", "arg1", new Exception("info"));
         logger.debug("debug:{}", "arg1", new Exception("debug"));
@@ -85,7 +83,8 @@ class LoggerTest {
 
     @ParameterizedTest
     @MethodSource("data")
-    void testLevelEnable(Class<? extends LoggerAdapter> loggerAdapter) throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+    void testLevelEnable(Class<? extends LoggerAdapter> loggerAdapter)
+            throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
         LoggerAdapter adapter = loggerAdapter.getDeclaredConstructor().newInstance();
         adapter.setLevel(Level.ALL);
         Logger logger = adapter.getLogger(this.getClass());

@@ -36,6 +36,14 @@ import org.apache.dubbo.rpc.cluster.loadbalance.RandomLoadBalance;
 import org.apache.dubbo.rpc.cluster.loadbalance.RoundRobinLoadBalance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -44,14 +52,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_CONNECTIVITY_VALIDATION;
@@ -78,8 +78,11 @@ class AbstractClusterInvokerTest {
     AbstractClusterInvoker<IHelloService> cluster_nocheck;
     StaticDirectory<IHelloService> dic;
     RpcInvocation invocation = new RpcInvocation();
-    URL url = URL.valueOf("registry://localhost:9090/org.apache.dubbo.rpc.cluster.support.AbstractClusterInvokerTest.IHelloService?refer=" + URL.encode("application=abstractClusterInvokerTest"));
-    URL consumerUrl = URL.valueOf("dubbo://localhost?application=abstractClusterInvokerTest&refer=application%3DabstractClusterInvokerTest");
+    URL url = URL.valueOf(
+            "registry://localhost:9090/org.apache.dubbo.rpc.cluster.support.AbstractClusterInvokerTest.IHelloService?refer="
+                    + URL.encode("application=abstractClusterInvokerTest"));
+    URL consumerUrl = URL.valueOf(
+            "dubbo://localhost?application=abstractClusterInvokerTest&refer=application%3DabstractClusterInvokerTest");
 
     Invoker<IHelloService> invoker1;
     Invoker<IHelloService> invoker2;
@@ -156,17 +159,19 @@ class AbstractClusterInvokerTest {
             }
         };
 
-        cluster_nocheck = new AbstractClusterInvoker(dic, url.addParameterIfAbsent(CLUSTER_AVAILABLE_CHECK_KEY, Boolean.FALSE.toString())) {
-            @Override
-            protected Result doInvoke(Invocation invocation, List invokers, LoadBalance loadbalance)
-                    throws RpcException {
-                return null;
-            }
-        };
-
+        cluster_nocheck =
+                new AbstractClusterInvoker(
+                        dic, url.addParameterIfAbsent(CLUSTER_AVAILABLE_CHECK_KEY, Boolean.FALSE.toString())) {
+                    @Override
+                    protected Result doInvoke(Invocation invocation, List invokers, LoadBalance loadbalance)
+                            throws RpcException {
+                        return null;
+                    }
+                };
     }
 
-    @Disabled("RpcContext attachments will be set to Invocation twice, first in ConsumerContextFilter, second AbstractInvoker")
+    @Disabled(
+            "RpcContext attachments will be set to Invocation twice, first in ConsumerContextFilter, second AbstractInvoker")
     @Test
     void testBindingAttachment() {
         final String attachKey = "attach";
@@ -175,7 +180,7 @@ class AbstractClusterInvokerTest {
         // setup attachment
         RpcContext.getClientAttachment().setAttachment(attachKey, attachValue);
         Map<String, Object> attachments = RpcContext.getClientAttachment().getObjectAttachments();
-        Assertions.assertTrue( attachments != null && attachments.size() == 1,"set attachment failed!");
+        Assertions.assertTrue(attachments != null && attachments.size() == 1, "set attachment failed!");
 
         cluster = new AbstractClusterInvoker(dic) {
             @Override
@@ -196,7 +201,7 @@ class AbstractClusterInvokerTest {
     @Test
     void testSelect_Invokersize0() {
         LoadBalance l = cluster.initLoadBalance(invokers, invocation);
-        Assertions.assertNotNull(l,"cluster.initLoadBalance returns null!");
+        Assertions.assertNotNull(l, "cluster.initLoadBalance returns null!");
         {
             Invoker invoker = cluster.select(l, null, null, null);
             Assertions.assertNull(invoker);
@@ -214,7 +219,7 @@ class AbstractClusterInvokerTest {
         cluster = new AbstractClusterInvoker(dic) {
             @Override
             protected Result doInvoke(Invocation invocation, List invokers, LoadBalance loadbalance)
-                throws RpcException {
+                    throws RpcException {
                 checkInvokers(invokers, invocation);
                 Invoker invoker = select(loadbalance, invocation, invokers, null);
                 return invokeWithContext(invoker, invocation);
@@ -232,7 +237,7 @@ class AbstractClusterInvokerTest {
         invokers.clear();
         invokers.add(invoker1);
         LoadBalance l = cluster.initLoadBalance(invokers, invocation);
-        Assertions.assertNotNull(l,"cluster.initLoadBalance returns null!");
+        Assertions.assertNotNull(l, "cluster.initLoadBalance returns null!");
         Invoker invoker = cluster.select(l, null, invokers, null);
         Assertions.assertEquals(invoker1, invoker);
     }
@@ -243,7 +248,7 @@ class AbstractClusterInvokerTest {
         invokers.add(invoker2);
         invokers.add(invoker4);
         LoadBalance l = cluster.initLoadBalance(invokers, invocation);
-        Assertions.assertNotNull(l,"cluster.initLoadBalance returns null!");
+        Assertions.assertNotNull(l, "cluster.initLoadBalance returns null!");
         {
             selectedInvokers.clear();
             selectedInvokers.add(invoker4);
@@ -268,7 +273,7 @@ class AbstractClusterInvokerTest {
     @Test
     void testCloseAvailablecheck() {
         LoadBalance lb = mock(LoadBalance.class);
-        Map<String, String> queryMap = (Map<String, String> )url.getAttribute(REFER_KEY);
+        Map<String, String> queryMap = (Map<String, String>) url.getAttribute(REFER_KEY);
         URL tmpUrl = turnRegistryUrlToConsumerUrl(url, queryMap);
 
         when(lb.select(same(invokers), eq(tmpUrl), same(invocation))).thenReturn(invoker1);
@@ -277,11 +282,11 @@ class AbstractClusterInvokerTest {
         Invoker sinvoker = cluster_nocheck.select(lb, invocation, invokers, selectedInvokers);
         Assertions.assertFalse(sinvoker.isAvailable());
         Assertions.assertEquals(invoker1, sinvoker);
-
     }
 
     private URL turnRegistryUrlToConsumerUrl(URL url, Map<String, String> queryMap) {
-        String host = StringUtils.isNotEmpty(queryMap.get("register.ip")) ? queryMap.get("register.ip") : this.url.getHost();
+        String host =
+                StringUtils.isNotEmpty(queryMap.get("register.ip")) ? queryMap.get("register.ip") : this.url.getHost();
         String path = queryMap.get(PATH_KEY);
         String consumedProtocol = queryMap.get(PROTOCOL_KEY) == null ? CONSUMER : queryMap.get(PROTOCOL_KEY);
 
@@ -299,7 +304,7 @@ class AbstractClusterInvokerTest {
         LoadBalance lb = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(RoundRobinLoadBalance.NAME);
         initlistsize5();
         {
-            //Boundary condition test .
+            // Boundary condition test .
             selectedInvokers.clear();
             selectedInvokers.add(invoker2);
             selectedInvokers.add(invoker3);
@@ -309,7 +314,7 @@ class AbstractClusterInvokerTest {
             Assertions.assertSame(invoker1, sinvoker);
         }
         {
-            //Boundary condition test .
+            // Boundary condition test .
             selectedInvokers.clear();
             selectedInvokers.add(invoker1);
             selectedInvokers.add(invoker3);
@@ -319,7 +324,7 @@ class AbstractClusterInvokerTest {
             Assertions.assertSame(invoker2, sinvoker);
         }
         {
-            //Boundary condition test .
+            // Boundary condition test .
             selectedInvokers.clear();
             selectedInvokers.add(invoker1);
             selectedInvokers.add(invoker2);
@@ -329,7 +334,7 @@ class AbstractClusterInvokerTest {
             Assertions.assertSame(invoker3, sinvoker);
         }
         {
-            //Boundary condition test .
+            // Boundary condition test .
             selectedInvokers.clear();
             selectedInvokers.add(invoker1);
             selectedInvokers.add(invoker2);
@@ -339,7 +344,7 @@ class AbstractClusterInvokerTest {
             Assertions.assertSame(invoker5, sinvoker);
         }
         {
-            //Boundary condition test .
+            // Boundary condition test .
             selectedInvokers.clear();
             selectedInvokers.add(invoker1);
             selectedInvokers.add(invoker2);
@@ -349,7 +354,6 @@ class AbstractClusterInvokerTest {
             Invoker sinvoker = cluster_nocheck.select(lb, invocation, invokers, selectedInvokers);
             Assertions.assertTrue(invokers.contains(sinvoker));
         }
-
     }
 
     @Test
@@ -358,7 +362,7 @@ class AbstractClusterInvokerTest {
         LoadBalance lb = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(RoundRobinLoadBalance.NAME);
         initlistsize5();
         {
-            //Boundary condition test .
+            // Boundary condition test .
             selectedInvokers.clear();
             selectedInvokers.add(invoker1);
             selectedInvokers.add(invoker2);
@@ -368,7 +372,7 @@ class AbstractClusterInvokerTest {
             Assertions.assertSame(sinvoker, invoker4);
         }
         {
-            //Boundary condition test .
+            // Boundary condition test .
             selectedInvokers.clear();
             selectedInvokers.add(invoker2);
             selectedInvokers.add(invoker3);
@@ -378,7 +382,7 @@ class AbstractClusterInvokerTest {
             Assertions.assertTrue(sinvoker == invoker2 || sinvoker == invoker4);
         }
         {
-            //Boundary condition test .
+            // Boundary condition test .
             for (int i = 0; i < 100; i++) {
                 selectedInvokers.clear();
                 Invoker sinvoker = cluster.select(lb, invocation, invokers, selectedInvokers);
@@ -386,7 +390,7 @@ class AbstractClusterInvokerTest {
             }
         }
         {
-            //Boundary condition test .
+            // Boundary condition test .
             for (int i = 0; i < 100; i++) {
                 selectedInvokers.clear();
                 selectedInvokers.add(invoker1);
@@ -397,7 +401,7 @@ class AbstractClusterInvokerTest {
             }
         }
         {
-            //Boundary condition test .
+            // Boundary condition test .
             for (int i = 0; i < 100; i++) {
                 selectedInvokers.clear();
                 selectedInvokers.add(invoker1);
@@ -410,7 +414,6 @@ class AbstractClusterInvokerTest {
             }
         }
     }
-
 
     public void testSelect_multiInvokers(String lbname) {
 
@@ -496,18 +499,19 @@ class AbstractClusterInvokerTest {
 
         for (Map.Entry<Invoker, AtomicLong> entry : counter.entrySet()) {
             Long count = entry.getValue().get();
-//            System.out.println(count);
+            //            System.out.println(count);
             if (entry.getKey().isAvailable())
-                Assertions.assertTrue(count > runs / invokers.size(),"count should > avg");
+                Assertions.assertTrue(count > runs / invokers.size(), "count should > avg");
         }
 
-        Assertions.assertEquals(runs, counter.get(invoker2).get() + counter.get(invoker4).get());
-
+        Assertions.assertEquals(
+                runs, counter.get(invoker2).get() + counter.get(invoker4).get());
     }
 
     private void initlistsize5() {
         invokers.clear();
-        selectedInvokers.clear();//Clear first, previous test case will make sure that the right invoker2 will be used.
+        selectedInvokers
+                .clear(); // Clear first, previous test case will make sure that the right invoker2 will be used.
         invokers.add(invoker1);
         invokers.add(invoker2);
         invokers.add(invoker3);
@@ -545,12 +549,12 @@ class AbstractClusterInvokerTest {
             }
 
             @Override
-            public void destroy() {
-            }
+            public void destroy() {}
         });
         Directory<DemoService> directory = new StaticDirectory<DemoService>(invokers);
         FailoverClusterInvoker<DemoService> failoverClusterInvoker = new FailoverClusterInvoker<DemoService>(directory);
-        RpcInvocation invocation = new RpcInvocation("sayHello", DemoService.class.getName(), "", new Class<?>[0], new Object[0]);
+        RpcInvocation invocation =
+                new RpcInvocation("sayHello", DemoService.class.getName(), "", new Class<?>[0], new Object[0]);
         try {
             failoverClusterInvoker.invoke(invocation);
             Assertions.fail();
@@ -575,6 +579,5 @@ class AbstractClusterInvokerTest {
         }
     }
 
-    public static interface IHelloService {
-    }
+    public static interface IHelloService {}
 }

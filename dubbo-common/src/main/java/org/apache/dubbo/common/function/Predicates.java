@@ -70,5 +70,4 @@ public interface Predicates {
     static <T> Predicate<T> or(Predicate<T>... predicates) {
         return of(predicates).reduce(Predicate::or).orElse(e -> true);
     }
-
 }

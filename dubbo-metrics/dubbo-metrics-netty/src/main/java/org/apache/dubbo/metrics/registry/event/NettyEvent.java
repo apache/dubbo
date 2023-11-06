@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.registry.event;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
@@ -26,13 +25,12 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import static org.apache.dubbo.metrics.MetricsConstants.NETTY_METRICS_MAP;
 
-
 /**
  * Netty related events
  */
 public class NettyEvent extends TimeCounterEvent {
     public NettyEvent(ApplicationModel applicationModel, TypeWrapper typeWrapper) {
-        super(applicationModel,typeWrapper);
+        super(applicationModel, typeWrapper);
         ScopeBeanFactory beanFactory = getSource().getBeanFactory();
         NettyMetricsCollector collector;
         if (!beanFactory.isDestroyed()) {
@@ -42,13 +40,11 @@ public class NettyEvent extends TimeCounterEvent {
     }
 
     public static NettyEvent toNettyEvent(ApplicationModel applicationModel) {
-        return new NettyEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, null,null,  null)) {
+        return new NettyEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, null, null, null)) {
             @Override
             public void customAfterPost(Object postResult) {
                 super.putAttachment(NETTY_METRICS_MAP, postResult);
             }
         };
     }
-
-
 }

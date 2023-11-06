@@ -55,8 +55,6 @@ public class EndpointResult {
 
     @Override
     public String toString() {
-        return "EndpointResult{" +
-            "endpoints=" + endpoints +
-            '}';
+        return "EndpointResult{" + "endpoints=" + endpoints + '}';
     }
 }

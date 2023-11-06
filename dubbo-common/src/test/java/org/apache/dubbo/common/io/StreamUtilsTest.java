@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.common.io;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;

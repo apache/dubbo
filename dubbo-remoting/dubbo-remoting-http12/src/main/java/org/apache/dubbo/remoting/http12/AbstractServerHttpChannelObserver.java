@@ -85,13 +85,9 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
         }
     }
 
-    protected void preOutputMessage(HttpOutputMessage outputMessage) throws Throwable {
+    protected void preOutputMessage(HttpOutputMessage outputMessage) throws Throwable {}
 
-    }
-
-    protected void postOutputMessage(HttpOutputMessage outputMessage) throws Throwable {
-
-    }
+    protected void postOutputMessage(HttpOutputMessage outputMessage) throws Throwable {}
 
     protected abstract HttpMetadata encodeHttpMetadata();
 
@@ -140,7 +136,11 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
     private void doSendHeaders(String statusCode) {
         HttpMetadata httpMetadata = encodeHttpMetadata();
         httpMetadata.headers().set(HttpHeaderNames.STATUS.getName(), statusCode);
-        httpMetadata.headers().set(HttpHeaderNames.CONTENT_TYPE.getName(), httpMessageCodec.contentType().getName());
+        httpMetadata
+                .headers()
+                .set(
+                        HttpHeaderNames.CONTENT_TYPE.getName(),
+                        httpMessageCodec.contentType().getName());
         this.headersCustomizer.accept(httpMetadata.headers());
         getHttpChannel().writeHeader(httpMetadata);
         this.headerSent = true;
@@ -154,5 +154,4 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
         this.trailersCustomizer.accept(httpMetadata.headers(), throwable);
         getHttpChannel().writeHeader(httpMetadata);
     }
-
 }

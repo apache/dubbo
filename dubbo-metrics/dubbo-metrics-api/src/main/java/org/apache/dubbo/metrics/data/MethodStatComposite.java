@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.data;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -68,7 +67,10 @@ public class MethodStatComposite extends AbstractMetricsExport {
             return;
         }
 
-        methodNumStats.get(wrapper).computeIfAbsent(new MethodMetric(getApplicationModel(), invocation, serviceLevel), k -> new AtomicLong(0L));
+        methodNumStats
+                .get(wrapper)
+                .computeIfAbsent(
+                        new MethodMetric(getApplicationModel(), invocation, serviceLevel), k -> new AtomicLong(0L));
         samplesChanged.set(true);
     }
 
@@ -78,12 +80,12 @@ public class MethodStatComposite extends AbstractMetricsExport {
         }
         AtomicLong stat = methodNumStats.get(wrapper).get(methodMetric);
         if (stat == null) {
-            methodNumStats.get(wrapper).computeIfAbsent(methodMetric, (k)-> new AtomicLong(0L));
+            methodNumStats.get(wrapper).computeIfAbsent(methodMetric, (k) -> new AtomicLong(0L));
             samplesChanged.set(true);
             stat = methodNumStats.get(wrapper).get(methodMetric);
         }
         stat.getAndAdd(size);
-//        MetricsSupport.fillZero(methodNumStats);
+        //        MetricsSupport.fillZero(methodNumStats);
     }
 
     public List<MetricSample> export(MetricsCategory category) {
@@ -92,14 +94,16 @@ public class MethodStatComposite extends AbstractMetricsExport {
             Map<MethodMetric, AtomicLong> stringAtomicLongMap = methodNumStats.get(wrapper);
             for (MethodMetric methodMetric : stringAtomicLongMap.keySet()) {
                 if (wrapper.getSampleType() == MetricSample.Type.COUNTER) {
-                    list.add(new CounterMetricSample<>(wrapper,
-                        methodMetric.getTags(), category, stringAtomicLongMap.get(methodMetric)));
+                    list.add(new CounterMetricSample<>(
+                            wrapper, methodMetric.getTags(), category, stringAtomicLongMap.get(methodMetric)));
                 } else if (wrapper.getSampleType() == MetricSample.Type.GAUGE) {
-                    list.add(new GaugeMetricSample<>(wrapper, methodMetric.getTags(), category, stringAtomicLongMap, value -> value.get(methodMetric).get()));
+                    list.add(new GaugeMetricSample<>(
+                            wrapper, methodMetric.getTags(), category, stringAtomicLongMap, value -> value.get(
+                                            methodMetric)
+                                    .get()));
                 } else {
                     throw new MetricsNeverHappenException("Unsupported metricSample type: " + wrapper.getSampleType());
                 }
-
             }
         }
         return list;

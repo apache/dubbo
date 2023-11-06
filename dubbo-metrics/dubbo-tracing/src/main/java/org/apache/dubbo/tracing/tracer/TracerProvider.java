@@ -26,5 +26,4 @@ public interface TracerProvider {
      * @return Tracer
      */
     Tracer getTracer();
-
 }

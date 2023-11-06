@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
@@ -30,7 +29,6 @@ public abstract class AbstractStream implements Stream {
 
     protected Executor executor;
     protected final FrameworkModel frameworkModel;
-
 
     private static final boolean HAS_PROTOBUF = hasProtobuf();
 

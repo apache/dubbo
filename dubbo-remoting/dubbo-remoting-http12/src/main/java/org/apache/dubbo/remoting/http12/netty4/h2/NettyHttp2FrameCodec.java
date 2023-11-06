@@ -16,6 +16,18 @@
  */
 package org.apache.dubbo.remoting.http12.netty4.h2;
 
+import org.apache.dubbo.remoting.http12.HttpHeaders;
+import org.apache.dubbo.remoting.http12.h2.Http2Header;
+import org.apache.dubbo.remoting.http12.h2.Http2InputMessage;
+import org.apache.dubbo.remoting.http12.h2.Http2InputMessageFrame;
+import org.apache.dubbo.remoting.http12.h2.Http2MetadataFrame;
+import org.apache.dubbo.remoting.http12.h2.Http2OutputMessage;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.List;
+import java.util.Map;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.ByteBufOutputStream;
@@ -28,17 +40,6 @@ import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import io.netty.handler.codec.http2.Http2DataFrame;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2HeadersFrame;
-import org.apache.dubbo.remoting.http12.HttpHeaders;
-import org.apache.dubbo.remoting.http12.h2.Http2Header;
-import org.apache.dubbo.remoting.http12.h2.Http2InputMessage;
-import org.apache.dubbo.remoting.http12.h2.Http2InputMessageFrame;
-import org.apache.dubbo.remoting.http12.h2.Http2MetadataFrame;
-import org.apache.dubbo.remoting.http12.h2.Http2OutputMessage;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.List;
-import java.util.Map;
 
 public class NettyHttp2FrameCodec extends ChannelDuplexHandler {
 
@@ -82,7 +83,8 @@ public class NettyHttp2FrameCodec extends ChannelDuplexHandler {
 
     private Http2InputMessage onHttp2DataFrame(Http2DataFrame dataFrame) {
         ByteBuf content = dataFrame.content();
-        Http2InputMessageFrame message = new Http2InputMessageFrame(new ByteBufInputStream(content, true), dataFrame.isEndStream());
+        Http2InputMessageFrame message =
+                new Http2InputMessageFrame(new ByteBufInputStream(content, true), dataFrame.isEndStream());
         message.setId(dataFrame.stream().id());
         return message;
     }
@@ -98,7 +100,8 @@ public class NettyHttp2FrameCodec extends ChannelDuplexHandler {
         return new DefaultHttp2HeadersFrame(http2Headers, http2Header.isEndStream());
     }
 
-    private Http2DataFrame encodeHttp2DataFrame(ChannelHandlerContext ctx, Http2OutputMessage outputMessage) throws IOException {
+    private Http2DataFrame encodeHttp2DataFrame(ChannelHandlerContext ctx, Http2OutputMessage outputMessage)
+            throws IOException {
         OutputStream body = outputMessage.getBody();
         if (body == null) {
             return new DefaultHttp2DataFrame(outputMessage.isEndStream());
@@ -109,5 +112,4 @@ public class NettyHttp2FrameCodec extends ChannelDuplexHandler {
         }
         throw new IllegalArgumentException("Http2OutputMessage body must be ByteBufOutputStream");
     }
-
 }

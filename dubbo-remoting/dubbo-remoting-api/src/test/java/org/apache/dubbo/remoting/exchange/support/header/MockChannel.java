@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.Parameters;
@@ -124,9 +123,7 @@ public class MockChannel implements Channel, Client {
     }
 
     @Override
-    public void reset(URL url) {
-
-    }
+    public void reset(URL url) {}
 
     @Override
     public void reconnect() throws RemotingException {
@@ -134,9 +131,7 @@ public class MockChannel implements Channel, Client {
     }
 
     @Override
-    public void reset(Parameters parameters) {
-
-    }
+    public void reset(Parameters parameters) {}
 
     public int getReconnectCount() {
         return reconnectCount;

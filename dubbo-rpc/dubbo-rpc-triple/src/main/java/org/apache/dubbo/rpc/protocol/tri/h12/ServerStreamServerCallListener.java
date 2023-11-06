@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.h12;
 
 import org.apache.dubbo.common.stream.StreamObserver;
@@ -24,21 +23,20 @@ import org.apache.dubbo.rpc.RpcInvocation;
 
 public class ServerStreamServerCallListener extends AbstractServerCallListener {
 
-    public ServerStreamServerCallListener(RpcInvocation invocation, Invoker<?> invoker,
-                                          StreamObserver<Object> responseObserver) {
+    public ServerStreamServerCallListener(
+            RpcInvocation invocation, Invoker<?> invoker, StreamObserver<Object> responseObserver) {
         super(invocation, invoker, responseObserver);
     }
 
     @Override
-    public void onReturn(Object value) {
-    }
+    public void onReturn(Object value) {}
 
     @Override
     public void onMessage(Object message) {
         if (message instanceof Object[]) {
             message = ((Object[]) message)[0];
         }
-        invocation.setArguments(new Object[]{message, responseObserver});
+        invocation.setArguments(new Object[] {message, responseObserver});
     }
 
     @Override

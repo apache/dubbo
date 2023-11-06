@@ -27,6 +27,9 @@ import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.transport.AbstractClient;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
@@ -35,9 +38,6 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
-
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_CLIENT_CONNECT_TIMEOUT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CONNECT_PROVIDER;
@@ -52,9 +52,10 @@ public class NettyClient extends AbstractClient {
 
     // ChannelFactory's closure has a DirectMemory leak, using static to avoid
     // https://issues.jboss.org/browse/NETTY-424
-    private static final ChannelFactory CHANNEL_FACTORY = new NioClientSocketChannelFactory(Executors.newCachedThreadPool(new NamedThreadFactory("NettyClientBoss", true)),
-        Executors.newCachedThreadPool(new NamedThreadFactory("NettyClientWorker", true)),
-        Constants.DEFAULT_IO_THREADS);
+    private static final ChannelFactory CHANNEL_FACTORY = new NioClientSocketChannelFactory(
+            Executors.newCachedThreadPool(new NamedThreadFactory("NettyClientBoss", true)),
+            Executors.newCachedThreadPool(new NamedThreadFactory("NettyClientWorker", true)),
+            Constants.DEFAULT_IO_THREADS);
     private ClientBootstrap bootstrap;
 
     private volatile Channel channel; // volatile, please copy reference to use
@@ -102,7 +103,8 @@ public class NettyClient extends AbstractClient {
                     if (oldChannel != null) {
                         try {
                             if (logger.isInfoEnabled()) {
-                                logger.info("Close old netty channel " + oldChannel + " on create new netty channel " + newChannel);
+                                logger.info("Close old netty channel " + oldChannel + " on create new netty channel "
+                                        + newChannel);
                             }
                             oldChannel.close();
                         } finally {
@@ -127,22 +129,38 @@ public class NettyClient extends AbstractClient {
             } else if (future.getCause() != null) {
                 Throwable cause = future.getCause();
 
-                RemotingException remotingException = new RemotingException(this, "client(url: " + getUrl() + ") failed to connect to server "
-                    + getRemoteAddress() + ", error message is:" + cause.getMessage(), cause);
+                RemotingException remotingException = new RemotingException(
+                        this,
+                        "client(url: " + getUrl() + ") failed to connect to server " + getRemoteAddress()
+                                + ", error message is:" + cause.getMessage(),
+                        cause);
 
                 // 6-1 - Failed to connect to provider server by other reason.
-                logger.error(TRANSPORT_FAILED_CONNECT_PROVIDER, "network disconnected", "", "Failed to connect to provider server by other reason.", cause);
+                logger.error(
+                        TRANSPORT_FAILED_CONNECT_PROVIDER,
+                        "network disconnected",
+                        "",
+                        "Failed to connect to provider server by other reason.",
+                        cause);
 
                 throw remotingException;
             } else {
 
-                RemotingException remotingException = new RemotingException(this, "client(url: " + getUrl() + ") failed to connect to server "
-                    + getRemoteAddress() + " client-side timeout "
-                    + getConnectTimeout() + "ms (elapsed: " + (System.currentTimeMillis() - start) + "ms) from netty client "
-                    + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion());
+                RemotingException remotingException = new RemotingException(
+                        this,
+                        "client(url: " + getUrl() + ") failed to connect to server "
+                                + getRemoteAddress() + " client-side timeout "
+                                + getConnectTimeout() + "ms (elapsed: " + (System.currentTimeMillis() - start)
+                                + "ms) from netty client "
+                                + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion());
 
                 // 6-2 - Client-side timeout.
-                logger.error(TRANSPORT_CLIENT_CONNECT_TIMEOUT, "provider crash", "", "Client-side timeout.", remotingException);
+                logger.error(
+                        TRANSPORT_CLIENT_CONNECT_TIMEOUT,
+                        "provider crash",
+                        "",
+                        "Client-side timeout.",
+                        remotingException);
 
                 throw remotingException;
             }
@@ -183,5 +201,4 @@ public class NettyClient extends AbstractClient {
     Channel getNettyChannel() {
         return channel;
     }
-
 }

@@ -19,7 +19,6 @@ package org.apache.dubbo.gen.grpc;
 import org.apache.dubbo.gen.AbstractGenerator;
 import org.apache.dubbo.gen.DubboGeneratorPlugin;
 
-
 public class DubboGrpcGenerator extends AbstractGenerator {
 
     public static void main(String[] args) {

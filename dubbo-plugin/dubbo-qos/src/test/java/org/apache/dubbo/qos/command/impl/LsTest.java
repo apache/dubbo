@@ -29,13 +29,13 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import java.util.HashMap;
-import java.util.Map;
 
 class LsTest {
     private FrameworkModel frameworkModel;
@@ -60,18 +60,18 @@ class LsTest {
         String result = ls.execute(Mockito.mock(CommandContext.class), new String[0]);
         System.out.println(result);
         /**
-         As Provider side:
-         +--------------------------------+---+
-         |      Provider Service Name     |PUB|
-         +--------------------------------+---+
-         |org.apache.dubbo.qos.DemoService| N |
-         +--------------------------------+---+
-         As Consumer side:
-         +--------------------------------+---+
-         |      Consumer Service Name     |NUM|
-         +--------------------------------+---+
-         |org.apache.dubbo.qos.DemoService| 0 |
-         +--------------------------------+---+
+         * As Provider side:
+         * +--------------------------------+---+
+         * |      Provider Service Name     |PUB|
+         * +--------------------------------+---+
+         * |org.apache.dubbo.qos.DemoService| N |
+         * +--------------------------------+---+
+         * As Consumer side:
+         * +--------------------------------+---+
+         * |      Consumer Service Name     |NUM|
+         * +--------------------------------+---+
+         * |org.apache.dubbo.qos.DemoService| 0 |
+         * +--------------------------------+---+
          */
     }
 
@@ -80,11 +80,12 @@ class LsTest {
         ServiceMetadata serviceMetadata = new ServiceMetadata();
         serviceMetadata.setServiceKey(DemoService.class.getName());
         ProviderModel providerModel = new ProviderModel(
-            DemoService.class.getName(),
-            new DemoServiceImpl(),
-            serviceDescriptor,
-            null,
-            serviceMetadata, ClassUtils.getClassLoader(DemoService.class));
+                DemoService.class.getName(),
+                new DemoServiceImpl(),
+                serviceDescriptor,
+                null,
+                serviceMetadata,
+                ClassUtils.getClassLoader(DemoService.class));
         repository.registerProvider(providerModel);
     }
 
@@ -96,8 +97,12 @@ class LsTest {
         serviceMetadata.setServiceKey(DemoService.class.getName());
         Map<String, AsyncMethodInfo> methodConfigs = new HashMap<>();
         ConsumerModel consumerModel = new ConsumerModel(
-            serviceMetadata.getServiceKey(), null, serviceDescriptor,
-            serviceMetadata, methodConfigs, referenceConfig.getInterfaceClassLoader());
+                serviceMetadata.getServiceKey(),
+                null,
+                serviceDescriptor,
+                serviceMetadata,
+                methodConfigs,
+                referenceConfig.getInterfaceClassLoader());
         repository.registerConsumer(consumerModel);
     }
 }

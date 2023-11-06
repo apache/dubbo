@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.merger;
 
 import org.apache.dubbo.common.utils.ArrayUtils;
@@ -43,5 +42,4 @@ public class ByteArrayMerger implements Merger<byte[]> {
         }
         return result;
     }
-
 }

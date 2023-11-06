@@ -24,9 +24,9 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
+
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -38,7 +38,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
 
 class AccessKeyAuthenticatorTest {
 
@@ -52,7 +51,8 @@ class AccessKeyAuthenticatorTest {
 
         AccessKeyAuthenticator helper = mock(AccessKeyAuthenticator.class);
         doCallRealMethod().when(helper).sign(invocation, url);
-        when(helper.getSignature(eq(url), eq(invocation), eq("sk"), anyString())).thenReturn("dubbo");
+        when(helper.getSignature(eq(url), eq(invocation), eq("sk"), anyString()))
+                .thenReturn("dubbo");
 
         AccessKeyPair accessKeyPair = mock(AccessKeyPair.class);
         when(accessKeyPair.getSecretKey()).thenReturn("sk");
@@ -78,7 +78,8 @@ class AccessKeyAuthenticatorTest {
 
         AccessKeyAuthenticator helper = mock(AccessKeyAuthenticator.class);
         doCallRealMethod().when(helper).authenticate(invocation, url);
-        when(helper.getSignature(eq(url), eq(invocation), eq("sk"), anyString())).thenReturn("dubbo");
+        when(helper.getSignature(eq(url), eq(invocation), eq("sk"), anyString()))
+                .thenReturn("dubbo");
 
         AccessKeyPair accessKeyPair = mock(AccessKeyPair.class);
         when(accessKeyPair.getSecretKey()).thenReturn("sk");
@@ -100,8 +101,7 @@ class AccessKeyAuthenticatorTest {
 
     @Test
     void testGetAccessKeyPairFailed() {
-        URL url = URL.valueOf("dubbo://10.10.10.10:2181")
-                .addParameter(Constants.ACCESS_KEY_ID_KEY, "ak");
+        URL url = URL.valueOf("dubbo://10.10.10.10:2181").addParameter(Constants.ACCESS_KEY_ID_KEY, "ak");
         AccessKeyAuthenticator helper = new AccessKeyAuthenticator(ApplicationModel.defaultModel());
         Invocation invocation = mock(Invocation.class);
         assertThrows(RuntimeException.class, () -> helper.getAccessKeyPair(invocation, url));

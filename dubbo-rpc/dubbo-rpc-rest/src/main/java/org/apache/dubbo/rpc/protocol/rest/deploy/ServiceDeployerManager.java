@@ -33,18 +33,16 @@ import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
 public class ServiceDeployerManager {
     private static final ConcurrentMap<String, ServiceDeployer> serviceDeployers = new ConcurrentHashMap<>();
 
-
     public static URL deploy(URL currentURL, ServiceRestMetadata serviceRestMetadata, Invoker invoker) {
 
         AtomicBoolean isNewCreate = new AtomicBoolean();
 
-        ServiceDeployer newServiceDeployer = ConcurrentHashMapUtils.computeIfAbsent(serviceDeployers, currentURL.getAddress(), address -> {
-            ServiceDeployer serviceDeployer = new ServiceDeployer();
-            isNewCreate.set(true);
-            return serviceDeployer;
-
-        });
-
+        ServiceDeployer newServiceDeployer =
+                ConcurrentHashMapUtils.computeIfAbsent(serviceDeployers, currentURL.getAddress(), address -> {
+                    ServiceDeployer serviceDeployer = new ServiceDeployer();
+                    isNewCreate.set(true);
+                    return serviceDeployer;
+                });
 
         // register service
         newServiceDeployer.deploy(serviceRestMetadata, invoker);
@@ -62,17 +60,14 @@ public class ServiceDeployerManager {
             return currentURL;
         }
 
-
         URL tmp = currentURL;
         // adapt to older rest versions
         if (REST_SERVER.contains(tmp.getParameter(SERVER_KEY))) {
             tmp = tmp.addParameter(SERVER_KEY, PORT_UNIFICATION_NETTY4_SERVER);
         }
 
-
         return tmp;
     }
-
 
     public static void close() {
         serviceDeployers.clear();

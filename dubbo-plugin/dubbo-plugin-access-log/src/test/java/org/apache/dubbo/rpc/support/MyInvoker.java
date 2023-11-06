@@ -86,5 +86,4 @@ public class MyInvoker<T> implements Invoker<T> {
     public String toString() {
         return "MyInvoker.toString()";
     }
-
 }

@@ -36,8 +36,6 @@ public interface ListeningDecoder {
          */
         void onMessage(Object message);
 
-        default void onClose() {
-
-        }
+        default void onClose() {}
     }
 }

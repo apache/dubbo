@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 package org.apache.dubbo.config.url;
-
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -66,11 +65,22 @@ public class UrlTestBase {
         {"deprecated", "deprecated", "boolean", false, true, "", "", "", "", ""},
         {"dynamic", "dynamic", "boolean", true, false, "", "", "", "", ""},
         {"accesslog", "accesslog", "string", "", "haominTest", "", "", "", "", ""},
-        {"document", "document", "string", "", "http://dubbo.apache.org/zh-cn/docs/user/quick-start.html?testquery=你好你好", "", "", "", "", ""},
+        {
+            "document",
+            "document",
+            "string",
+            "",
+            "http://dubbo.apache.org/zh-cn/docs/user/quick-start.html?testquery=你好你好",
+            "",
+            "",
+            "",
+            "",
+            ""
+        },
         {"weight", "weight", "int", 0, 90, "", "", "", "", ""},
 
-        //{"filter", "service.filter", "string", "", "", "", "", "", "", ""},
-        //{"listener", "listener", "string", "", "", "", "", "", "", ""},
+        // {"filter", "service.filter", "string", "", "", "", "", "", "", ""},
+        // {"listener", "listener", "string", "", "", "", "", "", "", ""},
 
     };
     protected Object regConfForServiceTable[][] = {
@@ -81,10 +91,16 @@ public class UrlTestBase {
         //            {"subscribe", "subscribe", "boolean", true, false, "", "", "", "", ""},
         {"dynamic", "dynamic", "boolean", true, false, "", "", "", "", ""},
     };
-    protected Object provConfTable[][] = {{"cluster", "cluster", "string", "string", "failover", "failfast", "failsafe", "", "", ""}, {"async", "async", "boolean", false, true, "", "", "", "", ""}, {"loadbalance", "loadbalance", "string", "random", "leastactive", "", "", "", "", ""}, {"connections", "connections", "int", 0, 60, "", "", "", "", ""}, {"retries", "retries", "int", 2, 60, "", "", "", "", ""}, {"timeout", "timeout", "int", 5000, 60, "", "", "", "", ""},
-        //change by fengting listener 没有缺省值
-        //{"listener", "exporter.listener", "string", "", "", "", "", "", "", ""},
-        //{"filter", "service.filter", "string", "", "", "", "", "", "", ""},
+    protected Object provConfTable[][] = {
+        {"cluster", "cluster", "string", "string", "failover", "failfast", "failsafe", "", "", ""},
+        {"async", "async", "boolean", false, true, "", "", "", "", ""},
+        {"loadbalance", "loadbalance", "string", "random", "leastactive", "", "", "", "", ""},
+        {"connections", "connections", "int", 0, 60, "", "", "", "", ""},
+        {"retries", "retries", "int", 2, 60, "", "", "", "", ""},
+        {"timeout", "timeout", "int", 5000, 60, "", "", "", "", ""},
+        // change by fengting listener 没有缺省值
+        // {"listener", "exporter.listener", "string", "", "", "", "", "", "", ""},
+        // {"filter", "service.filter", "string", "", "", "", "", "", "", ""},
 
     };
     protected Object methodConfForServiceTable[][] = {
@@ -130,7 +146,6 @@ public class UrlTestBase {
 
         RpcConfigGetSetProxy proxy = new RpcConfigGetSetProxy(conf);
         proxy.setValue((String) row[KEY], row[column]);
-
     }
 
     @SuppressWarnings("deprecation")
@@ -143,7 +158,7 @@ public class UrlTestBase {
         methodConfForService = new MethodConfig();
         servConf = new ServiceConfig<DemoService>();
 
-//        provConf.setApplication(appConfForProvider);
+        //        provConf.setApplication(appConfForProvider);
         application = new ApplicationConfig();
         application.setMetadataServicePort(20881);
         servConf.setApplication(application);
@@ -154,7 +169,7 @@ public class UrlTestBase {
         provConf.setProtocols(new ArrayList<>(Arrays.asList(protoConfForProvider)));
         servConf.setProtocols(new ArrayList<>(Arrays.asList(protoConfForService)));
 
-        servConf.setMethods(Arrays.asList(new MethodConfig[]{methodConfForService}));
+        servConf.setMethods(Arrays.asList(new MethodConfig[] {methodConfForService}));
         servConf.setProvider(provConf);
 
         servConf.setRef(demoService);
@@ -176,8 +191,8 @@ public class UrlTestBase {
      * @param configName
      * @param column
      */
-    protected void assertUrlStringWithLocalTable(String paramStringFromDb,
-                                                 Object[][] dataTable, String configName, int column) {
+    protected void assertUrlStringWithLocalTable(
+            String paramStringFromDb, Object[][] dataTable, String configName, int column) {
         final String FAILLOG_HEADER = "The following config items are not found in URLONE: ";
 
         log.warn("Verifying service url for " + configName + "... ");
@@ -200,5 +215,4 @@ public class UrlTestBase {
             fail(failLog);
         }
     }
-
 }

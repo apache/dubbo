@@ -16,8 +16,9 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
-import io.netty.handler.ssl.SslContext;
 import org.apache.dubbo.remoting.api.ssl.ContextOperator;
+
+import io.netty.handler.ssl.SslContext;
 
 public class NettySslContextOperator implements ContextOperator {
 

@@ -22,6 +22,9 @@ import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationPostProcessor;
 import org.apache.dubbo.config.spring.schema.AnnotationBeanDefinitionParser;
 import org.apache.dubbo.config.spring6.utils.AotUtils;
+
+import java.util.Collection;
+
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.TypeReference;
@@ -32,8 +35,6 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProce
 import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 
-import java.util.Collection;
-
 /**
  * The purpose of implementing {@link BeanRegistrationAotProcessor} is to
  * supplement for {@link ServiceAnnotationPostProcessor} ability of AOT.
@@ -42,7 +43,8 @@ import java.util.Collection;
  * @see BeanDefinitionRegistryPostProcessor
  * @since 3.3
  */
-public class ServiceAnnotationWithAotPostProcessor extends ServiceAnnotationPostProcessor implements BeanRegistrationAotProcessor {
+public class ServiceAnnotationWithAotPostProcessor extends ServiceAnnotationPostProcessor
+        implements BeanRegistrationAotProcessor {
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
@@ -83,11 +85,11 @@ public class ServiceAnnotationWithAotPostProcessor extends ServiceAnnotationPost
 
         @Override
         public void applyTo(GenerationContext generationContext, BeanRegistrationCode beanRegistrationCode) {
-            generationContext.getRuntimeHints().reflection().registerType(TypeReference.of(cl),
-                    MemberCategory.INVOKE_PUBLIC_METHODS);
+            generationContext
+                    .getRuntimeHints()
+                    .reflection()
+                    .registerType(TypeReference.of(cl), MemberCategory.INVOKE_PUBLIC_METHODS);
             AotUtils.registerSerializationForService(cl, generationContext.getRuntimeHints());
-
         }
     }
-
 }

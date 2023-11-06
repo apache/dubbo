@@ -28,8 +28,7 @@ public class SamplingConfig implements Serializable {
      */
     private float probability = 0.10f;
 
-    public SamplingConfig() {
-    }
+    public SamplingConfig() {}
 
     public SamplingConfig(float probability) {
         this.probability = probability;

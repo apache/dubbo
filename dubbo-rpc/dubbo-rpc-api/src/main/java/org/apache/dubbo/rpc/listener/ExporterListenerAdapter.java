@@ -26,11 +26,8 @@ import org.apache.dubbo.rpc.RpcException;
 public abstract class ExporterListenerAdapter implements ExporterListener {
 
     @Override
-    public void exported(Exporter<?> exporter) throws RpcException {
-    }
+    public void exported(Exporter<?> exporter) throws RpcException {}
 
     @Override
-    public void unexported(Exporter<?> exporter) throws RpcException {
-    }
-
+    public void unexported(Exporter<?> exporter) throws RpcException {}
 }

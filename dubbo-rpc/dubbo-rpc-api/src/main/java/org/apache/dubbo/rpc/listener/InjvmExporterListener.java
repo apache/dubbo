@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 /**
  * The InjvmExporterListener class is an implementation of the ExporterListenerAdapter abstract class,
  * <p>
@@ -73,7 +72,6 @@ public class InjvmExporterListener extends ExporterListenerAdapter {
         }
         super.exported(exporter);
     }
-
 
     /**
      * Overrides the unexported method to remove the given exporter from the exporters ConcurrentHashMap,
@@ -130,6 +128,4 @@ public class InjvmExporterListener extends ExporterListenerAdapter {
             exporterChangeListeners.remove(listenerKey);
         }
     }
-
-
 }

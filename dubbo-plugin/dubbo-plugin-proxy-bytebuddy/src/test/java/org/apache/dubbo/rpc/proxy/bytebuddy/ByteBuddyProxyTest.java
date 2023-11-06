@@ -18,10 +18,11 @@ package org.apache.dubbo.rpc.proxy.bytebuddy;
 
 import org.apache.dubbo.rpc.proxy.InvokerInvocationHandler;
 import org.apache.dubbo.rpc.proxy.RemoteService;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.lang.reflect.Proxy;
+
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.ArgumentMatchers.any;
@@ -32,7 +33,7 @@ class ByteBuddyProxyTest {
     void testNewInstance() throws Throwable {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         InvokerInvocationHandler handler = Mockito.mock(InvokerInvocationHandler.class);
-        Object proxy = ByteBuddyProxy.newInstance(cl, new Class<?>[]{RemoteService.class}, handler);
+        Object proxy = ByteBuddyProxy.newInstance(cl, new Class<?>[] {RemoteService.class}, handler);
         assertInstanceOf(RemoteService.class, proxy);
         assertInstanceOf(Proxy.class, proxy);
         RemoteService remoteService = (RemoteService) proxy;

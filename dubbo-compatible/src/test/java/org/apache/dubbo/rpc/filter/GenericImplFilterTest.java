@@ -37,20 +37,27 @@ import static org.mockito.Mockito.when;
 
 class GenericImplFilterTest {
 
-    private GenericImplFilter genericImplFilter = new GenericImplFilter(ApplicationModel.defaultModel().getDefaultModule());
+    private GenericImplFilter genericImplFilter =
+            new GenericImplFilter(ApplicationModel.defaultModel().getDefaultModule());
 
     @Test
     void testInvokeWithException() throws Exception {
 
-        RpcInvocation invocation = new RpcInvocation("getPerson", "org.apache.dubbo.rpc.support.DemoService",
-            "org.apache.dubbo.rpc.support.DemoService:dubbo", new Class[]{Person.class}, new Object[]{new Person("dubbo", 10)});
+        RpcInvocation invocation = new RpcInvocation(
+                "getPerson",
+                "org.apache.dubbo.rpc.support.DemoService",
+                "org.apache.dubbo.rpc.support.DemoService:dubbo",
+                new Class[] {Person.class},
+                new Object[] {new Person("dubbo", 10)});
 
-        URL url = URL.valueOf("test://test:11/org.apache.dubbo.rpc.support.DemoService?" +
-            "accesslog=true&group=dubbo&version=1.1&generic=true");
+        URL url = URL.valueOf("test://test:11/org.apache.dubbo.rpc.support.DemoService?"
+                + "accesslog=true&group=dubbo&version=1.1&generic=true");
         Invoker invoker = Mockito.mock(Invoker.class);
 
-        AppResponse mockRpcResult = new AppResponse(Dubbo2GenericExceptionUtils.newGenericException(new RuntimeException("failed")));
-        when(invoker.invoke(any(Invocation.class))).thenReturn(AsyncRpcResult.newDefaultAsyncResult(mockRpcResult, invocation));
+        AppResponse mockRpcResult =
+                new AppResponse(Dubbo2GenericExceptionUtils.newGenericException(new RuntimeException("failed")));
+        when(invoker.invoke(any(Invocation.class)))
+                .thenReturn(AsyncRpcResult.newDefaultAsyncResult(mockRpcResult, invocation));
         when(invoker.getUrl()).thenReturn(url);
         when(invoker.getInterface()).thenReturn(DemoService.class);
 
@@ -58,7 +65,5 @@ class GenericImplFilterTest {
         Result result = asyncResult.get();
         genericImplFilter.onResponse(result, invoker, invocation);
         Assertions.assertEquals(RuntimeException.class, result.getException().getClass());
-
     }
-
 }

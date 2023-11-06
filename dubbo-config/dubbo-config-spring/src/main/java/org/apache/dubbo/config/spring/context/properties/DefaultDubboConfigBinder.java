@@ -19,14 +19,14 @@ package org.apache.dubbo.config.spring.context.properties;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.spring.util.PropertySourcesUtils;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.IntStream;
+
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.DataBinder;
 import org.springframework.validation.FieldError;
-
-import java.util.List;
-import java.util.Map;
-import java.util.stream.IntStream;
 
 /**
  * Default {@link DubboConfigBinder} implementation based on Spring {@link DataBinder}
@@ -47,16 +47,20 @@ public class DefaultDubboConfigBinder extends AbstractDubboConfigBinder {
         dataBinder.bind(propertyValues);
         BindingResult bindingResult = dataBinder.getBindingResult();
         if (bindingResult.hasGlobalErrors()) {
-            throw new RuntimeException("Data bind global error, please check config. config: " + bindingResult.getGlobalError() + "");
+            throw new RuntimeException(
+                    "Data bind global error, please check config. config: " + bindingResult.getGlobalError() + "");
         }
         if (bindingResult.hasFieldErrors()) {
-            throw new RuntimeException(buildErrorMsg(bindingResult.getFieldErrors(), prefix, dubboConfig.getClass().getSimpleName()));
+            throw new RuntimeException(buildErrorMsg(
+                    bindingResult.getFieldErrors(),
+                    prefix,
+                    dubboConfig.getClass().getSimpleName()));
         }
     }
 
     private String buildErrorMsg(List<FieldError> errors, String prefix, String config) {
-        StringBuilder builder = new StringBuilder("Data bind error, please check config. config: " + config + ", prefix: " + prefix
-                + " , error fields: [" + errors.get(0).getField());
+        StringBuilder builder = new StringBuilder("Data bind error, please check config. config: " + config
+                + ", prefix: " + prefix + " , error fields: [" + errors.get(0).getField());
         if (errors.size() > 1) {
             IntStream.range(1, errors.size()).forEach(i -> {
                 builder.append(", " + errors.get(i).getField());
@@ -66,4 +70,3 @@ public class DefaultDubboConfigBinder extends AbstractDubboConfigBinder {
         return builder.toString();
     }
 }
-

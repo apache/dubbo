@@ -28,13 +28,12 @@ public class DataQueueCommand extends HttpChannelQueueCommand {
 
     @Override
     public void run() {
-        getHttpChannel().writeMessage(httpOutputMessage)
-            .whenComplete((unused, throwable) -> {
-                if (throwable != null) {
-                    completeExceptionally(throwable);
-                } else {
-                    complete(unused);
-                }
-            });
+        getHttpChannel().writeMessage(httpOutputMessage).whenComplete((unused, throwable) -> {
+            if (throwable != null) {
+                completeExceptionally(throwable);
+            } else {
+                complete(unused);
+            }
+        });
     }
 }

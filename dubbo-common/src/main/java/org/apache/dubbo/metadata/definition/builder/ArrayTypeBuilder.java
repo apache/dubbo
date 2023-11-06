@@ -52,5 +52,4 @@ public class ArrayTypeBuilder implements TypeBuilder {
         }
         return td;
     }
-
 }

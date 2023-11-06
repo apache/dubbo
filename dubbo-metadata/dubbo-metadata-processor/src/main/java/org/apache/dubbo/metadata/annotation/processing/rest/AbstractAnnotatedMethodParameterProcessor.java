@@ -33,14 +33,25 @@ import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUti
 public abstract class AbstractAnnotatedMethodParameterProcessor implements AnnotatedMethodParameterProcessor {
 
     @Override
-    public final void process(AnnotationMirror annotation, VariableElement parameter, int parameterIndex, ExecutableElement method, RestMethodMetadata restMethodMetadata) {
+    public final void process(
+            AnnotationMirror annotation,
+            VariableElement parameter,
+            int parameterIndex,
+            ExecutableElement method,
+            RestMethodMetadata restMethodMetadata) {
         String annotationValue = getAnnotationValue(annotation, parameter, parameterIndex);
         String defaultValue = getDefaultValue(annotation, parameter, parameterIndex);
         process(annotationValue, defaultValue, annotation, parameter, parameterIndex, method, restMethodMetadata);
     }
 
-    protected abstract void process(String annotationValue, String defaultValue, AnnotationMirror annotation, VariableElement parameter, int parameterIndex,
-                                    ExecutableElement method, RestMethodMetadata restMethodMetadata);
+    protected abstract void process(
+            String annotationValue,
+            String defaultValue,
+            AnnotationMirror annotation,
+            VariableElement parameter,
+            int parameterIndex,
+            ExecutableElement method,
+            RestMethodMetadata restMethodMetadata);
 
     protected String getAnnotationValue(AnnotationMirror annotation, VariableElement parameter, int parameterIndex) {
         return getValue(annotation);

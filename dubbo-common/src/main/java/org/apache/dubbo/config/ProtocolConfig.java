@@ -236,8 +236,7 @@ public class ProtocolConfig extends AbstractConfig {
      */
     private String jsonCheckLevel;
 
-    public ProtocolConfig() {
-    }
+    public ProtocolConfig() {}
 
     public ProtocolConfig(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -625,20 +624,20 @@ public class ProtocolConfig extends AbstractConfig {
         try {
             Map<String, Object> protocolConfigMap = CollectionUtils.objToMap(sourceConfig);
             for (Field targetField : targetFields) {
-                Optional.ofNullable(protocolConfigMap.get(targetField.getName())).ifPresent(value -> {
-                    try {
-                        targetField.setAccessible(true);
-                        if (targetField.get(this) == null) {
-                            targetField.set(this, value);
-                        }
-                    } catch (IllegalAccessException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+                Optional.ofNullable(protocolConfigMap.get(targetField.getName()))
+                        .ifPresent(value -> {
+                            try {
+                                targetField.setAccessible(true);
+                                if (targetField.get(this) == null) {
+                                    targetField.set(this, value);
+                                }
+                            } catch (IllegalAccessException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
             }
         } catch (Exception e) {
             logger.error(COMMON_UNEXPECTED_EXCEPTION, "", "", "merge protocol config fail, error: ", e);
         }
     }
-
 }

@@ -24,17 +24,18 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcStatus;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_WARMUP;
 import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_WEIGHT;
@@ -66,8 +67,7 @@ class LoadBalanceBaseTest {
      * @throws Exception
      */
     @BeforeAll
-    public static void setUpBeforeClass() throws Exception {
-    }
+    public static void setUpBeforeClass() throws Exception {}
 
     /**
      * @throws Exception
@@ -77,14 +77,14 @@ class LoadBalanceBaseTest {
 
         invocation = mock(Invocation.class);
         given(invocation.getMethodName()).willReturn("method1");
-        given(invocation.getArguments()).willReturn(new Object[] {"arg1","arg2","arg3"});
+        given(invocation.getArguments()).willReturn(new Object[] {"arg1", "arg2", "arg3"});
 
         genericInvocation = mock(Invocation.class);
         String methodName = "method1";
         given(genericInvocation.getMethodName()).willReturn("$invoke");
-        String[] paraTypes = new String[] {String.class.getName(),String.class.getName(),String.class.getName()};
-        Object[] argsObject = new Object[] {"arg1","arg2","arg3"};
-        Object[] args = new Object[] {methodName,paraTypes,argsObject};
+        String[] paraTypes = new String[] {String.class.getName(), String.class.getName(), String.class.getName()};
+        Object[] argsObject = new Object[] {"arg1", "arg2", "arg3"};
+        Object[] args = new Object[] {methodName, paraTypes, argsObject};
         given(genericInvocation.getArguments()).willReturn(args);
 
         invoker1 = mock(Invoker.class);
@@ -155,7 +155,8 @@ class LoadBalanceBaseTest {
     }
 
     protected AbstractLoadBalance getLoadBalance(String loadbalanceName) {
-        return (AbstractLoadBalance) ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(loadbalanceName);
+        return (AbstractLoadBalance)
+                ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(loadbalanceName);
     }
 
     @Test
@@ -228,7 +229,7 @@ class LoadBalanceBaseTest {
     }
 
     protected List<Invoker<LoadBalanceBaseTest>> weightInvokers = new ArrayList<Invoker<LoadBalanceBaseTest>>();
-    protected List<Invoker<LoadBalanceBaseTest>> weightInvokersSR= new ArrayList<Invoker<LoadBalanceBaseTest>>();
+    protected List<Invoker<LoadBalanceBaseTest>> weightInvokersSR = new ArrayList<Invoker<LoadBalanceBaseTest>>();
 
     protected Invoker<LoadBalanceBaseTest> weightInvoker1;
     protected Invoker<LoadBalanceBaseTest> weightInvoker2;
@@ -286,7 +287,6 @@ class LoadBalanceBaseTest {
         weightTestRpcStatus3 = RpcStatus.getStatus(weightInvoker3.getUrl(), weightTestInvocation.getMethodName());
         weightTestRpcStatus5 = RpcStatus.getStatus(weightInvoker5.getUrl(), weightTestInvocation.getMethodName());
 
-
         // weightTestRpcStatus3 active is 1
         RpcStatus.beginCount(weightInvoker3.getUrl(), weightTestInvocation.getMethodName());
 
@@ -301,7 +301,7 @@ class LoadBalanceBaseTest {
         Map<Invoker, InvokeResult> counter = new ConcurrentHashMap<Invoker, InvokeResult>();
         AbstractLoadBalance lb = getLoadBalance(loadbalanceName);
         int totalWeight = 0;
-        for (int i = 0; i < weightInvokers.size(); i ++) {
+        for (int i = 0; i < weightInvokers.size(); i++) {
             InvokeResult invokeResult = new InvokeResult(lb.getWeight(weightInvokers.get(i), weightTestInvocation));
             counter.put(weightInvokers.get(i), invokeResult);
             totalWeight += invokeResult.getWeight();
@@ -316,5 +316,4 @@ class LoadBalanceBaseTest {
         }
         return counter;
     }
-
 }

@@ -19,7 +19,6 @@ package org.apache.dubbo.remoting.transport.netty4;
 /**
  * <code>TestServiceImpl</code>
  */
-
 public class DemoServiceImpl implements DemoService {
     public void sayHello(String name) {
         System.out.println("hello " + name);

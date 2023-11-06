@@ -41,6 +41,10 @@ import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Set;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,13 +54,8 @@ import org.junit.jupiter.api.condition.JRE;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Set;
-
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
-
 
 /**
  * This abstraction class will implement some methods as base for single registry center.
@@ -64,7 +63,8 @@ import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 @DisabledForJreRange(min = JRE.JAVA_16)
 class SingleRegistryCenterDubboProtocolIntegrationTest implements IntegrationTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(SingleRegistryCenterDubboProtocolIntegrationTest.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(SingleRegistryCenterDubboProtocolIntegrationTest.class);
     /**
      * Define the provider application name.
      */
@@ -114,9 +114,9 @@ class SingleRegistryCenterDubboProtocolIntegrationTest implements IntegrationTes
         serviceConfig.setAsync(false);
 
         DubboBootstrap.getInstance()
-            .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
-            .protocol(new ProtocolConfig(PROTOCOL_NAME, PROTOCOL_PORT))
-            .service(serviceConfig);
+                .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
+                .protocol(new ProtocolConfig(PROTOCOL_NAME, PROTOCOL_PORT))
+                .service(serviceConfig);
         registryConfig = new RegistryConfig(ZookeeperRegistryCenterConfig.getConnectionAddress());
         DubboBootstrap.getInstance().registry(registryConfig);
     }
@@ -217,7 +217,8 @@ class SingleRegistryCenterDubboProtocolIntegrationTest implements IntegrationTes
         // ServiceDiscoveryRegistry's protocol is right or not
         Assertions.assertTrue(serviceDiscoveryRegistry.getServiceDiscovery() instanceof ZookeeperServiceDiscovery);
         // Convert to ZookeeperServiceDiscovery instance
-        ZookeeperServiceDiscovery zookeeperServiceDiscovery = (ZookeeperServiceDiscovery) serviceDiscoveryRegistry.getServiceDiscovery();
+        ZookeeperServiceDiscovery zookeeperServiceDiscovery =
+                (ZookeeperServiceDiscovery) serviceDiscoveryRegistry.getServiceDiscovery();
         // Gets registered service by ZookeeperServiceDiscovery
         Set<String> services = zookeeperServiceDiscovery.getServices();
         // check service exists
@@ -226,18 +227,35 @@ class SingleRegistryCenterDubboProtocolIntegrationTest implements IntegrationTes
         Assertions.assertTrue(services.contains(PROVIDER_APPLICATION_NAME));
 
         // obtain InMemoryWritableMetadataService instance
-        MetadataServiceDelegation inMemoryWritableMetadataService = (MetadataServiceDelegation) serviceConfig.getScopeModel().getBeanFactory().getBean(MetadataService.class);
+        MetadataServiceDelegation inMemoryWritableMetadataService = (MetadataServiceDelegation)
+                serviceConfig.getScopeModel().getBeanFactory().getBean(MetadataService.class);
         // Exported url is right or not in InMemoryWritableMetadataService
-        Assertions.assertEquals(inMemoryWritableMetadataService.getExportedURLs().size(), 1);
+        Assertions.assertEquals(
+                inMemoryWritableMetadataService.getExportedURLs().size(), 1);
         // MetadataInfo exists or not in InMemoryWritableMetadataService
-        Assertions.assertFalse(inMemoryWritableMetadataService.getMetadataInfos().isEmpty());
+        Assertions.assertFalse(
+                inMemoryWritableMetadataService.getMetadataInfos().isEmpty());
         // MetadataInfo has reported or not has service or not
-        Assertions.assertFalse(inMemoryWritableMetadataService.getMetadataInfos().get(0).getServices().isEmpty());
+        Assertions.assertFalse(inMemoryWritableMetadataService
+                .getMetadataInfos()
+                .get(0)
+                .getServices()
+                .isEmpty());
         // MetadataInfo has reported or not has service or not
-        Assertions.assertEquals(inMemoryWritableMetadataService.getMetadataInfos().get(0).getServices().size(), 1);
+        Assertions.assertEquals(
+                inMemoryWritableMetadataService
+                        .getMetadataInfos()
+                        .get(0)
+                        .getServices()
+                        .size(),
+                1);
         // obtain the service's key
         String key = SingleRegistryCenterIntegrationService.class.getName() + ":" + PROTOCOL_NAME;
-        MetadataInfo.ServiceInfo serviceInfo = inMemoryWritableMetadataService.getMetadataInfos().get(0).getServices().get(key);
+        MetadataInfo.ServiceInfo serviceInfo = inMemoryWritableMetadataService
+                .getMetadataInfos()
+                .get(0)
+                .getServices()
+                .get(key);
         // MetadataInfo's service exists or not
         Assertions.assertNotNull(serviceInfo);
         // The name of MetadataInfo's service is right or not
@@ -256,12 +274,23 @@ class SingleRegistryCenterDubboProtocolIntegrationTest implements IntegrationTes
         // 1. The exported service must contain SingleRegistryCenterIntegrationService
         // 2. The exported service's interface must be SingleRegistryCenterIntegrationService.class
         // 3. All exported services must be exported
-        singleRegistryCenterExportedServiceListener = (SingleRegistryCenterExportedServiceListener) ExtensionLoader.getExtensionLoader(ServiceListener.class).getExtension("exported");
+        singleRegistryCenterExportedServiceListener = (SingleRegistryCenterExportedServiceListener)
+                ExtensionLoader.getExtensionLoader(ServiceListener.class).getExtension("exported");
         Assertions.assertNotNull(singleRegistryCenterExportedServiceListener);
-        Assertions.assertEquals(singleRegistryCenterExportedServiceListener.getExportedServices().size(), 1);
-        Assertions.assertEquals(SingleRegistryCenterIntegrationService.class,
-            singleRegistryCenterExportedServiceListener.getExportedServices().get(0).getInterfaceClass());
-        ServiceConfig singleRegistryCenterServiceConfig = singleRegistryCenterExportedServiceListener.getExportedServices().get(0);
+        Assertions.assertEquals(
+                singleRegistryCenterExportedServiceListener
+                        .getExportedServices()
+                        .size(),
+                1);
+        Assertions.assertEquals(
+                SingleRegistryCenterIntegrationService.class,
+                singleRegistryCenterExportedServiceListener
+                        .getExportedServices()
+                        .get(0)
+                        .getInterfaceClass());
+        ServiceConfig singleRegistryCenterServiceConfig = singleRegistryCenterExportedServiceListener
+                .getExportedServices()
+                .get(0);
         Assertions.assertNotNull(singleRegistryCenterServiceConfig);
         Assertions.assertTrue(singleRegistryCenterServiceConfig.isExported());
     }
@@ -272,9 +301,10 @@ class SingleRegistryCenterDubboProtocolIntegrationTest implements IntegrationTes
      * FIXME It's not a good way to obtain {@link ServiceDiscoveryRegistry} using Reflection.
      */
     private ServiceDiscoveryRegistry getServiceDiscoveryRegistry() {
-        Collection<Registry> registries = RegistryManager.getInstance(ApplicationModel.defaultModel()).getRegistries();
+        Collection<Registry> registries =
+                RegistryManager.getInstance(ApplicationModel.defaultModel()).getRegistries();
         for (Registry registry : registries) {
-            if(registry instanceof ServiceDiscoveryRegistry) {
+            if (registry instanceof ServiceDiscoveryRegistry) {
                 return (ServiceDiscoveryRegistry) registry;
             }
         }
@@ -302,7 +332,9 @@ class SingleRegistryCenterDubboProtocolIntegrationTest implements IntegrationTes
      */
     private void beforeRefer() {
         // ReferenceConfig has integrated into DubboBootstrap or not
-        Assertions.assertEquals(referenceConfig.getScopeModel(), DubboBootstrap.getInstance().getApplicationModel().getDefaultModule());
+        Assertions.assertEquals(
+                referenceConfig.getScopeModel(),
+                DubboBootstrap.getInstance().getApplicationModel().getDefaultModule());
     }
 
     /**
@@ -329,8 +361,7 @@ class SingleRegistryCenterDubboProtocolIntegrationTest implements IntegrationTes
         Assertions.assertNotNull(referenceConfig.getInvoker());
         Assertions.assertTrue(referenceConfig.getInvoker() instanceof MigrationInvoker);
         // RPC works well or not
-        Assertions.assertEquals("Hello Reference",
-            singleRegistryCenterIntegrationService.hello("Reference"));
+        Assertions.assertEquals("Hello Reference", singleRegistryCenterIntegrationService.hello("Reference"));
         // get ServiceDiscoveryRegistryDirectory instance
         Directory directory = ((MigrationInvoker) referenceConfig.getInvoker()).getDirectory();
         // Directory is null or not
@@ -345,16 +376,20 @@ class SingleRegistryCenterDubboProtocolIntegrationTest implements IntegrationTes
         Assertions.assertFalse(directory.isDestroyed());
         // Directory has received notification or not
         Assertions.assertTrue(directory.isNotificationReceived());
-        ServiceDiscoveryRegistryDirectory serviceDiscoveryRegistryDirectory = (ServiceDiscoveryRegistryDirectory) directory;
+        ServiceDiscoveryRegistryDirectory serviceDiscoveryRegistryDirectory =
+                (ServiceDiscoveryRegistryDirectory) directory;
         // ServiceDiscoveryRegistryDirectory should register or not
         Assertions.assertTrue(serviceDiscoveryRegistryDirectory.isShouldRegister());
         // ServiceDiscoveryRegistryDirectory's registered consumer url is right or not
-        Assertions.assertEquals(serviceDiscoveryRegistryDirectory.getRegisteredConsumerUrl().getCategory(), CONSUMERS_CATEGORY);
+        Assertions.assertEquals(
+                serviceDiscoveryRegistryDirectory.getRegisteredConsumerUrl().getCategory(), CONSUMERS_CATEGORY);
         // ServiceDiscoveryRegistryDirectory's registry is right or not
         Assertions.assertTrue(serviceDiscoveryRegistryDirectory.getRegistry() instanceof ListenerRegistryWrapper);
         // Directory's invokers are right or not
-        Assertions.assertEquals(serviceDiscoveryRegistryDirectory.getAllInvokers().size(), 1);
-        Assertions.assertEquals(serviceDiscoveryRegistryDirectory.getInvokers(), serviceDiscoveryRegistryDirectory.getAllInvokers());
+        Assertions.assertEquals(
+                serviceDiscoveryRegistryDirectory.getAllInvokers().size(), 1);
+        Assertions.assertEquals(
+                serviceDiscoveryRegistryDirectory.getInvokers(), serviceDiscoveryRegistryDirectory.getAllInvokers());
     }
 
     @AfterEach
@@ -366,7 +401,9 @@ class SingleRegistryCenterDubboProtocolIntegrationTest implements IntegrationTes
         serviceConfig = null;
         referenceConfig = null;
         // The exported service has been unexported
-        Assertions.assertTrue(singleRegistryCenterExportedServiceListener.getExportedServices().isEmpty());
+        Assertions.assertTrue(singleRegistryCenterExportedServiceListener
+                .getExportedServices()
+                .isEmpty());
         singleRegistryCenterExportedServiceListener = null;
         logger.info(getClass().getSimpleName() + " testcase is ending...");
     }

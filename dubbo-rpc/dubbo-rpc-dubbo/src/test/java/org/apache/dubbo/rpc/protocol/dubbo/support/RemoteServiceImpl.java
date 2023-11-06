@@ -22,7 +22,8 @@ import java.rmi.RemoteException;
 
 public class RemoteServiceImpl implements RemoteService {
     public String getThreadName() throws RemoteException {
-        System.out.println("RpcContext.getServerAttachment().getRemoteHost()=" + RpcContext.getServiceContext().getRemoteHost());
+        System.out.println("RpcContext.getServerAttachment().getRemoteHost()="
+                + RpcContext.getServiceContext().getRemoteHost());
         return Thread.currentThread().getName();
     }
 

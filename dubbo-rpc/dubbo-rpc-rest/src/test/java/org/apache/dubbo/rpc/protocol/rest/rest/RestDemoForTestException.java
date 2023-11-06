@@ -36,7 +36,7 @@ public interface RestDemoForTestException {
     @GET
     @Consumes({MediaType.TEXT_PLAIN})
     @Path("/hello")
-    Integer test400(@QueryParam("a")String a,@QueryParam("b") String b);
+    Integer test400(@QueryParam("a") String a, @QueryParam("b") String b);
 
     @POST
     @Path("{uid}")

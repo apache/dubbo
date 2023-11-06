@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
-
 
 public class DoubleMatch {
     private Double exact;
@@ -46,7 +44,6 @@ public class DoubleMatch {
     public void setMod(Double mod) {
         this.mod = mod;
     }
-
 
     public boolean isMatch(Double input) {
         if (exact != null && mod == null) {

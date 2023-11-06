@@ -34,8 +34,7 @@ public class ServerDelegate implements RemotingServer {
 
     private transient RemotingServer server;
 
-    public ServerDelegate() {
-    }
+    public ServerDelegate() {}
 
     public ServerDelegate(RemotingServer server) {
         setServer(server);

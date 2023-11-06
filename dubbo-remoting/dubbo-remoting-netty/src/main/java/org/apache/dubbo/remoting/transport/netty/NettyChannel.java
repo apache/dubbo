@@ -24,12 +24,12 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.transport.AbstractChannel;
 import org.apache.dubbo.remoting.utils.PayloadDropper;
 
-import org.jboss.netty.channel.ChannelFuture;
-
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import org.jboss.netty.channel.ChannelFuture;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
@@ -42,7 +42,8 @@ final class NettyChannel extends AbstractChannel {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NettyChannel.class);
 
-    private static final ConcurrentMap<org.jboss.netty.channel.Channel, NettyChannel> CHANNEL_MAP = new ConcurrentHashMap<org.jboss.netty.channel.Channel, NettyChannel>();
+    private static final ConcurrentMap<org.jboss.netty.channel.Channel, NettyChannel> CHANNEL_MAP =
+            new ConcurrentHashMap<org.jboss.netty.channel.Channel, NettyChannel>();
 
     private final org.jboss.netty.channel.Channel channel;
 
@@ -111,12 +112,18 @@ final class NettyChannel extends AbstractChannel {
                 throw cause;
             }
         } catch (Throwable e) {
-            throw new RemotingException(this, "Failed to send message " + PayloadDropper.getRequestWithoutData(message) + " to " + getRemoteAddress() + ", cause: " + e.getMessage(), e);
+            throw new RemotingException(
+                    this,
+                    "Failed to send message " + PayloadDropper.getRequestWithoutData(message) + " to "
+                            + getRemoteAddress() + ", cause: " + e.getMessage(),
+                    e);
         }
 
         if (!success) {
-            throw new RemotingException(this, "Failed to send message " + PayloadDropper.getRequestWithoutData(message) + " to " + getRemoteAddress()
-                + "in timeout(" + timeout + "ms) limit");
+            throw new RemotingException(
+                    this,
+                    "Failed to send message " + PayloadDropper.getRequestWithoutData(message) + " to "
+                            + getRemoteAddress() + "in timeout(" + timeout + "ms) limit");
         }
     }
 
@@ -212,5 +219,4 @@ final class NettyChannel extends AbstractChannel {
     public String toString() {
         return "NettyChannel [channel=" + channel + "]";
     }
-
 }

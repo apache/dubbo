@@ -27,14 +27,17 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+
 import java.util.HashMap;
 import java.util.Map;
-
 
 /**
  * JAX-RS {@link RestService}
  */
-@DubboService(version = "3.0.0", protocol = {"dubbo", "rest"}, group = "standard")
+@DubboService(
+        version = "3.0.0",
+        protocol = {"dubbo", "rest"},
+        group = "standard")
 @Path("/")
 public class StandardRestService implements RestService {
 
@@ -55,8 +58,8 @@ public class StandardRestService implements RestService {
     @Override
     @Path("headers")
     @GET
-    public String headers(@HeaderParam("h") String header,
-                          @HeaderParam("h2") String header2, @QueryParam("v") Integer param) {
+    public String headers(
+            @HeaderParam("h") String header, @HeaderParam("h2") String header2, @QueryParam("v") Integer param) {
         String result = header + " , " + header2 + " , " + param;
         return result;
     }
@@ -64,8 +67,8 @@ public class StandardRestService implements RestService {
     @Override
     @Path("path-variables/{p1}/{p2}")
     @GET
-    public String pathVariables(@PathParam("p1") String path1,
-                                @PathParam("p2") String path2, @QueryParam("v") String param) {
+    public String pathVariables(
+            @PathParam("p1") String path1, @PathParam("p2") String path2, @QueryParam("v") String param) {
         String result = path1 + " , " + path2 + " , " + param;
         return result;
     }
@@ -84,8 +87,7 @@ public class StandardRestService implements RestService {
     @Path("request/body/map")
     @POST
     @Produces("application/json;charset=UTF-8")
-    public User requestBodyMap(Map<String, Object> data,
-                               @QueryParam("param") String param) {
+    public User requestBodyMap(Map<String, Object> data, @QueryParam("param") String param) {
         User user = new User();
         user.setId(((Integer) data.get("id")).longValue());
         user.setName((String) data.get("name"));

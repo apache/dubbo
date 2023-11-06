@@ -58,11 +58,11 @@ public interface ReferenceAttributes {
 
     String CLIENT = "client";
 
-//    /**
-//     * When enable, prefer to call local service in the same JVM if it's present, default value is true
-//     * @deprecated using scope="local" or scope="remote" instead
-//     */
-//    @Deprecated
+    //    /**
+    //     * When enable, prefer to call local service in the same JVM if it's present, default value is true
+    //     * @deprecated using scope="local" or scope="remote" instead
+    //     */
+    //    @Deprecated
     String INJVM = "injvm";
 
     String CHECK = "check";

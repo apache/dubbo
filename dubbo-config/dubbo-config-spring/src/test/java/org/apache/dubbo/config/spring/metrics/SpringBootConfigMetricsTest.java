@@ -20,6 +20,7 @@ import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -32,29 +33,26 @@ import org.springframework.context.annotation.Configuration;
 import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 
 @SpringBootTest(
-    properties = {
-        "dubbo.application.NAME = dubbo-demo-application",
-        "dubbo.module.name = dubbo-demo-module",
-        "dubbo.registry.address = zookeeper://localhost:2181",
-        "dubbo.protocol.name=dubbo",
-        "dubbo.protocol.port=20880",
-        "dubbo.metrics.protocol=prometheus",
-        "dubbo.metrics.export-service-protocol=tri",
-        "dubbo.metrics.export-service-port=9999",
-        "dubbo.metrics.enable-jvm=true",
-        "dubbo.metrics.prometheus.exporter.enabled=true",
-        "dubbo.metrics.prometheus.exporter.enable-http-service-discovery=true",
-        "dubbo.metrics.prometheus.exporter.http-service-discovery-url=localhost:8080",
-        "dubbo.metrics.aggregation.enabled=true",
-        "dubbo.metrics.aggregation.bucket-num=5",
-        "dubbo.metrics.aggregation.time-window-seconds=120",
-        "dubbo.metrics.histogram.enabled=true",
-        "dubbo.metadata-report.address=${zookeeper.connection.address.2}"
-    },
-    classes = {
-        SpringBootConfigMetricsTest.class
-    }
-)
+        properties = {
+            "dubbo.application.NAME = dubbo-demo-application",
+            "dubbo.module.name = dubbo-demo-module",
+            "dubbo.registry.address = zookeeper://localhost:2181",
+            "dubbo.protocol.name=dubbo",
+            "dubbo.protocol.port=20880",
+            "dubbo.metrics.protocol=prometheus",
+            "dubbo.metrics.export-service-protocol=tri",
+            "dubbo.metrics.export-service-port=9999",
+            "dubbo.metrics.enable-jvm=true",
+            "dubbo.metrics.prometheus.exporter.enabled=true",
+            "dubbo.metrics.prometheus.exporter.enable-http-service-discovery=true",
+            "dubbo.metrics.prometheus.exporter.http-service-discovery-url=localhost:8080",
+            "dubbo.metrics.aggregation.enabled=true",
+            "dubbo.metrics.aggregation.bucket-num=5",
+            "dubbo.metrics.aggregation.time-window-seconds=120",
+            "dubbo.metrics.histogram.enabled=true",
+            "dubbo.metadata-report.address=${zookeeper.connection.address.2}"
+        },
+        classes = {SpringBootConfigMetricsTest.class})
 @Configuration
 @ComponentScan
 @EnableDubbo
@@ -79,15 +77,15 @@ public class SpringBootConfigMetricsTest {
 
         Assertions.assertEquals(PROTOCOL_PROMETHEUS, metricsConfig.getProtocol());
         Assertions.assertTrue(metricsConfig.getEnableJvm());
-        Assertions.assertEquals("tri",metricsConfig.getExportServiceProtocol());
+        Assertions.assertEquals("tri", metricsConfig.getExportServiceProtocol());
         Assertions.assertEquals(9999, metricsConfig.getExportServicePort());
         Assertions.assertTrue(metricsConfig.getPrometheus().getExporter().getEnabled());
         Assertions.assertTrue(metricsConfig.getPrometheus().getExporter().getEnableHttpServiceDiscovery());
-        Assertions.assertEquals("localhost:8080", metricsConfig.getPrometheus().getExporter().getHttpServiceDiscoveryUrl());
+        Assertions.assertEquals(
+                "localhost:8080", metricsConfig.getPrometheus().getExporter().getHttpServiceDiscoveryUrl());
         Assertions.assertEquals(5, metricsConfig.getAggregation().getBucketNum());
         Assertions.assertEquals(120, metricsConfig.getAggregation().getTimeWindowSeconds());
         Assertions.assertTrue(metricsConfig.getAggregation().getEnabled());
         Assertions.assertTrue(metricsConfig.getHistogram().getEnabled());
     }
-
 }

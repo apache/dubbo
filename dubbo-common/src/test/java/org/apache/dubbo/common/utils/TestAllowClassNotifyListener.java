@@ -22,12 +22,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class TestAllowClassNotifyListener implements AllowClassNotifyListener {
-    private final static AtomicReference<SerializeCheckStatus> status = new AtomicReference<>();
-    private final static AtomicReference<Set<String>> allowedList = new AtomicReference<>();
-    private final static AtomicReference<Set<String>> disAllowedList = new AtomicReference<>();
-    private final static AtomicBoolean checkSerializable = new AtomicBoolean();
+    private static final AtomicReference<SerializeCheckStatus> status = new AtomicReference<>();
+    private static final AtomicReference<Set<String>> allowedList = new AtomicReference<>();
+    private static final AtomicReference<Set<String>> disAllowedList = new AtomicReference<>();
+    private static final AtomicBoolean checkSerializable = new AtomicBoolean();
 
-    private final static AtomicInteger count = new AtomicInteger(0);
+    private static final AtomicInteger count = new AtomicInteger(0);
 
     @Override
     public void notifyPrefix(Set<String> allowedList, Set<String> disAllowedList) {

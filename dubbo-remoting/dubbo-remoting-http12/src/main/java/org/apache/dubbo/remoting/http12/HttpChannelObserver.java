@@ -21,5 +21,4 @@ import org.apache.dubbo.common.stream.StreamObserver;
 public interface HttpChannelObserver<T> extends StreamObserver<T> {
 
     HttpChannel getHttpChannel();
-
 }

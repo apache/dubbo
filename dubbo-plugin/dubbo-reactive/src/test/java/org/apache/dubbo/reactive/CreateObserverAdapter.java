@@ -14,14 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.reactive;
 
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
-import org.mockito.Mockito;
-
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.mockito.Mockito;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -41,13 +40,9 @@ public class CreateObserverAdapter {
         errorCounter = new AtomicInteger();
 
         responseObserver = Mockito.mock(ServerCallToObserverAdapter.class);
-        doAnswer(o -> nextCounter.incrementAndGet())
-            .when(responseObserver).onNext(anyString());
-        doAnswer(o -> completeCounter.incrementAndGet())
-            .when(responseObserver).onCompleted();
-        doAnswer(o -> errorCounter.incrementAndGet())
-            .when(responseObserver).onError(any(Throwable.class));
-
+        doAnswer(o -> nextCounter.incrementAndGet()).when(responseObserver).onNext(anyString());
+        doAnswer(o -> completeCounter.incrementAndGet()).when(responseObserver).onCompleted();
+        doAnswer(o -> errorCounter.incrementAndGet()).when(responseObserver).onError(any(Throwable.class));
     }
 
     public AtomicInteger getCompleteCounter() {

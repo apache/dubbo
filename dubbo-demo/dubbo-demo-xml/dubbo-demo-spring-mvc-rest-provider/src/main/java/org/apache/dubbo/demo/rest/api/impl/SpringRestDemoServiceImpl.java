@@ -16,16 +16,16 @@
  */
 package org.apache.dubbo.demo.rest.api.impl;
 
-
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.demo.rest.api.SpringRestDemoService;
-import org.springframework.util.MultiValueMap;
-import po.User;
 
 import java.util.List;
 import java.util.Map;
 
-@DubboService(interfaceClass = SpringRestDemoService.class ,protocol = "rest")
+import org.springframework.util.MultiValueMap;
+import po.User;
+
+@DubboService(interfaceClass = SpringRestDemoService.class, protocol = "rest")
 public class SpringRestDemoServiceImpl implements SpringRestDemoService {
 
     @Override
@@ -42,7 +42,6 @@ public class SpringRestDemoServiceImpl implements SpringRestDemoService {
     public User testJavaBeanBody(User user) {
         return user;
     }
-
 
     @Override
     public int primitiveInt(int a, int b) {
@@ -64,7 +63,6 @@ public class SpringRestDemoServiceImpl implements SpringRestDemoService {
         return a + b;
     }
 
-
     @Override
     public String testMapParam(Map<String, String> params) {
         return params.get("param");
@@ -80,22 +78,18 @@ public class SpringRestDemoServiceImpl implements SpringRestDemoService {
         return params.get("form");
     }
 
-
     @Override
     public int headerInt(int header) {
         return header;
     }
-
 
     @Override
     public Integer hello(Integer a, Integer b) {
         return a + b;
     }
 
-
     @Override
     public String error() {
         throw new RuntimeException("test error");
     }
-
 }

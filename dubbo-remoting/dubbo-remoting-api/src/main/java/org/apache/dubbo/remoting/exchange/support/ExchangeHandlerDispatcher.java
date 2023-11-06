@@ -112,5 +112,4 @@ public class ExchangeHandlerDispatcher implements ExchangeHandler {
     public String telnet(Channel channel, String message) throws RemotingException {
         return telnetHandler.telnet(channel, message);
     }
-
 }

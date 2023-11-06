@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.registry;
 
 import org.apache.dubbo.common.URL;
@@ -23,6 +22,7 @@ import org.mockito.Mockito;
 
 public class SimpleRegistryFactory implements RegistryFactory {
     static Registry registry = Mockito.mock(Registry.class);
+
     @Override
     public Registry getRegistry(URL url) {
         return registry;

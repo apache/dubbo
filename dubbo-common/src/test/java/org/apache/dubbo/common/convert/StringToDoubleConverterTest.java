@@ -36,7 +36,8 @@ class StringToDoubleConverterTest {
 
     @BeforeEach
     public void init() {
-        converter = (StringToDoubleConverter) getExtensionLoader(Converter.class).getExtension("string-to-double");
+        converter =
+                (StringToDoubleConverter) getExtensionLoader(Converter.class).getExtension("string-to-double");
     }
 
     @Test

@@ -16,10 +16,11 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.netty;
 
-import io.netty.channel.ChannelHandler;
 import org.apache.dubbo.common.URL;
 
 import java.util.List;
+
+import io.netty.channel.ChannelHandler;
 
 /**
  *  FOR create netty un shared (no @Shared) handler

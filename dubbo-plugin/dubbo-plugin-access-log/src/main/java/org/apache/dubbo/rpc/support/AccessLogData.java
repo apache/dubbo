@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.support;
 
-
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.ToStringUtils;
 import org.apache.dubbo.rpc.Invocation;
@@ -78,7 +77,6 @@ public final class AccessLogData {
     public static AccessLogData newLogData() {
         return new AccessLogData();
     }
-
 
     /**
      * Add version information.
@@ -197,25 +195,26 @@ public final class AccessLogData {
         return get(SERVICE).toString();
     }
 
-
     public String getLogMessage() {
         StringBuilder sn = new StringBuilder();
 
         sn.append("[")
-            .append(LocalDateTime.ofInstant(getInvocationTime().toInstant(), ZoneId.systemDefault()).format(MESSAGE_DATE_FORMATTER))
-            .append("] ")
-            .append("-> ")
-            .append("[")
-            .append(LocalDateTime.ofInstant(getOutTime().toInstant(), ZoneId.systemDefault()).format(MESSAGE_DATE_FORMATTER))
-            .append("] ")
-            .append(get(REMOTE_HOST))
-            .append(':')
-            .append(get(REMOTE_PORT))
-            .append(" -> ")
-            .append(get(LOCAL_HOST))
-            .append(':')
-            .append(get(LOCAL_PORT))
-            .append(" - ");
+                .append(LocalDateTime.ofInstant(getInvocationTime().toInstant(), ZoneId.systemDefault())
+                        .format(MESSAGE_DATE_FORMATTER))
+                .append("] ")
+                .append("-> ")
+                .append("[")
+                .append(LocalDateTime.ofInstant(getOutTime().toInstant(), ZoneId.systemDefault())
+                        .format(MESSAGE_DATE_FORMATTER))
+                .append("] ")
+                .append(get(REMOTE_HOST))
+                .append(':')
+                .append(get(REMOTE_PORT))
+                .append(" -> ")
+                .append(get(LOCAL_HOST))
+                .append(':')
+                .append(get(LOCAL_PORT))
+                .append(" - ");
 
         String group = get(GROUP) != null ? get(GROUP).toString() : "";
         if (StringUtils.isNotEmpty(group)) {
@@ -245,7 +244,6 @@ public final class AccessLogData {
         }
         sn.append(") ");
 
-
         Object[] args = get(ARGUMENTS) != null ? (Object[]) get(ARGUMENTS) : null;
         if (args != null && args.length > 0) {
             sn.append(ToStringUtils.printToString(args));
@@ -259,7 +257,7 @@ public final class AccessLogData {
     }
 
     private Date getOutTime() {
-        return (Date)get(OUT_TIME);
+        return (Date) get(OUT_TIME);
     }
 
     /**
@@ -291,5 +289,4 @@ public final class AccessLogData {
         setTypes(inv.getParameterTypes());
         setArguments(inv.getArguments());
     }
-
 }

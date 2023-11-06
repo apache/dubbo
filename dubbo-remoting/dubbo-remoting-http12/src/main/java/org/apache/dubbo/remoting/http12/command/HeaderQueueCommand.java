@@ -28,8 +28,7 @@ public class HeaderQueueCommand extends HttpChannelQueueCommand {
 
     @Override
     public void run() {
-        getHttpChannel().writeHeader(httpMetadata)
-            .whenComplete((unused, throwable) -> {
+        getHttpChannel().writeHeader(httpMetadata).whenComplete((unused, throwable) -> {
             if (throwable != null) {
                 completeExceptionally(throwable);
             } else {

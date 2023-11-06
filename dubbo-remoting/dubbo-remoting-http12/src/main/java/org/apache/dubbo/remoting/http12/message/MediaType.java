@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.http12.message;
 
-
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Map;

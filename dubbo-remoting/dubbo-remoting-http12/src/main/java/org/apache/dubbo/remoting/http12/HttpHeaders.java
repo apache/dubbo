@@ -52,7 +52,6 @@ public class HttpHeaders implements Map<String, List<String>>, Serializable, Clo
         this.locale = Locale.US;
     }
 
-
     // Implementation of java.util.Map
 
     @Override
@@ -101,7 +100,6 @@ public class HttpHeaders implements Map<String, List<String>>, Serializable, Clo
     }
 
     @Override
-
     public List<String> getOrDefault(Object key, List<String> defaultValue) {
         if (key instanceof String) {
             String caseInsensitiveKey = this.caseInsensitiveKeys.get(convertKey((String) key));
@@ -132,7 +130,6 @@ public class HttpHeaders implements Map<String, List<String>>, Serializable, Clo
     }
 
     @Override
-
     public List<String> putIfAbsent(String key, List<String> value) {
         String oldKey = this.caseInsensitiveKeys.putIfAbsent(convertKey(key), key);
         if (oldKey != null) {
@@ -147,7 +144,6 @@ public class HttpHeaders implements Map<String, List<String>>, Serializable, Clo
     }
 
     @Override
-
     public List<String> computeIfAbsent(String key, Function<? super String, ? extends List<String>> mappingFunction) {
         String oldKey = this.caseInsensitiveKeys.putIfAbsent(convertKey(key), key);
         if (oldKey != null) {
@@ -162,7 +158,6 @@ public class HttpHeaders implements Map<String, List<String>>, Serializable, Clo
     }
 
     @Override
-
     public List<String> remove(Object key) {
         if (key instanceof String) {
             String caseInsensitiveKey = removeCaseInsensitiveKey((String) key);
@@ -232,7 +227,6 @@ public class HttpHeaders implements Map<String, List<String>>, Serializable, Clo
         return this.targetMap.toString();
     }
 
-
     public Locale getLocale() {
         return this.locale;
     }
@@ -245,11 +239,9 @@ public class HttpHeaders implements Map<String, List<String>>, Serializable, Clo
         return false;
     }
 
-
     private String removeCaseInsensitiveKey(String key) {
         return this.caseInsensitiveKeys.remove(convertKey(key));
     }
-
 
     private class KeySet extends AbstractSet<String> {
 
@@ -295,7 +287,6 @@ public class HttpHeaders implements Map<String, List<String>>, Serializable, Clo
         }
     }
 
-
     private class Values extends AbstractCollection<List<String>> {
 
         private final Collection<List<String>> delegate;
@@ -334,7 +325,6 @@ public class HttpHeaders implements Map<String, List<String>>, Serializable, Clo
             this.delegate.forEach(action);
         }
     }
-
 
     private class EntrySet extends AbstractSet<Entry<String, List<String>>> {
 
@@ -386,11 +376,9 @@ public class HttpHeaders implements Map<String, List<String>>, Serializable, Clo
         }
     }
 
-
     private abstract class EntryIterator<T> implements Iterator<T> {
 
         private final Iterator<Entry<String, List<String>>> delegate;
-
 
         private Entry<String, List<String>> last;
 
@@ -419,7 +407,6 @@ public class HttpHeaders implements Map<String, List<String>>, Serializable, Clo
         }
     }
 
-
     private class KeySetIterator extends EntryIterator<String> {
 
         @Override
@@ -427,7 +414,6 @@ public class HttpHeaders implements Map<String, List<String>>, Serializable, Clo
             return nextEntry().getKey();
         }
     }
-
 
     private class ValuesIterator extends EntryIterator<List<String>> {
 
@@ -437,7 +423,6 @@ public class HttpHeaders implements Map<String, List<String>>, Serializable, Clo
         }
     }
 
-
     private class EntrySetIterator extends EntryIterator<Entry<String, List<String>>> {
 
         @Override
@@ -445,5 +430,4 @@ public class HttpHeaders implements Map<String, List<String>>, Serializable, Clo
             return nextEntry();
         }
     }
-
 }

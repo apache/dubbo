@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.stream.StreamObserver;
@@ -27,10 +26,10 @@ public class BiStreamServerCallListener extends AbstractServerCallListener {
 
     private StreamObserver<Object> requestObserver;
 
-    public BiStreamServerCallListener(RpcInvocation invocation, Invoker<?> invoker,
-        ServerCallToObserverAdapter<Object> responseObserver) {
+    public BiStreamServerCallListener(
+            RpcInvocation invocation, Invoker<?> invoker, ServerCallToObserverAdapter<Object> responseObserver) {
         super(invocation, invoker, responseObserver);
-        invocation.setArguments(new Object[]{responseObserver});
+        invocation.setArguments(new Object[] {responseObserver});
         invoke();
     }
 
@@ -54,7 +53,6 @@ public class BiStreamServerCallListener extends AbstractServerCallListener {
     public void onCancel(TriRpcStatus status) {
         requestObserver.onError(status.asException());
     }
-
 
     @Override
     public void onComplete() {

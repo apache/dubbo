@@ -31,7 +31,8 @@ public class ProxyConfigWriter {
     public static final ProxyConfigWriter INSTANCE = new ProxyConfigWriter();
 
     public void write(BasicJsonWriter writer, ProxyConfigMetadataRepository repository) {
-        writer.writeArray(repository.getProxyDescribers().stream().map(this::toAttributes).collect(Collectors.toList()));
+        writer.writeArray(
+                repository.getProxyDescribers().stream().map(this::toAttributes).collect(Collectors.toList()));
     }
 
     private Map<String, Object> toAttributes(JdkProxyDescriber describer) {

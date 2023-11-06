@@ -27,5 +27,4 @@ public class ServletHttpServer extends AbstractHttpServer {
         super(url, handler);
         DispatcherServlet.addHttpHandler(url.getParameter(Constants.BIND_PORT_KEY, 8080), handler);
     }
-
 }

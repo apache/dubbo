@@ -21,6 +21,7 @@ import org.apache.dubbo.metadata.annotation.processing.ClassPathMetadataStorage;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 
 import javax.annotation.processing.ProcessingEnvironment;
+
 import java.io.IOException;
 import java.util.Set;
 
@@ -40,18 +41,19 @@ public class ServiceRestMetadataStorage {
     public void append(Set<ServiceRestMetadata> serviceRestMetadata) throws IOException {
         // Add all existed ServiceRestMetadata
         storage.read(SERVICE_REST_METADATA_RESOURCE_PATH, reader -> {
-            try {
-                StringBuilder stringBuilder = new StringBuilder();
-                char[] buf = new char[1024];
-                int len;
-                while ((len = reader.read(buf)) != -1) {
-                    stringBuilder.append(buf, 0, len);
-                }
-                return JsonUtils.toJavaList(stringBuilder.toString(), ServiceRestMetadata.class);
-            } catch (IOException e) {
-                return null;
-            }
-        }).ifPresent(serviceRestMetadata::addAll);
+                    try {
+                        StringBuilder stringBuilder = new StringBuilder();
+                        char[] buf = new char[1024];
+                        int len;
+                        while ((len = reader.read(buf)) != -1) {
+                            stringBuilder.append(buf, 0, len);
+                        }
+                        return JsonUtils.toJavaList(stringBuilder.toString(), ServiceRestMetadata.class);
+                    } catch (IOException e) {
+                        return null;
+                    }
+                })
+                .ifPresent(serviceRestMetadata::addAll);
         write(serviceRestMetadata);
     }
 
@@ -61,5 +63,4 @@ public class ServiceRestMetadataStorage {
         }
         storage.write(() -> JsonUtils.toJson(serviceRestMetadata), SERVICE_REST_METADATA_RESOURCE_PATH);
     }
-
 }

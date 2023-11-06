@@ -28,13 +28,13 @@ import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 import org.apache.dubbo.rpc.protocol.rest.netty.RestHttpRequestDecoder;
 
-import io.netty.handler.codec.http.HttpObjectAggregator;
-import io.netty.handler.codec.http.HttpRequestDecoder;
-import io.netty.handler.codec.http.HttpResponseEncoder;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpRequestDecoder;
+import io.netty.handler.codec.http.HttpResponseEncoder;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY;
 
@@ -47,10 +47,8 @@ public class RestHttp1WireProtocol extends AbstractWireProtocol implements Scope
         super(new RestHttp1Detector(frameworkModel));
     }
 
-
     @Override
     public void configServerProtocolHandler(URL url, ChannelOperator operator) {
-
 
         // h1 upgrade to  don`t response 101 ,cause there is no h1 stream handler
         // TODO add h1 stream handler
@@ -63,17 +61,19 @@ public class RestHttp1WireProtocol extends AbstractWireProtocol implements Scope
             serviceDeployer = emptyServiceDeployer;
         }
 
-        List<Object> channelHandlers = Arrays.asList(new HttpRequestDecoder(
-                url.getParameter(RestConstant.MAX_INITIAL_LINE_LENGTH_PARAM, RestConstant.MAX_INITIAL_LINE_LENGTH),
-                url.getParameter(RestConstant.MAX_HEADER_SIZE_PARAM, RestConstant.MAX_HEADER_SIZE),
-                url.getParameter(RestConstant.MAX_CHUNK_SIZE_PARAM, RestConstant.MAX_CHUNK_SIZE)),
-            new HttpObjectAggregator(url.getParameter(RestConstant.MAX_REQUEST_SIZE_PARAM, RestConstant.MAX_REQUEST_SIZE)),
-            new HttpResponseEncoder(), new RestHttpRequestDecoder(url, serviceDeployer));
-
+        List<Object> channelHandlers = Arrays.asList(
+                new HttpRequestDecoder(
+                        url.getParameter(
+                                RestConstant.MAX_INITIAL_LINE_LENGTH_PARAM, RestConstant.MAX_INITIAL_LINE_LENGTH),
+                        url.getParameter(RestConstant.MAX_HEADER_SIZE_PARAM, RestConstant.MAX_HEADER_SIZE),
+                        url.getParameter(RestConstant.MAX_CHUNK_SIZE_PARAM, RestConstant.MAX_CHUNK_SIZE)),
+                new HttpObjectAggregator(
+                        url.getParameter(RestConstant.MAX_REQUEST_SIZE_PARAM, RestConstant.MAX_REQUEST_SIZE)),
+                new HttpResponseEncoder(),
+                new RestHttpRequestDecoder(url, serviceDeployer));
 
         List<ChannelHandler> handlers = new ArrayList<>();
         handlers.add(new ChannelHandlerPretender(channelHandlers));
         operator.configChannelHandler(handlers);
     }
-
 }

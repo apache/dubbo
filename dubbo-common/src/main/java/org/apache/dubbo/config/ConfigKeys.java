@@ -47,5 +47,4 @@ public interface ConfigKeys {
      * Ignore duplicated interface (service/reference) config. Default value is false.
      */
     String DUBBO_CONFIG_IGNORE_DUPLICATED_INTERFACE = "dubbo.config.ignore-duplicated-interface";
-
 }

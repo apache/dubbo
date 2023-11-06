@@ -16,18 +16,6 @@
  */
 package org.apache.dubbo.registry.client.metadata;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -39,6 +27,18 @@ import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import static java.util.Collections.emptySortedSet;
 import static java.util.Collections.unmodifiableSortedSet;
@@ -55,7 +55,8 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
 
     private final ApplicationModel applicationModel;
     private final RegistryManager registryManager;
-    private ConcurrentMap<String, InstanceMetadataChangedListener> instanceMetadataChangedListenerMap = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, InstanceMetadataChangedListener> instanceMetadataChangedListenerMap =
+            new ConcurrentHashMap<>();
     private URL url;
     // works only for DNS service discovery
     private String instanceMetadata;
@@ -219,8 +220,8 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
         return instanceMetadata;
     }
 
-    private SortedSet<String> getServiceURLs(Map<String, SortedSet<URL>> exportedServiceURLs, String serviceKey,
-                                             String protocol) {
+    private SortedSet<String> getServiceURLs(
+            Map<String, SortedSet<URL>> exportedServiceURLs, String serviceKey, String protocol) {
 
         SortedSet<URL> serviceURLs = exportedServiceURLs.get(serviceKey);
 
@@ -233,15 +234,12 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
 
     private boolean isAcceptableProtocol(String protocol, URL url) {
         return protocol == null
-            || protocol.equals(url.getParameter(PROTOCOL_KEY))
-            || protocol.equals(url.getProtocol());
+                || protocol.equals(url.getParameter(PROTOCOL_KEY))
+                || protocol.equals(url.getProtocol());
     }
 
     @Override
-    public void destroy() {
-
-    }
-
+    public void destroy() {}
 
     static class URLComparator implements Comparator<URL> {
 

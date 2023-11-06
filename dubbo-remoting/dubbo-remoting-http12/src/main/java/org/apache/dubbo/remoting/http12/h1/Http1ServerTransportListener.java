@@ -20,6 +20,4 @@ import org.apache.dubbo.remoting.http12.HttpInputMessage;
 import org.apache.dubbo.remoting.http12.HttpTransportListener;
 import org.apache.dubbo.remoting.http12.RequestMetadata;
 
-public interface Http1ServerTransportListener extends HttpTransportListener<RequestMetadata, HttpInputMessage> {
-
-}
+public interface Http1ServerTransportListener extends HttpTransportListener<RequestMetadata, HttpInputMessage> {}

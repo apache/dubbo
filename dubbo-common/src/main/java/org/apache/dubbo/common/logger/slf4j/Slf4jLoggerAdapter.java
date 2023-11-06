@@ -20,8 +20,10 @@ import org.apache.dubbo.common.logger.Level;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerAdapter;
 import org.apache.dubbo.common.utils.ClassUtils;
-import org.slf4j.LoggerFactory;
+
 import java.io.File;
+
+import org.slf4j.LoggerFactory;
 
 public class Slf4jLoggerAdapter implements LoggerAdapter {
     public static final String NAME = "slf4j";
@@ -52,7 +54,9 @@ public class Slf4jLoggerAdapter implements LoggerAdapter {
 
     @Override
     public void setLevel(Level level) {
-        System.err.printf("The level of slf4j logger current can not be set, using the default level: %s \n", Slf4jLogger.getLevel(ROOT_LOGGER));
+        System.err.printf(
+                "The level of slf4j logger current can not be set, using the default level: %s \n",
+                Slf4jLogger.getLevel(ROOT_LOGGER));
         this.level = level;
     }
 

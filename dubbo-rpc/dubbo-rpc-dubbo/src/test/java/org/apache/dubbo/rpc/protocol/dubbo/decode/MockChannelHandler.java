@@ -45,14 +45,13 @@ public class MockChannelHandler implements ChannelHandler {
 
     @Override
     public void received(Channel channel, Object message) throws RemotingException {
-        //echo 
+        // echo
         channel.send(message);
     }
 
     @Override
     public void caught(Channel channel, Throwable exception) throws RemotingException {
         throw new RemotingException(channel, exception);
-
     }
 
     public Set<Channel> getChannels() {

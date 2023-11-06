@@ -33,6 +33,5 @@ public interface MetadataReportFactory {
     @Adaptive({PROTOCOL_KEY})
     MetadataReport getMetadataReport(URL url);
 
-    default void destroy() {
-    }
+    default void destroy() {}
 }

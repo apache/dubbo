@@ -40,7 +40,6 @@ public enum DubboObservationDocumentation implements ObservationDocumentation {
         public KeyName[] getLowCardinalityKeyNames() {
             return LowCardinalityKeyNames.values();
         }
-
     },
 
     /**
@@ -56,7 +55,6 @@ public enum DubboObservationDocumentation implements ObservationDocumentation {
         public KeyName[] getLowCardinalityKeyNames() {
             return LowCardinalityKeyNames.values();
         }
-
     };
 
     @NonNullApi
@@ -117,5 +115,4 @@ public enum DubboObservationDocumentation implements ObservationDocumentation {
             }
         }
     }
-
 }

@@ -24,5 +24,4 @@ import org.apache.dubbo.common.convert.StringToBooleanConverter;
  *
  * @since 2.7.7
  */
-public class String2BooleanConverter extends StringToBooleanConverter {
-}
+public class String2BooleanConverter extends StringToBooleanConverter {}

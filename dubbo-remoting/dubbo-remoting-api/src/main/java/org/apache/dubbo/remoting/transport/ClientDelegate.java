@@ -30,8 +30,7 @@ public class ClientDelegate implements Client {
 
     private transient Client client;
 
-    public ClientDelegate() {
-    }
+    public ClientDelegate() {}
 
     public ClientDelegate(Client client) {
         setClient(client);
@@ -138,5 +137,4 @@ public class ClientDelegate implements Client {
     public boolean isClosed() {
         return client.isClosed();
     }
-
 }

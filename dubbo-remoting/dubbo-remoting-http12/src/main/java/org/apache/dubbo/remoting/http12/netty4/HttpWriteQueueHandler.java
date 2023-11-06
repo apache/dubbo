@@ -16,10 +16,11 @@
  */
 package org.apache.dubbo.remoting.http12.netty4;
 
+import org.apache.dubbo.remoting.http12.command.HttpWriteQueue;
+
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.EventLoop;
-import org.apache.dubbo.remoting.http12.command.HttpWriteQueue;
 
 public class HttpWriteQueueHandler extends ChannelInboundHandlerAdapter {
 

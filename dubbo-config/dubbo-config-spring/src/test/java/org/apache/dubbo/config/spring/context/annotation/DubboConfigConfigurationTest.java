@@ -22,14 +22,14 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 
+import java.io.IOException;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.io.support.ResourcePropertySource;
-
-import java.io.IOException;
 
 /**
  * {@link DubboConfigConfiguration} Test
@@ -47,7 +47,6 @@ class DubboConfigConfigurationTest {
         context = new AnnotationConfigApplicationContext();
         ResourcePropertySource propertySource = new ResourcePropertySource("META-INF/config.properties");
         context.getEnvironment().getPropertySources().addFirst(propertySource);
-
     }
 
     @AfterEach
@@ -90,5 +89,4 @@ class DubboConfigConfigurationTest {
         RegistryConfig registry2 = context.getBean("registry2", RegistryConfig.class);
         Assertions.assertEquals(2182, registry2.getPort());
     }
-
 }

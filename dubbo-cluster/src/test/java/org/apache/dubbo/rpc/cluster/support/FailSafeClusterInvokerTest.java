@@ -26,12 +26,12 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.filter.DemoService;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.BDDMockito.given;
@@ -53,7 +53,6 @@ class FailSafeClusterInvokerTest {
     /**
      * @throws java.lang.Exception
      */
-
     @BeforeEach
     public void setUp() throws Exception {
         RpcContext.removeServiceContext();
@@ -81,7 +80,7 @@ class FailSafeClusterInvokerTest {
         given(invoker.getInterface()).willReturn(DemoService.class);
     }
 
-    //TODO assert error log
+    // TODO assert error log
     @Test
     void testInvokeExceptoin() {
         resetInvokerToException();
@@ -115,12 +114,11 @@ class FailSafeClusterInvokerTest {
 
         FailsafeClusterInvoker<DemoService> invoker = new FailsafeClusterInvoker<DemoService>(dic);
 
-        try{
+        try {
             invoker.invoke(invocation);
-        } catch (RpcException e){
+        } catch (RpcException e) {
             Assertions.assertTrue(e.getMessage().contains("No provider available"));
             assertFalse(e.getCause() instanceof RpcException);
         }
     }
-
 }

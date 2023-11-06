@@ -24,16 +24,22 @@ import org.apache.dubbo.rpc.protocol.rest.filter.RestRequestFilter;
 import org.apache.dubbo.rpc.protocol.rest.filter.context.RestFilterContext;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
-import org.jboss.resteasy.specimpl.BuiltResponse;
 
 import javax.ws.rs.container.ContainerRequestFilter;
+
 import java.util.List;
 
+import org.jboss.resteasy.specimpl.BuiltResponse;
 
-
-@Activate(value = "resteasy", onClass = {"javax.ws.rs.container.ContainerRequestFilter", "org.jboss.resteasy.plugins.server.netty.NettyHttpRequest", "org.jboss.resteasy.plugins.server.netty.NettyHttpResponse"}, order = Integer.MAX_VALUE - 1)
+@Activate(
+        value = "resteasy",
+        onClass = {
+            "javax.ws.rs.container.ContainerRequestFilter",
+            "org.jboss.resteasy.plugins.server.netty.NettyHttpRequest",
+            "org.jboss.resteasy.plugins.server.netty.NettyHttpResponse"
+        },
+        order = Integer.MAX_VALUE - 1)
 public class ResteasyRequestContainerFilterAdapter implements RestRequestFilter, ResteasyContext {
-
 
     @Override
     public void filter(RestFilterContext restFilterContext) throws Exception {
@@ -43,15 +49,16 @@ public class ResteasyRequestContainerFilterAdapter implements RestRequestFilter,
         URL url = restFilterContext.getUrl();
         NettyHttpResponse response = restFilterContext.getResponse();
 
-        List<ContainerRequestFilter> containerRequestFilters = getExtension(serviceDeployer, ContainerRequestFilter.class);
+        List<ContainerRequestFilter> containerRequestFilters =
+                getExtension(serviceDeployer, ContainerRequestFilter.class);
 
         if (containerRequestFilters.isEmpty()) {
 
             return;
         }
 
-
-        DubboPreMatchContainerRequestContext containerRequestContext = convertHttpRequestToContainerRequestContext(requestFacade, containerRequestFilters.toArray(new ContainerRequestFilter[0]));
+        DubboPreMatchContainerRequestContext containerRequestContext = convertHttpRequestToContainerRequestContext(
+                requestFacade, containerRequestFilters.toArray(new ContainerRequestFilter[0]));
 
         // set resteasy request for save user`s custom  request attribute
         restFilterContext.setOriginRequest(containerRequestContext.getHttpRequest());
@@ -70,9 +77,5 @@ public class ResteasyRequestContainerFilterAdapter implements RestRequestFilter,
         } catch (Throwable e) {
             throw new RuntimeException("dubbo rest resteasy ContainerRequestFilter write response encode error", e);
         }
-
-
     }
-
-
 }

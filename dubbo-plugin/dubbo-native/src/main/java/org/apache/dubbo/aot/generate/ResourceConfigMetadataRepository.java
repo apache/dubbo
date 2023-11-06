@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.aot.generate;
 
-
 import org.apache.dubbo.aot.api.ResourceBundleDescriber;
 import org.apache.dubbo.aot.api.ResourcePatternDescriber;
 
@@ -41,7 +40,7 @@ public class ResourceConfigMetadataRepository {
 
     public ResourceConfigMetadataRepository registerIncludesPatterns(String... patterns) {
         for (String pattern : patterns) {
-            registerIncludesPattern(new ResourcePatternDescriber(pattern,null));
+            registerIncludesPattern(new ResourcePatternDescriber(pattern, null));
         }
         return this;
     }

@@ -19,10 +19,10 @@ package org.apache.dubbo.registry.kubernetes.util;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 
+import java.util.Base64;
+
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.ConfigBuilder;
-
-import java.util.Base64;
 
 import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.API_VERSION;
 import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.CA_CERT_DATA;
@@ -66,31 +66,23 @@ public class KubernetesConfigUtils {
                 .withNamespace(url.getParameter(NAMESPACE, base.getNamespace())) //
                 .withUsername(url.getParameter(USERNAME, base.getUsername())) //
                 .withPassword(url.getParameter(PASSWORD, base.getPassword())) //
-
                 .withOauthToken(url.getParameter(OAUTH_TOKEN, base.getOauthToken())) //
-
                 .withCaCertFile(url.getParameter(CA_CERT_FILE, base.getCaCertFile())) //
                 .withCaCertData(url.getParameter(CA_CERT_DATA, decodeBase64(base.getCaCertData()))) //
-
                 .withClientKeyFile(url.getParameter(CLIENT_KEY_FILE, base.getClientKeyFile())) //
                 .withClientKeyData(url.getParameter(CLIENT_KEY_DATA, decodeBase64(base.getClientKeyData()))) //
-
                 .withClientCertFile(url.getParameter(CLIENT_CERT_FILE, base.getClientCertFile())) //
                 .withClientCertData(url.getParameter(CLIENT_CERT_DATA, decodeBase64(base.getClientCertData()))) //
-
                 .withClientKeyAlgo(url.getParameter(CLIENT_KEY_ALGO, base.getClientKeyAlgo())) //
                 .withClientKeyPassphrase(url.getParameter(CLIENT_KEY_PASSPHRASE, base.getClientKeyPassphrase())) //
-
                 .withConnectionTimeout(url.getParameter(CONNECTION_TIMEOUT, base.getConnectionTimeout())) //
                 .withRequestTimeout(url.getParameter(REQUEST_TIMEOUT, base.getRequestTimeout())) //
-
-                .withWatchReconnectInterval(url.getParameter(WATCH_RECONNECT_INTERVAL, base.getWatchReconnectInterval())) //
+                .withWatchReconnectInterval(
+                        url.getParameter(WATCH_RECONNECT_INTERVAL, base.getWatchReconnectInterval())) //
                 .withWatchReconnectLimit(url.getParameter(WATCH_RECONNECT_LIMIT, base.getWatchReconnectLimit())) //
                 .withLoggingInterval(url.getParameter(LOGGING_INTERVAL, base.getLoggingInterval())) //
-
                 .withTrustCerts(url.getParameter(TRUST_CERTS, base.isTrustCerts())) //
                 .withHttp2Disable(url.getParameter(HTTP2_DISABLE, base.isHttp2Disable())) //
-
                 .withHttpProxy(url.getParameter(HTTP_PROXY, base.getHttpProxy())) //
                 .withHttpsProxy(url.getParameter(HTTPS_PROXY, base.getHttpsProxy())) //
                 .withProxyUsername(url.getParameter(PROXY_USERNAME, base.getProxyUsername())) //
@@ -103,14 +95,10 @@ public class KubernetesConfigUtils {
         if (DEFAULT_MASTER_PLACEHOLDER.equalsIgnoreCase(url.getHost())) {
             return DEFAULT_MASTER_URL;
         }
-        return (url.getParameter(USE_HTTPS, true) ?
-                "https://" : "http://")
-                + url.getHost() + ":" + url.getPort();
+        return (url.getParameter(USE_HTTPS, true) ? "https://" : "http://") + url.getHost() + ":" + url.getPort();
     }
 
     private static String decodeBase64(String str) {
-        return StringUtils.isNotEmpty(str) ?
-                new String(Base64.getDecoder().decode(str)) :
-                null;
+        return StringUtils.isNotEmpty(str) ? new String(Base64.getDecoder().decode(str)) : null;
     }
 }

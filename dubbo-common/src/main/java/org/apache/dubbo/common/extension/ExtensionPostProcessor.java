@@ -28,5 +28,4 @@ public interface ExtensionPostProcessor {
     default Object postProcessAfterInitialization(Object instance, String name) throws Exception {
         return instance;
     }
-
 }

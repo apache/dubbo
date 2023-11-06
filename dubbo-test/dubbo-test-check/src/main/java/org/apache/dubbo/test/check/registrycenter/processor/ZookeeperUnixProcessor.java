@@ -37,7 +37,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.TESTING_REGI
  */
 public abstract class ZookeeperUnixProcessor implements Processor {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ZookeeperUnixProcessor.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(ZookeeperUnixProcessor.class);
 
     @Override
     public void process(Context context) throws DubboTestException {
@@ -50,7 +51,12 @@ public abstract class ZookeeperUnixProcessor implements Processor {
             try {
                 process.destroy();
             } catch (Throwable cause) {
-                logger.warn(TESTING_REGISTRY_FAILED_TO_STOP_ZOOKEEPER, "", "", String.format("Failed to kill the process, with client port %s !", clientPort), cause);
+                logger.warn(
+                        TESTING_REGISTRY_FAILED_TO_STOP_ZOOKEEPER,
+                        "",
+                        "",
+                        String.format("Failed to kill the process, with client port %s !", clientPort),
+                        cause);
             }
         }
     }
@@ -64,7 +70,7 @@ public abstract class ZookeeperUnixProcessor implements Processor {
         try (final BufferedReader reader = new BufferedReader(new InputStreamReader(errorStream))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                logger.error(TESTING_REGISTRY_FAILED_TO_START_ZOOKEEPER,"","",line);
+                logger.error(TESTING_REGISTRY_FAILED_TO_START_ZOOKEEPER, "", "", line);
             }
         } catch (IOException e) {
             /* eat quietly */

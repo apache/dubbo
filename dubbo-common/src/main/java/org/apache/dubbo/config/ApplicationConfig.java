@@ -297,8 +297,7 @@ public class ApplicationConfig extends AbstractConfig {
      */
     private String executorManagementMode;
 
-    public ApplicationConfig() {
-    }
+    public ApplicationConfig() {}
 
     public ApplicationConfig(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -382,11 +381,13 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setEnvironment(String environment) {
-        if (environment != null && !(DEVELOPMENT_ENVIRONMENT.equals(environment)
-                || TEST_ENVIRONMENT.equals(environment)
-                || PRODUCTION_ENVIRONMENT.equals(environment))) {
+        if (environment != null
+                && !(DEVELOPMENT_ENVIRONMENT.equals(environment)
+                        || TEST_ENVIRONMENT.equals(environment)
+                        || PRODUCTION_ENVIRONMENT.equals(environment))) {
 
-            throw new IllegalStateException(String.format("Unsupported environment: %s, only support %s/%s/%s, default is %s.",
+            throw new IllegalStateException(String.format(
+                    "Unsupported environment: %s, only support %s/%s/%s, default is %s.",
                     environment,
                     DEVELOPMENT_ENVIRONMENT,
                     TEST_ENVIRONMENT,
@@ -802,8 +803,9 @@ public class ApplicationConfig extends AbstractConfig {
         if (StringUtils.isEmpty(getName())) {
             String defaultName = DEFAULT_NAME_PREFIX + UUID.randomUUID();
             this.setName(defaultName);
-            LOGGER.info("No application name was set, '" + defaultName + "' will be used as the default application name," +
-                " it's highly recommended to set a unique and customized name for it can be critical for some service governance features.");
+            LOGGER.info(
+                    "No application name was set, '" + defaultName + "' will be used as the default application name,"
+                            + " it's highly recommended to set a unique and customized name for it can be critical for some service governance features.");
         }
     }
 

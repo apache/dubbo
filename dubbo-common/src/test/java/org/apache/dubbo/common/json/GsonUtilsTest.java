@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.common.json;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class GsonUtilsTest {
     @Test
@@ -35,7 +35,9 @@ class GsonUtilsTest {
             GsonUtils.fromJson("{'name':'Tom','age':}", User.class);
             Assertions.fail();
         } catch (RuntimeException ex) {
-            Assertions.assertEquals("Generic serialization [gson] Json syntax exception thrown when parsing (message:{'name':'Tom','age':} type:class org.apache.dubbo.common.json.GsonUtilsTest$User) error:com.google.gson.stream.MalformedJsonException: Expected value at line 1 column 21 path $.age", ex.getMessage());
+            Assertions.assertEquals(
+                    "Generic serialization [gson] Json syntax exception thrown when parsing (message:{'name':'Tom','age':} type:class org.apache.dubbo.common.json.GsonUtilsTest$User) error:com.google.gson.stream.MalformedJsonException: Expected value at line 1 column 21 path $.age",
+                    ex.getMessage());
         }
     }
 

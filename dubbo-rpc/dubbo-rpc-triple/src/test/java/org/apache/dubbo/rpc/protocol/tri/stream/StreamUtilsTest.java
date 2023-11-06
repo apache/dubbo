@@ -14,16 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
-
-import io.netty.handler.codec.http2.DefaultHttp2Headers;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -33,15 +28,18 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-class StreamUtilsTest {
+import io.netty.handler.codec.http2.DefaultHttp2Headers;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
+class StreamUtilsTest {
 
     @Test
     void encodeBase64ASCII() {
         String content = "😯";
-        Assertions.assertArrayEquals(content.getBytes(StandardCharsets.UTF_8),
-            StreamUtils.decodeASCIIByte(StreamUtils.encodeBase64ASCII(content.getBytes(
-                StandardCharsets.UTF_8))));
+        Assertions.assertArrayEquals(
+                content.getBytes(StandardCharsets.UTF_8),
+                StreamUtils.decodeASCIIByte(StreamUtils.encodeBase64ASCII(content.getBytes(StandardCharsets.UTF_8))));
     }
 
     @Test
@@ -69,11 +67,13 @@ class StreamUtilsTest {
         Assertions.assertNull(headers.get(TripleHeaderEnum.PATH_KEY.getHeader()));
         Assertions.assertNull(headers.get("Upper"));
         Assertions.assertNull(headers.get("obj"));
-        String jsonRaw = headers.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader()).toString();
+        String jsonRaw =
+                headers.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader()).toString();
         String json = TriRpcStatus.decodeMessage(jsonRaw);
         System.out.println(jsonRaw + "---" + json);
         Map<String, String> upperMap = JsonUtils.toJavaObject(json, Map.class);
-        Assertions.assertArrayEquals("Upper".getBytes(StandardCharsets.UTF_8), upperMap.get("upper").getBytes(StandardCharsets.UTF_8));
+        Assertions.assertArrayEquals(
+                "Upper".getBytes(StandardCharsets.UTF_8), upperMap.get("upper").getBytes(StandardCharsets.UTF_8));
 
         int count = 10000;
         CountDownLatch latch = new CountDownLatch(count);
@@ -110,6 +110,4 @@ class StreamUtilsTest {
         Assertions.assertEquals(0, latch.getCount());
         executorService.shutdown();
     }
-
-
 }

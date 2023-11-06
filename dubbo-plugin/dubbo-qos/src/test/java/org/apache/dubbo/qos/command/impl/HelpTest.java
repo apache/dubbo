@@ -41,7 +41,7 @@ class HelpTest {
     @Test
     void testGreeting() {
         Help help = new Help(FrameworkModel.defaultModel());
-        String output = help.execute(Mockito.mock(CommandContext.class), new String[]{"greeting"});
+        String output = help.execute(Mockito.mock(CommandContext.class), new String[] {"greeting"});
         assertThat(output, containsString("COMMAND NAME"));
         assertThat(output, containsString("greeting"));
         assertThat(output, containsString("EXAMPLE"));

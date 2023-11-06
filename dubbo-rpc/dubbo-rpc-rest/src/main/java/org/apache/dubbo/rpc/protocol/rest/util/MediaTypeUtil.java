@@ -27,7 +27,6 @@ public class MediaTypeUtil {
 
     private static final List<MediaType> mediaTypes = MediaType.getSupportMediaTypes();
 
-
     /**
      * return first match , if any multiple content-type  ,acquire mediaType by targetClass type .if contentTypes is empty
      *
@@ -54,6 +53,5 @@ public class MediaTypeUtil {
         }
 
         throw new UnSupportContentTypeException(Arrays.toString(contentTypes));
-
     }
 }

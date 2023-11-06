@@ -16,16 +16,17 @@
  */
 package org.apache.dubbo.registry.client;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.registry.client.support.MockServiceDiscovery;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -41,15 +42,19 @@ class ServiceDiscoveryCacheTest {
         applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("Test"));
 
         URL registryUrl = URL.valueOf("mock://127.0.0.1:12345").addParameter(METADATA_INFO_CACHE_EXPIRE_KEY, 10);
-        MockServiceDiscovery mockServiceDiscovery = Mockito.spy(new MockServiceDiscovery(applicationModel, registryUrl));
+        MockServiceDiscovery mockServiceDiscovery =
+                Mockito.spy(new MockServiceDiscovery(applicationModel, registryUrl));
 
         mockServiceDiscovery.register(URL.valueOf("mock://127.0.0.1:12345")
-            .setServiceInterface("org.apache.dubbo.registry.service.DemoService"));
+                .setServiceInterface("org.apache.dubbo.registry.service.DemoService"));
         mockServiceDiscovery.register();
 
         ServiceInstance localInstance = mockServiceDiscovery.getLocalInstance();
 
-        Assertions.assertEquals(localInstance.getServiceMetadata(), mockServiceDiscovery.getLocalMetadata(localInstance.getServiceMetadata().getRevision()));
+        Assertions.assertEquals(
+                localInstance.getServiceMetadata(),
+                mockServiceDiscovery.getLocalMetadata(
+                        localInstance.getServiceMetadata().getRevision()));
 
         List<MetadataInfo> instances = new LinkedList<>();
         instances.add(localInstance.getServiceMetadata().clone());
@@ -57,9 +62,10 @@ class ServiceDiscoveryCacheTest {
         for (int i = 0; i < 15; i++) {
             Thread.sleep(1);
             mockServiceDiscovery.register(URL.valueOf("mock://127.0.0.1:12345")
-                .setServiceInterface("org.apache.dubbo.registry.service.DemoService" + i));
+                    .setServiceInterface("org.apache.dubbo.registry.service.DemoService" + i));
             mockServiceDiscovery.update();
-            instances.add(mockServiceDiscovery.getLocalInstance().getServiceMetadata().clone());
+            instances.add(
+                    mockServiceDiscovery.getLocalInstance().getServiceMetadata().clone());
         }
 
         for (MetadataInfo instance : instances) {
@@ -69,15 +75,18 @@ class ServiceDiscoveryCacheTest {
         for (int i = 0; i < 5; i++) {
             Thread.sleep(1);
             mockServiceDiscovery.register(URL.valueOf("mock://127.0.0.1:12345")
-                .setServiceInterface("org.apache.dubbo.registry.service.DemoService-new" + i));
+                    .setServiceInterface("org.apache.dubbo.registry.service.DemoService-new" + i));
             mockServiceDiscovery.update();
-            instances.add(mockServiceDiscovery.getLocalInstance().getServiceMetadata().clone());
+            instances.add(
+                    mockServiceDiscovery.getLocalInstance().getServiceMetadata().clone());
         }
 
-        await().until(() -> Objects.isNull(mockServiceDiscovery.getLocalMetadata(instances.get(4).getRevision())));
+        await().until(() -> Objects.isNull(
+                mockServiceDiscovery.getLocalMetadata(instances.get(4).getRevision())));
 
         for (int i = 0; i < 5; i++) {
-            Assertions.assertNull(mockServiceDiscovery.getLocalMetadata(instances.get(i).getRevision()));
+            Assertions.assertNull(
+                    mockServiceDiscovery.getLocalMetadata(instances.get(i).getRevision()));
         }
 
         applicationModel.destroy();

@@ -14,15 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.aggregate;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 class TimeWindowQuantileTest {
 
@@ -49,18 +48,16 @@ class TimeWindowQuantileTest {
             for (int i = 0; i < 100; i++) {
                 int finalI = i;
                 Assertions.assertDoesNotThrow(() -> quantile.add(finalI));
-                executorService.execute(() ->
-                    quantile.add(finalI));
+                executorService.execute(() -> quantile.add(finalI));
             }
             index++;
-//            try {
-//                Thread.sleep(1);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
+            //            try {
+            //                Thread.sleep(1);
+            //            } catch (InterruptedException e) {
+            //                e.printStackTrace();
+            //            }
         }
 
         executorService.shutdown();
     }
-
 }

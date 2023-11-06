@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,10 +16,10 @@
  */
 package org.apache.dubbo.common.utils;
 
+import java.lang.reflect.Method;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.lang.reflect.Method;
 
 import static org.apache.dubbo.common.utils.MethodUtils.excludedDeclaredClass;
 import static org.apache.dubbo.common.utils.MethodUtils.findMethod;
@@ -77,7 +77,9 @@ class MethodUtilsTest {
 
     @Test
     void testGetMethods() throws NoSuchMethodException {
-        Assertions.assertTrue(getDeclaredMethods(MethodTestClazz.class, excludedDeclaredClass(String.class)).size() > 0);
+        Assertions.assertTrue(getDeclaredMethods(MethodTestClazz.class, excludedDeclaredClass(String.class))
+                        .size()
+                > 0);
         Assertions.assertTrue(getMethods(MethodTestClazz.class).size() > 0);
         Assertions.assertTrue(getAllDeclaredMethods(MethodTestClazz.class).size() > 0);
         Assertions.assertTrue(getAllMethods(MethodTestClazz.class).size() > 0);
@@ -87,13 +89,14 @@ class MethodUtilsTest {
         invokeMethod(methodTestClazz, "setValue", "Test");
         Assertions.assertEquals(methodTestClazz.getValue(), "Test");
 
-        Assertions.assertTrue(overrides(MethodOverrideClazz.class.getMethod("get"),
-                MethodTestClazz.class.getMethod("get")));
-        Assertions.assertEquals(findNearestOverriddenMethod(MethodOverrideClazz.class.getMethod("get")),
+        Assertions.assertTrue(
+                overrides(MethodOverrideClazz.class.getMethod("get"), MethodTestClazz.class.getMethod("get")));
+        Assertions.assertEquals(
+                findNearestOverriddenMethod(MethodOverrideClazz.class.getMethod("get")),
                 MethodTestClazz.class.getMethod("get"));
-        Assertions.assertEquals(findOverriddenMethod(MethodOverrideClazz.class.getMethod("get"), MethodOverrideClazz.class),
+        Assertions.assertEquals(
+                findOverriddenMethod(MethodOverrideClazz.class.getMethod("get"), MethodOverrideClazz.class),
                 MethodTestClazz.class.getMethod("get"));
-
     }
 
     @Test
@@ -139,7 +142,6 @@ class MethodUtilsTest {
         public String isFieldName3() {
             return "";
         }
-
     }
 
     public class MethodTestClazz {
@@ -169,5 +171,4 @@ class MethodUtilsTest {
             return this;
         }
     }
-
 }

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -35,7 +34,11 @@ public class ReconnectTimerTask extends AbstractTimerTask {
 
     private final int idleTimeout;
 
-    public ReconnectTimerTask(ChannelProvider channelProvider, HashedWheelTimer hashedWheelTimer, Long heartbeatTimeoutTick, int idleTimeout) {
+    public ReconnectTimerTask(
+            ChannelProvider channelProvider,
+            HashedWheelTimer hashedWheelTimer,
+            Long heartbeatTimeoutTick,
+            int idleTimeout) {
         super(channelProvider, hashedWheelTimer, heartbeatTimeoutTick);
         this.idleTimeout = idleTimeout;
     }
@@ -56,8 +59,12 @@ public class ReconnectTimerTask extends AbstractTimerTask {
                 }
                 // check pong at client
             } else if (lastRead != null && now - lastRead > idleTimeout) {
-                logger.warn(TRANSPORT_FAILED_RECONNECT, "", "", "Reconnect to channel " + channel + ", because heartbeat read idle time out: "
-                    + idleTimeout + "ms");
+                logger.warn(
+                        TRANSPORT_FAILED_RECONNECT,
+                        "",
+                        "",
+                        "Reconnect to channel " + channel + ", because heartbeat read idle time out: " + idleTimeout
+                                + "ms");
                 try {
                     ((Client) channel).reconnect();
                 } catch (Exception e) {
@@ -65,7 +72,12 @@ public class ReconnectTimerTask extends AbstractTimerTask {
                 }
             }
         } catch (Throwable t) {
-            logger.warn(INTERNAL_ERROR, "unknown error in remoting module", "", "Exception when reconnect to remote channel " + channel.getRemoteAddress(), t);
+            logger.warn(
+                    INTERNAL_ERROR,
+                    "unknown error in remoting module",
+                    "",
+                    "Exception when reconnect to remote channel " + channel.getRemoteAddress(),
+                    t);
         }
     }
 }

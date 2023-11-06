@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
@@ -37,13 +36,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.service.GenericService;
 
-import com.google.common.collect.Lists;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -51,6 +43,13 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import com.google.common.collect.Lists;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -164,8 +163,7 @@ class ServiceConfigTest {
     }
 
     @AfterEach
-    public void tearDown() {
-    }
+    public void tearDown() {}
 
     @Test
     void testExport() throws Exception {
@@ -193,7 +191,7 @@ class ServiceConfigTest {
 
     @Test
     void testVersionAndGroupConfigFromProvider() {
-        //Service no configuration version , the Provider configured.
+        // Service no configuration version , the Provider configured.
         service.getProvider().setVersion("1.0.0");
         service.getProvider().setGroup("groupA");
         service.export();
@@ -217,7 +215,6 @@ class ServiceConfigTest {
         TestProxyFactory.count = 0;
     }
 
-
     @Test
     void testDelayExport() throws Exception {
         CountDownLatch latch = new CountDownLatch(1);
@@ -230,9 +227,7 @@ class ServiceConfigTest {
             }
 
             @Override
-            public void unexported(ServiceConfig sc) {
-
-            }
+            public void unexported(ServiceConfig sc) {}
         });
         delayService.export();
         assertTrue(delayService.getExportedUrls().isEmpty());
@@ -245,7 +240,7 @@ class ServiceConfigTest {
         try {
             service.export();
             service.unexport();
-//            Thread.sleep(1000);
+            //            Thread.sleep(1000);
             Mockito.verify(exporter, Mockito.atLeastOnce()).unexport();
         } finally {
             System.clearProperty(SHUTDOWN_TIMEOUT_KEY);
@@ -324,14 +319,13 @@ class ServiceConfigTest {
         providerConfig.setAsync(true);
         providerConfig.setActives(10);
         config.setProvider(providerConfig);
-        config.setAsync(false);// override
+        config.setAsync(false); // override
 
         metaData = config.getMetaData();
         Assertions.assertEquals(2, metaData.size());
         Assertions.assertEquals("" + providerConfig.getActives(), metaData.get("actives"));
         Assertions.assertEquals("" + config.isAsync(), metaData.get("async"));
     }
-
 
     @Test
     void testExportWithoutRegistryConfig() {
@@ -352,7 +346,8 @@ class ServiceConfigTest {
         assertThat(url.getParameters(), hasKey(METHODS_KEY));
         assertThat(url.getParameters().get(METHODS_KEY), containsString("echo"));
         assertThat(url.getParameters(), hasEntry(SIDE_KEY, PROVIDER));
-        // export DemoService in "mockprotocol2" protocol (MetadataService will be not exported if no registry specified)
+        // export DemoService in "mockprotocol2" protocol (MetadataService will be not exported if no registry
+        // specified)
         Mockito.verify(protocolDelegate, times(1)).export(Mockito.any(Invoker.class));
     }
 
@@ -371,7 +366,6 @@ class ServiceConfigTest {
         assertSame(service, serviceConfig);
     }
 
-
     @Test
     void testMethodConfigWithInvalidArgumentConfig() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
@@ -379,16 +373,20 @@ class ServiceConfigTest {
 
             service.setInterface(DemoService.class);
             service.setRef(new DemoServiceImpl());
-            service.setProtocol(new ProtocolConfig() {{
-                setName("dubbo");
-            }});
+            service.setProtocol(new ProtocolConfig() {
+                {
+                    setName("dubbo");
+                }
+            });
 
             MethodConfig methodConfig = new MethodConfig();
             methodConfig.setName("sayName");
             // invalid argument index.
-            methodConfig.setArguments(Lists.newArrayList(new ArgumentConfig() {{
-                // unset config.
-            }}));
+            methodConfig.setArguments(Lists.newArrayList(new ArgumentConfig() {
+                {
+                    // unset config.
+                }
+            }));
             service.setMethods(Lists.newArrayList(methodConfig));
 
             service.export();
@@ -401,18 +399,22 @@ class ServiceConfigTest {
 
         service.setInterface(DemoService.class);
         service.setRef(new DemoServiceImpl());
-        service.setProtocol(new ProtocolConfig() {{
-            setName("dubbo");
-        }});
+        service.setProtocol(new ProtocolConfig() {
+            {
+                setName("dubbo");
+            }
+        });
 
         MethodConfig methodConfig = new MethodConfig();
         methodConfig.setName("sayName");
         // invalid argument index.
-        methodConfig.setArguments(Lists.newArrayList(new ArgumentConfig() {{
-            setType(String.class.getName());
-            setIndex(0);
-            setCallback(false);
-        }}));
+        methodConfig.setArguments(Lists.newArrayList(new ArgumentConfig() {
+            {
+                setType(String.class.getName());
+                setIndex(0);
+                setCallback(false);
+            }
+        }));
         service.setMethods(Lists.newArrayList(methodConfig));
 
         service.export();
@@ -427,17 +429,21 @@ class ServiceConfigTest {
 
         service.setInterface(DemoService.class);
         service.setRef(new DemoServiceImpl());
-        service.setProtocol(new ProtocolConfig() {{
-            setName("dubbo");
-        }});
+        service.setProtocol(new ProtocolConfig() {
+            {
+                setName("dubbo");
+            }
+        });
 
         MethodConfig methodConfig = new MethodConfig();
         methodConfig.setName("sayName");
         // invalid argument index.
-        methodConfig.setArguments(Lists.newArrayList(new ArgumentConfig() {{
-            setIndex(0);
-            setCallback(false);
-        }}));
+        methodConfig.setArguments(Lists.newArrayList(new ArgumentConfig() {
+            {
+                setIndex(0);
+                setCallback(false);
+            }
+        }));
         service.setMethods(Lists.newArrayList(methodConfig));
 
         service.export();
@@ -452,17 +458,21 @@ class ServiceConfigTest {
 
         service.setInterface(DemoService.class);
         service.setRef(new DemoServiceImpl());
-        service.setProtocol(new ProtocolConfig() {{
-            setName("dubbo");
-        }});
+        service.setProtocol(new ProtocolConfig() {
+            {
+                setName("dubbo");
+            }
+        });
 
         MethodConfig methodConfig = new MethodConfig();
         methodConfig.setName("sayName");
         // invalid argument index.
-        methodConfig.setArguments(Lists.newArrayList(new ArgumentConfig() {{
-            setType(String.class.getName());
-            setCallback(false);
-        }}));
+        methodConfig.setArguments(Lists.newArrayList(new ArgumentConfig() {
+            {
+                setType(String.class.getName());
+                setCallback(false);
+            }
+        }));
         service.setMethods(Lists.newArrayList(methodConfig));
 
         service.export();
@@ -478,17 +488,21 @@ class ServiceConfigTest {
 
             service.setInterface(DemoService.class);
             service.setRef(new DemoServiceImpl());
-            service.setProtocol(new ProtocolConfig() {{
-                setName("dubbo");
-            }});
+            service.setProtocol(new ProtocolConfig() {
+                {
+                    setName("dubbo");
+                }
+            });
 
             MethodConfig methodConfig = new MethodConfig();
             methodConfig.setName("sayName");
             // invalid argument index.
-            methodConfig.setArguments(Lists.newArrayList(new ArgumentConfig() {{
-                setType(Integer.class.getName());
-                setCallback(false);
-            }}));
+            methodConfig.setArguments(Lists.newArrayList(new ArgumentConfig() {
+                {
+                    setType(Integer.class.getName());
+                    setCallback(false);
+                }
+            }));
             service.setMethods(Lists.newArrayList(methodConfig));
 
             service.export();
@@ -502,17 +516,21 @@ class ServiceConfigTest {
 
             service.setInterface(DemoService.class);
             service.setRef(new DemoServiceImpl());
-            service.setProtocol(new ProtocolConfig() {{
-                setName("dubbo");
-            }});
+            service.setProtocol(new ProtocolConfig() {
+                {
+                    setName("dubbo");
+                }
+            });
 
             MethodConfig methodConfig = new MethodConfig();
             methodConfig.setName("sayName");
             // invalid argument index.
-            methodConfig.setArguments(Lists.newArrayList(new ArgumentConfig() {{
-                setType(Integer.class.getName());
-                setIndex(0);
-            }}));
+            methodConfig.setArguments(Lists.newArrayList(new ArgumentConfig() {
+                {
+                    setType(Integer.class.getName());
+                    setIndex(0);
+                }
+            }));
             service.setMethods(Lists.newArrayList(methodConfig));
 
             service.export();
@@ -526,17 +544,21 @@ class ServiceConfigTest {
 
             service.setInterface(DemoService.class);
             service.setRef(new DemoServiceImpl());
-            service.setProtocol(new ProtocolConfig() {{
-                setName("dubbo");
-            }});
+            service.setProtocol(new ProtocolConfig() {
+                {
+                    setName("dubbo");
+                }
+            });
 
             MethodConfig methodConfig = new MethodConfig();
             methodConfig.setName("sayName");
             // invalid argument index.
-            methodConfig.setArguments(Lists.newArrayList(new ArgumentConfig() {{
-                setType(String.class.getName());
-                setIndex(1);
-            }}));
+            methodConfig.setArguments(Lists.newArrayList(new ArgumentConfig() {
+                {
+                    setType(String.class.getName());
+                    setIndex(1);
+                }
+            }));
             service.setMethods(Lists.newArrayList(methodConfig));
 
             service.export();
@@ -593,9 +615,7 @@ class ServiceConfigTest {
             }
 
             @Override
-            public void putCachedMapping(String serviceKey, Set<String> apps) {
-
-            }
+            public void putCachedMapping(String serviceKey, Set<String> apps) {}
 
             @Override
             public Set<String> getRemoteMapping(URL consumerURL) {
@@ -608,9 +628,7 @@ class ServiceConfigTest {
             }
 
             @Override
-            public void $destroy() {
-
-            }
+            public void $destroy() {}
         };
         ApplicationConfig applicationConfig = new ApplicationConfig("app");
         applicationConfig.setMappingRetryInterval(10);
@@ -651,9 +669,7 @@ class ServiceConfigTest {
             }
 
             @Override
-            public void putCachedMapping(String serviceKey, Set<String> apps) {
-
-            }
+            public void putCachedMapping(String serviceKey, Set<String> apps) {}
 
             @Override
             public Set<String> getMapping(URL consumerURL) {
@@ -671,9 +687,7 @@ class ServiceConfigTest {
             }
 
             @Override
-            public void $destroy() {
-
-            }
+            public void $destroy() {}
         };
         ApplicationConfig applicationConfig = new ApplicationConfig("app");
         applicationConfig.setMappingRetryInterval(10);

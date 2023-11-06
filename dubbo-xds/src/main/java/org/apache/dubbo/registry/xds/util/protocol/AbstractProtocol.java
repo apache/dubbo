@@ -16,6 +16,12 @@
  */
 package org.apache.dubbo.registry.xds.util.protocol;
 
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.registry.xds.util.AdsObserver;
+import org.apache.dubbo.registry.xds.util.XdsListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,19 +37,12 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.registry.xds.util.AdsObserver;
-import org.apache.dubbo.registry.xds.util.XdsListener;
-
 import io.envoyproxy.envoy.config.core.v3.Node;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryRequest;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_INTERRUPTED;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
-import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 
 public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements XdsProtocol<T>, XdsListener {
 
@@ -107,7 +106,6 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         return resourcesMap.get(resourceName);
     }
 
-
     @Override
     public Map<String, T> getResource(Set<String> resourceNames) {
         resourceNames = resourceNames == null ? Collections.emptySet() : resourceNames;
@@ -120,8 +118,9 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
     }
 
     private Map<String, T> getResourceFromCache(Set<String> resourceNames) {
-        return resourceNames.stream().filter(o -> !StringUtils.isEmpty(o))
-            .collect(Collectors.toMap(k -> k, this::getCacheResource));
+        return resourceNames.stream()
+                .filter(o -> !StringUtils.isEmpty(o))
+                .collect(Collectors.toMap(k -> k, this::getCacheResource));
     }
 
     public Map<String, T> getResourceFromRemote(Set<String> resourceNames) {
@@ -139,8 +138,11 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
             Consumer<Map<String, T>> futureConsumer = future::complete;
             try {
                 writeLock.lock();
-                ConcurrentHashMapUtils.computeIfAbsent((ConcurrentHashMap<Set<String>, List<Consumer<Map<String, T>>>>)consumerObserveMap,consumerObserveResourceNames, key -> new ArrayList<>())
-                    .add(futureConsumer);
+                ConcurrentHashMapUtils.computeIfAbsent(
+                                (ConcurrentHashMap<Set<String>, List<Consumer<Map<String, T>>>>) consumerObserveMap,
+                                consumerObserveResourceNames,
+                                key -> new ArrayList<>())
+                        .add(futureConsumer);
             } finally {
                 writeLock.unlock();
             }
@@ -148,7 +150,8 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
             Set<String> resourceNamesToObserve = new HashSet<>(resourceNames);
             resourceNamesToObserve.addAll(resourcesMap.keySet());
             adsObserver.request(buildDiscoveryRequest(resourceNamesToObserve));
-            logger.info("Send xDS Observe request to remote. Resource count: " + resourceNamesToObserve.size() + ". Resource Type: " + getTypeUrl());
+            logger.info("Send xDS Observe request to remote. Resource count: " + resourceNamesToObserve.size()
+                    + ". Resource Type: " + getTypeUrl());
 
             try {
                 Map<String, T> result = future.get();
@@ -162,7 +165,12 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
                 return result;
             } catch (InterruptedException e) {
-                logger.error(INTERNAL_INTERRUPTED, "", "", "InterruptedException occur when request control panel. error=", e);
+                logger.error(
+                        INTERNAL_INTERRUPTED,
+                        "",
+                        "",
+                        "InterruptedException occur when request control panel. error=",
+                        e);
                 Thread.currentThread().interrupt();
             } catch (Exception e) {
                 logger.error(PROTOCOL_FAILED_REQUEST, "", "", "Error occur when request control panel. error=", e);
@@ -193,8 +201,8 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         }
         try {
             writeLock.lock();
-            this.observeResourcesName = consumerObserveMap.keySet()
-                .stream().flatMap(Set::stream).collect(Collectors.toSet());
+            this.observeResourcesName =
+                    consumerObserveMap.keySet().stream().flatMap(Set::stream).collect(Collectors.toSet());
         } finally {
             writeLock.unlock();
         }
@@ -206,10 +214,10 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
     protected DiscoveryRequest buildDiscoveryRequest(Set<String> resourceNames) {
         return DiscoveryRequest.newBuilder()
-            .setNode(node)
-            .setTypeUrl(getTypeUrl())
-            .addAllResourceNames(resourceNames)
-            .build();
+                .setNode(node)
+                .setTypeUrl(getTypeUrl())
+                .addAllResourceNames(resourceNames)
+                .build();
     }
 
     protected abstract Map<String, T> decodeDiscoveryResponse(DiscoveryResponse response);
@@ -238,7 +246,8 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
             return;
         }
 
-        logger.info("Receive resource update notification from xds server. Change resource count: " + changedResourceNames.stream() + ". Type: " + getTypeUrl());
+        logger.info("Receive resource update notification from xds server. Change resource count: "
+                + changedResourceNames.stream() + ". Type: " + getTypeUrl());
 
         // call once for full data
         try {
@@ -249,9 +258,8 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
                     continue;
                 }
 
-                Map<String, T> dsResultMap = entry.getKey()
-                    .stream()
-                    .collect(Collectors.toMap(k -> k, v -> newResult.get(v)));
+                Map<String, T> dsResultMap =
+                        entry.getKey().stream().collect(Collectors.toMap(k -> k, v -> newResult.get(v)));
                 entry.getValue().forEach(o -> o.accept(dsResultMap));
             }
         } finally {

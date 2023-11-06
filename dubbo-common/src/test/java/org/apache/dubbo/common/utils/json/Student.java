@@ -37,9 +37,6 @@ public class Student<W> implements Serializable {
 
     @Override
     public String toString() {
-        return "Student{" +
-                "type=" + type +
-                ", name='" + name + '\'' +
-                '}';
+        return "Student{" + "type=" + type + ", name='" + name + '\'' + '}';
     }
 }

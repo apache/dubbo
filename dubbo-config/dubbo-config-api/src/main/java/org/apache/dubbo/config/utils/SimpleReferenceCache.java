@@ -45,7 +45,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_API_W
  * You can implement and use your own {@link ReferenceConfigBase} cache if you need use complicate strategy.
  */
 public class SimpleReferenceCache implements ReferenceCache {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SimpleReferenceCache.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(SimpleReferenceCache.class);
     public static final String DEFAULT_NAME = "_DEFAULT_";
     /**
      * Create the key with the <b>Group</b>, <b>Interface</b> and <b>version</b> attribute of {@link ReferenceConfigBase}.
@@ -105,7 +106,8 @@ public class SimpleReferenceCache implements ReferenceCache {
      * Create cache if not existed yet.
      */
     public static SimpleReferenceCache getCache(String name, KeyGenerator keyGenerator) {
-        return ConcurrentHashMapUtils.computeIfAbsent(CACHE_HOLDER, name, k -> new SimpleReferenceCache(k, keyGenerator));
+        return ConcurrentHashMapUtils.computeIfAbsent(
+                CACHE_HOLDER, name, k -> new SimpleReferenceCache(k, keyGenerator));
     }
 
     @Override
@@ -120,14 +122,20 @@ public class SimpleReferenceCache implements ReferenceCache {
         if (singleton) {
             proxy = get(key, (Class<T>) type);
         } else {
-            logger.warn(CONFIG_API_WRONG_USE, "", "", "Using non-singleton ReferenceConfig and ReferenceCache at the same time may cause memory leak. " +
-                "Call ReferenceConfig#get() directly for non-singleton ReferenceConfig instead of using ReferenceCache#get(ReferenceConfig)");
+            logger.warn(
+                    CONFIG_API_WRONG_USE,
+                    "",
+                    "",
+                    "Using non-singleton ReferenceConfig and ReferenceCache at the same time may cause memory leak. "
+                            + "Call ReferenceConfig#get() directly for non-singleton ReferenceConfig instead of using ReferenceCache#get(ReferenceConfig)");
         }
 
         if (proxy == null) {
-            List<ReferenceConfigBase<?>> referencesOfType = ConcurrentHashMapUtils.computeIfAbsent(referenceTypeMap, type, _t -> Collections.synchronizedList(new ArrayList<>()));
+            List<ReferenceConfigBase<?>> referencesOfType = ConcurrentHashMapUtils.computeIfAbsent(
+                    referenceTypeMap, type, _t -> Collections.synchronizedList(new ArrayList<>()));
             referencesOfType.add(rc);
-            List<ReferenceConfigBase<?>> referenceConfigList = ConcurrentHashMapUtils.computeIfAbsent(referenceKeyMap, key, _k -> Collections.synchronizedList(new ArrayList<>()));
+            List<ReferenceConfigBase<?>> referenceConfigList = ConcurrentHashMapUtils.computeIfAbsent(
+                    referenceKeyMap, key, _k -> Collections.synchronizedList(new ArrayList<>()));
             referenceConfigList.add(rc);
             proxy = rc.get(check);
         }
@@ -216,7 +224,6 @@ public class SimpleReferenceCache implements ReferenceCache {
         for (ReferenceConfigBase<?> rc : referencesOfKey) {
             rc.checkOrDestroy(timeout);
         }
-
     }
 
     @Override
@@ -240,7 +247,6 @@ public class SimpleReferenceCache implements ReferenceCache {
             referencesOfType.remove(rc);
             destroyReference(rc);
         }
-
     }
 
     @Override

@@ -50,9 +50,6 @@ public class ParamMatch {
 
     @Override
     public String toString() {
-        return "ParamMatch{" +
-            "key='" + key + '\'' +
-            ", value='" + value + '\'' +
-            '}';
+        return "ParamMatch{" + "key='" + key + '\'' + ", value='" + value + '\'' + '}';
     }
 }

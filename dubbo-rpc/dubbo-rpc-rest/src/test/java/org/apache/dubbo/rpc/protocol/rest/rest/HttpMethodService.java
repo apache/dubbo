@@ -55,5 +55,4 @@ public interface HttpMethodService {
     @Path("/sayOptions")
     @Consumes({javax.ws.rs.core.MediaType.TEXT_PLAIN})
     String sayHelloOptions(@QueryParam("name") String name);
-
 }

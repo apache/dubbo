@@ -21,5 +21,4 @@ import java.io.InputStream;
 public interface HttpInputMessage {
 
     InputStream getBody();
-
 }

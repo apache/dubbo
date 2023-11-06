@@ -14,10 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.spring.boot.observability.autoconfigure.observability;
 
 import org.apache.dubbo.spring.boot.observability.autoconfigure.DubboMicrometerTracingAutoConfiguration;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import io.micrometer.tracing.Tracer;
 import io.micrometer.tracing.handler.DefaultTracingObservationHandler;
@@ -31,9 +33,6 @@ import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -49,7 +48,8 @@ class DubboMicrometerTracingAutoConfigurationTests {
 
     @Test
     void shouldSupplyBeans() {
-        this.contextRunner.withUserConfiguration(TracerConfiguration.class, PropagatorConfiguration.class)
+        this.contextRunner
+                .withUserConfiguration(TracerConfiguration.class, PropagatorConfiguration.class)
                 .run((context) -> {
                     assertThat(context).hasSingleBean(DefaultTracingObservationHandler.class);
                     assertThat(context).hasSingleBean(PropagatingReceiverTracingObservationHandler.class);
@@ -60,10 +60,11 @@ class DubboMicrometerTracingAutoConfigurationTests {
     @Test
     @SuppressWarnings("rawtypes")
     void shouldSupplyBeansInCorrectOrder() {
-        this.contextRunner.withUserConfiguration(TracerConfiguration.class, PropagatorConfiguration.class)
+        this.contextRunner
+                .withUserConfiguration(TracerConfiguration.class, PropagatorConfiguration.class)
                 .run((context) -> {
-                    List<TracingObservationHandler> tracingObservationHandlers = context
-                            .getBeanProvider(TracingObservationHandler.class)
+                    List<TracingObservationHandler> tracingObservationHandlers = context.getBeanProvider(
+                                    TracingObservationHandler.class)
                             .orderedStream()
                             .collect(Collectors.toList());
                     assertThat(tracingObservationHandlers).hasSize(3);
@@ -89,11 +90,13 @@ class DubboMicrometerTracingAutoConfigurationTests {
 
     @Test
     void shouldNotSupplyBeansIfMicrometerIsMissing() {
-        this.contextRunner.withClassLoader(new FilteredClassLoader("io.micrometer")).run((context) -> {
-            assertThat(context).doesNotHaveBean(DefaultTracingObservationHandler.class);
-            assertThat(context).doesNotHaveBean(PropagatingReceiverTracingObservationHandler.class);
-            assertThat(context).doesNotHaveBean(PropagatingSenderTracingObservationHandler.class);
-        });
+        this.contextRunner
+                .withClassLoader(new FilteredClassLoader("io.micrometer"))
+                .run((context) -> {
+                    assertThat(context).doesNotHaveBean(DefaultTracingObservationHandler.class);
+                    assertThat(context).doesNotHaveBean(PropagatingReceiverTracingObservationHandler.class);
+                    assertThat(context).doesNotHaveBean(PropagatingSenderTracingObservationHandler.class);
+                });
     }
 
     @Test
@@ -115,7 +118,8 @@ class DubboMicrometerTracingAutoConfigurationTests {
 
     @Test
     void shouldNotSupplyBeansIfTracingIsDisabled() {
-        this.contextRunner.withUserConfiguration(TracerConfiguration.class, PropagatorConfiguration.class)
+        this.contextRunner
+                .withUserConfiguration(TracerConfiguration.class, PropagatorConfiguration.class)
                 .withPropertyValues("dubbo.tracing.enabled=false")
                 .run((context) -> {
                     assertThat(context).doesNotHaveBean(DefaultTracingObservationHandler.class);
@@ -131,7 +135,6 @@ class DubboMicrometerTracingAutoConfigurationTests {
         Tracer tracer() {
             return mock(Tracer.class);
         }
-
     }
 
     @Configuration(proxyBeanMethods = false)
@@ -141,7 +144,6 @@ class DubboMicrometerTracingAutoConfigurationTests {
         Propagator propagator() {
             return mock(Propagator.class);
         }
-
     }
 
     @Configuration(proxyBeanMethods = false)
@@ -161,6 +163,5 @@ class DubboMicrometerTracingAutoConfigurationTests {
         PropagatingSenderTracingObservationHandler<?> customPropagatingSenderTracingObservationHandler() {
             return mock(PropagatingSenderTracingObservationHandler.class);
         }
-
     }
 }

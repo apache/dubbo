@@ -16,21 +16,22 @@
  */
 package org.apache.dubbo.config.spring.util;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationPostProcessor;
 import org.apache.dubbo.config.spring.context.DubboInfraBeanRegisterPostProcessor;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.TypedStringValue;
 import org.springframework.core.type.MethodMetadata;
 import org.springframework.core.type.StandardMethodMetadata;
-
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 
 /**
  * Spring Compatibility Utils for spring 3.x/4.x/5.x/6.x
@@ -54,7 +55,7 @@ public class SpringCompatUtils {
     public static boolean isFactoryMethodMetadataEnabled() {
         if (factoryMethodMetadataEnabled == null) {
             try {
-                //check AnnotatedBeanDefinition.getFactoryMethodMetadata() since spring 4.1
+                // check AnnotatedBeanDefinition.getFactoryMethodMetadata() since spring 4.1
                 AnnotatedBeanDefinition.class.getMethod("getFactoryMethodMetadata");
 
                 // check MethodMetadata.getReturnTypeName() since spring 4.2
@@ -131,23 +132,25 @@ public class SpringCompatUtils {
         return null;
     }
 
-    public static Class<?> referenceAnnotationBeanPostProcessor(){
+    public static Class<?> referenceAnnotationBeanPostProcessor() {
         try {
-            return Class.forName("org.apache.dubbo.config.spring6.beans.factory.annotation.ReferenceAnnotationWithAotBeanPostProcessor");
+            return Class.forName(
+                    "org.apache.dubbo.config.spring6.beans.factory.annotation.ReferenceAnnotationWithAotBeanPostProcessor");
         } catch (ClassNotFoundException e) {
             return ReferenceAnnotationBeanPostProcessor.class;
         }
     }
 
-    public static Class<?> serviceAnnotationPostProcessor(){
+    public static Class<?> serviceAnnotationPostProcessor() {
         try {
-            return Class.forName("org.apache.dubbo.config.spring6.beans.factory.annotation.ServiceAnnotationWithAotPostProcessor");
+            return Class.forName(
+                    "org.apache.dubbo.config.spring6.beans.factory.annotation.ServiceAnnotationWithAotPostProcessor");
         } catch (ClassNotFoundException e) {
             return ServiceAnnotationPostProcessor.class;
         }
     }
 
-    public static Class<?> dubboInfraBeanRegisterPostProcessor(){
+    public static Class<?> dubboInfraBeanRegisterPostProcessor() {
         try {
             return Class.forName("org.apache.dubbo.config.spring6.context.DubboInfraBeanRegisterPostProcessor");
         } catch (ClassNotFoundException e) {

@@ -55,22 +55,29 @@ public class NettyConfigOperator implements ChannelOperator {
             codecName = url.getProtocol();
         }
         if (url.getOrDefaultFrameworkModel().getExtensionLoader(Codec2.class).hasExtension(codecName)) {
-            codec2 = url.getOrDefaultFrameworkModel().getExtensionLoader(Codec2.class).getExtension(codecName);
-        } else if (url.getOrDefaultFrameworkModel().getExtensionLoader(Codec.class).hasExtension(codecName)) {
-            codec2 = new CodecAdapter(url.getOrDefaultFrameworkModel().getExtensionLoader(Codec.class)
-                .getExtension(codecName));
+            codec2 = url.getOrDefaultFrameworkModel()
+                    .getExtensionLoader(Codec2.class)
+                    .getExtension(codecName);
+        } else if (url.getOrDefaultFrameworkModel()
+                .getExtensionLoader(Codec.class)
+                .hasExtension(codecName)) {
+            codec2 = new CodecAdapter(url.getOrDefaultFrameworkModel()
+                    .getExtensionLoader(Codec.class)
+                    .getExtension(codecName));
         } else {
-            codec2 = url.getOrDefaultFrameworkModel().getExtensionLoader(Codec2.class).getExtension("default");
+            codec2 = url.getOrDefaultFrameworkModel()
+                    .getExtensionLoader(Codec2.class)
+                    .getExtension("default");
         }
 
         if (!(codec2 instanceof DefaultCodec)) {
             ((NettyChannel) channel).setCodec(codec2);
             NettyCodecAdapter codec = new NettyCodecAdapter(codec2, channel.getUrl(), handler);
-            ((NettyChannel) channel).getNioChannel().pipeline().addLast(
-                codec.getDecoder()
-            ).addLast(
-                codec.getEncoder()
-            );
+            ((NettyChannel) channel)
+                    .getNioChannel()
+                    .pipeline()
+                    .addLast(codec.getDecoder())
+                    .addLast(codec.getEncoder());
         }
 
         for (ChannelHandler handler : handlerList) {
@@ -82,12 +89,10 @@ public class NettyConfigOperator implements ChannelOperator {
 
         // todo distinguish between client and server channel
         if (isClientSide(channel)) {
-            //todo config client channel handler
+            // todo config client channel handler
         } else {
             NettyServerHandler sh = new NettyServerHandler(channel.getUrl(), handler);
-            ((NettyChannel) channel).getNioChannel().pipeline().addLast(
-                sh
-            );
+            ((NettyChannel) channel).getNioChannel().pipeline().addLast(sh);
         }
     }
 
@@ -101,10 +106,7 @@ public class NettyConfigOperator implements ChannelOperator {
         } else {
             addChannelHandler(realHandler);
         }
-
-
     }
-
 
     private void addChannelHandler(Object channelHandler) {
         if (!(channelHandler instanceof io.netty.channel.ChannelHandler)) {
@@ -125,5 +127,4 @@ public class NettyConfigOperator implements ChannelOperator {
     private boolean isClientSide(Channel channel) {
         return channel.getUrl().getSide("").equalsIgnoreCase(CommonConstants.CONSUMER);
     }
-
 }

@@ -30,5 +30,4 @@ public class Holder<T> {
     public T get() {
         return value;
     }
-
 }

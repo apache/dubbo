@@ -24,12 +24,12 @@ import org.apache.dubbo.config.nested.PropagationConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.tracing.utils.PropagationType;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import brave.propagation.Propagation;
 import io.micrometer.tracing.Tracer;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -63,11 +63,15 @@ class BraveProviderTest {
         when(baggageConfig.getEnabled()).thenReturn(Boolean.FALSE);
 
         when(propagationConfig.getType()).thenReturn(PropagationType.W3C.getValue());
-        Propagation.Factory w3cPropagationFactoryWithoutBaggage = BraveProvider.PropagatorFactory.getPropagationFactory(tracingConfig);
-        assertEquals(io.micrometer.tracing.brave.bridge.W3CPropagation.class, w3cPropagationFactoryWithoutBaggage.getClass());
+        Propagation.Factory w3cPropagationFactoryWithoutBaggage =
+                BraveProvider.PropagatorFactory.getPropagationFactory(tracingConfig);
+        assertEquals(
+                io.micrometer.tracing.brave.bridge.W3CPropagation.class,
+                w3cPropagationFactoryWithoutBaggage.getClass());
 
         when(propagationConfig.getType()).thenReturn(PropagationType.B3.getValue());
-        Propagation.Factory b3PropagationFactoryWithoutBaggage = BraveProvider.PropagatorFactory.getPropagationFactory(tracingConfig);
+        Propagation.Factory b3PropagationFactoryWithoutBaggage =
+                BraveProvider.PropagatorFactory.getPropagationFactory(tracingConfig);
         Assert.notNull(b3PropagationFactoryWithoutBaggage, "b3PropagationFactoryWithoutBaggage should not be null.");
 
         // with baggage
@@ -80,7 +84,8 @@ class BraveProviderTest {
             remoteFields.add("test-hd-" + i);
         }
         when(baggageConfig.getRemoteFields()).thenReturn(remoteFields);
-        Propagation.Factory propagationFactoryWithBaggage = BraveProvider.PropagatorFactory.getPropagationFactory(tracingConfig);
+        Propagation.Factory propagationFactoryWithBaggage =
+                BraveProvider.PropagatorFactory.getPropagationFactory(tracingConfig);
         Assert.notNull(propagationFactoryWithBaggage, "propagationFactoryWithBaggage should not be null.");
     }
 }

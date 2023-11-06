@@ -24,7 +24,6 @@ import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
 
 import static org.apache.dubbo.config.integration.Constants.MULTIPLE_CONFIG_CENTER_SERVICE_DISCOVERY_REGISTRY;
 
-
 @Activate(value = MULTIPLE_CONFIG_CENTER_SERVICE_DISCOVERY_REGISTRY)
 public class MultipleRegistryCenterServiceDiscoveryRegistryRegistryServiceListener implements RegistryServiceListener {
 
@@ -33,11 +32,13 @@ public class MultipleRegistryCenterServiceDiscoveryRegistryRegistryServiceListen
     /**
      * Create an {@link ServiceDiscoveryRegistryInfoWrapper} instance.
      */
-    private ServiceDiscoveryRegistryInfoWrapper createServiceDiscoveryRegistryInfoWrapper(ServiceDiscoveryRegistry serviceDiscoveryRegistry){
+    private ServiceDiscoveryRegistryInfoWrapper createServiceDiscoveryRegistryInfoWrapper(
+            ServiceDiscoveryRegistry serviceDiscoveryRegistry) {
         URL url = serviceDiscoveryRegistry.getUrl();
         String host = url.getHost();
         int port = url.getPort();
-        ServiceDiscoveryRegistryInfoWrapper serviceDiscoveryRegistryInfoWrapper = new ServiceDiscoveryRegistryInfoWrapper();
+        ServiceDiscoveryRegistryInfoWrapper serviceDiscoveryRegistryInfoWrapper =
+                new ServiceDiscoveryRegistryInfoWrapper();
         serviceDiscoveryRegistryInfoWrapper.setHost(host);
         serviceDiscoveryRegistryInfoWrapper.setPort(port);
         serviceDiscoveryRegistryInfoWrapper.setServiceDiscoveryRegistry(serviceDiscoveryRegistry);
@@ -48,10 +49,10 @@ public class MultipleRegistryCenterServiceDiscoveryRegistryRegistryServiceListen
     /**
      * Checks if the registry is checked application
      */
-    private boolean isCheckedApplication(Registry registry){
-        return registry.getUrl().getApplication()
-            .equals(MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest
-                .PROVIDER_APPLICATION_NAME);
+    private boolean isCheckedApplication(Registry registry) {
+        return registry.getUrl()
+                .getApplication()
+                .equals(MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest.PROVIDER_APPLICATION_NAME);
     }
 
     public void onRegister(URL url, Registry registry) {

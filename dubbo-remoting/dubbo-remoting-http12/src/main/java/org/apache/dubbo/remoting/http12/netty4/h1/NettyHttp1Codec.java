@@ -16,18 +16,6 @@
  */
 package org.apache.dubbo.remoting.http12.netty4.h1;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufInputStream;
-import io.netty.buffer.ByteBufOutputStream;
-import io.netty.channel.ChannelDuplexHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http.DefaultHttpResponse;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpVersion;
-import io.netty.handler.codec.http.LastHttpContent;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
@@ -40,24 +28,40 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
+import io.netty.buffer.ByteBufOutputStream;
+import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
+import io.netty.handler.codec.http.DefaultHttpResponse;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http.LastHttpContent;
+
 public class NettyHttp1Codec extends ChannelDuplexHandler {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        //decode FullHttpRequest
+        // decode FullHttpRequest
         if (msg instanceof FullHttpRequest) {
             FullHttpRequest fullHttpRequest = (FullHttpRequest) msg;
             HttpHeaders headers = fullHttpRequest.headers();
             Http1RequestMetadata http1RequestMetadata = new Http1RequestMetadata();
             http1RequestMetadata.setPath(fullHttpRequest.uri());
             http1RequestMetadata.setMethod(fullHttpRequest.method().name());
-            org.apache.dubbo.remoting.http12.HttpHeaders httpHeaders = new org.apache.dubbo.remoting.http12.HttpHeaders();
+            org.apache.dubbo.remoting.http12.HttpHeaders httpHeaders =
+                    new org.apache.dubbo.remoting.http12.HttpHeaders();
             for (Map.Entry<String, String> header : headers) {
                 String key = header.getKey();
                 httpHeaders.set(key, header.getValue());
             }
             http1RequestMetadata.setHeaders(httpHeaders);
-            Http1Request http1Request = new DefaultHttp1Request(http1RequestMetadata, new Http1InputMessage(new ByteBufInputStream(fullHttpRequest.content(), true)));
+            Http1Request http1Request = new DefaultHttp1Request(
+                    http1RequestMetadata,
+                    new Http1InputMessage(new ByteBufInputStream(fullHttpRequest.content(), true)));
             super.channelRead(ctx, http1Request);
             return;
         }
@@ -78,13 +82,13 @@ public class NettyHttp1Codec extends ChannelDuplexHandler {
     }
 
     private void doWriteHeader(ChannelHandlerContext ctx, HttpMetadata msg, ChannelPromise promise) {
-        //process status
+        // process status
         List<String> statusHeaders = msg.headers().remove(HttpHeaderNames.STATUS.getName());
         HttpResponseStatus status = HttpResponseStatus.OK;
         if (!(statusHeaders == null || statusHeaders.isEmpty())) {
             status = HttpResponseStatus.valueOf(Integer.parseInt(statusHeaders.get(0)));
         }
-        //process normal headers
+        // process normal headers
         DefaultHttpResponse defaultHttpResponse = new DefaultHttpResponse(HttpVersion.HTTP_1_1, status);
         HttpHeaders headers = defaultHttpResponse.headers();
         for (Map.Entry<String, List<String>> entry : msg.headers().entrySet()) {
@@ -106,5 +110,4 @@ public class NettyHttp1Codec extends ChannelDuplexHandler {
         }
         throw new IllegalArgumentException("HttpOutputMessage body must be 'io.netty.buffer.ByteBufOutputStream'");
     }
-
 }

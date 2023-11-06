@@ -38,7 +38,6 @@ public class ParameterConsumerParamParser implements BaseConsumerParamParser {
             return;
         }
 
-
         if (Map.class.isAssignableFrom(argInfo.getParamType())) {
             Map paramValues = (Map) paramValue;
             for (Object name : paramValues.keySet()) {
@@ -46,10 +45,7 @@ public class ParameterConsumerParamParser implements BaseConsumerParamParser {
             }
         } else {
             requestTemplate.addParam(argInfo.getAnnotationNameAttribute(), paramValue);
-
-
         }
-
     }
 
     @Override

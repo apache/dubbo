@@ -19,15 +19,15 @@ package org.apache.dubbo.metadata;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
@@ -43,8 +43,7 @@ class AbstractServiceNameMappingTest {
     URL url = URL.valueOf("dubbo://127.0.0.1:21880/" + AbstractServiceNameMappingTest.class.getName());
 
     @BeforeEach
-    public void setUp() throws Exception {
-    }
+    public void setUp() throws Exception {}
 
     @AfterEach
     public void clearup() {
@@ -58,15 +57,14 @@ class AbstractServiceNameMappingTest {
         Assertions.assertTrue(services.contains("app1"));
         Assertions.assertTrue(services.contains("app2"));
 
-//        // remove mapping cache, check get() works.
-//        mapping.removeCachedMapping(ServiceNameMapping.buildMappingKey(url));
-//        services = mapping.initInterfaceAppMapping(url);
-//        Assertions.assertTrue(services.contains("remote-app1"));
-//        Assertions.assertTrue(services.contains("remote-app2"));
+        //        // remove mapping cache, check get() works.
+        //        mapping.removeCachedMapping(ServiceNameMapping.buildMappingKey(url));
+        //        services = mapping.initInterfaceAppMapping(url);
+        //        Assertions.assertTrue(services.contains("remote-app1"));
+        //        Assertions.assertTrue(services.contains("remote-app2"));
 
-
-//        Assertions.assertNotNull(mapping.getCachedMapping(url));
-//        Assertions.assertIterableEquals(mapping.getCachedMapping(url), services);
+        //        Assertions.assertNotNull(mapping.getCachedMapping(url));
+        //        Assertions.assertIterableEquals(mapping.getCachedMapping(url), services);
     }
 
     @Test
@@ -82,17 +80,12 @@ class AbstractServiceNameMappingTest {
         mapping2.enabled = true;
         services = mapping2.getAndListen(registryURL, url, new MappingListener() {
             @Override
-            public void onEvent(MappingChangedEvent event) {
-
-            }
+            public void onEvent(MappingChangedEvent event) {}
 
             @Override
-            public void stop() {
-
-            }
+            public void stop() {}
         });
         Assertions.assertTrue(services.contains("remote-app3"));
-
     }
 
     private class MockServiceNameMapping extends AbstractServiceNameMapping {
@@ -117,9 +110,7 @@ class AbstractServiceNameMappingTest {
         }
 
         @Override
-        protected void removeListener(URL url, MappingListener mappingListener) {
-
-        }
+        protected void removeListener(URL url, MappingListener mappingListener) {}
 
         @Override
         public boolean map(URL url) {
@@ -154,9 +145,7 @@ class AbstractServiceNameMappingTest {
         }
 
         @Override
-        protected void removeListener(URL url, MappingListener mappingListener) {
-
-        }
+        protected void removeListener(URL url, MappingListener mappingListener) {}
 
         @Override
         public boolean map(URL url) {
@@ -168,5 +157,4 @@ class AbstractServiceNameMappingTest {
             return false;
         }
     }
-
 }

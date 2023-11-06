@@ -16,10 +16,9 @@
  */
 package org.apache.dubbo.remoting.http12.exception;
 
-public class IllegalPathException extends RuntimeException{
+public class IllegalPathException extends RuntimeException {
 
-    public IllegalPathException() {
-    }
+    public IllegalPathException() {}
 
     public IllegalPathException(String message) {
         super(message);

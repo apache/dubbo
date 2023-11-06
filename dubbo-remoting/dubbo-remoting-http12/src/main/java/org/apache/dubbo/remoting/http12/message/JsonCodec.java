@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.http12.message;
 
-import com.alibaba.fastjson2.JSONObject;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
@@ -27,6 +26,8 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.alibaba.fastjson2.JSONObject;
 
 /**
  * body is json

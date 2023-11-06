@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.threadpool.support.limited;
 
 import org.apache.dubbo.common.URL;
@@ -47,7 +46,8 @@ public class LimitedThreadPool implements ThreadPool {
 
     @Override
     public Executor getExecutor(URL url) {
-        String name = url.getParameter(THREAD_NAME_KEY, (String) url.getAttribute(THREAD_NAME_KEY, DEFAULT_THREAD_NAME));
+        String name =
+                url.getParameter(THREAD_NAME_KEY, (String) url.getAttribute(THREAD_NAME_KEY, DEFAULT_THREAD_NAME));
         int cores = url.getParameter(CORE_THREADS_KEY, DEFAULT_CORE_THREADS);
         int threads = url.getParameter(THREADS_KEY, DEFAULT_THREADS);
         int queues = url.getParameter(QUEUES_KEY, DEFAULT_QUEUES);
@@ -62,8 +62,13 @@ public class LimitedThreadPool implements ThreadPool {
             blockingQueue = new LinkedBlockingQueue<>(queues);
         }
 
-        return new ThreadPoolExecutor(cores, threads, Long.MAX_VALUE, TimeUnit.MILLISECONDS, blockingQueue,
-                new NamedInternalThreadFactory(name, true), new AbortPolicyWithReport(name, url));
+        return new ThreadPoolExecutor(
+                cores,
+                threads,
+                Long.MAX_VALUE,
+                TimeUnit.MILLISECONDS,
+                blockingQueue,
+                new NamedInternalThreadFactory(name, true),
+                new AbortPolicyWithReport(name, url));
     }
-
 }

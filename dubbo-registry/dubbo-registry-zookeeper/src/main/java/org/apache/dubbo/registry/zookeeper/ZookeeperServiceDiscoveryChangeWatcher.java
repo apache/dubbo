@@ -25,16 +25,16 @@ import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.x.discovery.ServiceCache;
 import org.apache.curator.x.discovery.details.ServiceCacheListener;
 import org.apache.zookeeper.Watcher;
-
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 
 /**
  * Zookeeper {@link ServiceDiscovery} Change {@link CuratorWatcher watcher} only interests in
@@ -56,21 +56,28 @@ public class ZookeeperServiceDiscoveryChangeWatcher implements ServiceCacheListe
 
     private final CountDownLatch latch;
 
-    public ZookeeperServiceDiscoveryChangeWatcher(ZookeeperServiceDiscovery zookeeperServiceDiscovery,
-                                                  ServiceCache<ZookeeperInstance> cacheInstance,
-                                                  String serviceName,
-                                                  CountDownLatch latch) {
+    public ZookeeperServiceDiscoveryChangeWatcher(
+            ZookeeperServiceDiscovery zookeeperServiceDiscovery,
+            ServiceCache<ZookeeperInstance> cacheInstance,
+            String serviceName,
+            CountDownLatch latch) {
         this.zookeeperServiceDiscovery = zookeeperServiceDiscovery;
         this.cacheInstance = cacheInstance;
         this.serviceName = serviceName;
-        this.notifier = new RegistryNotifier(zookeeperServiceDiscovery.getUrl(), zookeeperServiceDiscovery.getDelay(),
-            ScopeModelUtil.getFrameworkModel(zookeeperServiceDiscovery.getUrl().getScopeModel()).getBeanFactory()
-                .getBean(FrameworkExecutorRepository.class).getServiceDiscoveryAddressNotificationExecutor()) {
-            @Override
-            protected void doNotify(Object rawAddresses) {
-                listeners.forEach(listener -> listener.onEvent((ServiceInstancesChangedEvent) rawAddresses));
-            }
-        };
+        this.notifier =
+                new RegistryNotifier(
+                        zookeeperServiceDiscovery.getUrl(),
+                        zookeeperServiceDiscovery.getDelay(),
+                        ScopeModelUtil.getFrameworkModel(
+                                        zookeeperServiceDiscovery.getUrl().getScopeModel())
+                                .getBeanFactory()
+                                .getBean(FrameworkExecutorRepository.class)
+                                .getServiceDiscoveryAddressNotificationExecutor()) {
+                    @Override
+                    protected void doNotify(Object rawAddresses) {
+                        listeners.forEach(listener -> listener.onEvent((ServiceInstancesChangedEvent) rawAddresses));
+                    }
+                };
         this.latch = latch;
     }
 

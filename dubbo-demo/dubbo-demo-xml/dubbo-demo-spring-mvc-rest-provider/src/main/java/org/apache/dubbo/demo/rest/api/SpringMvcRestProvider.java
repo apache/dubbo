@@ -18,19 +18,16 @@ package org.apache.dubbo.demo.rest.api;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-
 public class SpringMvcRestProvider {
 
     public static void main(String[] args) throws Exception {
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"spring/rest-provider.xml"});
+        ClassPathXmlApplicationContext context =
+                new ClassPathXmlApplicationContext(new String[] {"spring/rest-provider.xml"});
 
         context.refresh();
-
 
         System.out.println("spring mvc rest provider started");
 
         System.in.read();
     }
-
-
 }

@@ -23,5 +23,4 @@ class JavassistProxyFactoryTest extends AbstractProxyTest {
     static {
         factory = new JavassistProxyFactory();
     }
-
 }

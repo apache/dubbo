@@ -19,5 +19,4 @@ package org.apache.dubbo.remoting.http12;
 public interface HttpMetadata {
 
     HttpHeaders headers();
-
 }

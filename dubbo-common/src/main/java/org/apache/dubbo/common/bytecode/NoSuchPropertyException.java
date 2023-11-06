@@ -19,7 +19,6 @@ package org.apache.dubbo.common.bytecode;
 /**
  * NoSuchPropertyException.
  */
-
 public class NoSuchPropertyException extends RuntimeException {
     private static final long serialVersionUID = -2725364246023268766L;
 

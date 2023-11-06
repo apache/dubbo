@@ -56,5 +56,4 @@ public @interface Adaptive {
      * @return parameter names in URL
      */
     String[] value() default {};
-
 }

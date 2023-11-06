@@ -16,22 +16,18 @@
  */
 package org.apache.dubbo.registry.integration;
 
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-
 public class CountRegistryProtocolListener implements RegistryProtocolListener {
 
     private static final AtomicInteger referCounter = new AtomicInteger(0);
 
     @Override
-    public void onExport(RegistryProtocol registryProtocol, Exporter<?> exporter) {
-
-    }
+    public void onExport(RegistryProtocol registryProtocol, Exporter<?> exporter) {}
 
     @Override
     public void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker, URL url, URL registryURL) {
@@ -39,9 +35,7 @@ public class CountRegistryProtocolListener implements RegistryProtocolListener {
     }
 
     @Override
-    public void onDestroy() {
-
-    }
+    public void onDestroy() {}
 
     public static AtomicInteger getReferCounter() {
         return referCounter;

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.stub;
 
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -33,17 +32,17 @@ public class StubSuppliers {
     public static void addDescriptor(String interfaceName, ServiceDescriptor serviceDescriptor) {
         SERVICE_DESCRIPTOR_MAP.put(interfaceName, serviceDescriptor);
     }
+
     public static void addSupplier(String interfaceName, Function<Invoker<?>, Object> supplier) {
         STUB_SUPPLIERS.put(interfaceName, supplier);
     }
 
     public static <T> T createStub(String interfaceName, Invoker<T> invoker) {
-        //TODO DO not hack here
+        // TODO DO not hack here
         if (!STUB_SUPPLIERS.containsKey(interfaceName)) {
             ReflectUtils.forName(stubClassName(interfaceName));
             if (!STUB_SUPPLIERS.containsKey(interfaceName)) {
-                throw new IllegalStateException(
-                    "Can not find any stub supplier for " + interfaceName);
+                throw new IllegalStateException("Can not find any stub supplier for " + interfaceName);
             }
         }
         return (T) STUB_SUPPLIERS.get(interfaceName).apply(invoker);
@@ -57,12 +56,11 @@ public class StubSuppliers {
     }
 
     public static ServiceDescriptor getServiceDescriptor(String interfaceName) {
-        //TODO DO not hack here
+        // TODO DO not hack here
         if (!SERVICE_DESCRIPTOR_MAP.containsKey(interfaceName)) {
             ReflectUtils.forName(stubClassName(interfaceName));
             if (!SERVICE_DESCRIPTOR_MAP.containsKey(interfaceName)) {
-                throw new IllegalStateException(
-                    "Can not find any stub supplier for " + interfaceName);
+                throw new IllegalStateException("Can not find any stub supplier for " + interfaceName);
             }
         }
         return SERVICE_DESCRIPTOR_MAP.get(interfaceName);

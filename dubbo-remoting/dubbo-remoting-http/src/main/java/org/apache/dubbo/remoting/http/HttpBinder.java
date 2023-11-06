@@ -36,5 +36,4 @@ public interface HttpBinder {
      */
     @Adaptive({Constants.SERVER_KEY})
     HttpServer bind(URL url, HttpHandler handler);
-
 }

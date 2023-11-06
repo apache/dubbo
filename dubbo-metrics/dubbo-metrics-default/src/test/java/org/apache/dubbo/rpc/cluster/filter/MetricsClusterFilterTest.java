@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.filter;
 
 import org.apache.dubbo.common.URL;
@@ -33,10 +32,6 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.filter.support.MetricsClusterFilter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,17 +40,22 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
 class MetricsClusterFilterTest {
 
-    private       ApplicationModel        applicationModel;
-    private       MetricsFilter           filter;
-    private       MetricsClusterFilter    metricsClusterFilter;
-    private       DefaultMetricsCollector collector;
-    private       RpcInvocation           invocation;
-    private final Invoker<?>              invoker = mock(Invoker.class);
+    private ApplicationModel applicationModel;
+    private MetricsFilter filter;
+    private MetricsClusterFilter metricsClusterFilter;
+    private DefaultMetricsCollector collector;
+    private RpcInvocation invocation;
+    private final Invoker<?> invoker = mock(Invoker.class);
 
     private static final String INTERFACE_NAME = "org.apache.dubbo.MockInterface";
     private static final String METHOD_NAME = "mockMethod";
@@ -65,12 +65,11 @@ class MetricsClusterFilterTest {
 
     private AtomicBoolean initApplication = new AtomicBoolean(false);
 
-
     @BeforeEach
     public void setup() {
         ApplicationConfig config = new ApplicationConfig();
         config.setName("MockMetrics");
-        //RpcContext.getContext().setAttachment("MockMetrics","MockMetrics");
+        // RpcContext.getContext().setAttachment("MockMetrics","MockMetrics");
 
         applicationModel = ApplicationModel.defaultModel();
         applicationModel.getApplicationConfigManager().setApplication(config);
@@ -79,14 +78,15 @@ class MetricsClusterFilterTest {
         filter = new MetricsFilter();
 
         collector = applicationModel.getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
-        if(!initApplication.get()) {
+        if (!initApplication.get()) {
             collector.collectApplication();
             initApplication.set(true);
         }
         filter.setApplicationModel(applicationModel);
         side = CommonConstants.CONSUMER;
         invocation.setInvoker(new TestMetricsInvoker(side));
-        RpcContext.getServiceContext().setUrl(URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&side=" + side));
+        RpcContext.getServiceContext()
+                .setUrl(URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&side=" + side));
 
         metricsClusterFilter = new MetricsClusterFilter();
         metricsClusterFilter.setApplicationModel(applicationModel);
@@ -98,12 +98,13 @@ class MetricsClusterFilterTest {
     }
 
     @Test
-    public void testNoProvider(){
-        testClusterFilterError(RpcException.FORBIDDEN_EXCEPTION,
-            MetricsKey.METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED.getNameByType(CommonConstants.CONSUMER));
+    public void testNoProvider() {
+        testClusterFilterError(
+                RpcException.FORBIDDEN_EXCEPTION,
+                MetricsKey.METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED.getNameByType(CommonConstants.CONSUMER));
     }
 
-    private void testClusterFilterError(int errorCode,String name){
+    private void testClusterFilterError(int errorCode, String name) {
         collector.setCollectEnabled(true);
         given(invoker.invoke(invocation)).willThrow(new RpcException(errorCode));
         initParam();
@@ -127,12 +128,10 @@ class MetricsClusterFilterTest {
         teardown();
     }
 
-
-
     private void initParam() {
         invocation.setTargetServiceUniqueName(GROUP + "/" + INTERFACE_NAME + ":" + VERSION);
         invocation.setMethodName(METHOD_NAME);
-        invocation.setParameterTypes(new Class[]{String.class});
+        invocation.setParameterTypes(new Class[] {String.class});
     }
 
     private Map<String, MetricSample> getMetricsMap() {
@@ -167,7 +166,7 @@ class MetricsClusterFilterTest {
 
         @Override
         public URL getUrl() {
-            return URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&side="+side);
+            return URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&side=" + side);
         }
 
         @Override
@@ -176,8 +175,6 @@ class MetricsClusterFilterTest {
         }
 
         @Override
-        public void destroy() {
-
-        }
+        public void destroy() {}
     }
 }

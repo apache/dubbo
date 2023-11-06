@@ -32,5 +32,4 @@ public class Http1OutputMessage implements HttpOutputMessage {
     public OutputStream getBody() {
         return outputStream;
     }
-
 }

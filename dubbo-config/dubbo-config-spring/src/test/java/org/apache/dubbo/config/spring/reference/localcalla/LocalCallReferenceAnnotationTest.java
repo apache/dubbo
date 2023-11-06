@@ -23,6 +23,8 @@ import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.rpc.RpcContext;
 
+import java.net.InetSocketAddress;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -36,14 +38,14 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.net.InetSocketAddress;
-
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 
 @EnableDubbo
 @ExtendWith(SpringExtension.class)
 @PropertySource("classpath:/org/apache/dubbo/config/spring/reference/localcalla/local-call-config.properties")
-@ContextConfiguration(classes = {LocalCallReferenceAnnotationTest.class, LocalCallReferenceAnnotationTest.LocalCallConfiguration.class})
+@ContextConfiguration(
+        classes = {LocalCallReferenceAnnotationTest.class, LocalCallReferenceAnnotationTest.LocalCallConfiguration.class
+        })
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
 class LocalCallReferenceAnnotationTest {
 
@@ -68,7 +70,8 @@ class LocalCallReferenceAnnotationTest {
         // see also: org.apache.dubbo.rpc.protocol.injvm.InjvmInvoker.doInvoke
         // InjvmInvoker set remote address to 127.0.0.1:0
         String result = helloService.sayHello("world");
-        Assertions.assertEquals("Hello world, response from provider: " + InetSocketAddress.createUnresolved("127.0.0.1", 0), result);
+        Assertions.assertEquals(
+                "Hello world, response from provider: " + InetSocketAddress.createUnresolved("127.0.0.1", 0), result);
     }
 
     @Configuration
@@ -81,7 +84,8 @@ class LocalCallReferenceAnnotationTest {
     public static class AnotherLocalHelloServiceImpl implements HelloService {
         @Override
         public String sayHello(String name) {
-            return "Hello " + name + ", response from provider: " + RpcContext.getContext().getLocalAddress();
+            return "Hello " + name + ", response from provider: "
+                    + RpcContext.getContext().getLocalAddress();
         }
     }
 }

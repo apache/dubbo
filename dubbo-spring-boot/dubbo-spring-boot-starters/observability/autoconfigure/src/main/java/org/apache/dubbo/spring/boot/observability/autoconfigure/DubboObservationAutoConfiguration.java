@@ -23,6 +23,8 @@ import org.apache.dubbo.qos.protocol.QosProtocolWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.spring.boot.observability.autoconfigure.annotation.ConditionalOnDubboTracingEnable;
 
+import java.util.Arrays;
+
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -39,18 +41,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 
-import java.util.Arrays;
-
 /**
  * Register observationRegistry to ApplicationModel.
  * Create observationRegistry when you are using Boot <3.0 or you are not using spring-boot-starter-actuator
  */
-@AutoConfiguration(after = DubboMicrometerTracingAutoConfiguration.class, afterName = "org.springframework.boot.actuate.autoconfigure.observation.ObservationAutoConfiguration")
+@AutoConfiguration(
+        after = DubboMicrometerTracingAutoConfiguration.class,
+        afterName = "org.springframework.boot.actuate.autoconfigure.observation.ObservationAutoConfiguration")
 @ConditionalOnDubboTracingEnable
 @ConditionalOnClass(name = {"io.micrometer.observation.Observation", "io.micrometer.tracing.Tracer"})
-public class DubboObservationAutoConfiguration implements BeanFactoryAware, ApplicationListener<DubboConfigInitEvent>, Ordered {
+public class DubboObservationAutoConfiguration
+        implements BeanFactoryAware, ApplicationListener<DubboConfigInitEvent>, Ordered {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(QosProtocolWrapper.class);
-
 
     public DubboObservationAutoConfiguration(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
@@ -68,10 +70,12 @@ public class DubboObservationAutoConfiguration implements BeanFactoryAware, Appl
     }
 
     @Bean
-    @ConditionalOnMissingBean(type = "org.springframework.boot.actuate.autoconfigure.observation.ObservationRegistryPostProcessor")
+    @ConditionalOnMissingBean(
+            type = "org.springframework.boot.actuate.autoconfigure.observation.ObservationRegistryPostProcessor")
     @ConditionalOnClass(name = "io.micrometer.observation.ObservationHandler")
-    public ObservationRegistryPostProcessor dubboObservationRegistryPostProcessor(ObjectProvider<ObservationHandlerGrouping> observationHandlerGrouping,
-                                                                                  ObjectProvider<io.micrometer.observation.ObservationHandler<?>> observationHandlers) {
+    public ObservationRegistryPostProcessor dubboObservationRegistryPostProcessor(
+            ObjectProvider<ObservationHandlerGrouping> observationHandlerGrouping,
+            ObjectProvider<io.micrometer.observation.ObservationHandler<?>> observationHandlers) {
         return new ObservationRegistryPostProcessor(observationHandlerGrouping, observationHandlers);
     }
 
@@ -83,9 +87,13 @@ public class DubboObservationAutoConfiguration implements BeanFactoryAware, Appl
     @Override
     public void onApplicationEvent(DubboConfigInitEvent event) {
         try {
-            applicationModel.getBeanFactory().registerBean(beanFactory.getBean(io.micrometer.observation.ObservationRegistry.class));
+            applicationModel
+                    .getBeanFactory()
+                    .registerBean(beanFactory.getBean(io.micrometer.observation.ObservationRegistry.class));
             applicationModel.getBeanFactory().registerBean(beanFactory.getBean(io.micrometer.tracing.Tracer.class));
-            applicationModel.getBeanFactory().registerBean(beanFactory.getBean(io.micrometer.tracing.propagation.Propagator.class));
+            applicationModel
+                    .getBeanFactory()
+                    .registerBean(beanFactory.getBean(io.micrometer.tracing.propagation.Propagator.class));
         } catch (NoSuchBeanDefinitionException e) {
             logger.info("Please use a version of micrometer higher than 1.10.0: " + e.getMessage());
         }
@@ -99,21 +107,23 @@ public class DubboObservationAutoConfiguration implements BeanFactoryAware, Appl
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(MeterRegistry.class)
     @ConditionalOnMissingClass("io.micrometer.tracing.Tracer")
-    @ConditionalOnMissingBean(type = "org.springframework.boot.actuate.autoconfigure.observation.ObservationRegistryPostProcessor")
+    @ConditionalOnMissingBean(
+            type = "org.springframework.boot.actuate.autoconfigure.observation.ObservationRegistryPostProcessor")
     static class OnlyMetricsConfiguration {
 
         @Bean
         @ConditionalOnClass(name = "io.micrometer.core.instrument.observation.MeterObservationHandler")
         ObservationHandlerGrouping metricsObservationHandlerGrouping() {
-            return new ObservationHandlerGrouping(io.micrometer.core.instrument.observation.MeterObservationHandler.class);
+            return new ObservationHandlerGrouping(
+                    io.micrometer.core.instrument.observation.MeterObservationHandler.class);
         }
-
     }
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(io.micrometer.tracing.Tracer.class)
     @ConditionalOnMissingClass("io.micrometer.core.instrument.MeterRegistry")
-    @ConditionalOnMissingBean(type = "org.springframework.boot.actuate.autoconfigure.observation.ObservationRegistryPostProcessor")
+    @ConditionalOnMissingBean(
+            type = "org.springframework.boot.actuate.autoconfigure.observation.ObservationRegistryPostProcessor")
     static class OnlyTracingConfiguration {
 
         @Bean
@@ -121,21 +131,25 @@ public class DubboObservationAutoConfiguration implements BeanFactoryAware, Appl
         ObservationHandlerGrouping tracingObservationHandlerGrouping() {
             return new ObservationHandlerGrouping(io.micrometer.tracing.handler.TracingObservationHandler.class);
         }
-
     }
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass({MeterRegistry.class, io.micrometer.tracing.Tracer.class})
-    @ConditionalOnMissingBean(type = "org.springframework.boot.actuate.autoconfigure.observation.ObservationRegistryPostProcessor")
+    @ConditionalOnMissingBean(
+            type = "org.springframework.boot.actuate.autoconfigure.observation.ObservationRegistryPostProcessor")
     static class MetricsWithTracingConfiguration {
 
         @Bean
-        @ConditionalOnClass(name = {"io.micrometer.tracing.handler.TracingObservationHandler", "io.micrometer.core.instrument.observation.MeterObservationHandler"})
+        @ConditionalOnClass(
+                name = {
+                    "io.micrometer.tracing.handler.TracingObservationHandler",
+                    "io.micrometer.core.instrument.observation.MeterObservationHandler"
+                })
         ObservationHandlerGrouping metricsAndTracingObservationHandlerGrouping() {
-            return new ObservationHandlerGrouping(
-                    Arrays.asList(io.micrometer.tracing.handler.TracingObservationHandler.class, io.micrometer.core.instrument.observation.MeterObservationHandler.class));
+            return new ObservationHandlerGrouping(Arrays.asList(
+                    io.micrometer.tracing.handler.TracingObservationHandler.class,
+                    io.micrometer.core.instrument.observation.MeterObservationHandler.class));
         }
-
     }
 
     @Configuration(proxyBeanMethods = false)
@@ -149,10 +163,10 @@ public class DubboObservationAutoConfiguration implements BeanFactoryAware, Appl
 
             @Bean
             @ConditionalOnClass(name = {"io.micrometer.core.instrument.observation.DefaultMeterObservationHandler"})
-            io.micrometer.core.instrument.observation.DefaultMeterObservationHandler defaultMeterObservationHandler(MeterRegistry meterRegistry) {
+            io.micrometer.core.instrument.observation.DefaultMeterObservationHandler defaultMeterObservationHandler(
+                    MeterRegistry meterRegistry) {
                 return new io.micrometer.core.instrument.observation.DefaultMeterObservationHandler(meterRegistry);
             }
-
         }
 
         @ConditionalOnBean(io.micrometer.tracing.Tracer.class)
@@ -160,14 +174,19 @@ public class DubboObservationAutoConfiguration implements BeanFactoryAware, Appl
         static class TracingAndMetricsObservationHandlerConfiguration {
 
             @Bean
-            @ConditionalOnClass(name = {"io.micrometer.tracing.handler.TracingAwareMeterObservationHandler", "io.micrometer.tracing.Tracer"})
-            io.micrometer.tracing.handler.TracingAwareMeterObservationHandler<io.micrometer.observation.Observation.Context> tracingAwareMeterObservationHandler(
-                    MeterRegistry meterRegistry, io.micrometer.tracing.Tracer tracer) {
-                io.micrometer.core.instrument.observation.DefaultMeterObservationHandler delegate = new io.micrometer.core.instrument.observation.DefaultMeterObservationHandler(meterRegistry);
+            @ConditionalOnClass(
+                    name = {
+                        "io.micrometer.tracing.handler.TracingAwareMeterObservationHandler",
+                        "io.micrometer.tracing.Tracer"
+                    })
+            io.micrometer.tracing.handler.TracingAwareMeterObservationHandler<
+                            io.micrometer.observation.Observation.Context>
+                    tracingAwareMeterObservationHandler(
+                            MeterRegistry meterRegistry, io.micrometer.tracing.Tracer tracer) {
+                io.micrometer.core.instrument.observation.DefaultMeterObservationHandler delegate =
+                        new io.micrometer.core.instrument.observation.DefaultMeterObservationHandler(meterRegistry);
                 return new io.micrometer.tracing.handler.TracingAwareMeterObservationHandler<>(delegate, tracer);
             }
-
         }
-
     }
 }

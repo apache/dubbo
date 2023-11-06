@@ -103,13 +103,16 @@ public class TraceFilter implements Filter {
                             }
                             count = c.getAndIncrement();
                             if (count < max) {
-                                String prompt = channel.getUrl().getParameter(Constants.PROMPT_KEY, Constants.DEFAULT_PROMPT);
-                                channel.send("\r\n" + RpcContext.getServiceContext().getRemoteAddress() + " -> "
-                                    + invoker.getInterface().getName()
-                                    + "." + RpcUtils.getMethodName(invocation)
-                                    + "(" + JsonUtils.toJson(invocation.getArguments()) + ")" + " -> " + JsonUtils.toJson(result.getValue())
-                                    + "\r\nelapsed: " + (end - start) + " ms."
-                                    + "\r\n\r\n" + prompt);
+                                String prompt =
+                                        channel.getUrl().getParameter(Constants.PROMPT_KEY, Constants.DEFAULT_PROMPT);
+                                channel.send(
+                                        "\r\n" + RpcContext.getServiceContext().getRemoteAddress() + " -> "
+                                                + invoker.getInterface().getName()
+                                                + "." + RpcUtils.getMethodName(invocation)
+                                                + "(" + JsonUtils.toJson(invocation.getArguments()) + ")" + " -> "
+                                                + JsonUtils.toJson(result.getValue())
+                                                + "\r\nelapsed: " + (end - start) + " ms."
+                                                + "\r\n\r\n" + prompt);
                             }
                             if (count >= max - 1) {
                                 channels.remove(channel);
@@ -126,5 +129,4 @@ public class TraceFilter implements Filter {
         }
         return result;
     }
-
 }

@@ -17,6 +17,11 @@
 package org.apache.dubbo.config.spring6.beans.factory.aot;
 
 import org.apache.dubbo.config.spring6.beans.factory.annotation.ReferenceAnnotationWithAotBeanPostProcessor;
+
+import java.lang.reflect.Field;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 import org.springframework.aot.hint.ExecutableMode;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.TypeConverter;
@@ -30,10 +35,6 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.function.ThrowingConsumer;
-
-import java.lang.reflect.Field;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 /**
  * Resolver used to support the autowiring of fields. Typically used in
@@ -57,16 +58,13 @@ public final class ReferencedFieldValueResolver extends AutowiredElementResolver
     @Nullable
     private final String shortcut;
 
-
-    private ReferencedFieldValueResolver(String fieldName, boolean required,
-                                         @Nullable String shortcut) {
+    private ReferencedFieldValueResolver(String fieldName, boolean required, @Nullable String shortcut) {
 
         Assert.hasText(fieldName, "'fieldName' must not be empty");
         this.fieldName = fieldName;
         this.required = required;
         this.shortcut = shortcut;
     }
-
 
     /**
      * Create a new {@link ReferencedFieldValueResolver} for the specified field
@@ -89,7 +87,6 @@ public final class ReferencedFieldValueResolver extends AutowiredElementResolver
     public static ReferencedFieldValueResolver forRequiredField(String fieldName) {
         return new ReferencedFieldValueResolver(fieldName, true, null);
     }
-
 
     /**
      * Return a new {@link ReferencedFieldValueResolver} instance that uses a
@@ -184,8 +181,7 @@ public final class ReferencedFieldValueResolver extends AutowiredElementResolver
         DependencyDescriptor descriptor = new DependencyDescriptor(field, this.required);
         descriptor.setContainingClass(beanClass);
         if (this.shortcut != null) {
-            descriptor = new ShortcutDependencyDescriptor(descriptor, this.shortcut,
-                field.getType());
+            descriptor = new ShortcutDependencyDescriptor(descriptor, this.shortcut, field.getType());
         }
         Set<String> autowiredBeanNames = new LinkedHashSet<>(1);
         TypeConverter typeConverter = beanFactory.getTypeConverter();
@@ -194,23 +190,21 @@ public final class ReferencedFieldValueResolver extends AutowiredElementResolver
 
             Object injectedObject = beanFactory.getBean(shortcut);
 
-
-            Object value = ((AutowireCapableBeanFactory) beanFactory).resolveDependency(
-                descriptor, beanName, autowiredBeanNames, typeConverter);
+            Object value = ((AutowireCapableBeanFactory) beanFactory)
+                    .resolveDependency(descriptor, beanName, autowiredBeanNames, typeConverter);
             registerDependentBeans(beanFactory, beanName, autowiredBeanNames);
             return injectedObject;
         } catch (BeansException ex) {
-            throw new UnsatisfiedDependencyException(null, beanName,
-                new InjectionPoint(field), ex);
+            throw new UnsatisfiedDependencyException(null, beanName, new InjectionPoint(field), ex);
         }
     }
 
     private Field getField(RegisteredBean registeredBean) {
-        Field field = ReflectionUtils.findField(registeredBean.getBeanClass(),
-            this.fieldName);
-        Assert.notNull(field, () -> "No field '" + this.fieldName + "' found on "
-            + registeredBean.getBeanClass().getName());
+        Field field = ReflectionUtils.findField(registeredBean.getBeanClass(), this.fieldName);
+        Assert.notNull(
+                field,
+                () -> "No field '" + this.fieldName + "' found on "
+                        + registeredBean.getBeanClass().getName());
         return field;
     }
-
 }

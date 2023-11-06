@@ -36,5 +36,4 @@ public class OverrideConfigurator extends AbstractConfigurator {
         logger.info("Start overriding url " + currentUrl + " with override url " + configUrl);
         return currentUrl.addParameters(configUrl.getParameters());
     }
-
 }

@@ -38,10 +38,9 @@ import java.util.Set;
 @Activate("multiValue")
 public class MultiValueCodec implements HttpMessageCodec<byte[], OutputStream> {
 
-
     @Override
     public Object decode(byte[] body, Class<?> targetType, Type type) throws Exception {
-        Object map = DataParseUtils.multipartFormConvert(body,targetType);
+        Object map = DataParseUtils.multipartFormConvert(body, targetType);
         Map valuesMap = (Map) map;
         if (Map.class.isAssignableFrom(targetType)) {
             return map;
@@ -57,9 +56,7 @@ public class MultiValueCodec implements HttpMessageCodec<byte[], OutputStream> {
             }
             return DataParseUtils.stringTypeConvert(targetType, String.valueOf(((List) value).get(0)));
 
-
         } else {
-
 
             Map<String, Field> beanPropertyFields = ReflectUtils.getBeanPropertyFields(targetType);
 
@@ -69,7 +66,11 @@ public class MultiValueCodec implements HttpMessageCodec<byte[], OutputStream> {
                 try {
                     List values = (List) valuesMap.get(entry.getKey());
                     String value = values == null ? null : String.valueOf(values.get(0));
-                    entry.getValue().set(emptyObject, DataParseUtils.stringTypeConvert(entry.getValue().getType(), value));
+                    entry.getValue()
+                            .set(
+                                    emptyObject,
+                                    DataParseUtils.stringTypeConvert(
+                                            entry.getValue().getType(), value));
                 } catch (IllegalAccessException e) {
 
                 }
@@ -77,9 +78,7 @@ public class MultiValueCodec implements HttpMessageCodec<byte[], OutputStream> {
 
             return emptyObject;
         }
-
     }
-
 
     @Override
     public boolean contentTypeSupport(MediaType mediaType, Class<?> targetType) {

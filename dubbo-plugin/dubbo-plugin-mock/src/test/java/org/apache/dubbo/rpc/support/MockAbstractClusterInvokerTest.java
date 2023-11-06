@@ -28,17 +28,18 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_CONNECTIVITY_VALIDATION;
 import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_AVAILABLE_CHECK_KEY;
@@ -58,8 +59,11 @@ class MockAbstractClusterInvokerTest {
     AbstractClusterInvoker<IHelloService> cluster_nocheck;
     StaticDirectory<IHelloService> dic;
     RpcInvocation invocation = new RpcInvocation();
-    URL url = URL.valueOf("registry://localhost:9090/org.apache.dubbo.rpc.cluster.support.AbstractClusterInvokerTest.IHelloService?refer=" + URL.encode("application=abstractClusterInvokerTest"));
-    URL consumerUrl = URL.valueOf("dubbo://localhost?application=abstractClusterInvokerTest&refer=application%3DabstractClusterInvokerTest");
+    URL url = URL.valueOf(
+            "registry://localhost:9090/org.apache.dubbo.rpc.cluster.support.AbstractClusterInvokerTest.IHelloService?refer="
+                    + URL.encode("application=abstractClusterInvokerTest"));
+    URL consumerUrl = URL.valueOf(
+            "dubbo://localhost?application=abstractClusterInvokerTest&refer=application%3DabstractClusterInvokerTest");
 
     Invoker<IHelloService> invoker1;
     Invoker<IHelloService> invoker2;
@@ -131,24 +135,26 @@ class MockAbstractClusterInvokerTest {
         cluster = new AbstractClusterInvoker(dic) {
             @Override
             protected Result doInvoke(Invocation invocation, List invokers, LoadBalance loadbalance)
-                throws RpcException {
+                    throws RpcException {
                 return null;
             }
         };
 
-        cluster_nocheck = new AbstractClusterInvoker(dic, url.addParameterIfAbsent(CLUSTER_AVAILABLE_CHECK_KEY, Boolean.FALSE.toString())) {
-            @Override
-            protected Result doInvoke(Invocation invocation, List invokers, LoadBalance loadbalance)
-                throws RpcException {
-                return null;
-            }
-        };
-
+        cluster_nocheck =
+                new AbstractClusterInvoker(
+                        dic, url.addParameterIfAbsent(CLUSTER_AVAILABLE_CHECK_KEY, Boolean.FALSE.toString())) {
+                    @Override
+                    protected Result doInvoke(Invocation invocation, List invokers, LoadBalance loadbalance)
+                            throws RpcException {
+                        return null;
+                    }
+                };
     }
 
     private void initlistsize5() {
         invokers.clear();
-        selectedInvokers.clear();//Clear first, previous test case will make sure that the right invoker2 will be used.
+        selectedInvokers
+                .clear(); // Clear first, previous test case will make sure that the right invoker2 will be used.
         invokers.add(invoker1);
         invokers.add(invoker2);
         invokers.add(invoker3);
@@ -181,6 +187,5 @@ class MockAbstractClusterInvokerTest {
         Assertions.assertEquals(5, invokers.size());
     }
 
-    public static interface IHelloService {
-    }
+    public static interface IHelloService {}
 }

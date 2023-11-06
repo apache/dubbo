@@ -34,9 +34,7 @@ import org.springframework.context.annotation.Configuration;
  * @since 2.7.0
  */
 @Configuration
-@ConditionalOnClass(name = {
-        "org.springframework.boot.actuate.health.Health"
-})
+@ConditionalOnClass(name = {"org.springframework.boot.actuate.health.Health"})
 @ConditionalOnProperty(name = "management.health.dubbo.enabled", matchIfMissing = true, havingValue = "true")
 @EnableConfigurationProperties(DubboHealthIndicatorProperties.class)
 public class DubboHealthIndicatorAutoConfiguration {
@@ -46,5 +44,4 @@ public class DubboHealthIndicatorAutoConfiguration {
     public DubboHealthIndicator dubboHealthIndicator() {
         return new DubboHealthIndicator();
     }
-
 }

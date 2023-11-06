@@ -33,5 +33,4 @@ public class ExitTelnetHandler implements TelnetHandler {
         channel.close();
         return null;
     }
-
 }

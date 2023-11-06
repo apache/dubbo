@@ -16,17 +16,18 @@
  */
 package org.apache.dubbo.metadata.annotation.processing;
 
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.InvocationInterceptor;
-import org.junit.jupiter.api.extension.ReflectiveInvocationContext;
-
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
+
 import java.lang.reflect.Method;
 import java.util.Set;
+
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.InvocationInterceptor;
+import org.junit.jupiter.api.extension.ReflectiveInvocationContext;
 
 import static javax.lang.model.SourceVersion.latestSupported;
 
@@ -40,9 +41,11 @@ public class AnnotationProcessingTestProcessor extends AbstractProcessor {
 
     private final ExtensionContext extensionContext;
 
-    public AnnotationProcessingTestProcessor(AbstractAnnotationProcessingTest abstractAnnotationProcessingTest, InvocationInterceptor.Invocation<Void> invocation,
-                                             ReflectiveInvocationContext<Method> invocationContext,
-                                             ExtensionContext extensionContext) {
+    public AnnotationProcessingTestProcessor(
+            AbstractAnnotationProcessingTest abstractAnnotationProcessingTest,
+            InvocationInterceptor.Invocation<Void> invocation,
+            ReflectiveInvocationContext<Method> invocationContext,
+            ExtensionContext extensionContext) {
         this.abstractAnnotationProcessingTest = abstractAnnotationProcessingTest;
         this.invocation = invocation;
         this.invocationContext = invocationContext;

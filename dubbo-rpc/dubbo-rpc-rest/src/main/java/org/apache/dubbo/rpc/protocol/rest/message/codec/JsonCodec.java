@@ -62,12 +62,10 @@ public class JsonCodec implements HttpMessageCodec<byte[], OutputStream> {
         return MediaType.APPLICATION_JSON_VALUE;
     }
 
-
     @Override
     public void encode(OutputStream outputStream, Object unSerializedBody, URL url) throws Exception {
         outputStream.write(JsonUtils.toJson(unSerializedBody).getBytes(StandardCharsets.UTF_8));
     }
-
 
     public static final void addUnSupportClass(Class<?> unSupportClass) {
         unSupportClasses.add(unSupportClass);

@@ -21,6 +21,5 @@ import java.util.function.BiConsumer;
 @FunctionalInterface
 public interface ErrorResponseCustomizer extends BiConsumer<ErrorResponse, Throwable> {
 
-    ErrorResponseCustomizer NO_OP = (errorResponse, throwable) -> {
-    };
+    ErrorResponseCustomizer NO_OP = (errorResponse, throwable) -> {};
 }

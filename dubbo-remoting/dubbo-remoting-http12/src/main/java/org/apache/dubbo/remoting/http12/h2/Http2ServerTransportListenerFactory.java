@@ -27,5 +27,4 @@ public interface Http2ServerTransportListenerFactory {
     Http2TransportListener newInstance(H2StreamChannel streamChannel, URL url, FrameworkModel frameworkModel);
 
     boolean supportContentType(String contentType);
-
 }

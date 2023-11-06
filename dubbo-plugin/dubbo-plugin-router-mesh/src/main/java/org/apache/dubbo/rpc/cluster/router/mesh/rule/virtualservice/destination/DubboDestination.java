@@ -14,16 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.destination;
-
 
 public class DubboDestination {
     private String host;
     private String subset;
     private int port;
     private DubboRouteDestination fallback;
-
 
     public String getHost() {
         return host;

@@ -153,8 +153,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
      */
     private Integer payload;
 
-    public AbstractServiceConfig() {
-    }
+    public AbstractServiceConfig() {}
 
     public AbstractServiceConfig(ModuleModel moduleModel) {
         super(moduleModel);

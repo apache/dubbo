@@ -16,7 +16,6 @@
  */
 package com.alibaba.dubbo.container.page;
 
-
 import org.apache.dubbo.common.extension.SPI;
 
 import com.alibaba.dubbo.common.URL;
@@ -34,5 +33,4 @@ public interface PageHandler {
      * @return the page.
      */
     Page handle(URL url);
-
 }

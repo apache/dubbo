@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.metadata;
 
 import org.apache.dubbo.config.ApplicationConfig;
@@ -28,13 +27,14 @@ import org.apache.dubbo.metrics.model.container.LongContainer;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_PUSH;
 import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_STORE_PROVIDER_INTERFACE;
@@ -74,14 +74,22 @@ public class MetadataStatCompositeTest {
 
     @Test
     void testInit() {
-        Assertions.assertEquals(statComposite.getApplicationStatComposite().getApplicationNumStats().size(), MetadataMetricsConstants.APP_LEVEL_KEYS.size());
+        Assertions.assertEquals(
+                statComposite
+                        .getApplicationStatComposite()
+                        .getApplicationNumStats()
+                        .size(),
+                MetadataMetricsConstants.APP_LEVEL_KEYS.size());
 
-        //(rt)5 * (push,subscribe,service)3
-        Assertions.assertEquals(5 * 3, statComposite.getRtStatComposite().getRtStats().size());
-        statComposite.getApplicationStatComposite().getApplicationNumStats().values().forEach((v ->
-            Assertions.assertEquals(v.get(), new AtomicLong(0L).get())));
-        statComposite.getRtStatComposite().getRtStats().forEach(rtContainer ->
-        {
+        // (rt)5 * (push,subscribe,service)3
+        Assertions.assertEquals(
+                5 * 3, statComposite.getRtStatComposite().getRtStats().size());
+        statComposite
+                .getApplicationStatComposite()
+                .getApplicationNumStats()
+                .values()
+                .forEach((v -> Assertions.assertEquals(v.get(), new AtomicLong(0L).get())));
+        statComposite.getRtStatComposite().getRtStats().forEach(rtContainer -> {
             for (Map.Entry<Metric, ? extends Number> entry : rtContainer.entrySet()) {
                 Assertions.assertEquals(0L, rtContainer.getValueSupplier().apply(entry.getKey()));
             }
@@ -92,14 +100,25 @@ public class MetadataStatCompositeTest {
     void testIncrement() {
         statComposite.incrementApp(MetricsKey.METADATA_PUSH_METRIC_NUM, 1);
 
-        Assertions.assertEquals(1L, statComposite.getApplicationStatComposite().getApplicationNumStats().get(MetricsKey.METADATA_PUSH_METRIC_NUM).get());
+        Assertions.assertEquals(
+                1L,
+                statComposite
+                        .getApplicationStatComposite()
+                        .getApplicationNumStats()
+                        .get(MetricsKey.METADATA_PUSH_METRIC_NUM)
+                        .get());
     }
 
     @Test
     void testCalcRt() {
         statComposite.calcApplicationRt(OP_TYPE_SUBSCRIBE.getType(), 10L);
-        Assertions.assertTrue(statComposite.getRtStatComposite().getRtStats().stream().anyMatch(longContainer -> longContainer.specifyType(OP_TYPE_SUBSCRIBE.getType())));
-        Optional<LongContainer<? extends Number>> subContainer = statComposite.getRtStatComposite().getRtStats().stream().filter(longContainer -> longContainer.specifyType(OP_TYPE_SUBSCRIBE.getType())).findFirst();
-        subContainer.ifPresent(v -> Assertions.assertEquals(10L, v.get(new ApplicationMetric(applicationModel)).longValue()));
+        Assertions.assertTrue(statComposite.getRtStatComposite().getRtStats().stream()
+                .anyMatch(longContainer -> longContainer.specifyType(OP_TYPE_SUBSCRIBE.getType())));
+        Optional<LongContainer<? extends Number>> subContainer =
+                statComposite.getRtStatComposite().getRtStats().stream()
+                        .filter(longContainer -> longContainer.specifyType(OP_TYPE_SUBSCRIBE.getType()))
+                        .findFirst();
+        subContainer.ifPresent(v -> Assertions.assertEquals(
+                10L, v.get(new ApplicationMetric(applicationModel)).longValue()));
     }
 }

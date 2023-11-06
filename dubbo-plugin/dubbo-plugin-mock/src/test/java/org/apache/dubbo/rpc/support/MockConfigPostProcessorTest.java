@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.support;
 
 import org.apache.dubbo.config.AbstractInterfaceConfig;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -28,7 +29,6 @@ class MockConfigPostProcessorTest {
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.setMock("return {a, b}");
             MockConfigPostProcessor.checkMock(Greeting.class, interfaceConfig);
-
         });
     }
 
@@ -50,7 +50,5 @@ class MockConfigPostProcessorTest {
         });
     }
 
-    public static class InterfaceConfig extends AbstractInterfaceConfig {
-
-    }
+    public static class InterfaceConfig extends AbstractInterfaceConfig {}
 }

@@ -29,14 +29,12 @@ public class ResetQueueCommand extends HttpChannelQueueCommand {
 
     @Override
     public void run() {
-        ((H2StreamChannel) getHttpChannel())
-            .writeResetFrame(errorCode)
-            .whenComplete((unused, throwable) -> {
-                if (throwable != null) {
-                    completeExceptionally(throwable);
-                } else {
-                    complete(unused);
-                }
-            });
+        ((H2StreamChannel) getHttpChannel()).writeResetFrame(errorCode).whenComplete((unused, throwable) -> {
+            if (throwable != null) {
+                completeExceptionally(throwable);
+            } else {
+                complete(unused);
+            }
+        });
     }
 }

@@ -16,13 +16,13 @@
  */
 package org.apache.dubbo.rpc.cluster;
 
+import java.util.List;
+
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.cluster.Router;
-
-import java.util.List;
 
 /**
  *

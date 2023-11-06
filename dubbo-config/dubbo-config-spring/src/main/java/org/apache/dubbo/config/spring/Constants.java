@@ -41,5 +41,4 @@ public interface Constants {
      * From FactoryBean.OBJECT_TYPE_ATTRIBUTE of Spring 5.2.
      */
     String OBJECT_TYPE_ATTRIBUTE = "factoryBeanObjectType";
-
 }

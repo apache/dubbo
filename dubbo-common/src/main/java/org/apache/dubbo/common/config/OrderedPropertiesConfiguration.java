@@ -37,7 +37,8 @@ public class OrderedPropertiesConfiguration implements Configuration {
 
     public void refresh() {
         properties = new Properties();
-        ExtensionLoader<OrderedPropertiesProvider> propertiesProviderExtensionLoader = moduleModel.getExtensionLoader(OrderedPropertiesProvider.class);
+        ExtensionLoader<OrderedPropertiesProvider> propertiesProviderExtensionLoader =
+                moduleModel.getExtensionLoader(OrderedPropertiesProvider.class);
         Set<String> propertiesProviderNames = propertiesProviderExtensionLoader.getSupportedExtensions();
         if (CollectionUtils.isEmpty(propertiesProviderNames)) {
             return;
@@ -47,15 +48,13 @@ public class OrderedPropertiesConfiguration implements Configuration {
             orderedPropertiesProviders.add(propertiesProviderExtensionLoader.getExtension(propertiesProviderName));
         }
 
-        //order the propertiesProvider according the priority descending
+        // order the propertiesProvider according the priority descending
         orderedPropertiesProviders.sort((a, b) -> b.priority() - a.priority());
 
-
-        //override the properties.
+        // override the properties.
         for (OrderedPropertiesProvider orderedPropertiesProvider : orderedPropertiesProviders) {
             properties.putAll(orderedPropertiesProvider.initProperties());
         }
-
     }
 
     @Override

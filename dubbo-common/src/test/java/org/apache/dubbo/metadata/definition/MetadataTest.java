@@ -58,7 +58,8 @@ class MetadataTest {
         System.out.println(">> testInnerClassType: " + JsonUtils.toJson(sd));
 
         Assertions.assertEquals(TestService.class.getName(), sd.getCanonicalName());
-        Assertions.assertEquals(TestService.class.getMethods().length, sd.getMethods().size());
+        Assertions.assertEquals(
+                TestService.class.getMethods().length, sd.getMethods().size());
         boolean containsType = false;
         for (TypeDefinition type : sd.getTypes()) {
             if (type.getType().equals("org.apache.dubbo.metadata.definition.common.OuterClass.InnerClass")) {
@@ -87,7 +88,8 @@ class MetadataTest {
         System.out.println(">> testRawMap: " + JsonUtils.toJson(sd));
 
         Assertions.assertEquals(TestService.class.getName(), sd.getCanonicalName());
-        Assertions.assertEquals(TestService.class.getMethods().length, sd.getMethods().size());
+        Assertions.assertEquals(
+                TestService.class.getMethods().length, sd.getMethods().size());
         boolean containsType = false;
         for (TypeDefinition type : sd.getTypes()) {
             if (type.getType().equals("org.apache.dubbo.metadata.definition.common.ResultWithRawCollections")) {
@@ -114,7 +116,8 @@ class MetadataTest {
         System.out.println(">> testEnum: " + JsonUtils.toJson(sd));
 
         Assertions.assertEquals(TestService.class.getName(), sd.getCanonicalName());
-        Assertions.assertEquals(TestService.class.getMethods().length, sd.getMethods().size());
+        Assertions.assertEquals(
+                TestService.class.getMethods().length, sd.getMethods().size());
         boolean containsType = false;
         for (TypeDefinition type : sd.getTypes()) {
             if (type.getType().equals("org.apache.dubbo.metadata.definition.common.ColorEnum")) {
@@ -138,7 +141,8 @@ class MetadataTest {
         System.out.println(">> testExtendsMap: " + JsonUtils.toJson(sd));
 
         Assertions.assertEquals(TestService.class.getName(), sd.getCanonicalName());
-        Assertions.assertEquals(TestService.class.getMethods().length, sd.getMethods().size());
+        Assertions.assertEquals(
+                TestService.class.getMethods().length, sd.getMethods().size());
         boolean containsType = false;
         for (TypeDefinition type : sd.getTypes()) {
             if (type.getType().equals("org.apache.dubbo.metadata.definition.common.ClassExtendsMap")) {

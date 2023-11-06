@@ -24,5 +24,4 @@ import org.apache.dubbo.rpc.protocol.rest.filter.context.RestFilterContext;
 public interface RestFilter {
 
     void filter(RestFilterContext restFilterContext) throws Exception;
-
 }

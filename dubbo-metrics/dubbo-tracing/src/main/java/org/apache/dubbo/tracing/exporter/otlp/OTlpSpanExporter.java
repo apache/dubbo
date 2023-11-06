@@ -19,24 +19,27 @@ package org.apache.dubbo.tracing.exporter.otlp;
 import org.apache.dubbo.config.nested.ExporterConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Map;
+
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-
-import java.util.Map;
 
 /**
  * OTlp span exporter for OTel.
  */
 public class OTlpSpanExporter {
 
-    public static SpanExporter getSpanExporter(ApplicationModel applicationModel, ExporterConfig.OtlpConfig otlpConfig) {
-        OtlpGrpcSpanExporter externalOTlpGrpcSpanExporter = applicationModel.getBeanFactory().getBean(OtlpGrpcSpanExporter.class);
+    public static SpanExporter getSpanExporter(
+            ApplicationModel applicationModel, ExporterConfig.OtlpConfig otlpConfig) {
+        OtlpGrpcSpanExporter externalOTlpGrpcSpanExporter =
+                applicationModel.getBeanFactory().getBean(OtlpGrpcSpanExporter.class);
         if (externalOTlpGrpcSpanExporter != null) {
             return externalOTlpGrpcSpanExporter;
         }
-        OtlpHttpSpanExporter externalOtlpHttpSpanExporter = applicationModel.getBeanFactory().getBean(OtlpHttpSpanExporter.class);
+        OtlpHttpSpanExporter externalOtlpHttpSpanExporter =
+                applicationModel.getBeanFactory().getBean(OtlpHttpSpanExporter.class);
         if (externalOtlpHttpSpanExporter != null) {
             return externalOtlpHttpSpanExporter;
         }

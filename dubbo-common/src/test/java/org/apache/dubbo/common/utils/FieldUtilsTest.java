@@ -73,13 +73,11 @@ class FieldUtilsTest {
 class A {
 
     private String a = "a";
-
 }
 
 class B extends A {
 
     private String b = "b";
-
 }
 
 class C extends B {

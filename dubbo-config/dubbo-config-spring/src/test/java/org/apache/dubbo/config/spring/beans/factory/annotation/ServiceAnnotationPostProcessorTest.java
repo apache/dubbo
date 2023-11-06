@@ -22,6 +22,8 @@ import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.DubboComponentScan;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 
+import java.util.Map;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -34,8 +36,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.Map;
-
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 
 /**
@@ -46,14 +46,15 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(
         classes = {
-                ServiceAnnotationTestConfiguration.class,
-                ServiceAnnotationPostProcessorTest.class,
-                ServiceAnnotationPostProcessorTest.DuplicatedScanConfig.class
+            ServiceAnnotationTestConfiguration.class,
+            ServiceAnnotationPostProcessorTest.class,
+            ServiceAnnotationPostProcessorTest.DuplicatedScanConfig.class
         })
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
-@TestPropertySource(properties = {
-        "provider.package = org.apache.dubbo.config.spring.context.annotation.provider",
-})
+@TestPropertySource(
+        properties = {
+            "provider.package = org.apache.dubbo.config.spring.context.annotation.provider",
+        })
 @EnableDubbo(scanBasePackages = "${provider.package}")
 class ServiceAnnotationPostProcessorTest {
 
@@ -85,7 +86,6 @@ class ServiceAnnotationPostProcessorTest {
                 beanFactory.getBeansOfType(ServiceAnnotationPostProcessor.class);
 
         Assertions.assertEquals(2, beanPostProcessorsMap.size());
-
     }
 
     @Test
@@ -95,15 +95,12 @@ class ServiceAnnotationPostProcessorTest {
 
         Assertions.assertEquals(3, serviceBeansMap.size());
 
-        ServiceBean demoServiceBean = serviceBeansMap.get("ServiceBean:org.apache.dubbo.config.spring.api.DemoService:2.5.7:");
+        ServiceBean demoServiceBean =
+                serviceBeansMap.get("ServiceBean:org.apache.dubbo.config.spring.api.DemoService:2.5.7:");
 
         Assertions.assertNotNull(demoServiceBean.getMethods());
-
     }
 
     @DubboComponentScan({"org.apache.dubbo.config.spring.context.annotation", "${provider.package}"})
-    static class DuplicatedScanConfig {
-
-    }
-
+    static class DuplicatedScanConfig {}
 }

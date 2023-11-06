@@ -24,9 +24,7 @@ public class DefaultHttpMessageListener implements HttpMessageListener {
 
     private ListeningDecoder listeningDecoder;
 
-    public DefaultHttpMessageListener() {
-
-    }
+    public DefaultHttpMessageListener() {}
 
     public DefaultHttpMessageListener(ListeningDecoder listeningDecoder) {
         this.listeningDecoder = listeningDecoder;

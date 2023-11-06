@@ -16,14 +16,14 @@
  */
 package org.apache.dubbo.spring.boot.observability.autoconfigure;
 
+import java.util.Collections;
+import java.util.List;
+
 import io.micrometer.observation.ObservationHandler;
 import io.micrometer.observation.ObservationRegistry;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Groups {@link ObservationHandler ObservationHandlers} by type.
@@ -45,7 +45,8 @@ class ObservationHandlerGrouping {
     }
 
     void apply(List<ObservationHandler<?>> handlers, ObservationRegistry.ObservationConfig config) {
-        MultiValueMap<Class<? extends ObservationHandler>, ObservationHandler<?>> groupings = new LinkedMultiValueMap<>();
+        MultiValueMap<Class<? extends ObservationHandler>, ObservationHandler<?>> groupings =
+                new LinkedMultiValueMap<>();
         for (ObservationHandler<?> handler : handlers) {
             Class<? extends ObservationHandler> category = findCategory(handler);
             if (category != null) {
@@ -57,7 +58,8 @@ class ObservationHandlerGrouping {
         for (Class<? extends ObservationHandler> category : this.categories) {
             List<ObservationHandler<?>> handlerGroup = groupings.get(category);
             if (!CollectionUtils.isEmpty(handlerGroup)) {
-                config.observationHandler(new ObservationHandler.FirstMatchingCompositeObservationHandler(handlerGroup));
+                config.observationHandler(
+                        new ObservationHandler.FirstMatchingCompositeObservationHandler(handlerGroup));
             }
         }
     }
@@ -70,5 +72,4 @@ class ObservationHandlerGrouping {
         }
         return null;
     }
-
 }

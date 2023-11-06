@@ -42,16 +42,18 @@ class Http2ProtocolDetectorTest {
         ByteBuf byteBuf = ByteBufAllocator.DEFAULT.buffer();
         ChannelBuffer in = new ByteBufferBackedChannelBuffer(byteBuf.nioBuffer());
         ProtocolDetector.Result result = detector.detect(in);
-        Assertions.assertEquals(result.flag(), ProtocolDetector.Result.unrecognized().flag());
+        Assertions.assertEquals(
+                result.flag(), ProtocolDetector.Result.unrecognized().flag());
 
         byteBuf.writeBytes(connectionPrefaceBuf);
         result = detector.detect(new ByteBufferBackedChannelBuffer(byteBuf.nioBuffer()));
-        Assertions.assertEquals(result.flag(), ProtocolDetector.Result.recognized().flag());
+        Assertions.assertEquals(
+                result.flag(), ProtocolDetector.Result.recognized().flag());
 
         byteBuf.clear();
         byteBuf.writeBytes(connectionPrefaceBuf, 0, 1);
         result = detector.detect(new ByteBufferBackedChannelBuffer(byteBuf.nioBuffer()));
-        Assertions.assertEquals(result.flag(), ProtocolDetector.Result.needMoreData().flag());
-
+        Assertions.assertEquals(
+                result.flag(), ProtocolDetector.Result.needMoreData().flag());
     }
 }

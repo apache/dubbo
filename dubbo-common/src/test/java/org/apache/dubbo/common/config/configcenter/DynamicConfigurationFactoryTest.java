@@ -33,9 +33,14 @@ class DynamicConfigurationFactoryTest {
 
     @Test
     void testDefaultExtension() {
-        DynamicConfigurationFactory factory = getExtensionLoader(DynamicConfigurationFactory.class).getDefaultExtension();
+        DynamicConfigurationFactory factory =
+                getExtensionLoader(DynamicConfigurationFactory.class).getDefaultExtension();
         assertEquals(NopDynamicConfigurationFactory.class, factory.getClass());
-        assertEquals(NopDynamicConfigurationFactory.class, getExtensionLoader(DynamicConfigurationFactory.class).getExtension("nop").getClass());
+        assertEquals(
+                NopDynamicConfigurationFactory.class,
+                getExtensionLoader(DynamicConfigurationFactory.class)
+                        .getExtension("nop")
+                        .getClass());
     }
 
     private <T> ExtensionLoader<T> getExtensionLoader(Class<T> extClass) {

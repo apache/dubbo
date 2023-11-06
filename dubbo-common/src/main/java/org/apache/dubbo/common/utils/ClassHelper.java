@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.utils;
 
-
 import java.lang.reflect.Method;
 
 /**
@@ -85,8 +84,7 @@ public class ClassHelper {
      * @throws LinkageError           if the class file could not be loaded
      * @see Class#forName(String, boolean, ClassLoader)
      */
-    public static Class<?> forName(String name, ClassLoader classLoader)
-            throws ClassNotFoundException, LinkageError {
+    public static Class<?> forName(String name, ClassLoader classLoader) throws ClassNotFoundException, LinkageError {
         return ClassUtils.forName(name, classLoader);
     }
 
@@ -108,7 +106,6 @@ public class ClassHelper {
 
     public static String toShortString(Object obj) {
         return ClassUtils.toShortString(obj);
-
     }
 
     public static String simpleClassName(Class<?> clazz) {
@@ -136,9 +133,8 @@ public class ClassHelper {
     }
 
     public static Object convertPrimitive(Class<?> type, String value) {
-        return ClassUtils.convertPrimitive(type,value);
+        return ClassUtils.convertPrimitive(type, value);
     }
-
 
     /**
      * We only check boolean value at this moment.
@@ -148,6 +144,6 @@ public class ClassHelper {
      * @return
      */
     public static boolean isTypeMatch(Class<?> type, String value) {
-    return ClassUtils.isTypeMatch(type,value);
+        return ClassUtils.isTypeMatch(type, value);
     }
 }

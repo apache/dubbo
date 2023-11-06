@@ -35,5 +35,4 @@ public interface HttpMessageCodecFactory {
         MediaType mediaType = this.contentType();
         return mediaType.getName().startsWith(contentType);
     }
-
 }

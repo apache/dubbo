@@ -41,7 +41,9 @@ import org.apache.dubbo.rpc.protocol.tri.h12.ServerCallListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.ServerStreamServerCallListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.UnaryServerCallListener;
 
-public class DefaultHttp11ServerTransportListener extends AbstractServerTransportListener<RequestMetadata, HttpInputMessage> implements Http1ServerTransportListener {
+public class DefaultHttp11ServerTransportListener
+        extends AbstractServerTransportListener<RequestMetadata, HttpInputMessage>
+        implements Http1ServerTransportListener {
 
     private final HttpChannel httpChannel;
 
@@ -53,18 +55,19 @@ public class DefaultHttp11ServerTransportListener extends AbstractServerTranspor
         this.httpChannel = httpChannel;
     }
 
-    private ServerCallListener startListener(RpcInvocation invocation,
-                                             MethodDescriptor methodDescriptor,
-                                             Invoker<?> invoker) {
+    private ServerCallListener startListener(
+            RpcInvocation invocation, MethodDescriptor methodDescriptor, Invoker<?> invoker) {
         switch (methodDescriptor.getRpcType()) {
             case UNARY:
                 Http1ServerChannelObserver http1ChannelObserver = new Http1ServerChannelObserver(httpChannel);
                 http1ChannelObserver.setHttpMessageCodec(getHttpMessageCodec());
                 return new AutoCompleteUnaryServerCallListener(invocation, invoker, http1ChannelObserver);
             case SERVER_STREAM:
-                Http1ServerChannelObserver serverStreamChannelObserver = new Http1ServerStreamChannelObserver(httpChannel);
+                Http1ServerChannelObserver serverStreamChannelObserver =
+                        new Http1ServerStreamChannelObserver(httpChannel);
                 serverStreamChannelObserver.setHttpMessageCodec(getHttpMessageCodec());
-                serverStreamChannelObserver.setHeadersCustomizer((headers) -> headers.set(HttpHeaderNames.CONTENT_TYPE.getName(), MediaType.TEXT_EVENT_STREAM_VALUE.getName()));
+                serverStreamChannelObserver.setHeadersCustomizer((headers) -> headers.set(
+                        HttpHeaderNames.CONTENT_TYPE.getName(), MediaType.TEXT_EVENT_STREAM_VALUE.getName()));
                 return new AutoCompleteServerStreamServerCallListener(invocation, invoker, serverStreamChannelObserver);
             default:
                 throw new UnsupportedOperationException("HTTP1.x only support unary and server-stream");
@@ -85,7 +88,8 @@ public class DefaultHttp11ServerTransportListener extends AbstractServerTranspor
         setMethodMetadata(methodMetadata);
         setRpcInvocation(rpcInvocation);
         HttpMessageCodec httpMessageCodec = getHttpMessageCodec();
-        ListeningDecoder listeningDecoder = newListeningDecoder(httpMessageCodec, methodMetadata.getActualRequestTypes());
+        ListeningDecoder listeningDecoder =
+                newListeningDecoder(httpMessageCodec, methodMetadata.getActualRequestTypes());
         return new DefaultHttpMessageListener(listeningDecoder);
     }
 
@@ -98,7 +102,8 @@ public class DefaultHttp11ServerTransportListener extends AbstractServerTranspor
 
     private static class AutoCompleteUnaryServerCallListener extends UnaryServerCallListener {
 
-        public AutoCompleteUnaryServerCallListener(RpcInvocation invocation, Invoker<?> invoker, StreamObserver<Object> responseObserver) {
+        public AutoCompleteUnaryServerCallListener(
+                RpcInvocation invocation, Invoker<?> invoker, StreamObserver<Object> responseObserver) {
             super(invocation, invoker, responseObserver);
         }
 
@@ -111,7 +116,8 @@ public class DefaultHttp11ServerTransportListener extends AbstractServerTranspor
 
     private static class AutoCompleteServerStreamServerCallListener extends ServerStreamServerCallListener {
 
-        public AutoCompleteServerStreamServerCallListener(RpcInvocation invocation, Invoker<?> invoker, StreamObserver<Object> responseObserver) {
+        public AutoCompleteServerStreamServerCallListener(
+                RpcInvocation invocation, Invoker<?> invoker, StreamObserver<Object> responseObserver) {
             super(invocation, invoker, responseObserver);
         }
 

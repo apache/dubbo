@@ -25,8 +25,7 @@ import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 
 public class MergeableClusterScopeModelInitializer implements ScopeModelInitializer {
     @Override
-    public void initializeFrameworkModel(FrameworkModel frameworkModel) {
-    }
+    public void initializeFrameworkModel(FrameworkModel frameworkModel) {}
 
     @Override
     public void initializeApplicationModel(ApplicationModel applicationModel) {
@@ -35,6 +34,5 @@ public class MergeableClusterScopeModelInitializer implements ScopeModelInitiali
     }
 
     @Override
-    public void initializeModuleModel(ModuleModel moduleModel) {
-    }
+    public void initializeModuleModel(ModuleModel moduleModel) {}
 }

@@ -31,7 +31,8 @@ import zipkin2.reporter.urlconnection.URLConnectionSender;
  */
 public class ZipkinSpanHandler {
 
-    public static SpanHandler getSpanHandler(ApplicationModel applicationModel, ExporterConfig.ZipkinConfig zipkinConfig) {
+    public static SpanHandler getSpanHandler(
+            ApplicationModel applicationModel, ExporterConfig.ZipkinConfig zipkinConfig) {
         URLConnectionSender sender = applicationModel.getBeanFactory().getBean(URLConnectionSender.class);
         if (sender == null) {
             URLConnectionSender.Builder builder = URLConnectionSender.newBuilder();

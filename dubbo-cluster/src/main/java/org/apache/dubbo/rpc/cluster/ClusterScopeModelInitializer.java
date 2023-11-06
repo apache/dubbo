@@ -38,6 +38,5 @@ public class ClusterScopeModelInitializer implements ScopeModelInitializer {
     }
 
     @Override
-    public void initializeModuleModel(ModuleModel moduleModel) {
-    }
+    public void initializeModuleModel(ModuleModel moduleModel) {}
 }

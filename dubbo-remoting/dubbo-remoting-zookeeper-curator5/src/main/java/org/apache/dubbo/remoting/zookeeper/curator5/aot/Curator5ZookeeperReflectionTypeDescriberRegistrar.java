@@ -19,13 +19,13 @@ package org.apache.dubbo.remoting.zookeeper.curator5.aot;
 import org.apache.dubbo.aot.api.MemberCategory;
 import org.apache.dubbo.aot.api.ReflectionTypeDescriberRegistrar;
 import org.apache.dubbo.aot.api.TypeDescriber;
-import org.apache.zookeeper.ClientCnxnSocketNIO;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.zookeeper.ClientCnxnSocketNIO;
 
 public class Curator5ZookeeperReflectionTypeDescriberRegistrar implements ReflectionTypeDescriberRegistrar {
 
@@ -38,7 +38,7 @@ public class Curator5ZookeeperReflectionTypeDescriberRegistrar implements Reflec
         return typeDescribers;
     }
 
-    private TypeDescriber buildTypeDescriberWithDeclared(String className){
+    private TypeDescriber buildTypeDescriberWithDeclared(String className) {
         Set<MemberCategory> memberCategories = new HashSet<>();
         memberCategories.add(MemberCategory.INVOKE_DECLARED_METHODS);
         memberCategories.add(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
@@ -46,9 +46,10 @@ public class Curator5ZookeeperReflectionTypeDescriberRegistrar implements Reflec
         return new TypeDescriber(className, null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
     }
 
-    private TypeDescriber buildTypeDescriberWithDeclaredConstructors(Class<?> c){
+    private TypeDescriber buildTypeDescriberWithDeclaredConstructors(Class<?> c) {
         Set<MemberCategory> memberCategories = new HashSet<>();
         memberCategories.add(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
-        return new TypeDescriber(c.getName(), null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
+        return new TypeDescriber(
+                c.getName(), null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
     }
 }

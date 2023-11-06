@@ -55,25 +55,26 @@ public class MockConfigPostProcessor implements ConfigPostProcessor {
         if (normalizedMock.startsWith(RETURN_PREFIX)) {
             normalizedMock = normalizedMock.substring(RETURN_PREFIX.length()).trim();
             try {
-                //Check whether the mock value is legal, if it is illegal, throw exception
+                // Check whether the mock value is legal, if it is illegal, throw exception
                 MockInvoker.parseMockValue(normalizedMock);
             } catch (Exception e) {
-                throw new IllegalStateException("Illegal mock return in <dubbo:service/reference ... " +
-                    "mock=\"" + mock + "\" />");
+                throw new IllegalStateException(
+                        "Illegal mock return in <dubbo:service/reference ... " + "mock=\"" + mock + "\" />");
             }
         } else if (normalizedMock.startsWith(THROW_PREFIX)) {
             normalizedMock = normalizedMock.substring(THROW_PREFIX.length()).trim();
             if (ConfigUtils.isNotEmpty(normalizedMock)) {
                 try {
-                    //Check whether the mock value is legal
+                    // Check whether the mock value is legal
                     MockInvoker.getThrowable(normalizedMock);
                 } catch (Exception e) {
-                    throw new IllegalStateException("Illegal mock throw in <dubbo:service/reference ... " +
-                        "mock=\"" + mock + "\" />");
+                    throw new IllegalStateException(
+                            "Illegal mock throw in <dubbo:service/reference ... " + "mock=\"" + mock + "\" />");
                 }
             }
         } else {
-            //Check whether the mock class is a implementation of the interfaceClass, and if it has a default constructor
+            // Check whether the mock class is a implementation of the interfaceClass, and if it has a default
+            // constructor
             MockInvoker.getMockObject(config.getScopeModel().getExtensionDirector(), normalizedMock, interfaceClass);
         }
     }

@@ -29,7 +29,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
-
 /**
  * Thread local context. (API, ThreadLocal, ThreadSafe)
  * <p>
@@ -56,52 +55,56 @@ public class RpcContext {
     /**
      * use internal thread local to improve performance
      */
+    private static final InternalThreadLocal<RpcContextAttachment> CLIENT_RESPONSE_LOCAL =
+            new InternalThreadLocal<RpcContextAttachment>() {
+                @Override
+                protected RpcContextAttachment initialValue() {
+                    return new RpcContextAttachment();
+                }
+            };
 
-    private static final InternalThreadLocal<RpcContextAttachment> CLIENT_RESPONSE_LOCAL = new InternalThreadLocal<RpcContextAttachment>() {
-        @Override
-        protected RpcContextAttachment initialValue() {
-            return new RpcContextAttachment();
-        }
-    };
+    private static final InternalThreadLocal<RpcContextAttachment> SERVER_RESPONSE_LOCAL =
+            new InternalThreadLocal<RpcContextAttachment>() {
+                @Override
+                protected RpcContextAttachment initialValue() {
+                    return new RpcContextAttachment();
+                }
+            };
 
-    private static final InternalThreadLocal<RpcContextAttachment> SERVER_RESPONSE_LOCAL = new InternalThreadLocal<RpcContextAttachment>() {
-        @Override
-        protected RpcContextAttachment initialValue() {
-            return new RpcContextAttachment();
-        }
-    };
+    private static final InternalThreadLocal<RpcContextAttachment> CLIENT_ATTACHMENT =
+            new InternalThreadLocal<RpcContextAttachment>() {
+                @Override
+                protected RpcContextAttachment initialValue() {
+                    return new RpcContextAttachment();
+                }
+            };
 
-    private static final InternalThreadLocal<RpcContextAttachment> CLIENT_ATTACHMENT = new InternalThreadLocal<RpcContextAttachment>() {
-        @Override
-        protected RpcContextAttachment initialValue() {
-            return new RpcContextAttachment();
-        }
-    };
+    private static final InternalThreadLocal<RpcContextAttachment> SERVER_ATTACHMENT =
+            new InternalThreadLocal<RpcContextAttachment>() {
+                @Override
+                protected RpcContextAttachment initialValue() {
+                    return new RpcContextAttachment();
+                }
+            };
 
-    private static final InternalThreadLocal<RpcContextAttachment> SERVER_ATTACHMENT = new InternalThreadLocal<RpcContextAttachment>() {
-        @Override
-        protected RpcContextAttachment initialValue() {
-            return new RpcContextAttachment();
-        }
-    };
-
-    private static final InternalThreadLocal<RpcServiceContext> SERVICE_CONTEXT = new InternalThreadLocal<RpcServiceContext>() {
-        @Override
-        protected RpcServiceContext initialValue() {
-            return new RpcServiceContext();
-        }
-    };
+    private static final InternalThreadLocal<RpcServiceContext> SERVICE_CONTEXT =
+            new InternalThreadLocal<RpcServiceContext>() {
+                @Override
+                protected RpcServiceContext initialValue() {
+                    return new RpcServiceContext();
+                }
+            };
 
     /**
      * use by cancel call
      */
-    private static final InternalThreadLocal<CancellationContext> CANCELLATION_CONTEXT = new InternalThreadLocal<CancellationContext>() {
-        @Override
-        protected CancellationContext initialValue() {
-            return new CancellationContext();
-        }
-    };
-
+    private static final InternalThreadLocal<CancellationContext> CANCELLATION_CONTEXT =
+            new InternalThreadLocal<CancellationContext>() {
+                @Override
+                protected CancellationContext initialValue() {
+                    return new CancellationContext();
+                }
+            };
 
     public static CancellationContext getCancellationContext() {
         return CANCELLATION_CONTEXT.get();
@@ -117,8 +120,7 @@ public class RpcContext {
 
     private boolean remove = true;
 
-    protected RpcContext() {
-    }
+    protected RpcContext() {}
 
     /**
      * get server side context. ( A <-- B , in B side)
@@ -180,7 +182,7 @@ public class RpcContext {
 
     public static void removeServerContext() {
         RpcContextAttachment rpcContextAttachment = RpcContext.getServerContext();
-        for(String key : rpcContextAttachment.attachments.keySet()) {
+        for (String key : rpcContextAttachment.attachments.keySet()) {
             rpcContextAttachment.remove(key);
         }
     }
@@ -603,7 +605,11 @@ public class RpcContext {
      */
     @Experimental("Experiment api for supporting Object transmission")
     public Map<String, Object> getObjectAttachments() {
-        Map<String, Object> result = new HashMap<>((int) ((CLIENT_ATTACHMENT.get().attachments.size() + SERVER_ATTACHMENT.get().attachments.size()) / .75) + 1);
+        Map<String, Object> result =
+                new HashMap<>((int) ((CLIENT_ATTACHMENT.get().attachments.size()
+                                        + SERVER_ATTACHMENT.get().attachments.size())
+                                / .75)
+                        + 1);
         result.putAll(SERVER_ATTACHMENT.get().attachments);
         result.putAll(CLIENT_ATTACHMENT.get().attachments);
         return result;

@@ -16,21 +16,19 @@
  */
 package org.apache.dubbo.registry.xds.util.protocol.message;
 
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
-
 import io.envoyproxy.envoy.config.route.v3.VirtualHost;
-
 
 public class RouteResult {
     private final Map<String, Set<String>> domainMap;
     private Map<String, VirtualHost> virtualHostMap;
-
 
     public RouteResult() {
         this.domainMap = new ConcurrentHashMap<>();
@@ -85,16 +83,12 @@ public class RouteResult {
         return virtualHostMap.get(domain);
     }
 
-
     public void removeVirtualHost(String domain) {
         virtualHostMap.remove(domain);
     }
 
     @Override
     public String toString() {
-        return "RouteResult{" +
-            "domainMap=" + domainMap +
-            ", virtualHostMap=" + virtualHostMap +
-            '}';
+        return "RouteResult{" + "domainMap=" + domainMap + ", virtualHostMap=" + virtualHostMap + '}';
     }
 }

@@ -19,5 +19,4 @@ package org.apache.dubbo.rpc.support;
 public interface DemoService {
 
     Person getPerson(Person person);
-
 }
