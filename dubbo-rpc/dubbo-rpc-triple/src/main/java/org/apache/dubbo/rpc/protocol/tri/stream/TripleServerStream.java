@@ -17,11 +17,11 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
-import io.netty.util.ReferenceCountUtil;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.serial.CloseableRunnable;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.Invoker;
@@ -60,6 +60,7 @@ import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.util.concurrent.Future;
+import io.netty.util.ReferenceCountUtil;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -70,7 +71,6 @@ import java.util.Optional;
 import java.util.concurrent.Executor;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
 
 public class TripleServerStream extends AbstractStream implements ServerStream {
 
@@ -432,15 +432,20 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
 
         @Override
         public void onData(ByteBuf data, boolean endStream) {
-            try {
-                executor.execute(() -> doOnData(data, endStream));
-            } catch (Throwable t) {
-                // Tasks will be rejected when the thread pool is closed or full,
-                // ByteBuf needs to be released to avoid out of heap memory leakage.
-                // For example, ThreadLessExecutor will be shutdown when request timeout {@link AsyncRpcResult}
-                ReferenceCountUtil.release(data);
-                LOGGER.error(PROTOCOL_FAILED_REQUEST, "", "", "submit onData task failed", t);
-            }
+            executor.execute(new CloseableRunnable() {
+                @Override
+                public void close() {
+                    // Tasks will be rejected when the thread pool is closed or full,
+                    // ByteBuf needs to be released to avoid out of heap memory leakage.
+                    // For example, ThreadLessExecutor will be shutdown when request timeout {@link AsyncRpcResult}
+                    ReferenceCountUtil.release(data);
+                }
+
+                @Override
+                public void run() {
+                    doOnData(data, endStream);
+                }
+            });
         }
 
         private void doOnData(ByteBuf data, boolean endStream) {

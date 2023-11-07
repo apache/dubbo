@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri.stream;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.serial.CloseableRunnable;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
@@ -447,15 +448,20 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
 
         @Override
         public void onData(ByteBuf data, boolean endStream) {
-            try {
-                executor.execute(() -> doOnData(data, endStream));
-            } catch (Throwable t) {
-                // Tasks will be rejected when the thread pool is closed or full,
-                // ByteBuf needs to be released to avoid out of heap memory leakage.
-                // For example, ThreadLessExecutor will be shutdown when request timeout {@link AsyncRpcResult}
-                ReferenceCountUtil.release(data);
-                LOGGER.error(PROTOCOL_FAILED_RESPONSE, "", "", "submit onData task failed", t);
-            }
+            executor.execute(new CloseableRunnable() {
+                @Override
+                public void close() {
+                    // Tasks will be rejected when the thread pool is closed or full,
+                    // ByteBuf needs to be released to avoid out of heap memory leakage.
+                    // For example, ThreadLessExecutor will be shutdown when request timeout {@link AsyncRpcResult}
+                    ReferenceCountUtil.release(data);
+                }
+
+                @Override
+                public void run() {
+                    doOnData(data, endStream);
+                }
+            });
         }
 
         private void doOnData(ByteBuf data, boolean endStream) {
