@@ -16,13 +16,13 @@
  */
 package org.apache.dubbo.common.utils;
 
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Set;
-
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Set;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNTRUSTED_SERIALIZE_CLASS;
 
@@ -102,14 +102,16 @@ public class DefaultSerializeClassChecker implements AllowClassNotifyListener {
      */
     public Class<?> loadClass(ClassLoader classLoader, String className) throws ClassNotFoundException {
         Class<?> aClass = loadClass0(classLoader, className);
-        if (checkSerializable && !aClass.isPrimitive() && !Serializable.class.isAssignableFrom(aClass)) {
+        if (!aClass.isPrimitive() && !Serializable.class.isAssignableFrom(aClass)) {
             String msg = "[Serialization Security] Serialized class " + className + " has not implement Serializable interface. " +
                 "Current mode is strict check, will disallow to deserialize it by default. ";
             if (serializeSecurityManager.getWarnedClasses().add(className)) {
                 logger.error(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "", msg);
             }
 
-            throw new IllegalArgumentException(msg);
+            if (checkSerializable) {
+                throw new IllegalArgumentException(msg);
+            }
         }
 
         return aClass;
