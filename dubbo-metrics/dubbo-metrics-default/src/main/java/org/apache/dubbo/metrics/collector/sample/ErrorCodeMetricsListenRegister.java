@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.collector.sample;
 
 import org.apache.dubbo.common.logger.LogListener;
@@ -28,7 +27,7 @@ public class ErrorCodeMetricsListenRegister implements LogListener {
 
     private final ErrorCodeSampler errorCodeSampler;
 
-    public ErrorCodeMetricsListenRegister(ErrorCodeSampler errorCodeSampler){
+    public ErrorCodeMetricsListenRegister(ErrorCodeSampler errorCodeSampler) {
         FailsafeErrorTypeAwareLogger.registerGlobalListen(this);
         this.errorCodeSampler = errorCodeSampler;
         this.errorCodeSampler.addMetricName(MetricsKey.ERROR_CODE_COUNT.getName());

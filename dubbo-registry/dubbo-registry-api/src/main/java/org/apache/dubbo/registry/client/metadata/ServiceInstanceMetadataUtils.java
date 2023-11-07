@@ -21,6 +21,7 @@ import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
@@ -63,7 +64,8 @@ import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
  * @since 2.7.5
  */
 public class ServiceInstanceMetadataUtils {
-    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(ServiceInstanceMetadataUtils.class);
+    private static final ErrorTypeAwareLogger LOGGER =
+            LoggerFactory.getErrorTypeAwareLogger(ServiceInstanceMetadataUtils.class);
 
     /**
      * The prefix of {@link MetadataService} : "dubbo.metadata-service."
@@ -126,9 +128,9 @@ public class ServiceInstanceMetadataUtils {
      */
     public static String getExportedServicesRevision(ServiceInstance serviceInstance) {
         return Optional.ofNullable(serviceInstance.getServiceMetadata())
-            .map(MetadataInfo::getRevision)
-            .filter(StringUtils::isNotEmpty)
-            .orElse(serviceInstance.getMetadata(EXPORTED_SERVICES_REVISION_PROPERTY_NAME));
+                .map(MetadataInfo::getRevision)
+                .filter(StringUtils::isNotEmpty)
+                .orElse(serviceInstance.getMetadata(EXPORTED_SERVICES_REVISION_PROPERTY_NAME));
     }
 
     /**
@@ -203,25 +205,30 @@ public class ServiceInstanceMetadataUtils {
     }
 
     public static void registerMetadataAndInstance(ApplicationModel applicationModel) {
-        LOGGER.info("Start registering instance address to registry.");
         RegistryManager registryManager = applicationModel.getBeanFactory().getBean(RegistryManager.class);
         // register service instance
-        List<ServiceDiscovery> serviceDiscoveries = registryManager.getServiceDiscoveries();
-        for (ServiceDiscovery serviceDiscovery : serviceDiscoveries) {
-            MetricsEventBus.post(RegistryEvent.toRegisterEvent(applicationModel,
-                    Collections.singletonList(getServiceDiscoveryName(serviceDiscovery))),
-                () -> {
-                    // register service instance
-                    serviceDiscoveries.forEach(ServiceDiscovery::register);
-                    return null;
-                }
-            );
+        if (CollectionUtils.isNotEmpty(registryManager.getServiceDiscoveries())) {
+            LOGGER.info("Start registering instance address to registry.");
+            List<ServiceDiscovery> serviceDiscoveries = registryManager.getServiceDiscoveries();
+            for (ServiceDiscovery serviceDiscovery : serviceDiscoveries) {
+                MetricsEventBus.post(
+                        RegistryEvent.toRegisterEvent(
+                                applicationModel, Collections.singletonList(getServiceDiscoveryName(serviceDiscovery))),
+                        () -> {
+                            // register service instance
+                            serviceDiscoveries.forEach(ServiceDiscovery::register);
+                            return null;
+                        });
+            }
         }
     }
 
     private static String getServiceDiscoveryName(ServiceDiscovery serviceDiscovery) {
-        return serviceDiscovery.getUrl().getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY,
-            serviceDiscovery.getUrl().getParameter(REGISTRY_KEY));
+        return serviceDiscovery
+                .getUrl()
+                .getParameter(
+                        RegistryConstants.REGISTRY_CLUSTER_KEY,
+                        serviceDiscovery.getUrl().getParameter(REGISTRY_KEY));
     }
 
     public static void refreshMetadataAndInstance(ApplicationModel applicationModel) {
@@ -243,7 +250,7 @@ public class ServiceInstanceMetadataUtils {
 
     public static void customizeInstance(ServiceInstance instance, ApplicationModel applicationModel) {
         ExtensionLoader<ServiceInstanceCustomizer> loader =
-            instance.getOrDefaultApplicationModel().getExtensionLoader(ServiceInstanceCustomizer.class);
+                instance.getOrDefaultApplicationModel().getExtensionLoader(ServiceInstanceCustomizer.class);
         // FIXME, sort customizer before apply
         loader.getSupportedExtensionInstances().forEach(customizer -> {
             // customize
@@ -269,5 +276,4 @@ public class ServiceInstanceMetadataUtils {
             }
         }
     }
-
 }

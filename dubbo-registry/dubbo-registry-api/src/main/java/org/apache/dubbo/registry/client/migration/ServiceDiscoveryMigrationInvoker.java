@@ -31,9 +31,16 @@ import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import java.util.concurrent.CountDownLatch;
 
 public class ServiceDiscoveryMigrationInvoker<T> extends MigrationInvoker<T> {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ServiceDiscoveryMigrationInvoker.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(ServiceDiscoveryMigrationInvoker.class);
 
-    public ServiceDiscoveryMigrationInvoker(RegistryProtocol registryProtocol, Cluster cluster, Registry registry, Class<T> type, URL url, URL consumerUrl) {
+    public ServiceDiscoveryMigrationInvoker(
+            RegistryProtocol registryProtocol,
+            Cluster cluster,
+            Registry registry,
+            Class<T> type,
+            URL url,
+            URL consumerUrl) {
         super(registryProtocol, cluster, registry, type, url, consumerUrl);
     }
 
@@ -63,7 +70,8 @@ public class ServiceDiscoveryMigrationInvoker<T> extends MigrationInvoker<T> {
     public Result invoke(Invocation invocation) throws RpcException {
         ClusterInvoker<T> invoker = getServiceDiscoveryInvoker();
         if (invoker == null) {
-            throw new IllegalStateException("There's no service discovery invoker available for service " + invocation.getServiceName());
+            throw new IllegalStateException(
+                    "There's no service discovery invoker available for service " + invocation.getServiceName());
         }
         return invoker.invoke(invocation);
     }

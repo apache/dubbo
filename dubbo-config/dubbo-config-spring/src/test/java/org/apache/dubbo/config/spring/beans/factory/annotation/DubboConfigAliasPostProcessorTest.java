@@ -54,6 +54,5 @@ class DubboConfigAliasPostProcessorTest {
             applicationConfig.setId(APP_ID);
             return applicationConfig;
         }
-
     }
 }

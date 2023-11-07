@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
-
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 
@@ -27,7 +25,6 @@ public class StringMatch {
     private String noempty;
     private String empty;
     private String wildcard;
-
 
     public String getExact() {
         return exact;
@@ -98,12 +95,11 @@ public class StringMatch {
 
     @Override
     public String toString() {
-        return "StringMatch{" +
-                "exact='" + exact + '\'' +
-                ", prefix='" + prefix + '\'' +
-                ", regex='" + regex + '\'' +
-                ", noempty='" + noempty + '\'' +
-                ", empty='" + empty + '\'' +
-                '}';
+        return "StringMatch{" + "exact='"
+                + exact + '\'' + ", prefix='"
+                + prefix + '\'' + ", regex='"
+                + regex + '\'' + ", noempty='"
+                + noempty + '\'' + ", empty='"
+                + empty + '\'' + '}';
     }
 }

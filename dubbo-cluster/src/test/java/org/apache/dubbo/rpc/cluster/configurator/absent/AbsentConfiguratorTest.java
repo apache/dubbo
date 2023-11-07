@@ -20,21 +20,21 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.cluster.configurator.consts.UrlConstant;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * OverrideConfiguratorTest
  */
 class AbsentConfiguratorTest {
 
-
     @Test
     void testOverrideApplication() {
-        AbsentConfigurator configurator = new AbsentConfigurator(URL.valueOf("override://foo@0.0.0.0/com.foo.BarService?timeout=200"));
+        AbsentConfigurator configurator =
+                new AbsentConfigurator(URL.valueOf("override://foo@0.0.0.0/com.foo.BarService?timeout=200"));
 
         URL url = configurator.configure(URL.valueOf(UrlConstant.URL_CONSUMER));
         Assertions.assertEquals("200", url.getParameter("timeout"));
@@ -51,7 +51,8 @@ class AbsentConfiguratorTest {
 
     @Test
     void testOverrideHost() {
-        AbsentConfigurator configurator = new AbsentConfigurator(URL.valueOf("override://" + NetUtils.getLocalHost() + "/com.foo.BarService?timeout=200"));
+        AbsentConfigurator configurator = new AbsentConfigurator(
+                URL.valueOf("override://" + NetUtils.getLocalHost() + "/com.foo.BarService?timeout=200"));
 
         URL url = configurator.configure(URL.valueOf(UrlConstant.URL_CONSUMER));
         Assertions.assertEquals("200", url.getParameter("timeout"));
@@ -72,7 +73,8 @@ class AbsentConfiguratorTest {
     @Test
     void testAbsentForVersion27() {
         {
-            String consumerUrlV27 = "dubbo://172.24.160.179/com.foo.BarService?application=foo&side=consumer&timeout=100";
+            String consumerUrlV27 =
+                    "dubbo://172.24.160.179/com.foo.BarService?application=foo&side=consumer&timeout=100";
 
             URL consumerConfiguratorUrl = URL.valueOf("absent://0.0.0.0/com.foo.BarService");
             Map<String, String> params = new HashMap<>();
@@ -95,7 +97,8 @@ class AbsentConfiguratorTest {
         }
 
         {
-            String providerUrlV27 = "dubbo://172.24.160.179:21880/com.foo.BarService?application=foo&side=provider&weight=100";
+            String providerUrlV27 =
+                    "dubbo://172.24.160.179:21880/com.foo.BarService?application=foo&side=provider&weight=100";
 
             URL providerConfiguratorUrl = URL.valueOf("absent://172.24.160.179:21880/com.foo.BarService");
             Map<String, String> params = new HashMap<>();
@@ -108,7 +111,8 @@ class AbsentConfiguratorTest {
             // Meet the configured conditions:
             // same side
             // same port
-            // The host of configuratorUrl is 0.0.0.0 or the host of providerConfiguratorUrl is the same as consumerUrlV27
+            // The host of configuratorUrl is 0.0.0.0 or the host of providerConfiguratorUrl is the same as
+            // consumerUrlV27
             // same appName
             AbsentConfigurator configurator = new AbsentConfigurator(providerConfiguratorUrl);
             URL url = configurator.configure(URL.valueOf(providerUrlV27));
@@ -116,5 +120,4 @@ class AbsentConfiguratorTest {
             Assertions.assertEquals("100", url.getParameter("weight"));
         }
     }
-
 }

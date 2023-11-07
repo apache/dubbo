@@ -65,13 +65,17 @@ public class ProtocolListenerWrapper implements Protocol {
         if (UrlUtils.isRegistry(invoker.getUrl())) {
             return protocol.export(invoker);
         }
-        List<ExporterListener> exporterListeners = ScopeModelUtil.getExtensionLoader(ExporterListener.class, invoker.getUrl().getScopeModel())
-            .getActivateExtension(invoker.getUrl(), EXPORTER_LISTENER_KEY);
+        List<ExporterListener> exporterListeners = ScopeModelUtil.getExtensionLoader(
+                        ExporterListener.class, invoker.getUrl().getScopeModel())
+                .getActivateExtension(invoker.getUrl(), EXPORTER_LISTENER_KEY);
         if (LOCAL_PROTOCOL.equals(invoker.getUrl().getProtocol())) {
-            exporterListeners.add(invoker.getUrl().getOrDefaultFrameworkModel().getBeanFactory().getBean(InjvmExporterListener.class));
+            exporterListeners.add(invoker.getUrl()
+                    .getOrDefaultFrameworkModel()
+                    .getBeanFactory()
+                    .getBean(InjvmExporterListener.class));
         }
-        return new ListenerExporterWrapper<T>(protocol.export(invoker),
-                Collections.unmodifiableList(exporterListeners));
+        return new ListenerExporterWrapper<T>(
+                protocol.export(invoker), Collections.unmodifiableList(exporterListeners));
     }
 
     @Override
@@ -82,10 +86,11 @@ public class ProtocolListenerWrapper implements Protocol {
 
         Invoker<T> invoker = protocol.refer(type, url);
         if (StringUtils.isEmpty(url.getParameter(REGISTRY_CLUSTER_TYPE_KEY))) {
-            invoker = new ListenerInvokerWrapper<>(invoker,
-                    Collections.unmodifiableList(
-                        ScopeModelUtil.getExtensionLoader(InvokerListener.class, invoker.getUrl().getScopeModel())
-                                    .getActivateExtension(url, INVOKER_LISTENER_KEY)));
+            invoker = new ListenerInvokerWrapper<>(
+                    invoker,
+                    Collections.unmodifiableList(ScopeModelUtil.getExtensionLoader(
+                                    InvokerListener.class, invoker.getUrl().getScopeModel())
+                            .getActivateExtension(url, INVOKER_LISTENER_KEY)));
         }
         return invoker;
     }

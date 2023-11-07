@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.model;
 
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -51,7 +50,6 @@ public class ApplicationMetric implements Metric {
         return MetricsSupport.hostTags(tags);
     }
 
-
     public Map<String, String> getExtraInfo() {
         return extraInfo;
     }
@@ -69,7 +67,8 @@ public class ApplicationMetric implements Metric {
             return false;
         }
         ApplicationMetric that = (ApplicationMetric) o;
-        return getApplicationName().equals(that.applicationModel.getApplicationName()) && Objects.equals(extraInfo, that.extraInfo);
+        return getApplicationName().equals(that.applicationModel.getApplicationName())
+                && Objects.equals(extraInfo, that.extraInfo);
     }
 
     private volatile int hashCode;
@@ -81,5 +80,4 @@ public class ApplicationMetric implements Metric {
         }
         return hashCode;
     }
-
 }

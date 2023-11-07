@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice;
 
 import org.apache.dubbo.rpc.RpcInvocation;
@@ -22,15 +21,15 @@ import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match.DubboA
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match.DubboMethodMatch;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match.StringMatch;
 import org.apache.dubbo.rpc.cluster.router.mesh.util.TracingContextProvider;
-import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 
 class DubboMatchRequestTest {
 
@@ -74,7 +73,6 @@ class DubboMatchRequestTest {
         assertTrue(dubboMatchRequest.isMatch(rpcInvocation, inputSourceLabelsMap, Collections.emptySet()));
         assertFalse(dubboMatchRequest.isMatch(rpcInvocation, inputSourceLabelsMap2, Collections.emptySet()));
 
-
         // tracingContext
         DubboAttachmentMatch dubboAttachmentMatch = new DubboAttachmentMatch();
         Map<String, StringMatch> tracingContextMatchMap = new HashMap<>();
@@ -90,8 +88,8 @@ class DubboMatchRequestTest {
         invokeTracingContextMap.put("other", "other");
 
         TracingContextProvider tracingContextProvider = (invocation, key) -> invokeTracingContextMap.get(key);
-        assertTrue(dubboMatchRequest.isMatch(rpcInvocation, inputSourceLabelsMap, Collections.singleton(tracingContextProvider)));
-
+        assertTrue(dubboMatchRequest.isMatch(
+                rpcInvocation, inputSourceLabelsMap, Collections.singleton(tracingContextProvider)));
 
         Map<String, String> invokeTracingContextMap2 = new HashMap<>();
         invokeTracingContextMap2.put("name", "jack");
@@ -99,10 +97,10 @@ class DubboMatchRequestTest {
         invokeTracingContextMap2.put("other", "other");
 
         TracingContextProvider tracingContextProvider2 = (invocation, key) -> invokeTracingContextMap2.get(key);
-        assertFalse(dubboMatchRequest.isMatch(rpcInvocation, inputSourceLabelsMap, Collections.singleton(tracingContextProvider2)));
+        assertFalse(dubboMatchRequest.isMatch(
+                rpcInvocation, inputSourceLabelsMap, Collections.singleton(tracingContextProvider2)));
 
-
-        //dubbo context
+        // dubbo context
         dubboAttachmentMatch = new DubboAttachmentMatch();
 
         Map<String, StringMatch> eagleeyecontextMatchMap = new HashMap<>();
@@ -110,7 +108,6 @@ class DubboMatchRequestTest {
         nameMatch.setExact("qinliujie");
         eagleeyecontextMatchMap.put("name", nameMatch);
         dubboAttachmentMatch.setTracingContext(eagleeyecontextMatchMap);
-
 
         Map<String, StringMatch> dubboContextMatchMap = new HashMap<>();
         StringMatch dpathMatch = new StringMatch();
@@ -120,18 +117,19 @@ class DubboMatchRequestTest {
 
         dubboMatchRequest.setAttachments(dubboAttachmentMatch);
 
-
         Map<String, String> invokeDubboContextMap = new HashMap<>();
         invokeDubboContextMap.put("dpath", "PRE");
 
         rpcInvocation.setAttachments(invokeDubboContextMap);
         TracingContextProvider tracingContextProvider3 = (invocation, key) -> invokeTracingContextMap.get(key);
-        assertTrue(dubboMatchRequest.isMatch(rpcInvocation, inputSourceLabelsMap, Collections.singleton(tracingContextProvider3)));
+        assertTrue(dubboMatchRequest.isMatch(
+                rpcInvocation, inputSourceLabelsMap, Collections.singleton(tracingContextProvider3)));
 
         Map<String, String> invokeDubboContextMap2 = new HashMap<>();
         invokeDubboContextMap.put("dpath", "other");
 
         rpcInvocation.setAttachments(invokeDubboContextMap2);
-        assertFalse(dubboMatchRequest.isMatch(rpcInvocation, inputSourceLabelsMap, Collections.singleton(tracingContextProvider3)));
+        assertFalse(dubboMatchRequest.isMatch(
+                rpcInvocation, inputSourceLabelsMap, Collections.singleton(tracingContextProvider3)));
     }
 }

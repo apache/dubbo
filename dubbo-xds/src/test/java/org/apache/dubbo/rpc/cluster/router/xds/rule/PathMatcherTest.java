@@ -23,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PathMatcherTest {
 
-
     @Test
     public void pathMatcherTest() {
         PathMatcher pathMatcher = new PathMatcher();
@@ -33,7 +32,6 @@ public class PathMatcherTest {
         assertTrue(pathMatcher.isMatch(path.toUpperCase()));
         pathMatcher.setCaseSensitive(true);
         assertFalse(pathMatcher.isMatch(path.toUpperCase()));
-
     }
 
     @Test
@@ -56,5 +54,4 @@ public class PathMatcherTest {
         pathMatcher.setRegex(regex);
         assertTrue(pathMatcher.isMatch(path));
     }
-
 }

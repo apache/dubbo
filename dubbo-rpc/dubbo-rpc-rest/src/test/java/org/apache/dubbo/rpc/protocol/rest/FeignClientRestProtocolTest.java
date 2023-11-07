@@ -29,16 +29,18 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.rest.mvc.feign.FeignClientController;
 import org.apache.dubbo.rpc.protocol.rest.mvc.feign.FeignClientControllerImpl;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-
 public class FeignClientRestProtocolTest {
-    private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("rest");
-    private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-    private final ModuleServiceRepository repository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
-
+    private Protocol protocol =
+            ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("rest");
+    private ProxyFactory proxy =
+            ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+    private final ModuleServiceRepository repository =
+            ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
 
     @AfterEach
     public void tearDown() {
@@ -46,32 +48,28 @@ public class FeignClientRestProtocolTest {
         FrameworkModel.destroyAll();
     }
 
-
     @Test
     void testRestProtocol() {
-        URL url = URL.valueOf("rest://127.0.0.1:" + NetUtils.getAvailablePort() + "/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.mvc.feign.FeignClientController");
+        URL url = URL.valueOf("rest://127.0.0.1:" + NetUtils.getAvailablePort()
+                + "/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.mvc.feign.FeignClientController");
 
         FeignClientController server = new FeignClientControllerImpl();
 
         url = this.registerProvider(url, server, DemoService.class);
 
-        Exporter<FeignClientController> exporter = protocol.export(proxy.getInvoker(server, FeignClientController.class, url));
+        Exporter<FeignClientController> exporter =
+                protocol.export(proxy.getInvoker(server, FeignClientController.class, url));
 
-        FeignClientController feignClientController = this.proxy.getProxy(protocol.refer(FeignClientController.class, url));
+        FeignClientController feignClientController =
+                this.proxy.getProxy(protocol.refer(FeignClientController.class, url));
 
-        Assertions.assertEquals("hello, feign",feignClientController.hello());
+        Assertions.assertEquals("hello, feign", feignClientController.hello());
         exporter.unexport();
     }
 
-
     private URL registerProvider(URL url, Object impl, Class<?> interfaceClass) {
         ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
-        ProviderModel providerModel = new ProviderModel(
-            url.getServiceKey(),
-            impl,
-            serviceDescriptor,
-            null,
-            null);
+        ProviderModel providerModel = new ProviderModel(url.getServiceKey(), impl, serviceDescriptor, null, null);
         repository.registerProvider(providerModel);
         return url.setServiceModel(providerModel);
     }

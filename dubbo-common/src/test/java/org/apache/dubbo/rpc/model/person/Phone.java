@@ -30,8 +30,7 @@ public class Phone implements Serializable {
 
     private String extensionNumber;
 
-    public Phone() {
-    }
+    public Phone() {}
 
     public Phone(String country, String area, String number, String extensionNumber) {
         this.country = country;
@@ -85,33 +84,22 @@ public class Phone implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
         Phone other = (Phone) obj;
         if (area == null) {
-            if (other.area != null)
-                return false;
-        } else if (!area.equals(other.area))
-            return false;
+            if (other.area != null) return false;
+        } else if (!area.equals(other.area)) return false;
         if (country == null) {
-            if (other.country != null)
-                return false;
-        } else if (!country.equals(other.country))
-            return false;
+            if (other.country != null) return false;
+        } else if (!country.equals(other.country)) return false;
         if (extensionNumber == null) {
-            if (other.extensionNumber != null)
-                return false;
-        } else if (!extensionNumber.equals(other.extensionNumber))
-            return false;
+            if (other.extensionNumber != null) return false;
+        } else if (!extensionNumber.equals(other.extensionNumber)) return false;
         if (number == null) {
-            if (other.number != null)
-                return false;
-        } else if (!number.equals(other.number))
-            return false;
+            if (other.number != null) return false;
+        } else if (!number.equals(other.number)) return false;
         return true;
     }
 
@@ -135,5 +123,4 @@ public class Phone implements Serializable {
         }
         return sb.toString();
     }
-
 }

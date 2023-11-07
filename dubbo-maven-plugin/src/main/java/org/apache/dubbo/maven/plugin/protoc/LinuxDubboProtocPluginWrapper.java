@@ -16,16 +16,15 @@
  */
 package org.apache.dubbo.maven.plugin.protoc;
 
-import org.apache.maven.plugin.logging.Log;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
-public class LinuxDubboProtocPluginWrapper implements DubboProtocPluginWrapper {
+import org.apache.maven.plugin.logging.Log;
 
+public class LinuxDubboProtocPluginWrapper implements DubboProtocPluginWrapper {
 
     @Override
     public File createProtocPlugin(DubboProtocPlugin dubboProtocPlugin, Log log) {
@@ -60,7 +59,7 @@ public class LinuxDubboProtocPluginWrapper implements DubboProtocPluginWrapper {
             out.println("\"");
             out.println();
             out.println("\"" + javaLocation.getAbsolutePath() + "\" $JVMARGS -cp $CP "
-                + dubboProtocPlugin.getMainClass() + " $ARGS");
+                    + dubboProtocPlugin.getMainClass() + " $ARGS");
             out.println();
             boolean b = pluginExecutableFile.setExecutable(true);
             if (!b) {
@@ -70,15 +69,13 @@ public class LinuxDubboProtocPluginWrapper implements DubboProtocPluginWrapper {
         } catch (IOException e) {
             throw new RuntimeException("Could not write plugin script file: " + pluginExecutableFile, e);
         }
-
     }
-
 
     private void createPluginDirectory(File pluginDirectory) {
         pluginDirectory.mkdirs();
         if (!pluginDirectory.isDirectory()) {
-            throw new RuntimeException("Could not create protoc plugin directory: "
-                + pluginDirectory.getAbsolutePath());
+            throw new RuntimeException(
+                    "Could not create protoc plugin directory: " + pluginDirectory.getAbsolutePath());
         }
     }
 }

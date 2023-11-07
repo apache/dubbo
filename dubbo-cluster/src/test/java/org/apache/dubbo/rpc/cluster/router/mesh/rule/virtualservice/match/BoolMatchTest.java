@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
-
 
 import org.junit.jupiter.api.Test;
 
@@ -27,9 +25,8 @@ class BoolMatchTest {
 
     @Test
     void isMatch() {
-        BoolMatch boolMatch =  new BoolMatch();
+        BoolMatch boolMatch = new BoolMatch();
         boolMatch.setExact(true);
-
 
         assertTrue(boolMatch.isMatch(true));
         assertFalse(boolMatch.isMatch(false));
@@ -37,6 +34,5 @@ class BoolMatchTest {
         boolMatch.setExact(false);
         assertFalse(boolMatch.isMatch(true));
         assertTrue(boolMatch.isMatch(false));
-
     }
 }

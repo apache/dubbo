@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.remoting.transport.codec;
 
 import org.apache.dubbo.common.io.UnsafeByteArrayInputStream;
@@ -37,8 +36,7 @@ public class CodecAdapter implements Codec2 {
     }
 
     @Override
-    public void encode(Channel channel, ChannelBuffer buffer, Object message)
-            throws IOException {
+    public void encode(Channel channel, ChannelBuffer buffer, Object message) throws IOException {
         UnsafeByteArrayOutputStream os = new UnsafeByteArrayOutputStream(1024);
         codec.encode(channel, os, message);
         buffer.writeBytes(os.toByteArray());

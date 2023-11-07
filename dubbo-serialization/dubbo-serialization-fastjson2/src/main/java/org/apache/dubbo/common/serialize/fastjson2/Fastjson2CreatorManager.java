@@ -16,26 +16,25 @@
  */
 package org.apache.dubbo.common.serialize.fastjson2;
 
-import com.alibaba.fastjson2.reader.ObjectReaderCreator;
-import com.alibaba.fastjson2.writer.ObjectWriterCreator;
 import org.apache.dubbo.common.aot.NativeDetector;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeClassLoaderListener;
 
-import com.alibaba.fastjson2.JSONFactory;
-import com.alibaba.fastjson2.reader.ObjectReaderCreatorASM;
-import com.alibaba.fastjson2.writer.ObjectWriterCreatorASM;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.alibaba.fastjson2.JSONFactory;
+import com.alibaba.fastjson2.reader.ObjectReaderCreator;
+import com.alibaba.fastjson2.reader.ObjectReaderCreatorASM;
+import com.alibaba.fastjson2.writer.ObjectWriterCreator;
+import com.alibaba.fastjson2.writer.ObjectWriterCreatorASM;
 
 public class Fastjson2CreatorManager implements ScopeClassLoaderListener<FrameworkModel> {
 
     /**
      * An empty classLoader used when classLoader is system classLoader. Prevent the NPE.
      */
-    private static final ClassLoader SYSTEM_CLASSLOADER_KEY = new ClassLoader() {
-    };
+    private static final ClassLoader SYSTEM_CLASSLOADER_KEY = new ClassLoader() {};
 
     private final Map<ClassLoader, ObjectReaderCreator> readerMap = new ConcurrentHashMap<>();
     private final Map<ClassLoader, ObjectWriterCreator> writerMap = new ConcurrentHashMap<>();

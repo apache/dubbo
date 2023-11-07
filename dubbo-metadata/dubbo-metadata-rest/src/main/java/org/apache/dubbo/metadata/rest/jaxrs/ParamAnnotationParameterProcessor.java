@@ -31,8 +31,14 @@ import java.lang.reflect.Parameter;
 public abstract class ParamAnnotationParameterProcessor extends AbstractAnnotatedMethodParameterProcessor {
 
     @Override
-    protected void process(String name, String defaultValue, Annotation annotation, Parameter parameter,
-                           int parameterIndex, Method method, RestMethodMetadata restMethodMetadata) {
+    protected void process(
+            String name,
+            String defaultValue,
+            Annotation annotation,
+            Parameter parameter,
+            int parameterIndex,
+            Method method,
+            RestMethodMetadata restMethodMetadata) {
         RequestMetadata requestMetadata = restMethodMetadata.getRequest();
         requestMetadata.addParam(name, defaultValue);
     }

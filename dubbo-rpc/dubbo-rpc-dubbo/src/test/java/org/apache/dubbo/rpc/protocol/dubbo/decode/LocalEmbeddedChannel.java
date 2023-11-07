@@ -18,10 +18,10 @@ package org.apache.dubbo.rpc.protocol.dubbo.decode;
 
 import org.apache.dubbo.common.utils.NetUtils;
 
-import io.netty.channel.embedded.EmbeddedChannel;
-
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+
+import io.netty.channel.embedded.EmbeddedChannel;
 
 public class LocalEmbeddedChannel extends EmbeddedChannel {
     public SocketAddress localAddress() {

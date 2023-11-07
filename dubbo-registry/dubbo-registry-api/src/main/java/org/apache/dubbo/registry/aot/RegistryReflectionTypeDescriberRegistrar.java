@@ -26,7 +26,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-
 public class RegistryReflectionTypeDescriberRegistrar implements ReflectionTypeDescriberRegistrar {
 
     @Override
@@ -41,6 +40,7 @@ public class RegistryReflectionTypeDescriberRegistrar implements ReflectionTypeD
         Set<MemberCategory> memberCategories = new HashSet<>();
         memberCategories.add(MemberCategory.INVOKE_PUBLIC_METHODS);
         memberCategories.add(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
-        return new TypeDescriber(cl.getName(), null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
+        return new TypeDescriber(
+                cl.getName(), null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
     }
 }

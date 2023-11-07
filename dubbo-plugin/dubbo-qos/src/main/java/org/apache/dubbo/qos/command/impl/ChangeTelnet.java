@@ -18,8 +18,8 @@ package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.qos.api.BaseCommand;
-import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.qos.api.Cmd;
+import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
@@ -27,9 +27,10 @@ import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
 
-@Cmd(name = "cd", summary = "Change default service.", example = {
-    "cd [service]"
-})
+@Cmd(
+        name = "cd",
+        summary = "Change default service.",
+        example = {"cd [service]"})
 public class ChangeTelnet implements BaseCommand {
 
     public static final AttributeKey<String> SERVICE_KEY = AttributeKey.valueOf("telnet.service");
@@ -56,15 +57,17 @@ public class ChangeTelnet implements BaseCommand {
             boolean found = false;
             for (Exporter<?> exporter : dubboProtocol.getExporters()) {
                 if (message.equals(exporter.getInvoker().getInterface().getSimpleName())
-                    || message.equals(exporter.getInvoker().getInterface().getName())
-                    || message.equals(exporter.getInvoker().getUrl().getPath())) {
+                        || message.equals(exporter.getInvoker().getInterface().getName())
+                        || message.equals(exporter.getInvoker().getUrl().getPath())) {
                     found = true;
                     break;
                 }
             }
             if (found) {
                 channel.attr(SERVICE_KEY).set(message);
-                buf.append("Used the ").append(message).append(" as default.\r\nYou can cancel default service by command: cd /");
+                buf.append("Used the ")
+                        .append(message)
+                        .append(" as default.\r\nYou can cancel default service by command: cd /");
             } else {
                 buf.append("No such service ").append(message);
             }

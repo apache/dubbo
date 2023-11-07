@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
 
 import org.apache.dubbo.rpc.Invocation;
@@ -22,7 +21,6 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.List;
 import java.util.Map;
-
 
 public class DubboMethodMatch {
     private StringMatch name_match;
@@ -73,13 +71,12 @@ public class DubboMethodMatch {
 
     @Override
     public String toString() {
-        return "DubboMethodMatch{" +
-                "name_match=" + name_match +
-                ", argc=" + argc +
-                ", args=" + args +
-                ", argp=" + argp +
-                ", headers=" + headers +
-                '}';
+        return "DubboMethodMatch{" + "name_match="
+                + name_match + ", argc="
+                + argc + ", args="
+                + args + ", argp="
+                + argp + ", headers="
+                + headers + '}';
     }
 
     public boolean isMatch(Invocation invocation) {
@@ -90,8 +87,8 @@ public class DubboMethodMatch {
 
         Integer argc = getArgc();
         Object[] arguments = invocation.getArguments();
-        if (argc != null &&
-            ((argc != 0 && (arguments == null || arguments.length == 0)) || (argc != arguments.length))) {
+        if (argc != null
+                && ((argc != 0 && (arguments == null || arguments.length == 0)) || (argc != arguments.length))) {
             return false;
         }
 
@@ -107,7 +104,7 @@ public class DubboMethodMatch {
 
             for (int index = 0; index < argp.size(); index++) {
                 boolean match = argp.get(index).isMatch(parameterTypes[index].getName())
-                    || argp.get(index).isMatch(parameterTypes[index].getSimpleName());
+                        || argp.get(index).isMatch(parameterTypes[index].getSimpleName());
                 if (!match) {
                     return false;
                 }
@@ -134,4 +131,3 @@ public class DubboMethodMatch {
         return true;
     }
 }
-

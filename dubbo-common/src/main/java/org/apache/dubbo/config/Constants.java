@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.config;
 
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_COMPATIBLE;
@@ -90,13 +89,11 @@ public interface Constants {
 
     String MULTICAST = "multicast";
 
-
-    String DUBBO_IP_TO_REGISTRY = "dubbo.ip.to.registry";
+    String DUBBO_IP_TO_REGISTRY = "DUBBO_IP_TO_REGISTRY";
 
     String DUBBO_PORT_TO_REGISTRY = "dubbo.port.to.registry";
 
-
-    String DUBBO_PORT_TO_BIND = "dubbo.port.to.bind";
+    String DUBBO_PORT_TO_BIND = "DUBBO_PORT_TO_BIND";
 
     String SCOPE_NONE = "none";
 
@@ -124,13 +121,10 @@ public interface Constants {
 
     String ON_THROW_INSTANCE_ATTRIBUTE_KEY = "onthrow-instance";
 
-
     // FIXME: is this still useful?
     String SHUTDOWN_TIMEOUT_KEY = "shutdown.timeout";
 
-
     String PROTOCOLS_SUFFIX = "dubbo.protocols.";
-
 
     String REGISTRIES_SUFFIX = "dubbo.registries.";
 
@@ -140,8 +134,14 @@ public interface Constants {
 
     String MULTI_SERIALIZATION_KEY = "serialize.multiple";
 
-    String[] DOT_COMPATIBLE_KEYS = new String[]{QOS_ENABLE_COMPATIBLE, QOS_HOST_COMPATIBLE, QOS_PORT_COMPATIBLE,
-        ACCEPT_FOREIGN_IP_COMPATIBLE, ACCEPT_FOREIGN_IP_WHITELIST_COMPATIBLE, REGISTRY_TYPE_KEY};
+    String[] DOT_COMPATIBLE_KEYS = new String[] {
+        QOS_ENABLE_COMPATIBLE,
+        QOS_HOST_COMPATIBLE,
+        QOS_PORT_COMPATIBLE,
+        ACCEPT_FOREIGN_IP_COMPATIBLE,
+        ACCEPT_FOREIGN_IP_WHITELIST_COMPATIBLE,
+        REGISTRY_TYPE_KEY
+    };
 
     String IGNORE_CHECK_KEYS = "ignoreCheckKeys";
 

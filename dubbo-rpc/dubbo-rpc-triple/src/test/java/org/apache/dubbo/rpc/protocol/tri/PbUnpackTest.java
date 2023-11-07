@@ -14,22 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri;
+
+import java.io.IOException;
 
 import io.grpc.health.v1.HealthCheckRequest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-
 class PbUnpackTest {
 
     @Test
     void unpack() throws IOException {
-        HealthCheckRequest req = HealthCheckRequest.newBuilder()
-                .setService("service")
-                .build();
+        HealthCheckRequest req =
+                HealthCheckRequest.newBuilder().setService("service").build();
         PbUnpack<HealthCheckRequest> unpack = new PbUnpack<>(HealthCheckRequest.class);
         HealthCheckRequest obj = (HealthCheckRequest) unpack.unpack(req.toByteArray());
         Assertions.assertEquals("service", obj.getService());

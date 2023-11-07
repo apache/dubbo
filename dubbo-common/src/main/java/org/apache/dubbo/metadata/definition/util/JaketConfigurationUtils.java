@@ -98,5 +98,4 @@ public class JaketConfigurationUtils {
 
         return !isExcludedType(clazz);
     }
-
 }

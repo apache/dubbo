@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.remoting.utils;
 
 import org.apache.dubbo.common.URL;
@@ -127,7 +126,9 @@ public class UrlUtils {
     public static Collection<String> allSerializations(URL url) {
         // preferSerialization -> serialization -> default serialization
         Set<String> serializations = new LinkedHashSet<>(preferSerialization(url));
-        Optional.ofNullable(url.getParameter(SERIALIZATION_KEY)).filter(StringUtils::isNotBlank).ifPresent(serializations::add);
+        Optional.ofNullable(url.getParameter(SERIALIZATION_KEY))
+                .filter(StringUtils::isNotBlank)
+                .ifPresent(serializations::add);
         serializations.add(DefaultSerializationSelector.getDefaultRemotingSerialization());
         return Collections.unmodifiableSet(serializations);
     }

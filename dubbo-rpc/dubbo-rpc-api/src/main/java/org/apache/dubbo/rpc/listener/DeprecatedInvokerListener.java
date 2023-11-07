@@ -31,13 +31,18 @@ import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
 @Activate(DEPRECATED_KEY)
 public class DeprecatedInvokerListener extends InvokerListenerAdapter {
 
-    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(DeprecatedInvokerListener.class);
+    private static final ErrorTypeAwareLogger LOGGER =
+            LoggerFactory.getErrorTypeAwareLogger(DeprecatedInvokerListener.class);
 
     @Override
     public void referred(Invoker<?> invoker) throws RpcException {
         if (invoker.getUrl().getParameter(DEPRECATED_KEY, false)) {
-            LOGGER.error(PROXY_UNSUPPORTED_INVOKER,"","","The service " + invoker.getInterface().getName() + " is DEPRECATED! Declare from " + invoker.getUrl());
+            LOGGER.error(
+                    PROXY_UNSUPPORTED_INVOKER,
+                    "",
+                    "",
+                    "The service " + invoker.getInterface().getName() + " is DEPRECATED! Declare from "
+                            + invoker.getUrl());
         }
     }
-
 }

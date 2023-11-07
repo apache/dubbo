@@ -147,5 +147,4 @@ public interface Service {
     Iterator<String> testIterator();
 
     AbstractObject testAbstract();
-
 }

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.config.collector;
 
 import org.apache.dubbo.common.extension.Activate;
@@ -38,7 +37,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.metrics.model.MetricsCategory.CONFIGCENTER;
-
 
 /**
  * Config center implementation of {@link MetricsCollector}
@@ -77,7 +75,8 @@ public class ConfigCenterMetricsCollector extends CombMetricsCollector<ConfigCen
         if (!isCollectEnabled()) {
             return;
         }
-        ConfigCenterMetric metric = new ConfigCenterMetric(applicationModel.getApplicationName(), key, group, protocol, changeTypeName);
+        ConfigCenterMetric metric =
+                new ConfigCenterMetric(applicationModel.getApplicationName(), key, group, protocol, changeTypeName);
         AtomicLong metrics = updatedMetrics.get(metric);
         if (metrics == null) {
             metrics = updatedMetrics.computeIfAbsent(metric, k -> new AtomicLong(0L));
@@ -86,7 +85,6 @@ public class ConfigCenterMetricsCollector extends CombMetricsCollector<ConfigCen
         metrics.addAndGet(size);
     }
 
-
     @Override
     public List<MetricSample> collect() {
         // Add metrics to reporter
@@ -94,7 +92,8 @@ public class ConfigCenterMetricsCollector extends CombMetricsCollector<ConfigCen
         if (!isCollectEnabled()) {
             return list;
         }
-        updatedMetrics.forEach((k, v) -> list.add(new GaugeMetricSample<>(MetricsKey.CONFIGCENTER_METRIC_TOTAL, k.getTags(), CONFIGCENTER, v, AtomicLong::get)));
+        updatedMetrics.forEach((k, v) -> list.add(new GaugeMetricSample<>(
+                MetricsKey.CONFIGCENTER_METRIC_TOTAL, k.getTags(), CONFIGCENTER, v, AtomicLong::get)));
         return list;
     }
 

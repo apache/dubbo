@@ -31,14 +31,10 @@ public class TailStateRouter<T> implements StateRouter<T> {
         return INSTANCE;
     }
 
-    private TailStateRouter() {
-
-    }
+    private TailStateRouter() {}
 
     @Override
-    public void setNextRouter(StateRouter<T> nextRouter) {
-
-    }
+    public void setNextRouter(StateRouter<T> nextRouter) {}
 
     @Override
     public URL getUrl() {
@@ -46,7 +42,13 @@ public class TailStateRouter<T> implements StateRouter<T> {
     }
 
     @Override
-    public BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url, Invocation invocation, boolean needToPrintMessage, Holder<RouterSnapshotNode<T>> nodeHolder) throws RpcException {
+    public BitList<Invoker<T>> route(
+            BitList<Invoker<T>> invokers,
+            URL url,
+            Invocation invocation,
+            boolean needToPrintMessage,
+            Holder<RouterSnapshotNode<T>> nodeHolder)
+            throws RpcException {
         return invokers;
     }
 
@@ -61,9 +63,7 @@ public class TailStateRouter<T> implements StateRouter<T> {
     }
 
     @Override
-    public void notify(BitList<Invoker<T>> invokers) {
-
-    }
+    public void notify(BitList<Invoker<T>> invokers) {}
 
     @Override
     public String buildSnapshot() {

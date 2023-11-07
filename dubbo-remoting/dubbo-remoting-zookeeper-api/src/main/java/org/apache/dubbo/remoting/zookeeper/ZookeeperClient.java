@@ -123,5 +123,4 @@ public interface ZookeeperClient {
     ConfigItem getConfigItem(String path);
 
     boolean checkExists(String path);
-
 }

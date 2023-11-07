@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.listener;
 
 import org.apache.dubbo.metrics.event.MetricsEvent;
@@ -29,7 +28,8 @@ import java.util.function.Consumer;
  * build a consistent static method for general and custom monitoring consume methods
  *
  */
-public abstract class AbstractMetricsKeyListener extends AbstractMetricsListener<TimeCounterEvent> implements MetricsLifeListener<TimeCounterEvent> {
+public abstract class AbstractMetricsKeyListener extends AbstractMetricsListener<TimeCounterEvent>
+        implements MetricsLifeListener<TimeCounterEvent> {
 
     private final MetricsKey metricsKey;
 
@@ -46,9 +46,7 @@ public abstract class AbstractMetricsKeyListener extends AbstractMetricsListener
     }
 
     @Override
-    public void onEvent(TimeCounterEvent event) {
-
-    }
+    public void onEvent(TimeCounterEvent event) {}
 
     public static AbstractMetricsKeyListener onEvent(MetricsKey metricsKey, Consumer<TimeCounterEvent> postFunc) {
 
@@ -79,6 +77,4 @@ public abstract class AbstractMetricsKeyListener extends AbstractMetricsListener
             }
         };
     }
-
-
 }

@@ -18,21 +18,23 @@ package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.qos.api.BaseCommand;
-import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.qos.api.Cmd;
+import org.apache.dubbo.qos.api.CommandContext;
 
 import java.util.Arrays;
 
-@Cmd(name = "pwd", summary = "Print working default service.", example = {
-    "pwd"
-})
+@Cmd(
+        name = "pwd",
+        summary = "Print working default service.",
+        example = {"pwd"})
 public class PwdTelnet implements BaseCommand {
     @Override
     public String execute(CommandContext commandContext, String[] args) {
         if (args.length > 0) {
             return "Unsupported parameter " + Arrays.toString(args) + " for pwd.";
         }
-        String service = commandContext.getRemote().attr(ChangeTelnet.SERVICE_KEY).get();
+        String service =
+                commandContext.getRemote().attr(ChangeTelnet.SERVICE_KEY).get();
         StringBuilder buf = new StringBuilder();
         if (StringUtils.isEmpty(service)) {
             buf.append('/');

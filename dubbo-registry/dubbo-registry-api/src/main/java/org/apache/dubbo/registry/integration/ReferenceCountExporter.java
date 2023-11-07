@@ -51,12 +51,8 @@ public class ReferenceCountExporter<T> implements Exporter<T> {
     }
 
     @Override
-    public void register() {
-
-    }
+    public void register() {}
 
     @Override
-    public void unregister() {
-
-    }
+    public void unregister() {}
 }

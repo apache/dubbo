@@ -28,5 +28,4 @@ public class ChannelHandlerPretender extends ChannelHandlerAdapter {
     public Object getRealHandler() {
         return realHandler;
     }
-
 }

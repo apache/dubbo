@@ -28,7 +28,6 @@ import java.lang.annotation.Annotation;
 /**
  * parsing @FeignClient service name attribute to replace reference config provided by
  */
-
 @Activate
 public class FeignClientAnnotationConfigPostProcessor implements CommonConfigPostProcessor {
 
@@ -37,15 +36,15 @@ public class FeignClientAnnotationConfigPostProcessor implements CommonConfigPos
         appendParametersFromInterfaceClassMetadata(referenceConfig.getInterfaceClass(), referenceConfig);
     }
 
-
-    public static void appendParametersFromInterfaceClassMetadata(Class<?> interfaceClass, ReferenceConfigBase referenceConfig) {
+    public static void appendParametersFromInterfaceClassMetadata(
+            Class<?> interfaceClass, ReferenceConfigBase referenceConfig) {
 
         if (interfaceClass == null) {
             return;
         }
 
-        Class<? extends Annotation> feignClientAnno = (Class<? extends Annotation>) ClassUtils.forNameAndTryCatch("org.springframework.cloud.openfeign.FeignClient");
-
+        Class<? extends Annotation> feignClientAnno = (Class<? extends Annotation>)
+                ClassUtils.forNameAndTryCatch("org.springframework.cloud.openfeign.FeignClient");
 
         if (feignClientAnno == null || !AnnotationUtils.isAnnotationPresent(interfaceClass, feignClientAnno)) {
             return;
@@ -61,7 +60,5 @@ public class FeignClientAnnotationConfigPostProcessor implements CommonConfigPos
         }
 
         referenceConfig.setProvidedBy(serviceName);
-
-
     }
 }

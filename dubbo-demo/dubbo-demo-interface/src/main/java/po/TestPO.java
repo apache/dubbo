@@ -27,8 +27,7 @@ public class TestPO {
         this.age = age;
     }
 
-    public TestPO() {
-    }
+    public TestPO() {}
 
     public String getName() {
         return name;
@@ -60,10 +59,6 @@ public class TestPO {
 
     @Override
     public String toString() {
-        return "TestPO{" +
-            "name='" + name + '\'' +
-            ", address='" + address + '\'' +
-            ", age=" + age +
-            '}';
+        return "TestPO{" + "name='" + name + '\'' + ", address='" + address + '\'' + ", age=" + age + '}';
     }
 }

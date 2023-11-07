@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.registry;
 
 public interface Constants {
@@ -131,6 +130,8 @@ public interface Constants {
     String MIGRATION_RULE_INTERFACES_KEY = "interfaces";
 
     String MIGRATION_RULE_APPLICATIONS_KEY = "applications";
+
+    String USER_HOME = "user.home";
 
     String DUBBO_REGISTRY = "/.dubbo/dubbo-registry-";
 

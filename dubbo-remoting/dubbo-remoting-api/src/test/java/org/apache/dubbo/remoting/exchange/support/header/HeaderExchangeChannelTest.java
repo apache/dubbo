@@ -22,13 +22,13 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-
-import java.util.List;
 
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -72,7 +72,6 @@ class HeaderExchangeChannelTest {
             public boolean isConnected() {
                 return true;
             }
-
         };
         Assertions.assertNull(channel.getAttribute(CHANNEL_KEY));
         HeaderExchangeChannel ret = HeaderExchangeChannel.getOrAddChannel(channel);
@@ -87,7 +86,6 @@ class HeaderExchangeChannelTest {
         HeaderExchangeChannel ret = HeaderExchangeChannel.getOrAddChannel(channel);
         Assertions.assertNull(ret);
     }
-
 
     @Test
     void removeChannelIfDisconnectedTest() {
@@ -186,17 +184,15 @@ class HeaderExchangeChannelTest {
         Assertions.assertTrue(channel.isClosed());
     }
 
-
     @Test
     void closeWithTimeoutTest02() {
         Assertions.assertFalse(channel.isClosed());
         Request request = new Request();
         DefaultFuture.newFuture(channel, request, 100, null);
         header.close(100);
-        //return directly
+        // return directly
         header.close(1000);
     }
-
 
     @Test
     void startCloseTest() {
@@ -231,7 +227,6 @@ class HeaderExchangeChannelTest {
         Assertions.assertFalse(header.isConnected());
     }
 
-
     @Test
     void getChannelHandlerTest() {
         Assertions.assertNull(header.getChannelHandler());
@@ -241,7 +236,6 @@ class HeaderExchangeChannelTest {
     void getExchangeHandlerTest() {
         Assertions.assertNull(header.getExchangeHandler());
     }
-
 
     @Test
     void getAttributeAndSetAttributeTest() {
@@ -257,7 +251,6 @@ class HeaderExchangeChannelTest {
         header.removeAttribute("test");
         Assertions.assertFalse(header.hasAttribute("test"));
     }
-
 
     @Test
     void hasAttributeTest() {
@@ -284,10 +277,8 @@ class HeaderExchangeChannelTest {
         });
     }
 
-
     @Test
     void toStringTest() {
         Assertions.assertEquals(header.toString(), channel.toString());
     }
 }
-

@@ -46,7 +46,9 @@ public class FileStateRouterFactory implements StateRouterFactory {
         try {
             // Transform File URL into Script Route URL, and Load
             // file:///d:/path/to/route.js?router=script ==> script:///d:/path/to/route.js?type=js&rule=<file-content>
-            String protocol = url.getParameter(ROUTER_KEY, ScriptStateRouterFactory.NAME); // Replace original protocol (maybe 'file') with 'script'
+            String protocol = url.getParameter(
+                    ROUTER_KEY,
+                    ScriptStateRouterFactory.NAME); // Replace original protocol (maybe 'file') with 'script'
             String type = null; // Use file suffix to config script type, e.g., js, groovy ...
             String path = url.getPath();
             if (path != null) {
@@ -71,5 +73,4 @@ public class FileStateRouterFactory implements StateRouterFactory {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
-
 }

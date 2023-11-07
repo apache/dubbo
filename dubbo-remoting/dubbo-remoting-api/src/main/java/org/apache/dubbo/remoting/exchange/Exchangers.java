@@ -28,8 +28,7 @@ import org.apache.dubbo.remoting.transport.ChannelHandlerAdapter;
  * Exchanger facade. (API, Static, ThreadSafe)
  */
 public class Exchangers {
-    private Exchangers() {
-    }
+    private Exchangers() {}
 
     public static ExchangeServer bind(String url, Replier<?> replier) throws RemotingException {
         return bind(URL.valueOf(url), replier);
@@ -78,7 +77,8 @@ public class Exchangers {
         return connect(url, new ChannelHandlerAdapter(), replier);
     }
 
-    public static ExchangeClient connect(String url, ChannelHandler handler, Replier<?> replier) throws RemotingException {
+    public static ExchangeClient connect(String url, ChannelHandler handler, Replier<?> replier)
+            throws RemotingException {
         return connect(URL.valueOf(url), handler, replier);
     }
 
@@ -102,7 +102,8 @@ public class Exchangers {
 
     public static Exchanger getExchanger(URL url) {
         String type = url.getParameter(Constants.EXCHANGER_KEY, Constants.DEFAULT_EXCHANGER);
-        return url.getOrDefaultFrameworkModel().getExtensionLoader(Exchanger.class).getExtension(type);
+        return url.getOrDefaultFrameworkModel()
+                .getExtensionLoader(Exchanger.class)
+                .getExtension(type);
     }
-
 }

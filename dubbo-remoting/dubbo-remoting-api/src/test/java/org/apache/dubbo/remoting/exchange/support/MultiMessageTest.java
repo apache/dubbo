@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.remoting.exchange.support;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * {@link MultiMessage}
@@ -59,8 +59,8 @@ class MultiMessageTest {
 
         MultiMessage multiMessage1 = MultiMessage.createFromCollection(Arrays.asList("test1", "test2"));
         MultiMessage multiMessage2 = MultiMessage.createFromArray("test1", "test2");
-        Assertions.assertArrayEquals(multiMessage1.getMessages().toArray(), multiMessage2.getMessages().toArray());
-
+        Assertions.assertArrayEquals(
+                multiMessage1.getMessages().toArray(),
+                multiMessage2.getMessages().toArray());
     }
-
 }

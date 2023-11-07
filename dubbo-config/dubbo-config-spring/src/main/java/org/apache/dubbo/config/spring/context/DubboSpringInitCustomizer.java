@@ -43,5 +43,4 @@ public interface DubboSpringInitCustomizer {
      * @param context
      */
     void customize(DubboSpringInitContext context);
-
 }

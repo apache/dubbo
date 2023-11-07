@@ -19,5 +19,4 @@ package org.apache.dubbo.metadata.rest.tag;
 /**
  *  for no annotation mode param
  */
-public interface NoAnnotationTag {
-}
+public interface NoAnnotationTag {}

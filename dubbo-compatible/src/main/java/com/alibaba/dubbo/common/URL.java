@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.common;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -32,7 +31,14 @@ public class URL extends org.apache.dubbo.common.URL {
     }
 
     public URL(org.apache.dubbo.common.URL url) {
-        super(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(), url.getParameters());
+        super(
+                url.getProtocol(),
+                url.getUsername(),
+                url.getPassword(),
+                url.getHost(),
+                url.getPort(),
+                url.getPath(),
+                url.getParameters());
     }
 
     public URL(String protocol, String host, int port) {
@@ -67,7 +73,14 @@ public class URL extends org.apache.dubbo.common.URL {
         super(protocol, username, password, host, port, path, CollectionUtils.toStringMap(pairs));
     }
 
-    public URL(String protocol, String username, String password, String host, int port, String path, Map<String, String> parameters) {
+    public URL(
+            String protocol,
+            String username,
+            String password,
+            String host,
+            int port,
+            String path,
+            Map<String, String> parameters) {
         super(protocol, username, password, host, port, path, parameters);
     }
 
@@ -91,7 +104,14 @@ public class URL extends org.apache.dubbo.common.URL {
 
     @Override
     public URL setProtocol(String protocol) {
-        return new URL(protocol, super.getUsername(), super.getPassword(), super.getHost(), super.getPort(), super.getPath(), super.getParameters());
+        return new URL(
+                protocol,
+                super.getUsername(),
+                super.getPassword(),
+                super.getHost(),
+                super.getPort(),
+                super.getPath(),
+                super.getParameters());
     }
 
     @Override
@@ -101,7 +121,14 @@ public class URL extends org.apache.dubbo.common.URL {
 
     @Override
     public URL setUsername(String username) {
-        return new URL(super.getProtocol(), username, super.getPassword(), super.getHost(), super.getPort(), super.getPath(), super.getParameters());
+        return new URL(
+                super.getProtocol(),
+                username,
+                super.getPassword(),
+                super.getHost(),
+                super.getPort(),
+                super.getPath(),
+                super.getParameters());
     }
 
     @Override
@@ -111,7 +138,14 @@ public class URL extends org.apache.dubbo.common.URL {
 
     @Override
     public URL setPassword(String password) {
-        return new URL(super.getProtocol(), super.getUsername(), password, super.getHost(), super.getPort(), super.getPath(), super.getParameters());
+        return new URL(
+                super.getProtocol(),
+                super.getUsername(),
+                password,
+                super.getHost(),
+                super.getPort(),
+                super.getPath(),
+                super.getParameters());
     }
 
     @Override
@@ -127,7 +161,14 @@ public class URL extends org.apache.dubbo.common.URL {
 
     @Override
     public URL setHost(String host) {
-        return new URL(super.getProtocol(), super.getUsername(), super.getPassword(), host, super.getPort(), super.getPath(), super.getParameters());
+        return new URL(
+                super.getProtocol(),
+                super.getUsername(),
+                super.getPassword(),
+                host,
+                super.getPort(),
+                super.getPath(),
+                super.getParameters());
     }
 
     @Override
@@ -142,7 +183,14 @@ public class URL extends org.apache.dubbo.common.URL {
 
     @Override
     public URL setPort(int port) {
-        return new URL(super.getProtocol(), super.getUsername(), super.getPassword(), super.getHost(), port, super.getPath(), super.getParameters());
+        return new URL(
+                super.getProtocol(),
+                super.getUsername(),
+                super.getPassword(),
+                super.getHost(),
+                port,
+                super.getPath(),
+                super.getParameters());
     }
 
     @Override
@@ -171,10 +219,10 @@ public class URL extends org.apache.dubbo.common.URL {
         return super.getBackupAddress(defaultPort);
     }
 
-//    public List<URL> getBackupUrls() {
-//        List<org.apache.dubbo.common.URL> res = super.getBackupUrls();
-//        return res.stream().map(url -> new URL(url)).collect(Collectors.toList());
-//    }
+    //    public List<URL> getBackupUrls() {
+    //        List<org.apache.dubbo.common.URL> res = super.getBackupUrls();
+    //        return res.stream().map(url -> new URL(url)).collect(Collectors.toList());
+    //    }
 
     @Override
     public String getPath() {
@@ -183,7 +231,14 @@ public class URL extends org.apache.dubbo.common.URL {
 
     @Override
     public URL setPath(String path) {
-        return new URL(super.getProtocol(), super.getUsername(), super.getPassword(), super.getHost(), super.getPort(), path, super.getParameters());
+        return new URL(
+                super.getProtocol(),
+                super.getUsername(),
+                super.getPassword(),
+                super.getHost(),
+                super.getPort(),
+                path,
+                super.getParameters());
     }
 
     @Override
@@ -626,7 +681,13 @@ public class URL extends org.apache.dubbo.common.URL {
     }
 
     public org.apache.dubbo.common.URL getOriginalURL() {
-        return new org.apache.dubbo.common.URL(super.getProtocol(), super.getUsername(), super.getPassword(),
-            super.getHost(), super.getPort(), super.getPath(), super.getParameters());
+        return new org.apache.dubbo.common.URL(
+                super.getProtocol(),
+                super.getUsername(),
+                super.getPassword(),
+                super.getHost(),
+                super.getPort(),
+                super.getPath(),
+                super.getParameters());
     }
 }

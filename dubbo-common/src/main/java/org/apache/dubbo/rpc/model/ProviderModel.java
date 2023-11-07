@@ -42,10 +42,11 @@ public class ProviderModel extends ServiceModel {
 
     private volatile long lastInvokeTime = 0;
 
-    public ProviderModel(String serviceKey,
-                         Object serviceInstance,
-                         ServiceDescriptor serviceDescriptor,
-                         ClassLoader interfaceClassLoader) {
+    public ProviderModel(
+            String serviceKey,
+            Object serviceInstance,
+            ServiceDescriptor serviceDescriptor,
+            ClassLoader interfaceClassLoader) {
         super(serviceInstance, serviceKey, serviceDescriptor, null, interfaceClassLoader);
         if (null == serviceInstance) {
             throw new IllegalArgumentException("Service[" + serviceKey + "]Target is NULL.");
@@ -54,11 +55,12 @@ public class ProviderModel extends ServiceModel {
         this.urls = new CopyOnWriteArrayList<>();
     }
 
-    public ProviderModel(String serviceKey,
-                         Object serviceInstance,
-                         ServiceDescriptor serviceDescriptor,
-                         ServiceMetadata serviceMetadata,
-                         ClassLoader interfaceClassLoader) {
+    public ProviderModel(
+            String serviceKey,
+            Object serviceInstance,
+            ServiceDescriptor serviceDescriptor,
+            ServiceMetadata serviceMetadata,
+            ClassLoader interfaceClassLoader) {
         super(serviceInstance, serviceKey, serviceDescriptor, null, serviceMetadata, interfaceClassLoader);
         if (null == serviceInstance) {
             throw new IllegalArgumentException("Service[" + serviceKey + "]Target is NULL.");
@@ -68,12 +70,13 @@ public class ProviderModel extends ServiceModel {
         this.urls = new ArrayList<>(1);
     }
 
-    public ProviderModel(String serviceKey,
-                         Object serviceInstance,
-                         ServiceDescriptor serviceModel,
-                         ModuleModel moduleModel,
-                         ServiceMetadata serviceMetadata,
-                         ClassLoader interfaceClassLoader) {
+    public ProviderModel(
+            String serviceKey,
+            Object serviceInstance,
+            ServiceDescriptor serviceModel,
+            ModuleModel moduleModel,
+            ServiceMetadata serviceMetadata,
+            ClassLoader interfaceClassLoader) {
         super(serviceInstance, serviceKey, serviceModel, moduleModel, serviceMetadata, interfaceClassLoader);
         if (null == serviceInstance) {
             throw new IllegalArgumentException("Service[" + serviceKey + "]Target is NULL.");
@@ -100,9 +103,7 @@ public class ProviderModel extends ServiceModel {
         private volatile URL providerUrl;
         private volatile boolean registered;
 
-        public RegisterStatedURL(URL providerUrl,
-                                 URL registryUrl,
-                                 boolean registered) {
+        public RegisterStatedURL(URL providerUrl, URL registryUrl, boolean registered) {
             this.providerUrl = providerUrl;
             this.registered = registered;
             this.registryUrl = registryUrl;
@@ -176,7 +177,6 @@ public class ProviderModel extends ServiceModel {
     public void setServiceUrls(List<URL> urls) {
         this.serviceUrls = urls;
     }
-
 
     public long getLastInvokeTime() {
         return lastInvokeTime;

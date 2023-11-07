@@ -14,10 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.config.spring6.beans.factory.aot;
 
 import org.apache.dubbo.config.spring6.beans.factory.annotation.ReferenceAnnotationWithAotBeanPostProcessor;
+
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.springframework.aot.hint.ExecutableMode;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.TypeConverter;
@@ -34,12 +40,6 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.function.ThrowingConsumer;
-
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Resolver used to support the autowiring of methods. Typically used in
@@ -65,9 +65,8 @@ public final class ReferencedMethodArgumentsResolver extends AutowiredElementRes
     @Nullable
     private final String[] shortcuts;
 
-
-    private ReferencedMethodArgumentsResolver(String methodName, Class<?>[] parameterTypes,
-                                              boolean required, @Nullable String[] shortcuts) {
+    private ReferencedMethodArgumentsResolver(
+            String methodName, Class<?>[] parameterTypes, boolean required, @Nullable String[] shortcuts) {
 
         Assert.hasText(methodName, "'methodName' must not be empty");
         this.methodName = methodName;
@@ -84,11 +83,9 @@ public final class ReferencedMethodArgumentsResolver extends AutowiredElementRes
      * @param parameterTypes the factory method parameter types
      * @return a new {@link org.springframework.beans.factory.aot.AutowiredFieldValueResolver} instance
      */
-    public static ReferencedMethodArgumentsResolver forMethod(String methodName,
-                                                              Class<?>... parameterTypes) {
+    public static ReferencedMethodArgumentsResolver forMethod(String methodName, Class<?>... parameterTypes) {
 
-        return new ReferencedMethodArgumentsResolver(methodName, parameterTypes, false,
-            null);
+        return new ReferencedMethodArgumentsResolver(methodName, parameterTypes, false, null);
     }
 
     /**
@@ -99,11 +96,9 @@ public final class ReferencedMethodArgumentsResolver extends AutowiredElementRes
      * @param parameterTypes the factory method parameter types
      * @return a new {@link AutowiredFieldValueResolver} instance
      */
-    public static ReferencedMethodArgumentsResolver forRequiredMethod(String methodName,
-                                                                      Class<?>... parameterTypes) {
+    public static ReferencedMethodArgumentsResolver forRequiredMethod(String methodName, Class<?>... parameterTypes) {
 
-        return new ReferencedMethodArgumentsResolver(methodName, parameterTypes, true,
-            null);
+        return new ReferencedMethodArgumentsResolver(methodName, parameterTypes, true, null);
     }
 
     /**
@@ -116,8 +111,7 @@ public final class ReferencedMethodArgumentsResolver extends AutowiredElementRes
      * the shortcuts
      */
     public ReferencedMethodArgumentsResolver withShortcut(String... beanNames) {
-        return new ReferencedMethodArgumentsResolver(this.methodName, this.parameterTypes,
-            this.required, beanNames);
+        return new ReferencedMethodArgumentsResolver(this.methodName, this.parameterTypes, this.required, beanNames);
     }
 
     /**
@@ -127,8 +121,7 @@ public final class ReferencedMethodArgumentsResolver extends AutowiredElementRes
      * @param registeredBean the registered bean
      * @param action         the action to execute with the resolved method arguments
      */
-    public void resolve(RegisteredBean registeredBean,
-                        ThrowingConsumer<AutowiredArguments> action) {
+    public void resolve(RegisteredBean registeredBean, ThrowingConsumer<AutowiredArguments> action) {
 
         Assert.notNull(registeredBean, "'registeredBean' must not be null");
         Assert.notNull(action, "'action' must not be null");
@@ -169,8 +162,7 @@ public final class ReferencedMethodArgumentsResolver extends AutowiredElementRes
     }
 
     @Nullable
-    private AutowiredArguments resolveArguments(RegisteredBean registeredBean,
-                                                Method method) {
+    private AutowiredArguments resolveArguments(RegisteredBean registeredBean, Method method) {
 
         String beanName = registeredBean.getBeanName();
         Class<?> beanClass = registeredBean.getBeanClass();
@@ -183,22 +175,19 @@ public final class ReferencedMethodArgumentsResolver extends AutowiredElementRes
         TypeConverter typeConverter = beanFactory.getTypeConverter();
         for (int i = 0; i < argumentCount; i++) {
             MethodParameter parameter = new MethodParameter(method, i);
-            DependencyDescriptor descriptor = new DependencyDescriptor(parameter,
-                this.required);
+            DependencyDescriptor descriptor = new DependencyDescriptor(parameter, this.required);
             descriptor.setContainingClass(beanClass);
             String shortcut = (this.shortcuts != null) ? this.shortcuts[i] : null;
             if (shortcut != null) {
-                descriptor = new ShortcutDependencyDescriptor(descriptor, shortcut,
-                    parameter.getParameterType());
+                descriptor = new ShortcutDependencyDescriptor(descriptor, shortcut, parameter.getParameterType());
             }
             try {
                 Object injectedArgument = beanFactory.getBean(shortcut);
-                Object argument = autowireCapableBeanFactory.resolveDependency(descriptor,
-                    beanName, autowiredBeanNames, typeConverter);
+                Object argument = autowireCapableBeanFactory.resolveDependency(
+                        descriptor, beanName, autowiredBeanNames, typeConverter);
                 arguments[i] = injectedArgument;
             } catch (BeansException ex) {
-                throw new UnsatisfiedDependencyException(null, beanName,
-                    new InjectionPoint(parameter), ex);
+                throw new UnsatisfiedDependencyException(null, beanName, new InjectionPoint(parameter), ex);
             }
         }
         registerDependentBeans(beanFactory, beanName, autowiredBeanNames);
@@ -206,16 +195,16 @@ public final class ReferencedMethodArgumentsResolver extends AutowiredElementRes
     }
 
     private Method getMethod(RegisteredBean registeredBean) {
-        Method method = ReflectionUtils.findMethod(registeredBean.getBeanClass(),
-            this.methodName, this.parameterTypes);
-        Assert.notNull(method, () ->
-            "Method '" + this.methodName + "' with parameter types [" + toCommaSeparatedNames(this.parameterTypes) + "] declared on " + registeredBean.getBeanClass().getName() + " could not be found.");
+        Method method = ReflectionUtils.findMethod(registeredBean.getBeanClass(), this.methodName, this.parameterTypes);
+        Assert.notNull(
+                method,
+                () -> "Method '" + this.methodName + "' with parameter types ["
+                        + toCommaSeparatedNames(this.parameterTypes) + "] declared on "
+                        + registeredBean.getBeanClass().getName() + " could not be found.");
         return method;
     }
 
     private String toCommaSeparatedNames(Class<?>... parameterTypes) {
-        return Arrays.stream(parameterTypes).map(Class::getName)
-            .collect(Collectors.joining(", "));
+        return Arrays.stream(parameterTypes).map(Class::getName).collect(Collectors.joining(", "));
     }
-
 }

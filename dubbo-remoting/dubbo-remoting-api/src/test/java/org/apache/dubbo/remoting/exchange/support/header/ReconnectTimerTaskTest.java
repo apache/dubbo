@@ -19,13 +19,13 @@ package org.apache.dubbo.remoting.exchange.support.header;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 
+import java.util.Collections;
+import java.util.concurrent.TimeUnit;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.Collections;
-import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.remoting.Constants.HEARTBEAT_CHECK_TICK;
@@ -56,7 +56,9 @@ class ReconnectTimerTaskTest {
             }
         };
 
-        reconnectTimerTask = new ReconnectTimerTask(() -> Collections.singleton(channel), reconnectTimer, tickDuration / HEARTBEAT_CHECK_TICK, (int) tickDuration);
+        reconnectTimerTask = new ReconnectTimerTask(
+                () -> Collections.singleton(channel), reconnectTimer, tickDuration / HEARTBEAT_CHECK_TICK, (int)
+                        tickDuration);
     }
 
     @AfterEach

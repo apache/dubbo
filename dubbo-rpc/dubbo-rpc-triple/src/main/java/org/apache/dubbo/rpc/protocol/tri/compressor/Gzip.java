@@ -14,13 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.compressor;
 
 import org.apache.dubbo.rpc.RpcException;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -53,6 +54,15 @@ public class Gzip implements Compressor, DeCompressor {
     }
 
     @Override
+    public OutputStream decorate(OutputStream outputStream) {
+        try {
+            return new GZIPOutputStream(outputStream);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    @Override
     public byte[] decompress(byte[] payloadByteArr) throws RpcException {
         if (null == payloadByteArr || 0 == payloadByteArr.length) {
             return new byte[0];
@@ -72,5 +82,4 @@ public class Gzip implements Compressor, DeCompressor {
 
         return byteOutStream.toByteArray();
     }
-
 }

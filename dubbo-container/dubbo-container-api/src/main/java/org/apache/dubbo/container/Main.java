@@ -32,9 +32,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_CONTAINER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_SHUTDOWN_HOOK_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_THREAD_INTERRUPTED_EXCEPTION;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_START_DUBBO_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_STOP_DUBBO_ERROR;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_THREAD_INTERRUPTED_EXCEPTION;
+
 
 /**
  * Main. (API, Static, ThreadSafe)
@@ -90,7 +91,8 @@ public class Main {
                 container.start();
                 logger.info("Dubbo " + container.getClass().getSimpleName() + " started!");
             }
-            System.out.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]").format(new Date()) + " Dubbo service server started!");
+            System.out.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]").format(new Date())
+                    + " Dubbo service server started!");
         } catch (RuntimeException e) {
             logger.error(CONFIG_START_DUBBO_ERROR, "", "", e.getMessage(), e);
             System.exit(1);
@@ -99,10 +101,14 @@ public class Main {
             LOCK.lock();
             STOP.await();
         } catch (InterruptedException e) {
-            logger.warn(COMMON_THREAD_INTERRUPTED_EXCEPTION, "", "", "Dubbo service server stopped, interrupted by other thread!", e);
+            logger.warn(
+                    COMMON_THREAD_INTERRUPTED_EXCEPTION,
+                    "",
+                    "",
+                    "Dubbo service server stopped, interrupted by other thread!",
+                    e);
         } finally {
             LOCK.unlock();
         }
     }
-
 }

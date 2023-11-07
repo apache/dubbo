@@ -25,15 +25,16 @@ import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.http.HttpHandler;
 import org.apache.dubbo.remoting.http.HttpServer;
 
-import org.apache.http.client.fluent.Request;
-import org.eclipse.jetty.util.log.Log;
-import org.junit.jupiter.api.Test;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+
+import org.apache.http.client.fluent.Request;
+import org.eclipse.jetty.util.log.Log;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -45,11 +46,11 @@ import static org.mockito.Mockito.when;
 class JettyLoggerAdapterTest {
 
     @Test
-    void testJettyUseDubboLogger() throws Exception{
+    void testJettyUseDubboLogger() throws Exception {
         int port = NetUtils.getAvailablePort();
-        URL url = new ServiceConfigURL("http", "localhost", port,
-            new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});
-        HttpServer httpServer = new JettyHttpServer(url, new HttpHandler<HttpServletRequest,HttpServletResponse>() {
+        URL url = new ServiceConfigURL(
+                "http", "localhost", port, new String[] {Constants.BIND_PORT_KEY, String.valueOf(port)});
+        HttpServer httpServer = new JettyHttpServer(url, new HttpHandler<HttpServletRequest, HttpServletResponse>() {
             @Override
             public void handle(HttpServletRequest request, HttpServletResponse response) throws IOException {
                 response.getWriter().write("Jetty is using Dubbo's logger");
@@ -62,12 +63,12 @@ class JettyLoggerAdapterTest {
         httpServer.close();
     }
 
-
     @Test
-    void testSuccessLogger() throws Exception{
+    void testSuccessLogger() throws Exception {
         Logger successLogger = mock(Logger.class);
         Class<?> clazz = Class.forName("org.apache.dubbo.remoting.http.jetty.JettyLoggerAdapter");
-        JettyLoggerAdapter jettyLoggerAdapter = (JettyLoggerAdapter) clazz.getDeclaredConstructor().newInstance();
+        JettyLoggerAdapter jettyLoggerAdapter =
+                (JettyLoggerAdapter) clazz.getDeclaredConstructor().newInstance();
 
         Field loggerField = clazz.getDeclaredField("logger");
         loggerField.setAccessible(true);
@@ -96,32 +97,30 @@ class JettyLoggerAdapterTest {
         jettyLoggerAdapter.debug("debug", new Exception("debug"));
     }
 
-
     @Test
-    void testNewLogger(){
+    void testNewLogger() {
         JettyLoggerAdapter loggerAdapter = new JettyLoggerAdapter();
-        org.eclipse.jetty.util.log.Logger logger = loggerAdapter.newLogger(this.getClass().getName());
+        org.eclipse.jetty.util.log.Logger logger =
+                loggerAdapter.newLogger(this.getClass().getName());
         assertThat(logger.getClass().isAssignableFrom(JettyLoggerAdapter.class), is(true));
     }
 
-
     @Test
-    void testDebugEnabled(){
+    void testDebugEnabled() {
         JettyLoggerAdapter loggerAdapter = new JettyLoggerAdapter();
         loggerAdapter.setDebugEnabled(true);
         assertThat(loggerAdapter.isDebugEnabled(), is(true));
     }
 
-
     @Test
-    void testLoggerFormat() throws Exception{
+    void testLoggerFormat() throws Exception {
         Class<?> clazz = Class.forName("org.apache.dubbo.remoting.http.jetty.JettyLoggerAdapter");
         Object newInstance = clazz.getDeclaredConstructor().newInstance();
 
         Method method = clazz.getDeclaredMethod("format", String.class, Object[].class);
         method.setAccessible(true);
 
-        String print = (String) method.invoke(newInstance, "Hello,{}! I'am {}", new  String[]{"World","Jetty"});
+        String print = (String) method.invoke(newInstance, "Hello,{}! I'am {}", new String[] {"World", "Jetty"});
 
         assertThat(print, is("Hello,World! I'am Jetty"));
     }

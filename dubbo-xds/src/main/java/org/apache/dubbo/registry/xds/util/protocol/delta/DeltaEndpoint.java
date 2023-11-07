@@ -42,10 +42,7 @@ public class DeltaEndpoint implements DeltaResource<EndpointResult> {
 
     @Override
     public EndpointResult getResource() {
-        Set<Endpoint> set = data.values().stream()
-            .flatMap(Set::stream)
-            .collect(Collectors.toSet());
+        Set<Endpoint> set = data.values().stream().flatMap(Set::stream).collect(Collectors.toSet());
         return new EndpointResult(set);
     }
-
 }

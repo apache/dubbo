@@ -16,14 +16,13 @@
  */
 package org.apache.dubbo.demo.graalvm.consumer;
 
-import org.apache.dubbo.graalvm.demo.DemoService;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
-import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-
+import org.apache.dubbo.graalvm.demo.DemoService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,7 +30,6 @@ import java.util.Map;
 public class Application {
 
     private static final String REGISTRY_URL = "zookeeper://127.0.0.1:2181";
-
 
     public static void main(String[] args) {
         System.setProperty("dubbo.application.logger", "log4j");
@@ -56,15 +54,15 @@ public class Application {
 
         ProtocolConfig protocolConfig = new ProtocolConfig(CommonConstants.DUBBO, -1);
         protocolConfig.setSerialization("fastjson2");
-        bootstrap.application(applicationConfig)
-            .registry(new RegistryConfig(REGISTRY_URL))
-            .protocol(protocolConfig)
-            .reference(reference)
-            .start();
+        bootstrap
+                .application(applicationConfig)
+                .registry(new RegistryConfig(REGISTRY_URL))
+                .protocol(protocolConfig)
+                .reference(reference)
+                .start();
 
         DemoService demoService = bootstrap.getCache().get(reference);
         String message = demoService.sayHello("Native");
         System.out.println(message);
     }
-
 }

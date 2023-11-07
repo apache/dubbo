@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.collector.sample;
 
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
@@ -47,20 +46,19 @@ public class ErrorCodeSampler extends MetricsNameCountSampler<String, String, Er
     }
 
     @Override
-    protected MetricSample provideMetricsSample(ErrorCodeMetric metric, AtomicLong count, MetricsKey metricsKey, MetricsCategory metricsCategory) {
+    protected MetricSample provideMetricsSample(
+            ErrorCodeMetric metric, AtomicLong count, MetricsKey metricsKey, MetricsCategory metricsCategory) {
         return new CounterMetricSample<>(
-            metricsKey.getNameByType(metric.getErrorCode()),
-            metricsKey.getDescription(),
-            metric.getTags(),
-            metricsCategory,
-            count
-        );
+                metricsKey.getNameByType(metric.getErrorCode()),
+                metricsKey.getDescription(),
+                metric.getTags(),
+                metricsCategory,
+                count);
     }
 
     @Override
     protected void countConfigure(MetricsCountSampleConfigurer<String, String, ErrorCodeMetric> sampleConfigure) {
         sampleConfigure.configureMetrics(configure -> {
-
             String errorCode = configure.getSource();
             ErrorCodeMetric metric = errorCodeMetrics.get(errorCode);
 

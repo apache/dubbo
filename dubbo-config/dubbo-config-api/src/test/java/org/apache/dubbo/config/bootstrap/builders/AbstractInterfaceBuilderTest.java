@@ -25,11 +25,11 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 
+import java.util.Collections;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.Collections;
 
 class AbstractInterfaceBuilderTest {
 
@@ -261,14 +261,27 @@ class AbstractInterfaceBuilderTest {
         ConfigCenterConfig configCenterConfig = new ConfigCenterConfig();
 
         InterfaceBuilder builder = new InterfaceBuilder();
-        builder.id("id").local(true).stub(false).monitor("123").proxy("mockproxyfactory").cluster("mockcluster")
-                .filter("mockfilter").listener("mockinvokerlistener").owner("owner").connections(1)
-                .layer("layer").application(applicationConfig).module(moduleConfig)
-                .addRegistry(registryConfig).registryIds("registryIds")
-                .onconnect("onconnet").ondisconnect("ondisconnect")
+        builder.id("id")
+                .local(true)
+                .stub(false)
+                .monitor("123")
+                .proxy("mockproxyfactory")
+                .cluster("mockcluster")
+                .filter("mockfilter")
+                .listener("mockinvokerlistener")
+                .owner("owner")
+                .connections(1)
+                .layer("layer")
+                .application(applicationConfig)
+                .module(moduleConfig)
+                .addRegistry(registryConfig)
+                .registryIds("registryIds")
+                .onconnect("onconnet")
+                .ondisconnect("ondisconnect")
                 .metadataReportConfig(metadataReportConfig)
                 .configCenter(configCenterConfig)
-                .callbacks(2).scope("scope");
+                .callbacks(2)
+                .scope("scope");
 
         InterfaceConfig config = builder.build();
         InterfaceConfig config2 = builder.build();
@@ -313,6 +326,5 @@ class AbstractInterfaceBuilderTest {
         }
     }
 
-    private static class InterfaceConfig extends AbstractInterfaceConfig {
-    }
+    private static class InterfaceConfig extends AbstractInterfaceConfig {}
 }

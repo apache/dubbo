@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.filter;
 
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -38,30 +37,34 @@ class DefaultFilterChainBuilderTest {
         DefaultFilterChainBuilder defaultFilterChainBuilder = new DefaultFilterChainBuilder();
 
         // verify that no filter is built by default
-        URL urlWithoutFilter = URL.valueOf("injvm://127.0.0.1/DemoService")
-            .addParameter(INTERFACE_KEY, DemoService.class.getName());
+        URL urlWithoutFilter =
+                URL.valueOf("injvm://127.0.0.1/DemoService").addParameter(INTERFACE_KEY, DemoService.class.getName());
         urlWithoutFilter = urlWithoutFilter.setScopeModel(ApplicationModel.defaultModel());
-        AbstractInvoker<DemoService> invokerWithoutFilter = new AbstractInvoker<DemoService>(DemoService.class, urlWithoutFilter) {
-            @Override
-            protected Result doInvoke(Invocation invocation) {
-                return null;
-            }
-        };
+        AbstractInvoker<DemoService> invokerWithoutFilter =
+                new AbstractInvoker<DemoService>(DemoService.class, urlWithoutFilter) {
+                    @Override
+                    protected Result doInvoke(Invocation invocation) {
+                        return null;
+                    }
+                };
 
-        Invoker<?> invokerAfterBuild = defaultFilterChainBuilder.buildInvokerChain(invokerWithoutFilter, REFERENCE_FILTER_KEY, CONSUMER);
+        Invoker<?> invokerAfterBuild =
+                defaultFilterChainBuilder.buildInvokerChain(invokerWithoutFilter, REFERENCE_FILTER_KEY, CONSUMER);
 
         // verify that if LogFilter is configured, LogFilter should exist in the filter chain
         URL urlWithFilter = URL.valueOf("injvm://127.0.0.1/DemoService")
-            .addParameter(INTERFACE_KEY, DemoService.class.getName())
-            .addParameter(REFERENCE_FILTER_KEY, "log");
+                .addParameter(INTERFACE_KEY, DemoService.class.getName())
+                .addParameter(REFERENCE_FILTER_KEY, "log");
         urlWithFilter = urlWithFilter.setScopeModel(ApplicationModel.defaultModel());
-        AbstractInvoker<DemoService> invokerWithFilter = new AbstractInvoker<DemoService>(DemoService.class, urlWithFilter) {
-            @Override
-            protected Result doInvoke(Invocation invocation) {
-                return null;
-            }
-        };
-        invokerAfterBuild = defaultFilterChainBuilder.buildInvokerChain(invokerWithFilter, REFERENCE_FILTER_KEY, CONSUMER);
+        AbstractInvoker<DemoService> invokerWithFilter =
+                new AbstractInvoker<DemoService>(DemoService.class, urlWithFilter) {
+                    @Override
+                    protected Result doInvoke(Invocation invocation) {
+                        return null;
+                    }
+                };
+        invokerAfterBuild =
+                defaultFilterChainBuilder.buildInvokerChain(invokerWithFilter, REFERENCE_FILTER_KEY, CONSUMER);
         Assertions.assertTrue(invokerAfterBuild instanceof FilterChainBuilder.CallbackRegistrationInvoker);
     }
 
@@ -71,31 +74,34 @@ class DefaultFilterChainBuilderTest {
 
         // verify that no filter is built by default
         URL urlWithoutFilter = URL.valueOf("dubbo://127.0.0.1:20880/DemoService")
-            .addParameter(INTERFACE_KEY, DemoService.class.getName());
+                .addParameter(INTERFACE_KEY, DemoService.class.getName());
         urlWithoutFilter = urlWithoutFilter.setScopeModel(ApplicationModel.defaultModel());
-        AbstractInvoker<DemoService> invokerWithoutFilter = new AbstractInvoker<DemoService>(DemoService.class, urlWithoutFilter) {
-            @Override
-            protected Result doInvoke(Invocation invocation) {
-                return null;
-            }
-        };
+        AbstractInvoker<DemoService> invokerWithoutFilter =
+                new AbstractInvoker<DemoService>(DemoService.class, urlWithoutFilter) {
+                    @Override
+                    protected Result doInvoke(Invocation invocation) {
+                        return null;
+                    }
+                };
 
-        Invoker<?> invokerAfterBuild = defaultFilterChainBuilder.buildInvokerChain(invokerWithoutFilter, REFERENCE_FILTER_KEY, CONSUMER);
-//        Assertions.assertTrue(invokerAfterBuild instanceof AbstractInvoker);
+        Invoker<?> invokerAfterBuild =
+                defaultFilterChainBuilder.buildInvokerChain(invokerWithoutFilter, REFERENCE_FILTER_KEY, CONSUMER);
+        //        Assertions.assertTrue(invokerAfterBuild instanceof AbstractInvoker);
 
         // verify that if LogFilter is configured, LogFilter should exist in the filter chain
         URL urlWithFilter = URL.valueOf("dubbo://127.0.0.1:20880/DemoService")
-            .addParameter(INTERFACE_KEY, DemoService.class.getName())
-            .addParameter(REFERENCE_FILTER_KEY, "log");
+                .addParameter(INTERFACE_KEY, DemoService.class.getName())
+                .addParameter(REFERENCE_FILTER_KEY, "log");
         urlWithFilter = urlWithFilter.setScopeModel(ApplicationModel.defaultModel());
-        AbstractInvoker<DemoService> invokerWithFilter = new AbstractInvoker<DemoService>(DemoService.class, urlWithFilter) {
-            @Override
-            protected Result doInvoke(Invocation invocation) {
-                return null;
-            }
-        };
-        invokerAfterBuild = defaultFilterChainBuilder.buildInvokerChain(invokerWithFilter, REFERENCE_FILTER_KEY, CONSUMER);
+        AbstractInvoker<DemoService> invokerWithFilter =
+                new AbstractInvoker<DemoService>(DemoService.class, urlWithFilter) {
+                    @Override
+                    protected Result doInvoke(Invocation invocation) {
+                        return null;
+                    }
+                };
+        invokerAfterBuild =
+                defaultFilterChainBuilder.buildInvokerChain(invokerWithFilter, REFERENCE_FILTER_KEY, CONSUMER);
         Assertions.assertTrue(invokerAfterBuild instanceof FilterChainBuilder.CallbackRegistrationInvoker);
-
     }
 }

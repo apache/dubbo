@@ -31,13 +31,13 @@ import org.apache.dubbo.rpc.protocol.tri.call.TripleClientCall;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 
+import java.util.HashSet;
+import java.util.concurrent.ExecutorService;
+
 import io.netty.channel.Channel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import java.util.HashSet;
-import java.util.concurrent.ExecutorService;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -52,8 +52,7 @@ class TripleInvokerTest {
         ConnectionManager connectionManager = Mockito.mock(ConnectionManager.class);
         when(connectionManager.connect(any(URL.class), any(ChannelHandler.class)))
                 .thenReturn(connectionClient);
-        when(connectionClient.getChannel(true))
-                .thenReturn(channel);
+        when(connectionClient.getChannel(true)).thenReturn(channel);
         when(connectionClient.isConnected()).thenReturn(true);
 
         ExecutorService executorService = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel())
@@ -64,15 +63,14 @@ class TripleInvokerTest {
                 .thenReturn(streamObserver);
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("test");
-        invocation.setArguments(new Object[]{streamObserver, streamObserver});
-        TripleInvoker<IGreeter> invoker = new TripleInvoker<>(IGreeter.class, url,
-                Identity.MESSAGE_ENCODING, connectionClient, new HashSet<>(), executorService);
-        MethodDescriptor echoMethod = new ReflectionMethodDescriptor(
-                IGreeter.class.getDeclaredMethod("echo", String.class));
+        invocation.setArguments(new Object[] {streamObserver, streamObserver});
+        TripleInvoker<IGreeter> invoker = new TripleInvoker<>(
+                IGreeter.class, url, Identity.MESSAGE_ENCODING, connectionClient, new HashSet<>(), executorService);
+        MethodDescriptor echoMethod =
+                new ReflectionMethodDescriptor(IGreeter.class.getDeclaredMethod("echo", String.class));
         Assertions.assertTrue(invoker.isAvailable());
         invoker.invokeUnary(echoMethod, invocation, call, new ThreadlessExecutor());
         invoker.destroy();
         Assertions.assertFalse(invoker.isAvailable());
     }
-
 }

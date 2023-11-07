@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.remoting.Constants;
@@ -50,7 +49,7 @@ public class UnaryClientCallListener implements ClientCall.Listener {
             } else {
                 result.setValue(appResponse);
             }
-         } else {
+        } else {
             result.setException(status.asException());
         }
         result.setAttribute(Constants.CONTENT_LENGTH_KEY, actualContentLength);
@@ -59,8 +58,7 @@ public class UnaryClientCallListener implements ClientCall.Listener {
 
     @Override
     public void onStart(ClientCall call) {
-        future.addTimeoutListener(
-            () -> call.cancelByLocal(new IllegalStateException("client timeout")));
+        future.addTimeoutListener(() -> call.cancelByLocal(new IllegalStateException("client timeout")));
         call.request(2);
     }
 }

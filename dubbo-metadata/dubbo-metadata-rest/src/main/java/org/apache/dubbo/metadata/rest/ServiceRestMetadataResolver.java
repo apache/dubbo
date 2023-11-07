@@ -36,7 +36,7 @@ public interface ServiceRestMetadataResolver {
      */
     boolean supports(Class<?> serviceType);
 
-    boolean supports(Class<?> serviceType,boolean consumer);
+    boolean supports(Class<?> serviceType, boolean consumer);
 
     /**
      * Resolve the {@link ServiceRestMetadata REST metadata} from the specified

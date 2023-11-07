@@ -28,6 +28,11 @@ import org.apache.dubbo.tracing.exporter.zipkin.ZipkinSpanHandler;
 import org.apache.dubbo.tracing.tracer.TracerProvider;
 import org.apache.dubbo.tracing.utils.PropagationType;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
 import io.micrometer.tracing.CurrentTraceContext;
 import io.micrometer.tracing.Tracer;
 import io.micrometer.tracing.brave.bridge.BraveBaggageManager;
@@ -35,18 +40,12 @@ import io.micrometer.tracing.brave.bridge.BraveCurrentTraceContext;
 import io.micrometer.tracing.brave.bridge.BraveTracer;
 import io.micrometer.tracing.brave.bridge.W3CPropagation;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
 import static org.apache.dubbo.tracing.utils.ObservationConstants.DEFAULT_APPLICATION_NAME;
 import static org.apache.dubbo.tracing.utils.ObservationSupportUtil.isSupportBraveURLSender;
 
-
 public class BraveProvider implements TracerProvider {
 
-    private final static ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(BraveProvider.class);
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(BraveProvider.class);
 
     private static final BraveBaggageManager BRAVE_BAGGAGE_MANAGER = new BraveBaggageManager();
 
@@ -63,19 +62,21 @@ public class BraveProvider implements TracerProvider {
         // [Brave component] SpanHandler is a component that gets called when a span is finished.
         List<brave.handler.SpanHandler> spanHandlerList = getSpanHandlers();
 
-        String applicationName = applicationModel.getApplicationConfigManager().getApplication()
+        String applicationName = applicationModel
+                .getApplicationConfigManager()
+                .getApplication()
                 .map(ApplicationConfig::getName)
                 .orElse(DEFAULT_APPLICATION_NAME);
 
         // [Brave component] CurrentTraceContext is a Brave component that allows you to
         // retrieve the current TraceContext.
-        brave.propagation.ThreadLocalCurrentTraceContext braveCurrentTraceContext = brave.propagation.ThreadLocalCurrentTraceContext.newBuilder()
-                .addScopeDecorator(correlationScopeDecorator()) // Brave's automatic MDC setup
-                .build();
+        brave.propagation.ThreadLocalCurrentTraceContext braveCurrentTraceContext =
+                brave.propagation.ThreadLocalCurrentTraceContext.newBuilder()
+                        .addScopeDecorator(correlationScopeDecorator()) // Brave's automatic MDC setup
+                        .build();
 
         // [Micrometer Tracing component] A Micrometer Tracing wrapper for Brave's CurrentTraceContext
         CurrentTraceContext bridgeContext = new BraveCurrentTraceContext(braveCurrentTraceContext);
-
 
         // [Brave component] Tracing is the root component that allows to configure the
         // tracer, handlers, context propagation etc.
@@ -127,8 +128,10 @@ public class BraveProvider implements TracerProvider {
         return Optional.of((builder) -> {
             List<String> correlationFields = correlation.getFields();
             for (String field : correlationFields) {
-                builder.add(brave.baggage.CorrelationScopeConfig.SingleCorrelationField.newBuilder(brave.baggage.BaggageField.create(field))
-                        .flushOnUpdate().build());
+                builder.add(brave.baggage.CorrelationScopeConfig.SingleCorrelationField.newBuilder(
+                                brave.baggage.BaggageField.create(field))
+                        .flushOnUpdate()
+                        .build());
             }
         });
     }
@@ -149,36 +152,47 @@ public class BraveProvider implements TracerProvider {
             return getPropagationFactoryWithBaggage(tracingConfig);
         }
 
-        private static brave.propagation.Propagation.Factory getPropagationFactoryWithoutBaggage(TracingConfig tracingConfig) {
-            PropagationType propagationType = PropagationType.forValue(tracingConfig.getPropagation().getType());
+        private static brave.propagation.Propagation.Factory getPropagationFactoryWithoutBaggage(
+                TracingConfig tracingConfig) {
+            PropagationType propagationType =
+                    PropagationType.forValue(tracingConfig.getPropagation().getType());
             if (PropagationType.W3C == propagationType) {
                 return new io.micrometer.tracing.brave.bridge.W3CPropagation();
             } else {
                 // Brave default propagation is B3
-                return brave.propagation.B3Propagation.newFactoryBuilder().injectFormat(brave.propagation.B3Propagation.Format.SINGLE_NO_PARENT).build();
+                return brave.propagation.B3Propagation.newFactoryBuilder()
+                        .injectFormat(brave.propagation.B3Propagation.Format.SINGLE_NO_PARENT)
+                        .build();
             }
         }
 
-        private static brave.propagation.Propagation.Factory getPropagationFactoryWithBaggage(TracingConfig tracingConfig) {
-            PropagationType propagationType = PropagationType.forValue(tracingConfig.getPropagation().getType());
+        private static brave.propagation.Propagation.Factory getPropagationFactoryWithBaggage(
+                TracingConfig tracingConfig) {
+            PropagationType propagationType =
+                    PropagationType.forValue(tracingConfig.getPropagation().getType());
             brave.propagation.Propagation.Factory delegate;
             if (PropagationType.W3C == propagationType) {
                 delegate = new W3CPropagation(BRAVE_BAGGAGE_MANAGER, Collections.emptyList());
             } else {
                 // Brave default propagation is B3
-                delegate = brave.propagation.B3Propagation.newFactoryBuilder().injectFormat(brave.propagation.B3Propagation.Format.SINGLE_NO_PARENT).build();
+                delegate = brave.propagation.B3Propagation.newFactoryBuilder()
+                        .injectFormat(brave.propagation.B3Propagation.Format.SINGLE_NO_PARENT)
+                        .build();
             }
             return getBaggageFactoryBuilder(delegate, tracingConfig).build();
         }
 
-        private static brave.baggage.BaggagePropagation.FactoryBuilder getBaggageFactoryBuilder(brave.propagation.Propagation.Factory delegate, TracingConfig tracingConfig) {
-            brave.baggage.BaggagePropagation.FactoryBuilder builder = brave.baggage.BaggagePropagation.newFactoryBuilder(delegate);
+        private static brave.baggage.BaggagePropagation.FactoryBuilder getBaggageFactoryBuilder(
+                brave.propagation.Propagation.Factory delegate, TracingConfig tracingConfig) {
+            brave.baggage.BaggagePropagation.FactoryBuilder builder =
+                    brave.baggage.BaggagePropagation.newFactoryBuilder(delegate);
 
             getBaggagePropagationCustomizers(tracingConfig).forEach((customizer) -> customizer.customize(builder));
             return builder;
         }
 
-        private static List<brave.baggage.BaggagePropagationCustomizer> getBaggagePropagationCustomizers(TracingConfig tracingConfig) {
+        private static List<brave.baggage.BaggagePropagationCustomizer> getBaggagePropagationCustomizers(
+                TracingConfig tracingConfig) {
             List<brave.baggage.BaggagePropagationCustomizer> res = new ArrayList<>();
             if (tracingConfig.getBaggage().getCorrelation().isEnabled()) {
                 res.add(remoteFieldsBaggagePropagationCustomizer(tracingConfig));
@@ -186,11 +200,13 @@ public class BraveProvider implements TracerProvider {
             return res;
         }
 
-        private static brave.baggage.BaggagePropagationCustomizer remoteFieldsBaggagePropagationCustomizer(TracingConfig tracingConfig) {
+        private static brave.baggage.BaggagePropagationCustomizer remoteFieldsBaggagePropagationCustomizer(
+                TracingConfig tracingConfig) {
             return (builder) -> {
                 List<String> remoteFields = tracingConfig.getBaggage().getRemoteFields();
                 for (String fieldName : remoteFields) {
-                    builder.add(brave.baggage.BaggagePropagationConfig.SingleBaggageField.remote(brave.baggage.BaggageField.create(fieldName)));
+                    builder.add(brave.baggage.BaggagePropagationConfig.SingleBaggageField.remote(
+                            brave.baggage.BaggageField.create(fieldName)));
                 }
             };
         }

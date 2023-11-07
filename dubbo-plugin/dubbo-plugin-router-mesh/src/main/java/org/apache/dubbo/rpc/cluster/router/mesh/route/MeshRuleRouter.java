@@ -74,13 +74,20 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
         super(url);
         sourcesLabels = Collections.unmodifiableMap(new HashMap<>(url.getParameters()));
         this.meshRuleManager = url.getOrDefaultModuleModel().getBeanFactory().getBean(MeshRuleManager.class);
-        this.tracingContextProviders = url.getOrDefaultModuleModel().getExtensionLoader(TracingContextProvider.class).getSupportedExtensionInstances();
+        this.tracingContextProviders = url.getOrDefaultModuleModel()
+                .getExtensionLoader(TracingContextProvider.class)
+                .getSupportedExtensionInstances();
     }
 
     @Override
-    protected BitList<Invoker<T>> doRoute(BitList<Invoker<T>> invokers, URL url, Invocation invocation,
-                                          boolean needToPrintMessage, Holder<RouterSnapshotNode<T>> nodeHolder,
-                                          Holder<String> messageHolder) throws RpcException {
+    protected BitList<Invoker<T>> doRoute(
+            BitList<Invoker<T>> invokers,
+            URL url,
+            Invocation invocation,
+            boolean needToPrintMessage,
+            Holder<RouterSnapshotNode<T>> nodeHolder,
+            Holder<String> messageHolder)
+            throws RpcException {
         MeshRuleCache<T> ruleCache = this.meshRuleCache;
         if (!ruleCache.containsRule()) {
             if (needToPrintMessage) {
@@ -96,7 +103,8 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
         // loop each application
         for (String appName : ruleCache.getAppList()) {
             // find destination by invocation
-            List<DubboRouteDestination> routeDestination = getDubboRouteDestination(ruleCache.getVsDestinationGroup(appName), invocation);
+            List<DubboRouteDestination> routeDestination =
+                    getDubboRouteDestination(ruleCache.getVsDestinationGroup(appName), invocation);
             if (routeDestination != null) {
                 // aggregate target invokers
                 String subset = randomSelectDestination(ruleCache, appName, routeDestination, invokers);
@@ -104,7 +112,12 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
                     BitList<Invoker<T>> destination = meshRuleCache.getSubsetInvokers(appName, subset);
                     result = result.or(destination);
                     if (stringBuilder != null) {
-                        stringBuilder.append("Match App: ").append(appName).append(" Subset: ").append(subset).append(' ');
+                        stringBuilder
+                                .append("Match App: ")
+                                .append(appName)
+                                .append(" Subset: ")
+                                .append(subset)
+                                .append(' ');
                     }
                 }
             }
@@ -129,7 +142,8 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
     /**
      * Select RouteDestination by Invocation
      */
-    protected List<DubboRouteDestination> getDubboRouteDestination(VsDestinationGroup vsDestinationGroup, Invocation invocation) {
+    protected List<DubboRouteDestination> getDubboRouteDestination(
+            VsDestinationGroup vsDestinationGroup, Invocation invocation) {
         if (vsDestinationGroup != null) {
             List<VirtualServiceRule> virtualServiceRuleList = vsDestinationGroup.getVirtualServiceRuleList();
             if (CollectionUtils.isNotEmpty(virtualServiceRuleList)) {
@@ -182,8 +196,8 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
                     return dubboRouteDetail.getRoute();
                 }
 
-                if (matchRequestList.stream().allMatch(
-                    request -> request.isMatch(invocation, sourcesLabels, tracingContextProviders))) {
+                if (matchRequestList.stream()
+                        .allMatch(request -> request.isMatch(invocation, sourcesLabels, tracingContextProviders))) {
                     return dubboRouteDetail.getRoute();
                 }
             }
@@ -195,7 +209,12 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
     /**
      * Find out target invokers from RouteDestination
      */
-    protected String randomSelectDestination(MeshRuleCache<T> meshRuleCache, String appName, List<DubboRouteDestination> routeDestination, BitList<Invoker<T>> availableInvokers) throws RpcException {
+    protected String randomSelectDestination(
+            MeshRuleCache<T> meshRuleCache,
+            String appName,
+            List<DubboRouteDestination> routeDestination,
+            BitList<Invoker<T>> availableInvokers)
+            throws RpcException {
         // randomly select one DubboRouteDestination from list by weight
         int totalWeight = 0;
         for (DubboRouteDestination dubboRouteDestination : routeDestination) {
@@ -206,7 +225,8 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
             target -= Math.max(destination.getWeight(), 1);
             if (target <= 0) {
                 // match weight
-                String result = computeDestination(meshRuleCache, appName, destination.getDestination(), availableInvokers);
+                String result =
+                        computeDestination(meshRuleCache, appName, destination.getDestination(), availableInvokers);
                 if (result != null) {
                     return result;
                 }
@@ -226,13 +246,19 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
     /**
      * Compute Destination Subset
      */
-    protected String computeDestination(MeshRuleCache<T> meshRuleCache, String appName, DubboDestination dubboDestination, BitList<Invoker<T>> availableInvokers) throws RpcException {
+    protected String computeDestination(
+            MeshRuleCache<T> meshRuleCache,
+            String appName,
+            DubboDestination dubboDestination,
+            BitList<Invoker<T>> availableInvokers)
+            throws RpcException {
         String subset = dubboDestination.getSubset();
 
         do {
             BitList<Invoker<T>> result = meshRuleCache.getSubsetInvokers(appName, subset);
 
-            if (CollectionUtils.isNotEmpty(result) && !availableInvokers.clone().and(result).isEmpty()) {
+            if (CollectionUtils.isNotEmpty(result)
+                    && !availableInvokers.clone().and(result).isEmpty()) {
                 return subset;
             }
 
@@ -309,7 +335,12 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
                 appToVDGroup.put(appName, vsDestinationGroup);
             }
         } catch (Throwable t) {
-            logger.error(CLUSTER_FAILED_RECEIVE_RULE,"failed to parse mesh route rule","","Error occurred when parsing rule component.",t);
+            logger.error(
+                    CLUSTER_FAILED_RECEIVE_RULE,
+                    "failed to parse mesh route rule",
+                    "",
+                    "Error occurred when parsing rule component.",
+                    t);
         }
 
         computeSubset(appToVDGroup);
@@ -323,7 +354,8 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
     }
 
     protected void computeSubset(Map<String, VsDestinationGroup> vsDestinationGroupMap) {
-        this.meshRuleCache = MeshRuleCache.build(getUrl().getProtocolServiceKey(), this.invokerList, vsDestinationGroupMap);
+        this.meshRuleCache =
+                MeshRuleCache.build(getUrl().getProtocolServiceKey(), this.invokerList, vsDestinationGroupMap);
     }
 
     @Override

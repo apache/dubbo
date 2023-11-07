@@ -62,7 +62,14 @@ public class AddressMatch {
             try {
                 return input.equals(getCird()) || matchIpExpression(getCird(), input);
             } catch (UnknownHostException e) {
-                logger.error(CLUSTER_FAILED_EXEC_CONDITION_ROUTER, "Executing routing rule match expression error.", "", String.format("Error trying to match cird formatted address %s with input %s in AddressMatch.", getCird(), input), e);
+                logger.error(
+                        CLUSTER_FAILED_EXEC_CONDITION_ROUTER,
+                        "Executing routing rule match expression error.",
+                        "",
+                        String.format(
+                                "Error trying to match cird formatted address %s with input %s in AddressMatch.",
+                                getCird(), input),
+                        e);
             }
         }
         if (getWildcard() != null && input != null) {

@@ -16,9 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.mvc.feign;
 
-
-
-public class FeignClientControllerImpl implements FeignClientController{
+public class FeignClientControllerImpl implements FeignClientController {
 
     @Override
     public String hello() {

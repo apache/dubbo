@@ -22,7 +22,9 @@ public class MultiClassLoaderServiceImpl implements MultiClassLoaderService {
     private AtomicReference<MultiClassLoaderServiceRequest> innerRequestReference;
     private AtomicReference<MultiClassLoaderServiceResult> innerResultReference;
 
-    public MultiClassLoaderServiceImpl(AtomicReference<MultiClassLoaderServiceRequest> innerRequestReference, AtomicReference<MultiClassLoaderServiceResult> innerResultReference) {
+    public MultiClassLoaderServiceImpl(
+            AtomicReference<MultiClassLoaderServiceRequest> innerRequestReference,
+            AtomicReference<MultiClassLoaderServiceResult> innerResultReference) {
         this.innerRequestReference = innerRequestReference;
         this.innerResultReference = innerResultReference;
     }

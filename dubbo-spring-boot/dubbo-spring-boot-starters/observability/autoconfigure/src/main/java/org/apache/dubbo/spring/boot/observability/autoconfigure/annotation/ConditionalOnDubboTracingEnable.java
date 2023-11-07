@@ -18,14 +18,14 @@ package org.apache.dubbo.spring.boot.observability.autoconfigure.annotation;
 
 import org.apache.dubbo.spring.boot.observability.autoconfigure.ObservabilityUtils;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 /**
  * Checks whether tracing is enabled.
@@ -39,5 +39,4 @@ import java.lang.annotation.Target;
 @Inherited
 @Documented
 @ConditionalOnProperty(prefix = ObservabilityUtils.DUBBO_TRACING_PREFIX, name = "enabled")
-public @interface ConditionalOnDubboTracingEnable {
-}
+public @interface ConditionalOnDubboTracingEnable {}

@@ -39,7 +39,7 @@ public class DubboConfigAliasPostProcessor implements BeanDefinitionRegistryPost
     /**
      * The bean name of {@link DubboConfigConfigurationRegistrar}
      */
-    public final static String BEAN_NAME = "dubboConfigAliasPostProcessor";
+    public static final String BEAN_NAME = "dubboConfigAliasPostProcessor";
 
     private BeanDefinitionRegistry registry;
 
@@ -63,9 +63,9 @@ public class DubboConfigAliasPostProcessor implements BeanDefinitionRegistryPost
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         if (bean instanceof AbstractConfig) {
             String id = ((AbstractConfig) bean).getId();
-            if (hasText(id)                                     // id MUST be present in AbstractConfig
-                    && !nullSafeEquals(id, beanName)            // id MUST NOT be equal to bean name
-                    && !BeanRegistrar.hasAlias(registry, beanName, id)) {     // id MUST NOT be present in AliasRegistry
+            if (hasText(id) // id MUST be present in AbstractConfig
+                    && !nullSafeEquals(id, beanName) // id MUST NOT be equal to bean name
+                    && !BeanRegistrar.hasAlias(registry, beanName, id)) { // id MUST NOT be present in AliasRegistry
                 registry.registerAlias(beanName, id);
             }
         }

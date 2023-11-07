@@ -14,11 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.tracing.utils;
 
 public enum PropagationType {
-
     W3C("W3C"),
     B3("B3");
 

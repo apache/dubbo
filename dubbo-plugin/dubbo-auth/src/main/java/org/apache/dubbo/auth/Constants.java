@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.auth;
 
-
 public interface Constants {
 
     String SERVICE_AUTH = "auth";

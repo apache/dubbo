@@ -18,6 +18,7 @@ package org.apache.dubbo.demo.rest.api.annotation;
 
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.demo.rest.api.DubboServiceAnnotationService;
+
 import org.springframework.stereotype.Component;
 
 @Component

@@ -24,13 +24,6 @@ import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.ArgumentsProvider;
-import org.junit.jupiter.params.provider.ArgumentsSource;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Method;
@@ -39,6 +32,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 
 class TypeMatchTest {
     static class DataProvider implements ArgumentsProvider {
@@ -68,24 +68,32 @@ class TypeMatchTest {
             datas.add("world".getBytes());
 
             for (Method method : ObjectInput.class.getMethods()) {
-                if (method.getName().startsWith("read") && method.getParameterTypes().length == 0 && !method.getReturnType().equals(Object.class)) {
+                if (method.getName().startsWith("read")
+                        && method.getParameterTypes().length == 0
+                        && !method.getReturnType().equals(Object.class)) {
                     readMethods.add(method);
                 }
             }
             for (Method method : DataInput.class.getMethods()) {
-                if (method.getName().startsWith("read") && method.getParameterTypes().length == 0 && !method.getReturnType().equals(Object.class)) {
+                if (method.getName().startsWith("read")
+                        && method.getParameterTypes().length == 0
+                        && !method.getReturnType().equals(Object.class)) {
                     readMethods.add(method);
                 }
             }
 
             for (Method method : ObjectOutput.class.getMethods()) {
-                if (method.getName().startsWith("write") && method.getParameterTypes().length == 1 && !method.getParameterTypes()[0].equals(Object.class)) {
+                if (method.getName().startsWith("write")
+                        && method.getParameterTypes().length == 1
+                        && !method.getParameterTypes()[0].equals(Object.class)) {
                     writeMethods.add(method);
                 }
             }
 
             for (Method method : DataOutput.class.getMethods()) {
-                if (method.getName().startsWith("write") && method.getParameterTypes().length == 1 && !method.getParameterTypes()[0].equals(Object.class)) {
+                if (method.getName().startsWith("write")
+                        && method.getParameterTypes().length == 1
+                        && !method.getParameterTypes()[0].equals(Object.class)) {
                     writeMethods.add(method);
                 }
             }
@@ -108,8 +116,9 @@ class TypeMatchTest {
                         if (output.getParameterTypes()[0].isAssignableFrom(data.getClass())) {
                             argumentsList.add(Arguments.arguments(data, input, output));
                         }
-                        if (primitiveWrapperTypeMap.containsKey(data.getClass()) &&
-                            output.getParameterTypes()[0].isAssignableFrom(primitiveWrapperTypeMap.get(data.getClass()))) {
+                        if (primitiveWrapperTypeMap.containsKey(data.getClass())
+                                && output.getParameterTypes()[0].isAssignableFrom(
+                                        primitiveWrapperTypeMap.get(data.getClass()))) {
                             argumentsList.add(Arguments.arguments(data, input, output));
                         }
                     }
@@ -124,7 +133,8 @@ class TypeMatchTest {
     @ArgumentsSource(DataProvider.class)
     void test(Object data, Method input, Method output) throws Exception {
         FrameworkModel frameworkModel = new FrameworkModel();
-        Serialization serialization = frameworkModel.getExtensionLoader(Serialization.class).getExtension("fastjson2");
+        Serialization serialization =
+                frameworkModel.getExtensionLoader(Serialization.class).getExtension("fastjson2");
         URL url = URL.valueOf("").setScopeModel(frameworkModel);
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

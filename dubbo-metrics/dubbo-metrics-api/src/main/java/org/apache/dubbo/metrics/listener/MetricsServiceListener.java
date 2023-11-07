@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.listener;
 
 import org.apache.dubbo.metrics.collector.ServiceMetricsCollector;
@@ -34,22 +33,21 @@ public class MetricsServiceListener extends AbstractMetricsKeyListener {
         super(metricsKey);
     }
 
-    public static AbstractMetricsKeyListener onPostEventBuild(MetricsKey metricsKey, MetricsPlaceValue placeType, ServiceMetricsCollector<TimeCounterEvent> collector) {
-        return AbstractMetricsKeyListener.onEvent(metricsKey,
-            event -> MetricsSupport.increment(metricsKey, placeType, collector, event)
-        );
+    public static AbstractMetricsKeyListener onPostEventBuild(
+            MetricsKey metricsKey, MetricsPlaceValue placeType, ServiceMetricsCollector<TimeCounterEvent> collector) {
+        return AbstractMetricsKeyListener.onEvent(
+                metricsKey, event -> MetricsSupport.increment(metricsKey, placeType, collector, event));
     }
 
-    public static AbstractMetricsKeyListener onFinishEventBuild(MetricsKey metricsKey, MetricsPlaceValue placeType, ServiceMetricsCollector<TimeCounterEvent> collector) {
-        return AbstractMetricsKeyListener.onFinish(metricsKey,
-            event -> MetricsSupport.incrAndAddRt(metricsKey, placeType, collector, event)
-        );
+    public static AbstractMetricsKeyListener onFinishEventBuild(
+            MetricsKey metricsKey, MetricsPlaceValue placeType, ServiceMetricsCollector<TimeCounterEvent> collector) {
+        return AbstractMetricsKeyListener.onFinish(
+                metricsKey, event -> MetricsSupport.incrAndAddRt(metricsKey, placeType, collector, event));
     }
 
-    public static AbstractMetricsKeyListener onErrorEventBuild(MetricsKey metricsKey, MetricsPlaceValue placeType, ServiceMetricsCollector<TimeCounterEvent> collector) {
-        return AbstractMetricsKeyListener.onError(metricsKey,
-            event -> MetricsSupport.incrAndAddRt(metricsKey, placeType, collector, event)
-        );
+    public static AbstractMetricsKeyListener onErrorEventBuild(
+            MetricsKey metricsKey, MetricsPlaceValue placeType, ServiceMetricsCollector<TimeCounterEvent> collector) {
+        return AbstractMetricsKeyListener.onError(
+                metricsKey, event -> MetricsSupport.incrAndAddRt(metricsKey, placeType, collector, event));
     }
-
 }

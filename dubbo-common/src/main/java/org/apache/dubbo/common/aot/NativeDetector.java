@@ -32,5 +32,4 @@ public abstract class NativeDetector {
     public static boolean inNativeImage() {
         return IMAGE_CODE;
     }
-
 }

@@ -18,11 +18,11 @@ package org.apache.dubbo.config.bootstrap.builders;
 
 import org.apache.dubbo.config.AbstractMethodConfig;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class AbstractMethodBuilderTest {
 
@@ -150,8 +150,17 @@ class AbstractMethodBuilderTest {
     @Test
     void build() {
         MethodBuilder builder = new MethodBuilder();
-        builder.id("id").timeout(1).retries(2).actives(3).loadbalance("mockloadbalance").async(true)
-                .sent(false).mock("mock").merger("merger").cache("cache").validation("validation")
+        builder.id("id")
+                .timeout(1)
+                .retries(2)
+                .actives(3)
+                .loadbalance("mockloadbalance")
+                .async(true)
+                .sent(false)
+                .mock("mock")
+                .merger("merger")
+                .cache("cache")
+                .validation("validation")
                 .appendParameter("default.num", "one");
 
         MethodConfig config = builder.build();
@@ -172,7 +181,6 @@ class AbstractMethodBuilderTest {
         Assertions.assertEquals("one", config.getParameters().get("default.num"));
 
         Assertions.assertNotSame(config, config2);
-
     }
 
     private static class MethodBuilder extends AbstractMethodBuilder<MethodConfig, MethodBuilder> {
@@ -190,6 +198,5 @@ class AbstractMethodBuilderTest {
         }
     }
 
-    private static class MethodConfig extends AbstractMethodConfig {
-    }
+    private static class MethodConfig extends AbstractMethodConfig {}
 }

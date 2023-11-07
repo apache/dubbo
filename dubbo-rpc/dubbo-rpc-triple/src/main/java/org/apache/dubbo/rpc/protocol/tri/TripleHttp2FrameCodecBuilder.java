@@ -14,8 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri;
+
+import org.apache.dubbo.common.utils.Assert;
+
+import java.util.function.Consumer;
 
 import io.netty.handler.codec.http2.DefaultHttp2Connection;
 import io.netty.handler.codec.http2.Http2CodecUtil;
@@ -23,9 +26,6 @@ import io.netty.handler.codec.http2.Http2Connection;
 import io.netty.handler.codec.http2.Http2FrameCodecBuilder;
 import io.netty.handler.codec.http2.Http2LocalFlowController;
 import io.netty.handler.codec.http2.Http2RemoteFlowController;
-import org.apache.dubbo.common.utils.Assert;
-
-import java.util.function.Consumer;
 
 public class TripleHttp2FrameCodecBuilder extends Http2FrameCodecBuilder {
 

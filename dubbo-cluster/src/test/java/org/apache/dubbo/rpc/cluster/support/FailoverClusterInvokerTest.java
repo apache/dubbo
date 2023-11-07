@@ -32,12 +32,13 @@ import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -64,7 +65,6 @@ class FailoverClusterInvokerTest {
     /**
      * @throws java.lang.Exception
      */
-
     @BeforeEach
     public void setUp() throws Exception {
         ApplicationModel.defaultModel().getBeanFactory().registerBean(MetricsDispatcher.class);
@@ -79,7 +79,6 @@ class FailoverClusterInvokerTest {
         invokers.add(invoker1);
         invokers.add(invoker2);
     }
-
 
     @Test
     void testInvokeWithRuntimeException() {
@@ -197,7 +196,8 @@ class FailoverClusterInvokerTest {
     @Test
     void testInvoke_without_retry() {
         int withoutRetry = 0;
-        final URL url = URL.valueOf("test://localhost/" + Demo.class.getName() + "?loadbalance=roundrobin&retries=" + withoutRetry);
+        final URL url = URL.valueOf(
+                "test://localhost/" + Demo.class.getName() + "?loadbalance=roundrobin&retries=" + withoutRetry);
         RpcException exception = new RpcException(RpcException.TIMEOUT_EXCEPTION);
         MockInvoker<Demo> invoker1 = new MockInvoker<>(Demo.class, url);
         invoker1.setException(exception);
@@ -224,7 +224,8 @@ class FailoverClusterInvokerTest {
     @Test
     void testInvoke_when_retry_illegal() {
         int illegalRetry = -1;
-        final URL url = URL.valueOf("test://localhost/" + Demo.class.getName() + "?loadbalance=roundrobin&retries=" + illegalRetry);
+        final URL url = URL.valueOf(
+                "test://localhost/" + Demo.class.getName() + "?loadbalance=roundrobin&retries=" + illegalRetry);
         RpcException exception = new RpcException(RpcException.TIMEOUT_EXCEPTION);
         MockInvoker<Demo> invoker1 = new MockInvoker<>(Demo.class, url);
         invoker1.setException(exception);
@@ -260,7 +261,6 @@ class FailoverClusterInvokerTest {
 
         invokers.add(invoker1);
 
-
         FailoverClusterInvoker<FailoverClusterInvokerTest> invoker = new FailoverClusterInvoker<>(dic);
         try {
             invoker.invoke(invocation);
@@ -276,7 +276,8 @@ class FailoverClusterInvokerTest {
      */
     @Test
     void testInvokerDestroyAndReList() {
-        final URL url = URL.valueOf("test://localhost/" + Demo.class.getName() + "?loadbalance=roundrobin&retries=" + retries);
+        final URL url =
+                URL.valueOf("test://localhost/" + Demo.class.getName() + "?loadbalance=roundrobin&retries=" + retries);
         RpcException exception = new RpcException(RpcException.TIMEOUT_EXCEPTION);
         MockInvoker<Demo> invoker1 = new MockInvoker<>(Demo.class, url);
         invoker1.setException(exception);
@@ -291,7 +292,7 @@ class FailoverClusterInvokerTest {
         MockDirectory<Demo> dic = new MockDirectory<>(url, invokers);
 
         Callable<Object> callable = () -> {
-            //Simulation: all invokers are destroyed
+            // Simulation: all invokers are destroyed
             for (Invoker<Demo> invoker : invokers) {
                 invoker.destroy();
             }
@@ -312,8 +313,7 @@ class FailoverClusterInvokerTest {
         clusterInvoker.invoke(inv);
     }
 
-    public interface Demo {
-    }
+    public interface Demo {}
 
     public static class MockInvoker<T> extends AbstractInvoker<T> {
         URL url;
@@ -362,7 +362,9 @@ class FailoverClusterInvokerTest {
         }
 
         @Override
-        protected List<Invoker<T>> doList(SingleRouterChain<T> singleRouterChain, BitList<Invoker<T>> invokers, Invocation invocation) throws RpcException {
+        protected List<Invoker<T>> doList(
+                SingleRouterChain<T> singleRouterChain, BitList<Invoker<T>> invokers, Invocation invocation)
+                throws RpcException {
             return super.doList(singleRouterChain, invokers, invocation);
         }
     }

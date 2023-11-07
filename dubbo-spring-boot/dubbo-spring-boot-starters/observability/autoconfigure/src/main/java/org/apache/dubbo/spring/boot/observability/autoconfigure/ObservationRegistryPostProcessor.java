@@ -16,14 +16,14 @@
  */
 package org.apache.dubbo.spring.boot.observability.autoconfigure;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import io.micrometer.observation.ObservationHandler;
 import io.micrometer.observation.ObservationRegistry;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * registry observationHandlers to observationConfig
@@ -32,11 +32,11 @@ public class ObservationRegistryPostProcessor implements BeanPostProcessor {
     private final ObjectProvider<ObservationHandlerGrouping> observationHandlerGrouping;
     private final ObjectProvider<ObservationHandler<?>> observationHandlers;
 
-    public ObservationRegistryPostProcessor(ObjectProvider<ObservationHandlerGrouping> observationHandlerGrouping,
-                                            ObjectProvider<ObservationHandler<?>> observationHandlers) {
+    public ObservationRegistryPostProcessor(
+            ObjectProvider<ObservationHandlerGrouping> observationHandlerGrouping,
+            ObjectProvider<ObservationHandler<?>> observationHandlers) {
         this.observationHandlerGrouping = observationHandlerGrouping;
         this.observationHandlers = observationHandlers;
-
     }
 
     @Override
@@ -46,8 +46,7 @@ public class ObservationRegistryPostProcessor implements BeanPostProcessor {
             List<ObservationHandler<?>> observationHandlerList =
                     observationHandlers.orderedStream().collect(Collectors.toList());
             observationHandlerGrouping.ifAvailable(grouping -> {
-                grouping.apply(observationHandlerList,
-                        observationRegistry.observationConfig());
+                grouping.apply(observationHandlerList, observationRegistry.observationConfig());
             });
         }
         return bean;

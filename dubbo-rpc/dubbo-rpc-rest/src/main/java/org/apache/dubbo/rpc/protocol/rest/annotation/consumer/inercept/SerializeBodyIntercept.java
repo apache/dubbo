@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept;
 
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.extension.Activate;
@@ -40,7 +39,8 @@ import java.util.Collection;
 @Activate(value = RestConstant.SERIALIZE_INTERCEPT, order = Integer.MAX_VALUE)
 public class SerializeBodyIntercept implements HttpConnectionPreBuildIntercept {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SerializeBodyIntercept.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(SerializeBodyIntercept.class);
 
     @Override
     public void intercept(HttpConnectionCreateContext connectionCreateContext) {
@@ -50,30 +50,32 @@ public class SerializeBodyIntercept implements HttpConnectionPreBuildIntercept {
             return;
         }
 
-
         try {
             Object unSerializedBody = requestTemplate.getUnSerializedBody();
             URL url = connectionCreateContext.getUrl();
             // TODO pool
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             Collection<String> headers = requestTemplate.getHeaders(RestConstant.CONTENT_TYPE);
-            MediaType mediaType = MediaTypeUtil.convertMediaType(requestTemplate.getBodyType(), headers.toArray(new String[0]));
+            MediaType mediaType =
+                    MediaTypeUtil.convertMediaType(requestTemplate.getBodyType(), headers.toArray(new String[0]));
 
             // add mediaType by targetClass serialize
             if (mediaType != null && !mediaType.equals(MediaType.ALL_VALUE)) {
                 headers.clear();
                 headers.add(mediaType.value);
             }
-            HttpMessageCodecManager.httpMessageEncode(outputStream, unSerializedBody, url, mediaType, requestTemplate.getBodyType());
+            HttpMessageCodecManager.httpMessageEncode(
+                    outputStream, unSerializedBody, url, mediaType, requestTemplate.getBodyType());
             requestTemplate.serializeBody(outputStream.toByteArray());
             outputStream.close();
         } catch (Exception e) {
-            logger.error(LoggerCodeConstants.PROTOCOL_ERROR_DESERIALIZE, "", "", "Rest SerializeBodyIntercept serialize error: {}", e);
+            logger.error(
+                    LoggerCodeConstants.PROTOCOL_ERROR_DESERIALIZE,
+                    "",
+                    "",
+                    "Rest SerializeBodyIntercept serialize error: {}",
+                    e);
             throw new RpcException(e);
         }
-
-
     }
-
-
 }

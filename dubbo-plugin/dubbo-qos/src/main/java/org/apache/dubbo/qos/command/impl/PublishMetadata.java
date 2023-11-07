@@ -21,8 +21,8 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.qos.api.BaseCommand;
-import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.qos.api.Cmd;
+import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -32,10 +32,10 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_PARAMETER_FORMAT_ERROR;
 
-@Cmd(name = "publishMetadata", summary = "update service metadata and service instance", example = {
-    "publishMetadata",
-    "publishMetadata 5"
-})
+@Cmd(
+        name = "publishMetadata",
+        summary = "update service metadata and service instance",
+        example = {"publishMetadata", "publishMetadata 5"})
 public class PublishMetadata implements BaseCommand {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(PublishMetadata.class);
     private final FrameworkModel frameworkModel;
@@ -54,21 +54,35 @@ public class PublishMetadata implements BaseCommand {
         for (ApplicationModel applicationModel : applicationModels) {
             if (ArrayUtils.isEmpty(args)) {
                 ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationModel);
-                stringBuilder.append("publish metadata succeeded. App:").append(applicationModel.getApplicationName()).append("\n");
+                stringBuilder
+                        .append("publish metadata succeeded. App:")
+                        .append(applicationModel.getApplicationName())
+                        .append("\n");
             } else {
                 try {
                     int delay = Integer.parseInt(args[0]);
-                    FrameworkExecutorRepository frameworkExecutorRepository = applicationModel.getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
-                    frameworkExecutorRepository.nextScheduledExecutor()
-                        .schedule(() -> ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationModel), delay, TimeUnit.SECONDS);
+                    FrameworkExecutorRepository frameworkExecutorRepository = applicationModel
+                            .getFrameworkModel()
+                            .getBeanFactory()
+                            .getBean(FrameworkExecutorRepository.class);
+                    frameworkExecutorRepository
+                            .nextScheduledExecutor()
+                            .schedule(
+                                    () -> ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationModel),
+                                    delay,
+                                    TimeUnit.SECONDS);
                 } catch (NumberFormatException e) {
                     logger.error(CONFIG_PARAMETER_FORMAT_ERROR, "", "", "Wrong delay param", e);
                     return "publishMetadata failed! Wrong delay param!";
                 }
-                stringBuilder.append("publish task submitted, will publish in ").append(args[0]).append(" seconds. App:").append(applicationModel.getApplicationName()).append("\n");
+                stringBuilder
+                        .append("publish task submitted, will publish in ")
+                        .append(args[0])
+                        .append(" seconds. App:")
+                        .append(applicationModel.getApplicationName())
+                        .append("\n");
             }
         }
         return stringBuilder.toString();
     }
-
 }

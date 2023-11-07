@@ -58,9 +58,11 @@ public final class TimeoutCountDown implements Comparable<TimeoutCountDown> {
 
     public long elapsedMillis() {
         if (isExpired()) {
-            return timeoutInMillis + TimeUnit.MILLISECONDS.convert(System.nanoTime() - deadlineInNanos, TimeUnit.NANOSECONDS);
+            return timeoutInMillis
+                    + TimeUnit.MILLISECONDS.convert(System.nanoTime() - deadlineInNanos, TimeUnit.NANOSECONDS);
         } else {
-            return timeoutInMillis - TimeUnit.MILLISECONDS.convert(deadlineInNanos - System.nanoTime(), TimeUnit.NANOSECONDS);
+            return timeoutInMillis
+                    - TimeUnit.MILLISECONDS.convert(deadlineInNanos - System.nanoTime(), TimeUnit.NANOSECONDS);
         }
     }
 

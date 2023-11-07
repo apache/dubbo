@@ -16,12 +16,10 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider;
 
-
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.ParamType;
-
+import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 
 /**
  * path param parse
@@ -36,7 +34,6 @@ public class PathProviderParamParser extends ProviderParamParser {
         Object pathVariableValue = paramTypeConvert(argInfo.getParamType(), pathVariable);
 
         parseContext.setValueByIndex(argInfo.getIndex(), pathVariableValue);
-
     }
 
     @Override

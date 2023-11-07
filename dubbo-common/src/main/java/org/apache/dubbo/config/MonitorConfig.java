@@ -24,7 +24,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.util.Map;
 
 /**
- * MonitorConfig
+ * Configuration for the monitor.
  *
  * @export
  */
@@ -33,8 +33,8 @@ public class MonitorConfig extends AbstractConfig {
     private static final long serialVersionUID = -1184681514659198203L;
 
     /**
-     * The protocol of the monitor, if the value is registry, it will search the monitor address from the registry center,
-     * otherwise, it will directly connect to the monitor center
+     * The protocol of the monitor. If the value is "registry" it will search the monitor address from the registry center.
+     * Otherwise, it will directly connect to the monitor center.
      */
     private String protocol;
 
@@ -49,23 +49,31 @@ public class MonitorConfig extends AbstractConfig {
     private String username;
 
     /**
-     * The password
+     * The monitor password
      */
     private String password;
 
+    /**
+     * The monitor group
+     */
     private String group;
 
+    /**
+     * The monitor version
+     */
     private String version;
 
+    /**
+     * The monitor reporting interval
+     */
     private String interval;
 
     /**
-     * customized parameters
+     * Customized parameters
      */
     private Map<String, String> parameters;
 
-    public MonitorConfig() {
-    }
+    public MonitorConfig() {}
 
     public MonitorConfig(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -153,5 +161,4 @@ public class MonitorConfig extends AbstractConfig {
     public boolean isValid() {
         return StringUtils.isNotEmpty(address) || RegistryConstants.REGISTRY_PROTOCOL.equals(protocol);
     }
-
 }

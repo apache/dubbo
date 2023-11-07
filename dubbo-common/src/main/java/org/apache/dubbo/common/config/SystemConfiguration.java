@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.config;
 
-
 import java.util.Map;
 
 /**

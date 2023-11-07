@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.stub;
 
 import org.apache.dubbo.common.stream.StreamObserver;
@@ -26,13 +25,12 @@ import org.apache.dubbo.rpc.proxy.InvocationUtil;
 
 public class StubInvocationUtil {
 
-    public static <T, R> R unaryCall(Invoker<?> invoker, MethodDescriptor methodDescriptor,
-        T request) {
-        return (R) call(invoker, methodDescriptor, new Object[]{request});
+    public static <T, R> R unaryCall(Invoker<?> invoker, MethodDescriptor methodDescriptor, T request) {
+        return (R) call(invoker, methodDescriptor, new Object[] {request});
     }
 
-    public static <T, R> void unaryCall(Invoker<?> invoker, MethodDescriptor method, T request,
-        StreamObserver<R> responseObserver) {
+    public static <T, R> void unaryCall(
+            Invoker<?> invoker, MethodDescriptor method, T request, StreamObserver<R> responseObserver) {
         try {
             Object res = unaryCall(invoker, method, request);
             responseObserver.onNext((R) res);
@@ -42,23 +40,25 @@ public class StubInvocationUtil {
         responseObserver.onCompleted();
     }
 
-    public static <T, R> StreamObserver<T> biOrClientStreamCall(Invoker<?> invoker,
-        MethodDescriptor method, StreamObserver<R> responseObserver) {
-        return (StreamObserver<T>) call(invoker, method, new Object[]{responseObserver});
+    public static <T, R> StreamObserver<T> biOrClientStreamCall(
+            Invoker<?> invoker, MethodDescriptor method, StreamObserver<R> responseObserver) {
+        return (StreamObserver<T>) call(invoker, method, new Object[] {responseObserver});
     }
 
-    public static <T, R> void serverStreamCall(Invoker<?> invoker, MethodDescriptor method,
-        T request, StreamObserver<R> responseObserver) {
-        call(invoker, method, new Object[]{request, responseObserver});
+    public static <T, R> void serverStreamCall(
+            Invoker<?> invoker, MethodDescriptor method, T request, StreamObserver<R> responseObserver) {
+        call(invoker, method, new Object[] {request, responseObserver});
     }
 
-    private static Object call(Invoker<?> invoker, MethodDescriptor methodDescriptor,
-        Object[] arguments) {
-        RpcInvocation rpcInvocation = new RpcInvocation(invoker.getUrl().getServiceModel(),
-            methodDescriptor.getMethodName(), invoker.getInterface().getName(),
-            invoker.getUrl().getProtocolServiceKey(), methodDescriptor.getParameterClasses(),
-            arguments);
-        //When there are multiple MethodDescriptors with the same method name, the return type will be wrong
+    private static Object call(Invoker<?> invoker, MethodDescriptor methodDescriptor, Object[] arguments) {
+        RpcInvocation rpcInvocation = new RpcInvocation(
+                invoker.getUrl().getServiceModel(),
+                methodDescriptor.getMethodName(),
+                invoker.getInterface().getName(),
+                invoker.getUrl().getProtocolServiceKey(),
+                methodDescriptor.getParameterClasses(),
+                arguments);
+        // When there are multiple MethodDescriptors with the same method name, the return type will be wrong
         rpcInvocation.setReturnType(methodDescriptor.getReturnClass());
         try {
             return InvocationUtil.invoke(invoker, rpcInvocation);
@@ -66,9 +66,7 @@ public class StubInvocationUtil {
             if (e instanceof RuntimeException) {
                 throw (RuntimeException) e;
             } else {
-                throw TriRpcStatus.INTERNAL
-                    .withCause(e)
-                    .asException();
+                throw TriRpcStatus.INTERNAL.withCause(e).asException();
             }
         }
     }

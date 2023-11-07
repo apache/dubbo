@@ -49,7 +49,5 @@ class ServiceBeanTest {
         MatcherAssert.assertThat(beanService, not(nullValue()));
     }
 
-    abstract class TestService implements Service {
-
-    }
+    abstract class TestService implements Service {}
 }

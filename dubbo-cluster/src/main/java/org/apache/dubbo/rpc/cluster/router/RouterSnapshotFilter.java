@@ -34,7 +34,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 public class RouterSnapshotFilter implements ClusterFilter, BaseFilter.Listener {
 
     private final RouterSnapshotSwitcher switcher;
-    private final static Logger logger = LoggerFactory.getLogger(RouterSnapshotFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(RouterSnapshotFilter.class);
 
     public RouterSnapshotFilter(FrameworkModel frameworkModel) {
         this.switcher = frameworkModel.getBeanFactory().getBean(RouterSnapshotSwitcher.class);

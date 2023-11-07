@@ -29,9 +29,7 @@ import java.util.function.Consumer;
 public class MockChannel implements Channel {
     private Consumer consumer;
 
-    public MockChannel() {
-
-    }
+    public MockChannel() {}
 
     public MockChannel(Consumer consumer) {
         this.consumer = consumer;
@@ -58,14 +56,10 @@ public class MockChannel implements Channel {
     }
 
     @Override
-    public void setAttribute(String key, Object value) {
-
-    }
+    public void setAttribute(String key, Object value) {}
 
     @Override
-    public void removeAttribute(String key) {
-
-    }
+    public void removeAttribute(String key) {}
 
     @Override
     public URL getUrl() {
@@ -90,24 +84,16 @@ public class MockChannel implements Channel {
     }
 
     @Override
-    public void send(Object message, boolean sent) throws RemotingException {
-
-    }
+    public void send(Object message, boolean sent) throws RemotingException {}
 
     @Override
-    public void close() {
-
-    }
+    public void close() {}
 
     @Override
-    public void close(int timeout) {
-
-    }
+    public void close(int timeout) {}
 
     @Override
-    public void startClose() {
-
-    }
+    public void startClose() {}
 
     @Override
     public boolean isClosed() {

@@ -16,11 +16,9 @@
  */
 package org.apache.dubbo.demo.rest.api.extension;
 
-
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionHandler;
 
 public class ExceptionMapperForTest implements ExceptionHandler<RuntimeException> {
-
 
     @Override
     public Object result(RuntimeException exception) {

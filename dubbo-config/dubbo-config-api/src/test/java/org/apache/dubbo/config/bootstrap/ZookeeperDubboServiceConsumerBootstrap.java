@@ -38,8 +38,11 @@ public class ZookeeperDubboServiceConsumerBootstrap {
                         .parameter(REGISTRY_TYPE_KEY, SERVICE_REGISTRY_TYPE)
                         .useAsConfigCenter(true)
                         .useAsMetadataCenter(true))
-                .reference("echo", builder -> builder.interfaceClass(EchoService.class).protocol("dubbo").services("zookeeper-dubbo-provider"))
-                .reference("user", builder -> builder.interfaceClass(UserService.class).protocol("rest"))
+                .reference("echo", builder -> builder.interfaceClass(EchoService.class)
+                        .protocol("dubbo")
+                        .services("zookeeper-dubbo-provider"))
+                .reference("user", builder -> builder.interfaceClass(UserService.class)
+                        .protocol("rest"))
                 .start();
 
         EchoService echoService = bootstrap.getCache().get(EchoService.class);

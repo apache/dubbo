@@ -27,11 +27,7 @@ import org.apache.dubbo.common.extension.SPI;
 @SPI(scope = ExtensionScope.MODULE)
 public interface ConfigPostProcessor extends CommonConfigPostProcessor {
 
-    default void postProcessReferConfig(ReferenceConfig referenceConfig) {
+    default void postProcessReferConfig(ReferenceConfig referenceConfig) {}
 
-    }
-
-    default void postProcessServiceConfig(ServiceConfig serviceConfig) {
-
-    }
+    default void postProcessServiceConfig(ServiceConfig serviceConfig) {}
 }

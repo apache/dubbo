@@ -33,7 +33,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_EXECUTOR
 import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_FILTER_KEY;
 
 /**
- * AbstractServiceConfig
+ * Abstract configuration for the service.
  *
  * @export
  */
@@ -42,100 +42,98 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     private static final long serialVersionUID = -9026290350363878309L;
 
     /**
-     * The service version
+     * The service version.
      */
     protected String version;
 
     /**
-     * The service group
+     * The service group.
      */
     protected String group;
 
     /**
-     * whether the service is deprecated
+     * Whether the service is deprecated.
      */
-    protected Boolean deprecated; // false;
+    protected Boolean deprecated;
 
     /**
-     * The time delay register service (milliseconds)
+     * The time delay to register the service (in milliseconds).
      */
     protected Integer delay;
 
     /**
-     * Whether to export the service
+     * Whether to export the service.
      */
     protected Boolean export;
 
     /**
-     * The service weight
+     * The service weight.
      */
     protected Integer weight;
 
     /**
-     * Document center
+     * Document center for the service.
      */
     protected String document;
 
     /**
-     * Whether to register as a dynamic service or not on register center, the value is true, the status will be enabled
-     * after the service registered,and it needs to be disabled manually; if you want to disable the service, you also need
-     * manual processing
+     * Whether to register the service as a dynamic service on the registry. If true, the service
+     * will be enabled automatically after registration, and manual disabling is required to stop it.
      */
-    protected Boolean dynamic; // true;
+    protected Boolean dynamic;
 
     /**
-     * Whether to use token
+     * Whether to use a token for authentication.
      */
     protected String token;
 
     /**
-     * Whether to export access logs to logs
+     * Whether to export access logs to logs.
      */
     protected String accesslog;
 
     /**
-     * The protocol list the service will export with
-     * Also see {@link #protocolIds}, only one of them will work.
+     * List of protocols the service will export with (use this or protocolIds, not both).
      */
     protected List<ProtocolConfig> protocols;
 
     /**
-     * The id list of protocols the service will export with
-     * Also see {@link #protocols}, only one of them will work.
+     * Id list of protocols the service will export with (use this or protocols, not both).
      */
     protected String protocolIds;
 
     /**
-     * Max allowed executing times
+     * Max allowed executing times.
      */
     private Integer executes;
 
     /**
-     * Whether to register
+     * Whether to register the service.
      */
     private Boolean register;
 
     /**
-     * Warm up period
+     * Warm-up period for the service.
      */
     private Integer warmup;
 
     /**
-     * The serialization type
+     * Serialization type for service communication.
      */
     private String serialization;
 
     /**
-     * If the parameter has a value, the consumer will read the parameter first.
+     * Specifies the preferred serialization method for the consumer.
+     *  If specified, the consumer will use this parameter first.
      * If the Dubbo Sdk you are using contains the serialization type, the serialization method specified by the argument is used.
      * <p>
      * When this parameter is null or the serialization type specified by this parameter does not exist in the Dubbo SDK, the serialization type specified by serialization is used.
      * If the Dubbo SDK if still does not exist, the default type of the Dubbo SDK is used.
      * For Dubbo SDK >= 3.2, <code>preferSerialization</code> takes precedence over <code>serialization</code>
      * <p>
-     * The configuration supports multiple, which are separated by commas.Such as:<code>fastjson2,fastjson,hessian2</code>
+     * Supports multiple values separated by commas, e.g., "fastjson2,fastjson,hessian2".
      */
-    private String preferSerialization; // default:fastjson2,hessian2
+    private String preferSerialization; // Default: fastjson2, hessian2
 
     /**
      * Weather the service is export asynchronously
@@ -155,8 +153,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
      */
     private Integer payload;
 
-    public AbstractServiceConfig() {
-    }
+    public AbstractServiceConfig() {}
 
     public AbstractServiceConfig(ModuleModel moduleModel) {
         super(moduleModel);

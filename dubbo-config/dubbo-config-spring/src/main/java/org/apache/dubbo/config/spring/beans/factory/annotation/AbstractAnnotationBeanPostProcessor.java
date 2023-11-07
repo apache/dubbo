@@ -20,6 +20,19 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.spring.util.AnnotationUtils;
 
+import java.beans.PropertyDescriptor;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValues;
@@ -42,19 +55,6 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.beans.PropertyDescriptor;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_DUBBO_BEAN_INITIALIZER;
 import static org.springframework.core.BridgeMethodResolver.findBridgedMethod;
 import static org.springframework.core.BridgeMethodResolver.isVisibilityBridgeMethodPair;
@@ -63,18 +63,23 @@ import static org.springframework.core.BridgeMethodResolver.isVisibilityBridgeMe
  * Abstract common {@link BeanPostProcessor} implementation for customized annotation that annotated injected-object.
  */
 @SuppressWarnings("unchecked")
-public abstract class AbstractAnnotationBeanPostProcessor implements
-        InstantiationAwareBeanPostProcessor, MergedBeanDefinitionPostProcessor,
-    BeanFactoryAware, BeanClassLoaderAware, EnvironmentAware, DisposableBean {
+public abstract class AbstractAnnotationBeanPostProcessor
+        implements InstantiationAwareBeanPostProcessor,
+                MergedBeanDefinitionPostProcessor,
+                BeanFactoryAware,
+                BeanClassLoaderAware,
+                EnvironmentAware,
+                DisposableBean {
 
-    private final static int CACHE_SIZE = Integer.getInteger("", 32);
+    private static final int CACHE_SIZE = Integer.getInteger("", 32);
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     private final Class<? extends Annotation>[] annotationTypes;
 
-    private final ConcurrentMap<String, AbstractAnnotationBeanPostProcessor.AnnotatedInjectionMetadata> injectionMetadataCache =
-        new ConcurrentHashMap<String, AbstractAnnotationBeanPostProcessor.AnnotatedInjectionMetadata>(CACHE_SIZE);
+    private final ConcurrentMap<String, AbstractAnnotationBeanPostProcessor.AnnotatedInjectionMetadata>
+            injectionMetadataCache = new ConcurrentHashMap<
+                    String, AbstractAnnotationBeanPostProcessor.AnnotatedInjectionMetadata>(CACHE_SIZE);
 
     private ConfigurableListableBeanFactory beanFactory;
 
@@ -117,8 +122,10 @@ public abstract class AbstractAnnotationBeanPostProcessor implements
 
     @Override
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-        Assert.isInstanceOf(ConfigurableListableBeanFactory.class, beanFactory,
-            "AnnotationInjectedBeanPostProcessor requires a ConfigurableListableBeanFactory");
+        Assert.isInstanceOf(
+                ConfigurableListableBeanFactory.class,
+                beanFactory,
+                "AnnotationInjectedBeanPostProcessor requires a ConfigurableListableBeanFactory");
         this.beanFactory = (ConfigurableListableBeanFactory) beanFactory;
     }
 
@@ -128,21 +135,26 @@ public abstract class AbstractAnnotationBeanPostProcessor implements
      * @param beanClass The {@link Class} of Bean
      * @return non-null {@link List}
      */
-    private List<AbstractAnnotationBeanPostProcessor.AnnotatedFieldElement> findFieldAnnotationMetadata(final Class<?> beanClass) {
+    private List<AbstractAnnotationBeanPostProcessor.AnnotatedFieldElement> findFieldAnnotationMetadata(
+            final Class<?> beanClass) {
 
         final List<AbstractAnnotationBeanPostProcessor.AnnotatedFieldElement> elements = new LinkedList<>();
 
         ReflectionUtils.doWithFields(beanClass, field -> {
-
             for (Class<? extends Annotation> annotationType : getAnnotationTypes()) {
 
-                AnnotationAttributes attributes = AnnotationUtils.getAnnotationAttributes(field, annotationType, getEnvironment(), true, true);
+                AnnotationAttributes attributes =
+                        AnnotationUtils.getAnnotationAttributes(field, annotationType, getEnvironment(), true, true);
 
                 if (attributes != null) {
 
                     if (Modifier.isStatic(field.getModifiers())) {
                         if (logger.isWarnEnabled()) {
-                            logger.warn(CONFIG_DUBBO_BEAN_INITIALIZER, "", "", "@" + annotationType.getName() + " is not supported on static fields: " + field);
+                            logger.warn(
+                                    CONFIG_DUBBO_BEAN_INITIALIZER,
+                                    "",
+                                    "",
+                                    "@" + annotationType.getName() + " is not supported on static fields: " + field);
                         }
                         return;
                     }
@@ -153,7 +165,6 @@ public abstract class AbstractAnnotationBeanPostProcessor implements
         });
 
         return elements;
-
     }
 
     /**
@@ -162,12 +173,12 @@ public abstract class AbstractAnnotationBeanPostProcessor implements
      * @param beanClass The {@link Class} of Bean
      * @return non-null {@link List}
      */
-    private List<AbstractAnnotationBeanPostProcessor.AnnotatedMethodElement> findAnnotatedMethodMetadata(final Class<?> beanClass) {
+    private List<AbstractAnnotationBeanPostProcessor.AnnotatedMethodElement> findAnnotatedMethodMetadata(
+            final Class<?> beanClass) {
 
         final List<AbstractAnnotationBeanPostProcessor.AnnotatedMethodElement> elements = new LinkedList<>();
 
         ReflectionUtils.doWithMethods(beanClass, method -> {
-
             Method bridgedMethod = findBridgedMethod(method);
 
             if (!isVisibilityBridgeMethodPair(method, bridgedMethod)) {
@@ -181,14 +192,17 @@ public abstract class AbstractAnnotationBeanPostProcessor implements
 
             for (Class<? extends Annotation> annotationType : getAnnotationTypes()) {
 
-                AnnotationAttributes attributes = AnnotationUtils.getAnnotationAttributes(bridgedMethod, annotationType, getEnvironment(), true, true);
+                AnnotationAttributes attributes = AnnotationUtils.getAnnotationAttributes(
+                        bridgedMethod, annotationType, getEnvironment(), true, true);
 
                 if (attributes != null && method.equals(ClassUtils.getMostSpecificMethod(method, beanClass))) {
                     if (Modifier.isStatic(method.getModifiers())) {
-                        throw new IllegalStateException("When using @" + annotationType.getName() + " to inject interface proxy, it is not supported on static methods: " + method);
+                        throw new IllegalStateException("When using @" + annotationType.getName()
+                                + " to inject interface proxy, it is not supported on static methods: " + method);
                     }
                     if (method.getParameterTypes().length != 1) {
-                        throw new IllegalStateException("When using @" + annotationType.getName() + " to inject interface proxy, the method must have only one parameter: " + method);
+                        throw new IllegalStateException("When using @" + annotationType.getName()
+                                + " to inject interface proxy, the method must have only one parameter: " + method);
                     }
                     PropertyDescriptor pd = BeanUtils.findPropertyForMethod(bridgedMethod, beanClass);
                     elements.add(new AnnotatedMethodElement(method, pd, attributes));
@@ -199,9 +213,12 @@ public abstract class AbstractAnnotationBeanPostProcessor implements
         return elements;
     }
 
-    private AbstractAnnotationBeanPostProcessor.AnnotatedInjectionMetadata buildAnnotatedMetadata(final Class<?> beanClass) {
-        Collection<AbstractAnnotationBeanPostProcessor.AnnotatedFieldElement> fieldElements = findFieldAnnotationMetadata(beanClass);
-        Collection<AbstractAnnotationBeanPostProcessor.AnnotatedMethodElement> methodElements = findAnnotatedMethodMetadata(beanClass);
+    private AbstractAnnotationBeanPostProcessor.AnnotatedInjectionMetadata buildAnnotatedMetadata(
+            final Class<?> beanClass) {
+        Collection<AbstractAnnotationBeanPostProcessor.AnnotatedFieldElement> fieldElements =
+                findFieldAnnotationMetadata(beanClass);
+        Collection<AbstractAnnotationBeanPostProcessor.AnnotatedMethodElement> methodElements =
+                findAnnotatedMethodMetadata(beanClass);
         return new AnnotatedInjectionMetadata(beanClass, fieldElements, methodElements);
     }
 
@@ -209,7 +226,8 @@ public abstract class AbstractAnnotationBeanPostProcessor implements
         // Fall back to class name as cache key, for backwards compatibility with custom callers.
         String cacheKey = (StringUtils.hasLength(beanName) ? beanName : clazz.getName());
         // Quick check on the concurrent map first, with minimal locking.
-        AbstractAnnotationBeanPostProcessor.AnnotatedInjectionMetadata metadata = this.injectionMetadataCache.get(cacheKey);
+        AbstractAnnotationBeanPostProcessor.AnnotatedInjectionMetadata metadata =
+                this.injectionMetadataCache.get(cacheKey);
         if (needsRefreshInjectionMetadata(metadata, clazz)) {
             synchronized (this.injectionMetadataCache) {
                 metadata = this.injectionMetadataCache.get(cacheKey);
@@ -222,8 +240,10 @@ public abstract class AbstractAnnotationBeanPostProcessor implements
                         metadata = buildAnnotatedMetadata(clazz);
                         this.injectionMetadataCache.put(cacheKey, metadata);
                     } catch (NoClassDefFoundError err) {
-                        throw new IllegalStateException("Failed to introspect object class [" + clazz.getName() +
-                            "] for annotation metadata: could not find class that it depends on", err);
+                        throw new IllegalStateException(
+                                "Failed to introspect object class [" + clazz.getName()
+                                        + "] for annotation metadata: could not find class that it depends on",
+                                err);
                     }
                 }
             }
@@ -244,7 +264,6 @@ public abstract class AbstractAnnotationBeanPostProcessor implements
         if (logger.isInfoEnabled()) {
             logger.info(getClass() + " was destroying!");
         }
-
     }
 
     @Override
@@ -280,8 +299,13 @@ public abstract class AbstractAnnotationBeanPostProcessor implements
      * @return An injected object
      * @throws Exception If getting is failed
      */
-    protected Object getInjectedObject(AnnotationAttributes attributes, Object bean, String beanName, Class<?> injectedType,
-                                       AnnotatedInjectElement injectedElement) throws Exception {
+    protected Object getInjectedObject(
+            AnnotationAttributes attributes,
+            Object bean,
+            String beanName,
+            Class<?> injectedType,
+            AnnotatedInjectElement injectedElement)
+            throws Exception {
         return doGetInjectedBean(attributes, bean, beanName, injectedType, injectedElement);
     }
 
@@ -291,8 +315,7 @@ public abstract class AbstractAnnotationBeanPostProcessor implements
      * @param metadata
      * @throws Exception
      */
-    protected void prepareInjection(AnnotatedInjectionMetadata metadata) throws Exception {
-    }
+    protected void prepareInjection(AnnotatedInjectionMetadata metadata) throws Exception {}
 
     /**
      * Subclass must implement this method to get injected-object. The context objects could help this method if
@@ -311,8 +334,13 @@ public abstract class AbstractAnnotationBeanPostProcessor implements
      * @return The injected object
      * @throws Exception If resolving an injected object is failed.
      */
-    protected abstract Object doGetInjectedBean(AnnotationAttributes attributes, Object bean, String beanName, Class<?> injectedType,
-                                                AnnotatedInjectElement injectedElement) throws Exception;
+    protected abstract Object doGetInjectedBean(
+            AnnotationAttributes attributes,
+            Object bean,
+            String beanName,
+            Class<?> injectedType,
+            AnnotatedInjectElement injectedElement)
+            throws Exception;
 
     @Override
     public Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) throws BeansException {
@@ -344,8 +372,10 @@ public abstract class AbstractAnnotationBeanPostProcessor implements
 
         private final Collection<AbstractAnnotationBeanPostProcessor.AnnotatedMethodElement> methodElements;
 
-        public AnnotatedInjectionMetadata(Class<?> targetClass, Collection<AbstractAnnotationBeanPostProcessor.AnnotatedFieldElement> fieldElements,
-                                          Collection<AbstractAnnotationBeanPostProcessor.AnnotatedMethodElement> methodElements) {
+        public AnnotatedInjectionMetadata(
+                Class<?> targetClass,
+                Collection<AbstractAnnotationBeanPostProcessor.AnnotatedFieldElement> fieldElements,
+                Collection<AbstractAnnotationBeanPostProcessor.AnnotatedMethodElement> methodElements) {
             super(targetClass, combine(fieldElements, methodElements));
             this.targetClass = targetClass;
             this.fieldElements = fieldElements;
@@ -360,12 +390,12 @@ public abstract class AbstractAnnotationBeanPostProcessor implements
             return methodElements;
         }
 
-        //@Override // since Spring 5.2.4
+        // @Override // since Spring 5.2.4
         protected boolean needsRefresh(Class<?> clazz) {
             if (this.targetClass == clazz) {
                 return false;
             }
-            //IGNORE Spring CGLIB enhanced class
+            // IGNORE Spring CGLIB enhanced class
             if (targetClass.isAssignableFrom(clazz) && clazz.getName().contains("$$EnhancerBySpringCGLIB$$")) {
                 return false;
             }

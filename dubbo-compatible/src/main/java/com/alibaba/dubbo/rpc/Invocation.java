@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.rpc;
 
 import org.apache.dubbo.rpc.model.ServiceModel;
@@ -47,13 +46,10 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
     }
 
     @Override
-    default void setObjectAttachmentIfAbsent(String key, Object value) {
-    }
+    default void setObjectAttachmentIfAbsent(String key, Object value) {}
 
     @Override
-    default void setObjectAttachment(String key, Object value) {
-
-    }
+    default void setObjectAttachment(String key, Object value) {}
 
     @Override
     default void setAttachment(String key, Object value) {
@@ -64,7 +60,6 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
     default void setAttachmentIfAbsent(String key, Object value) {
         setObjectAttachmentIfAbsent(key, value);
     }
-
 
     @Override
     default String getServiceName() {
@@ -82,9 +77,7 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
     }
 
     @Override
-    default void setServiceModel(ServiceModel serviceModel) {
-
-    }
+    default void setServiceModel(ServiceModel serviceModel) {}
 
     @Override
     default ServiceModel getServiceModel() {

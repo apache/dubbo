@@ -26,10 +26,10 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
+import java.util.Collection;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.Collection;
 
 class ExtensionDirectorTest {
 
@@ -45,21 +45,29 @@ class ExtensionDirectorTest {
         // 2. Child ExtensionDirector can get extension instance from parent
         // 3. Parent ExtensionDirector can't get extension instance from child
 
-        ExtensionDirector fwExtensionDirector = new ExtensionDirector(null, ExtensionScope.FRAMEWORK, FrameworkModel.defaultModel());
-        ExtensionDirector appExtensionDirector = new ExtensionDirector(fwExtensionDirector, ExtensionScope.APPLICATION, ApplicationModel.defaultModel());
-        ExtensionDirector moduleExtensionDirector = new ExtensionDirector(appExtensionDirector, ExtensionScope.MODULE, ApplicationModel.defaultModel().getDefaultModule());
+        ExtensionDirector fwExtensionDirector =
+                new ExtensionDirector(null, ExtensionScope.FRAMEWORK, FrameworkModel.defaultModel());
+        ExtensionDirector appExtensionDirector =
+                new ExtensionDirector(fwExtensionDirector, ExtensionScope.APPLICATION, ApplicationModel.defaultModel());
+        ExtensionDirector moduleExtensionDirector = new ExtensionDirector(
+                appExtensionDirector,
+                ExtensionScope.MODULE,
+                ApplicationModel.defaultModel().getDefaultModule());
 
         // test module extension loader
-        FooFrameworkService testFwSrvFromModule = moduleExtensionDirector.getExtension(FooFrameworkService.class, testFwSrvName);
+        FooFrameworkService testFwSrvFromModule =
+                moduleExtensionDirector.getExtension(FooFrameworkService.class, testFwSrvName);
         FooAppService testAppSrvFromModule = moduleExtensionDirector.getExtension(FooAppService.class, testAppSrvName);
-        FooModuleService testMdSrvFromModule = moduleExtensionDirector.getExtension(FooModuleService.class, testMdSrvName);
+        FooModuleService testMdSrvFromModule =
+                moduleExtensionDirector.getExtension(FooModuleService.class, testMdSrvName);
 
         Assertions.assertNotNull(testFwSrvFromModule);
         Assertions.assertNotNull(testAppSrvFromModule);
         Assertions.assertNotNull(testMdSrvFromModule);
 
         // test app extension loader
-        FooFrameworkService testFwSrvFromApp = appExtensionDirector.getExtension(FooFrameworkService.class, testFwSrvName);
+        FooFrameworkService testFwSrvFromApp =
+                appExtensionDirector.getExtension(FooFrameworkService.class, testFwSrvName);
         FooAppService testAppSrvFromApp = appExtensionDirector.getExtension(FooAppService.class, testAppSrvName);
         FooModuleService testMdSrvFromApp = appExtensionDirector.getExtension(FooModuleService.class, testMdSrvName);
 
@@ -68,7 +76,8 @@ class ExtensionDirectorTest {
         Assertions.assertNull(testMdSrvFromApp);
 
         // test framework extension loader
-        FooFrameworkService testFwSrvFromFw = fwExtensionDirector.getExtension(FooFrameworkService.class, testFwSrvName);
+        FooFrameworkService testFwSrvFromFw =
+                fwExtensionDirector.getExtension(FooFrameworkService.class, testFwSrvName);
         FooAppService testAppSrvFromFw = fwExtensionDirector.getExtension(FooAppService.class, testAppSrvName);
         FooModuleService testMdSrvFromFw = fwExtensionDirector.getExtension(FooModuleService.class, testMdSrvName);
 
@@ -78,9 +87,7 @@ class ExtensionDirectorTest {
     }
 
     @Test
-    void testPostProcessor() {
-
-    }
+    void testPostProcessor() {}
 
     @Test
     void testModelAware() {
@@ -103,9 +110,12 @@ class ExtensionDirectorTest {
         Assertions.assertSame(null, fwExtensionDirector.getParent());
 
         // check module extension aware
-        TestFrameworkService testFwSrvFromModule = (TestFrameworkService) moduleExtensionDirector.getExtension(FooFrameworkService.class, testFwSrvName);
-        TestAppService testAppSrvFromModule = (TestAppService) moduleExtensionDirector.getExtension(FooAppService.class, testAppSrvName);
-        TestModuleService testMdSrvFromModule = (TestModuleService) moduleExtensionDirector.getExtension(FooModuleService.class, testMdSrvName);
+        TestFrameworkService testFwSrvFromModule =
+                (TestFrameworkService) moduleExtensionDirector.getExtension(FooFrameworkService.class, testFwSrvName);
+        TestAppService testAppSrvFromModule =
+                (TestAppService) moduleExtensionDirector.getExtension(FooAppService.class, testAppSrvName);
+        TestModuleService testMdSrvFromModule =
+                (TestModuleService) moduleExtensionDirector.getExtension(FooModuleService.class, testMdSrvName);
 
         Assertions.assertSame(frameworkModel, testFwSrvFromModule.getFrameworkModel());
         Assertions.assertSame(null, testFwSrvFromModule.getApplicationModel());
@@ -120,16 +130,20 @@ class ExtensionDirectorTest {
         Assertions.assertSame(moduleModel, testMdSrvFromModule.getModuleModel());
 
         // check app extension aware
-        TestFrameworkService testFwSrvFromApp = (TestFrameworkService) appExtensionDirector.getExtension(FooFrameworkService.class, testFwSrvName);
-        TestAppService testAppSrvFromApp = (TestAppService) appExtensionDirector.getExtension(FooAppService.class, testAppSrvName);
-        TestModuleService testMdSrvFromApp = (TestModuleService) appExtensionDirector.getExtension(FooModuleService.class, testMdSrvName);
+        TestFrameworkService testFwSrvFromApp =
+                (TestFrameworkService) appExtensionDirector.getExtension(FooFrameworkService.class, testFwSrvName);
+        TestAppService testAppSrvFromApp =
+                (TestAppService) appExtensionDirector.getExtension(FooAppService.class, testAppSrvName);
+        TestModuleService testMdSrvFromApp =
+                (TestModuleService) appExtensionDirector.getExtension(FooModuleService.class, testMdSrvName);
 
         Assertions.assertSame(testFwSrvFromApp, testFwSrvFromModule);
         Assertions.assertSame(testAppSrvFromApp, testAppSrvFromModule);
         Assertions.assertNull(testMdSrvFromApp);
 
         // check framework extension aware
-        FooFrameworkService testFwSrvFromFw = fwExtensionDirector.getExtension(FooFrameworkService.class, testFwSrvName);
+        FooFrameworkService testFwSrvFromFw =
+                fwExtensionDirector.getExtension(FooFrameworkService.class, testFwSrvName);
         FooAppService testAppSrvFromFw = fwExtensionDirector.getExtension(FooAppService.class, testAppSrvName);
         FooModuleService testMdSrvFromFw = fwExtensionDirector.getExtension(FooModuleService.class, testMdSrvName);
 
@@ -140,14 +154,14 @@ class ExtensionDirectorTest {
 
     @Test
     void testModelDataIsolation() {
-        //Model Tree
-        //├─frameworkModel1
-        //│  ├─applicationModel11
-        //│  │  ├─moduleModel111
-        //│  │  └─moduleModel112
-        //│  └─applicationModel12
-        //│     └─moduleModel121
-        //└─frameworkModel2
+        // Model Tree
+        // ├─frameworkModel1
+        // │  ├─applicationModel11
+        // │  │  ├─moduleModel111
+        // │  │  └─moduleModel112
+        // │  └─applicationModel12
+        // │     └─moduleModel121
+        // └─frameworkModel2
         //   └─applicationModel21
         //      └─moduleModel211
 
@@ -175,52 +189,70 @@ class ExtensionDirectorTest {
         Assertions.assertTrue(modulesOfApp11.contains(moduleModel112));
 
         // test isolation of FrameworkModel
-        FooFrameworkService frameworkService1 = frameworkModel1.getExtensionDirector().getExtension(FooFrameworkService.class, testFwSrvName);
-        FooFrameworkService frameworkService2 = frameworkModel2.getExtensionDirector().getExtension(FooFrameworkService.class, testFwSrvName);
+        FooFrameworkService frameworkService1 =
+                frameworkModel1.getExtensionDirector().getExtension(FooFrameworkService.class, testFwSrvName);
+        FooFrameworkService frameworkService2 =
+                frameworkModel2.getExtensionDirector().getExtension(FooFrameworkService.class, testFwSrvName);
         Assertions.assertNotSame(frameworkService1, frameworkService2);
 
         // test isolation of ApplicationModel
         // applicationModel11 and applicationModel12 are shared frameworkModel1
-        FooFrameworkService frameworkService11 = applicationModel11.getExtensionDirector().getExtension(FooFrameworkService.class, testFwSrvName);
-        FooFrameworkService frameworkService12 = applicationModel12.getExtensionDirector().getExtension(FooFrameworkService.class, testFwSrvName);
+        FooFrameworkService frameworkService11 =
+                applicationModel11.getExtensionDirector().getExtension(FooFrameworkService.class, testFwSrvName);
+        FooFrameworkService frameworkService12 =
+                applicationModel12.getExtensionDirector().getExtension(FooFrameworkService.class, testFwSrvName);
         Assertions.assertSame(frameworkService1, frameworkService11);
         Assertions.assertSame(frameworkService1, frameworkService12);
 
         // applicationModel11 and applicationModel12 are isolated in application scope
-        FooAppService applicationService11 = applicationModel11.getExtensionDirector().getExtension(FooAppService.class, testAppSrvName);
-        FooAppService applicationService12 = applicationModel12.getExtensionDirector().getExtension(FooAppService.class, testAppSrvName);
+        FooAppService applicationService11 =
+                applicationModel11.getExtensionDirector().getExtension(FooAppService.class, testAppSrvName);
+        FooAppService applicationService12 =
+                applicationModel12.getExtensionDirector().getExtension(FooAppService.class, testAppSrvName);
         Assertions.assertNotSame(applicationService11, applicationService12);
 
         // applicationModel11 and applicationModel21 are isolated in both framework and application scope
-        FooFrameworkService frameworkService21 = applicationModel21.getExtensionDirector().getExtension(FooFrameworkService.class, testFwSrvName);
-        FooAppService applicationService21 = applicationModel21.getExtensionDirector().getExtension(FooAppService.class, testAppSrvName);
+        FooFrameworkService frameworkService21 =
+                applicationModel21.getExtensionDirector().getExtension(FooFrameworkService.class, testFwSrvName);
+        FooAppService applicationService21 =
+                applicationModel21.getExtensionDirector().getExtension(FooAppService.class, testAppSrvName);
         Assertions.assertNotSame(frameworkService11, frameworkService21);
         Assertions.assertNotSame(applicationService11, applicationService21);
 
         // test isolation of ModuleModel
-        FooModuleService moduleService111 = moduleModel111.getExtensionDirector().getExtension(FooModuleService.class, testMdSrvName);
-        FooModuleService moduleService112 = moduleModel112.getExtensionDirector().getExtension(FooModuleService.class, testMdSrvName);
+        FooModuleService moduleService111 =
+                moduleModel111.getExtensionDirector().getExtension(FooModuleService.class, testMdSrvName);
+        FooModuleService moduleService112 =
+                moduleModel112.getExtensionDirector().getExtension(FooModuleService.class, testMdSrvName);
 
         // moduleModel111 and moduleModel112 are isolated in module scope
         Assertions.assertNotSame(moduleService111, moduleService112);
 
         // moduleModel111 and moduleModel112 are shared applicationModel11
-        FooAppService applicationService111 = moduleModel111.getExtensionDirector().getExtension(FooAppService.class, testAppSrvName);
-        FooAppService applicationService112 = moduleModel112.getExtensionDirector().getExtension(FooAppService.class, testAppSrvName);
+        FooAppService applicationService111 =
+                moduleModel111.getExtensionDirector().getExtension(FooAppService.class, testAppSrvName);
+        FooAppService applicationService112 =
+                moduleModel112.getExtensionDirector().getExtension(FooAppService.class, testAppSrvName);
         Assertions.assertSame(applicationService111, applicationService112);
 
         // moduleModel111 and moduleModel121 are isolated in application scope, but shared frameworkModel1
-        FooAppService applicationService121 = moduleModel121.getExtensionDirector().getExtension(FooAppService.class, testAppSrvName);
+        FooAppService applicationService121 =
+                moduleModel121.getExtensionDirector().getExtension(FooAppService.class, testAppSrvName);
         Assertions.assertNotSame(applicationService111, applicationService121);
 
-        FooFrameworkService frameworkService111 = moduleModel111.getExtensionDirector().getExtension(FooFrameworkService.class, testFwSrvName);
-        FooFrameworkService frameworkService121 = moduleModel121.getExtensionDirector().getExtension(FooFrameworkService.class, testFwSrvName);
+        FooFrameworkService frameworkService111 =
+                moduleModel111.getExtensionDirector().getExtension(FooFrameworkService.class, testFwSrvName);
+        FooFrameworkService frameworkService121 =
+                moduleModel121.getExtensionDirector().getExtension(FooFrameworkService.class, testFwSrvName);
         Assertions.assertSame(frameworkService111, frameworkService121);
 
         // moduleModel111 and moduleModel211 are isolated in both framework and application scope
-        FooModuleService moduleService211 = moduleModel211.getExtensionDirector().getExtension(FooModuleService.class, testMdSrvName);
-        FooAppService applicationService211 = moduleModel211.getExtensionDirector().getExtension(FooAppService.class, testAppSrvName);
-        FooFrameworkService frameworkService211 = moduleModel211.getExtensionDirector().getExtension(FooFrameworkService.class, testFwSrvName);
+        FooModuleService moduleService211 =
+                moduleModel211.getExtensionDirector().getExtension(FooModuleService.class, testMdSrvName);
+        FooAppService applicationService211 =
+                moduleModel211.getExtensionDirector().getExtension(FooAppService.class, testAppSrvName);
+        FooFrameworkService frameworkService211 =
+                moduleModel211.getExtensionDirector().getExtension(FooFrameworkService.class, testFwSrvName);
         Assertions.assertNotSame(moduleService111, moduleService211);
         Assertions.assertNotSame(applicationService111, applicationService211);
         Assertions.assertNotSame(frameworkService111, frameworkService211);
@@ -231,7 +263,8 @@ class ExtensionDirectorTest {
 
         // Expect:
         // 1. Framework scope extension can be injected to extensions of Framework/Application/Module scope
-        // 2. Application scope extension can be injected to extensions of Application/Module scope, but not Framework scope
+        // 2. Application scope extension can be injected to extensions of Application/Module scope, but not Framework
+        // scope
         // 3. Module scope extension can be injected to extensions of Module scope, but not Framework/Application scope
 
         FrameworkModel frameworkModel = new FrameworkModel();
@@ -239,8 +272,8 @@ class ExtensionDirectorTest {
         ModuleModel moduleModel = applicationModel.newModule();
 
         // check module service
-        TestModuleService moduleService = (TestModuleService) moduleModel.getExtensionDirector()
-            .getExtension(FooModuleService.class, testMdSrvName);
+        TestModuleService moduleService = (TestModuleService)
+                moduleModel.getExtensionDirector().getExtension(FooModuleService.class, testMdSrvName);
         Assertions.assertNotNull(moduleService.getFrameworkService());
         Assertions.assertNotNull(moduleService.getFrameworkProvider());
         Assertions.assertNotNull(moduleService.getAppService());
@@ -248,16 +281,16 @@ class ExtensionDirectorTest {
         Assertions.assertNotNull(moduleService.getModuleProvider());
 
         // check app service
-        TestAppService appService = (TestAppService) applicationModel.getExtensionDirector()
-            .getExtension(FooAppService.class, testAppSrvName);
+        TestAppService appService = (TestAppService)
+                applicationModel.getExtensionDirector().getExtension(FooAppService.class, testAppSrvName);
         Assertions.assertNotNull(appService.getFrameworkService());
         Assertions.assertNotNull(appService.getFrameworkProvider());
         Assertions.assertNotNull(appService.getAppProvider());
         Assertions.assertNull(appService.getModuleProvider());
 
         // check framework service
-        TestFrameworkService frameworkService = (TestFrameworkService) frameworkModel.getExtensionDirector()
-            .getExtension(FooFrameworkService.class, testFwSrvName);
+        TestFrameworkService frameworkService = (TestFrameworkService)
+                frameworkModel.getExtensionDirector().getExtension(FooFrameworkService.class, testFwSrvName);
         Assertions.assertNotNull(frameworkService.getFrameworkProvider());
         Assertions.assertNull(frameworkService.getAppProvider());
         Assertions.assertNull(frameworkService.getModuleProvider());

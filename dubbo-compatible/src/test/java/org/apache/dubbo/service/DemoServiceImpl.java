@@ -23,7 +23,6 @@ import java.util.List;
 /**
  * DemoServiceImpl
  */
-
 public class DemoServiceImpl implements DemoService {
     public DemoServiceImpl() {
         super();
@@ -42,25 +41,23 @@ public class DemoServiceImpl implements DemoService {
     }
 
     public int getSize(String[] strs) {
-        if (strs == null)
-            return -1;
+        if (strs == null) return -1;
         return strs.length;
     }
 
     public int getSize(Object[] os) {
-        if (os == null)
-            return -1;
+        if (os == null) return -1;
         return os.length;
     }
 
     public Object invoke(String service, String method) throws Exception {
-        System.out.println("RpcContext.getServerAttachment().getRemoteHost()=" + RpcContext.getServiceContext().getRemoteHost());
+        System.out.println("RpcContext.getServerAttachment().getRemoteHost()="
+                + RpcContext.getServiceContext().getRemoteHost());
         return service + ":" + method;
     }
 
     public Type enumlength(Type... types) {
-        if (types.length == 0)
-            return Type.Lower;
+        if (types.length == 0) return Type.Lower;
         return types[0];
     }
 
@@ -86,7 +83,8 @@ public class DemoServiceImpl implements DemoService {
     }
 
     @Override
-    public ComplexObject findComplexObject(String var1, int var2, long l, String[] var3, List<Integer> var4, ComplexObject.TestEnum testEnum) {
+    public ComplexObject findComplexObject(
+            String var1, int var2, long l, String[] var3, List<Integer> var4, ComplexObject.TestEnum testEnum) {
 
         return new ComplexObject(var1, var2, l, var3, var4, testEnum);
     }

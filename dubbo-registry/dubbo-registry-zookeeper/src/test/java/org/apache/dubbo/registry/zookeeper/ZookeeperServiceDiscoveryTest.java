@@ -24,6 +24,11 @@ import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,11 +36,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledForJreRange;
 import org.junit.jupiter.api.condition.JRE;
 import org.mockito.internal.util.collections.Sets;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -85,11 +85,11 @@ class ZookeeperServiceDiscoveryTest {
         // Add Listener
         discovery.addServiceInstancesChangedListener(
                 new ServiceInstancesChangedListener(Sets.newSet(SERVICE_NAME), discovery) {
-            @Override
-            public void onEvent(ServiceInstancesChangedEvent event) {
-                latch.countDown();
-            }
-        });
+                    @Override
+                    public void onEvent(ServiceInstancesChangedEvent event) {
+                        latch.countDown();
+                    }
+                });
 
         discovery.register();
         latch.await();
@@ -100,7 +100,7 @@ class ZookeeperServiceDiscoveryTest {
         discovery.register();
         serviceInstances = discovery.getInstances(SERVICE_NAME);
 
-        DefaultServiceInstance serviceInstance = (DefaultServiceInstance)discovery.getLocalInstance();
+        DefaultServiceInstance serviceInstance = (DefaultServiceInstance) discovery.getLocalInstance();
         assertTrue(serviceInstances.contains(serviceInstance));
         assertEquals(asList(serviceInstance), serviceInstances);
 
@@ -121,5 +121,4 @@ class ZookeeperServiceDiscoveryTest {
 
         assertTrue(serviceInstances.isEmpty());
     }
-
 }

@@ -40,19 +40,11 @@ class MemberUtilsTest {
         assertTrue(isPublic(getClass().getMethod("publicMethod")));
     }
 
-    public void noStatic() {
+    public void noStatic() {}
 
-    }
+    public static void staticMethod() {}
 
-    public static void staticMethod() {
+    private void privateMethod() {}
 
-    }
-
-    private void privateMethod() {
-
-    }
-
-    public void publicMethod() {
-
-    }
+    public void publicMethod() {}
 }

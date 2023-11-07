@@ -30,9 +30,7 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @since 2.7.0
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(
-        classes = {WelcomeLogoApplicationListener.class}
-)
+@SpringBootTest(classes = {WelcomeLogoApplicationListener.class})
 public class WelcomeLogoApplicationListenerTest {
 
     @Autowired
@@ -42,7 +40,5 @@ public class WelcomeLogoApplicationListenerTest {
     public void testOnApplicationEvent() {
 
         Assert.assertNotNull(welcomeLogoApplicationListener.buildBannerText());
-
     }
-
 }

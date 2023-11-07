@@ -16,14 +16,14 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http2.DefaultHttp2PingFrame;
 import io.netty.handler.codec.http2.Http2PingFrame;
 import io.netty.handler.timeout.IdleStateEvent;
-
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 public class TriplePingPongHandler extends ChannelDuplexHandler {
 
@@ -41,7 +41,7 @@ public class TriplePingPongHandler extends ChannelDuplexHandler {
             super.channelRead(ctx, msg);
             return;
         }
-        //cancel task when read anything, include http2 ping ack
+        // cancel task when read anything, include http2 ping ack
         pingAckTimeoutFuture.cancel(true);
         pingAckTimeoutFuture = null;
     }
@@ -54,9 +54,10 @@ public class TriplePingPongHandler extends ChannelDuplexHandler {
         }
         ctx.writeAndFlush(new DefaultHttp2PingFrame(0));
         if (pingAckTimeoutFuture == null) {
-            pingAckTimeoutFuture = ctx.executor().schedule(new CloseChannelTask(ctx), pingAckTimeout, TimeUnit.MILLISECONDS);
+            pingAckTimeoutFuture =
+                    ctx.executor().schedule(new CloseChannelTask(ctx), pingAckTimeout, TimeUnit.MILLISECONDS);
         }
-        //not null means last ping ack not received
+        // not null means last ping ack not received
     }
 
     private static class CloseChannelTask implements Runnable {
@@ -72,5 +73,4 @@ public class TriplePingPongHandler extends ChannelDuplexHandler {
             ctx.close();
         }
     }
-
 }

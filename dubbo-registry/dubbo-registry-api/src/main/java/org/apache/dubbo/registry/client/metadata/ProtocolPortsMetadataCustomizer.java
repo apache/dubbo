@@ -40,7 +40,9 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  * @since 2.7.5
  */
 public class ProtocolPortsMetadataCustomizer implements ServiceInstanceCustomizer {
-    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(ProtocolPortsMetadataCustomizer.class);
+    private static final ErrorTypeAwareLogger LOGGER =
+            LoggerFactory.getErrorTypeAwareLogger(ProtocolPortsMetadataCustomizer.class);
+
     @Override
     public void customize(ServiceInstance serviceInstance, ApplicationModel applicationModel) {
         MetadataInfo metadataInfo = serviceInstance.getServiceMetadata();
@@ -56,13 +58,18 @@ public class ProtocolPortsMetadataCustomizer implements ServiceInstanceCustomize
             Integer oldPort = protocols.get(protocol);
             int newPort = url.getPort();
             if (oldPort != null && oldPort != newPort) {
-                LOGGER.warn(LoggerCodeConstants.PROTOCOL_INCORRECT_PARAMETER_VALUES, "the protocol is listening multiple ports", "", "Same protocol " + "[" + protocol + "]" + " listens on different ports " + "[" + oldPort + "," + newPort + "]" + " will override with each other" +
-                    ". The port [" + oldPort + "] is overridden with port [" + newPort + "].");
+                LOGGER.warn(
+                        LoggerCodeConstants.PROTOCOL_INCORRECT_PARAMETER_VALUES,
+                        "the protocol is listening multiple ports",
+                        "",
+                        "Same protocol " + "[" + protocol + "]" + " listens on different ports " + "[" + oldPort + ","
+                                + newPort + "]" + " will override with each other" + ". The port [" + oldPort
+                                + "] is overridden with port [" + newPort + "].");
             }
             protocols.put(protocol, newPort);
         });
 
-        if (protocols.size() > 0) {// set endpoints only for multi-protocol scenario
+        if (protocols.size() > 0) { // set endpoints only for multi-protocol scenario
             setEndpoints(serviceInstance, protocols);
         }
     }

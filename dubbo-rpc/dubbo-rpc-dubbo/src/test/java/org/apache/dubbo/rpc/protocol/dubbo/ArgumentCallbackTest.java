@@ -28,17 +28,17 @@ import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CALLBACK_INSTANCES_LIMIT_KEY;
 
@@ -62,7 +62,8 @@ class ArgumentCallbackTest {
         // export one service first, to test connection sharing
         serviceURL = serviceURL.addParameter("connections", 1);
         URL hellourl = serviceURL.setPath(IHelloService.class.getName());
-        ModuleServiceRepository serviceRepository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
+        ModuleServiceRepository serviceRepository =
+                ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
         serviceRepository.registerService(IDemoService.class);
         serviceRepository.registerService(IHelloService.class);
         hello_exporter = ProtocolUtils.export(new HelloServiceImpl(), IHelloService.class, hellourl);
@@ -70,30 +71,39 @@ class ArgumentCallbackTest {
     }
 
     void referService() {
-        ApplicationModel.defaultModel().getDefaultModule().getServiceRepository().registerService(IDemoService.class);
+        ApplicationModel.defaultModel()
+                .getDefaultModule()
+                .getServiceRepository()
+                .registerService(IDemoService.class);
         demoProxy = (IDemoService) ProtocolUtils.refer(IDemoService.class, consumerUrl);
     }
 
     @BeforeEach
-    public void setUp() {
-    }
+    public void setUp() {}
 
     public void initOrResetUrl(int callbacks, int timeout) {
         int port = NetUtils.getAvailablePort();
-        consumerUrl = serviceURL = URL.valueOf("dubbo://127.0.0.1:" + port + "/" + IDemoService.class.getName() + "?group=test"
-                + "&xxx.0.callback=true"
-                + "&xxx2.0.callback=true"
-                + "&unxxx2.0.callback=false"
-                + "&timeout=" + timeout
-                + "&retries=0"
-                + "&" + CALLBACK_INSTANCES_LIMIT_KEY + "=" + callbacks)
-            .setScopeModel(ApplicationModel.defaultModel().getDefaultModule())
-            .setServiceModel(new ConsumerModel(IDemoService.class.getName(), null, null,
-                ApplicationModel.defaultModel().getDefaultModule(), null, null, ClassUtils.getClassLoader(IDemoService.class)));
+        consumerUrl = serviceURL = URL.valueOf(
+                        "dubbo://127.0.0.1:" + port + "/" + IDemoService.class.getName() + "?group=test"
+                                + "&xxx.0.callback=true"
+                                + "&xxx2.0.callback=true"
+                                + "&unxxx2.0.callback=false"
+                                + "&timeout=" + timeout
+                                + "&retries=0"
+                                + "&" + CALLBACK_INSTANCES_LIMIT_KEY + "=" + callbacks)
+                .setScopeModel(ApplicationModel.defaultModel().getDefaultModule())
+                .setServiceModel(new ConsumerModel(
+                        IDemoService.class.getName(),
+                        null,
+                        null,
+                        ApplicationModel.defaultModel().getDefaultModule(),
+                        null,
+                        null,
+                        ClassUtils.getClassLoader(IDemoService.class)));
 
         //      uncomment is unblock invoking
-//        serviceURL = serviceURL.addParameter("yyy."+Constants.ASYNC_KEY,String.valueOf(true));
-//        consumerUrl = consumerUrl.addParameter("yyy."+Constants.ASYNC_KEY,String.valueOf(true));
+        //        serviceURL = serviceURL.addParameter("yyy."+Constants.ASYNC_KEY,String.valueOf(true));
+        //        consumerUrl = consumerUrl.addParameter("yyy."+Constants.ASYNC_KEY,String.valueOf(true));
     }
 
     public void initOrResetService() {
@@ -121,17 +131,20 @@ class ArgumentCallbackTest {
 
         final AtomicInteger count = new AtomicInteger(0);
 
-        demoProxy.xxx(new IDemoCallback() {
-            public String yyy(String msg) {
-                System.out.println("Recived callback: " + msg);
-                count.incrementAndGet();
-                return "ok";
-            }
-        }, "other custom args", 10, 100);
+        demoProxy.xxx(
+                new IDemoCallback() {
+                    public String yyy(String msg) {
+                        System.out.println("Received callback: " + msg);
+                        count.incrementAndGet();
+                        return "ok";
+                    }
+                },
+                "other custom args",
+                10,
+                100);
         System.out.println("Async...");
         assertCallbackCount(10, 100, count);
         destroyService();
-
     }
 
     @Test
@@ -141,19 +154,21 @@ class ArgumentCallbackTest {
         initOrResetService();
         final AtomicInteger count = new AtomicInteger(0);
 
-        demoProxy.xxx(new IDemoCallback() {
-            public String yyy(String msg) {
-                System.out.println("Recived callback: " + msg);
-                count.incrementAndGet();
-                return "ok";
-            }
-        }, "other custom args", 10, 100);
+        demoProxy.xxx(
+                new IDemoCallback() {
+                    public String yyy(String msg) {
+                        System.out.println("Received callback: " + msg);
+                        count.incrementAndGet();
+                        return "ok";
+                    }
+                },
+                "other custom args",
+                10,
+                100);
         System.out.println("Async...");
-//        Thread.sleep(10000000);
+        //        Thread.sleep(10000000);
         assertCallbackCount(10, 100, count);
         destroyService();
-
-
     }
 
     @Test
@@ -213,21 +228,29 @@ class ArgumentCallbackTest {
             // it needs manually specified.
             initOrResetService();
             final AtomicInteger count = new AtomicInteger(0);
-            demoProxy.xxx(new IDemoCallback() {
-                public String yyy(String msg) {
-                    System.out.println("Recived callback: " + msg);
-                    count.incrementAndGet();
-                    return "ok";
-                }
-            }, "other custom args", 10, 100);
+            demoProxy.xxx(
+                    new IDemoCallback() {
+                        public String yyy(String msg) {
+                            System.out.println("Received callback: " + msg);
+                            count.incrementAndGet();
+                            return "ok";
+                        }
+                    },
+                    "other custom args",
+                    10,
+                    100);
 
-            demoProxy.xxx(new IDemoCallback() {
-                public String yyy(String msg) {
-                    System.out.println("Recived callback: " + msg);
-                    count.incrementAndGet();
-                    return "ok";
-                }
-            }, "other custom args", 10, 100);
+            demoProxy.xxx(
+                    new IDemoCallback() {
+                        public String yyy(String msg) {
+                            System.out.println("Received callback: " + msg);
+                            count.incrementAndGet();
+                            return "ok";
+                        }
+                    },
+                    "other custom args",
+                    10,
+                    100);
             destroyService();
         });
     }
@@ -241,21 +264,29 @@ class ArgumentCallbackTest {
             serviceURL = serviceURL.addParameter(CALLBACK_INSTANCES_LIMIT_KEY, 1 + "");
             initOrResetService();
             final AtomicInteger count = new AtomicInteger(0);
-            demoProxy.xxx(new IDemoCallback() {
-                public String yyy(String msg) {
-                    System.out.println("Recived callback: " + msg);
-                    count.incrementAndGet();
-                    return "ok";
-                }
-            }, "other custom args", 10, 100);
+            demoProxy.xxx(
+                    new IDemoCallback() {
+                        public String yyy(String msg) {
+                            System.out.println("Received callback: " + msg);
+                            count.incrementAndGet();
+                            return "ok";
+                        }
+                    },
+                    "other custom args",
+                    10,
+                    100);
 
-            demoProxy.xxx(new IDemoCallback() {
-                public String yyy(String msg) {
-                    System.out.println("Recived callback: " + msg);
-                    count.incrementAndGet();
-                    return "ok";
-                }
-            }, "other custom args", 10, 100);
+            demoProxy.xxx(
+                    new IDemoCallback() {
+                        public String yyy(String msg) {
+                            System.out.println("Received callback: " + msg);
+                            count.incrementAndGet();
+                            return "ok";
+                        }
+                    },
+                    "other custom args",
+                    10,
+                    100);
             destroyService();
         });
     }
@@ -306,7 +337,6 @@ class ArgumentCallbackTest {
         public String sayHello() {
             return "hello";
         }
-
     }
 
     class DemoServiceImpl implements IDemoService {
@@ -360,7 +390,8 @@ class ArgumentCallbackTest {
                                     List<IDemoCallback> callbacksCopy = new ArrayList<IDemoCallback>(callbacks);
                                     for (IDemoCallback callback : callbacksCopy) {
                                         try {
-                                            callback.yyy("this is callback msg,current time is :" + System.currentTimeMillis());
+                                            callback.yyy("this is callback msg,current time is :"
+                                                    + System.currentTimeMillis());
                                         } catch (Exception e) {
                                             e.printStackTrace();
                                             callbacks.remove(callback);

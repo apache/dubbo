@@ -14,19 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.rpc.support;
+
+import java.lang.reflect.Type;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
-
-import java.lang.reflect.Type;
 
 /**
  * 2019-04-18
  */
 public class RpcUtils extends org.apache.dubbo.rpc.support.RpcUtils {
-
 
     public static Class<?> getReturnType(Invocation invocation) {
         return org.apache.dubbo.rpc.support.RpcUtils.getReturnType(invocation);
@@ -50,7 +48,6 @@ public class RpcUtils extends org.apache.dubbo.rpc.support.RpcUtils {
     public static void attachInvocationIdIfAsync(URL url, Invocation inv) {
         org.apache.dubbo.rpc.support.RpcUtils.attachInvocationIdIfAsync(url.getOriginalURL(), inv);
     }
-
 
     public static String getMethodName(Invocation invocation) {
         return org.apache.dubbo.rpc.support.RpcUtils.getMethodName(invocation);

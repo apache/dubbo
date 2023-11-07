@@ -14,16 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.rpc;
 
 import org.apache.dubbo.rpc.ProtocolServer;
 
-import com.alibaba.dubbo.common.DelegateURL;
-import com.alibaba.dubbo.common.URL;
-
 import java.util.Collections;
 import java.util.List;
+
+import com.alibaba.dubbo.common.DelegateURL;
+import com.alibaba.dubbo.common.URL;
 
 @Deprecated
 public interface Protocol extends org.apache.dubbo.rpc.Protocol {
@@ -38,7 +37,8 @@ public interface Protocol extends org.apache.dubbo.rpc.Protocol {
     }
 
     @Override
-    default <T> org.apache.dubbo.rpc.Invoker<T> refer(Class<T> aClass, org.apache.dubbo.common.URL url) throws RpcException {
+    default <T> org.apache.dubbo.rpc.Invoker<T> refer(Class<T> aClass, org.apache.dubbo.common.URL url)
+            throws RpcException {
         return this.refer(aClass, new DelegateURL(url));
     }
 

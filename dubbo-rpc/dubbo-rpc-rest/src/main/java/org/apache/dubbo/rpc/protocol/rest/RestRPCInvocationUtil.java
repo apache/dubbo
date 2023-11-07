@@ -33,14 +33,14 @@ import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.util.HttpHeaderUtil;
 import org.apache.dubbo.rpc.protocol.rest.util.NoAnnotationBodyParseUtil;
 
-
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 
 public class RestRPCInvocationUtil {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RestRPCInvocationUtil.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(RestRPCInvocationUtil.class);
 
     /**
      * service method real args parse
@@ -51,12 +51,16 @@ public class RestRPCInvocationUtil {
      * @param servletResponse
      * @param restMethodMetadata
      */
-    public static void parseMethodArgs(RpcInvocation rpcInvocation, RequestFacade request, Object servletRequest,
-                                       Object servletResponse,
-                                       RestMethodMetadata restMethodMetadata) {
+    public static void parseMethodArgs(
+            RpcInvocation rpcInvocation,
+            RequestFacade request,
+            Object servletRequest,
+            Object servletResponse,
+            RestMethodMetadata restMethodMetadata) {
 
         try {
-            ProviderParseContext parseContext = createParseContext(request, servletRequest, servletResponse, restMethodMetadata);
+            ProviderParseContext parseContext =
+                    createParseContext(request, servletRequest, servletResponse, restMethodMetadata);
             Object[] args = ParamParserManager.providerParamParse(parseContext);
 
             List<ArgInfo> argInfos = parseContext.getArgInfos();
@@ -65,8 +69,8 @@ public class RestRPCInvocationUtil {
                 // TODO set default value
                 if (argInfo.getParamType().isPrimitive() && args[argInfo.getIndex()] == null) {
                     throw new ParamParseException("\n dubbo provider primitive arg not exist in request, method is: "
-                        + restMethodMetadata.getReflectMethod() + "\n type is: " +
-                        argInfo.getParamType() + " \n and arg index is: " + argInfo.getIndex());
+                            + restMethodMetadata.getReflectMethod() + "\n type is: " + argInfo.getParamType()
+                            + " \n and arg index is: " + argInfo.getIndex());
                 }
             }
 
@@ -86,7 +90,8 @@ public class RestRPCInvocationUtil {
      * @param restMethodMetadata
      * @return
      */
-    private static ProviderParseContext createParseContext(RequestFacade request, Object originRequest, Object originResponse, RestMethodMetadata restMethodMetadata) {
+    private static ProviderParseContext createParseContext(
+            RequestFacade request, Object originRequest, Object originResponse, RestMethodMetadata restMethodMetadata) {
         ProviderParseContext parseContext = new ProviderParseContext(request);
         parseContext.setResponse(originResponse);
         parseContext.setRequest(originRequest);
@@ -99,7 +104,6 @@ public class RestRPCInvocationUtil {
         if (restMethodMetadata.currentCodeStyleIsNoAnnotationMode()) {
             parseContext.setArrayArgs(NoAnnotationBodyParseUtil.doParse(parseContext));
         }
-
 
         return parseContext;
     }
@@ -119,18 +123,18 @@ public class RestRPCInvocationUtil {
         rpcInvocation.setMethodName(restMethodMetadata.getMethod().getName());
 
         // TODO set   protocolServiceKey ,but no set method
-//
+        //
 
         HttpHeaderUtil.parseRequest(rpcInvocation, request);
 
-        String serviceKey = BaseServiceMetadata.buildServiceKey(request.getHeader(RestHeaderEnum.PATH.getHeader()),
-            request.getHeader(RestHeaderEnum.GROUP.getHeader()),
-            request.getHeader(RestHeaderEnum.VERSION.getHeader()));
+        String serviceKey = BaseServiceMetadata.buildServiceKey(
+                request.getHeader(RestHeaderEnum.PATH.getHeader()),
+                request.getHeader(RestHeaderEnum.GROUP.getHeader()),
+                request.getHeader(RestHeaderEnum.VERSION.getHeader()));
         rpcInvocation.setTargetServiceUniqueName(serviceKey);
 
         return rpcInvocation;
     }
-
 
     /**
      * get InvokerAndRestMethodMetadataPair by path matcher
@@ -138,7 +142,8 @@ public class RestRPCInvocationUtil {
      * @param pathMatcher
      * @return
      */
-    public static InvokerAndRestMethodMetadataPair getRestMethodMetadataAndInvokerPair(PathMatcher pathMatcher, ServiceDeployer serviceDeployer) {
+    public static InvokerAndRestMethodMetadataPair getRestMethodMetadataAndInvokerPair(
+            PathMatcher pathMatcher, ServiceDeployer serviceDeployer) {
 
         return serviceDeployer.getPathAndInvokerMapper().getRestMethodMetadata(pathMatcher);
     }
@@ -149,15 +154,12 @@ public class RestRPCInvocationUtil {
      * @param request
      * @return
      */
-
     public static InvokerAndRestMethodMetadataPair getRestMethodMetadataAndInvokerPair(RequestFacade request) {
-
 
         PathMatcher pathMather = createPathMatcher(request);
 
         return getRestMethodMetadataAndInvokerPair(pathMather, request.getServiceDeployer());
     }
-
 
     /**
      * get  invoker by request
@@ -165,14 +167,12 @@ public class RestRPCInvocationUtil {
      * @param request
      * @return
      */
-
     public static Invoker getInvokerByRequest(RequestFacade request) {
 
         PathMatcher pathMatcher = createPathMatcher(request);
 
         return getInvoker(pathMatcher, request.getServiceDeployer());
     }
-
 
     /**
      * get invoker by service method
@@ -182,7 +182,6 @@ public class RestRPCInvocationUtil {
      * @param serviceMethod
      * @return
      */
-
     public static Invoker getInvokerByServiceInvokeMethod(Method serviceMethod, ServiceDeployer serviceDeployer) {
 
         if (serviceMethod == null) {
@@ -230,6 +229,4 @@ public class RestRPCInvocationUtil {
 
         return PathMatcher.getInvokeCreatePathMatcher(path, version, group, null, method);
     }
-
-
 }

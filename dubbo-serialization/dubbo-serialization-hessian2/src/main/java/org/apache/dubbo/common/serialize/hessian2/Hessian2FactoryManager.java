@@ -23,9 +23,8 @@ import org.apache.dubbo.common.utils.SerializeSecurityManager;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import com.alibaba.com.caucho.hessian.io.SerializerFactory;
-
 import java.util.concurrent.ConcurrentHashMap;
+import com.alibaba.com.caucho.hessian.io.SerializerFactory;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_HESSIAN_ALLOW;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_HESSIAN_ALLOW_NON_SERIALIZABLE;
@@ -43,7 +42,8 @@ public class Hessian2FactoryManager {
 
     public Hessian2FactoryManager(FrameworkModel frameworkModel) {
         serializeSecurityManager = frameworkModel.getBeanFactory().getOrRegisterBean(SerializeSecurityManager.class);
-        defaultSerializeClassChecker = frameworkModel.getBeanFactory().getOrRegisterBean(DefaultSerializeClassChecker.class);
+        defaultSerializeClassChecker =
+                frameworkModel.getBeanFactory().getOrRegisterBean(DefaultSerializeClassChecker.class);
     }
 
     public SerializerFactory getSerializerFactory(ClassLoader classLoader) {
@@ -65,8 +65,8 @@ public class Hessian2FactoryManager {
             return SYSTEM_SERIALIZER_FACTORY;
         }
 
-        SerializerFactory factory = ConcurrentHashMapUtils.computeIfAbsent(CL_2_SERIALIZER_FACTORY,
-            classLoader, this::createSerializerFactory);
+        SerializerFactory factory = ConcurrentHashMapUtils.computeIfAbsent(
+                CL_2_SERIALIZER_FACTORY, classLoader, this::createSerializerFactory);
         stickySerializerFactory = factory;
         return factory;
     }
@@ -81,8 +81,10 @@ public class Hessian2FactoryManager {
     }
 
     private SerializerFactory createDefaultSerializerFactory(ClassLoader classLoader) {
-        Hessian2SerializerFactory hessian2SerializerFactory = new Hessian2SerializerFactory(classLoader, defaultSerializeClassChecker);
-        hessian2SerializerFactory.setAllowNonSerializable(Boolean.parseBoolean(System.getProperty(DUBBO_HESSIAN_ALLOW_NON_SERIALIZABLE, "false")));
+        Hessian2SerializerFactory hessian2SerializerFactory =
+                new Hessian2SerializerFactory(classLoader, defaultSerializeClassChecker);
+        hessian2SerializerFactory.setAllowNonSerializable(
+                Boolean.parseBoolean(System.getProperty(DUBBO_HESSIAN_ALLOW_NON_SERIALIZABLE, "false")));
         hessian2SerializerFactory.getClassFactory().allow("org.apache.dubbo.*");
         return hessian2SerializerFactory;
     }
@@ -110,7 +112,8 @@ public class Hessian2FactoryManager {
                 }
             }
         }
-        serializerFactory.setAllowNonSerializable(Boolean.parseBoolean(System.getProperty(DUBBO_HESSIAN_ALLOW_NON_SERIALIZABLE, "false")));
+        serializerFactory.setAllowNonSerializable(
+                Boolean.parseBoolean(System.getProperty(DUBBO_HESSIAN_ALLOW_NON_SERIALIZABLE, "false")));
         serializerFactory.getClassFactory().allow("org.apache.dubbo.*");
         return serializerFactory;
     }

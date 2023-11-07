@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.remoting.zookeeper;
 
 @Deprecated
-public interface ZookeeperTransporter extends org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter {
-}
+public interface ZookeeperTransporter extends org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter {}

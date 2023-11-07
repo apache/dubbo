@@ -14,11 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.utils;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -31,6 +27,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -88,9 +87,9 @@ class ReflectUtilsTest {
 
     @Test
     void testIsCompatibleWithArray() {
-        assertFalse(ReflectUtils.isCompatible(new Class[]{short.class, int.class}, new Object[]{(short) 1}));
-        assertFalse(ReflectUtils.isCompatible(new Class[]{double.class}, new Object[]{"hello"}));
-        assertTrue(ReflectUtils.isCompatible(new Class[]{double.class}, new Object[]{1.2}));
+        assertFalse(ReflectUtils.isCompatible(new Class[] {short.class, int.class}, new Object[] {(short) 1}));
+        assertFalse(ReflectUtils.isCompatible(new Class[] {double.class}, new Object[] {"hello"}));
+        assertTrue(ReflectUtils.isCompatible(new Class[] {double.class}, new Object[] {1.2}));
     }
 
     @Test
@@ -157,8 +156,9 @@ class ReflectUtilsTest {
 
     @Test
     void testGetMethodName() throws Exception {
-        assertThat(ReflectUtils.getName(Foo2.class.getDeclaredMethod("hello", int[].class)),
-            equalTo("java.util.List hello(int[])"));
+        assertThat(
+                ReflectUtils.getName(Foo2.class.getDeclaredMethod("hello", int[].class)),
+                equalTo("java.util.List hello(int[])"));
     }
 
     @Test
@@ -183,8 +183,9 @@ class ReflectUtilsTest {
 
     @Test
     void testGetDescMethod() throws Exception {
-        assertThat(ReflectUtils.getDesc(Foo2.class.getDeclaredMethod("hello", int[].class)),
-            equalTo("hello([I)Ljava/util/List;"));
+        assertThat(
+                ReflectUtils.getDesc(Foo2.class.getDeclaredMethod("hello", int[].class)),
+                equalTo("hello([I)Ljava/util/List;"));
     }
 
     @Test
@@ -194,8 +195,9 @@ class ReflectUtilsTest {
 
     @Test
     void testGetDescWithoutMethodName() throws Exception {
-        assertThat(ReflectUtils.getDescWithoutMethodName(Foo2.class.getDeclaredMethod("hello", int[].class)),
-            equalTo("([I)Ljava/util/List;"));
+        assertThat(
+                ReflectUtils.getDescWithoutMethodName(Foo2.class.getDeclaredMethod("hello", int[].class)),
+                equalTo("([I)Ljava/util/List;"));
     }
 
     @Test
@@ -208,7 +210,6 @@ class ReflectUtilsTest {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             ReflectUtils.findMethodByMethodName(Foo2.class, "hello");
         });
-
     }
 
     @Test
@@ -309,23 +310,22 @@ class ReflectUtilsTest {
         String desc;
         Class<?>[] cs;
 
-        cs = new Class<?>[]{int.class, getClass(), String.class, int[][].class, boolean[].class};
+        cs = new Class<?>[] {int.class, getClass(), String.class, int[][].class, boolean[].class};
         desc = ReflectUtils.getDesc(cs);
         assertSame(cs, ReflectUtils.desc2classArray(desc));
 
-        cs = new Class<?>[]{};
+        cs = new Class<?>[] {};
         desc = ReflectUtils.getDesc(cs);
         assertSame(cs, ReflectUtils.desc2classArray(desc));
 
-        cs = new Class<?>[]{void.class, String[].class, int[][].class, ReflectUtilsTest[][].class};
+        cs = new Class<?>[] {void.class, String[].class, int[][].class, ReflectUtilsTest[][].class};
         desc = ReflectUtils.getDesc(cs);
         assertSame(cs, ReflectUtils.desc2classArray(desc));
     }
 
     protected void assertSame(Class<?>[] cs1, Class<?>[] cs2) throws Exception {
         assertEquals(cs1.length, cs2.length);
-        for (int i = 0; i < cs1.length; i++)
-            assertEquals(cs1[i], cs2[i]);
+        for (int i = 0; i < cs1.length; i++) assertEquals(cs1[i], cs2[i]);
     }
 
     @Test
@@ -341,8 +341,8 @@ class ReflectUtilsTest {
     @Test
     void testFindMethodByMethodSignature_override() throws Exception {
         {
-            Method m = ReflectUtils.findMethodByMethodSignature(TestedClass.class,
-                "overrideMethod", new String[]{"int"});
+            Method m =
+                    ReflectUtils.findMethodByMethodSignature(TestedClass.class, "overrideMethod", new String[] {"int"});
 
             assertEquals("overrideMethod", m.getName());
             Class<?>[] parameterTypes = m.getParameterTypes();
@@ -350,8 +350,8 @@ class ReflectUtilsTest {
             assertEquals(int.class, parameterTypes[0]);
         }
         {
-            Method m = ReflectUtils.findMethodByMethodSignature(TestedClass.class,
-                "overrideMethod", new String[]{"java.lang.Integer"});
+            Method m = ReflectUtils.findMethodByMethodSignature(
+                    TestedClass.class, "overrideMethod", new String[] {"java.lang.Integer"});
 
             assertEquals("overrideMethod", m.getName());
             Class<?>[] parameterTypes = m.getParameterTypes();
@@ -486,9 +486,7 @@ class ReflectUtilsTest {
             return null;
         }
 
-        public void isProperty() {
-
-        }
+        public void isProperty() {}
 
         public boolean isSet() {
             return set;
@@ -503,26 +501,19 @@ class ReflectUtilsTest {
         }
     }
 
-    public static class EmptyProperty {
-    }
+    public static class EmptyProperty {}
 
     static class TestedClass {
-        public void method1(int x) {
-        }
+        public void method1(int x) {}
 
-        public void overrideMethod(int x) {
-        }
+        public void overrideMethod(int x) {}
 
-        public void overrideMethod(Integer x) {
-        }
+        public void overrideMethod(Integer x) {}
 
-        public void overrideMethod(String s) {
-        }
+        public void overrideMethod(String s) {}
 
-        public void overrideMethod(String s1, String s2) {
-        }
+        public void overrideMethod(String s1, String s2) {}
     }
-
 
     interface Foo<A, B> {
         A hello(B b);
@@ -536,8 +527,7 @@ class ReflectUtilsTest {
     }
 
     static class Foo2 implements Foo<List<String>, int[]> {
-        public Foo2(List<String> list, int[] ints) {
-        }
+        public Foo2(List<String> list, int[] ints) {}
 
         @Override
         public List<String> hello(int[] ints) {
@@ -546,8 +536,7 @@ class ReflectUtilsTest {
     }
 
     static class Foo3 implements Foo<Foo1, Foo2> {
-        public Foo3(Foo foo) {
-        }
+        public Foo3(Foo foo) {}
 
         @Override
         public Foo1 hello(Foo2 foo2) {

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.collector.sample;
 
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
@@ -42,7 +41,8 @@ public abstract class MetricsNameCountSampler<S, K, M extends Metric> extends Si
 
     protected final MetricsKey metricsKey;
 
-    public MetricsNameCountSampler(DefaultMetricsCollector collector,MetricsCategory metricsCategory,MetricsKey metricsKey) {
+    public MetricsNameCountSampler(
+            DefaultMetricsCollector collector, MetricsCategory metricsCategory, MetricsKey metricsKey) {
         this.metricsCategory = metricsCategory;
         this.metricsKey = metricsKey;
         this.collector = collector;
@@ -63,12 +63,13 @@ public abstract class MetricsNameCountSampler<S, K, M extends Metric> extends Si
 
     private void collect(List<MetricSample> samples, K metricName) {
         getCount(metricName)
-            .filter(e -> !e.isEmpty())
-            .ifPresent(map -> map.forEach((k, v) ->
-                samples.add(provideMetricsSample(k,v,metricsKey,metricsCategory))));
+                .filter(e -> !e.isEmpty())
+                .ifPresent(map ->
+                        map.forEach((k, v) -> samples.add(provideMetricsSample(k, v, metricsKey, metricsCategory))));
     }
 
-    protected abstract MetricSample provideMetricsSample(M metric,AtomicLong count,MetricsKey metricsKey,MetricsCategory metricsCategory);
+    protected abstract MetricSample provideMetricsSample(
+            M metric, AtomicLong count, MetricsKey metricsKey, MetricsCategory metricsCategory);
 
     @Override
     public boolean calSamplesChanged() {

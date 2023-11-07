@@ -18,6 +18,28 @@ package org.apache.dubbo.rpc.protocol.rest.extension.resteasy.filter;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.container.ContainerResponseFilter;
+import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.Link;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.NewCookie;
+import javax.ws.rs.core.Response;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.net.URI;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
+
 import org.jboss.resteasy.core.Dispatcher;
 import org.jboss.resteasy.core.ServerResponseWriter;
 import org.jboss.resteasy.core.SynchronousDispatcher;
@@ -30,28 +52,9 @@ import org.jboss.resteasy.spi.HttpResponse;
 import org.jboss.resteasy.spi.ResteasyAsynchronousResponse;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.container.ContainerResponseFilter;
-import javax.ws.rs.core.EntityTag;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Link;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.NewCookie;
-import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-import java.net.URI;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Consumer;
-
 public class DubboContainerResponseContextImpl implements SuspendableContainerResponseContext {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DubboContainerResponseContextImpl.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(DubboContainerResponseContextImpl.class);
 
     protected final HttpRequest request;
     protected final HttpResponse httpResponse;
@@ -68,10 +71,14 @@ public class DubboContainerResponseContextImpl implements SuspendableContainerRe
     private Consumer<Throwable> onComplete;
     private boolean weSuspended;
 
-
-    public DubboContainerResponseContextImpl(final HttpRequest request, final HttpResponse httpResponse, final BuiltResponse serverResponse,
-                                             final ResponseContainerRequestContext requestContext, final ContainerResponseFilter[] responseFilters,
-                                             final Consumer<Throwable> onComplete, final ServerResponseWriter.RunnableWithIOException continuation) {
+    public DubboContainerResponseContextImpl(
+            final HttpRequest request,
+            final HttpResponse httpResponse,
+            final BuiltResponse serverResponse,
+            final ResponseContainerRequestContext requestContext,
+            final ContainerResponseFilter[] responseFilters,
+            final Consumer<Throwable> onComplete,
+            final ServerResponseWriter.RunnableWithIOException continuation) {
         this.request = request;
         this.httpResponse = httpResponse;
         this.jaxrsResponse = serverResponse;
@@ -124,10 +131,11 @@ public class DubboContainerResponseContextImpl implements SuspendableContainerRe
 
     @Override
     public void setEntity(Object entity) {
-        //if (entity != null) logger.info("*** setEntity(Object) " + entity.toString());
         if (entity != null && jaxrsResponse.getEntity() != null) {
-            logger.info("Dubbo container response context filter set entity ,before entity is: " + jaxrsResponse.getEntity() + "and after entity is: " + entity);
-
+            if (logger.isDebugEnabled()) {
+                logger.debug("Dubbo container response context filter set entity ,before entity is: "
+                        + jaxrsResponse.getEntity() + "and after entity is: " + entity);
+            }
         }
         jaxrsResponse.setEntity(entity);
         // it resets the entity in a response filter which results
@@ -138,9 +146,11 @@ public class DubboContainerResponseContextImpl implements SuspendableContainerRe
 
     @Override
     public void setEntity(Object entity, Annotation[] annotations, MediaType mediaType) {
-        //if (entity != null) logger.info("*** setEntity(Object, Annotation[], MediaType) " + entity.toString() + ", " + mediaType);
         if (entity != null && jaxrsResponse.getEntity() != null) {
-            logger.info("Dubbo container response context filter set entity ,before entity is: " + jaxrsResponse.getEntity() + "and after entity is: " + entity);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Dubbo container response context filter set entity ,before entity is: "
+                        + jaxrsResponse.getEntity() + "and after entity is: " + entity);
+            }
         }
         jaxrsResponse.setEntity(entity);
         jaxrsResponse.setAnnotations(annotations);
@@ -260,18 +270,15 @@ public class DubboContainerResponseContextImpl implements SuspendableContainerRe
         return jaxrsResponse.getHeaderString(name);
     }
 
-
     @Override
     public synchronized void suspend() {
-        if (continuation == null)
-            throw new RuntimeException("Suspend not supported yet");
+        if (continuation == null) throw new RuntimeException("Suspend not supported yet");
         suspended = true;
     }
 
     @Override
     public synchronized void resume() {
-        if (!suspended)
-            throw new RuntimeException("Cannot resume: not suspended");
+        if (!suspended) throw new RuntimeException("Cannot resume: not suspended");
         if (inFilter) {
             // suspend/resume within filter, same thread: just ignore and move on
             suspended = false;
@@ -279,7 +286,8 @@ public class DubboContainerResponseContextImpl implements SuspendableContainerRe
         }
 
         // go on, but with proper exception handling
-        try (ResteasyProviderFactory.CloseableContext c = ResteasyProviderFactory.addCloseableContextDataLevel(contextDataMap)) {
+        try (ResteasyProviderFactory.CloseableContext c =
+                ResteasyProviderFactory.addCloseableContextDataLevel(contextDataMap)) {
             filter();
         } catch (Throwable t) {
             // don't throw to client
@@ -289,14 +297,14 @@ public class DubboContainerResponseContextImpl implements SuspendableContainerRe
 
     @Override
     public synchronized void resume(Throwable t) {
-        if (!suspended)
-            throw new RuntimeException("Cannot resume: not suspended");
+        if (!suspended) throw new RuntimeException("Cannot resume: not suspended");
         if (inFilter) {
             // not suspended, or suspend/abortWith within filter, same thread: collect and move on
             throwable = t;
             suspended = false;
         } else {
-            try (ResteasyProviderFactory.CloseableContext c = ResteasyProviderFactory.addCloseableContextDataLevel(contextDataMap)) {
+            try (ResteasyProviderFactory.CloseableContext c =
+                    ResteasyProviderFactory.addCloseableContextDataLevel(contextDataMap)) {
                 writeException(t);
             }
         }
@@ -341,8 +349,7 @@ public class DubboContainerResponseContextImpl implements SuspendableContainerRe
             }
             if (throwable != null) {
                 // handle the case where we've been suspended by a previous filter
-                if (filterReturnIsMeaningful)
-                    SynchronousDispatcher.rethrow(throwable);
+                if (filterReturnIsMeaningful) SynchronousDispatcher.rethrow(throwable);
                 else {
                     writeException(throwable);
                     return;
@@ -354,8 +361,7 @@ public class DubboContainerResponseContextImpl implements SuspendableContainerRe
         // some frameworks don't support async request filters, in which case suspend() is forbidden
         // so if we get here we're still synchronous and don't have a continuation, which must be in
         // the caller
-        if (continuation == null)
-            return;
+        if (continuation == null) return;
 
         // if we've never been suspended, the caller is valid so let it handle any exception
         if (filterReturnIsMeaningful) {
@@ -370,11 +376,18 @@ public class DubboContainerResponseContextImpl implements SuspendableContainerRe
             onComplete.accept(null);
             if (weSuspended) {
                 // if we're the ones who turned the request async, nobody will call complete() for us, so we have to
-                HttpServletRequest httpServletRequest = (HttpServletRequest) contextDataMap.get(HttpServletRequest.class);
+                HttpServletRequest httpServletRequest =
+                        (HttpServletRequest) contextDataMap.get(HttpServletRequest.class);
                 httpServletRequest.getAsyncContext().complete();
             }
         } catch (IOException e) {
-            logger.error("", "Dubbo container response context filter error", "request method is: " + request.getHttpMethod() + "and request uri is:" + request.getUri().getPath(), "", e);
+            logger.error(
+                    "",
+                    "Dubbo container response context filter error",
+                    "request method is: " + request.getHttpMethod() + "and request uri is:"
+                            + request.getUri().getPath(),
+                    "",
+                    e);
         }
     }
 }

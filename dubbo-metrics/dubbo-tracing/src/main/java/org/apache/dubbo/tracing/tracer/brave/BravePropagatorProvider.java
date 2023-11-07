@@ -21,7 +21,6 @@ import org.apache.dubbo.tracing.tracer.PropagatorProvider;
 import io.micrometer.tracing.brave.bridge.BravePropagator;
 import io.micrometer.tracing.propagation.Propagator;
 
-
 public class BravePropagatorProvider implements PropagatorProvider {
 
     private static Propagator propagator;

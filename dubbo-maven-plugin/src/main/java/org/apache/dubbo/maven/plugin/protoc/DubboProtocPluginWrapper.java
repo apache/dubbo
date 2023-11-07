@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.maven.plugin.protoc;
 
-import org.apache.maven.plugin.logging.Log;
-
 import java.io.File;
+
+import org.apache.maven.plugin.logging.Log;
 
 public interface DubboProtocPluginWrapper {
 

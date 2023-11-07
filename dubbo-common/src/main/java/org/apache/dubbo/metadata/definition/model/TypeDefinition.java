@@ -35,7 +35,7 @@ public class TypeDefinition implements Serializable {
      * the name of type
      *
      * @see Class#getCanonicalName()
-     * @see org.apache.dubbo.metadata.definition.util.ClassUtils#getCanonicalNameForParameterizedType(ParameterizedType) 
+     * @see org.apache.dubbo.metadata.definition.util.ClassUtils#getCanonicalNameForParameterizedType(ParameterizedType)
      */
     private String type;
 
@@ -59,8 +59,7 @@ public class TypeDefinition implements Serializable {
      */
     private Map<String, String> properties;
 
-    public TypeDefinition() {
-    }
+    public TypeDefinition() {}
 
     public TypeDefinition(String type) {
         this.setType(type);
@@ -166,10 +165,10 @@ public class TypeDefinition implements Serializable {
             return false;
         }
         TypeDefinition that = (TypeDefinition) o;
-        return Objects.equals(getType(), that.getType()) &&
-                Objects.equals(getItems(), that.getItems()) &&
-                Objects.equals(getEnums(), that.getEnums()) &&
-                Objects.equals(getProperties(), that.getProperties());
+        return Objects.equals(getType(), that.getType())
+                && Objects.equals(getItems(), that.getItems())
+                && Objects.equals(getEnums(), that.getEnums())
+                && Objects.equals(getProperties(), that.getProperties());
     }
 
     @Override

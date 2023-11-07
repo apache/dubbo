@@ -14,13 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.logger;
 
 /**
  *  Loggers that can register to listen to log messages.
  */
-public interface ListenableLogger extends ErrorTypeAwareLogger{
+public interface ListenableLogger extends ErrorTypeAwareLogger {
 
     /**
      * Register a listener to this logger，and get notified when a log happens.
@@ -28,5 +27,4 @@ public interface ListenableLogger extends ErrorTypeAwareLogger{
      * @param listener log listener
      */
     void registerListen(LogListener listener);
-
 }

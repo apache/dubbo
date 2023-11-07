@@ -22,7 +22,6 @@ import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.ParamType;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 
-
 /**
  * body param parse
  * users can custom NoAnnotationParamProviderParamParser
@@ -44,8 +43,6 @@ public class NoAnnotationParamProviderParamParser extends ProviderParamParser {
         Object convertArg = JsonUtils.toJavaObject(JsonUtils.toJson(arg), argInfo.actualReflectType());
 
         parseContext.setValueByIndex(index, convertArg);
-
-
     }
 
     @Override

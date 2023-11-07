@@ -14,25 +14,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.config.nested;
 
 import java.io.Serializable;
 
+/**
+ * Configuration for the histogram.
+ */
 public class HistogramConfig implements Serializable {
 
+    /**
+     * Whether histograms are enabled or not. Default is not enabled (false).
+     */
     private Boolean enabled;
 
+    /**
+     * Buckets in milliseconds for the histograms. Defines the histogram bucket boundaries.
+     */
     private Integer[] bucketsMs;
 
+    /**
+     * Minimum expected value in milliseconds for the histograms. Values lower than this will be considered outliers.
+     */
     private Integer minExpectedMs;
 
+    /**
+     * Maximum expected value in milliseconds for the histograms. Values higher than this will be considered outliers.
+     */
     private Integer maxExpectedMs;
 
+    /**
+     * Whether enabledPercentiles are enabled or not. Default is not enabled (false).
+     */
     private Boolean enabledPercentiles;
 
+    /**
+     * Array of percentiles to be calculated for the histograms. Each percentile is a double value.
+     */
     private double[] percentiles;
 
+    /**
+     * Expiry time in minutes for distribution statistics. After this time, the statistics are expired.
+     */
     private Integer distributionStatisticExpiryMin;
 
     public Boolean getEnabled() {

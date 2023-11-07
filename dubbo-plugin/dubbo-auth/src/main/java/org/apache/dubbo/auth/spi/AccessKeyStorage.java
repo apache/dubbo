@@ -21,7 +21,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.Invocation;
 
-
 /**
  * This SPI Extension support us to store our {@link AccessKeyPair} or load {@link AccessKeyPair} from other
  * storage, such as filesystem.

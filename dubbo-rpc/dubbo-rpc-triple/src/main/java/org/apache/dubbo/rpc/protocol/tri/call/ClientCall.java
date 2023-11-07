@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.stream.StreamObserver;
@@ -83,8 +82,7 @@ public interface ClientCall {
      * @param responseListener the listener to receive response
      * @return the stream observer representing the request sink
      */
-    StreamObserver<Object> start(RequestMetadata metadata,
-        Listener responseListener);
+    StreamObserver<Object> start(RequestMetadata metadata, Listener responseListener);
 
     /**
      * @return true if this call is auto request
@@ -98,7 +96,6 @@ public interface ClientCall {
      */
     void setAutoRequest(boolean autoRequest);
 
-
     /**
      * No more data will be sent.
      */
@@ -110,5 +107,4 @@ public interface ClientCall {
      * @param compression compression algorithm
      */
     void setCompression(String compression);
-
 }

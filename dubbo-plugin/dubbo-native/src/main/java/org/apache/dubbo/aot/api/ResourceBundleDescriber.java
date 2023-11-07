@@ -31,7 +31,6 @@ public class ResourceBundleDescriber implements ConditionalDescriber {
 
     private final String reachableType;
 
-
     public ResourceBundleDescriber(String name, List<String> locales, String reachableType) {
         this.name = name;
         this.locales = locales;

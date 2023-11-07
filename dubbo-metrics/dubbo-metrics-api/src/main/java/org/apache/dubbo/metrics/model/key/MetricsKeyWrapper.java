@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.model.key;
 
-import io.micrometer.common.lang.Nullable;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 
 import java.util.Objects;
+
+import io.micrometer.common.lang.Nullable;
 
 /**
  * Let {@link MetricsKey MetricsKey}  output dynamic, custom string content

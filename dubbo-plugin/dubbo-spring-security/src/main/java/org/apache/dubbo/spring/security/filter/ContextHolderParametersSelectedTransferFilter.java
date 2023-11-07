@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.spring.security.filter;
 
 import org.apache.dubbo.common.constants.CommonConstants;
@@ -32,7 +31,7 @@ import java.util.Objects;
 import static org.apache.dubbo.spring.security.utils.SecurityNames.SECURITY_AUTHENTICATION_CONTEXT_KEY;
 
 @Activate(group = CommonConstants.CONSUMER, order = -1)
-public class ContextHolderParametersSelectedTransferFilter implements ClusterFilter{
+public class ContextHolderParametersSelectedTransferFilter implements ClusterFilter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) {
@@ -42,12 +41,12 @@ public class ContextHolderParametersSelectedTransferFilter implements ClusterFil
     }
 
     private void setSecurityContextIfExists(Invocation invocation) {
-        Map<String,Object> resultMap = RpcContext.getServerAttachment().getObjectAttachments();
+        Map<String, Object> resultMap = RpcContext.getServerAttachment().getObjectAttachments();
 
         Object authentication = resultMap.get(SECURITY_AUTHENTICATION_CONTEXT_KEY);
 
         if (Objects.isNull(authentication)) {
-            return ;
+            return;
         }
 
         invocation.setObjectAttachment(SecurityNames.SECURITY_AUTHENTICATION_CONTEXT_KEY, authentication);

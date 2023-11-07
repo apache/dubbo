@@ -16,6 +16,4 @@
  */
 package org.apache.dubbo.registry.integration;
 
-
-public interface DemoService {
-}
+public interface DemoService {}

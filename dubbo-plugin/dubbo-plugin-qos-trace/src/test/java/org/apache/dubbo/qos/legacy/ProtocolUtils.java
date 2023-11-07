@@ -35,7 +35,8 @@ public class ProtocolUtils {
 
     public static <T> T refer(Class<T> type, URL url) {
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        ProxyFactory proxy =
+                ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         return proxy.getProxy(protocol.refer(type, url));
     }
 
@@ -45,7 +46,8 @@ public class ProtocolUtils {
 
     public static <T> Exporter<T> export(T instance, Class<T> type, URL url) {
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        ProxyFactory proxy =
+                ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         return protocol.export(proxy.getInvoker(instance, type, url));
     }
 

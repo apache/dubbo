@@ -36,45 +36,70 @@ public class SSLConfigCertProvider implements CertProvider {
 
     @Override
     public boolean isSupport(URL address) {
-        return address.getOrDefaultApplicationModel().getApplicationConfigManager().getSsl()
-            .isPresent();
+        return address.getOrDefaultApplicationModel()
+                .getApplicationConfigManager()
+                .getSsl()
+                .isPresent();
     }
 
     @Override
     public ProviderCert getProviderConnectionConfig(URL localAddress) {
-        return localAddress.getOrDefaultApplicationModel().getApplicationConfigManager().getSsl()
-            .filter(sslConfig -> Objects.nonNull(sslConfig.getServerKeyCertChainPath()))
-            .filter(sslConfig -> Objects.nonNull(sslConfig.getServerPrivateKeyPath()))
-            .map(sslConfig -> {
-                try {
-                    return new ProviderCert(
-                        IOUtils.toByteArray(sslConfig.getServerKeyCertChainPathStream()),
-                        IOUtils.toByteArray(sslConfig.getServerPrivateKeyPathStream()),
-                        sslConfig.getServerTrustCertCollectionPath() != null ? IOUtils.toByteArray(sslConfig.getServerTrustCertCollectionPathStream()) : null,
-                        sslConfig.getServerKeyPassword(), AuthPolicy.CLIENT_AUTH);
-                } catch (IOException e) {
-                    logger.warn(LoggerCodeConstants.CONFIG_SSL_PATH_LOAD_FAILED, "", "", "Failed to load ssl config.", e);
-                    return null;
-                }
-            }).orElse(null);
+        return localAddress
+                .getOrDefaultApplicationModel()
+                .getApplicationConfigManager()
+                .getSsl()
+                .filter(sslConfig -> Objects.nonNull(sslConfig.getServerKeyCertChainPath()))
+                .filter(sslConfig -> Objects.nonNull(sslConfig.getServerPrivateKeyPath()))
+                .map(sslConfig -> {
+                    try {
+                        return new ProviderCert(
+                                IOUtils.toByteArray(sslConfig.getServerKeyCertChainPathStream()),
+                                IOUtils.toByteArray(sslConfig.getServerPrivateKeyPathStream()),
+                                sslConfig.getServerTrustCertCollectionPath() != null
+                                        ? IOUtils.toByteArray(sslConfig.getServerTrustCertCollectionPathStream())
+                                        : null,
+                                sslConfig.getServerKeyPassword(),
+                                AuthPolicy.CLIENT_AUTH);
+                    } catch (IOException e) {
+                        logger.warn(
+                                LoggerCodeConstants.CONFIG_SSL_PATH_LOAD_FAILED,
+                                "",
+                                "",
+                                "Failed to load ssl config.",
+                                e);
+                        return null;
+                    }
+                })
+                .orElse(null);
     }
 
     @Override
     public Cert getConsumerConnectionConfig(URL remoteAddress) {
-        return remoteAddress.getOrDefaultApplicationModel().getApplicationConfigManager().getSsl()
-            .filter(sslConfig -> Objects.nonNull(sslConfig.getClientKeyCertChainPath()))
-            .filter(sslConfig -> Objects.nonNull(sslConfig.getClientPrivateKeyPath()))
-            .map(sslConfig -> {
-                try {
-                    return new Cert(
-                        IOUtils.toByteArray(sslConfig.getClientKeyCertChainPathStream()),
-                        IOUtils.toByteArray(sslConfig.getClientPrivateKeyPathStream()),
-                        sslConfig.getClientTrustCertCollectionPath() != null ? IOUtils.toByteArray(sslConfig.getClientTrustCertCollectionPathStream()) : null,
-                        sslConfig.getClientKeyPassword());
-                } catch (IOException e) {
-                    logger.warn(LoggerCodeConstants.CONFIG_SSL_PATH_LOAD_FAILED, "", "", "Failed to load ssl config.", e);
-                    return null;
-                }
-            }).orElse(null);
+        return remoteAddress
+                .getOrDefaultApplicationModel()
+                .getApplicationConfigManager()
+                .getSsl()
+                .filter(sslConfig -> Objects.nonNull(sslConfig.getClientKeyCertChainPath()))
+                .filter(sslConfig -> Objects.nonNull(sslConfig.getClientPrivateKeyPath()))
+                .map(sslConfig -> {
+                    try {
+                        return new Cert(
+                                IOUtils.toByteArray(sslConfig.getClientKeyCertChainPathStream()),
+                                IOUtils.toByteArray(sslConfig.getClientPrivateKeyPathStream()),
+                                sslConfig.getClientTrustCertCollectionPath() != null
+                                        ? IOUtils.toByteArray(sslConfig.getClientTrustCertCollectionPathStream())
+                                        : null,
+                                sslConfig.getClientKeyPassword());
+                    } catch (IOException e) {
+                        logger.warn(
+                                LoggerCodeConstants.CONFIG_SSL_PATH_LOAD_FAILED,
+                                "",
+                                "",
+                                "Failed to load ssl config.",
+                                e);
+                        return null;
+                    }
+                })
+                .orElse(null);
     }
 }

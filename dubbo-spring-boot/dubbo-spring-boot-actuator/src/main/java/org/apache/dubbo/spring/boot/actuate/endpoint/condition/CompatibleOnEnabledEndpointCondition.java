@@ -38,16 +38,16 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CLASS
  */
 class CompatibleOnEnabledEndpointCondition implements Condition {
 
-    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(CompatibleOnEnabledEndpointCondition.class);
+    private static final ErrorTypeAwareLogger LOGGER =
+            LoggerFactory.getErrorTypeAwareLogger(CompatibleOnEnabledEndpointCondition.class);
 
     // Spring Boot [2.0.0 , 2.2.x]
     static String CONDITION_CLASS_NAME_OLD =
-        "org.springframework.boot.actuate.autoconfigure.endpoint.condition.OnEnabledEndpointCondition";
+            "org.springframework.boot.actuate.autoconfigure.endpoint.condition.OnEnabledEndpointCondition";
 
     // Spring Boot 2.2.0 +
     static String CONDITION_CLASS_NAME_NEW =
-        "org.springframework.boot.actuate.autoconfigure.endpoint.condition.OnAvailableEndpointCondition";
-
+            "org.springframework.boot.actuate.autoconfigure.endpoint.condition.OnAvailableEndpointCondition";
 
     @Override
     public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
@@ -64,7 +64,11 @@ class CompatibleOnEnabledEndpointCondition implements Condition {
             return true;
         }
         // No condition class found
-        LOGGER.warn(COMMON_CLASS_NOT_FOUND, "No condition class found", "", String.format("No condition class found, Dubbo Health Endpoint [%s] will not expose", metadata));
+        LOGGER.warn(
+                COMMON_CLASS_NOT_FOUND,
+                "No condition class found",
+                "",
+                String.format("No condition class found, Dubbo Health Endpoint [%s] will not expose", metadata));
         return false;
     }
 }

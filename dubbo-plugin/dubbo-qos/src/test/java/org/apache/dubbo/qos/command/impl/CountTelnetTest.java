@@ -29,13 +29,13 @@ import org.apache.dubbo.rpc.RpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -64,7 +64,6 @@ class CountTelnetTest {
         given(mockCommandContext.getRemote()).willReturn(mockChannel);
         given(mockInvoker.getInterface()).willReturn(DemoService.class);
         given(mockInvoker.getUrl()).willReturn(url);
-
     }
 
     @AfterEach
@@ -77,9 +76,11 @@ class CountTelnetTest {
     @Test
     void test() throws Exception {
         String methodName = "sayHello";
-        String[] args = new String[]{"org.apache.dubbo.qos.legacy.service.DemoService", "sayHello", "1"};
+        String[] args = new String[] {"org.apache.dubbo.qos.legacy.service.DemoService", "sayHello", "1"};
 
-        ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME).export(mockInvoker);
+        ExtensionLoader.getExtensionLoader(Protocol.class)
+                .getExtension(DubboProtocol.NAME)
+                .export(mockInvoker);
         RpcStatus.beginCount(url, methodName);
         RpcStatus.endCount(url, methodName, 10L, true);
         count.execute(mockCommandContext, args);
@@ -90,12 +91,11 @@ class CountTelnetTest {
             sb.append(o.toString());
         }
 
-        assertThat(sb.toString(), containsString(buildTable(methodName,
-            10, 10, "1", "0", "0")));
+        assertThat(sb.toString(), containsString(buildTable(methodName, 10, 10, "1", "0", "0")));
     }
 
-    public static String buildTable(String methodName, long averageElapsed,
-                                    long maxElapsed, String total, String failed, String active) {
+    public static String buildTable(
+            String methodName, long averageElapsed, long maxElapsed, String total, String failed, String active) {
         List<String> header = new LinkedList<>();
         header.add("method");
         header.add("total");
@@ -117,5 +117,4 @@ class CountTelnetTest {
 
         return TelnetUtils.toTable(header, table);
     }
-
 }

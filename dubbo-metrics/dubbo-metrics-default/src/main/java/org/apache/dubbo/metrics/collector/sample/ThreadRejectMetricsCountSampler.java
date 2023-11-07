@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.collector.sample;
 
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
@@ -31,22 +30,25 @@ import static org.apache.dubbo.metrics.model.MetricsCategory.THREAD_POOL;
 public class ThreadRejectMetricsCountSampler extends MetricsNameCountSampler<String, String, ThreadPoolRejectMetric> {
 
     public ThreadRejectMetricsCountSampler(DefaultMetricsCollector collector) {
-        super(collector, THREAD_POOL,MetricsKey.THREAD_POOL_THREAD_REJECT_COUNT);
+        super(collector, THREAD_POOL, MetricsKey.THREAD_POOL_THREAD_REJECT_COUNT);
     }
 
     @Override
-    protected MetricSample provideMetricsSample(ThreadPoolRejectMetric metric, AtomicLong count, MetricsKey metricsKey, MetricsCategory metricsCategory) {
+    protected MetricSample provideMetricsSample(
+            ThreadPoolRejectMetric metric, AtomicLong count, MetricsKey metricsKey, MetricsCategory metricsCategory) {
         return new GaugeMetricSample<>(
-            metricsKey.getNameByType(metric.getThreadPoolName()),
-            metricsKey.getDescription(),
-            metric.getTags(),
-            metricsCategory,
-            count,
-            AtomicLong::get);
+                metricsKey.getNameByType(metric.getThreadPoolName()),
+                metricsKey.getDescription(),
+                metric.getTags(),
+                metricsCategory,
+                count,
+                AtomicLong::get);
     }
 
     @Override
-    protected void countConfigure(MetricsCountSampleConfigurer<String, String, ThreadPoolRejectMetric> sampleConfigure) {
-        sampleConfigure.configureMetrics(configure -> new ThreadPoolRejectMetric(collector.getApplicationName(),configure.getSource()));
+    protected void countConfigure(
+            MetricsCountSampleConfigurer<String, String, ThreadPoolRejectMetric> sampleConfigure) {
+        sampleConfigure.configureMetrics(
+                configure -> new ThreadPoolRejectMetric(collector.getApplicationName(), configure.getSource()));
     }
 }

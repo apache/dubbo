@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.utils;
 
 import org.junit.jupiter.api.Test;
@@ -49,7 +48,9 @@ class ClassUtilsTest {
 
     @Test
     void testGetCallerClassLoader() {
-        assertThat(ClassUtils.getCallerClassLoader(ClassUtilsTest.class), sameInstance(ClassUtilsTest.class.getClassLoader()));
+        assertThat(
+                ClassUtils.getCallerClassLoader(ClassUtilsTest.class),
+                sameInstance(ClassUtilsTest.class.getClassLoader()));
     }
 
     @Test
@@ -58,7 +59,9 @@ class ClassUtilsTest {
         try {
             assertThat(ClassUtils.getClassLoader(ClassUtilsTest.class), sameInstance(oldClassLoader));
             Thread.currentThread().setContextClassLoader(null);
-            assertThat(ClassUtils.getClassLoader(ClassUtilsTest.class), sameInstance(ClassUtilsTest.class.getClassLoader()));
+            assertThat(
+                    ClassUtils.getClassLoader(ClassUtilsTest.class),
+                    sameInstance(ClassUtilsTest.class.getClassLoader()));
         } finally {
             Thread.currentThread().setContextClassLoader(oldClassLoader);
         }
@@ -129,7 +132,6 @@ class ClassUtilsTest {
         assertThat(ClassUtils.convertPrimitive(byte.class, null), equalTo(null));
         assertThat(ClassUtils.convertPrimitive(byte.class, "127"), equalTo(Byte.MAX_VALUE));
 
-
         assertThat(ClassUtils.convertPrimitive(short.class, ""), equalTo(null));
         assertThat(ClassUtils.convertPrimitive(short.class, null), equalTo(null));
         assertThat(ClassUtils.convertPrimitive(short.class, "32767"), equalTo(Short.MAX_VALUE));
@@ -150,5 +152,4 @@ class ClassUtilsTest {
         assertThat(ClassUtils.convertPrimitive(double.class, null), equalTo(null));
         assertThat(ClassUtils.convertPrimitive(double.class, "10.1"), equalTo(Double.valueOf(10.1)));
     }
-
 }

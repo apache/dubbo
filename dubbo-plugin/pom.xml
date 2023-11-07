@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   Licensed to the Apache Software Foundation (ASF) under one or more
   contributor license agreements.  See the NOTICE file distributed with
@@ -15,79 +16,79 @@
   limitations under the License.
   -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-parent</artifactId>
-        <version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.dubbo</groupId>
+    <artifactId>dubbo-parent</artifactId>
+    <version>${revision}</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
 
-    <artifactId>dubbo-plugin</artifactId>
-    <packaging>pom</packaging>
+  <artifactId>dubbo-plugin</artifactId>
+  <packaging>pom</packaging>
 
-    <name>dubbo-plugin</name>
-    <description>The registry module of dubbo project</description>
-    <modules>
-        <module>dubbo-qos</module>
-        <module>dubbo-auth</module>
-        <module>dubbo-reactive</module>
-        <module>dubbo-security</module>
-        <module>dubbo-spring-security</module>
-        <module>dubbo-qos-api</module>
-        <module>dubbo-plugin-cluster-mergeable</module>
-        <module>dubbo-native</module>
-        <module>dubbo-compiler</module>
-        <module>dubbo-plugin-mock</module>
-        <module>dubbo-plugin-router-script</module>
-        <module>dubbo-plugin-router-mesh</module>
-        <module>dubbo-plugin-router-condition</module>
-        <module>dubbo-plugin-router-tag</module>
-        <module>dubbo-plugin-loadbalance-adaptive</module>
-        <module>dubbo-plugin-access-log</module>
-        <module>dubbo-plugin-tps</module>
-        <module>dubbo-plugin-token</module>
-        <module>dubbo-plugin-generic-invoke</module>
-        <module>dubbo-plugin-context</module>
-        <module>dubbo-plugin-classloader-filter</module>
-        <module>dubbo-plugin-proxy-bytebuddy</module>
-        <module>dubbo-plugin-qos-trace</module>
-        <module>dubbo-filter-cache</module>
-        <module>dubbo-filter-validation</module>
-    </modules>
-    <properties>
-        <skip_maven_deploy>false</skip_maven_deploy>
-    </properties>
+  <name>dubbo-plugin</name>
+  <description>The registry module of dubbo project</description>
+  <modules>
+    <module>dubbo-qos</module>
+    <module>dubbo-auth</module>
+    <module>dubbo-reactive</module>
+    <module>dubbo-security</module>
+    <module>dubbo-spring-security</module>
+    <module>dubbo-qos-api</module>
+    <module>dubbo-plugin-cluster-mergeable</module>
+    <module>dubbo-native</module>
+    <module>dubbo-compiler</module>
+    <module>dubbo-plugin-mock</module>
+    <module>dubbo-plugin-router-script</module>
+    <module>dubbo-plugin-router-mesh</module>
+    <module>dubbo-plugin-router-condition</module>
+    <module>dubbo-plugin-router-tag</module>
+    <module>dubbo-plugin-loadbalance-adaptive</module>
+    <module>dubbo-plugin-access-log</module>
+    <module>dubbo-plugin-tps</module>
+    <module>dubbo-plugin-token</module>
+    <module>dubbo-plugin-generic-invoke</module>
+    <module>dubbo-plugin-context</module>
+    <module>dubbo-plugin-classloader-filter</module>
+    <module>dubbo-plugin-proxy-bytebuddy</module>
+    <module>dubbo-plugin-qos-trace</module>
+    <module>dubbo-filter-cache</module>
+    <module>dubbo-filter-validation</module>
+  </modules>
+  <properties>
+    <skip_maven_deploy>false</skip_maven_deploy>
+  </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-test-check</artifactId>
-            <version>${project.parent.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-test-check</artifactId>
+      <version>${project.parent.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 
-    <profiles>
-        <profile>
-            <id>loom</id>
-            <activation>
-                <jdk>[21,)</jdk>
-            </activation>
-            <modules>
-                <module>dubbo-plugin-loom</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>release</id>
-            <modules>
-                <module>dubbo-plugin-loom</module>
-            </modules>
-        </profile>
-    </profiles>
+  <profiles>
+    <profile>
+      <id>loom</id>
+      <activation>
+        <jdk>[21,)</jdk>
+      </activation>
+      <modules>
+        <module>dubbo-plugin-loom</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>release</id>
+      <modules>
+        <module>dubbo-plugin-loom</module>
+      </modules>
+    </profile>
+  </profiles>
 </project>

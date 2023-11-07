@@ -40,5 +40,4 @@ public class NacosServiceDiscoveryFactory extends AbstractServiceDiscoveryFactor
     protected ServiceDiscovery createDiscovery(URL registryURL) {
         return new NacosServiceDiscovery(applicationModel, registryURL);
     }
-
 }

@@ -19,11 +19,9 @@ package org.apache.dubbo.rpc.cluster.filter;
 /**
  * <code>TestService</code>
  */
-
 class DemoServiceLocal implements DemoService {
 
-    public DemoServiceLocal(DemoService demoService) {
-    }
+    public DemoServiceLocal(DemoService demoService) {}
 
     public String sayHello(String name) {
         return name;
@@ -33,11 +31,7 @@ class DemoServiceLocal implements DemoService {
         return a + b;
     }
 
-    public void ondisconnect() {
+    public void ondisconnect() {}
 
-    }
-
-    public void onconnect() {
-
-    }
+    public void onconnect() {}
 }

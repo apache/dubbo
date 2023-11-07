@@ -22,8 +22,7 @@ public class ValidationParameter {
     @NotNull
     private String parameter;
 
-    public ValidationParameter() {
-    }
+    public ValidationParameter() {}
 
     public ValidationParameter(String parameter) {
         this.parameter = parameter;

@@ -58,5 +58,4 @@ public interface MemberUtils {
     static boolean isPublic(Member member) {
         return member != null && Modifier.isPublic(member.getModifiers());
     }
-
 }

@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,13 +19,13 @@ package org.apache.dubbo.common.threadpool.support.loom;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.api.condition.JRE;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
 
 import static org.apache.dubbo.common.constants.CommonConstants.QUEUES_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
@@ -39,8 +39,7 @@ public class VirtualThreadPoolTest {
     @Test
     @EnabledForJreRange(min = JRE.JAVA_21)
     void getExecutor1() throws Exception {
-        URL url = URL.valueOf("dubbo://10.20.130.230:20880/context/path?" +
-            THREAD_NAME_KEY + "=demo");
+        URL url = URL.valueOf("dubbo://10.20.130.230:20880/context/path?" + THREAD_NAME_KEY + "=demo");
         ThreadPool threadPool = new VirtualThreadPool();
         Executor executor = threadPool.getExecutor(url);
 
@@ -61,6 +60,8 @@ public class VirtualThreadPoolTest {
     void getExecutor2() {
         URL url = URL.valueOf("dubbo://10.20.130.230:20880/context/path?" + QUEUES_KEY + "=1");
         ThreadPool threadPool = new VirtualThreadPool();
-        assertThat(threadPool.getExecutor(url).getClass().getName(), Matchers.is("java.util.concurrent.ThreadPerTaskExecutor"));
+        assertThat(
+                threadPool.getExecutor(url).getClass().getName(),
+                Matchers.is("java.util.concurrent.ThreadPerTaskExecutor"));
     }
 }

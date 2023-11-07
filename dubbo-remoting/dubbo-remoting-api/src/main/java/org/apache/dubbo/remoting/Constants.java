@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.remoting;
-
 
 import java.util.Arrays;
 import java.util.List;
@@ -77,6 +75,7 @@ public interface Constants {
      * ticks per wheel.
      */
     int TICKS_PER_WHEEL = 128;
+
     String PAYLOAD_KEY = "payload";
     /**
      * 8M
@@ -184,5 +183,4 @@ public interface Constants {
     String DUBBO_USE_SECURE_RANDOM_ID = "dubbo.application.use-secure-random-request-id";
 
     String CONNECTION_HANDLER_NAME = "connectionHandler";
-
 }

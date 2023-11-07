@@ -24,5 +24,4 @@ public class EchoServiceDetector implements BuiltinServiceDetector {
     public Class<?> getService() {
         return EchoService.class;
     }
-
 }

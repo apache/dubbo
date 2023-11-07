@@ -16,14 +16,13 @@
  */
 package org.apache.dubbo.common.serialize.support;
 
-
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_DEFAULT_REMOTING_SERIALIZATION_PROPERTY;
 
 public class DefaultSerializationSelector {
 
-    private final static String DEFAULT_REMOTING_SERIALIZATION_PROPERTY = "hessian2";
+    private static final String DEFAULT_REMOTING_SERIALIZATION_PROPERTY = "hessian2";
 
-    private final static String DEFAULT_REMOTING_SERIALIZATION;
+    private static final String DEFAULT_REMOTING_SERIALIZATION;
 
     static {
         String fromProperty = System.getProperty(DUBBO_DEFAULT_REMOTING_SERIALIZATION_PROPERTY);

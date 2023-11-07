@@ -50,4 +50,8 @@ public interface ModuleDeployer extends Deployer<ModuleModel> {
      * Whether start in background, do not await finish
      */
     boolean isBackground();
+
+    boolean hasRegistryInteraction();
+
+    ApplicationDeployer getApplicationDeployer();
 }

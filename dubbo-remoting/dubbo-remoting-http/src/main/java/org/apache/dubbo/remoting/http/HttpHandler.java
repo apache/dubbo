@@ -31,5 +31,4 @@ public interface HttpHandler<REQUEST, RESPONSE> {
      * @throws IOException
      */
     void handle(REQUEST request, RESPONSE response) throws IOException;
-
 }

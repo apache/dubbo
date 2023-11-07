@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.command;
 
 import io.netty.channel.Channel;
@@ -70,4 +69,3 @@ public abstract class QueuedCommand {
 
     public abstract void doSend(ChannelHandlerContext ctx, ChannelPromise promise);
 }
-
