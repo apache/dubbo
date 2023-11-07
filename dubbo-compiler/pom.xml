@@ -60,6 +60,11 @@
             <groupId>com.salesforce.servicelibs</groupId>
             <artifactId>grpc-contrib</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.google.googlejavaformat</groupId>
+            <artifactId>google-java-format</artifactId>
+            <version>1.7</version> <!-- for jdk8 -->
+        </dependency>
     </dependencies>
 
     <build>
