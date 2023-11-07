@@ -710,5 +710,4 @@ public interface CommonConstants {
     String EXT_PROTOCOL = "ext.protocol";
 
     String IS_EXTRA = "isExtra";
-
 }

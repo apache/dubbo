@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.aot;
 
-
 import static org.apache.dubbo.common.constants.CommonConstants.GRAALVM_NATIVEIMAGE_IMAGECODE;
 
 public abstract class NativeDetector {

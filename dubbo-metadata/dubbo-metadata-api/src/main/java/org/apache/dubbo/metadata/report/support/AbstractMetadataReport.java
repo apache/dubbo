@@ -116,9 +116,10 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
         boolean localCacheEnabled = reportServerURL.getParameter(REGISTRY_LOCAL_FILE_CACHE_ENABLED, true);
         // Start file save timer
-        String defaultFilename = System.getProperty(SYSTEM_USER_HOME) + DUBBO_METADATA +
-            reportServerURL.getApplication() + "-" +
-            replace(reportServerURL.getAddress(), ":", "-") + CACHE;
+        String defaultFilename =
+                System.getProperty(SYSTEM_USER_HOME) + DUBBO_METADATA + reportServerURL.getApplication()
+                        + "-" + replace(reportServerURL.getAddress(), ":", "-")
+                        + CACHE;
         String filename = reportServerURL.getParameter(FILE_KEY, defaultFilename);
         File file = null;
         if (localCacheEnabled && ConfigUtils.isNotEmpty(filename)) {

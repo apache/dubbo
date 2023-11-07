@@ -90,7 +90,8 @@ class DefaultSerializeClassCheckerTest {
     @Test
     void testAddBlock() {
         System.setProperty(
-                CommonConstants.DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST, Runtime.class.getName() + "," + Thread.class.getName());
+                CommonConstants.DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST,
+                Runtime.class.getName() + "," + Thread.class.getName());
 
         DefaultSerializeClassChecker defaultSerializeClassChecker = DefaultSerializeClassChecker.getInstance();
         for (int i = 0; i < 10; i++) {

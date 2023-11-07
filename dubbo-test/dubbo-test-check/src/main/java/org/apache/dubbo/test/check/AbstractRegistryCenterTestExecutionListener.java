@@ -33,7 +33,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.ZOOKEEPER_CONFIG
  */
 public abstract class AbstractRegistryCenterTestExecutionListener implements TestExecutionListener {
 
-
     /**
      * The registry center should start
      * if we want to run the test cases in the given package.

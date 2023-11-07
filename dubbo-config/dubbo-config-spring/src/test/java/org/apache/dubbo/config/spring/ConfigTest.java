@@ -143,9 +143,9 @@ class ConfigTest {
             reference.setUrl("dubbo://127.0.0.1:12345");
 
             consumerBootstrap = DubboBootstrap.newInstance()
-                .application(new ApplicationConfig("consumer"))
-                .reference(reference)
-                .start();
+                    .application(new ApplicationConfig("consumer"))
+                    .reference(reference)
+                    .start();
             HelloService helloService = consumerBootstrap.getCache().get(reference);
 
             String hello = helloService.sayHello("hello");
@@ -185,9 +185,9 @@ class ConfigTest {
         reference.setUrl(url);
 
         DubboBootstrap bootstrap = DubboBootstrap.newInstance()
-            .application(new ApplicationConfig("consumer"))
-            .reference(reference)
-            .start();
+                .application(new ApplicationConfig("consumer"))
+                .reference(reference)
+                .start();
         return bootstrap.getCache().get(reference);
     }
 
@@ -844,12 +844,12 @@ class ConfigTest {
             reference.setRetries(2);
 
             DubboBootstrap.getInstance()
-                .application(new ApplicationConfig("testSystemPropertyOverrideReferenceConfig"))
-                .registry(new RegistryConfig(RegistryConfig.NO_AVAILABLE))
-                .protocol(protocolConfig)
-                .service(service)
-                .reference(reference)
-                .start();
+                    .application(new ApplicationConfig("testSystemPropertyOverrideReferenceConfig"))
+                    .registry(new RegistryConfig(RegistryConfig.NO_AVAILABLE))
+                    .protocol(protocolConfig)
+                    .service(service)
+                    .reference(reference)
+                    .start();
 
             // override retries
             assertEquals(Integer.valueOf(5), reference.getRetries());
@@ -921,11 +921,11 @@ class ConfigTest {
             service.setProtocol(protocol);
 
             DubboBootstrap.getInstance()
-                .application(application)
-                .registry(registry)
-                .protocol(protocol)
-                .service(service)
-                .start();
+                    .application(application)
+                    .registry(registry)
+                    .protocol(protocol)
+                    .service(service)
+                    .start();
 
             URL url = service.getExportedUrls().get(0);
             assertEquals("sysover", url.getParameter("application"));
@@ -960,11 +960,11 @@ class ConfigTest {
             service.setProtocol(protocol);
 
             DubboBootstrap.getInstance()
-                .application(application)
-                .registry(registry)
-                .protocol(protocol)
-                .service(service)
-                .start();
+                    .application(application)
+                    .registry(registry)
+                    .protocol(protocol)
+                    .service(service)
+                    .start();
 
             URL url = service.getExportedUrls().get(0);
             // from api
@@ -984,7 +984,7 @@ class ConfigTest {
     @SuppressWarnings("unchecked")
     public void testCustomizeParameter() throws Exception {
         ClassPathXmlApplicationContext context =
-            new ClassPathXmlApplicationContext(resourcePath + "/customize-parameter.xml");
+                new ClassPathXmlApplicationContext(resourcePath + "/customize-parameter.xml");
         try {
             context.start();
             ServiceBean<DemoService> serviceBean = (ServiceBean<DemoService>) context.getBean("demoServiceExport");
@@ -1064,11 +1064,11 @@ class ConfigTest {
             service.setProtocol(protocol);
 
             DubboBootstrap.getInstance()
-                .application(application)
-                .registry(registry)
-                .protocol(protocol)
-                .service(service)
-                .start();
+                    .application(application)
+                    .registry(registry)
+                    .protocol(protocol)
+                    .service(service)
+                    .start();
 
             assertEquals(port, service.getExportedUrls().get(0).getPort());
         } finally {

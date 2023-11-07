@@ -21,7 +21,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 
 import static org.apache.dubbo.common.constants.CommonConstants.SYSTEM_JAVA_VERSION;
 
-
 /**
  * JRE version
  */

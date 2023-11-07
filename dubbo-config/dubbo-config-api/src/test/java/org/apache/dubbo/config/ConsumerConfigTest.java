@@ -110,9 +110,9 @@ class ConsumerConfigTest {
         consumerConfig.setCheck(true);
 
         DubboBootstrap.getInstance()
-            .application("demo-app")
-            .consumer(consumerConfig)
-            .initialize();
+                .application("demo-app")
+                .consumer(consumerConfig)
+                .initialize();
 
         Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel()
                 .getDefaultModule()
@@ -141,9 +141,9 @@ class ConsumerConfigTest {
         consumerConfig.setCheck(true);
 
         DubboBootstrap.getInstance()
-            .application("demo-app")
-            .consumer(consumerConfig)
-            .initialize();
+                .application("demo-app")
+                .consumer(consumerConfig)
+                .initialize();
 
         Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel()
                 .getDefaultModule()
@@ -175,9 +175,9 @@ class ConsumerConfigTest {
         consumerConfig.setCheck(true);
 
         DubboBootstrap.getInstance()
-            .application("demo-app")
-            .consumer(consumerConfig)
-            .initialize();
+                .application("demo-app")
+                .consumer(consumerConfig)
+                .initialize();
 
         Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel()
                 .getDefaultModule()
@@ -214,9 +214,9 @@ class ConsumerConfigTest {
             consumerConfig.setGroup("groupA");
 
             DubboBootstrap.getInstance()
-                .application("demo-app")
-                .consumer(consumerConfig)
-                .initialize();
+                    .application("demo-app")
+                    .consumer(consumerConfig)
+                    .initialize();
 
             Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel()
                     .getDefaultModule()

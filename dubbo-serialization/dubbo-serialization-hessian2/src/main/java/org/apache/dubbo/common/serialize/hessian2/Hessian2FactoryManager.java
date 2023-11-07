@@ -24,13 +24,13 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.concurrent.ConcurrentHashMap;
+
 import com.alibaba.com.caucho.hessian.io.SerializerFactory;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_HESSIAN_ALLOW;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_HESSIAN_ALLOW_NON_SERIALIZABLE;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_HESSIAN_DENY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_HESSIAN_WHITELIST;
-
 
 public class Hessian2FactoryManager {
     private volatile SerializerFactory SYSTEM_SERIALIZER_FACTORY;

@@ -24,7 +24,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.SYSTEM_JAVA_VERSION;
 
-
 class JRETest {
 
     @Test

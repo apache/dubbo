@@ -33,6 +33,4 @@ public class SystemPropertyConfigUtilsTest {
         String value = SystemPropertyConfigUtils.getSystemProperty("dubbo.migration.file", "migration.xml");
         assertEquals(value, "migration.xml");
     }
-
-
 }

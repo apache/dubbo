@@ -36,7 +36,6 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_THREA
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_START_DUBBO_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_STOP_DUBBO_ERROR;
 
-
 /**
  * Main. (API, Static, ThreadSafe)
  * <p>
