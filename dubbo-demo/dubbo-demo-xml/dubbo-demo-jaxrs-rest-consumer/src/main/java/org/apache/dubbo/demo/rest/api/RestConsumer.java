@@ -17,10 +17,13 @@
 package org.apache.dubbo.demo.rest.api;
 
 import org.apache.dubbo.demo.rest.api.annotation.DubboServiceAnnotationServiceConsumer;
+import org.apache.dubbo.demo.rest.api.request.HttpClientInvoke;
+import org.apache.dubbo.demo.rest.api.request.SpringCloudInvokeDubboRestConsumer;
 import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import po.User;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 public class RestConsumer {
@@ -38,7 +41,23 @@ public class RestConsumer {
         httpRPCContextTest(context);
         jaxRsRestDemoServiceTest(context);
         annotationTest(context);
+        httpClientInvoke(context);
+        springCloudInvokeDubboRestService(context);
         System.out.println("rest consumer test success");
+    }
+
+    private static void springCloudInvokeDubboRestService(ClassPathXmlApplicationContext context) {
+        SpringCloudInvokeDubboRestConsumer bean = context.getBean(SpringCloudInvokeDubboRestConsumer.class);
+        bean.invokeHttpService();
+    }
+
+    private static void httpClientInvoke(ClassPathXmlApplicationContext context) {
+        HttpClientInvoke bean = context.getBean(HttpClientInvoke.class);
+        try {
+            bean.httpServiceHttpClientInvoke();
+        } catch (IOException e) {
+            System.out.println("rest consumer httpClientInvoke  failed: " + e.getMessage());
+        }
     }
 
     private static void annotationTest(ClassPathXmlApplicationContext context) {
