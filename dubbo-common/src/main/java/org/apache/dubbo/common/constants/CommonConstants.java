@@ -381,6 +381,9 @@ public interface CommonConstants {
 
     int DEFAULT_METADATA_INFO_CACHE_EXPIRE = 10 * 60 * 1000;
 
+    String File_ADDRESS_SHORTENED = "dubbo.application.address-shortened";
+
+
     String METADATA_INFO_CACHE_SIZE_KEY = "metadata-info-cache.size";
 
     int DEFAULT_METADATA_INFO_CACHE_SIZE = 16;

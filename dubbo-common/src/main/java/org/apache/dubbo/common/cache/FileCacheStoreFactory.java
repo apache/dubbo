@@ -17,16 +17,23 @@
 
 package org.apache.dubbo.common.cache;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.system.OperatingSystemBeanManager;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
+import org.apache.dubbo.common.utils.MD5Utils;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -37,6 +44,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CACHE_PATH_INACCESSIBLE;
+import static org.apache.dubbo.common.system.OperatingSystemBeanManager.OS.Windows;
 
 /**
  * ClassLoader Level static share.
@@ -54,7 +62,7 @@ public final class FileCacheStoreFactory {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(FileCacheStoreFactory.class);
     private static final ConcurrentMap<String, FileCacheStore> cacheMap = new ConcurrentHashMap<>();
 
-    private static final String SUFFIX = ".dubbo.cache";
+    public static final String SUFFIX = ".dubbo.cache";
     private static final char ESCAPE_MARK = '%';
     private static final Set<Character> LEGAL_CHARACTERS = Collections.unmodifiableSet(new HashSet<Character>() {{
         // - $ . _ 0-9 a-z A-Z
@@ -73,11 +81,11 @@ public final class FileCacheStoreFactory {
         }
     }});
 
-    public static FileCacheStore getInstance(String basePath, String cacheName) {
-        return getInstance(basePath, cacheName, true);
+    public static FileCacheStore getInstance(String basePath, String filePrefix, String cacheName) {
+        return getInstance(basePath, filePrefix, cacheName, true);
     }
 
-    public static FileCacheStore getInstance(String basePath, String cacheName, boolean enableFileCache) {
+    public static FileCacheStore getInstance(String basePath, String filePrefix, String cacheName, boolean enableFileCache) {
         if (basePath == null) {
             // default case: ~/.dubbo
             basePath = System.getProperty("user.home") + File.separator + ".dubbo";
@@ -107,10 +115,24 @@ public final class FileCacheStoreFactory {
         if (!cacheName.endsWith(SUFFIX)) {
             cacheName = cacheName + SUFFIX;
         }
-
-        String cacheFilePath = basePath + File.separator + cacheName;
-
-        return ConcurrentHashMapUtils.computeIfAbsent(cacheMap, cacheFilePath, k -> getFile(k, enableFileCache));
+        OperatingSystemBeanManager.OS os = OperatingSystemBeanManager.getOS();
+        if (os == Windows || "true".equals(System.getProperty(CommonConstants.File_ADDRESS_SHORTENED, "false"))) {
+            MD5Utils md5Utils = new MD5Utils();
+            /** try to shorten the address
+             *  for example,  basePath: /Users/aming/.dubbo   cacheName: .metadata.dubbo-demo-api-provider-2.zookeeper.127.0.0.1%003a2181.dubbo.cache
+             *  and the fileContent = /Users/aming/.dubbo/.metadata.dubbo-demo-api-provider-2.zookeeper.127.0.0.1%003a2181.dubbo.cache
+             *      the basePath = /Users/aming/.dubbo/.metadata
+             *      the cacheFilePath = /Users/aming/.dubbo/.metadata/b5c91baccb83c8786f7e33a84e1c417e
+             */
+            String fileContent = basePath + File.separator + cacheName;
+            basePath = basePath + File.separator + filePrefix;
+            String md5String32Bit = md5Utils.getMd5(cacheName);
+            String cacheFilePath = basePath + "." + md5Utils.getMd5(cacheName);
+            return ConcurrentHashMapUtils.computeIfAbsent(cacheMap, cacheFilePath, k -> getFile(cacheFilePath, fileContent, md5String32Bit, enableFileCache, true));
+        } else {
+            String cacheFilePath = basePath + File.separator + cacheName;
+            return ConcurrentHashMapUtils.computeIfAbsent(cacheMap, cacheFilePath, k -> getFile(cacheFilePath, "", "", enableFileCache, true));
+        }
     }
 
     /**
@@ -119,7 +141,7 @@ public final class FileCacheStoreFactory {
      * @param name origin file name
      * @return sanitized version of name
      */
-    private static String safeName(String name) {
+    static String safeName(String name) {
         int len = name.length();
         StringBuilder sb = new StringBuilder(len);
         for (int i = 0; i < len; i++) {
@@ -140,38 +162,66 @@ public final class FileCacheStoreFactory {
      * @param name the file name
      * @return a file object
      */
-    private static FileCacheStore getFile(String name, boolean enableFileCache) {
+    private static FileCacheStore getFile(String name, String fileContent, String md5String, boolean enableFileCache, boolean enableAddressShorten) {
         if (!enableFileCache) {
             return FileCacheStore.Empty.getInstance(name);
         }
-
+        FileCacheStore.Builder builder = FileCacheStore.newBuilder();
         try {
-            FileCacheStore.Builder builder = FileCacheStore.newBuilder();
-            tryFileLock(builder, name);
-            File file = new File(name);
+            tryFileLock(builder, name, md5String, enableAddressShorten);
+            getFile(builder, name, fileContent, md5String, enableFileCache, enableAddressShorten);
+        } catch (Throwable t) {
+            logger.warn(COMMON_CACHE_PATH_INACCESSIBLE, "inaccessible of cache path", "",
+                "Failed to create file store cache. Local file cache will be disabled. Cache file name: " + name, t);
+            return FileCacheStore.Empty.getInstance(name);
+        }
+        return builder.build();
+    }
 
+    private static void getFile(FileCacheStore.Builder builder, String name, String fileContent, String md5String, boolean enableFileCache, boolean enableAddressShorten) {
+        try {
+            File file = new File(name);
             if (!file.exists()) {
                 Path pathObjectOfFile = file.toPath();
-                Files.createFile(pathObjectOfFile);
+                try {
+                    Files.createFile(pathObjectOfFile);
+                } catch (FileSystemException e) {
+                    if (enableAddressShorten && !StringUtils.isEmpty(md5String) && md5String.length() == 32) {
+                        int newNameIndex = name.indexOf(md5String);
+                        if (newNameIndex == -1) {
+                            logger.warn(COMMON_CACHE_PATH_INACCESSIBLE, "inaccessible of cache path", "",
+                                "Failed to create file store cache. Local file cache will be disabled. Cache file name: " + name, e);
+                            return;
+                        }
+                        String md5String16Bit = md5String.substring(8, 24);
+                        String newName = name.substring(0, newNameIndex - 1) + "." + md5String16Bit;
+                        getFile(builder, newName, fileContent, md5String16Bit, enableFileCache, enableAddressShorten);
+                        return;
+                    } else {
+                        logger.warn(COMMON_CACHE_PATH_INACCESSIBLE, "inaccessible of cache path", "",
+                            "Failed to create file store cache. Local file cache will be disabled. Cache file name: " + name, e);
+                        return ;
+                    }
+                }
+            }
+            if (!StringUtils.isEmpty(fileContent) && enableFileCache) {
+                try (FileOutputStream outputFile = new FileOutputStream(file)) {
+                    outputFile.write(fileContent.getBytes(StandardCharsets.UTF_8), 0, fileContent.length());
+                }
             }
 
             builder.cacheFilePath(name)
                 .cacheFile(file);
-
-            return builder.build();
         } catch (Throwable t) {
-
             logger.warn(COMMON_CACHE_PATH_INACCESSIBLE, "inaccessible of cache path", "",
                 "Failed to create file store cache. Local file cache will be disabled. Cache file name: " + name, t);
-
-            return FileCacheStore.Empty.getInstance(name);
         }
     }
 
-    private static void tryFileLock(FileCacheStore.Builder builder, String fileName) throws PathNotExclusiveException {
+    private static void tryFileLock(FileCacheStore.Builder builder, String fileName, String md5String, boolean enableAddressShorten) throws PathNotExclusiveException {
         File lockFile = new File(fileName + ".lock");
 
-        FileLock dirLock;
+        FileLock dirLock = null;
         try {
             lockFile.createNewFile();
             if (!lockFile.exists()) {
@@ -182,7 +232,19 @@ public final class FileCacheStoreFactory {
         } catch (OverlappingFileLockException ofle) {
             dirLock = null;
         } catch (IOException ioe) {
-            throw new RuntimeException(ioe);
+            if (enableAddressShorten && !StringUtils.isEmpty(md5String) && md5String.length() == 32) {
+                int newNameIndex = fileName.indexOf(md5String);
+                if (newNameIndex == -1) {
+                    throw new RuntimeException(ioe);
+                }
+                String md5String16Bit = md5String.substring(8, 24);
+                String newName = fileName.substring(0, newNameIndex - 1) + "." + md5String16Bit;
+                lockFile.deleteOnExit();
+                tryFileLock(builder, newName, md5String16Bit, enableAddressShorten);
+                return;
+            } else {
+                throw new RuntimeException(ioe);
+            }
         }
 
         if (dirLock == null) {

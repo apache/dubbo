@@ -49,7 +49,7 @@ public abstract class AbstractCacheManager<V> implements Disposable {
         this.cache = new LRUCache<>(entrySize);
 
         try {
-            cacheStore = FileCacheStoreFactory.getInstance(filePath, fileName, enableFileCache);
+            cacheStore = FileCacheStoreFactory.getInstance(filePath, getDefaultFileName(), fileName, enableFileCache);
             Map<String, String> properties = cacheStore.loadCache(entrySize);
             if (logger.isDebugEnabled()) {
                 logger.debug("Successfully loaded " + getName() + " cache from file " + fileName + ", entries " + properties.size());
@@ -88,6 +88,7 @@ public abstract class AbstractCacheManager<V> implements Disposable {
         return cache.remove(key);
     }
 
+    public abstract String getDefaultFileName();
     public Map<String, V> getAll() {
         if (cache.isEmpty()) {
             return Collections.emptyMap();

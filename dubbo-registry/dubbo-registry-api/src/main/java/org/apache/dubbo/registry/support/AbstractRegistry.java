@@ -17,14 +17,18 @@
 package org.apache.dubbo.registry.support;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.system.OperatingSystemBeanManager;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.MD5Utils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.metadata.report.support.Constants;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -71,6 +75,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.ACCEPTS_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
+import static org.apache.dubbo.common.system.OperatingSystemBeanManager.OS.Windows;
 import static org.apache.dubbo.registry.Constants.CACHE;
 import static org.apache.dubbo.registry.Constants.DUBBO_REGISTRY;
 import static org.apache.dubbo.registry.Constants.REGISTRY_FILESAVE_SYNC_KEY;
@@ -107,6 +112,8 @@ public abstract class AbstractRegistry implements Registry {
     private final ConcurrentMap<URL, Map<String, List<URL>>> notified = new ConcurrentHashMap<>();
     // Is it synchronized to save the file
     private boolean syncSaveFile;
+
+    private String appAndAddressNameMd5String;
     private URL registryUrl;
     // Local disk cache file
     private File file;
@@ -122,44 +129,58 @@ public abstract class AbstractRegistry implements Registry {
         localCacheEnabled = url.getParameter(REGISTRY_LOCAL_FILE_CACHE_ENABLED, true);
         registryCacheExecutor = url.getOrDefaultFrameworkModel().getBeanFactory()
             .getBean(FrameworkExecutorRepository.class).getSharedScheduledExecutor();
+        String defaultFilename;
         if (localCacheEnabled) {
             // Start file save timer
             syncSaveFile = url.getParameter(REGISTRY_FILESAVE_SYNC_KEY, false);
 
-            String defaultFilename = System.getProperty(USER_HOME) + DUBBO_REGISTRY + url.getApplication() +
-                "-" + url.getAddress().replaceAll(":", "-") + CACHE;
+            OperatingSystemBeanManager.OS os = OperatingSystemBeanManager.getOS();
+            if (os == Windows || "true".equals(System.getProperty(CommonConstants.File_ADDRESS_SHORTENED, "false"))) {
+                String appAndAddressName = url.getApplication() + "-" + url.getAddress().replaceAll(":", "-");
+                MD5Utils md5Utils = new MD5Utils();
 
-            String filename = url.getParameter(FILE_KEY, defaultFilename);
-            File file = null;
-
-            if (ConfigUtils.isNotEmpty(filename)) {
-                file = new File(filename);
-                if (!file.exists() && file.getParentFile() != null && !file.getParentFile().exists()) {
-                    if (!file.getParentFile().mkdirs()) {
-
-                        IllegalArgumentException illegalArgumentException = new IllegalArgumentException(
-                            "Invalid registry cache file " + file + ", cause: Failed to create directory " + file.getParentFile() + "!");
-
-                        if (logger != null) {
-                            // 1-9 failed to read / save registry cache file.
-
-                            logger.error(REGISTRY_FAILED_READ_WRITE_CACHE_FILE, "cache directory inaccessible",
-                                "Try adjusting permission of the directory.",
-                                "failed to create directory", illegalArgumentException);
-                        }
-
-                        throw illegalArgumentException;
-                    }
-                }
+                String defaultFileContent = System.getProperty(Constants.USER_HOME) + DUBBO_REGISTRY +
+                    appAndAddressName + Constants.CACHE;
+                properties.setProperty("registry.realFilePath", defaultFileContent);
+                String appAndAddressNameMd5String = md5Utils.getMd5(appAndAddressName);
+                defaultFilename = System.getProperty(USER_HOME) + DUBBO_REGISTRY + appAndAddressNameMd5String + CACHE;
+            } else {
+                defaultFilename = System.getProperty(USER_HOME) + DUBBO_REGISTRY + url.getApplication() +
+                    "-" + url.getAddress().replaceAll(":", "-") + CACHE;
             }
 
-            this.file = file;
-
+            prepareBeforeCreateFile(defaultFilename, url);
             // When starting the subscription center,
             // we need to read the local cache file for future Registry fault tolerance processing.
             loadProperties();
             notify(url.getBackupUrls());
         }
+    }
+
+    private void prepareBeforeCreateFile(String defaultFilename, URL url) {
+        String filename = url.getParameter(FILE_KEY, defaultFilename);
+        File file = null;
+        if (ConfigUtils.isNotEmpty(filename)) {
+            file = new File(filename);
+            if (!file.exists() && file.getParentFile() != null && !file.getParentFile().exists()) {
+                if (!file.getParentFile().mkdirs()) {
+
+                    IllegalArgumentException illegalArgumentException = new IllegalArgumentException(
+                        "Invalid registry cache file " + file + ", cause: Failed to create directory " + file.getParentFile() + "!");
+
+                    if (logger != null) {
+                        // 1-9 failed to read / save registry cache file.
+
+                        logger.error(REGISTRY_FAILED_READ_WRITE_CACHE_FILE, "cache directory inaccessible",
+                            "Try adjusting permission of the directory.",
+                            "failed to create directory", illegalArgumentException);
+                    }
+
+                    throw illegalArgumentException;
+                }
+            }
+        }
+        this.file = file;
     }
 
     protected static List<URL> filterEmpty(URL url, List<URL> urls) {
@@ -266,6 +287,18 @@ public abstract class AbstractRegistry implements Registry {
                 }
             }
         } catch (Throwable e) {
+            if (e instanceof IOException) {
+                OperatingSystemBeanManager.OS os = OperatingSystemBeanManager.getOS();
+                if (os == Windows || "true".equals(System.getProperty(CommonConstants.File_ADDRESS_SHORTENED, "false"))) {
+                    if (appAndAddressNameMd5String.length() == 32) {
+                        appAndAddressNameMd5String = appAndAddressNameMd5String.substring(8, 24);
+                        String defaultFilename = System.getProperty(USER_HOME) + DUBBO_REGISTRY + appAndAddressNameMd5String + CACHE;
+                        prepareBeforeCreateFile(defaultFilename, registryUrl);
+                        doSaveProperties(version);
+                        return;
+                    }
+                }
+            }
             savePropertiesRetryTimes.incrementAndGet();
 
             if (savePropertiesRetryTimes.get() >= MAX_RETRY_TIMES_SAVE_PROPERTIES) {

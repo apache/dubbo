@@ -17,11 +17,14 @@
 package org.apache.dubbo.metadata.report.support;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.system.OperatingSystemBeanManager;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
+import org.apache.dubbo.common.utils.MD5Utils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
@@ -72,6 +75,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.RETRY_TIMES_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SYNC_REPORT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_FAILED_EXPORT_SERVICE;
+import static org.apache.dubbo.common.system.OperatingSystemBeanManager.OS.Windows;
 import static org.apache.dubbo.common.utils.StringUtils.replace;
 import static org.apache.dubbo.metadata.report.support.Constants.CACHE;
 import static org.apache.dubbo.metadata.report.support.Constants.DEFAULT_METADATA_REPORT_CYCLE_REPORT;
@@ -113,10 +117,23 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         applicationModel = reportServerURL.getOrDefaultApplicationModel();
 
         boolean localCacheEnabled = reportServerURL.getParameter(REGISTRY_LOCAL_FILE_CACHE_ENABLED, true);
-        // Start file save timer
-        String defaultFilename = System.getProperty(USER_HOME) + DUBBO_METADATA +
-            reportServerURL.getApplication() + "-" +
-            replace(reportServerURL.getAddress(), ":", "-") + CACHE;
+        String defaultFilename;
+        OperatingSystemBeanManager.OS os = OperatingSystemBeanManager.getOS();
+        if (os == Windows || "true".equals(System.getProperty(CommonConstants.File_ADDRESS_SHORTENED, "false"))) {
+            String appAndAddressName = reportServerURL.getApplication() + "-" + reportServerURL.getAddress().replaceAll(":", "-");
+            MD5Utils md5Utils = new MD5Utils();
+
+            // Start file save timer
+            String defaultFileContent = System.getProperty(USER_HOME) + DUBBO_METADATA +
+                appAndAddressName + CACHE;
+            properties.setProperty("metadata.realFilePath", defaultFileContent);
+            defaultFilename = System.getProperty(USER_HOME) + DUBBO_METADATA +
+                md5Utils.getMd5(appAndAddressName) + CACHE;
+        } else {
+            defaultFilename = System.getProperty(USER_HOME) + DUBBO_METADATA +
+                reportServerURL.getApplication() + "-" +
+                replace(reportServerURL.getAddress(), ":", "-") + CACHE;
+        }
         String filename = reportServerURL.getParameter(FILE_KEY, defaultFilename);
         File file = null;
         if (localCacheEnabled && ConfigUtils.isNotEmpty(filename)) {
