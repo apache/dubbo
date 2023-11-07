@@ -495,15 +495,14 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         if (hasTriProtocol && !(ref instanceof ServerService)) {
             ServiceDescriptor serviceDescriptor = getScopeModel().getServiceRepository().registerService(getInterfaceClass());
             serviceDescriptor.getMethods().forEach((methodName, methodList) -> {
-                //fix Server stream create two method
-                List<MethodDescriptor> tmpMethodList = methodList.stream().filter(md -> md.getRpcType() != MethodDescriptor.RpcType.SERVER_STREAM && md.getRpcType() != MethodDescriptor.RpcType.BI_STREAM).collect(Collectors.toList());
                 //triple protocol pb method not allow override
-                if (tmpMethodList.size() > 1) {
-                    long pbMethodCount = tmpMethodList.stream()
+                if (methodList.size() > 1) {
+                    long pbMethodCount = methodList.stream()
                         .filter(methodDescriptor -> Arrays.stream(methodDescriptor.getParameterClasses()).anyMatch(ProtobufUtils::isProtobufClass)).count();
                     if (pbMethodCount > 0L) {
                         throw new IllegalStateException("Triple protocol's protobuf method not allow override," + "method(" + interfaceName + "." + methodName + ").");
                     }
+
                 }
             });
         }

@@ -734,5 +734,12 @@ class ServiceConfigTest {
         } catch (Exception e) {
             Assertions.assertEquals(EXPECT_RESPONSE_MSG, e.getMessage());
         }
+        ServiceConfig<DemoService3> serviceConfig4 = new ServiceConfig<>();
+        serviceConfig4.setInterface(DemoService3.class);
+        serviceConfig4.setRef(new DemoService3Impl());
+        serviceConfig4.setProtocol(new ProtocolConfig() {{
+            setName("dubbo");
+        }});
+        serviceConfig4.refresh();
     }
 }
