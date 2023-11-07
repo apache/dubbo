@@ -38,7 +38,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-
 /**
  * {@link DubboAutoConfiguration} Test On multiple Dubbo Configuration
  *
@@ -46,24 +45,19 @@ import org.springframework.test.context.junit4.SpringRunner;
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource(
-    properties = {
-        "dubbo.applications.application1.name=dubbo-demo-multi-application",
-        "dubbo.modules.module1.name=dubbo-demo-module",
-        "dubbo.registries.registry1.address=test://192.168.99.100:32770",
-        "dubbo.protocols.protocol1.name=dubbo",
-        "dubbo.protocols.protocol1.port=20880",
-        "dubbo.monitors.monitor1.address=test://127.0.0.1:32770",
-        "dubbo.providers.provider1.host=127.0.0.1",
-        "dubbo.consumers.consumer1.client=netty",
-        "dubbo.config.multiple=true",
-        "dubbo.scan.basePackages=org.apache.dubbo.spring.boot.dubbo, org.apache.dubbo.spring.boot.condition"
-    }
-)
-@SpringBootTest(
-    classes = {
-        DubboAutoConfigurationOnMultipleConfigTest.class
-    }
-)
+        properties = {
+            "dubbo.applications.application1.name=dubbo-demo-multi-application",
+            "dubbo.modules.module1.name=dubbo-demo-module",
+            "dubbo.registries.registry1.address=test://192.168.99.100:32770",
+            "dubbo.protocols.protocol1.name=dubbo",
+            "dubbo.protocols.protocol1.port=20880",
+            "dubbo.monitors.monitor1.address=test://127.0.0.1:32770",
+            "dubbo.providers.provider1.host=127.0.0.1",
+            "dubbo.consumers.consumer1.client=netty",
+            "dubbo.config.multiple=true",
+            "dubbo.scan.basePackages=org.apache.dubbo.spring.boot.dubbo, org.apache.dubbo.spring.boot.condition"
+        })
+@SpringBootTest(classes = {DubboAutoConfigurationOnMultipleConfigTest.class})
 @EnableAutoConfiguration
 @ComponentScan
 public class DubboAutoConfigurationOnMultipleConfigTest {
@@ -74,21 +68,27 @@ public class DubboAutoConfigurationOnMultipleConfigTest {
     @Autowired
     @Qualifier("application1")
     ApplicationConfig application;
+
     @Autowired
     @Qualifier("module1")
     ModuleConfig module;
+
     @Autowired
     @Qualifier("registry1")
     RegistryConfig registry;
+
     @Autowired
     @Qualifier("monitor1")
     MonitorConfig monitor;
+
     @Autowired
     @Qualifier("protocol1")
     ProtocolConfig protocol;
+
     @Autowired
     @Qualifier("consumer1")
     ConsumerConfig consumer;
+
     @Autowired
     @Qualifier("provider1")
     ProviderConfig provider;

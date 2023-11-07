@@ -78,6 +78,4 @@ public class TestBeansConfiguration {
         config.setId("provider1");
         return config;
     }
-
-
 }

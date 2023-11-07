@@ -44,20 +44,17 @@ import org.springframework.test.context.junit4.SpringRunner;
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource(
-    properties = {
-        "dubbo.application.name = dubbo-demo-single-application",
-        "dubbo.module.name = dubbo-demo-module",
-        "dubbo.registry.address = test://192.168.99.100:32770",
-        "dubbo.protocol.name=dubbo",
-        "dubbo.protocol.port=20880",
-        "dubbo.monitor.address=test://127.0.0.1:32770",
-        "dubbo.provider.host=127.0.0.1",
-        "dubbo.consumer.client=netty"
-    }
-)
-@SpringBootTest(
-    classes = {DubboAutoConfigurationOnSingleConfigTest.class}
-)
+        properties = {
+            "dubbo.application.name = dubbo-demo-single-application",
+            "dubbo.module.name = dubbo-demo-module",
+            "dubbo.registry.address = test://192.168.99.100:32770",
+            "dubbo.protocol.name=dubbo",
+            "dubbo.protocol.port=20880",
+            "dubbo.monitor.address=test://127.0.0.1:32770",
+            "dubbo.provider.host=127.0.0.1",
+            "dubbo.consumer.client=netty"
+        })
+@SpringBootTest(classes = {DubboAutoConfigurationOnSingleConfigTest.class})
 @EnableAutoConfiguration
 @ComponentScan
 public class DubboAutoConfigurationOnSingleConfigTest {
@@ -110,6 +107,5 @@ public class DubboAutoConfigurationOnSingleConfigTest {
         Assert.assertEquals("netty", consumerConfig.getClient());
         // provider
         Assert.assertEquals("127.0.0.1", providerConfig.getHost());
-
     }
 }
