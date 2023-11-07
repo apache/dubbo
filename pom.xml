@@ -120,7 +120,7 @@
 
   <properties>
     <!-- Test libs -->
-    <junit_jupiter_version>5.9.3</junit_jupiter_version>
+    <junit_jupiter_version>5.10.1</junit_jupiter_version>
     <awaitility_version>4.2.0</awaitility_version>
     <hazelcast_version>3.12.13</hazelcast_version>
     <hamcrest_version>2.2</hamcrest_version>
