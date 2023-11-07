@@ -23,6 +23,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
@@ -37,6 +38,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 
 /**
@@ -48,6 +50,7 @@ public class MultipleRegistry extends AbstractRegistry {
 
     public static final String REGISTRY_FOR_SERVICE = "service-registry";
     public static final String REGISTRY_FOR_REFERENCE = "reference-registry";
+    public static final String REGISTRY_SEPARATOR = "separator";
 
     protected RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
     private final Map<String, Registry> serviceRegistries = new ConcurrentHashMap<>(4);
@@ -88,7 +91,9 @@ public class MultipleRegistry extends AbstractRegistry {
     }
 
     protected void initServiceRegistry(URL url, Map<String, Registry> registryMap) {
-        origServiceRegistryURLs = url.getParameter(REGISTRY_FOR_SERVICE, new ArrayList<String>());
+        String serviceRegistryString = url.getParameter(REGISTRY_FOR_SERVICE);
+        char separator = url.getParameter(REGISTRY_SEPARATOR, COMMA_SEPARATOR).charAt(0);
+        origServiceRegistryURLs = StringUtils.splitToList(serviceRegistryString, separator);
         effectServiceRegistryURLs = this.filterServiceRegistry(origServiceRegistryURLs);
         for (String tmpUrl : effectServiceRegistryURLs) {
             if (registryMap.get(tmpUrl) != null) {
@@ -102,7 +107,9 @@ public class MultipleRegistry extends AbstractRegistry {
     }
 
     protected void initReferenceRegistry(URL url, Map<String, Registry> registryMap) {
-        origReferenceRegistryURLs = url.getParameter(REGISTRY_FOR_REFERENCE, new ArrayList<String>());
+        String serviceRegistryString = url.getParameter(REGISTRY_FOR_REFERENCE);
+        char separator = url.getParameter(REGISTRY_SEPARATOR, COMMA_SEPARATOR).charAt(0);
+        origReferenceRegistryURLs = StringUtils.splitToList(serviceRegistryString, separator);
         effectReferenceRegistryURLs = this.filterReferenceRegistry(origReferenceRegistryURLs);
         for (String tmpUrl : effectReferenceRegistryURLs) {
             if (registryMap.get(tmpUrl) != null) {
