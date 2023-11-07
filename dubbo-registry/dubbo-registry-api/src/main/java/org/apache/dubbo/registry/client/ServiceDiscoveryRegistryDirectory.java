@@ -290,12 +290,9 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
 
         if (invokerUrls.size() == 1 && EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
             logger.warn(PROTOCOL_UNSUPPORTED, "", "", String.format("Received url with EMPTY protocol from registry %s, will clear all available addresses.", this));
-            refreshRouter(BitList.emptyList(), () ->
-                this.forbidden = true // Forbid to access
-            );
+            refreshRouter(BitList.emptyList(), () -> {});
             destroyAllInvokers(); // Close all invokers
         } else {
-            this.forbidden = false; // Allow accessing
             if (CollectionUtils.isEmpty(invokerUrls)) {
                 logger.warn(PROTOCOL_UNSUPPORTED, "", "", String.format("Received empty url list from registry %s, will ignore for protection purpose.", this));
                 return;

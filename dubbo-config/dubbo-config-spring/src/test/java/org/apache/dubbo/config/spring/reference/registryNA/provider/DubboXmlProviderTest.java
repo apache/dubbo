@@ -45,7 +45,7 @@ public class DubboXmlProviderTest {
         HelloService helloService = context2.getBean("helloService", HelloService.class);
         Assertions.assertNotNull(helloService);
         RpcException exception = Assertions.assertThrows(RpcException.class, () -> helloService.sayHello("dubbo"));
-        Assertions.assertTrue(exception.getMessage().contains("Failed to invoke the method sayHello in the service org.apache.dubbo.config.spring.api.HelloService. No provider available for the service org.apache.dubbo.config.spring.api.HelloService"));
+        Assertions.assertTrue(exception.getMessage().contains("No provider available from registry ServiceDiscoveryRegistryDirectory(registry: 127.0.0.1:2181, subscribed key: org.apache.dubbo.config.spring.api.HelloService)-Directory(invokers: 0[], validInvokers: 0[], invokersToReconnect: 0[]) for service org.apache.dubbo.config.spring.api.HelloService"));
     }
 
 }
