@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.context.annotation;
 
+import com.alibaba.spring.context.annotation.ExposingClassPathBeanDefinitionScanner;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
@@ -36,7 +37,7 @@ import static org.springframework.context.annotation.AnnotationConfigUtils.regis
  * @see #registerDefaultFilters()
  * @since 2.5.7
  */
-public class DubboClassPathBeanDefinitionScanner extends ClassPathBeanDefinitionScanner {
+public class DubboClassPathBeanDefinitionScanner extends ExposingClassPathBeanDefinitionScanner {
 
     /**
      * key is package to scan, value is BeanDefinition
@@ -47,11 +48,7 @@ public class DubboClassPathBeanDefinitionScanner extends ClassPathBeanDefinition
     public DubboClassPathBeanDefinitionScanner(BeanDefinitionRegistry registry, boolean useDefaultFilters, Environment environment,
                                                ResourceLoader resourceLoader) {
 
-        super(registry, useDefaultFilters);
-
-        setEnvironment(environment);
-
-        setResourceLoader(resourceLoader);
+        super(registry, useDefaultFilters, environment, resourceLoader);
 
         registerAnnotationConfigProcessors(registry);
 
