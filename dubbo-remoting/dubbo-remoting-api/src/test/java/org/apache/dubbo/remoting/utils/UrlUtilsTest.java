@@ -41,10 +41,10 @@ class UrlUtilsTest {
 
     @Test
     void testConfiguredHeartbeat() {
-        System.setProperty(Constants.HEARTBEAT_CONFIG_KEY, "200");
+        System.setProperty(Constants.DUBBO_HEARTBEAT_CONFIG_KEY, "200");
         URL url = URL.valueOf("dubbo://127.0.0.1:12345");
         Assertions.assertEquals(200, UrlUtils.getHeartbeat(url));
-        System.clearProperty(Constants.HEARTBEAT_CONFIG_KEY);
+        System.clearProperty(Constants.DUBBO_HEARTBEAT_CONFIG_KEY);
     }
 
     @Test
@@ -65,9 +65,9 @@ class UrlUtilsTest {
 
     @Test
     void testConfiguredClose() {
-        System.setProperty(Constants.CLOSE_TIMEOUT_CONFIG_KEY, "180000");
+        System.setProperty(Constants.DUBBO_CLOSE_TIMEOUT_CONFIG_KEY, "180000");
         URL url = URL.valueOf("dubbo://127.0.0.1:12345");
         Assertions.assertEquals(180000, UrlUtils.getCloseTimeout(url));
-        System.clearProperty(Constants.HEARTBEAT_CONFIG_KEY);
+        System.clearProperty(Constants.DUBBO_HEARTBEAT_CONFIG_KEY);
     }
 }

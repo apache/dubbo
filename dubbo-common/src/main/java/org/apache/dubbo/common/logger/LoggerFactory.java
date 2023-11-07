@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.logger;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.jcl.JclLoggerAdapter;
 import org.apache.dubbo.common.logger.jdk.JdkLoggerAdapter;
 import org.apache.dubbo.common.logger.log4j.Log4jLoggerAdapter;
@@ -46,7 +47,7 @@ public class LoggerFactory {
 
     // search common-used logging frameworks
     static {
-        String logger = System.getProperty("dubbo.application.logger", "");
+        String logger = System.getProperty(CommonConstants.DUBBO_APPLICATION_LOGGER, "");
         switch (logger) {
             case Slf4jLoggerAdapter.NAME:
                 setLoggerAdapter(new Slf4jLoggerAdapter());

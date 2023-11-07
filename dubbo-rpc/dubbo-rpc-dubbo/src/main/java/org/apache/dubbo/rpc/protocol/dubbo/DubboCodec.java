@@ -45,7 +45,7 @@ import java.io.InputStream;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.dubbo.common.constants.CommonConstants.BYTE_ACCESSOR_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SYSTEM_BYTE_ACCESSOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_ISOLATION;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
@@ -80,7 +80,7 @@ public class DubboCodec extends ExchangeCodec {
     public DubboCodec(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
         callbackServiceCodec = new CallbackServiceCodec(frameworkModel);
-        customByteAccessor = Optional.ofNullable(System.getProperty(BYTE_ACCESSOR_KEY))
+        customByteAccessor = Optional.ofNullable(System.getProperty(SYSTEM_BYTE_ACCESSOR_KEY))
             .filter(StringUtils::isNotBlank)
             .map(key -> frameworkModel.getExtensionLoader(ByteAccessor.class).getExtension(key))
             .orElse(null);

@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.SYSTEM_TCP_RESPONSE_TIMEOUT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -49,11 +50,11 @@ class ConsumerConfigTest {
 
     @Test
     void testTimeout() {
-        System.clearProperty("sun.rmi.transport.tcp.responseTimeout");
+        System.clearProperty(SYSTEM_TCP_RESPONSE_TIMEOUT);
         ConsumerConfig consumer = new ConsumerConfig();
         consumer.setTimeout(10);
         assertThat(consumer.getTimeout(), is(10));
-        assertThat(System.getProperty("sun.rmi.transport.tcp.responseTimeout"), equalTo("10"));
+        assertThat(System.getProperty(SYSTEM_TCP_RESPONSE_TIMEOUT), equalTo("10"));
     }
 
     @Test
@@ -110,9 +111,9 @@ class ConsumerConfigTest {
         consumerConfig.setCheck(true);
 
         DubboBootstrap.getInstance()
-                .application("demo-app")
-                .consumer(consumerConfig)
-                .initialize();
+            .application("demo-app")
+            .consumer(consumerConfig)
+            .initialize();
 
         Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel().getDefaultModule().getConfigManager().getConsumers();
         Assertions.assertEquals(1, consumers.size());
@@ -127,7 +128,7 @@ class ConsumerConfigTest {
 
     @Test
     void testOverrideConfigByPluralityId() {
-        SysProps.setProperty("dubbo.consumer.group", "demoA");  //ignore
+        SysProps.setProperty("dubbo.consumer.group", "demoA");  // ignore
         SysProps.setProperty("dubbo.consumers.consumerA.check", "false");
         SysProps.setProperty("dubbo.consumers.consumerA.group", "demoB");
         SysProps.setProperty("dubbo.consumers.consumerA.threads", "10");
@@ -139,9 +140,9 @@ class ConsumerConfigTest {
         consumerConfig.setCheck(true);
 
         DubboBootstrap.getInstance()
-                .application("demo-app")
-                .consumer(consumerConfig)
-                .initialize();
+            .application("demo-app")
+            .consumer(consumerConfig)
+            .initialize();
 
         Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel().getDefaultModule().getConfigManager().getConsumers();
         Assertions.assertEquals(1, consumers.size());
@@ -170,9 +171,9 @@ class ConsumerConfigTest {
         consumerConfig.setCheck(true);
 
         DubboBootstrap.getInstance()
-                .application("demo-app")
-                .consumer(consumerConfig)
-                .initialize();
+            .application("demo-app")
+            .consumer(consumerConfig)
+            .initialize();
 
         Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel().getDefaultModule().getConfigManager().getConsumers();
         Assertions.assertEquals(1, consumers.size());
@@ -197,9 +198,9 @@ class ConsumerConfigTest {
             consumerConfig.setGroup("groupA");
 
             DubboBootstrap.getInstance()
-                    .application("demo-app")
-                    .consumer(consumerConfig)
-                    .initialize();
+                .application("demo-app")
+                .consumer(consumerConfig)
+                .initialize();
 
             Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel().getDefaultModule().getConfigManager().getConsumers();
             Assertions.assertEquals(1, consumers.size());
@@ -243,7 +244,7 @@ class ConsumerConfigTest {
     void testMetaData() {
         ConsumerConfig consumerConfig = new ConsumerConfig();
         Map<String, String> metaData = consumerConfig.getMetaData();
-        Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: "+metaData);
+        Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: " + metaData);
     }
 
     @Test

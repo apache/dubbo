@@ -24,6 +24,11 @@ import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.util.concurrent.ScheduledExecutorService;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_META_CACHE_ENTRYSIZE;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_META_CACHE_FILENAME;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_META_CACHE_FILEPATH;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_META_CACHE_MAXFILESIZE;
+
 /**
  * Metadata cache with limited size that uses LRU expiry policy.
  */
@@ -36,8 +41,8 @@ public class MetaCacheManager extends AbstractCacheManager<MetadataInfo> {
     }
 
     public MetaCacheManager(boolean enableFileCache, String registryName, ScheduledExecutorService executorService) {
-        String filePath = System.getProperty("dubbo.meta.cache.filePath");
-        String fileName = System.getProperty("dubbo.meta.cache.fileName");
+        String filePath = System.getProperty(DUBBO_META_CACHE_FILEPATH);
+        String fileName = System.getProperty(DUBBO_META_CACHE_FILENAME);
         if (StringUtils.isEmpty(fileName)) {
             fileName = DEFAULT_FILE_NAME;
         }
@@ -46,11 +51,11 @@ public class MetaCacheManager extends AbstractCacheManager<MetadataInfo> {
             fileName = fileName + "." + registryName;
         }
 
-        String rawEntrySize = System.getProperty("dubbo.meta.cache.entrySize");
+        String rawEntrySize = System.getProperty(DUBBO_META_CACHE_ENTRYSIZE);
         int entrySize = StringUtils.parseInteger(rawEntrySize);
         entrySize = (entrySize == 0 ? DEFAULT_ENTRY_SIZE : entrySize);
 
-        String rawMaxFileSize = System.getProperty("dubbo.meta.cache.maxFileSize");
+        String rawMaxFileSize = System.getProperty(DUBBO_META_CACHE_MAXFILESIZE);
         long maxFileSize = StringUtils.parseLong(rawMaxFileSize);
 
         init(enableFileCache, filePath, fileName, entrySize, maxFileSize, 60, executorService);

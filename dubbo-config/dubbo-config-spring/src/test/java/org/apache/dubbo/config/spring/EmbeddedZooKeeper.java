@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.test.common.utils.TestSocketUtils;
+
 import org.apache.zookeeper.server.ServerConfig;
 import org.apache.zookeeper.server.ZooKeeperServerMain;
 import org.apache.zookeeper.server.quorum.QuorumPeerConfig;
@@ -29,6 +30,7 @@ import java.lang.reflect.Method;
 import java.util.Properties;
 import java.util.UUID;
 
+import static org.apache.dubbo.common.constants.CommonConstants.SYSTEM_JAVA_IO_TMPDIR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TESTING_INIT_ZOOKEEPER_SERVER_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TESTING_REGISTRY_FAILED_TO_STOP_ZOOKEEPER;
 
@@ -222,7 +224,7 @@ public class EmbeddedZooKeeper implements SmartLifecycle {
         public void run() {
             try {
                 Properties properties = new Properties();
-                File file = new File(System.getProperty("java.io.tmpdir")
+                File file = new File(System.getProperty(SYSTEM_JAVA_IO_TMPDIR)
                     + File.separator + UUID.randomUUID());
                 file.deleteOnExit();
                 properties.setProperty("dataDir", file.getAbsolutePath());

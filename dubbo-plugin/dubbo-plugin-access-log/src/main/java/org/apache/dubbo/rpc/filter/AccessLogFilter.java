@@ -49,6 +49,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
+import static org.apache.dubbo.common.constants.CommonConstants.SYSTEM_LINE_SEPARATOR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FILTER_VALIDATION_EXCEPTION;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.VULNERABILITY_WARNING;
 import static org.apache.dubbo.rpc.Constants.ACCESS_LOG_FIXED_PATH_KEY;
@@ -87,8 +88,6 @@ public class AccessLogFilter implements Filter {
 
     private final AtomicBoolean scheduled = new AtomicBoolean();
     private ScheduledFuture<?> future;
-
-    private static final String LINE_SEPARATOR = "line.separator";
 
     /**
      * Default constructor initialize demon thread for writing into access log file with names with access log key
@@ -149,9 +148,9 @@ public class AccessLogFilter implements Filter {
             logQueue.add(accessLogData);
         } else {
             logger.warn(CONFIG_FILTER_VALIDATION_EXCEPTION, "", "", "AccessLog buffer is full. Do a force writing to file to clear buffer.");
-            //just write current logSet to file.
+            // just write current logSet to file.
             writeLogSetToFile(accessLog, logQueue, isFixedPath);
-            //after force writing, add accessLogData to current logSet
+            // after force writing, add accessLogData to current logSet
             logQueue.add(accessLogData);
         }
     }
@@ -188,7 +187,7 @@ public class AccessLogFilter implements Filter {
         try {
             while (!logQueue.isEmpty()) {
                 writer.write(logQueue.poll().getLogMessage());
-                writer.write(System.getProperty(LINE_SEPARATOR));
+                writer.write(System.getProperty(SYSTEM_LINE_SEPARATOR));
             }
         } finally {
             writer.flush();

@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.dubbo.common.constants.CommonConstants.OS_NAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.OS_WIN_PREFIX;
+import static org.apache.dubbo.common.constants.CommonConstants.SYSTEM_USER_HOME;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -67,7 +68,7 @@ class AbortPolicyWithReportTest {
             + "&version=1.0.0&application=morgan&noValue=true");
         AbortPolicyWithReport abortPolicyWithReport = new AbortPolicyWithReport("Test", url);
 
-        Assertions.assertEquals(System.getProperty("user.home"), abortPolicyWithReport.getDumpPath());
+        Assertions.assertEquals(System.getProperty(SYSTEM_USER_HOME), abortPolicyWithReport.getDumpPath());
     }
 
     private String dumpDirectoryCannotBeCreated() {
@@ -89,7 +90,7 @@ class AbortPolicyWithReportTest {
             + "&version=1.0.0&application=morgan&noValue=true");
         AbortPolicyWithReport abortPolicyWithReport = new AbortPolicyWithReport("Test", url);
 
-        Assertions.assertNotEquals(System.getProperty("user.home"), abortPolicyWithReport.getDumpPath());
+        Assertions.assertNotEquals(System.getProperty(SYSTEM_USER_HOME), abortPolicyWithReport.getDumpPath());
     }
 
     @Test

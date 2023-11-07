@@ -69,10 +69,64 @@ public interface CommonConstants {
 
     String DUBBO_MIGRATION_FILE_ENABLE = "dubbo.migration-file.enable";
 
+    String DUBBO_APPLICATION_LOGGER = "dubbo.application.logger";
+
     String DEFAULT_DUBBO_MIGRATION_FILE = "dubbo-migration.yaml";
 
     String ANY_VALUE = "*";
 
+    String DUBBO_RESOLVE_FILE = "dubbo.resolve.file";
+
+    String DUBBO_CONTAINER_KEY = "dubbo.container";
+
+    String DUBBO_SHUTDOWN_HOOK_KEY = "dubbo.shutdown.hook";
+
+    String DUBBO_SPRING_CONFIG = "dubbo.spring.config";
+
+    String DUBBO_MAPPING_CACHE_FILEPATH = "dubbo.mapping.cache.filePath";
+
+    String DUBBO_MAPPING_CACHE_FILENAME = "dubbo.mapping.cache.fileName";
+
+    String DUBBO_MAPPING_CACHE_ENTRYSIZE = "dubbo.mapping.cache.entrySize";
+
+    String DUBBO_MAPPING_CACHE_MAXFILESIZE = "dubbo.mapping.cache.maxFileSize";
+
+    String DUBBO_META_CACHE_FILEPATH = "dubbo.meta.cache.filePath";
+
+    String DUBBO_META_CACHE_FILENAME = "dubbo.meta.cache.fileName";
+
+    String DUBBO_META_CACHE_ENTRYSIZE = "dubbo.meta.cache.entrySize";
+
+    String DUBBO_META_CACHE_MAXFILESIZE = "dubbo.meta.cache.maxFileSize";
+
+    String DUBBO_DEFAULT_REMOTING_SERIALIZATION_PROPERTY = "DUBBO_DEFAULT_SERIALIZATION";
+
+    String DUBBO_HESSIAN_ALLOW_NON_SERIALIZABLE = "dubbo.hessian.allowNonSerializable";
+
+    String DUBBO_HESSIAN_WHITELIST = "dubbo.application.hessian2.whitelist";
+
+    String DUBBO_HESSIAN_ALLOW = "dubbo.application.hessian2.allow";
+
+    String DUBBO_HESSIAN_DENY = "dubbo.application.hessian2.deny";
+
+    String GRAALVM_NATIVEIMAGE_IMAGECODE = "org.graalvm.nativeimage.imagecode";
+
+    /**
+     * The JVM arguments to set if it can use embedded zookeeper, the default value is {@code true}.
+     */
+    String ZOOKEEPER_CONFIG_ENABLE_EMBEDDED = "enableEmbeddedZookeeper";
+
+    String SYSTEM_USER_HOME = "user.home";
+
+    String SYSTEM_JAVA_VERSION = "java.version";
+
+    String SYSTEM_TCP_RESPONSE_TIMEOUT = "sun.rmi.transport.tcp.responseTimeout";
+
+    String SYSTEM_JAVA_IO_TMPDIR = "java.io.tmpdir";
+
+    String SYSTEM_LINE_SEPARATOR = "line.separator";
+
+    String SYSTEM_OS_NAME = "os.name";
     /**
      * @since 2.7.8
      */
@@ -438,11 +492,11 @@ public interface CommonConstants {
      */
     String DEFAULT_SERVICE_NAME_MAPPING_PROPERTIES_PATH = "META-INF/dubbo/service-name-mapping.properties";
 
-    String CLASS_DESERIALIZE_BLOCK_ALL = "dubbo.security.serialize.blockAllClassExceptAllow";
+    String DUBBO_CLASS_DESERIALIZE_BLOCK_ALL = "dubbo.security.serialize.blockAllClassExceptAllow";
 
-    String CLASS_DESERIALIZE_ALLOWED_LIST = "dubbo.security.serialize.allowedClassList";
+    String DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST = "dubbo.security.serialize.allowedClassList";
 
-    String CLASS_DESERIALIZE_BLOCKED_LIST = "dubbo.security.serialize.blockedClassList";
+    String DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST = "dubbo.security.serialize.blockedClassList";
 
     String ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE = "dubbo.security.serialize.generic.native-java-enable";
 
@@ -474,7 +528,7 @@ public interface CommonConstants {
 
     String DEFAULT_VERSION = "0.0.0";
 
-    String CLASS_DESERIALIZE_OPEN_CHECK = "dubbo.security.serialize.openCheckClass";
+    String DUBBO_CLASS_DESERIALIZE_OPEN_CHECK = "dubbo.security.serialize.openCheckClass";
 
     String ROUTER_KEY = "router";
 
@@ -577,7 +631,7 @@ public interface CommonConstants {
 
     String OPTIMIZER_KEY = "optimizer";
 
-    String PREFER_JSON_FRAMEWORK_NAME = "dubbo.json-framework.prefer";
+    String DUBBO_PREFER_JSON_FRAMEWORK_NAME = "dubbo.json-framework.prefer";
 
     /**
      * @since 3.1.0
@@ -627,7 +681,7 @@ public interface CommonConstants {
     /**
      * @since 3.2.0
      */
-    String BYTE_ACCESSOR_KEY = "byte.accessor";
+    String SYSTEM_BYTE_ACCESSOR_KEY = "byte.accessor";
 
     String PAYLOAD = "payload";
 
@@ -647,7 +701,7 @@ public interface CommonConstants {
 
     String DUBBO_MANUAL_REGISTER_KEY = "dubbo.application.manual-register";
 
-    String POD_NAMESPACE = "POD_NAMESPACE";
+    String K8S_POD_NAMESPACE = "POD_NAMESPACE";
 
-    String CLUSTER_DOMAIN = "CLUSTER_DOMAIN";
+    String K8S_CLUSTER_DOMAIN = "CLUSTER_DOMAIN";
 }

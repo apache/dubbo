@@ -91,12 +91,12 @@ public interface Constants {
     String MULTICAST = "multicast";
 
 
-    String DUBBO_IP_TO_REGISTRY = "DUBBO_IP_TO_REGISTRY";
+    String DUBBO_IP_TO_REGISTRY = "dubbo.ip.to.registry";
 
-    String DUBBO_PORT_TO_REGISTRY = "DUBBO_PORT_TO_REGISTRY";
+    String DUBBO_PORT_TO_REGISTRY = "dubbo.port.to.registry";
 
 
-    String DUBBO_PORT_TO_BIND = "DUBBO_PORT_TO_BIND";
+    String DUBBO_PORT_TO_BIND = "dubbo.port.to.bind";
 
     String SCOPE_NONE = "none";
 
@@ -151,9 +151,9 @@ public interface Constants {
 
     String CLIENT_THREAD_POOL_NAME = "DubboClientHandler";
 
-    String REST_PROTOCOL="rest";
+    String REST_PROTOCOL = "rest";
 
-    String DEFAULT_NATIVE_COMPILER="jdk";
+    String DEFAULT_NATIVE_COMPILER = "jdk";
 
-    String DEFAULT_NATIVE_PROXY="jdk";
+    String DEFAULT_NATIVE_PROXY = "jdk";
 }

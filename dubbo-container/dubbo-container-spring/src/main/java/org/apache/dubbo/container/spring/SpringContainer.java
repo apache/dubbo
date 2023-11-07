@@ -23,16 +23,16 @@ import org.apache.dubbo.container.Container;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_SPRING_CONFIG;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_STOP_DUBBO_ERROR;
 
 /**
  * SpringContainer. (SPI, Singleton, ThreadSafe)
- *
+ * <p>
  * The container class implementation for Spring
  */
 public class SpringContainer implements Container {
 
-    public static final String SPRING_CONFIG = "dubbo.spring.config";
     public static final String DEFAULT_SPRING_CONFIG = "classpath*:META-INF/spring/*.xml";
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SpringContainer.class);
     static ClassPathXmlApplicationContext context;
@@ -43,7 +43,7 @@ public class SpringContainer implements Container {
 
     @Override
     public void start() {
-        String configPath = System.getProperty(SPRING_CONFIG);
+        String configPath = System.getProperty(DUBBO_SPRING_CONFIG);
         if (StringUtils.isEmpty(configPath)) {
             configPath = DEFAULT_SPRING_CONFIG;
         }

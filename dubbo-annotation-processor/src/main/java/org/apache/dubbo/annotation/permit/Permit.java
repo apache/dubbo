@@ -41,7 +41,7 @@ public class Permit {
     private Permit() {
     }
 
-
+    private static final String LOMBOK_DEBUG_REFLECTION = "lombok.debug.reflection";
     private static final long ACCESSIBLE_OVERRIDE_FIELD_OFFSET;
     private static final IllegalAccessException INIT_ERROR;
     private static final sun.misc.Unsafe UNSAFE = (sun.misc.Unsafe) reflectiveStaticFieldAccess(sun.misc.Unsafe.class, "theUnsafe");
@@ -176,7 +176,7 @@ public class Permit {
     }
 
     public static boolean isDebugReflection() {
-        return !"false".equals(System.getProperty("lombok.debug.reflection", "false"));
+        return !"false".equals(System.getProperty(LOMBOK_DEBUG_REFLECTION, "false"));
     }
 
     public static void handleReflectionDebug(Throwable t, Throwable initError) {
@@ -218,13 +218,13 @@ public class Permit {
             return m.invoke(receiver, args);
         } catch (NoClassDefFoundError e) {
             handleReflectionDebug(e, initError);
-            //ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
-            //do anything useful here.
+            // ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
+            // do anything useful here.
             return null;
         } catch (NullPointerException e) {
             handleReflectionDebug(e, initError);
-            //ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
-            //do anything useful here.
+            // ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
+            // do anything useful here.
             return null;
         } catch (IllegalAccessException e) {
             handleReflectionDebug(e, initError);
@@ -271,13 +271,13 @@ public class Permit {
             return c.newInstance(args);
         } catch (NoClassDefFoundError e) {
             handleReflectionDebug(e, initError);
-            //ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
-            //do anything useful here.
+            // ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
+            // do anything useful here.
             return null;
         } catch (NullPointerException e) {
             handleReflectionDebug(e, initError);
-            //ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
-            //do anything useful here.
+            // ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
+            // do anything useful here.
             return null;
         } catch (IllegalAccessException e) {
             handleReflectionDebug(e, initError);
@@ -391,7 +391,7 @@ public class Permit {
         try {
             cModule = Class.forName("java.lang.Module");
         } catch (ClassNotFoundException e) {
-            return; //jdk8-; this is not needed.
+            return; // jdk8-; this is not needed.
         }
 
         Unsafe unsafe = UNSAFE;
@@ -417,13 +417,15 @@ public class Permit {
             long firstFieldOffset = getFirstFieldOffset(unsafe);
             unsafe.putBooleanVolatile(m, firstFieldOffset, true);
             for (String p : allPkgs) m.invoke(jdkCompilerModule, p, ownModule);
-        } catch (Exception ignore) {}
+        } catch (Exception ignore) {
+        }
 
         try {
             Method m = cModule.getDeclaredMethod("implAddExports", String.class, cModule);
             long firstFieldOffset = getFirstFieldOffset(unsafe);
             unsafe.putBooleanVolatile(m, firstFieldOffset, true);
             for (String p : allPkgs) m.invoke(jdkCompilerModule, p, ownModule);
-        } catch (Exception ignore) {}
+        } catch (Exception ignore) {
+        }
     }
 }

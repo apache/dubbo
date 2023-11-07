@@ -40,8 +40,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
-import static org.apache.dubbo.common.constants.CommonConstants.CLASS_DESERIALIZE_ALLOWED_LIST;
-import static org.apache.dubbo.common.constants.CommonConstants.CLASS_DESERIALIZE_BLOCKED_LIST;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST;
 
 class SerializeSecurityConfiguratorTest {
 
@@ -127,7 +127,7 @@ class SerializeSecurityConfiguratorTest {
         FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
-        System.setProperty(CommonConstants.CLASS_DESERIALIZE_OPEN_CHECK, "false");
+        System.setProperty(CommonConstants.DUBBO_CLASS_DESERIALIZE_OPEN_CHECK, "false");
 
         SerializeSecurityManager ssm = frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class);
 
@@ -136,7 +136,7 @@ class SerializeSecurityConfiguratorTest {
 
         Assertions.assertEquals(SerializeCheckStatus.DISABLE, ssm.getCheckStatus());
 
-        System.clearProperty(CommonConstants.CLASS_DESERIALIZE_OPEN_CHECK);
+        System.clearProperty(CommonConstants.DUBBO_CLASS_DESERIALIZE_OPEN_CHECK);
         frameworkModel.destroy();
     }
 
@@ -145,7 +145,7 @@ class SerializeSecurityConfiguratorTest {
         FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
-        System.setProperty(CommonConstants.CLASS_DESERIALIZE_BLOCK_ALL, "true");
+        System.setProperty(CommonConstants.DUBBO_CLASS_DESERIALIZE_BLOCK_ALL, "true");
 
         SerializeSecurityManager ssm = frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class);
 
@@ -154,7 +154,7 @@ class SerializeSecurityConfiguratorTest {
 
         Assertions.assertEquals(SerializeCheckStatus.STRICT, ssm.getCheckStatus());
 
-        System.clearProperty(CommonConstants.CLASS_DESERIALIZE_BLOCK_ALL);
+        System.clearProperty(CommonConstants.DUBBO_CLASS_DESERIALIZE_BLOCK_ALL);
         frameworkModel.destroy();
     }
 
@@ -163,7 +163,7 @@ class SerializeSecurityConfiguratorTest {
         FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
-        System.setProperty(CLASS_DESERIALIZE_ALLOWED_LIST, "test.package1, test.package2, ,");
+        System.setProperty(DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST, "test.package1, test.package2, ,");
 
         SerializeSecurityManager ssm = frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class);
 
@@ -173,7 +173,7 @@ class SerializeSecurityConfiguratorTest {
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("test.package1"));
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("test.package2"));
 
-        System.clearProperty(CommonConstants.CLASS_DESERIALIZE_ALLOWED_LIST);
+        System.clearProperty(CommonConstants.DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST);
         frameworkModel.destroy();
 
     }
@@ -183,7 +183,7 @@ class SerializeSecurityConfiguratorTest {
         FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
-        System.setProperty(CLASS_DESERIALIZE_BLOCKED_LIST, "test.package1, test.package2, ,");
+        System.setProperty(DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST, "test.package1, test.package2, ,");
 
         SerializeSecurityManager ssm = frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class);
 
@@ -193,7 +193,7 @@ class SerializeSecurityConfiguratorTest {
         Assertions.assertTrue(ssm.getDisAllowedPrefix().contains("test.package1"));
         Assertions.assertTrue(ssm.getDisAllowedPrefix().contains("test.package2"));
 
-        System.clearProperty(CommonConstants.CLASS_DESERIALIZE_BLOCK_ALL);
+        System.clearProperty(CommonConstants.DUBBO_CLASS_DESERIALIZE_BLOCK_ALL);
         frameworkModel.destroy();
 
     }
@@ -203,8 +203,8 @@ class SerializeSecurityConfiguratorTest {
         FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
-        System.setProperty(CLASS_DESERIALIZE_ALLOWED_LIST, "test.package1, test.package2, ,");
-        System.setProperty(CLASS_DESERIALIZE_BLOCKED_LIST, "test.package1, test.package2, ,");
+        System.setProperty(DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST, "test.package1, test.package2, ,");
+        System.setProperty(DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST, "test.package1, test.package2, ,");
 
         SerializeSecurityManager ssm = frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class);
 
@@ -214,8 +214,8 @@ class SerializeSecurityConfiguratorTest {
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("test.package1"));
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("test.package2"));
 
-        System.clearProperty(CommonConstants.CLASS_DESERIALIZE_ALLOWED_LIST);
-        System.clearProperty(CommonConstants.CLASS_DESERIALIZE_BLOCK_ALL);
+        System.clearProperty(CommonConstants.DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST);
+        System.clearProperty(CommonConstants.DUBBO_CLASS_DESERIALIZE_BLOCK_ALL);
         frameworkModel.destroy();
 
     }

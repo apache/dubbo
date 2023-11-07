@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static org.apache.dubbo.common.constants.CommonConstants.SYSTEM_USER_HOME;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CACHE_PATH_INACCESSIBLE;
 
 /**
@@ -79,7 +80,7 @@ public final class FileCacheStoreFactory {
     public static FileCacheStore getInstance(String basePath, String cacheName, boolean enableFileCache) {
         if (basePath == null) {
             // default case: ~/.dubbo
-            basePath = System.getProperty("user.home") + File.separator + ".dubbo";
+            basePath = System.getProperty(SYSTEM_USER_HOME) + File.separator + ".dubbo";
         }
         if (basePath.endsWith(File.separator)) {
             basePath = basePath.substring(0, basePath.length() - 1);

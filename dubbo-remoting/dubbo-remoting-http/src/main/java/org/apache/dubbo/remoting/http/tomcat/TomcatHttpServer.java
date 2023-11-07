@@ -32,6 +32,7 @@ import org.apache.catalina.startup.Tomcat;
 import java.io.File;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREADS;
+import static org.apache.dubbo.common.constants.CommonConstants.SYSTEM_JAVA_IO_TMPDIR;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_STOP_HTTP_SERVER;
 import static org.apache.dubbo.remoting.Constants.ACCEPTS_KEY;
@@ -49,7 +50,7 @@ public class TomcatHttpServer extends AbstractHttpServer {
 
         this.url = url;
         DispatcherServlet.addHttpHandler(url.getPort(), handler);
-        String baseDir = new File(System.getProperty("java.io.tmpdir")).getAbsolutePath();
+        String baseDir = new File(System.getProperty(SYSTEM_JAVA_IO_TMPDIR)).getAbsolutePath();
         tomcat = new Tomcat();
 
         Connector connector = tomcat.getConnector();

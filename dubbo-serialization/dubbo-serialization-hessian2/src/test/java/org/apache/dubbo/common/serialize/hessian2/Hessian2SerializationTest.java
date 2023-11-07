@@ -38,6 +38,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_HESSIAN_ALLOW_NON_SERIALIZABLE;
+
 class Hessian2SerializationTest {
     @Test
     void testReadString() throws IOException {
@@ -584,7 +586,7 @@ class Hessian2SerializationTest {
         // write force un-serializable, read failed
 
         {
-            System.setProperty("dubbo.hessian.allowNonSerializable", "true");
+            System.setProperty(DUBBO_HESSIAN_ALLOW_NON_SERIALIZABLE, "true");
             FrameworkModel frameworkModel = new FrameworkModel();
             Serialization serialization = frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
             URL url = URL.valueOf("").setScopeModel(frameworkModel);
@@ -597,7 +599,7 @@ class Hessian2SerializationTest {
             objectOutput.flushBuffer();
 
             frameworkModel.destroy();
-            System.clearProperty("dubbo.hessian.allowNonSerializable");
+            System.clearProperty(DUBBO_HESSIAN_ALLOW_NON_SERIALIZABLE);
         }
 
         {

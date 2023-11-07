@@ -22,6 +22,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,7 +61,7 @@ class DefaultSerializeClassCheckerTest {
 
     @Test
     void testAddAllow() throws ClassNotFoundException {
-        System.setProperty(CommonConstants.CLASS_DESERIALIZE_ALLOWED_LIST, ReentrantReadWriteLock.WriteLock.class.getName() + "," + ReentrantReadWriteLock.ReadLock.class.getName());
+        System.setProperty(CommonConstants.DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST, ReentrantReadWriteLock.WriteLock.class.getName() + "," + ReentrantReadWriteLock.ReadLock.class.getName());
 
         DefaultSerializeClassChecker defaultSerializeClassChecker = DefaultSerializeClassChecker.getInstance();
         for (int i = 0; i < 10; i++) {
@@ -68,12 +69,12 @@ class DefaultSerializeClassCheckerTest {
             defaultSerializeClassChecker.loadClass(Thread.currentThread().getContextClassLoader(), ReentrantReadWriteLock.ReadLock.class.getName());
         }
 
-        System.clearProperty(CommonConstants.CLASS_DESERIALIZE_ALLOWED_LIST);
+        System.clearProperty(CommonConstants.DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST);
     }
 
     @Test
     void testAddBlock() {
-        System.setProperty(CommonConstants.CLASS_DESERIALIZE_BLOCKED_LIST, Runtime.class.getName() + "," + Thread.class.getName());
+        System.setProperty(CommonConstants.DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST, Runtime.class.getName() + "," + Thread.class.getName());
 
         DefaultSerializeClassChecker defaultSerializeClassChecker = DefaultSerializeClassChecker.getInstance();
         for (int i = 0; i < 10; i++) {
@@ -89,13 +90,13 @@ class DefaultSerializeClassCheckerTest {
                 .getWarnedClasses().contains(Thread.class.getName()));
         }
 
-        System.clearProperty(CommonConstants.CLASS_DESERIALIZE_BLOCKED_LIST);
+        System.clearProperty(CommonConstants.DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST);
     }
 
     @Test
     void testBlockAll() throws ClassNotFoundException {
-        System.setProperty(CommonConstants.CLASS_DESERIALIZE_BLOCK_ALL, "true");
-        System.setProperty(CommonConstants.CLASS_DESERIALIZE_ALLOWED_LIST, ReentrantReadWriteLock.WriteLock.class.getName());
+        System.setProperty(CommonConstants.DUBBO_CLASS_DESERIALIZE_BLOCK_ALL, "true");
+        System.setProperty(CommonConstants.DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST, ReentrantReadWriteLock.WriteLock.class.getName());
 
         DefaultSerializeClassChecker defaultSerializeClassChecker = DefaultSerializeClassChecker.getInstance();
         for (int i = 0; i < 10; i++) {
@@ -107,8 +108,8 @@ class DefaultSerializeClassCheckerTest {
                 .getWarnedClasses().contains(ReentrantReadWriteLock.ReadLock.class.getName()));
         }
 
-        System.clearProperty(CommonConstants.CLASS_DESERIALIZE_BLOCK_ALL);
-        System.clearProperty(CommonConstants.CLASS_DESERIALIZE_ALLOWED_LIST);
+        System.clearProperty(CommonConstants.DUBBO_CLASS_DESERIALIZE_BLOCK_ALL);
+        System.clearProperty(CommonConstants.DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST);
     }
 
     @Test

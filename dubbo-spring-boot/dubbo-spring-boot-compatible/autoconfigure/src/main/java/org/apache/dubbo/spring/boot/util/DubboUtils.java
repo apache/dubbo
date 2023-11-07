@@ -26,6 +26,8 @@ import org.springframework.core.env.PropertyResolver;
 
 import java.util.Set;
 
+import static org.apache.dubbo.common.constants.CommonConstants.SYSTEM_LINE_SEPARATOR;
+
 /**
  * The utilities class for Dubbo
  *
@@ -36,7 +38,7 @@ public abstract class DubboUtils {
     /**
      * line separator
      */
-    public static final String LINE_SEPARATOR = System.getProperty("line.separator");
+    public static final String LINE_SEPARATOR = System.getProperty(SYSTEM_LINE_SEPARATOR);
 
 
     /**

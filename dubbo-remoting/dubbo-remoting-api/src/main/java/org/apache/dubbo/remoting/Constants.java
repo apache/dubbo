@@ -159,8 +159,8 @@ public interface Constants {
     String DEFAULT_PROMPT = "dubbo>";
     String TELNET_KEY = "telnet";
     String HEARTBEAT_KEY = "heartbeat";
-    String HEARTBEAT_CONFIG_KEY = "dubbo.protocol.default-heartbeat";
-    String CLOSE_TIMEOUT_CONFIG_KEY = "dubbo.protocol.default-close-timeout";
+    String DUBBO_HEARTBEAT_CONFIG_KEY = "dubbo.protocol.default-heartbeat";
+    String DUBBO_CLOSE_TIMEOUT_CONFIG_KEY = "dubbo.protocol.default-close-timeout";
     int DEFAULT_HEARTBEAT = 60 * 1000;
     String HEARTBEAT_TIMEOUT_KEY = "heartbeat.timeout";
     String CLOSE_TIMEOUT_KEY = "close.timeout";
@@ -181,7 +181,7 @@ public interface Constants {
 
     List<String> REST_SERVER = Arrays.asList("jetty", "tomcat", "netty");
     String CONTENT_LENGTH_KEY = "content-length";
-    String USE_SECURE_RANDOM_ID = "dubbo.application.use-secure-random-request-id";
+    String DUBBO_USE_SECURE_RANDOM_ID = "dubbo.application.use-secure-random-request-id";
 
     String CONNECTION_HANDLER_NAME = "connectionHandler";
 

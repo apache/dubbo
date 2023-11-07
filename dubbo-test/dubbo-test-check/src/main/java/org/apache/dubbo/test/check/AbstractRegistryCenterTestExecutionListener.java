@@ -25,16 +25,14 @@ import org.junit.platform.launcher.TestPlan;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ZOOKEEPER_CONFIG_ENABLE_EMBEDDED;
+
 /**
  * The abstract implementation provides the basic methods. <p></p>
  * {@link #needRegistryCenter(TestPlan)}: checks if current {@link TestPlan} need registry center.
  */
 public abstract class AbstractRegistryCenterTestExecutionListener implements TestExecutionListener {
 
-    /**
-     * The JVM arguments to set if it can use embedded zookeeper, the default value is {@code true}.
-     */
-    private static final String CONFIG_ENABLE_EMBEDDED_ZOOKEEPER = "enableEmbeddedZookeeper";
 
     /**
      * The registry center should start
@@ -59,7 +57,7 @@ public abstract class AbstractRegistryCenterTestExecutionListener implements Tes
         // dubbo-metadata-report-zookeeper
         PACKAGE_NAME.add("org.apache.dubbo.metadata.store.zookeeper");
 
-        enableEmbeddedZookeeper = Boolean.valueOf(System.getProperty(CONFIG_ENABLE_EMBEDDED_ZOOKEEPER, "true"));
+        enableEmbeddedZookeeper = Boolean.valueOf(System.getProperty(ZOOKEEPER_CONFIG_ENABLE_EMBEDDED, "true"));
     }
 
     /**

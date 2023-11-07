@@ -55,7 +55,7 @@ class NoAnnotationRestProtocolTest {
                 setJson(null);
             }
         }.clearJson();
-        System.clearProperty(CommonConstants.PREFER_JSON_FRAMEWORK_NAME);
+        System.clearProperty(CommonConstants.DUBBO_PREFER_JSON_FRAMEWORK_NAME);
     }
 
     @Test
@@ -67,7 +67,7 @@ class NoAnnotationRestProtocolTest {
                     setJson(null);
                 }
             }.clearJson();
-            System.setProperty(CommonConstants.PREFER_JSON_FRAMEWORK_NAME, json);
+            System.setProperty(CommonConstants.DUBBO_PREFER_JSON_FRAMEWORK_NAME, json);
             testRestProtocol();
         }
     }
@@ -93,7 +93,7 @@ class NoAnnotationRestProtocolTest {
         User user = client.user(User.getInstance());
         Assertions.assertEquals("invoked", user.getName());
 
-        Assertions.assertEquals(User.getInstance(),client.userList(Arrays.asList(User.getInstance())).get(0));
+        Assertions.assertEquals(User.getInstance(), client.userList(Arrays.asList(User.getInstance())).get(0));
 
 
         invoker.destroy();

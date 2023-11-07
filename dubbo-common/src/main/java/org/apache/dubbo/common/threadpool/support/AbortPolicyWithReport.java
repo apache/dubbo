@@ -45,6 +45,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_ENABLE;
 import static org.apache.dubbo.common.constants.CommonConstants.OS_NAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.OS_WIN_PREFIX;
+import static org.apache.dubbo.common.constants.CommonConstants.SYSTEM_USER_HOME;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_POOL_EXHAUSTED_LISTENERS_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_THREAD_POOL_EXHAUSTED;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_CREATE_DUMP;
@@ -71,7 +72,7 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
 
     protected static Semaphore guard = new Semaphore(1);
 
-    private static final String USER_HOME = System.getProperty("user.home");
+    private static final String USER_HOME = System.getProperty(SYSTEM_USER_HOME);
 
     private final Set<ThreadPoolExhaustedListener> listeners = new ConcurrentHashSet<>();
 
@@ -137,7 +138,7 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
     private void dumpJStack() {
         long now = System.currentTimeMillis();
 
-        //dump every 10 minutes
+        // dump every 10 minutes
         if (now - lastPrintTime < TEN_MINUTES_MILLS) {
             return;
         }
@@ -167,7 +168,7 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
                 }
 
                 String dateStr = sdf.format(new Date());
-                //try-with-resources
+                // try-with-resources
                 try (FileOutputStream jStackStream = new FileOutputStream(
                     new File(dumpPath, "Dubbo_JStack.log" + "." + dateStr))) {
                     jstack(jStackStream);
@@ -179,7 +180,7 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
                 }
             });
         } finally {
-            //must shutdown thread pool ,if not will lead to OOM
+            // must shutdown thread pool ,if not will lead to OOM
             pool.shutdown();
         }
 

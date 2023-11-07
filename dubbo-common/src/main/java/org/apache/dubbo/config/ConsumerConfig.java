@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import static org.apache.dubbo.common.constants.CommonConstants.MESH_ENABLE;
 import static org.apache.dubbo.common.constants.CommonConstants.REFER_BACKGROUND_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFER_THREAD_NUM_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SYSTEM_TCP_RESPONSE_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.URL_MERGE_PROCESSOR_KEY;
 
 /**
@@ -61,8 +62,8 @@ public class ConsumerConfig extends AbstractReferenceConfig {
     private Integer shareconnections;
 
     /**
-     *  Url Merge Processor
-     *  Used to customize the URL merge of consumer and provider
+     * Url Merge Processor
+     * Used to customize the URL merge of consumer and provider
      */
     private String urlMergeProcessor;
 
@@ -74,13 +75,14 @@ public class ConsumerConfig extends AbstractReferenceConfig {
     /**
      * Whether refer should run in background or not.
      *
-     * @deprecated replace with {@link ModuleConfig#setBackground(Boolean)}
      * @see ModuleConfig#setBackground(Boolean)
+     * @deprecated replace with {@link ModuleConfig#setBackground(Boolean)}
      */
     private Boolean referBackground;
 
     /**
      * enable mesh mode
+     *
      * @since 3.1.0
      */
     private Boolean meshEnable;
@@ -96,10 +98,10 @@ public class ConsumerConfig extends AbstractReferenceConfig {
     @Override
     public void setTimeout(Integer timeout) {
         super.setTimeout(timeout);
-        String rmiTimeout = System.getProperty("sun.rmi.transport.tcp.responseTimeout");
+        String rmiTimeout = System.getProperty(SYSTEM_TCP_RESPONSE_TIMEOUT);
         if (timeout != null && timeout > 0
-                && (StringUtils.isEmpty(rmiTimeout))) {
-            System.setProperty("sun.rmi.transport.tcp.responseTimeout", String.valueOf(timeout));
+            && (StringUtils.isEmpty(rmiTimeout))) {
+            System.setProperty(SYSTEM_TCP_RESPONSE_TIMEOUT, String.valueOf(timeout));
         }
     }
 
@@ -170,8 +172,8 @@ public class ConsumerConfig extends AbstractReferenceConfig {
     /**
      * Whether refer should run in background or not.
      *
-     * @deprecated replace with {@link ModuleConfig#setBackground(Boolean)}
      * @see ModuleConfig#setBackground(Boolean)
+     * @deprecated replace with {@link ModuleConfig#setBackground(Boolean)}
      */
     @Deprecated
     public void setReferBackground(Boolean referBackground) {

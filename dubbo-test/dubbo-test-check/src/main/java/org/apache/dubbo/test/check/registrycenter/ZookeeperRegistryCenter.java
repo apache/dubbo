@@ -43,6 +43,10 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.CommonConstants.SYSTEM_JAVA_IO_TMPDIR;
+import static org.apache.dubbo.common.constants.CommonConstants.SYSTEM_OS_NAME;
+import static org.apache.dubbo.common.constants.CommonConstants.SYSTEM_USER_HOME;
+
 /**
  * Build the registry center with embedded zookeeper, which is run by a new process.
  */
@@ -136,18 +140,18 @@ class ZookeeperRegistryCenter implements RegistryCenter {
         String directory;
         // Use System.getProperty({@link #CONFIG_EMBEDDED_ZOOKEEPER_DIRECTORY})
         directory = System.getProperty(CONFIG_EMBEDDED_ZOOKEEPER_DIRECTORY);
-        logger.info(String.format("The customized directory is %s to store zookeeper binary archive.",directory));
+        logger.info(String.format("The customized directory is %s to store zookeeper binary archive.", directory));
         if (StringUtils.isNotEmpty(directory)) {
             return directory;
         }
         // Use System.getProperty(user.home)
-        logger.info(String.format("The user home is %s to store zookeeper binary archive.",directory));
-        directory = System.getProperty("user.home");
-        logger.info(String.format("user.home is %s",directory));
+        logger.info(String.format("The user home is %s to store zookeeper binary archive.", directory));
+        directory = System.getProperty(SYSTEM_USER_HOME);
+        logger.info(String.format("user.home is %s", directory));
         if (StringUtils.isEmpty(directory)) {
             // Use default temporary directory
-            directory = System.getProperty("java.io.tmpdir");
-            logger.info(String.format("The temporary directory is %s to store zookeeper binary archive.",directory));
+            directory = System.getProperty(SYSTEM_JAVA_IO_TMPDIR);
+            logger.info(String.format("The temporary directory is %s to store zookeeper binary archive.", directory));
         }
         Assert.notEmptyString(directory, "The directory to store zookeeper binary archive cannot be null or empty.");
         return directory + File.separator + ".tmp" + File.separator + "zookeeper";
@@ -168,7 +172,7 @@ class ZookeeperRegistryCenter implements RegistryCenter {
      * Returns the Operating System.
      */
     private static OS getOS() {
-        String osName = System.getProperty("os.name").toLowerCase();
+        String osName = System.getProperty(SYSTEM_OS_NAME).toLowerCase();
         OS os = OS.Unix;
         if (osName.contains("windows")) {
             os = OS.Windows;

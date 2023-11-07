@@ -118,7 +118,7 @@ public interface Constants {
      */
     String MIGRATION_RULE_KEY = "key";
 
-    String MIGRATION_RULE_STEP_KEY ="step";
+    String MIGRATION_RULE_STEP_KEY = "step";
 
     String MIGRATION_RULE_THRESHOLD_KEY = "threshold";
 
@@ -132,9 +132,7 @@ public interface Constants {
 
     String MIGRATION_RULE_APPLICATIONS_KEY = "applications";
 
-    String USER_HOME = "user.home";
-
-    String DUBBO_REGISTRY  = "/.dubbo/dubbo-registry-";
+    String DUBBO_REGISTRY = "/.dubbo/dubbo-registry-";
 
     String CACHE = ".cache";
 

@@ -70,6 +70,7 @@ import static java.util.Collections.unmodifiableMap;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.commons.io.FileUtils.readFileToString;
+import static org.apache.dubbo.common.constants.CommonConstants.SYSTEM_USER_HOME;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_ERROR_PROCESS_LISTENER;
 
 /**
@@ -83,7 +84,7 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
 
     public static final String CONFIG_CENTER_ENCODING_PARAM_NAME = PARAM_NAME_PREFIX + "encoding";
 
-    public static final String DEFAULT_CONFIG_CENTER_DIR_PATH = System.getProperty("user.home") + File.separator
+    public static final String DEFAULT_CONFIG_CENTER_DIR_PATH = System.getProperty(SYSTEM_USER_HOME) + File.separator
         + ".dubbo" + File.separator + "config-center";
 
     public static final int DEFAULT_THREAD_POOL_SIZE = 1;
