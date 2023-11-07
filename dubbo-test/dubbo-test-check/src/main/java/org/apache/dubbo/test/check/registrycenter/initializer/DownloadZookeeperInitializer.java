@@ -21,12 +21,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.test.check.exception.DubboTestException;
 import org.apache.dubbo.test.check.registrycenter.context.ZookeeperContext;
 
-import org.asynchttpclient.AsyncCompletionHandler;
-import org.asynchttpclient.AsyncHttpClient;
-import org.asynchttpclient.DefaultAsyncHttpClient;
-import org.asynchttpclient.DefaultAsyncHttpClientConfig;
-import org.asynchttpclient.Response;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,6 +31,12 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.asynchttpclient.AsyncCompletionHandler;
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.DefaultAsyncHttpClient;
+import org.asynchttpclient.DefaultAsyncHttpClientConfig;
+import org.asynchttpclient.Response;
+
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TESTING_REGISTRY_FAILED_TO_DOWNLOAD_ZK_FILE;
 
 /**
@@ -44,7 +44,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.TESTING_REGI
  */
 public class DownloadZookeeperInitializer extends ZookeeperInitializer {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DownloadZookeeperInitializer.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(DownloadZookeeperInitializer.class);
 
     /**
      * The zookeeper binary file name format.
@@ -54,7 +55,8 @@ public class DownloadZookeeperInitializer extends ZookeeperInitializer {
     /**
      * The url format for zookeeper binary file.
      */
-    private static final String ZOOKEEPER_BINARY_URL_FORMAT = "https://archive.apache.org/dist/zookeeper/zookeeper-%s/" + ZOOKEEPER_FILE_NAME_FORMAT;
+    private static final String ZOOKEEPER_BINARY_URL_FORMAT =
+            "https://archive.apache.org/dist/zookeeper/zookeeper-%s/" + ZOOKEEPER_FILE_NAME_FORMAT;
 
     /**
      * The temporary directory.
@@ -89,40 +91,52 @@ public class DownloadZookeeperInitializer extends ZookeeperInitializer {
         String zookeeperFileName = String.format(ZOOKEEPER_FILE_NAME_FORMAT, context.getVersion());
         Path temporaryFilePath;
         try {
-            temporaryFilePath = Paths.get(Files.createTempDirectory("").getParent().toString(),
-                TEMPORARY_DIRECTORY,
-                zookeeperFileName);
+            temporaryFilePath = Paths.get(
+                    Files.createTempDirectory("").getParent().toString(), TEMPORARY_DIRECTORY, zookeeperFileName);
         } catch (IOException e) {
-            throw new RuntimeException(String.format("Cannot create the temporary directory, file path: %s", TEMPORARY_DIRECTORY), e);
+            throw new RuntimeException(
+                    String.format("Cannot create the temporary directory, file path: %s", TEMPORARY_DIRECTORY), e);
         }
 
         // create the temporary directory path.
         try {
             Files.createDirectories(temporaryFilePath.getParent());
         } catch (IOException e) {
-            throw new RuntimeException(String.format("Failed to create the temporary directory to save zookeeper binary file, file path:%s", temporaryFilePath.getParent()), e);
+            throw new RuntimeException(
+                    String.format(
+                            "Failed to create the temporary directory to save zookeeper binary file, file path:%s",
+                            temporaryFilePath.getParent()),
+                    e);
         }
 
         // download zookeeper binary file in temporary directory.
-        String zookeeperBinaryUrl = String.format(ZOOKEEPER_BINARY_URL_FORMAT, context.getVersion(), context.getVersion());
+        String zookeeperBinaryUrl =
+                String.format(ZOOKEEPER_BINARY_URL_FORMAT, context.getVersion(), context.getVersion());
         try {
-            logger.info("It is beginning to download the zookeeper binary archive, it will take several minutes..." +
-                "\nThe zookeeper binary archive file will be download from " + zookeeperBinaryUrl + "," +
-                "\nwhich will be saved in " + temporaryFilePath.toString() + "," +
-                "\nalso it will be renamed to 'apache-zookeeper-bin.tar.gz' and moved into " + context.getSourceFile() + ".\n");
+            logger.info("It is beginning to download the zookeeper binary archive, it will take several minutes..."
+                    + "\nThe zookeeper binary archive file will be download from "
+                    + zookeeperBinaryUrl + "," + "\nwhich will be saved in "
+                    + temporaryFilePath.toString() + ","
+                    + "\nalso it will be renamed to 'apache-zookeeper-bin.tar.gz' and moved into "
+                    + context.getSourceFile() + ".\n");
             this.download(zookeeperBinaryUrl, temporaryFilePath);
         } catch (Exception e) {
-            throw new RuntimeException(String.format("Download zookeeper binary archive failed, download url:%s, file path:%s." +
-                    "\nOr you can do something to avoid this problem as below:" +
-                    "\n1. Download zookeeper binary archive manually regardless of the version" +
-                    "\n2. Rename the downloaded file named 'apache-zookeeper-{version}-bin.tar.gz' to 'apache-zookeeper-bin.tar.gz'" +
-                    "\n3. Put the renamed file in %s, you maybe need to create the directory if necessary.\n",
-                zookeeperBinaryUrl, temporaryFilePath, context.getSourceFile()), e);
+            throw new RuntimeException(
+                    String.format(
+                            "Download zookeeper binary archive failed, download url:%s, file path:%s."
+                                    + "\nOr you can do something to avoid this problem as below:"
+                                    + "\n1. Download zookeeper binary archive manually regardless of the version"
+                                    + "\n2. Rename the downloaded file named 'apache-zookeeper-{version}-bin.tar.gz' to 'apache-zookeeper-bin.tar.gz'"
+                                    + "\n3. Put the renamed file in %s, you maybe need to create the directory if necessary.\n",
+                            zookeeperBinaryUrl, temporaryFilePath, context.getSourceFile()),
+                    e);
         }
 
         // check downloaded zookeeper binary file in temporary directory.
         if (!checkFile(temporaryFilePath)) {
-            throw new IllegalArgumentException(String.format("There are some unknown problem occurred when downloaded the zookeeper binary archive file, file path:%s", temporaryFilePath));
+            throw new IllegalArgumentException(String.format(
+                    "There are some unknown problem occurred when downloaded the zookeeper binary archive file, file path:%s",
+                    temporaryFilePath));
         }
 
         // create target directory if necessary
@@ -130,7 +144,11 @@ public class DownloadZookeeperInitializer extends ZookeeperInitializer {
             try {
                 Files.createDirectories(context.getSourceFile().getParent());
             } catch (IOException e) {
-                throw new IllegalArgumentException(String.format("Failed to create target directory, the directory path: %s", context.getSourceFile().getParent()), e);
+                throw new IllegalArgumentException(
+                        String.format(
+                                "Failed to create target directory, the directory path: %s",
+                                context.getSourceFile().getParent()),
+                        e);
             }
         }
 
@@ -138,12 +156,17 @@ public class DownloadZookeeperInitializer extends ZookeeperInitializer {
         try {
             Files.copy(temporaryFilePath, context.getSourceFile(), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            throw new IllegalArgumentException(String.format("Failed to copy file, the source file path: %s, the target file path: %s", temporaryFilePath, context.getSourceFile()), e);
+            throw new IllegalArgumentException(
+                    String.format(
+                            "Failed to copy file, the source file path: %s, the target file path: %s",
+                            temporaryFilePath, context.getSourceFile()),
+                    e);
         }
 
         // checks the zookeeper binary file exists or not again
         if (!checkFile(context.getSourceFile())) {
-            throw new IllegalArgumentException(String.format("The zookeeper binary archive file doesn't exist, file path:%s", context.getSourceFile()));
+            throw new IllegalArgumentException(String.format(
+                    "The zookeeper binary archive file doesn't exist, file path:%s", context.getSourceFile()));
         }
     }
 
@@ -153,26 +176,32 @@ public class DownloadZookeeperInitializer extends ZookeeperInitializer {
      * @param url        the url to download.
      * @param targetPath the target path to save the downloaded file.
      */
-    private void download(String url, Path targetPath) throws ExecutionException, InterruptedException, IOException, TimeoutException {
-        AsyncHttpClient asyncHttpClient = new DefaultAsyncHttpClient(
-            new DefaultAsyncHttpClientConfig.Builder()
+    private void download(String url, Path targetPath)
+            throws ExecutionException, InterruptedException, IOException, TimeoutException {
+        AsyncHttpClient asyncHttpClient = new DefaultAsyncHttpClient(new DefaultAsyncHttpClientConfig.Builder()
                 .setConnectTimeout(CONNECT_TIMEOUT)
                 .setRequestTimeout(REQUEST_TIMEOUT)
                 .setMaxRequestRetry(1)
                 .build());
-        Future<Response> responseFuture = asyncHttpClient.prepareGet(url).execute(new AsyncCompletionHandler<Response>() {
-            @Override
-            public Response onCompleted(Response response) {
-                logger.info("Download zookeeper binary archive file successfully! download url: " + url);
-                return response;
-            }
+        Future<Response> responseFuture = asyncHttpClient
+                .prepareGet(url)
+                .execute(new AsyncCompletionHandler<Response>() {
+                    @Override
+                    public Response onCompleted(Response response) {
+                        logger.info("Download zookeeper binary archive file successfully! download url: " + url);
+                        return response;
+                    }
 
-            @Override
-            public void onThrowable(Throwable t) {
-                logger.warn(TESTING_REGISTRY_FAILED_TO_DOWNLOAD_ZK_FILE, "", "", "Failed to download the file, download url: " + url);
-                super.onThrowable(t);
-            }
-        });
+                    @Override
+                    public void onThrowable(Throwable t) {
+                        logger.warn(
+                                TESTING_REGISTRY_FAILED_TO_DOWNLOAD_ZK_FILE,
+                                "",
+                                "",
+                                "Failed to download the file, download url: " + url);
+                        super.onThrowable(t);
+                    }
+                });
         // Future timeout should 2 times as equal as REQUEST_TIMEOUT, because it will retry 1 time.
         Response response = responseFuture.get(REQUEST_TIMEOUT * 2, TimeUnit.MILLISECONDS);
         Files.copy(response.getResponseBodyAsStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);

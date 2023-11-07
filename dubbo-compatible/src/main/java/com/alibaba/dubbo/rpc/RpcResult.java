@@ -21,8 +21,7 @@ import org.apache.dubbo.rpc.AppResponse;
 @Deprecated
 public class RpcResult extends AppResponse implements com.alibaba.dubbo.rpc.Result {
 
-    public RpcResult() {
-    }
+    public RpcResult() {}
 
     public RpcResult(Object result) {
         super(result);
@@ -31,5 +30,4 @@ public class RpcResult extends AppResponse implements com.alibaba.dubbo.rpc.Resu
     public RpcResult(Throwable exception) {
         super(exception);
     }
-
 }

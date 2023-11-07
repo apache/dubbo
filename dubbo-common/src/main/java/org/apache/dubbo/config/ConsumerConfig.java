@@ -85,9 +85,7 @@ public class ConsumerConfig extends AbstractReferenceConfig {
      */
     private Boolean meshEnable;
 
-
-    public ConsumerConfig() {
-    }
+    public ConsumerConfig() {}
 
     public ConsumerConfig(ModuleModel moduleModel) {
         super(moduleModel);
@@ -97,8 +95,7 @@ public class ConsumerConfig extends AbstractReferenceConfig {
     public void setTimeout(Integer timeout) {
         super.setTimeout(timeout);
         String rmiTimeout = System.getProperty("sun.rmi.transport.tcp.responseTimeout");
-        if (timeout != null && timeout > 0
-                && (StringUtils.isEmpty(rmiTimeout))) {
+        if (timeout != null && timeout > 0 && (StringUtils.isEmpty(rmiTimeout))) {
             System.setProperty("sun.rmi.transport.tcp.responseTimeout", String.valueOf(timeout));
         }
     }

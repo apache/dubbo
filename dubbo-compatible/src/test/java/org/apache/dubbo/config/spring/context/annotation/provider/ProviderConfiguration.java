@@ -21,6 +21,8 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.spring.context.annotation.DubboComponentScan;
 
+import java.util.UUID;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -32,8 +34,6 @@ import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionStatus;
-
-import java.util.UUID;
 
 @DubboComponentScan(basePackages = "org.apache.dubbo.config.spring.context.annotation.provider")
 @PropertySource("classpath:/META-INF/default.properties")
@@ -115,6 +115,4 @@ public class ProviderConfiguration {
             }
         };
     }
-
 }
-

@@ -31,11 +31,14 @@ import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUti
  */
 public abstract class AbstractRequestAnnotationParameterProcessor extends AbstractAnnotatedMethodParameterProcessor {
 
-
-    protected abstract void process(String name, String defaultValue, AnnotationMirror annotation,
-                                    VariableElement parameter, int parameterIndex,
-                                    ExecutableElement method,
-                                    RestMethodMetadata restMethodMetadata);
+    protected abstract void process(
+            String name,
+            String defaultValue,
+            AnnotationMirror annotation,
+            VariableElement parameter,
+            int parameterIndex,
+            ExecutableElement method,
+            RestMethodMetadata restMethodMetadata);
 
     @Override
     protected String getAnnotationValue(AnnotationMirror annotation, VariableElement parameter, int parameterIndex) {

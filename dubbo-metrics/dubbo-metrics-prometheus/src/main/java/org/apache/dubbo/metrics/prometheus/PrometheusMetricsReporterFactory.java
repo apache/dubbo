@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.prometheus;
 
 import org.apache.dubbo.common.URL;
@@ -31,7 +30,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERR
  */
 public class PrometheusMetricsReporterFactory extends AbstractMetricsReporterFactory {
 
-    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(PrometheusMetricsReporterFactory.class);
+    private final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(PrometheusMetricsReporterFactory.class);
 
     public PrometheusMetricsReporterFactory(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -44,9 +44,24 @@ public class PrometheusMetricsReporterFactory extends AbstractMetricsReporterFac
         } catch (NoClassDefFoundError ncde) {
             String msg = ncde.getMessage();
             if (dependenciesNotFound(msg)) {
-                logger.error(INTERNAL_ERROR, "", "", "Failed to load class \"org.apache.dubbo.metrics.prometheus.PrometheusMetricsReporter\".", ncde);
-                logger.error(INTERNAL_ERROR, "", "", "Defaulting to no-operation (NOP) metricsReporter implementation", ncde);
-                logger.error(INTERNAL_ERROR, "", "", "Introduce the micrometer-core package to use the ability of metrics", ncde);
+                logger.error(
+                        INTERNAL_ERROR,
+                        "",
+                        "",
+                        "Failed to load class \"org.apache.dubbo.metrics.prometheus.PrometheusMetricsReporter\".",
+                        ncde);
+                logger.error(
+                        INTERNAL_ERROR,
+                        "",
+                        "",
+                        "Defaulting to no-operation (NOP) metricsReporter implementation",
+                        ncde);
+                logger.error(
+                        INTERNAL_ERROR,
+                        "",
+                        "",
+                        "Introduce the micrometer-core package to use the ability of metrics",
+                        ncde);
                 return new NopPrometheusMetricsReporter();
             } else {
                 logger.error(INTERNAL_ERROR, "", "", "Failed to instantiate PrometheusMetricsReporter", ncde);

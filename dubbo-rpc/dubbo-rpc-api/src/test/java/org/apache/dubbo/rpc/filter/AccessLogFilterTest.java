@@ -27,16 +27,16 @@ import org.apache.dubbo.rpc.support.AccessLogData;
 import org.apache.dubbo.rpc.support.MockInvocation;
 import org.apache.dubbo.rpc.support.MyInvoker;
 
+import java.lang.reflect.Field;
+import java.util.Map;
+import java.util.Queue;
+
 import org.apache.log4j.Appender;
 import org.apache.log4j.Level;
 import org.apache.log4j.spi.LoggingEvent;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-
-import java.lang.reflect.Field;
-import java.util.Map;
-import java.util.Queue;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -102,7 +102,10 @@ class AccessLogFilterTest {
             ArgumentCaptor<LoggingEvent> argument = ArgumentCaptor.forClass(LoggingEvent.class);
             verify(appender, times(2)).doAppend(argument.capture());
             assertEquals(Level.WARN, argument.getAllValues().get(1).getLevel());
-            assertTrue(argument.getAllValues().get(1).getRenderedMessage().contains("Change of accesslog file path not allowed"));
+            assertTrue(argument.getAllValues()
+                    .get(1)
+                    .getRenderedMessage()
+                    .contains("Change of accesslog file path not allowed"));
         } finally {
             customAccessLogFilter.destroy();
             realLogger.removeAppender(appender);
@@ -140,5 +143,4 @@ class AccessLogFilterTest {
             e.printStackTrace();
         }
     }
-
 }

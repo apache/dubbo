@@ -55,6 +55,8 @@ public interface Cluster {
         if (StringUtils.isEmpty(name)) {
             name = Cluster.DEFAULT;
         }
-        return ScopeModelUtil.getApplicationModel(scopeModel).getExtensionLoader(Cluster.class).getExtension(name, wrap);
+        return ScopeModelUtil.getApplicationModel(scopeModel)
+                .getExtensionLoader(Cluster.class)
+                .getExtension(name, wrap);
     }
 }

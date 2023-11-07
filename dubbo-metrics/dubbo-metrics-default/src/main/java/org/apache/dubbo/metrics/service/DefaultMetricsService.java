@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.service;
 
 import org.apache.dubbo.metrics.collector.MetricsCollector;
@@ -46,12 +45,14 @@ public class DefaultMetricsService implements MetricsService {
     }
 
     @Override
-    public Map<MetricsCategory, List<MetricsEntity>> getMetricsByCategories(String serviceUniqueName, List<MetricsCategory> categories) {
+    public Map<MetricsCategory, List<MetricsEntity>> getMetricsByCategories(
+            String serviceUniqueName, List<MetricsCategory> categories) {
         return getMetricsByCategories(serviceUniqueName, null, null, categories);
     }
 
     @Override
-    public Map<MetricsCategory, List<MetricsEntity>> getMetricsByCategories(String serviceUniqueName, String methodName, Class<?>[] parameterTypes, List<MetricsCategory> categories) {
+    public Map<MetricsCategory, List<MetricsEntity>> getMetricsByCategories(
+            String serviceUniqueName, String methodName, Class<?>[] parameterTypes, List<MetricsCategory> categories) {
         Map<MetricsCategory, List<MetricsEntity>> result = new HashMap<>();
         for (MetricsCollector<?> collector : collectors) {
             List<MetricSample> samples = collector.collect();

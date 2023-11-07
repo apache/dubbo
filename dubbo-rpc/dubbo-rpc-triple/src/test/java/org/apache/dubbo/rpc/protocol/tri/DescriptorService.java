@@ -22,7 +22,6 @@ import java.util.concurrent.CompletableFuture;
 
 public interface DescriptorService {
 
-
     CompletableFuture<String> unaryFuture();
 
     void noParameterMethod();
@@ -40,7 +39,6 @@ public interface DescriptorService {
      * @return
      */
     String noParameterAndReturnJavaClassMethod();
-
 
     /**
      * bi stream need wrapper
@@ -71,7 +69,6 @@ public interface DescriptorService {
     void sayHelloServerStream2(Object request, StreamObserver<Object> reply);
 
     /***********************grpc******************************/
-
     java.util.Iterator<HelloReply> iteratorServerStream(HelloReply request);
 
     reactor.core.publisher.Mono<HelloReply> reactorMethod(HelloReply reactorRequest);
@@ -102,6 +99,4 @@ public interface DescriptorService {
     StreamObserver<String> testErrorBiStream3(StreamObserver<HelloReply> observer);
 
     StreamObserver<String> testErrorBiStream4(StreamObserver<HelloReply> observer, String str);
-
-
 }

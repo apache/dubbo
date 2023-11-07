@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.maven.plugin;
 
 import java.util.Set;
@@ -23,8 +22,7 @@ public class Test {
 
     public static void main(String[] args) {
         ClassFinder finder = new ClassFinder();
-        Set<String> set = finder.findClassSet("org.apache.dubbo", msg -> {
-        });
+        Set<String> set = finder.findClassSet("org.apache.dubbo", msg -> {});
         System.out.println(set.size());
     }
 }

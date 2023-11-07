@@ -22,7 +22,10 @@ import org.junit.jupiter.api.Test;
 public class ResourcePatternDescriberTest {
     @Test
     public void testToRegex() {
-        ResourcePatternDescriber describer = new ResourcePatternDescriber("META-INF/dubbo/internal/org.apache.dubbo.common.extension.ExtensionInjector", null);
-        Assertions.assertEquals("\\QMETA-INF/dubbo/internal/org.apache.dubbo.common.extension.ExtensionInjector\\E",describer.toRegex().toString());
+        ResourcePatternDescriber describer = new ResourcePatternDescriber(
+                "META-INF/dubbo/internal/org.apache.dubbo.common.extension.ExtensionInjector", null);
+        Assertions.assertEquals(
+                "\\QMETA-INF/dubbo/internal/org.apache.dubbo.common.extension.ExtensionInjector\\E",
+                describer.toRegex().toString());
     }
 }

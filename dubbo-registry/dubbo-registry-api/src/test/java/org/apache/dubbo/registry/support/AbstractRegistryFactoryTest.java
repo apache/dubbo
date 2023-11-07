@@ -22,13 +22,13 @@ import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.Collection;
-import java.util.List;
 
 /**
  * AbstractRegistryFactoryTest
@@ -55,30 +55,24 @@ class AbstractRegistryFactoryTest {
                     }
 
                     @Override
-                    public void destroy() {
-                    }
+                    public void destroy() {}
 
                     @Override
-                    public void register(URL url) {
-                    }
+                    public void register(URL url) {}
 
                     @Override
-                    public void unregister(URL url) {
-                    }
+                    public void unregister(URL url) {}
 
                     @Override
-                    public void subscribe(URL url, NotifyListener listener) {
-                    }
+                    public void subscribe(URL url, NotifyListener listener) {}
 
                     @Override
-                    public void unsubscribe(URL url, NotifyListener listener) {
-                    }
+                    public void unsubscribe(URL url, NotifyListener listener) {}
 
                     @Override
                     public List<URL> lookup(URL url) {
                         return null;
                     }
-
                 };
             }
         };
@@ -103,30 +97,38 @@ class AbstractRegistryFactoryTest {
      */
     // @Test
     public void testRegistryFactoryIpCache() {
-        Registry registry1 = registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":2233"));
-        Registry registry2 = registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostAddress() + ":2233"));
+        Registry registry1 = registryFactory.getRegistry(
+                URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":2233"));
+        Registry registry2 = registryFactory.getRegistry(
+                URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostAddress() + ":2233"));
         Assertions.assertEquals(registry1, registry2);
     }
 
     @Test
     void testRegistryFactoryGroupCache() {
-        Registry registry1 = registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":2233?group=aaa"));
-        Registry registry2 = registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":2233?group=bbb"));
+        Registry registry1 =
+                registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":2233?group=aaa"));
+        Registry registry2 =
+                registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":2233?group=bbb"));
         Assertions.assertNotSame(registry1, registry2);
     }
 
     @Test
     void testDestroyAllRegistries() {
-        Registry registry1 = registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":8888?group=xxx"));
-        Registry registry2 = registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":9999?group=yyy"));
-        Registry registry3 = new AbstractRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":2020?group=yyy")) {
-            @Override
-            public boolean isAvailable() {
-                return true;
-            }
-        };
+        Registry registry1 =
+                registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":8888?group=xxx"));
+        Registry registry2 =
+                registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":9999?group=yyy"));
+        Registry registry3 =
+                new AbstractRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":2020?group=yyy")) {
+                    @Override
+                    public boolean isAvailable() {
+                        return true;
+                    }
+                };
 
-        RegistryManager registryManager = ApplicationModel.defaultModel().getBeanFactory().getBean(RegistryManager.class);
+        RegistryManager registryManager =
+                ApplicationModel.defaultModel().getBeanFactory().getBean(RegistryManager.class);
 
         Collection<Registry> registries = registryManager.getRegistries();
         Assertions.assertTrue(registries.contains(registry1));

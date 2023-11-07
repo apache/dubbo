@@ -144,14 +144,16 @@ public interface RestMetadataConstants {
          *
          * @since 2.7.9
          */
-        Class<? extends Annotation> CONTROLLER_ANNOTATION_CLASS = (Class<? extends Annotation>) resolveClass(CONTROLLER_ANNOTATION_CLASS_NAME, getClassLoader());
+        Class<? extends Annotation> CONTROLLER_ANNOTATION_CLASS =
+                (Class<? extends Annotation>) resolveClass(CONTROLLER_ANNOTATION_CLASS_NAME, getClassLoader());
 
         /**
          * The class of @RequestMapping
          *
          * @since 2.7.9
          */
-        Class<? extends Annotation> REQUEST_MAPPING_ANNOTATION_CLASS = (Class<? extends Annotation>) resolveClass(REQUEST_MAPPING_ANNOTATION_CLASS_NAME, getClassLoader());
+        Class<? extends Annotation> REQUEST_MAPPING_ANNOTATION_CLASS =
+                (Class<? extends Annotation>) resolveClass(REQUEST_MAPPING_ANNOTATION_CLASS_NAME, getClassLoader());
 
         /**
          * The annotation class name of AnnotatedElementUtils

@@ -18,14 +18,13 @@ package org.apache.dubbo.common.compiler.support;
 
 import org.apache.dubbo.common.bytecode.DubboLoaderClassPath;
 
+import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.LoaderClassPath;
-
-import java.util.Arrays;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * JavassistCompiler. (SPI, Singleton, ThreadSafe)
@@ -99,5 +98,4 @@ public class JavassistCompiler extends AbstractCompiler {
             throw t;
         }
     }
-
 }

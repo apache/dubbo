@@ -38,9 +38,9 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @see DubboAutoConfiguration
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = CompatibleDubboAutoConfigurationTestWithoutProperties.class, properties = {
-        "dubbo.application.name=demo"
-})
+@SpringBootTest(
+        classes = CompatibleDubboAutoConfigurationTestWithoutProperties.class,
+        properties = {"dubbo.application.name=demo"})
 @EnableAutoConfiguration
 public class CompatibleDubboAutoConfigurationTestWithoutProperties {
 
@@ -64,7 +64,8 @@ public class CompatibleDubboAutoConfigurationTestWithoutProperties {
     public void testBeans() {
         Assert.assertNull(serviceAnnotationPostProcessor);
 
-        ReferenceAnnotationBeanPostProcessor referenceAnnotationBeanPostProcessor =  DubboBeanUtils.getReferenceAnnotationBeanPostProcessor(applicationContext);
+        ReferenceAnnotationBeanPostProcessor referenceAnnotationBeanPostProcessor =
+                DubboBeanUtils.getReferenceAnnotationBeanPostProcessor(applicationContext);
         Assert.assertNotNull(referenceAnnotationBeanPostProcessor);
     }
 }

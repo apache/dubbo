@@ -45,7 +45,10 @@ public abstract class AbstractCluster implements Cluster {
     private <T> Invoker<T> buildClusterInterceptors(AbstractClusterInvoker<T> clusterInvoker) {
         AbstractClusterInvoker<T> last = buildInterceptorInvoker(new ClusterFilterInvoker<>(clusterInvoker));
 
-        if (Boolean.parseBoolean(ConfigurationUtils.getProperty(clusterInvoker.getDirectory().getConsumerUrl().getScopeModel(), CLUSTER_INTERCEPTOR_COMPATIBLE_KEY, "false"))) {
+        if (Boolean.parseBoolean(ConfigurationUtils.getProperty(
+                clusterInvoker.getDirectory().getConsumerUrl().getScopeModel(),
+                CLUSTER_INTERCEPTOR_COMPATIBLE_KEY,
+                "false"))) {
             return build27xCompatibleClusterInterceptors(clusterInvoker, last);
         }
         return last;
@@ -61,7 +64,10 @@ public abstract class AbstractCluster implements Cluster {
     }
 
     private <T> AbstractClusterInvoker<T> buildInterceptorInvoker(AbstractClusterInvoker<T> invoker) {
-        List<InvocationInterceptorBuilder> builders = ScopeModelUtil.getApplicationModel(invoker.getUrl().getScopeModel()).getExtensionLoader(InvocationInterceptorBuilder.class).getActivateExtensions();
+        List<InvocationInterceptorBuilder> builders = ScopeModelUtil.getApplicationModel(
+                        invoker.getUrl().getScopeModel())
+                .getExtensionLoader(InvocationInterceptorBuilder.class)
+                .getActivateExtensions();
         if (CollectionUtils.isEmpty(builders)) {
             return invoker;
         }
@@ -74,13 +80,17 @@ public abstract class AbstractCluster implements Cluster {
         private final ClusterInvoker<T> filterInvoker;
 
         public ClusterFilterInvoker(AbstractClusterInvoker<T> invoker) {
-            List<FilterChainBuilder> builders = ScopeModelUtil.getApplicationModel(invoker.getUrl().getScopeModel()).getExtensionLoader(FilterChainBuilder.class).getActivateExtensions();
+            List<FilterChainBuilder> builders = ScopeModelUtil.getApplicationModel(
+                            invoker.getUrl().getScopeModel())
+                    .getExtensionLoader(FilterChainBuilder.class)
+                    .getActivateExtensions();
             if (CollectionUtils.isEmpty(builders)) {
                 filterInvoker = invoker;
             } else {
                 ClusterInvoker<T> tmpInvoker = invoker;
                 for (FilterChainBuilder builder : builders) {
-                    tmpInvoker = builder.buildClusterInvokerChain(tmpInvoker, REFERENCE_FILTER_KEY, CommonConstants.CONSUMER);
+                    tmpInvoker = builder.buildClusterInvokerChain(
+                            tmpInvoker, REFERENCE_FILTER_KEY, CommonConstants.CONSUMER);
                 }
                 filterInvoker = tmpInvoker;
             }
@@ -95,8 +105,6 @@ public abstract class AbstractCluster implements Cluster {
         public Directory<T> getDirectory() {
             return filterInvoker.getDirectory();
         }
-
-
 
         @Override
         public URL getRegistryUrl() {
@@ -118,8 +126,9 @@ public abstract class AbstractCluster implements Cluster {
          * Use ClusterInvoker<T> to replace AbstractClusterInvoker<T> in the future.
          */
         @Override
-        protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
-           return null;
+        protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance)
+                throws RpcException {
+            return null;
         }
 
         public ClusterInvoker<T> getFilterInvoker() {
@@ -130,10 +139,12 @@ public abstract class AbstractCluster implements Cluster {
     static class InvocationInterceptorInvoker<T> extends AbstractClusterInvoker<T> {
         private ClusterInvoker<T> interceptorInvoker;
 
-        public InvocationInterceptorInvoker(AbstractClusterInvoker<T> invoker, List<InvocationInterceptorBuilder> builders) {
+        public InvocationInterceptorInvoker(
+                AbstractClusterInvoker<T> invoker, List<InvocationInterceptorBuilder> builders) {
             ClusterInvoker<T> tmpInvoker = invoker;
             for (InvocationInterceptorBuilder builder : builders) {
-                tmpInvoker = builder.buildClusterInterceptorChain(tmpInvoker, INVOCATION_INTERCEPTOR_KEY, CommonConstants.CONSUMER);
+                tmpInvoker = builder.buildClusterInterceptorChain(
+                        tmpInvoker, INVOCATION_INTERCEPTOR_KEY, CommonConstants.CONSUMER);
             }
             interceptorInvoker = tmpInvoker;
         }
@@ -168,14 +179,19 @@ public abstract class AbstractCluster implements Cluster {
          * Use ClusterInvoker<T> to replace AbstractClusterInvoker<T> in the future.
          */
         @Override
-        protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
+        protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance)
+                throws RpcException {
             return null;
         }
     }
 
     @Deprecated
-    private <T> ClusterInvoker<T> build27xCompatibleClusterInterceptors(AbstractClusterInvoker<T> clusterInvoker, AbstractClusterInvoker<T> last) {
-        List<ClusterInterceptor> interceptors = ScopeModelUtil.getApplicationModel(clusterInvoker.getUrl().getScopeModel()).getExtensionLoader(ClusterInterceptor.class).getActivateExtensions();
+    private <T> ClusterInvoker<T> build27xCompatibleClusterInterceptors(
+            AbstractClusterInvoker<T> clusterInvoker, AbstractClusterInvoker<T> last) {
+        List<ClusterInterceptor> interceptors = ScopeModelUtil.getApplicationModel(
+                        clusterInvoker.getUrl().getScopeModel())
+                .getExtensionLoader(ClusterInterceptor.class)
+                .getActivateExtensions();
 
         if (!interceptors.isEmpty()) {
             for (int i = interceptors.size() - 1; i >= 0; i--) {
@@ -194,9 +210,10 @@ public abstract class AbstractCluster implements Cluster {
         private final ClusterInterceptor interceptor;
         private final AbstractClusterInvoker<T> next;
 
-        public InterceptorInvokerNode(AbstractClusterInvoker<T> clusterInvoker,
-                                      ClusterInterceptor interceptor,
-                                      AbstractClusterInvoker<T> next) {
+        public InterceptorInvokerNode(
+                AbstractClusterInvoker<T> clusterInvoker,
+                ClusterInterceptor interceptor,
+                AbstractClusterInvoker<T> next) {
             this.clusterInvoker = clusterInvoker;
             this.interceptor = interceptor;
             this.next = next;
@@ -257,11 +274,10 @@ public abstract class AbstractCluster implements Cluster {
         }
 
         @Override
-        protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
+        protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance)
+                throws RpcException {
             // The only purpose is to build an interceptor chain, so the cluster related logic doesn't matter.
             return null;
         }
     }
-
-
 }

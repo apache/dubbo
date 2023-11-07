@@ -16,12 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster;
 
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.stream.Collectors;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
@@ -35,6 +29,12 @@ import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
+
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
 
@@ -52,31 +52,30 @@ public class RouterChain<T> {
     public static <T> RouterChain<T> buildChain(Class<T> interfaceClass, URL url) {
         SingleRouterChain<T> chain1 = buildSingleChain(interfaceClass, url);
         SingleRouterChain<T> chain2 = buildSingleChain(interfaceClass, url);
-        return new RouterChain<>(new SingleRouterChain[]{chain1, chain2});
+        return new RouterChain<>(new SingleRouterChain[] {chain1, chain2});
     }
 
     public static <T> SingleRouterChain<T> buildSingleChain(Class<T> interfaceClass, URL url) {
         ModuleModel moduleModel = url.getOrDefaultModuleModel();
 
-        List<RouterFactory> extensionFactories = moduleModel.getExtensionLoader(RouterFactory.class)
-            .getActivateExtension(url, ROUTER_KEY);
+        List<RouterFactory> extensionFactories =
+                moduleModel.getExtensionLoader(RouterFactory.class).getActivateExtension(url, ROUTER_KEY);
 
         List<Router> routers = extensionFactories.stream()
-            .map(factory -> factory.getRouter(url))
-            .sorted(Router::compareTo)
-            .collect(Collectors.toList());
+                .map(factory -> factory.getRouter(url))
+                .sorted(Router::compareTo)
+                .collect(Collectors.toList());
 
-        List<StateRouter<T>> stateRouters = moduleModel
-            .getExtensionLoader(StateRouterFactory.class)
-            .getActivateExtension(url, ROUTER_KEY)
-            .stream()
-            .map(factory -> factory.getRouter(interfaceClass, url))
-            .collect(Collectors.toList());
+        List<StateRouter<T>> stateRouters =
+                moduleModel.getExtensionLoader(StateRouterFactory.class).getActivateExtension(url, ROUTER_KEY).stream()
+                        .map(factory -> factory.getRouter(interfaceClass, url))
+                        .collect(Collectors.toList());
 
+        boolean shouldFailFast = Boolean.parseBoolean(
+                ConfigurationUtils.getProperty(moduleModel, Constants.SHOULD_FAIL_FAST_KEY, "true"));
 
-        boolean shouldFailFast = Boolean.parseBoolean(ConfigurationUtils.getProperty(moduleModel, Constants.SHOULD_FAIL_FAST_KEY, "true"));
-
-        RouterSnapshotSwitcher routerSnapshotSwitcher = ScopeModelUtil.getFrameworkModel(moduleModel).getBeanFactory().getBean(RouterSnapshotSwitcher.class);
+        RouterSnapshotSwitcher routerSnapshotSwitcher =
+                ScopeModelUtil.getFrameworkModel(moduleModel).getBeanFactory().getBean(RouterSnapshotSwitcher.class);
 
         return new SingleRouterChain<>(routers, stateRouters, shouldFailFast, routerSnapshotSwitcher);
     }
@@ -106,9 +105,9 @@ public class RouterChain<T> {
         //     If `availableInvokers` is created from origin invokers => use backup chain
         //     If `availableInvokers` is created from newly invokers  => use main chain
         BitList<Invoker<T>> notifying = notifyingInvokers.get();
-        if (notifying != null &&
-            currentChain == backupChain &&
-            availableInvokers.getOriginList() == notifying.getOriginList()) {
+        if (notifying != null
+                && currentChain == backupChain
+                && availableInvokers.getOriginList() == notifying.getOriginList()) {
             return mainChain;
         }
         return currentChain;
@@ -140,7 +139,8 @@ public class RouterChain<T> {
         }
 
         // Refresh main chain.
-        // No one can request to use main chain. `currentChain` is backup chain. `route` method cannot access main chain.
+        // No one can request to use main chain. `currentChain` is backup chain. `route` method cannot access main
+        // chain.
         try {
             // Lock main chain to wait all invocation end
             // To wait until no one is using main chain.
@@ -157,26 +157,32 @@ public class RouterChain<T> {
         }
 
         // Set the reference of newly invokers to temp variable.
-        // Reason: The next step will switch the invokers reference in directory, so we should check the `availableInvokers`
-        //         argument when `route`. If the current invocation use newly invokers, we should use main chain to route, and
+        // Reason: The next step will switch the invokers reference in directory, so we should check the
+        // `availableInvokers`
+        //         argument when `route`. If the current invocation use newly invokers, we should use main chain to
+        // route, and
         //         this can prevent use newly invokers to route backup chain, which can only route origin invokers now.
         notifyingInvokers.set(invokers);
 
         // Switch the invokers reference in directory.
-        // Cannot switch before update main chain or after backup chain update success. Or that will cause state inconsistent.
+        // Cannot switch before update main chain or after backup chain update success. Or that will cause state
+        // inconsistent.
         switchAction.run();
 
         try {
             // Lock to prevent directory continue list
-            // The invokers reference in directory now should be the newly one and should always use the newly one once lock released.
+            // The invokers reference in directory now should be the newly one and should always use the newly one once
+            // lock released.
             lock.writeLock().lock();
 
             // Switch to main chain. Will update backup chain later.
             currentChain = mainChain;
 
             // Clean up temp variable.
-            // `availableInvokers` check is useless now, because `route` method will no longer receive any `availableInvokers` related
-            // with the origin invokers. The getter of invokers reference in directory is locked now, and will return newly invokers
+            // `availableInvokers` check is useless now, because `route` method will no longer receive any
+            // `availableInvokers` related
+            // with the origin invokers. The getter of invokers reference in directory is locked now, and will return
+            // newly invokers
             // once lock released.
             notifyingInvokers.set(null);
         } finally {
@@ -186,7 +192,8 @@ public class RouterChain<T> {
         }
 
         // Refresh main chain.
-        // No one can request to use main chain. `currentChain` is main chain. `route` method cannot access backup chain.
+        // No one can request to use main chain. `currentChain` is main chain. `route` method cannot access backup
+        // chain.
         try {
             // Lock main chain to wait all invocation end
             backupChain.getLock().writeLock().lock();

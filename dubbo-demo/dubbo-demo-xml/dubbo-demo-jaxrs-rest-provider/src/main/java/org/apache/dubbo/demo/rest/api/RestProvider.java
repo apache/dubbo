@@ -18,26 +18,23 @@ package org.apache.dubbo.demo.rest.api;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-
 public class RestProvider {
 
     public static void main(String[] args) throws Exception {
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"spring/rest-provider.xml"});
+        ClassPathXmlApplicationContext context =
+                new ClassPathXmlApplicationContext(new String[] {"spring/rest-provider.xml"});
 
         context.refresh();
 
-//        SpringControllerService springControllerService = context.getBean(SpringControllerService.class);
-//        ServiceConfig<SpringControllerService> serviceConfig = new ServiceConfig<>();
-//        serviceConfig.setInterface(SpringControllerService.class);
-//        serviceConfig.setProtocol(new ProtocolConfig("rest", 8888));
-//        serviceConfig.setRef(springControllerService);
-//        serviceConfig.export();
-
+        //        SpringControllerService springControllerService = context.getBean(SpringControllerService.class);
+        //        ServiceConfig<SpringControllerService> serviceConfig = new ServiceConfig<>();
+        //        serviceConfig.setInterface(SpringControllerService.class);
+        //        serviceConfig.setProtocol(new ProtocolConfig("rest", 8888));
+        //        serviceConfig.setRef(springControllerService);
+        //        serviceConfig.export();
 
         System.out.println("dubbo service started");
 
         System.in.read();
     }
-
-
 }

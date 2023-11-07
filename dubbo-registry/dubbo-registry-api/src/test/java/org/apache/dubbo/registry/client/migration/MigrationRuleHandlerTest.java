@@ -31,7 +31,7 @@ class MigrationRuleHandlerTest {
         MigrationClusterInvoker<?> invoker = Mockito.mock(MigrationClusterInvoker.class);
         URL url = Mockito.mock(URL.class);
         Mockito.when(url.getDisplayServiceKey()).thenReturn("test");
-        Mockito.when(url.getParameter(Mockito.any(), (String) Mockito.any())).thenAnswer(i->i.getArgument(1));
+        Mockito.when(url.getParameter(Mockito.any(), (String) Mockito.any())).thenAnswer(i -> i.getArgument(1));
         Mockito.when(url.getOrDefaultApplicationModel()).thenReturn(ApplicationModel.defaultModel());
         MigrationRuleHandler<?> handler = new MigrationRuleHandler<>(invoker, url);
 
@@ -61,7 +61,8 @@ class MigrationRuleHandlerTest {
         testMigrationWithStepUnchanged(rule, url, handler, invoker);
     }
 
-    private void testMigrationFailed(MigrationRule rule, URL url, MigrationRuleHandler<?> handler, MigrationClusterInvoker<?> invoker) {
+    private void testMigrationFailed(
+            MigrationRule rule, URL url, MigrationRuleHandler<?> handler, MigrationClusterInvoker<?> invoker) {
         Assertions.assertEquals(MigrationStep.FORCE_INTERFACE, handler.getMigrationStep());
 
         Mockito.when(invoker.migrateToForceApplicationInvoker(Mockito.any())).thenReturn(false);
@@ -72,12 +73,12 @@ class MigrationRuleHandlerTest {
         Assertions.assertEquals(MigrationStep.FORCE_INTERFACE, handler.getMigrationStep());
     }
 
-    private void testMigrationWithStepUnchanged(MigrationRule rule, URL url, MigrationRuleHandler<?> handler, MigrationClusterInvoker<?> invoker) {
+    private void testMigrationWithStepUnchanged(
+            MigrationRule rule, URL url, MigrationRuleHandler<?> handler, MigrationClusterInvoker<?> invoker) {
         // set the same as
         Mockito.when(rule.getStep(url)).thenReturn(handler.getMigrationStep());
         handler.doMigrate(rule);
         // no interaction
         Mockito.verify(invoker, Mockito.times(1)).migrateToForceInterfaceInvoker(rule);
     }
-
 }

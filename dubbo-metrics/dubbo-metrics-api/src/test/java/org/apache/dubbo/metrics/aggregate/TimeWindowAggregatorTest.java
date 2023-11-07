@@ -14,20 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.aggregate;
+
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-
-import java.util.concurrent.TimeUnit;
 
 public class TimeWindowAggregatorTest {
     @Test
     public void testTimeWindowAggregator() {
         TimeWindowAggregator aggregator = new TimeWindowAggregator(5, 5);
 
-        //First time window, time range: 0 - 5 seconds
+        // First time window, time range: 0 - 5 seconds
 
         aggregator.add(10);
         aggregator.add(20);
@@ -40,7 +39,7 @@ public class TimeWindowAggregatorTest {
         Assertions.assertEquals(30, entry1.getMax());
         Assertions.assertEquals(10, entry1.getMin());
 
-        //Second time window, time range: 5 - 10 seconds
+        // Second time window, time range: 5 - 10 seconds
         try {
             TimeUnit.SECONDS.sleep(5);
         } catch (InterruptedException e) {
@@ -58,8 +57,7 @@ public class TimeWindowAggregatorTest {
         Assertions.assertEquals(35, entry2.getMax());
         Assertions.assertEquals(15, entry2.getMin());
 
-
-        //Third time window, time range: 10 - 15 seconds
+        // Third time window, time range: 10 - 15 seconds
 
         try {
             TimeUnit.SECONDS.sleep(5);
@@ -78,10 +76,3 @@ public class TimeWindowAggregatorTest {
         Assertions.assertEquals(12, entry3.getMin());
     }
 }
-
-
-
-
-
-
-

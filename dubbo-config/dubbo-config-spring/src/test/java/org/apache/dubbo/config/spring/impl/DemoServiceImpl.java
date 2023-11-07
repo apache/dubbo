@@ -41,5 +41,4 @@ public class DemoServiceImpl implements DemoService {
     public void setPrefix(String prefix) {
         this.prefix = prefix;
     }
-
 }

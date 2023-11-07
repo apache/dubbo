@@ -29,8 +29,7 @@ public class MetadataIdentifier extends BaseServiceMetadataIdentifier implements
 
     private String application;
 
-    public MetadataIdentifier() {
-    }
+    public MetadataIdentifier() {}
 
     public MetadataIdentifier(String serviceInterface, String version, String group, String side, String application) {
         this.serviceInterface = serviceInterface;
@@ -39,7 +38,6 @@ public class MetadataIdentifier extends BaseServiceMetadataIdentifier implements
         this.side = side;
         this.application = application;
     }
-
 
     public MetadataIdentifier(URL url) {
         this.serviceInterface = url.getServiceInterface();
@@ -103,12 +101,11 @@ public class MetadataIdentifier extends BaseServiceMetadataIdentifier implements
 
     @Override
     public String toString() {
-        return "MetadataIdentifier{" +
-            "application='" + application + '\'' +
-            ", serviceInterface='" + serviceInterface + '\'' +
-            ", version='" + version + '\'' +
-            ", group='" + group + '\'' +
-            ", side='" + side + '\'' +
-            '}';
+        return "MetadataIdentifier{" + "application='"
+                + application + '\'' + ", serviceInterface='"
+                + serviceInterface + '\'' + ", version='"
+                + version + '\'' + ", group='"
+                + group + '\'' + ", side='"
+                + side + '\'' + '}';
     }
 }

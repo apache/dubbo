@@ -31,11 +31,11 @@ public class MapTypeModel {
 
     private Map<String, String> strings; // The composite element is simple type
 
-    private SortedMap<String, Color> colors;     // The composite element is Enum type
+    private SortedMap<String, Color> colors; // The composite element is Enum type
 
-    private NavigableMap<Color, PrimitiveTypeModel> primitiveTypeModels;  // The composite element is POJO type
+    private NavigableMap<Color, PrimitiveTypeModel> primitiveTypeModels; // The composite element is POJO type
 
-    private HashMap<String, Model> models;  // The composite element is hierarchical POJO type
+    private HashMap<String, Model> models; // The composite element is hierarchical POJO type
 
     private TreeMap<PrimitiveTypeModel, Model[]> modelArrays; // The composite element is hierarchical POJO type
 }

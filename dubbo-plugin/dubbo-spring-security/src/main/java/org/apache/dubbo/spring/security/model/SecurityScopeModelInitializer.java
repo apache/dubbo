@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.spring.security.model;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
@@ -36,8 +35,14 @@ import static org.apache.dubbo.spring.security.utils.SecurityNames.OBJECT_MAPPER
 import static org.apache.dubbo.spring.security.utils.SecurityNames.SECURITY_CONTEXT_HOLDER_CLASS_NAME;
 import static org.apache.dubbo.spring.security.utils.SecurityNames.SIMPLE_MODULE_CLASS_NAME;
 
-@Activate(onClass = {SECURITY_CONTEXT_HOLDER_CLASS_NAME, CORE_JACKSON_2_MODULE_CLASS_NAME, OBJECT_MAPPER_CLASS_NAME,
-    JAVA_TIME_MODULE_CLASS_NAME, SIMPLE_MODULE_CLASS_NAME})
+@Activate(
+        onClass = {
+            SECURITY_CONTEXT_HOLDER_CLASS_NAME,
+            CORE_JACKSON_2_MODULE_CLASS_NAME,
+            OBJECT_MAPPER_CLASS_NAME,
+            JAVA_TIME_MODULE_CLASS_NAME,
+            SIMPLE_MODULE_CLASS_NAME
+        })
 public class SecurityScopeModelInitializer implements ScopeModelInitializer {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -49,7 +54,9 @@ public class SecurityScopeModelInitializer implements ScopeModelInitializer {
         try {
             ObjectMapperCodec objectMapperCodec = new ObjectMapperCodec();
 
-            Set<ObjectMapperCodecCustomer> objectMapperCodecCustomerList = frameworkModel.getExtensionLoader(ObjectMapperCodecCustomer.class).getSupportedExtensionInstances();
+            Set<ObjectMapperCodecCustomer> objectMapperCodecCustomerList = frameworkModel
+                    .getExtensionLoader(ObjectMapperCodecCustomer.class)
+                    .getSupportedExtensionInstances();
 
             for (ObjectMapperCodecCustomer objectMapperCodecCustomer : objectMapperCodecCustomerList) {
                 objectMapperCodecCustomer.customize(objectMapperCodec);
@@ -57,18 +64,15 @@ public class SecurityScopeModelInitializer implements ScopeModelInitializer {
 
             beanFactory.registerBean(objectMapperCodec);
         } catch (Throwable t) {
-            logger.info("Failed to initialize ObjectMapperCodecCustomer and spring security related features are disabled.", t);
+            logger.info(
+                    "Failed to initialize ObjectMapperCodecCustomer and spring security related features are disabled.",
+                    t);
         }
     }
 
     @Override
-    public void initializeApplicationModel(ApplicationModel applicationModel) {
-    }
+    public void initializeApplicationModel(ApplicationModel applicationModel) {}
 
     @Override
-    public void initializeModuleModel(ModuleModel moduleModel) {
-
-
-    }
-
+    public void initializeModuleModel(ModuleModel moduleModel) {}
 }

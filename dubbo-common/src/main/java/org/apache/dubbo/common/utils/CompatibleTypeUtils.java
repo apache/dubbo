@@ -40,8 +40,7 @@ public class CompatibleTypeUtils {
      */
     private static final int ISO_LOCAL_DATE_TIME_MIN_LEN = 19;
 
-    private CompatibleTypeUtils() {
-    }
+    private CompatibleTypeUtils() {}
 
     /**
      * Compatible type convert. Null value is allowed to pass in. If no conversion is needed, then the original value
@@ -64,8 +63,10 @@ public class CompatibleTypeUtils {
             String string = (String) value;
             if (char.class.equals(type) || Character.class.equals(type)) {
                 if (string.length() != 1) {
-                    throw new IllegalArgumentException(String.format("CAN NOT convert String(%s) to char!" +
-                            " when convert String to char, the String MUST only 1 char.", string));
+                    throw new IllegalArgumentException(String.format(
+                            "CAN NOT convert String(%s) to char!"
+                                    + " when convert String to char, the String MUST only 1 char.",
+                            string));
                 }
                 return string.charAt(0);
             }
@@ -99,7 +100,9 @@ public class CompatibleTypeUtils {
             if (type == Boolean.class || type == boolean.class) {
                 return Boolean.valueOf(string);
             }
-            if (type == Date.class || type == java.sql.Date.class || type == java.sql.Timestamp.class
+            if (type == Date.class
+                    || type == java.sql.Date.class
+                    || type == java.sql.Timestamp.class
                     || type == java.sql.Time.class) {
                 try {
                     Date date = new SimpleDateFormat(DATE_FORMAT).parse(string);
@@ -114,8 +117,10 @@ public class CompatibleTypeUtils {
                     }
                     return date;
                 } catch (ParseException e) {
-                    throw new IllegalStateException("Failed to parse date " + value + " by format "
-                            + DATE_FORMAT + ", cause: " + e.getMessage(), e);
+                    throw new IllegalStateException(
+                            "Failed to parse date " + value + " by format " + DATE_FORMAT + ", cause: "
+                                    + e.getMessage(),
+                            e);
                 }
             }
             if (type == java.time.LocalDateTime.class) {
@@ -134,7 +139,7 @@ public class CompatibleTypeUtils {
                 if (StringUtils.isEmpty(string)) {
                     return null;
                 }
-                
+
                 if (string.length() >= ISO_LOCAL_DATE_TIME_MIN_LEN) {
                     return LocalDateTime.parse(string).toLocalTime();
                 } else {
@@ -204,7 +209,8 @@ public class CompatibleTypeUtils {
             }
             if (!type.isInterface()) {
                 try {
-                    Collection result = (Collection) type.getDeclaredConstructor().newInstance();
+                    Collection result =
+                            (Collection) type.getDeclaredConstructor().newInstance();
                     result.addAll(collection);
                     return result;
                 } catch (Throwable ignored) {
@@ -227,7 +233,7 @@ public class CompatibleTypeUtils {
                     collection = new ArrayList<Object>(length);
                 }
             } else if (type == Set.class) {
-                collection = new HashSet<Object>(Math.max((int) (length/.75f) + 1, 16));
+                collection = new HashSet<Object>(Math.max((int) (length / .75f) + 1, 16));
             } else {
                 collection = new ArrayList<Object>(length);
             }

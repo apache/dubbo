@@ -36,7 +36,9 @@ public class NettyPortUnificationTransporter implements PortUnificationTransport
 
     @Override
     public AbstractConnectionClient connect(URL url, ChannelHandler handler) throws RemotingException {
-        ConnectionManager manager = url.getOrDefaultFrameworkModel().getExtensionLoader(ConnectionManager.class).getExtension(MultiplexProtocolConnectionManager.NAME);
+        ConnectionManager manager = url.getOrDefaultFrameworkModel()
+                .getExtensionLoader(ConnectionManager.class)
+                .getExtension(MultiplexProtocolConnectionManager.NAME);
         return manager.connect(url, handler);
     }
 }

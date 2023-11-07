@@ -33,6 +33,8 @@ import org.apache.dubbo.remoting.transport.netty4.ssl.SslClientTlsHandler;
 import org.apache.dubbo.remoting.transport.netty4.ssl.SslContexts;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 
+import java.net.InetSocketAddress;
+
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
@@ -45,8 +47,6 @@ import io.netty.handler.proxy.Socks5ProxyHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.EventExecutorGroup;
-
-import java.net.InetSocketAddress;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_CLIENT_CONNECT_TIMEOUT;
@@ -72,9 +72,9 @@ public class NettyClient extends AbstractClient {
     /**
      * netty client bootstrap
      */
-    private static final GlobalResourceInitializer<EventLoopGroup> EVENT_LOOP_GROUP = new GlobalResourceInitializer<>(() ->
-        eventLoopGroup(Constants.DEFAULT_IO_THREADS, "NettyClientWorker"),
-        EventExecutorGroup::shutdownGracefully);
+    private static final GlobalResourceInitializer<EventLoopGroup> EVENT_LOOP_GROUP = new GlobalResourceInitializer<>(
+            () -> eventLoopGroup(Constants.DEFAULT_IO_THREADS, "NettyClientWorker"),
+            EventExecutorGroup::shutdownGracefully);
 
     private Bootstrap bootstrap;
 
@@ -90,7 +90,8 @@ public class NettyClient extends AbstractClient {
      * It wil init and start netty.
      */
     public NettyClient(final URL url, final ChannelHandler handler) throws RemotingException {
-        // you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in CommonConstants.
+        // you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in
+        // CommonConstants.
         // the handler will be wrapped: MultiMessageHandler->HeartbeatHandler->handler
         super(url, wrapChannelHandler(url, handler));
     }
@@ -112,12 +113,13 @@ public class NettyClient extends AbstractClient {
     }
 
     protected void initBootstrap(NettyClientHandler nettyClientHandler) {
-        bootstrap.group(EVENT_LOOP_GROUP.get())
-            .option(ChannelOption.SO_KEEPALIVE, true)
-            .option(ChannelOption.TCP_NODELAY, true)
-            .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-            //.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getTimeout())
-            .channel(socketChannelClass());
+        bootstrap
+                .group(EVENT_LOOP_GROUP.get())
+                .option(ChannelOption.SO_KEEPALIVE, true)
+                .option(ChannelOption.TCP_NODELAY, true)
+                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+                // .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getTimeout())
+                .channel(socketChannelClass());
 
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Math.max(DEFAULT_CONNECT_TIMEOUT, getConnectTimeout()));
         SslContext sslContext = SslContexts.buildClientSslContext(getUrl());
@@ -132,16 +134,19 @@ public class NettyClient extends AbstractClient {
                 }
 
                 NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyClient.this);
-                ch.pipeline()//.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
-                    .addLast("decoder", adapter.getDecoder())
-                    .addLast("encoder", adapter.getEncoder())
-                    .addLast("client-idle-handler", new IdleStateHandler(heartbeatInterval, 0, 0, MILLISECONDS))
-                    .addLast("handler", nettyClientHandler);
+                ch.pipeline() // .addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
+                        .addLast("decoder", adapter.getDecoder())
+                        .addLast("encoder", adapter.getEncoder())
+                        .addLast("client-idle-handler", new IdleStateHandler(heartbeatInterval, 0, 0, MILLISECONDS))
+                        .addLast("handler", nettyClientHandler);
 
-                String socksProxyHost = ConfigurationUtils.getProperty(getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_HOST);
+                String socksProxyHost =
+                        ConfigurationUtils.getProperty(getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_HOST);
                 if (socksProxyHost != null && !isFilteredAddress(getUrl().getHost())) {
-                    int socksProxyPort = Integer.parseInt(ConfigurationUtils.getProperty(getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_PORT, DEFAULT_SOCKS_PROXY_PORT));
-                    Socks5ProxyHandler socks5ProxyHandler = new Socks5ProxyHandler(new InetSocketAddress(socksProxyHost, socksProxyPort));
+                    int socksProxyPort = Integer.parseInt(ConfigurationUtils.getProperty(
+                            getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_PORT, DEFAULT_SOCKS_PROXY_PORT));
+                    Socks5ProxyHandler socks5ProxyHandler =
+                            new Socks5ProxyHandler(new InetSocketAddress(socksProxyHost, socksProxyPort));
                     ch.pipeline().addFirst(socks5ProxyHandler);
                 }
             }
@@ -158,14 +163,15 @@ public class NettyClient extends AbstractClient {
         try {
             String ipv6Address = NetUtils.getLocalHostV6();
             InetSocketAddress connectAddress;
-            //first try ipv6 address
+            // first try ipv6 address
             if (ipv6Address != null && getUrl().getParameter(CommonConstants.IPV6_KEY) != null) {
-                connectAddress = new InetSocketAddress(getUrl().getParameter(CommonConstants.IPV6_KEY), getUrl().getPort());
+                connectAddress =
+                        new InetSocketAddress(getUrl().getParameter(CommonConstants.IPV6_KEY), getUrl().getPort());
                 try {
                     doConnect(connectAddress);
                     return;
                 } catch (Throwable throwable) {
-                    //ignore
+                    // ignore
                 }
             }
 
@@ -174,7 +180,7 @@ public class NettyClient extends AbstractClient {
         } finally {
             // just add new valid channel to NettyChannel's cache
             if (!isConnected()) {
-                //future.cancel(true);
+                // future.cancel(true);
             }
         }
     }
@@ -194,7 +200,8 @@ public class NettyClient extends AbstractClient {
                     if (oldChannel != null) {
                         try {
                             if (logger.isInfoEnabled()) {
-                                logger.info("Close old netty channel " + oldChannel + " on create new netty channel " + newChannel);
+                                logger.info("Close old netty channel " + oldChannel + " on create new netty channel "
+                                        + newChannel);
                             }
                             oldChannel.close();
                         } finally {
@@ -222,11 +229,18 @@ public class NettyClient extends AbstractClient {
 
                 // 6-1 Failed to connect to provider server by other reason.
 
-                RemotingException remotingException = new RemotingException(this, "client(url: " + getUrl() + ") failed to connect to server "
-                    + serverAddress + ", error message is:" + cause.getMessage(), cause);
+                RemotingException remotingException = new RemotingException(
+                        this,
+                        "client(url: " + getUrl() + ") failed to connect to server " + serverAddress
+                                + ", error message is:" + cause.getMessage(),
+                        cause);
 
-                logger.error(TRANSPORT_FAILED_CONNECT_PROVIDER, "network disconnected", "",
-                    "Failed to connect to provider server by other reason.", cause);
+                logger.error(
+                        TRANSPORT_FAILED_CONNECT_PROVIDER,
+                        "network disconnected",
+                        "",
+                        "Failed to connect to provider server by other reason.",
+                        cause);
 
                 throw remotingException;
 
@@ -234,20 +248,27 @@ public class NettyClient extends AbstractClient {
 
                 // 6-2 Client-side timeout
 
-                RemotingException remotingException = new RemotingException(this, "client(url: " + getUrl() + ") failed to connect to server "
-                    + serverAddress + " client-side timeout "
-                    + getConnectTimeout() + "ms (elapsed: " + (System.currentTimeMillis() - start) + "ms) from netty client "
-                    + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion());
+                RemotingException remotingException = new RemotingException(
+                        this,
+                        "client(url: " + getUrl() + ") failed to connect to server "
+                                + serverAddress + " client-side timeout "
+                                + getConnectTimeout() + "ms (elapsed: " + (System.currentTimeMillis() - start)
+                                + "ms) from netty client "
+                                + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion());
 
-                logger.error(TRANSPORT_CLIENT_CONNECT_TIMEOUT, "provider crash", "",
-                    "Client-side timeout.", remotingException);
+                logger.error(
+                        TRANSPORT_CLIENT_CONNECT_TIMEOUT,
+                        "provider crash",
+                        "",
+                        "Client-side timeout.",
+                        remotingException);
 
                 throw remotingException;
             }
         } finally {
             // just add new valid channel to NettyChannel's cache
             if (!isConnected()) {
-                //future.cancel(true);
+                // future.cancel(true);
             }
         }
     }
@@ -263,7 +284,8 @@ public class NettyClient extends AbstractClient {
 
     @Override
     protected void doClose() throws Throwable {
-        // can't shut down nioEventLoopGroup because the method will be invoked when closing one channel but not a client,
+        // can't shut down nioEventLoopGroup because the method will be invoked when closing one channel but not a
+        // client,
         // but when and how to close the nioEventLoopGroup ?
         // nioEventLoopGroup.shutdownGracefully();
     }

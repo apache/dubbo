@@ -44,19 +44,25 @@ import static org.apache.dubbo.remoting.Constants.CHARSET_KEY;
 
 public class DeprecatedTelnetCodec implements Codec {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DeprecatedTelnetCodec.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(DeprecatedTelnetCodec.class);
 
     private static final String HISTORY_LIST_KEY = "telnet.history.list";
 
     private static final String HISTORY_INDEX_KEY = "telnet.history.index";
 
-    private static final byte[] UP = new byte[]{27, 91, 65};
+    private static final byte[] UP = new byte[] {27, 91, 65};
 
-    private static final byte[] DOWN = new byte[]{27, 91, 66};
+    private static final byte[] DOWN = new byte[] {27, 91, 66};
 
-    private static final List<?> ENTER = Arrays.asList(new Object[]{new byte[]{'\r', '\n'} /* Windows Enter */, new byte[]{'\n'} /* Linux Enter */});
+    private static final List<?> ENTER = Arrays.asList(
+            new Object[] {new byte[] {'\r', '\n'} /* Windows Enter */, new byte[] {'\n'} /* Linux Enter */});
 
-    private static final List<?> EXIT = Arrays.asList(new Object[]{new byte[]{3} /* Windows Ctrl+C */, new byte[]{-1, -12, -1, -3, 6} /* Linux Ctrl+C */, new byte[]{-1, -19, -1, -3, 6} /* Linux Pause */});
+    private static final List<?> EXIT = Arrays.asList(new Object[] {
+        new byte[] {3} /* Windows Ctrl+C */,
+        new byte[] {-1, -12, -1, -3, 6} /* Linux Ctrl+C */,
+        new byte[] {-1, -19, -1, -3, 6} /* Linux Pause */
+    });
 
     static void checkPayload(Channel channel, long size) throws IOException {
         int payload = Constants.DEFAULT_PAYLOAD;
@@ -64,7 +70,8 @@ public class DeprecatedTelnetCodec implements Codec {
             payload = channel.getUrl().getPositiveParameter(Constants.PAYLOAD_KEY, Constants.DEFAULT_PAYLOAD);
         }
         if (size > payload) {
-            IOException e = new IOException("Data length too large: " + size + ", max payload: " + payload + ", channel: " + channel);
+            IOException e = new IOException(
+                    "Data length too large: " + size + ", max payload: " + payload + ", channel: " + channel);
             logger.error(TRANSPORT_EXCEED_PAYLOAD_LIMIT, "", "", e.getMessage(), e);
             throw e;
         }
@@ -124,8 +131,9 @@ public class DeprecatedTelnetCodec implements Codec {
                 } else if (i < message.length - 2) {
                     i = i + 2;
                 }
-            } else if (b == -1 && i < message.length - 2
-                && (message[i + 1] == -3 || message[i + 1] == -5)) { // handshake
+            } else if (b == -1
+                    && i < message.length - 2
+                    && (message[i + 1] == -3 || message[i + 1] == -5)) { // handshake
                 i = i + 2;
             } else {
                 copy[index++] = message[i];
@@ -164,11 +172,10 @@ public class DeprecatedTelnetCodec implements Codec {
             InetSocketAddress address = channel.getRemoteAddress();
             URL url = channel.getUrl();
             boolean client = url.getPort() == address.getPort()
-                && NetUtils.filterLocalHost(url.getIp()).equals(
-                NetUtils.filterLocalHost(address.getAddress()
-                    .getHostAddress()));
-            channel.setAttribute(SIDE_KEY, client ? "client"
-                : "server");
+                    && NetUtils.filterLocalHost(url.getIp())
+                            .equals(NetUtils.filterLocalHost(
+                                    address.getAddress().getHostAddress()));
+            channel.setAttribute(SIDE_KEY, client ? "client" : "server");
             return client;
         }
     }
@@ -182,7 +189,8 @@ public class DeprecatedTelnetCodec implements Codec {
             output.write(msgData);
             output.flush();
         } else {
-            ObjectOutput objectOutput = CodecSupport.getSerialization(channel.getUrl()).serialize(channel.getUrl(), output);
+            ObjectOutput objectOutput =
+                    CodecSupport.getSerialization(channel.getUrl()).serialize(channel.getUrl(), output);
             objectOutput.writeObject(message);
             objectOutput.flushBuffer();
         }
@@ -208,7 +216,9 @@ public class DeprecatedTelnetCodec implements Codec {
         if (message[message.length - 1] == '\b') { // Windows backspace echo
             try {
                 boolean doublechar = message.length >= 3 && message[message.length - 3] < 0; // double byte char
-                channel.send(new String(doublechar ? new byte[]{32, 32, 8, 8} : new byte[]{32, 8}, getCharset(channel).name()));
+                channel.send(new String(
+                        doublechar ? new byte[] {32, 32, 8, 8} : new byte[] {32, 8},
+                        getCharset(channel).name()));
             } catch (RemotingException e) {
                 throw new IOException(StringUtils.toString(e));
             }
@@ -218,7 +228,8 @@ public class DeprecatedTelnetCodec implements Codec {
         for (Object command : EXIT) {
             if (isEquals(message, (byte[]) command)) {
                 if (logger.isInfoEnabled()) {
-                    logger.info(new Exception("Close channel " + channel + " on exit command: " + Arrays.toString((byte[]) command)));
+                    logger.info(new Exception(
+                            "Close channel " + channel + " on exit command: " + Arrays.toString((byte[]) command)));
                 }
                 channel.close();
                 return null;

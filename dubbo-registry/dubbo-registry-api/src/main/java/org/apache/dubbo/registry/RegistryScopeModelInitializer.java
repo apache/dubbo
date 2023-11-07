@@ -38,7 +38,5 @@ public class RegistryScopeModelInitializer implements ScopeModelInitializer {
     }
 
     @Override
-    public void initializeModuleModel(ModuleModel moduleModel) {
-
-    }
+    public void initializeModuleModel(ModuleModel moduleModel) {}
 }

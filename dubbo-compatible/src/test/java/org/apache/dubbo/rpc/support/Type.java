@@ -17,5 +17,7 @@
 package org.apache.dubbo.rpc.support;
 
 public enum Type {
-    High, Normal, Lower
+    High,
+    Normal,
+    Lower
 }

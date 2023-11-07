@@ -30,5 +30,4 @@ public class MulticastRegistryFactory extends AbstractRegistryFactory {
     public Registry createRegistry(URL url) {
         return new MulticastRegistry(url, applicationModel);
     }
-
 }

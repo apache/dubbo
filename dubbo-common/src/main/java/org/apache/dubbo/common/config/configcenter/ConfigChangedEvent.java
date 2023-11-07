@@ -64,12 +64,12 @@ public class ConfigChangedEvent extends EventObject {
 
     @Override
     public String toString() {
-        return "ConfigChangedEvent{" +
-                "key='" + key + '\'' +
-                ", group='" + group + '\'' +
-                ", content='" + content + '\'' +
-                ", changeType=" + changeType +
-                "} " + super.toString();
+        return "ConfigChangedEvent{" + "key='"
+                + key + '\'' + ", group='"
+                + group + '\'' + ", content='"
+                + content + '\'' + ", changeType="
+                + changeType + "} "
+                + super.toString();
     }
 
     @Override
@@ -81,10 +81,10 @@ public class ConfigChangedEvent extends EventObject {
             return false;
         }
         ConfigChangedEvent that = (ConfigChangedEvent) o;
-        return Objects.equals(getKey(), that.getKey()) &&
-                Objects.equals(getGroup(), that.getGroup()) &&
-                Objects.equals(getContent(), that.getContent()) &&
-                getChangeType() == that.getChangeType();
+        return Objects.equals(getKey(), that.getKey())
+                && Objects.equals(getGroup(), that.getGroup())
+                && Objects.equals(getContent(), that.getContent())
+                && getChangeType() == that.getChangeType();
     }
 
     @Override

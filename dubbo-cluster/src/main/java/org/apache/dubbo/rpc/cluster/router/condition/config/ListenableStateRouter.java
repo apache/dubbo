@@ -50,7 +50,8 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
     public static final String NAME = "LISTENABLE_ROUTER";
     public static final String RULE_SUFFIX = ".condition-router";
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ListenableStateRouter.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(ListenableStateRouter.class);
     private volatile ConditionRouterRule routerRule;
     private volatile List<ConditionStateRouter<T>> conditionRouters = Collections.emptyList();
     private final String ruleKey;
@@ -65,8 +66,8 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
     @Override
     public synchronized void process(ConfigChangedEvent event) {
         if (logger.isInfoEnabled()) {
-            logger.info("Notification of condition rule, change type is: " + event.getChangeType() +
-                    ", raw rule is:\n " + event.getContent());
+            logger.info("Notification of condition rule, change type is: " + event.getChangeType() + ", raw rule is:\n "
+                    + event.getContent());
         }
 
         if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
@@ -77,18 +78,31 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
                 routerRule = ConditionRuleParser.parse(event.getContent());
                 generateConditions(routerRule);
             } catch (Exception e) {
-                logger.error(CLUSTER_FAILED_RULE_PARSING,"Failed to parse the raw condition rule","","Failed to parse the raw condition rule and it will not take effect, please check " +
-                    "if the condition rule matches with the template, the raw rule is:\n " + event.getContent(),e);
+                logger.error(
+                        CLUSTER_FAILED_RULE_PARSING,
+                        "Failed to parse the raw condition rule",
+                        "",
+                        "Failed to parse the raw condition rule and it will not take effect, please check "
+                                + "if the condition rule matches with the template, the raw rule is:\n "
+                                + event.getContent(),
+                        e);
             }
         }
     }
 
     @Override
-    public BitList<Invoker<T>> doRoute(BitList<Invoker<T>> invokers, URL url, Invocation invocation,
-                                       boolean needToPrintMessage, Holder<RouterSnapshotNode<T>> nodeHolder, Holder<String> messageHolder) throws RpcException {
+    public BitList<Invoker<T>> doRoute(
+            BitList<Invoker<T>> invokers,
+            URL url,
+            Invocation invocation,
+            boolean needToPrintMessage,
+            Holder<RouterSnapshotNode<T>> nodeHolder,
+            Holder<String> messageHolder)
+            throws RpcException {
         if (CollectionUtils.isEmpty(invokers) || conditionRouters.size() == 0) {
             if (needToPrintMessage) {
-                messageHolder.set("Directly return. Reason: Invokers from previous router is empty or conditionRouters is empty.");
+                messageHolder.set(
+                        "Directly return. Reason: Invokers from previous router is empty or conditionRouters is empty.");
             }
             return invokers;
         }
@@ -123,9 +137,9 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
 
     private void generateConditions(ConditionRouterRule rule) {
         if (rule != null && rule.isValid()) {
-            this.conditionRouters = rule.getConditions()
-                    .stream()
-                    .map(condition -> new ConditionStateRouter<T>(getUrl(), condition, rule.isForce(), rule.isEnabled()))
+            this.conditionRouters = rule.getConditions().stream()
+                    .map(condition ->
+                            new ConditionStateRouter<T>(getUrl(), condition, rule.isForce(), rule.isEnabled()))
                     .collect(Collectors.toList());
             for (ConditionStateRouter<T> conditionRouter : this.conditionRouters) {
                 conditionRouter.setNextRouter(TailStateRouter.getInstance());

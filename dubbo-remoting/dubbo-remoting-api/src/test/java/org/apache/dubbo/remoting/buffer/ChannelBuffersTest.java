@@ -16,10 +16,10 @@
  */
 package org.apache.dubbo.remoting.buffer;
 
+import java.nio.ByteBuffer;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.nio.ByteBuffer;
 
 import static org.apache.dubbo.remoting.buffer.ChannelBuffers.DEFAULT_CAPACITY;
 import static org.apache.dubbo.remoting.buffer.ChannelBuffers.EMPTY_BUFFER;
@@ -41,7 +41,7 @@ class ChannelBuffersTest {
     }
 
     @Test
-    void testPrefixEquals(){
+    void testPrefixEquals() {
         ChannelBuffer bufA = ChannelBuffers.wrappedBuffer("abcedfaf".getBytes());
         ChannelBuffer bufB = ChannelBuffers.wrappedBuffer("abcedfaa".getBytes());
         Assertions.assertTrue(ChannelBuffers.equals(bufA, bufB));
@@ -64,7 +64,7 @@ class ChannelBuffersTest {
         Assertions.assertTrue(channelBuffer instanceof HeapChannelBuffer);
         Assertions.assertEquals(channelBuffer.capacity(), 15);
 
-        channelBuffer = ChannelBuffers.wrappedBuffer(new byte[]{});
+        channelBuffer = ChannelBuffers.wrappedBuffer(new byte[] {});
         Assertions.assertEquals(channelBuffer, EMPTY_BUFFER);
 
         ByteBuffer byteBuffer = ByteBuffer.allocate(16);
@@ -92,19 +92,19 @@ class ChannelBuffersTest {
     @Test
     void testEqualsHashCodeCompareMethod() {
         ChannelBuffer buffer1 = ChannelBuffers.buffer(4);
-        byte[] bytes1 = new byte[]{1, 2, 3, 4};
+        byte[] bytes1 = new byte[] {1, 2, 3, 4};
         buffer1.writeBytes(bytes1);
 
         ChannelBuffer buffer2 = ChannelBuffers.buffer(4);
-        byte[] bytes2 = new byte[]{1, 2, 3, 4};
+        byte[] bytes2 = new byte[] {1, 2, 3, 4};
         buffer2.writeBytes(bytes2);
 
         ChannelBuffer buffer3 = ChannelBuffers.buffer(3);
-        byte[] bytes3 = new byte[]{1, 2, 3};
+        byte[] bytes3 = new byte[] {1, 2, 3};
         buffer3.writeBytes(bytes3);
 
         ChannelBuffer buffer4 = ChannelBuffers.buffer(4);
-        byte[] bytes4 = new byte[]{1, 2, 3, 5};
+        byte[] bytes4 = new byte[] {1, 2, 3, 5};
         buffer4.writeBytes(bytes4);
 
         Assertions.assertTrue(ChannelBuffers.equals(buffer1, buffer2));

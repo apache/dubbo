@@ -24,12 +24,6 @@ import org.apache.dubbo.metadata.definition.TypeDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.builder.TypeBuilder;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 
-import com.google.protobuf.ByteString;
-import com.google.protobuf.Descriptors;
-import com.google.protobuf.GeneratedMessageV3;
-import com.google.protobuf.ProtocolStringList;
-import com.google.protobuf.UnknownFieldSet;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.HashMap;
@@ -37,6 +31,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.google.protobuf.ByteString;
+import com.google.protobuf.Descriptors;
+import com.google.protobuf.GeneratedMessageV3;
+import com.google.protobuf.ProtocolStringList;
+import com.google.protobuf.UnknownFieldSet;
 
 @Activate(onClass = "com.google.protobuf.GeneratedMessageV3")
 public class ProtobufTypeBuilder implements TypeBuilder, Prioritized {
@@ -54,7 +54,8 @@ public class ProtobufTypeBuilder implements TypeBuilder, Prioritized {
 
     static {
         try {
-            STRING_LIST_TYPE = ProtobufTypeBuilder.class.getDeclaredField("LIST").getGenericType();
+            STRING_LIST_TYPE =
+                    ProtobufTypeBuilder.class.getDeclaredField("LIST").getGenericType();
         } catch (NoSuchFieldException e) {
             // do nothing
         }
@@ -114,7 +115,8 @@ public class ProtobufTypeBuilder implements TypeBuilder, Prioritized {
         return (GeneratedMessageV3.Builder) method.invoke(null, null);
     }
 
-    private TypeDefinition buildProtobufTypeDefinition(Class<?> clazz, GeneratedMessageV3.Builder builder, Map<String, TypeDefinition> typeCache) {
+    private TypeDefinition buildProtobufTypeDefinition(
+            Class<?> clazz, GeneratedMessageV3.Builder builder, Map<String, TypeDefinition> typeCache) {
         String canonicalName = clazz.getCanonicalName();
         TypeDefinition td = new TypeDefinition(canonicalName);
         if (builder == null) {
@@ -128,7 +130,8 @@ public class ProtobufTypeBuilder implements TypeBuilder, Prioritized {
 
             if (isSimplePropertySettingMethod(method)) {
                 // property of custom type or primitive type
-                TypeDefinition fieldTd = TypeDefinitionBuilder.build(method.getGenericParameterTypes()[0], method.getParameterTypes()[0], typeCache);
+                TypeDefinition fieldTd = TypeDefinitionBuilder.build(
+                        method.getGenericParameterTypes()[0], method.getParameterTypes()[0], typeCache);
                 properties.put(generateSimpleFiledName(methodName), fieldTd.getType());
             } else if (isMapPropertySettingMethod(method)) {
                 // property of map
@@ -171,8 +174,8 @@ public class ProtobufTypeBuilder implements TypeBuilder, Prioritized {
     private void validateMapType(String fieldName, String typeName) {
         Matcher matcher = MAP_PATTERN.matcher(typeName);
         if (!matcher.matches()) {
-            throw new IllegalArgumentException("Map protobuf property " + fieldName + "of Type " +
-                    typeName + " can't be parsed.The type name should mathch[" + MAP_PATTERN.toString() + "].");
+            throw new IllegalArgumentException("Map protobuf property " + fieldName + "of Type " + typeName
+                    + " can't be parsed.The type name should mathch[" + MAP_PATTERN.toString() + "].");
         }
     }
 
@@ -208,7 +211,6 @@ public class ProtobufTypeBuilder implements TypeBuilder, Prioritized {
     private String generateListFieldName(String methodName) {
         return toCamelCase(methodName.substring(3, methodName.length() - 4));
     }
-
 
     private String toCamelCase(String nameString) {
         char[] chars = nameString.toCharArray();
@@ -263,7 +265,6 @@ public class ProtobufTypeBuilder implements TypeBuilder, Prioritized {
         return !methodName.endsWith("Value") || types[0] != int.class;
     }
 
-
     /**
      * judge List property</br>
      * proto3 grammar ex: repeated string names; </br>
@@ -275,7 +276,6 @@ public class ProtobufTypeBuilder implements TypeBuilder, Prioritized {
     boolean isListPropertyGettingMethod(Method method) {
         String methodName = method.getName();
         Class<?> type = method.getReturnType();
-
 
         if (!methodName.startsWith("get") || !methodName.endsWith("List")) {
             return false;

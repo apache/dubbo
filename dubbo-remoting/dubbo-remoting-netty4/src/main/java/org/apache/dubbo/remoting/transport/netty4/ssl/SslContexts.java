@@ -24,17 +24,18 @@ import org.apache.dubbo.common.ssl.Cert;
 import org.apache.dubbo.common.ssl.CertManager;
 import org.apache.dubbo.common.ssl.ProviderCert;
 
+import javax.net.ssl.SSLException;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.Provider;
+import java.security.Security;
+
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.OpenSsl;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
-
-import javax.net.ssl.SSLException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.Provider;
-import java.security.Security;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE_STREAM;
 
@@ -53,11 +54,11 @@ public class SslContexts {
             serverTrustCertStream = providerConnectionConfig.getTrustCertInputStream();
             String password = providerConnectionConfig.getPassword();
             if (password != null) {
-                sslClientContextBuilder = SslContextBuilder.forServer(serverKeyCertChainPathStream,
-                    serverPrivateKeyPathStream, password);
+                sslClientContextBuilder =
+                        SslContextBuilder.forServer(serverKeyCertChainPathStream, serverPrivateKeyPathStream, password);
             } else {
-                sslClientContextBuilder = SslContextBuilder.forServer(serverKeyCertChainPathStream,
-                    serverPrivateKeyPathStream);
+                sslClientContextBuilder =
+                        SslContextBuilder.forServer(serverKeyCertChainPathStream, serverPrivateKeyPathStream);
             }
 
             if (serverTrustCertStream != null) {
@@ -83,7 +84,8 @@ public class SslContexts {
     }
 
     public static SslContext buildClientSslContext(URL url) {
-        CertManager certManager = url.getOrDefaultFrameworkModel().getBeanFactory().getBean(CertManager.class);
+        CertManager certManager =
+                url.getOrDefaultFrameworkModel().getBeanFactory().getBean(CertManager.class);
         Cert consumerConnectionConfig = certManager.getConsumerConnectionConfig(url);
         if (consumerConnectionConfig == null) {
             return null;
@@ -136,8 +138,8 @@ public class SslContexts {
             return SslProvider.JDK;
         }
         throw new IllegalStateException(
-            "Could not find any valid TLS provider, please check your dependency or deployment environment, " +
-                "usually netty-tcnative, Conscrypt, or Jetty NPN/ALPN is needed.");
+                "Could not find any valid TLS provider, please check your dependency or deployment environment, "
+                        + "usually netty-tcnative, Conscrypt, or Jetty NPN/ALPN is needed.");
     }
 
     private static boolean checkJdkProvider() {
@@ -155,5 +157,4 @@ public class SslContexts {
             logger.warn(TRANSPORT_FAILED_CLOSE_STREAM, "", "", "Failed to close a stream.", e);
         }
     }
-
 }

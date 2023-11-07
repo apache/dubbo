@@ -58,5 +58,4 @@ public interface ProxyFactory {
      */
     @Adaptive({PROXY_KEY})
     <T> Invoker<T> getInvoker(T proxy, Class<T> type, URL url) throws RpcException;
-
 }

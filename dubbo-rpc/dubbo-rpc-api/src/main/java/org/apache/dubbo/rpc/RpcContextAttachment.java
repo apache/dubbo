@@ -22,13 +22,12 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import java.util.HashMap;
 import java.util.Map;
 
-public class RpcContextAttachment extends RpcContext{
+public class RpcContextAttachment extends RpcContext {
     protected volatile Map<String, Object> attachments = new HashMap<>();
     // only useful on provider side.
     protected AsyncContext asyncContext;
 
-    protected RpcContextAttachment() {
-    }
+    protected RpcContextAttachment() {}
 
     /**
      * @return

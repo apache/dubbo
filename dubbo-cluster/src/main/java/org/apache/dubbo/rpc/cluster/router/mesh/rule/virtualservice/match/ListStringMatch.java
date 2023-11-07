@@ -14,11 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
 
 import java.util.List;
-
 
 public class ListStringMatch {
     private List<StringMatch> oneof;
@@ -30,7 +28,6 @@ public class ListStringMatch {
     public void setOneof(List<StringMatch> oneof) {
         this.oneof = oneof;
     }
-
 
     public boolean isMatch(String input) {
 

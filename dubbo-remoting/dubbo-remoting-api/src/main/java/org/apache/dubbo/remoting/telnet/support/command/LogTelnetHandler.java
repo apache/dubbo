@@ -69,12 +69,15 @@ public class LogTelnetHandler implements TelnetHandler {
                                     filechannel.read(bb, pos);
                                 }
                                 bb.flip();
-                                String content = new String(bb.array()).replace("<", "&lt;")
-                                        .replace(">", "&gt;").replace("\n", "<br/><br/>");
+                                String content = new String(bb.array())
+                                        .replace("<", "&lt;")
+                                        .replace(">", "&gt;")
+                                        .replace("\n", "<br/><br/>");
                                 buf.append("\r\ncontent:" + content);
 
-                                buf.append("\r\nmodified:" + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-                                        .format(new Date(file.lastModified()))));
+                                buf.append("\r\nmodified:"
+                                        + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                                .format(new Date(file.lastModified()))));
                                 buf.append("\r\nsize:" + size + "\r\n");
                             }
                         }
@@ -91,5 +94,4 @@ public class LogTelnetHandler implements TelnetHandler {
                 .append("\r\nCURRENT LOG APPENDER:" + (file == null ? "console" : file.getAbsolutePath()));
         return buf.toString();
     }
-
 }

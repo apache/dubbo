@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.spring.boot.actuate.endpoint.metadata;
 
-import org.springframework.stereotype.Component;
-
 import java.util.SortedMap;
+
+import org.springframework.stereotype.Component;
 
 import static org.apache.dubbo.config.spring.util.EnvironmentUtils.filterDubboProperties;
 

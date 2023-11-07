@@ -52,15 +52,17 @@ public class TimeoutFilter implements Filter, Filter.Listener {
             TimeoutCountDown countDown = (TimeoutCountDown) obj;
             if (countDown.isExpired()) {
                 if (logger.isWarnEnabled()) {
-                    logger.warn(PROXY_TIMEOUT_REQUEST, "", "", "invoke timed out. method: " + RpcUtils.getMethodName(invocation) +
-                        " url is " + invoker.getUrl() + ", invoke elapsed " + countDown.elapsedMillis() + " ms.");
+                    logger.warn(
+                            PROXY_TIMEOUT_REQUEST,
+                            "",
+                            "",
+                            "invoke timed out. method: " + RpcUtils.getMethodName(invocation) + " url is "
+                                    + invoker.getUrl() + ", invoke elapsed " + countDown.elapsedMillis() + " ms.");
                 }
             }
         }
     }
 
     @Override
-    public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-
-    }
+    public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {}
 }

@@ -33,5 +33,4 @@ public interface Replier<T> {
      * @throws RemotingException
      */
     Object reply(ExchangeChannel channel, T request) throws RemotingException;
-
 }

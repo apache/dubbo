@@ -25,7 +25,6 @@ public class FloatSumMerger implements Merger<Float> {
 
     @Override
     public Float merge(Float... items) {
-        return Arrays.stream(items).filter(Objects::nonNull)
-            .reduce(0.0F, (f1, f2) -> f1 + f2);
+        return Arrays.stream(items).filter(Objects::nonNull).reduce(0.0F, (f1, f2) -> f1 + f2);
     }
 }

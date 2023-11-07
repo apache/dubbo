@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.config.deploy;
 
 import org.apache.dubbo.common.utils.Assert;
@@ -26,7 +25,8 @@ class DefaultApplicationDeployerTest {
 
     @Test
     void isSupportPrometheus() {
-        boolean supportPrometheus = new DefaultApplicationDeployer(ApplicationModel.defaultModel()).isSupportPrometheus();
-        Assert.assertTrue(supportPrometheus,"DefaultApplicationDeployer.isSupportPrometheus() should return true");
+        boolean supportPrometheus =
+                new DefaultApplicationDeployer(ApplicationModel.defaultModel()).isSupportPrometheus();
+        Assert.assertTrue(supportPrometheus, "DefaultApplicationDeployer.isSupportPrometheus() should return true");
     }
 }

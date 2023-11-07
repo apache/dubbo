@@ -39,7 +39,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
  */
 public class NacosNamingServiceUtils {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NacosNamingServiceUtils.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(NacosNamingServiceUtils.class);
     private static final String NACOS_GROUP_KEY = "nacos.group";
 
     private static final String NACOS_RETRY_KEY = "nacos.retry";
@@ -78,10 +79,10 @@ public class NacosNamingServiceUtils {
      * @since 2.7.5
      */
     public static ServiceInstance toServiceInstance(URL registryUrl, Instance instance) {
-        DefaultServiceInstance serviceInstance =
-            new DefaultServiceInstance(
+        DefaultServiceInstance serviceInstance = new DefaultServiceInstance(
                 NamingUtils.getServiceName(instance.getServiceName()),
-                instance.getIp(), instance.getPort(),
+                instance.getIp(),
+                instance.getPort(),
                 ScopeModelUtil.getApplicationModel(registryUrl.getScopeModel()));
         serviceInstance.setMetadata(instance.getMetadata());
         serviceInstance.setEnabled(instance.isEnabled());
@@ -113,7 +114,8 @@ public class NacosNamingServiceUtils {
         boolean check = connectionURL.getParameter(NACOS_CHECK_KEY, true);
         int retryTimes = connectionURL.getPositiveParameter(NACOS_RETRY_KEY, 10);
         int sleepMsBetweenRetries = connectionURL.getPositiveParameter(NACOS_RETRY_WAIT_KEY, 10);
-        NacosConnectionManager nacosConnectionManager = new NacosConnectionManager(connectionURL, check, retryTimes, sleepMsBetweenRetries);
+        NacosConnectionManager nacosConnectionManager =
+                new NacosConnectionManager(connectionURL, check, retryTimes, sleepMsBetweenRetries);
         return new NacosNamingServiceWrapper(nacosConnectionManager, retryTimes, sleepMsBetweenRetries);
     }
 }

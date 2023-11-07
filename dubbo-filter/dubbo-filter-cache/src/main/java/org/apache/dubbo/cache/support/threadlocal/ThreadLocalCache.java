@@ -73,5 +73,4 @@ public class ThreadLocalCache implements Cache {
     public Object get(Object key) {
         return store.get().get(key);
     }
-
 }

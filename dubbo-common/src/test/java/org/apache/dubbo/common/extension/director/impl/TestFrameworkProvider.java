@@ -21,7 +21,5 @@ import org.apache.dubbo.common.extension.director.FooFrameworkProvider;
 
 public class TestFrameworkProvider implements FooFrameworkProvider {
     @Override
-    public void process(URL url) {
-
-    }
+    public void process(URL url) {}
 }

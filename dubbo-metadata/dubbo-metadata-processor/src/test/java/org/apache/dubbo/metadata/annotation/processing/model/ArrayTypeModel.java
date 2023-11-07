@@ -23,14 +23,13 @@ package org.apache.dubbo.metadata.annotation.processing.model;
  */
 public class ArrayTypeModel {
 
-    private int[] integers;                           // Primitive type array
+    private int[] integers; // Primitive type array
 
-    private String[] strings;                         // Simple type array
+    private String[] strings; // Simple type array
 
     private PrimitiveTypeModel[] primitiveTypeModels; // Complex type array
 
-    private Model[] models;                           // Hierarchical Complex type array
+    private Model[] models; // Hierarchical Complex type array
 
-    private Color[] colors;                           // Enum type array
-
+    private Color[] colors; // Enum type array
 }

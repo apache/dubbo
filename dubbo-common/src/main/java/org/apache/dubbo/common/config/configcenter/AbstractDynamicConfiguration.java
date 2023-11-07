@@ -50,7 +50,8 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
     /**
      * The keep alive time in milliseconds for threads in {@link ThreadPoolExecutor}
      */
-    public static final String THREAD_POOL_KEEP_ALIVE_TIME_PARAM_NAME = PARAM_NAME_PREFIX + "thread-pool.keep-alive-time";
+    public static final String THREAD_POOL_KEEP_ALIVE_TIME_PARAM_NAME =
+            PARAM_NAME_PREFIX + "thread-pool.keep-alive-time";
 
     /**
      * The parameter name of group for config-center
@@ -88,27 +89,26 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
     private final long timeout;
 
     protected AbstractDynamicConfiguration(URL url) {
-        this(getThreadPoolPrefixName(url), getThreadPoolSize(url), getThreadPoolKeepAliveTime(url), getGroup(url),
-            getTimeout(url));
+        this(
+                getThreadPoolPrefixName(url),
+                getThreadPoolSize(url),
+                getThreadPoolKeepAliveTime(url),
+                getGroup(url),
+                getTimeout(url));
     }
 
-    protected AbstractDynamicConfiguration(String threadPoolPrefixName,
-                                           int threadPoolSize,
-                                           long keepAliveTime,
-                                           String group,
-                                           long timeout) {
+    protected AbstractDynamicConfiguration(
+            String threadPoolPrefixName, int threadPoolSize, long keepAliveTime, String group, long timeout) {
         this.workersThreadPool = initWorkersThreadPool(threadPoolPrefixName, threadPoolSize, keepAliveTime);
         this.group = group;
         this.timeout = timeout;
     }
 
     @Override
-    public void addListener(String key, String group, ConfigurationListener listener) {
-    }
+    public void addListener(String key, String group, ConfigurationListener listener) {}
 
     @Override
-    public void removeListener(String key, String group, ConfigurationListener listener) {
-    }
+    public void removeListener(String key, String group, ConfigurationListener listener) {}
 
     @Override
     public final String getConfig(String key, String group, long timeout) throws IllegalStateException {
@@ -187,10 +187,12 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
      * @param timeout timeout in milliseconds
      */
     protected final void execute(Runnable task, long timeout) {
-        execute(() -> {
-            task.run();
-            return null;
-        }, timeout);
+        execute(
+                () -> {
+                    task.run();
+                    return null;
+                },
+                timeout);
     }
 
     /**
@@ -233,11 +235,15 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
         }
     }
 
-    protected ThreadPoolExecutor initWorkersThreadPool(String threadPoolPrefixName,
-                                                       int threadPoolSize,
-                                                       long keepAliveTime) {
-        return new ThreadPoolExecutor(threadPoolSize, threadPoolSize, keepAliveTime,
-            TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), new NamedThreadFactory(threadPoolPrefixName, true));
+    protected ThreadPoolExecutor initWorkersThreadPool(
+            String threadPoolPrefixName, int threadPoolSize, long keepAliveTime) {
+        return new ThreadPoolExecutor(
+                threadPoolSize,
+                threadPoolSize,
+                keepAliveTime,
+                TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<>(),
+                new NamedThreadFactory(threadPoolPrefixName, true));
     }
 
     protected static String getThreadPoolPrefixName(URL url) {
@@ -272,7 +278,6 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
         }
         return defaultValue;
     }
-
 
     protected String getGroup() {
         return group;

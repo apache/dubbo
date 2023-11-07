@@ -21,5 +21,4 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.BaseFilter;
 
 @SPI(scope = ExtensionScope.MODULE)
-public interface ClusterFilter extends BaseFilter {
-}
+public interface ClusterFilter extends BaseFilter {}

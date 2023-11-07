@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.service;
 
 import org.apache.dubbo.metrics.model.MetricsCategory;
@@ -32,9 +31,7 @@ public class MetricsEntity {
     private MetricsCategory category;
     private Object value;
 
-    public MetricsEntity() {
-
-    }
+    public MetricsEntity() {}
 
     public MetricsEntity(String name, Map<String, String> tags, MetricsCategory category, Object value) {
         this.name = name;
@@ -80,8 +77,10 @@ public class MetricsEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MetricsEntity entity = (MetricsEntity) o;
-        return Objects.equals(name, entity.name) && Objects.equals(tags, entity.tags)
-            && Objects.equals(category, entity.category) && Objects.equals(value, entity.value);
+        return Objects.equals(name, entity.name)
+                && Objects.equals(tags, entity.tags)
+                && Objects.equals(category, entity.category)
+                && Objects.equals(value, entity.value);
     }
 
     @Override

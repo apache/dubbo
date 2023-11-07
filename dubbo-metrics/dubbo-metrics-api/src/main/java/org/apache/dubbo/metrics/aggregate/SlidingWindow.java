@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.aggregate;
 
 import org.apache.dubbo.common.utils.Assert;
@@ -110,7 +109,8 @@ public abstract class SlidingWindow<T> {
             else if (paneStartInMs == oldPane.getStartInMs()) {
                 return oldPane;
             }
-            // The pane has deprecated. To avoid the overhead of creating a new instance, reset the original pane directly.
+            // The pane has deprecated. To avoid the overhead of creating a new instance, reset the original pane
+            // directly.
             else if (paneStartInMs > oldPane.getStartInMs()) {
                 if (updateLock.tryLock()) {
                     try {

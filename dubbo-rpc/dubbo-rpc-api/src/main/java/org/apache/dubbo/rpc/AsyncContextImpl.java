@@ -45,7 +45,8 @@ public class AsyncContextImpl implements AsyncContext {
                 future.complete(value);
             }
         } else {
-            throw new IllegalStateException("The async response has probably been wrote back by another thread, or the asyncContext has been closed.");
+            throw new IllegalStateException(
+                    "The async response has probably been wrote back by another thread, or the asyncContext has been closed.");
         }
     }
 

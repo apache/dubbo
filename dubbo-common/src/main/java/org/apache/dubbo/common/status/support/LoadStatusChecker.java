@@ -48,4 +48,3 @@ public class LoadStatusChecker implements StatusChecker {
         return new Status(level, message);
     }
 }
-

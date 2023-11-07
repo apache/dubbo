@@ -26,7 +26,6 @@ import static org.apache.dubbo.metadata.MetadataConstants.KEY_SEPARATOR;
  * 2019-08-15
  */
 public enum KeyTypeEnum {
-
     PATH(PATH_SEPARATOR) {
         public String build(String one, String... others) {
             return buildPath(one, others);
@@ -58,5 +57,4 @@ public enum KeyTypeEnum {
      * @since 2.7.8
      */
     public abstract String build(String one, String... others);
-
 }

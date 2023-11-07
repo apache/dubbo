@@ -18,14 +18,15 @@ package org.apache.dubbo.config.spring.impl;
 
 import org.apache.dubbo.config.spring.api.MethodCallback;
 
+import javax.annotation.PostConstruct;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-
-import javax.annotation.PostConstruct;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class MethodCallbackImpl implements MethodCallback {
     private String onInvoke1 = "";
@@ -196,5 +197,4 @@ public class MethodCallbackImpl implements MethodCallback {
             throw new IllegalStateException("No active transaction");
         }
     }
-
 }

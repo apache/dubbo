@@ -14,17 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.reactive;
 
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.reactive.handler.ManyToManyMethodHandler;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit test for ManyToManyMethodHandler
@@ -34,9 +33,9 @@ public final class ManyToManyMethodHandlerTest {
     void testInvoke() throws ExecutionException, InterruptedException {
         CreateObserverAdapter creator = new CreateObserverAdapter();
 
-        ManyToManyMethodHandler<String, String> handler = new ManyToManyMethodHandler<>(requestFlux ->
-            requestFlux.map(r -> r + "0"));
-        CompletableFuture<StreamObserver<String>> future = handler.invoke(new Object[]{creator.getResponseObserver()});
+        ManyToManyMethodHandler<String, String> handler =
+                new ManyToManyMethodHandler<>(requestFlux -> requestFlux.map(r -> r + "0"));
+        CompletableFuture<StreamObserver<String>> future = handler.invoke(new Object[] {creator.getResponseObserver()});
         StreamObserver<String> requestObserver = future.get();
         for (int i = 0; i < 10; i++) {
             requestObserver.onNext(String.valueOf(i));

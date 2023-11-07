@@ -16,15 +16,15 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.netty;
 
+import org.apache.dubbo.remoting.transport.ExceedPayloadLimitException;
+
+import java.io.IOException;
+import java.io.OutputStream;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultHttpContent;
-import org.apache.dubbo.remoting.transport.ExceedPayloadLimitException;
-
-import java.io.IOException;
-import java.io.OutputStream;
 
 public class ChunkOutputStream extends OutputStream {
     final ByteBuf buffer;
@@ -51,8 +51,7 @@ public class ChunkOutputStream extends OutputStream {
     }
 
     private void throwExceedPayloadLimitException(int dataSize) throws ExceedPayloadLimitException {
-        throw new ExceedPayloadLimitException(
-            "Data length too large: " + dataSize + ", max payload: " + chunkSize);
+        throw new ExceedPayloadLimitException("Data length too large: " + dataSize + ", max payload: " + chunkSize);
     }
 
     public void reset() {
@@ -65,7 +64,6 @@ public class ChunkOutputStream extends OutputStream {
         flush();
         super.close();
     }
-
 
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
@@ -86,6 +84,4 @@ public class ChunkOutputStream extends OutputStream {
         buffer.clear();
         super.flush();
     }
-
 }
-

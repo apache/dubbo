@@ -24,7 +24,6 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 
-
 /**
  * RpcExceptionFilter
  * <p>
@@ -53,8 +52,5 @@ public class RpcExceptionFilter implements Filter, Filter.Listener {
     }
 
     @Override
-    public void onError(Throwable e, Invoker<?> invoker, Invocation invocation) {
-
-    }
+    public void onError(Throwable e, Invoker<?> invoker, Invocation invocation) {}
 }
-

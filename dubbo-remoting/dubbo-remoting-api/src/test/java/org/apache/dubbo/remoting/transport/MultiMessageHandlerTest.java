@@ -41,7 +41,8 @@ class MultiMessageHandlerTest {
         // verify
         ArgumentCaptor<Channel> channelArgumentCaptor = ArgumentCaptor.forClass(Channel.class);
         ArgumentCaptor<Object> objectArgumentCaptor = ArgumentCaptor.forClass(Object.class);
-        Mockito.verify(handler, Mockito.times(2)).received(channelArgumentCaptor.capture(), objectArgumentCaptor.capture());
+        Mockito.verify(handler, Mockito.times(2))
+                .received(channelArgumentCaptor.capture(), objectArgumentCaptor.capture());
         Assertions.assertEquals(objectArgumentCaptor.getAllValues().get(0), "test1");
         Assertions.assertEquals(objectArgumentCaptor.getAllValues().get(1), "test2");
         Assertions.assertEquals(channelArgumentCaptor.getValue(), channel);
@@ -49,7 +50,8 @@ class MultiMessageHandlerTest {
         Object obj = new Object();
         multiMessageHandler.received(channel, obj);
         // verify
-        Mockito.verify(handler, Mockito.times(3)).received(channelArgumentCaptor.capture(), objectArgumentCaptor.capture());
+        Mockito.verify(handler, Mockito.times(3))
+                .received(channelArgumentCaptor.capture(), objectArgumentCaptor.capture());
         Assertions.assertEquals(objectArgumentCaptor.getValue(), obj);
         Assertions.assertEquals(channelArgumentCaptor.getValue(), channel);
 
@@ -58,10 +60,10 @@ class MultiMessageHandlerTest {
         multiMessageHandler.received(channel, multiMessage);
         // verify
         ArgumentCaptor<Throwable> throwableArgumentCaptor = ArgumentCaptor.forClass(Throwable.class);
-        Mockito.verify(handler, Mockito.times(2)).caught(channelArgumentCaptor.capture(), throwableArgumentCaptor.capture());
+        Mockito.verify(handler, Mockito.times(2))
+                .caught(channelArgumentCaptor.capture(), throwableArgumentCaptor.capture());
         Assertions.assertEquals(throwableArgumentCaptor.getAllValues().get(0), runtimeException);
         Assertions.assertEquals(throwableArgumentCaptor.getAllValues().get(1), runtimeException);
         Assertions.assertEquals(channelArgumentCaptor.getValue(), channel);
-
     }
 }

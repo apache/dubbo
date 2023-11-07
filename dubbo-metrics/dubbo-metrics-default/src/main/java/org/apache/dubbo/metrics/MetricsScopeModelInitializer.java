@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
@@ -27,9 +26,7 @@ import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 public class MetricsScopeModelInitializer implements ScopeModelInitializer {
 
     @Override
-    public void initializeFrameworkModel(FrameworkModel frameworkModel) {
-
-    }
+    public void initializeFrameworkModel(FrameworkModel frameworkModel) {}
 
     @Override
     public void initializeApplicationModel(ApplicationModel applicationModel) {
@@ -38,7 +35,5 @@ public class MetricsScopeModelInitializer implements ScopeModelInitializer {
     }
 
     @Override
-    public void initializeModuleModel(ModuleModel moduleModel) {
-
-    }
+    public void initializeModuleModel(ModuleModel moduleModel) {}
 }

@@ -40,23 +40,23 @@ public class ApiConsumer {
         referenceConfig.setTimeout(100000);
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
-        bootstrap.application(new ApplicationConfig("dubbo-demo-triple-api-consumer"))
-            .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
-            .protocol(new ProtocolConfig(CommonConstants.TRIPLE, -1))
-            .reference(referenceConfig)
-            .start();
+        bootstrap
+                .application(new ApplicationConfig("dubbo-demo-triple-api-consumer"))
+                .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
+                .protocol(new ProtocolConfig(CommonConstants.TRIPLE, -1))
+                .reference(referenceConfig)
+                .start();
 
         GreeterService greeterService = referenceConfig.get();
         System.out.println("dubbo referenceConfig started");
         try {
-            final HelloReply reply = greeterService.sayHello(HelloRequest.newBuilder()
-                .setName("triple")
-                .build());
+            final HelloReply reply = greeterService.sayHello(
+                    HelloRequest.newBuilder().setName("triple").build());
             TimeUnit.SECONDS.sleep(1);
             System.out.println("Reply: " + reply.getMessage());
 
             CompletableFuture<String> sayHelloAsync = greeterService.sayHelloAsync("triple");
-            System.out.println("Async Reply: "+sayHelloAsync.get());
+            System.out.println("Async Reply: " + sayHelloAsync.get());
         } catch (Throwable t) {
             t.printStackTrace();
         }

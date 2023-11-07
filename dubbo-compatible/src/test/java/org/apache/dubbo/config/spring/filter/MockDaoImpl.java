@@ -19,6 +19,4 @@ package org.apache.dubbo.config.spring.filter;
 /**
  * MockDaoImpl
  */
-public class MockDaoImpl implements MockDao {
-
-}
+public class MockDaoImpl implements MockDao {}

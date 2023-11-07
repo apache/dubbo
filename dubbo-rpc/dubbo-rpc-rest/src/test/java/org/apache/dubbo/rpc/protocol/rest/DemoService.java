@@ -16,10 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
-
-import io.netty.handler.codec.http.DefaultFullHttpRequest;
-import org.jboss.resteasy.annotations.Form;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
@@ -30,9 +26,13 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import io.netty.handler.codec.http.DefaultFullHttpRequest;
+import org.jboss.resteasy.annotations.Form;
 
 @Path("/demoService")
 public interface DemoService {
@@ -153,5 +153,4 @@ public interface DemoService {
     @POST
     @Path("/formBody")
     User formBody(@Form User user);
-
 }

@@ -19,7 +19,6 @@ package org.apache.dubbo.config.spring.context.annotation.provider;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.api.HelloService;
 
-
 /**
  * {@link HelloService} Implementation just annotating Dubbo's {@link Service}
  *

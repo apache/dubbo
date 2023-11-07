@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
@@ -32,9 +31,8 @@ import org.junit.jupiter.api.Test;
 
 class TriplePathResolverTest {
 
-    private static final PathResolver PATH_RESOLVER = ExtensionLoader.getExtensionLoader(
-            PathResolver.class)
-        .getDefaultExtension();
+    private static final PathResolver PATH_RESOLVER =
+            ExtensionLoader.getExtensionLoader(PathResolver.class).getDefaultExtension();
 
     private static final Invoker<Object> INVOKER = new Invoker<Object>() {
         @Override
@@ -48,9 +46,7 @@ class TriplePathResolverTest {
         }
 
         @Override
-        public void destroy() {
-
-        }
+        public void destroy() {}
 
         @Override
         public Class<Object> getInterface() {

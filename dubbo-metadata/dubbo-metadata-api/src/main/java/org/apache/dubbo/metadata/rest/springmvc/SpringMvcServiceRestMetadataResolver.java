@@ -58,9 +58,9 @@ public class SpringMvcServiceRestMetadataResolver extends AbstractServiceRestMet
     protected boolean supports0(Class<?> serviceType) {
         // class @Controller or @RequestMapping
         return isAnnotationPresent(serviceType, CONTROLLER_ANNOTATION_CLASS)
-            || isAnnotationPresent(serviceType, REQUEST_MAPPING_ANNOTATION_CLASS)
-            // method @RequestMapping
-            || isServiceMethodAnnotationPresent(serviceType, REQUEST_MAPPING_ANNOTATION_CLASS_NAME);
+                || isAnnotationPresent(serviceType, REQUEST_MAPPING_ANNOTATION_CLASS)
+                // method @RequestMapping
+                || isServiceMethodAnnotationPresent(serviceType, REQUEST_MAPPING_ANNOTATION_CLASS_NAME);
     }
 
     @Override
@@ -92,14 +92,16 @@ public class SpringMvcServiceRestMetadataResolver extends AbstractServiceRestMet
     }
 
     @Override
-    protected void processProduces(Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass, Set<String> produces) {
+    protected void processProduces(
+            Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass, Set<String> produces) {
         addMediaTypes(serviceMethod, "produces", produces);
         addMediaTypes(serviceType, "produces", produces);
         addMediaTypes(serviceInterfaceClass, "produces", produces);
     }
 
     @Override
-    protected void processConsumes(Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass, Set<String> consumes) {
+    protected void processConsumes(
+            Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass, Set<String> consumes) {
         addMediaTypes(serviceMethod, "consumes", consumes);
         addMediaTypes(serviceType, "consumes", consumes);
         addMediaTypes(serviceInterfaceClass, "consumes", consumes);
@@ -153,10 +155,12 @@ public class SpringMvcServiceRestMetadataResolver extends AbstractServiceRestMet
             // because of "@GetMapping" alias for ("@AliasFor") "@RequestMapping" , both of them belongs to
             // the artifact "spring-web" which depends on "spring-core", thus Spring core's
             // AnnotatedElementUtils.findMergedAnnotation(AnnotatedElement, Class) must be involved.
-            Method method = findMethod(ANNOTATED_ELEMENT_UTILS_CLASS, "findMergedAnnotation", AnnotatedElement.class, Class.class);
+            Method method = findMethod(
+                    ANNOTATED_ELEMENT_UTILS_CLASS, "findMergedAnnotation", AnnotatedElement.class, Class.class);
             if (method != null) {
                 try {
-                    requestMapping = (Annotation) method.invoke(null, annotatedElement, REQUEST_MAPPING_ANNOTATION_CLASS);
+                    requestMapping =
+                            (Annotation) method.invoke(null, annotatedElement, REQUEST_MAPPING_ANNOTATION_CLASS);
                 } catch (Exception ignored) {
                 }
             }

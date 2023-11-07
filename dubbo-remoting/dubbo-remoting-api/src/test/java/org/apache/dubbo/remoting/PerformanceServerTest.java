@@ -26,11 +26,11 @@ import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 import org.apache.dubbo.remoting.transport.dispatcher.execution.ExecutionDispatcher;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREADPOOL;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREADS;
@@ -48,7 +48,8 @@ import static org.apache.dubbo.remoting.Constants.DEFAULT_BUFFER_SIZE;
  */
 class PerformanceServerTest {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(PerformanceServerTest.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(PerformanceServerTest.class);
     private static ExchangeServer server = null;
 
     private static void restartServer(int times, int alive, int sleep) throws Exception {
@@ -70,81 +71,88 @@ class PerformanceServerTest {
 
     private static ExchangeServer statServer() throws Exception {
         final int port = PerformanceUtils.getIntProperty("port", 9911);
-        final String transporter = PerformanceUtils.getProperty(Constants.TRANSPORTER_KEY, Constants.DEFAULT_TRANSPORTER);
-        final String serialization = PerformanceUtils.getProperty(Constants.SERIALIZATION_KEY, DefaultSerializationSelector.getDefaultRemotingSerialization());
+        final String transporter =
+                PerformanceUtils.getProperty(Constants.TRANSPORTER_KEY, Constants.DEFAULT_TRANSPORTER);
+        final String serialization = PerformanceUtils.getProperty(
+                Constants.SERIALIZATION_KEY, DefaultSerializationSelector.getDefaultRemotingSerialization());
         final String threadpool = PerformanceUtils.getProperty(THREADPOOL_KEY, DEFAULT_THREADPOOL);
         final int threads = PerformanceUtils.getIntProperty(THREADS_KEY, DEFAULT_THREADS);
         final int iothreads = PerformanceUtils.getIntProperty(IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS);
         final int buffer = PerformanceUtils.getIntProperty(BUFFER_KEY, DEFAULT_BUFFER_SIZE);
         final String channelHandler = PerformanceUtils.getProperty(Constants.DISPATCHER_KEY, ExecutionDispatcher.NAME);
 
-
         // Start server
-        ExchangeServer server = Exchangers.bind("exchange://0.0.0.0:" + port + "?transporter="
-            + transporter + "&serialization="
-            + serialization + "&threadpool=" + threadpool
-            + "&threads=" + threads + "&iothreads=" + iothreads + "&buffer=" + buffer + "&channel.handler=" + channelHandler, new ExchangeHandlerAdapter(FrameworkModel.defaultModel()) {
-            public String telnet(Channel channel, String message) throws RemotingException {
-                return "echo: " + message + "\r\ntelnet> ";
-            }
+        ExchangeServer server = Exchangers.bind(
+                "exchange://0.0.0.0:" + port + "?transporter="
+                        + transporter + "&serialization="
+                        + serialization + "&threadpool=" + threadpool
+                        + "&threads=" + threads + "&iothreads=" + iothreads + "&buffer=" + buffer + "&channel.handler="
+                        + channelHandler,
+                new ExchangeHandlerAdapter(FrameworkModel.defaultModel()) {
+                    public String telnet(Channel channel, String message) throws RemotingException {
+                        return "echo: " + message + "\r\ntelnet> ";
+                    }
 
-            public CompletableFuture<Object> reply(ExchangeChannel channel, Object request) throws RemotingException {
-                if ("environment".equals(request)) {
-                    return CompletableFuture.completedFuture(PerformanceUtils.getEnvironment());
-                }
-                if ("scene".equals(request)) {
-                    List<String> scene = new ArrayList<String>();
-                    scene.add("Transporter: " + transporter);
-                    scene.add("Service Threads: " + threads);
-                    return CompletableFuture.completedFuture(scene);
-                }
-                return CompletableFuture.completedFuture(request);
-            }
-        });
+                    public CompletableFuture<Object> reply(ExchangeChannel channel, Object request)
+                            throws RemotingException {
+                        if ("environment".equals(request)) {
+                            return CompletableFuture.completedFuture(PerformanceUtils.getEnvironment());
+                        }
+                        if ("scene".equals(request)) {
+                            List<String> scene = new ArrayList<String>();
+                            scene.add("Transporter: " + transporter);
+                            scene.add("Service Threads: " + threads);
+                            return CompletableFuture.completedFuture(scene);
+                        }
+                        return CompletableFuture.completedFuture(request);
+                    }
+                });
 
         return server;
     }
 
     private static ExchangeServer statTelnetServer(int port) throws Exception {
         // Start server
-        ExchangeServer telnetserver = Exchangers.bind("exchange://0.0.0.0:" + port, new ExchangeHandlerAdapter(FrameworkModel.defaultModel()) {
-            public String telnet(Channel channel, String message) throws RemotingException {
-                if (message.equals("help")) {
-                    return "support cmd: \r\n\tstart \r\n\tstop \r\n\tshutdown \r\n\trestart times [alive] [sleep] \r\ntelnet>";
-                } else if (message.equals("stop")) {
-                    logger.info("server closed:" + server);
-                    server.close();
-                    return "stop server\r\ntelnet>";
-                } else if (message.startsWith("start")) {
-                    try {
-                        restartServer(0, 0, 0);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    return "start server\r\ntelnet>";
-                } else if (message.startsWith("shutdown")) {
-                    System.exit(0);
-                    return "start server\r\ntelnet>";
-                } else if (message.startsWith("channels")) {
-                    return "server.getExchangeChannels():" + server.getExchangeChannels().size() + "\r\ntelnet>";
-                } else if (message.startsWith("restart ")) { //r times [sleep] r 10 or r 10 100
-                    String[] args = message.split(" ");
-                    int times = Integer.parseInt(args[1]);
-                    int alive = args.length > 2 ? Integer.parseInt(args[2]) : 0;
-                    int sleep = args.length > 3 ? Integer.parseInt(args[3]) : 100;
-                    try {
-                        restartServer(times, alive, sleep);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+        ExchangeServer telnetserver = Exchangers.bind(
+                "exchange://0.0.0.0:" + port, new ExchangeHandlerAdapter(FrameworkModel.defaultModel()) {
+                    public String telnet(Channel channel, String message) throws RemotingException {
+                        if (message.equals("help")) {
+                            return "support cmd: \r\n\tstart \r\n\tstop \r\n\tshutdown \r\n\trestart times [alive] [sleep] \r\ntelnet>";
+                        } else if (message.equals("stop")) {
+                            logger.info("server closed:" + server);
+                            server.close();
+                            return "stop server\r\ntelnet>";
+                        } else if (message.startsWith("start")) {
+                            try {
+                                restartServer(0, 0, 0);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            return "start server\r\ntelnet>";
+                        } else if (message.startsWith("shutdown")) {
+                            System.exit(0);
+                            return "start server\r\ntelnet>";
+                        } else if (message.startsWith("channels")) {
+                            return "server.getExchangeChannels():"
+                                    + server.getExchangeChannels().size() + "\r\ntelnet>";
+                        } else if (message.startsWith("restart ")) { // r times [sleep] r 10 or r 10 100
+                            String[] args = message.split(" ");
+                            int times = Integer.parseInt(args[1]);
+                            int alive = args.length > 2 ? Integer.parseInt(args[2]) : 0;
+                            int sleep = args.length > 3 ? Integer.parseInt(args[3]) : 100;
+                            try {
+                                restartServer(times, alive, sleep);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
 
-                    return "restart server,times:" + times + " stop alive time: " + alive + ",sleep time: " + sleep + " usage:r times [alive] [sleep] \r\ntelnet>";
-                } else {
-                    return "echo: " + message + "\r\ntelnet> ";
-                }
-
-            }
-        });
+                            return "restart server,times:" + times + " stop alive time: " + alive + ",sleep time: "
+                                    + sleep + " usage:r times [alive] [sleep] \r\ntelnet>";
+                        } else {
+                            return "echo: " + message + "\r\ntelnet> ";
+                        }
+                    }
+                });
 
         return telnetserver;
     }
@@ -170,5 +178,4 @@ class PerformanceServerTest {
             }
         }
     }
-
 }

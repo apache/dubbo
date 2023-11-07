@@ -164,7 +164,7 @@ public class ProtocolBuilder extends AbstractBuilder<ProtocolConfig, ProtocolBui
     /**
      * whether it is a persistent connection
      */
-    //TODO add this to provider config
+    // TODO add this to provider config
     private Boolean keepAlive;
 
     // TODO add this to provider config

@@ -14,8 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.collector;
+
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
@@ -34,14 +34,16 @@ import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.metrics.DefaultConstants.INIT_AGG_METHOD_KEYS;
 import static org.apache.dubbo.metrics.DefaultConstants.INIT_DEFAULT_METHOD_KEYS;
@@ -80,10 +82,11 @@ class InitServiceMetricsTest {
         applicationModel.getApplicationConfigManager().setMetrics(metricsConfig);
         applicationModel.getApplicationConfigManager().setApplication(config);
 
-        defaultCollector =  applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
+        defaultCollector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
         defaultCollector.setCollectEnabled(true);
 
-        aggregateMetricsCollector = applicationModel.getBeanFactory().getOrRegisterBean(AggregateMetricsCollector.class);
+        aggregateMetricsCollector =
+                applicationModel.getBeanFactory().getOrRegisterBean(AggregateMetricsCollector.class);
         aggregateMetricsCollector.setCollectEnabled(true);
 
         interfaceName = "org.apache.dubbo.MockInterface";
@@ -92,13 +95,14 @@ class InitServiceMetricsTest {
         version = "1.0.0";
         side = CommonConstants.PROVIDER_SIDE;
 
-        String serviceKey=group+"/"+interfaceName+":"+version;
+        String serviceKey = group + "/" + interfaceName + ":" + version;
 
-        String protocolServiceKey=serviceKey+":dubbo";
+        String protocolServiceKey = serviceKey + ":dubbo";
 
-        RpcInvocation invocation = new RpcInvocation(serviceKey,null,methodName,interfaceName, protocolServiceKey, null, null,null,null,null,null);
-        MetricsEventBus.publish(MetricsInitEvent.toMetricsInitEvent(applicationModel,invocation, MethodMetric.isServiceLevel(applicationModel)));
-
+        RpcInvocation invocation = new RpcInvocation(
+                serviceKey, null, methodName, interfaceName, protocolServiceKey, null, null, null, null, null, null);
+        MetricsEventBus.publish(MetricsInitEvent.toMetricsInitEvent(
+                applicationModel, invocation, MethodMetric.isServiceLevel(applicationModel)));
     }
 
     @AfterEach
@@ -106,17 +110,20 @@ class InitServiceMetricsTest {
         applicationModel.destroy();
     }
 
-
     @Test
     void testMetricsInitEvent() {
 
         List<MetricSample> metricSamples = defaultCollector.collect();
-        //INIT_DEFAULT_METHOD_KEYS.size() = 6
+        // INIT_DEFAULT_METHOD_KEYS.size() = 6
         Assertions.assertEquals(INIT_DEFAULT_METHOD_KEYS.size(), metricSamples.size());
-        List<String> metricsNames = metricSamples.stream().map(MetricSample::getName).collect(Collectors.toList());
+        List<String> metricsNames =
+                metricSamples.stream().map(MetricSample::getName).collect(Collectors.toList());
 
-        String REQUESTS = new MetricsKeyWrapper(METRIC_REQUESTS, MetricsPlaceValue.of(side, MetricsLevel.SERVICE)).targetKey();
-        String PROCESSING = new MetricsKeyWrapper(METRIC_REQUESTS_PROCESSING, MetricsPlaceValue.of(side, MetricsLevel.SERVICE)).targetKey();
+        String REQUESTS =
+                new MetricsKeyWrapper(METRIC_REQUESTS, MetricsPlaceValue.of(side, MetricsLevel.SERVICE)).targetKey();
+        String PROCESSING = new MetricsKeyWrapper(
+                        METRIC_REQUESTS_PROCESSING, MetricsPlaceValue.of(side, MetricsLevel.SERVICE))
+                .targetKey();
         Assertions.assertTrue(metricsNames.contains(REQUESTS));
         Assertions.assertTrue(metricsNames.contains(PROCESSING));
         for (MetricSample metricSample : metricSamples) {
@@ -133,21 +140,18 @@ class InitServiceMetricsTest {
             }
         }
 
-
         List<MetricSample> samples = aggregateMetricsCollector.collect();
-        //INIT_AGG_METHOD_KEYS.size(10) + qps(1) + rt(4) +rtAgr(3)= 18
-        Assertions.assertEquals(INIT_AGG_METHOD_KEYS.size()+ 1+ 4+ 3, samples.size());
+        // INIT_AGG_METHOD_KEYS.size(10) + qps(1) + rt(4) +rtAgr(3)= 18
+        Assertions.assertEquals(INIT_AGG_METHOD_KEYS.size() + 1 + 4 + 3, samples.size());
 
         for (MetricSample metricSample : samples) {
             if (metricSample instanceof GaugeMetricSample) {
                 GaugeMetricSample<?> gaugeMetricSample = (GaugeMetricSample<?>) metricSample;
                 Object objVal = gaugeMetricSample.getValue();
                 if (objVal instanceof TimeWindowCounter) {
-                    Assertions.assertEquals(0.0,((TimeWindowCounter) objVal).get());
+                    Assertions.assertEquals(0.0, ((TimeWindowCounter) objVal).get());
                 }
             }
         }
-
     }
-
 }

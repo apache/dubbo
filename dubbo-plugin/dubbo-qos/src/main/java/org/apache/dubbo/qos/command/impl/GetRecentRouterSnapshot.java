@@ -17,8 +17,8 @@
 package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.qos.api.BaseCommand;
-import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.qos.api.Cmd;
+import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.rpc.cluster.router.RouterSnapshotSwitcher;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -26,8 +26,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-@Cmd(name = "getRecentRouterSnapshot",
-    summary = "Get recent (32) router snapshot message")
+@Cmd(name = "getRecentRouterSnapshot", summary = "Get recent (32) router snapshot message")
 public class GetRecentRouterSnapshot implements BaseCommand {
 
     private final RouterSnapshotSwitcher routerSnapshotSwitcher;
@@ -38,6 +37,9 @@ public class GetRecentRouterSnapshot implements BaseCommand {
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        return Arrays.stream(routerSnapshotSwitcher.cloneSnapshot()).filter(Objects::nonNull).sorted().collect(Collectors.joining("\n\n"));
+        return Arrays.stream(routerSnapshotSwitcher.cloneSnapshot())
+                .filter(Objects::nonNull)
+                .sorted()
+                .collect(Collectors.joining("\n\n"));
     }
 }

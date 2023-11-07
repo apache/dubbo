@@ -19,11 +19,9 @@ package org.apache.dubbo.rpc.protocol.dubbo.support;
 import java.util.Map;
 import java.util.Set;
 
-
 /**
  * <code>TestService</code>
  */
-
 public interface DemoService {
     void sayHello(String name);
 

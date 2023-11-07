@@ -43,7 +43,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
-
 public class DefaultProviderURLMergeProcessor implements ProviderURLMergeProcessor {
 
     @Override
@@ -104,14 +103,18 @@ public class DefaultProviderURLMergeProcessor implements ProviderURLMergeProcess
                 // Combine filters and listeners on Provider and Consumer
                 String remoteFilter = remoteMap.get(REFERENCE_FILTER_KEY);
                 String localFilter = copyOfLocalMap.get(REFERENCE_FILTER_KEY);
-                if (remoteFilter != null && remoteFilter.length() > 0
-                        && localFilter != null && localFilter.length() > 0) {
+                if (remoteFilter != null
+                        && remoteFilter.length() > 0
+                        && localFilter != null
+                        && localFilter.length() > 0) {
                     map.put(REFERENCE_FILTER_KEY, remoteFilter + "," + localFilter);
                 }
                 String remoteListener = remoteMap.get(INVOKER_LISTENER_KEY);
                 String localListener = copyOfLocalMap.get(INVOKER_LISTENER_KEY);
-                if (remoteListener != null && remoteListener.length() > 0
-                        && localListener != null && localListener.length() > 0) {
+                if (remoteListener != null
+                        && remoteListener.length() > 0
+                        && localListener != null
+                        && localListener.length() > 0) {
                     map.put(INVOKER_LISTENER_KEY, remoteListener + "," + localListener);
                 }
             }
@@ -119,5 +122,4 @@ public class DefaultProviderURLMergeProcessor implements ProviderURLMergeProcess
 
         return remoteUrl.clearParameters().addParameters(map);
     }
-
 }

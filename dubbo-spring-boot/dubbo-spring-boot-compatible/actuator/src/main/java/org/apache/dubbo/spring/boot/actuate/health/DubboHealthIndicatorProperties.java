@@ -18,12 +18,12 @@ package org.apache.dubbo.spring.boot.actuate.health;
 
 import org.apache.dubbo.common.status.StatusChecker;
 
-import org.springframework.boot.actuate.health.HealthIndicator;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
+
+import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import static org.apache.dubbo.spring.boot.actuate.health.DubboHealthIndicatorProperties.PREFIX;
 
@@ -95,5 +95,4 @@ public class DubboHealthIndicatorProperties {
             this.extras = extras;
         }
     }
-
 }

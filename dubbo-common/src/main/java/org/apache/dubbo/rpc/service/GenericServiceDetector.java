@@ -24,5 +24,4 @@ public class GenericServiceDetector implements BuiltinServiceDetector {
     public Class<?> getService() {
         return GenericService.class;
     }
-
 }

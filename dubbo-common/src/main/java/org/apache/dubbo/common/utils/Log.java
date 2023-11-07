@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.log4j.Level;
-
 import java.io.Serializable;
+
+import org.apache.log4j.Level;
 
 public class Log implements Serializable {
     private static final long serialVersionUID = -534113138054377073L;
@@ -112,5 +112,4 @@ public class Log implements Serializable {
         }
         return true;
     }
-
 }

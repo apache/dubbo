@@ -38,7 +38,6 @@ public class TextCodec implements HttpMessageCodec<byte[], OutputStream> {
         return DataParseUtils.stringTypeConvert(targetType, new String(body, StandardCharsets.UTF_8));
     }
 
-
     @Override
     public boolean contentTypeSupport(MediaType mediaType, Class<?> targetType) {
         return MediaTypeMatcher.TEXT_PLAIN.mediaSupport(mediaType);

@@ -27,8 +27,7 @@ public class Hello implements Serializable {
 
     private String name;
 
-    public Hello() {
-    }
+    public Hello() {}
 
     public Hello(String name) {
         this.name = name;
@@ -41,5 +40,4 @@ public class Hello implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
-
 }

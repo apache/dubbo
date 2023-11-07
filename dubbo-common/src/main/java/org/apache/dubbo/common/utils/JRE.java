@@ -14,19 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.utils;
-
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-
 
 /**
  * JRE version
  */
 public enum JRE {
-
     JAVA_8,
 
     JAVA_9,
@@ -131,10 +127,11 @@ public enum JRE {
                     return OTHER;
             }
         } catch (Exception e) {
-            logger.debug("Can't determine current JRE version (maybe java.version is null), assuming that JRE version is 8.", e);
+            logger.debug(
+                    "Can't determine current JRE version (maybe java.version is null), assuming that JRE version is 8.",
+                    e);
         }
         // default java 8
         return JAVA_8;
     }
-
 }

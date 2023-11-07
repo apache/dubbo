@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
-
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
@@ -76,7 +75,7 @@ public class ServiceAnnotationTestConfiguration {
      *
      * @return {@link ProtocolConfig} Bean
      */
-    @Bean//("dubbo")
+    @Bean // ("dubbo")
     public ProtocolConfig protocolConfig() {
         ProtocolConfig protocolConfig = new ProtocolConfig();
         protocolConfig.setName("dubbo");
@@ -95,15 +94,10 @@ public class ServiceAnnotationTestConfiguration {
             }
 
             @Override
-            public void commit(TransactionStatus status) throws TransactionException {
-
-            }
+            public void commit(TransactionStatus status) throws TransactionException {}
 
             @Override
-            public void rollback(TransactionStatus status) throws TransactionException {
-
-            }
+            public void rollback(TransactionStatus status) throws TransactionException {}
         };
     }
-
 }

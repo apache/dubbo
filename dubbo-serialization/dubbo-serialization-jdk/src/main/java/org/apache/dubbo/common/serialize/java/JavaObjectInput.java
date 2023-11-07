@@ -77,8 +77,7 @@ public class JavaObjectInput extends NativeJavaObjectInput {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T readObject(Class<T> cls) throws IOException,
-            ClassNotFoundException {
+    public <T> T readObject(Class<T> cls) throws IOException, ClassNotFoundException {
         return (T) readObject();
     }
 
@@ -87,5 +86,4 @@ public class JavaObjectInput extends NativeJavaObjectInput {
     public <T> T readObject(Class<T> cls, Type type) throws IOException, ClassNotFoundException {
         return (T) readObject();
     }
-
 }

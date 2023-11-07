@@ -39,5 +39,4 @@ public class HTTPRouteDestination {
     public void setWeightedClusters(List<ClusterWeight> weightedClusters) {
         this.weightedClusters = weightedClusters;
     }
-
 }

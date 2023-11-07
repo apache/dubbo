@@ -14,13 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.threadpool;
+
+import java.lang.instrument.Instrumentation;
 
 import net.bytebuddy.agent.ByteBuddyAgent;
 import org.junit.jupiter.api.Test;
-
-import java.lang.instrument.Instrumentation;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -31,10 +30,10 @@ class MemoryLimitedLinkedBlockingQueueTest {
         ByteBuddyAgent.install();
         final Instrumentation instrumentation = ByteBuddyAgent.getInstrumentation();
         MemoryLimitedLinkedBlockingQueue<Runnable> queue = new MemoryLimitedLinkedBlockingQueue<>(1, instrumentation);
-        //an object needs more than 1 byte of space, so it will fail here
+        // an object needs more than 1 byte of space, so it will fail here
         assertThat(queue.offer(() -> System.out.println("add fail")), is(false));
 
-        //will success
+        // will success
         queue.setMemoryLimit(Integer.MAX_VALUE);
         assertThat(queue.offer(() -> System.out.println("add success")), is(true));
     }

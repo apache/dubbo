@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.merger;
 
 import org.apache.dubbo.common.utils.ArrayUtils;
@@ -34,10 +33,9 @@ public class ListMerger implements Merger<List<?>> {
         if (ArrayUtils.isEmpty(items)) {
             return Collections.emptyList();
         }
-        return Stream.of(items).filter(Objects::nonNull)
+        return Stream.of(items)
+                .filter(Objects::nonNull)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
-
     }
-
 }

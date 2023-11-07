@@ -56,5 +56,4 @@ public interface ObjectOutput extends DataOutput {
     default void writeAttachments(Map<String, Object> attachments) throws IOException {
         writeObject(attachments);
     }
-
 }

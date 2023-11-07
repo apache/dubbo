@@ -26,7 +26,8 @@ import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import io.netty.handler.codec.http2.Http2Headers;
 
 public class TripleIsolationExecutorSupport extends AbstractIsolationExecutorSupport {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(TripleIsolationExecutorSupport.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(TripleIsolationExecutorSupport.class);
 
     public TripleIsolationExecutorSupport(URL url) {
         super(url);
@@ -42,12 +43,12 @@ public class TripleIsolationExecutorSupport extends AbstractIsolationExecutorSup
         String path = headers.path().toString();
         String[] parts = path.split("/"); // path like /{interfaceName}/{methodName}
         String interfaceName = parts[1];
-        String version = headers.contains(TripleHeaderEnum.SERVICE_VERSION.getHeader()) ?
-            headers.get(TripleHeaderEnum.SERVICE_VERSION.getHeader()).toString() : null;
-        String group = headers.contains(TripleHeaderEnum.SERVICE_GROUP.getHeader()) ?
-            headers.get(TripleHeaderEnum.SERVICE_GROUP.getHeader()).toString() : null;
+        String version = headers.contains(TripleHeaderEnum.SERVICE_VERSION.getHeader())
+                ? headers.get(TripleHeaderEnum.SERVICE_VERSION.getHeader()).toString()
+                : null;
+        String group = headers.contains(TripleHeaderEnum.SERVICE_GROUP.getHeader())
+                ? headers.get(TripleHeaderEnum.SERVICE_GROUP.getHeader()).toString()
+                : null;
         return new ServiceKey(interfaceName, version, group);
     }
-
-
 }

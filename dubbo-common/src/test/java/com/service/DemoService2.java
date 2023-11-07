@@ -16,5 +16,4 @@
  */
 package com.service;
 
-public interface DemoService2 extends DemoService1 {
-}
+public interface DemoService2 extends DemoService1 {}

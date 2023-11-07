@@ -22,5 +22,4 @@ package org.apache.dubbo.config.cache;
 public interface CacheService {
 
     String findCache(String id);
-
 }

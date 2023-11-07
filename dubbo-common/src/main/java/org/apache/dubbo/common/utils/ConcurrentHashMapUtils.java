@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.utils;
 
 import java.util.Objects;
@@ -24,7 +23,6 @@ import java.util.function.Function;
 /**
  * ConcurrentHashMap util
  */
-
 public class ConcurrentHashMapUtils {
 
     /**
@@ -42,11 +40,11 @@ public class ConcurrentHashMapUtils {
 
                 // this bug fix methods maybe cause `func.apply` multiple calls.
                 v = func.apply(key);
-                if(null == v){
+                if (null == v) {
                     return null;
                 }
                 final V res = map.putIfAbsent(key, v);
-                if(null != res){
+                if (null != res) {
                     // if pre value present, means other thread put value already, and putIfAbsent not effect
                     // return exist value
                     return res;
@@ -58,5 +56,4 @@ public class ConcurrentHashMapUtils {
             return map.computeIfAbsent(key, func);
         }
     }
-
 }

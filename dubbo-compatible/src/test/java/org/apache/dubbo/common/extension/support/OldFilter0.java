@@ -16,5 +16,4 @@
  */
 package org.apache.dubbo.common.extension.support;
 
-public interface OldFilter0 extends Filter0 {
-}
+public interface OldFilter0 extends Filter0 {}

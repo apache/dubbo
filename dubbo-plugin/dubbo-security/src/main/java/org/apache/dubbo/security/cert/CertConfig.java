@@ -35,7 +35,8 @@ public class CertConfig {
         this(remoteAddress, envType, caCertPath, oidcTokenPath, DEFAULT_REFRESH_INTERVAL);
     }
 
-    public CertConfig(String remoteAddress, String envType, String caCertPath, String oidcTokenPath, int refreshInterval) {
+    public CertConfig(
+            String remoteAddress, String envType, String caCertPath, String oidcTokenPath, int refreshInterval) {
         this.remoteAddress = remoteAddress;
         this.envType = envType;
         this.caCertPath = caCertPath;
@@ -72,7 +73,10 @@ public class CertConfig {
             return false;
         }
         CertConfig that = (CertConfig) o;
-        return Objects.equals(remoteAddress, that.remoteAddress) && Objects.equals(envType, that.envType) && Objects.equals(caCertPath, that.caCertPath) && Objects.equals(oidcTokenPath, that.oidcTokenPath);
+        return Objects.equals(remoteAddress, that.remoteAddress)
+                && Objects.equals(envType, that.envType)
+                && Objects.equals(caCertPath, that.caCertPath)
+                && Objects.equals(oidcTokenPath, that.oidcTokenPath);
     }
 
     @Override

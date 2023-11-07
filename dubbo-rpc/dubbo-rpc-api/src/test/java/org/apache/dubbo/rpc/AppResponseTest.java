@@ -16,10 +16,10 @@
  */
 package org.apache.dubbo.rpc;
 
+import java.util.HashMap;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
@@ -45,7 +45,7 @@ class AppResponseTest {
 
         StackTraceElement[] stackTrace = appResponse.getException().getStackTrace();
         Assertions.assertNotNull(stackTrace);
-        Assertions.assertEquals(0,stackTrace.length);
+        Assertions.assertEquals(0, stackTrace.length);
     }
 
     @Test
@@ -71,7 +71,7 @@ class AppResponseTest {
 
         StackTraceElement[] stackTrace = appResponse.getException().getStackTrace();
         Assertions.assertNotNull(stackTrace);
-        Assertions.assertEquals(0,stackTrace.length);
+        Assertions.assertEquals(0, stackTrace.length);
     }
 
     private Throwable buildEmptyStackTraceException() {
@@ -120,5 +120,4 @@ class AppResponseTest {
         response.setObjectAttachments(map);
         Assertions.assertEquals(map, response.getObjectAttachments());
     }
-
 }

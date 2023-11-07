@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.registry;
 
 import org.apache.dubbo.common.URL;
@@ -22,20 +21,11 @@ import org.apache.dubbo.common.extension.SPI;
 
 @SPI
 public interface RegistryServiceListener {
-    default void onRegister(URL url, Registry registry) {
+    default void onRegister(URL url, Registry registry) {}
 
-    }
+    default void onUnregister(URL url, Registry registry) {}
 
+    default void onSubscribe(URL url, Registry registry) {}
 
-    default void onUnregister(URL url, Registry registry) {
-
-    }
-
-    default void onSubscribe(URL url, Registry registry) {
-
-    }
-
-    default void onUnsubscribe(URL url, Registry registry) {
-
-    }
+    default void onUnsubscribe(URL url, Registry registry) {}
 }

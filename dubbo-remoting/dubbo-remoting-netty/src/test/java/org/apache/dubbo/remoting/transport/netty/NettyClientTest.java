@@ -23,12 +23,13 @@ import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
 
@@ -54,16 +55,16 @@ class NettyClientTest {
     @AfterAll
     public static void tearDown() {
         try {
-            if (server != null)
-                server.close();
+            if (server != null) server.close();
         } finally {
         }
     }
 
-//    public static void main(String[] args) throws RemotingException, InterruptedException {
-//        ExchangeChannel client = Exchangers.connect(URL.valueOf("exchange://10.20.153.10:20880?client=netty3&heartbeat=1000&codec=exchange"));
-//        Thread.sleep(60 * 1000 * 50);
-//    }
+    //    public static void main(String[] args) throws RemotingException, InterruptedException {
+    //        ExchangeChannel client =
+    // Exchangers.connect(URL.valueOf("exchange://10.20.153.10:20880?client=netty3&heartbeat=1000&codec=exchange"));
+    //        Thread.sleep(60 * 1000 * 50);
+    //    }
 
     @Test
     void testClientClose() throws Exception {
@@ -88,7 +89,8 @@ class NettyClientTest {
     @Test
     void testServerClose() throws Exception {
         for (int i = 0; i < 100; i++) {
-            URL url = URL.valueOf("exchange://localhost:" + NetUtils.getAvailablePort(6000) + "?server=netty3&codec=exchange");
+            URL url = URL.valueOf(
+                    "exchange://localhost:" + NetUtils.getAvailablePort(6000) + "?server=netty3&codec=exchange");
             ApplicationModel applicationModel = ApplicationModel.defaultModel();
             ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
             applicationConfig.setExecutorManagementMode(EXECUTOR_MANAGEMENT_MODE_DEFAULT);

@@ -17,17 +17,15 @@
 package org.apache.dubbo.spring.boot.context.event;
 
 import org.apache.dubbo.common.Version;
-
-
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent;
-import org.springframework.boot.logging.LoggingApplicationListener;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_GITHUB_URL;
 import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_MAILING_LIST;
@@ -39,7 +37,7 @@ import static org.apache.dubbo.spring.boot.util.DubboUtils.LINE_SEPARATOR;
  * @see ApplicationListener
  * @since 2.7.0
  */
-@Order(Ordered.HIGHEST_PRECEDENCE + 20 + 1)  // After LoggingApplicationListener#DEFAULT_ORDER
+@Order(Ordered.HIGHEST_PRECEDENCE + 20 + 1) // After LoggingApplicationListener#DEFAULT_ORDER
 public class WelcomeLogoApplicationListener implements ApplicationListener<ApplicationEnvironmentPreparedEvent> {
 
     private static AtomicBoolean processed = new AtomicBoolean(false);
@@ -77,16 +75,15 @@ public class WelcomeLogoApplicationListener implements ApplicationListener<Appli
         bannerTextBuilder
                 .append(LINE_SEPARATOR)
                 .append(LINE_SEPARATOR)
-                .append(" :: Dubbo (v").append(Version.getVersion()).append(") : ")
+                .append(" :: Dubbo (v")
+                .append(Version.getVersion())
+                .append(") : ")
                 .append(DUBBO_GITHUB_URL)
                 .append(LINE_SEPARATOR)
                 .append(" :: Discuss group : ")
                 .append(DUBBO_MAILING_LIST)
-                .append(LINE_SEPARATOR)
-        ;
+                .append(LINE_SEPARATOR);
 
         return bannerTextBuilder.toString();
-
     }
-
 }

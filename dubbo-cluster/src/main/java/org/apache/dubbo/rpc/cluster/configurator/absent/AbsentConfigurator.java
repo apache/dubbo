@@ -32,5 +32,4 @@ public class AbsentConfigurator extends AbstractConfigurator {
     public URL doConfigure(URL currentUrl, URL configUrl) {
         return currentUrl.addParametersIfAbsent(configUrl.getParameters());
     }
-
 }

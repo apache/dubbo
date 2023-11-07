@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.support;
 
-public class DemoServiceStub extends DemoServiceImpl{
+public class DemoServiceStub extends DemoServiceImpl {
     private DemoService demoService;
 
     public DemoServiceStub(DemoService demoService) {

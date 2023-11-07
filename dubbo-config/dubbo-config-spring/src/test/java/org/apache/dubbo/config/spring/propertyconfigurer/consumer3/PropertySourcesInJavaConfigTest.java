@@ -21,6 +21,9 @@ import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.propertyconfigurer.consumer.DemoBeanFactoryPostProcessor;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,14 +38,13 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.io.ClassPathResource;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-
 class PropertySourcesInJavaConfigTest {
 
-    private static final String SCAN_PACKAGE_NAME = "org.apache.dubbo.config.spring.propertyconfigurer.consumer3.notexist";
+    private static final String SCAN_PACKAGE_NAME =
+            "org.apache.dubbo.config.spring.propertyconfigurer.consumer3.notexist";
     private static final String PACKAGE_PATH = "/org/apache/dubbo/config/spring/propertyconfigurer/consumer3";
-    private static final String PROVIDER_CONFIG_PATH = "org/apache/dubbo/config/spring/propertyconfigurer/provider/dubbo-provider.xml";
+    private static final String PROVIDER_CONFIG_PATH =
+            "org/apache/dubbo/config/spring/propertyconfigurer/provider/dubbo-provider.xml";
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -67,7 +69,8 @@ class PropertySourcesInJavaConfigTest {
             providerContext.start();
 
             // Resolve placeholder by import property sources
-            AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration.class, ImportPropertyConfiguration.class);
+            AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+                    ConsumerConfiguration.class, ImportPropertyConfiguration.class);
             try {
                 // expect auto create PropertySourcesPlaceholderConfigurer bean
                 String[] beanNames = context.getBeanNamesForType(PropertySourcesPlaceholderConfigurer.class);
@@ -77,7 +80,9 @@ class PropertySourcesInJavaConfigTest {
                 HelloService service = (HelloService) context.getBean("demoService");
                 String result = service.sayHello("world");
                 System.out.println("result: " + result);
-                Assertions.assertEquals("Hello world, response from provider: " + InetSocketAddress.createUnresolved("127.0.0.1", 0), result);
+                Assertions.assertEquals(
+                        "Hello world, response from provider: " + InetSocketAddress.createUnresolved("127.0.0.1", 0),
+                        result);
             } finally {
                 context.close();
             }
@@ -95,7 +100,8 @@ class PropertySourcesInJavaConfigTest {
             providerContext.start();
 
             // Resolve placeholder by custom PropertySourcesPlaceholderConfigurer bean
-            AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration.class, PropertyBeanConfiguration.class);
+            AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+                    ConsumerConfiguration.class, PropertyBeanConfiguration.class);
             try {
                 // expect using custom PropertySourcesPlaceholderConfigurer bean
                 String[] beanNames = context.getBeanNamesForType(PropertySourcesPlaceholderConfigurer.class);
@@ -105,7 +111,9 @@ class PropertySourcesInJavaConfigTest {
                 HelloService service = (HelloService) context.getBean("demoService");
                 String result = service.sayHello("world");
                 System.out.println("result: " + result);
-                Assertions.assertEquals("Hello world, response from provider: " + InetSocketAddress.createUnresolved("127.0.0.1", 0), result);
+                Assertions.assertEquals(
+                        "Hello world, response from provider: " + InetSocketAddress.createUnresolved("127.0.0.1", 0),
+                        result);
             } finally {
                 context.close();
             }
@@ -128,9 +136,7 @@ class PropertySourcesInJavaConfigTest {
 
     @Configuration
     @PropertySource("classpath:" + PACKAGE_PATH + "/app.properties")
-    static class ImportPropertyConfiguration {
-
-    }
+    static class ImportPropertyConfiguration {}
 
     @Configuration
     static class PropertyBeanConfiguration {

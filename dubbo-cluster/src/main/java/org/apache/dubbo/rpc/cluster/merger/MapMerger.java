@@ -36,5 +36,4 @@ public class MapMerger implements Merger<Map<?, ?>> {
         Stream.of(items).filter(Objects::nonNull).forEach(result::putAll);
         return result;
     }
-
 }

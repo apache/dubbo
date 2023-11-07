@@ -32,7 +32,7 @@ public class ExcludedParamsFilter2 implements MetadataParamsFilter {
 
     @Override
     public String[] serviceParamsExcluded() {
-        return new String[]{DEPRECATED_KEY, SIDE_KEY};
+        return new String[] {DEPRECATED_KEY, SIDE_KEY};
     }
 
     /**

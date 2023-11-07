@@ -14,13 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.config;
 
 @Deprecated
 public class MonitorConfig extends org.apache.dubbo.config.MonitorConfig {
-    public MonitorConfig() {
-    }
+    public MonitorConfig() {}
 
     public MonitorConfig(String address) {
         super(address);

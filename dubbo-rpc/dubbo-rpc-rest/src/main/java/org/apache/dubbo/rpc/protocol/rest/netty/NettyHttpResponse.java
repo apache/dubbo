@@ -16,6 +16,18 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.netty;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metadata.rest.media.MediaType;
+import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -27,22 +39,8 @@ import io.netty.handler.codec.http.HttpHeaders.Names;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.LastHttpContent;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.metadata.rest.media.MediaType;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
-
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
-
 
 /**
  * netty http response
@@ -65,14 +63,13 @@ public class NettyHttpResponse implements HttpResponse {
         this(ctx, keepAlive, null, url);
     }
 
-    public NettyHttpResponse(final ChannelHandlerContext ctx, final boolean keepAlive,  HttpMethod method, URL url) {
+    public NettyHttpResponse(final ChannelHandlerContext ctx, final boolean keepAlive, HttpMethod method, URL url) {
         outputHeaders = new HashMap<>();
         this.method = method;
         os = new ChunkOutputStream(this, ctx, url.getParameter(Constants.PAYLOAD_KEY, Constants.DEFAULT_PAYLOAD));
         this.ctx = ctx;
         this.keepAlive = keepAlive;
     }
-
 
     public void setOutputStream(OutputStream os) {
         this.os = os;
@@ -101,7 +98,6 @@ public class NettyHttpResponse implements HttpResponse {
         return os;
     }
 
-
     @Override
     public void sendError(int status) throws IOException {
         sendError(status, null);
@@ -114,7 +110,6 @@ public class NettyHttpResponse implements HttpResponse {
         if (message != null) {
             getOutputStream().write(message.getBytes(StandardCharsets.UTF_8));
         }
-
     }
 
     @Override
@@ -155,7 +150,6 @@ public class NettyHttpResponse implements HttpResponse {
         transformHeaders(this, res);
     }
 
-
     public void prepareChunkStream() {
         committed = true;
         DefaultHttpResponse response = getDefaultHttpResponse();
@@ -164,8 +158,7 @@ public class NettyHttpResponse implements HttpResponse {
     }
 
     public void finish() throws IOException {
-        if (os != null)
-            os.flush();
+        if (os != null) os.flush();
         ChannelFuture future;
         if (isCommitted()) {
             // if committed this means the output stream was used.
@@ -183,8 +176,7 @@ public class NettyHttpResponse implements HttpResponse {
 
     @Override
     public void flushBuffer() throws IOException {
-        if (os != null)
-            os.flush();
+        if (os != null) os.flush();
         ctx.flush();
     }
 
@@ -202,20 +194,21 @@ public class NettyHttpResponse implements HttpResponse {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public static void transformHeaders(NettyHttpResponse nettyResponse, io.netty.handler.codec.http.HttpResponse response) {
-//        if (nettyResponse.isKeepAlive()) {
-//            response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
-//        } else {
-//            response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE);
-//        }
+    public static void transformHeaders(
+            NettyHttpResponse nettyResponse, io.netty.handler.codec.http.HttpResponse response) {
+        //        if (nettyResponse.isKeepAlive()) {
+        //            response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+        //        } else {
+        //            response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE);
+        //        }
 
-        for (Map.Entry<String, List<String>> entry : nettyResponse.getOutputHeaders().entrySet()) {
+        for (Map.Entry<String, List<String>> entry :
+                nettyResponse.getOutputHeaders().entrySet()) {
             String key = entry.getKey();
             for (String value : entry.getValue()) {
                 response.headers().set(key, value);
             }
         }
-
     }
 
     public Object getResponseBody() {

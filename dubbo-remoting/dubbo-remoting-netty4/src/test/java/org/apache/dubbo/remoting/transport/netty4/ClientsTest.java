@@ -51,14 +51,20 @@ class ClientsTest {
     @Test
     void testGetTransport3() {
         String name = "netty4";
-        assertEquals(NettyTransporter.class, ExtensionLoader.getExtensionLoader(Transporter.class).getExtension(name).getClass());
+        assertEquals(
+                NettyTransporter.class,
+                ExtensionLoader.getExtensionLoader(Transporter.class)
+                        .getExtension(name)
+                        .getClass());
     }
 
     @Test
     void testGetTransportWrong() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             String name = "nety";
-            assertNull(ExtensionLoader.getExtensionLoader(Transporter.class).getExtension(name).getClass());
+            assertNull(ExtensionLoader.getExtensionLoader(Transporter.class)
+                    .getExtension(name)
+                    .getClass());
         });
     }
 }

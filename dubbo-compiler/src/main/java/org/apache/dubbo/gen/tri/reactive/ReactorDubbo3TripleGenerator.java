@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.gen.tri.reactive;
 
-import com.salesforce.jprotoc.ProtocPlugin;
 import org.apache.dubbo.gen.AbstractGenerator;
+
+import com.salesforce.jprotoc.ProtocPlugin;
 
 public class ReactorDubbo3TripleGenerator extends AbstractGenerator {
 

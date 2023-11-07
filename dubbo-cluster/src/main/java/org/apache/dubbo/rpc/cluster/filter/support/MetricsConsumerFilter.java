@@ -27,10 +27,11 @@ import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 
-@Activate(group = {CONSUMER}, order = Integer.MIN_VALUE + 100)
+@Activate(
+        group = {CONSUMER},
+        order = Integer.MIN_VALUE + 100)
 public class MetricsConsumerFilter extends MetricsFilter implements ClusterFilter, BaseFilter.Listener {
-    public MetricsConsumerFilter() {
-    }
+    public MetricsConsumerFilter() {}
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {

@@ -24,11 +24,16 @@ import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 
 public class RestInterceptContext extends RestFilterContext {
 
-
     private Object result;
     private RpcInvocation rpcInvocation;
 
-    public RestInterceptContext(URL url, RequestFacade requestFacade, NettyHttpResponse response, ServiceDeployer serviceDeployer, Object result, RpcInvocation rpcInvocation) {
+    public RestInterceptContext(
+            URL url,
+            RequestFacade requestFacade,
+            NettyHttpResponse response,
+            ServiceDeployer serviceDeployer,
+            Object result,
+            RpcInvocation rpcInvocation) {
         super(url, requestFacade, response, serviceDeployer);
         this.result = result;
         this.rpcInvocation = rpcInvocation;

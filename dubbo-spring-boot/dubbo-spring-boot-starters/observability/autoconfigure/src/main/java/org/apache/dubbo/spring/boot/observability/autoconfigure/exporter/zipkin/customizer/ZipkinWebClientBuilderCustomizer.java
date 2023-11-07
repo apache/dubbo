@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.spring.boot.observability.autoconfigure.exporter.zipkin.customizer;
-
 
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -35,5 +33,4 @@ public interface ZipkinWebClientBuilderCustomizer {
      * @param webClientBuilder the {@code WebClient.Builder} to customize
      */
     void customize(WebClient.Builder webClientBuilder);
-
 }

@@ -52,6 +52,5 @@ class Http2ProtocolDetectorTest {
         byteBuf.writeBytes(connectionPrefaceBuf, 0, 1);
         result = detector.detect(new ByteBufferBackedChannelBuffer(byteBuf.nioBuffer()));
         Assertions.assertEquals(result, ProtocolDetector.Result.NEED_MORE_DATA);
-
     }
 }

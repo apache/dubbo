@@ -30,8 +30,11 @@ class ThrowableFunctionTest {
 
     @Test
     void testExecute() {
-        assertThrows(RuntimeException.class, () -> execute("Hello,World", m -> {
-            throw new Exception(m);
-        }), "Hello,World");
+        assertThrows(
+                RuntimeException.class,
+                () -> execute("Hello,World", m -> {
+                    throw new Exception(m);
+                }),
+                "Hello,World");
     }
 }

@@ -153,10 +153,10 @@ public class ActivateComparator implements Comparator<Class<?>> {
             info.before = activate.before();
             info.after = activate.after();
             info.order = activate.order();
-        } else if (Dubbo2CompactUtils.isEnabled() && Dubbo2ActivateUtils.isActivateLoaded() &&
-            clazz.isAnnotationPresent(Dubbo2ActivateUtils.getActivateClass())) {
-            Annotation activate = clazz.getAnnotation(
-                Dubbo2ActivateUtils.getActivateClass());
+        } else if (Dubbo2CompactUtils.isEnabled()
+                && Dubbo2ActivateUtils.isActivateLoaded()
+                && clazz.isAnnotationPresent(Dubbo2ActivateUtils.getActivateClass())) {
+            Annotation activate = clazz.getAnnotation(Dubbo2ActivateUtils.getActivateClass());
             info.before = Dubbo2ActivateUtils.getBefore(activate);
             info.after = Dubbo2ActivateUtils.getAfter(activate);
             info.order = Dubbo2ActivateUtils.getOrder(activate);

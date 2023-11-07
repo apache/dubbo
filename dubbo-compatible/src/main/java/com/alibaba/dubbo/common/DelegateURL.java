@@ -778,7 +778,8 @@ public class DelegateURL extends com.alibaba.dubbo.common.URL {
         return apacheUrl.equals(obj);
     }
 
-    public static void putMethodParameter(String method, String key, String value, Map<String, Map<String, String>> methodParameters) {
+    public static void putMethodParameter(
+            String method, String key, String value, Map<String, Map<String, String>> methodParameters) {
         org.apache.dubbo.common.URL.putMethodParameter(method, key, value, methodParameters);
     }
 

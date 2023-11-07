@@ -48,9 +48,12 @@ public interface AnnotatedMethodParameterProcessor extends Prioritized {
      * @param method             {@link ExecutableElement method that parameter belongs to}
      * @param restMethodMetadata {@link RestMethodMetadata the metadata is used to update}
      */
-    void process(AnnotationMirror annotation, VariableElement parameter, int parameterIndex, ExecutableElement method,
-                 RestMethodMetadata restMethodMetadata);
-
+    void process(
+            AnnotationMirror annotation,
+            VariableElement parameter,
+            int parameterIndex,
+            ExecutableElement method,
+            RestMethodMetadata restMethodMetadata);
 
     /**
      * Build the default value

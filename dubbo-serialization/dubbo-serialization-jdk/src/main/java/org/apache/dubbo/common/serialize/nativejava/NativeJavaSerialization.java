@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.serialize.nativejava;
 
 import org.apache.dubbo.common.URL;
@@ -57,9 +56,13 @@ public class NativeJavaSerialization implements Serialization {
     @Override
     public ObjectOutput serialize(URL url, OutputStream output) throws IOException {
         if (warn.compareAndSet(false, true)) {
-            logger.error(PROTOCOL_UNSAFE_SERIALIZATION, "", "", "Java serialization is unsafe. Dubbo Team do not recommend anyone to use it." +
-                "If you still want to use it, please follow [JEP 290](https://openjdk.java.net/jeps/290)" +
-                "to set serialization filter to prevent deserialization leak.");
+            logger.error(
+                    PROTOCOL_UNSAFE_SERIALIZATION,
+                    "",
+                    "",
+                    "Java serialization is unsafe. Dubbo Team do not recommend anyone to use it."
+                            + "If you still want to use it, please follow [JEP 290](https://openjdk.java.net/jeps/290)"
+                            + "to set serialization filter to prevent deserialization leak.");
         }
         return new NativeJavaObjectOutput(output);
     }
@@ -67,9 +70,13 @@ public class NativeJavaSerialization implements Serialization {
     @Override
     public ObjectInput deserialize(URL url, InputStream input) throws IOException {
         if (warn.compareAndSet(false, true)) {
-            logger.error(PROTOCOL_UNSAFE_SERIALIZATION, "", "", "Java serialization is unsafe. Dubbo Team do not recommend anyone to use it." +
-                "If you still want to use it, please follow [JEP 290](https://openjdk.java.net/jeps/290)" +
-                "to set serialization filter to prevent deserialization leak.");
+            logger.error(
+                    PROTOCOL_UNSAFE_SERIALIZATION,
+                    "",
+                    "",
+                    "Java serialization is unsafe. Dubbo Team do not recommend anyone to use it."
+                            + "If you still want to use it, please follow [JEP 290](https://openjdk.java.net/jeps/290)"
+                            + "to set serialization filter to prevent deserialization leak.");
         }
         return new NativeJavaObjectInput(input);
     }

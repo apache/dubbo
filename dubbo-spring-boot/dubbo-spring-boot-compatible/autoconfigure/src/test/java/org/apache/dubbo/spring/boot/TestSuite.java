@@ -32,16 +32,15 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-        CompatibleDubboAutoConfigurationTest.class,
-        CompatibleDubboAutoConfigurationTestWithoutProperties.class,
-        DubboAutoConfigurationOnMultipleConfigTest.class,
-        DubboAutoConfigurationOnSingleConfigTest.class,
-        RelaxedDubboConfigBinderTest.class,
-        AwaitingNonWebApplicationListenerTest.class,
-        DubboConfigBeanDefinitionConflictApplicationListenerTest.class,
-        WelcomeLogoApplicationListenerTest.class,
-        DubboDefaultPropertiesEnvironmentPostProcessorTest.class,
-        DubboUtilsTest.class,
+    CompatibleDubboAutoConfigurationTest.class,
+    CompatibleDubboAutoConfigurationTestWithoutProperties.class,
+    DubboAutoConfigurationOnMultipleConfigTest.class,
+    DubboAutoConfigurationOnSingleConfigTest.class,
+    RelaxedDubboConfigBinderTest.class,
+    AwaitingNonWebApplicationListenerTest.class,
+    DubboConfigBeanDefinitionConflictApplicationListenerTest.class,
+    WelcomeLogoApplicationListenerTest.class,
+    DubboDefaultPropertiesEnvironmentPostProcessorTest.class,
+    DubboUtilsTest.class,
 })
-public class TestSuite {
-}
+public class TestSuite {}

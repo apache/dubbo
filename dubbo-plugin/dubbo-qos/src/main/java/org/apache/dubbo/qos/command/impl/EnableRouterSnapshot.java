@@ -17,16 +17,17 @@
 package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.qos.api.BaseCommand;
-import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.qos.api.Cmd;
+import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.rpc.cluster.router.RouterSnapshotSwitcher;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 
-@Cmd(name = "enableRouterSnapshot",
-    summary = "Enable Dubbo Invocation Level Router Snapshot Print",
-    example = "enableRouterSnapshot xx.xx.xxx.service")
+@Cmd(
+        name = "enableRouterSnapshot",
+        summary = "Enable Dubbo Invocation Level Router Snapshot Print",
+        example = "enableRouterSnapshot xx.xx.xxx.service")
 public class EnableRouterSnapshot implements BaseCommand {
     private final RouterSnapshotSwitcher routerSnapshotSwitcher;
     private final FrameworkModel frameworkModel;
@@ -46,7 +47,8 @@ public class EnableRouterSnapshot implements BaseCommand {
         for (ConsumerModel consumerModel : frameworkModel.getServiceRepository().allConsumerModels()) {
             try {
                 ServiceMetadata metadata = consumerModel.getServiceMetadata();
-                if (metadata.getServiceKey().matches(servicePattern) || metadata.getDisplayServiceKey().matches(servicePattern)) {
+                if (metadata.getServiceKey().matches(servicePattern)
+                        || metadata.getDisplayServiceKey().matches(servicePattern)) {
                     routerSnapshotSwitcher.addEnabledService(metadata.getServiceKey());
                     count += 1;
                 }

@@ -68,7 +68,8 @@ class ScopeModelAwareExtensionProcessorTest {
     void testPostProcessAfterInitialization() throws Exception {
         ScopeModelAwareExtensionProcessor processor = new ScopeModelAwareExtensionProcessor(moduleModel);
         MockScopeModelAware mockScopeModelAware = new MockScopeModelAware();
-        Object object = processor.postProcessAfterInitialization(mockScopeModelAware, mockScopeModelAware.getClass().getName());
+        Object object = processor.postProcessAfterInitialization(
+                mockScopeModelAware, mockScopeModelAware.getClass().getName());
         Assertions.assertEquals(object, mockScopeModelAware);
 
         Assertions.assertEquals(mockScopeModelAware.getScopeModel(), moduleModel);

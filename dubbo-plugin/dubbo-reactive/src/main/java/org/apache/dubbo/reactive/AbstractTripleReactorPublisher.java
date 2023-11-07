@@ -14,24 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.reactive;
 
 import org.apache.dubbo.rpc.protocol.tri.CancelableStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
-import org.reactivestreams.Publisher;
-import org.reactivestreams.Subscriber;
-import org.reactivestreams.Subscription;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+
+import org.reactivestreams.Publisher;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
 
 /**
  * The middle layer between {@link org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver} and Reactive API. <p>
  * 1. passing the data received by CallStreamObserver to Reactive consumer <br>
  * 2. passing the request of Reactive API to CallStreamObserver
  */
-public abstract class AbstractTripleReactorPublisher<T> extends CancelableStreamObserver<T> implements Publisher<T>, Subscription {
+public abstract class AbstractTripleReactorPublisher<T> extends CancelableStreamObserver<T>
+        implements Publisher<T>, Subscription {
 
     private boolean canRequest;
 
@@ -59,8 +60,7 @@ public abstract class AbstractTripleReactorPublisher<T> extends CancelableStream
 
     private final AtomicBoolean CALLED_SHUT_DOWN_HOOK = new AtomicBoolean();
 
-    public AbstractTripleReactorPublisher() {
-    }
+    public AbstractTripleReactorPublisher() {}
 
     public AbstractTripleReactorPublisher(Consumer<CallStreamObserver<?>> onSubscribe, Runnable shutdownHook) {
         this.onSubscribe = onSubscribe;

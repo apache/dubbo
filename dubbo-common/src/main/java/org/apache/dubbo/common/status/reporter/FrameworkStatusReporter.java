@@ -20,10 +20,8 @@ import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
-
 @SPI(scope = ExtensionScope.APPLICATION)
 public interface FrameworkStatusReporter extends ScopeModelAware {
 
     void report(String type, Object obj);
-
 }

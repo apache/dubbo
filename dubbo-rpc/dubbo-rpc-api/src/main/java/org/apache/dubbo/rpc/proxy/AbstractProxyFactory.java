@@ -42,11 +42,10 @@ import static org.apache.dubbo.rpc.Constants.INTERFACES;
  * AbstractProxyFactory
  */
 public abstract class AbstractProxyFactory implements ProxyFactory {
-    private static final Class<?>[] INTERNAL_INTERFACES = new Class<?>[]{
-        EchoService.class, Destroyable.class
-    };
+    private static final Class<?>[] INTERNAL_INTERFACES = new Class<?>[] {EchoService.class, Destroyable.class};
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractProxyFactory.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(AbstractProxyFactory.class);
 
     @Override
     public <T> T getProxy(Invoker<T> invoker) throws RpcException {
@@ -68,7 +67,6 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
                 } catch (Throwable e) {
                     // ignore
                 }
-
             }
         }
 
@@ -83,8 +81,9 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
                 // ignore
             }
 
-            if (GenericService.class.isAssignableFrom(invoker.getInterface()) &&
-                Dubbo2CompactUtils.isEnabled() && Dubbo2CompactUtils.isGenericServiceClassLoaded()) {
+            if (GenericService.class.isAssignableFrom(invoker.getInterface())
+                    && Dubbo2CompactUtils.isEnabled()
+                    && Dubbo2CompactUtils.isGenericServiceClassLoaded()) {
                 interfaces.add(Dubbo2CompactUtils.getGenericServiceClass());
             }
             if (!GenericService.class.isAssignableFrom(invoker.getInterface())) {
@@ -108,7 +107,12 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
                 }
                 interfaces.remove(invoker.getInterface());
 
-                logger.error(PROXY_UNSUPPORTED_INVOKER, "", "", "Error occur when creating proxy. Invoker is in generic mode. Trying to create proxy without real interface class.", t);
+                logger.error(
+                        PROXY_UNSUPPORTED_INVOKER,
+                        "",
+                        "",
+                        "Error occur when creating proxy. Invoker is in generic mode. Trying to create proxy without real interface class.",
+                        t);
                 return getProxy(invoker, interfaces.toArray(new Class<?>[0]));
             } else {
                 throw t;
@@ -133,5 +137,4 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
     }
 
     public abstract <T> T getProxy(Invoker<T> invoker, Class<?>[] types);
-
 }
