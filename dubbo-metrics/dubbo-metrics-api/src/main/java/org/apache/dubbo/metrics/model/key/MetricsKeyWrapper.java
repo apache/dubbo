@@ -85,7 +85,7 @@ public class MetricsKeyWrapper {
             return metricsKey.getName();
         }
         try {
-            return String.format(metricsKey.getName(), getType());
+            return metricsKey.getNameByType(getType());
         } catch (Exception ignore) {
             return metricsKey.getName();
         }

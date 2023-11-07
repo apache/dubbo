@@ -25,6 +25,7 @@ import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
+import org.apache.dubbo.metrics.registry.RegistryMetricsConstants;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -221,9 +222,9 @@ public class RegistryMetricsTest {
         }
         List<MetricSample> samples = collector.collect();
 
-        GaugeMetricSample<?> succeedRequests = getSample(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED.getName(), samples);
-        GaugeMetricSample<?> failedRequests = getSample(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_FAILED.getName(), samples);
-        GaugeMetricSample<?> totalRequests = getSample(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS.getName(), samples);
+        GaugeMetricSample<?> succeedRequests = getSample(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED.getNameByType(RegistryMetricsConstants.OP_TYPE_REGISTER_SERVICE.getType()), samples);
+        GaugeMetricSample<?> failedRequests = getSample(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_FAILED.getNameByType(RegistryMetricsConstants.OP_TYPE_REGISTER_SERVICE.getType()), samples);
+        GaugeMetricSample<?> totalRequests = getSample(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS.getNameByType(RegistryMetricsConstants.OP_TYPE_REGISTER_SERVICE.getType()), samples);
 
         Assertions.assertEquals(5L, succeedRequests.applyAsLong());
         Assertions.assertEquals(5L, failedRequests.applyAsLong());
