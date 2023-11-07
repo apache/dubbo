@@ -30,9 +30,8 @@ import org.springframework.boot.context.properties.source.UnboundElementsSourceF
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.PropertySource;
 
+import java.util.Collections;
 import java.util.Map;
-
-import static java.util.Arrays.asList;
 import static org.springframework.boot.context.properties.source.ConfigurationPropertySources.from;
 
 /**
@@ -47,13 +46,13 @@ class BinderDubboConfigBinder implements ConfigurationBeanBinder {
     public void bind(Map<String, Object> configurationProperties, boolean ignoreUnknownFields,
                      boolean ignoreInvalidFields, Object configurationBean) {
 
-        Iterable<PropertySource<?>> propertySources = asList(new MapPropertySource("internal", configurationProperties));
+        Iterable<PropertySource<?>> propertySources = singletonList(new MapPropertySource("internal", configurationProperties));
 
         // Converts ConfigurationPropertySources
         Iterable<ConfigurationPropertySource> configurationPropertySources = from(propertySources);
 
         // Wrap Bindable from DubboConfig instance
-        Bindable bindable = Bindable.ofInstance(configurationBean);
+        Bindable<Object> bindable = Bindable.ofInstance(configurationBean);
 
         Binder binder = new Binder(configurationPropertySources, new PropertySourcesPlaceholdersResolver(propertySources));
 
