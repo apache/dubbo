@@ -37,19 +37,20 @@ public class CompositeConfiguration implements Configuration {
      */
     private final List<Configuration> configList = new CopyOnWriteArrayList<>();
 
-    //FIXME, consider change configList to SortedMap to replace this boolean status.
+    // FIXME, consider change configList to SortedMap to replace this boolean status.
     private boolean dynamicIncluded;
 
-    public CompositeConfiguration() {
-    }
+    public CompositeConfiguration() {}
 
     public CompositeConfiguration(Configuration... configurations) {
         if (ArrayUtils.isNotEmpty(configurations)) {
-            Arrays.stream(configurations).filter(config -> !configList.contains(config)).forEach(configList::add);
+            Arrays.stream(configurations)
+                    .filter(config -> !configList.contains(config))
+                    .forEach(configList::add);
         }
     }
 
-    //FIXME, consider changing configList to SortedMap to replace this boolean status.
+    // FIXME, consider changing configList to SortedMap to replace this boolean status.
     public boolean isDynamicIncluded() {
         return dynamicIncluded;
     }
@@ -82,11 +83,14 @@ public class CompositeConfiguration implements Configuration {
                     return value;
                 }
             } catch (Exception e) {
-                logger.error(CONFIG_FAILED_LOAD_ENV_VARIABLE, "", "", "Error when trying to get value for key " + key + " from " + config + ", " +
-                    "will continue to try the next one.");
+                logger.error(
+                        CONFIG_FAILED_LOAD_ENV_VARIABLE,
+                        "",
+                        "",
+                        "Error when trying to get value for key " + key + " from " + config + ", "
+                                + "will continue to try the next one.");
             }
         }
         return null;
     }
-
 }

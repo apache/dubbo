@@ -22,9 +22,9 @@ import org.apache.dubbo.metadata.rest.SpringRestService;
 import org.apache.dubbo.metadata.rest.StandardRestService;
 import org.apache.dubbo.metadata.rest.User;
 
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
+
+import org.junit.jupiter.api.Test;
 
 /**
  * The test case for {@link DefaultRestService}
@@ -36,7 +36,8 @@ class DefaultRestServiceTest {
     @Test
     void test() throws IOException {
         Compiler compiler = new Compiler();
-        compiler.compile(User.class,
+        compiler.compile(
+                User.class,
                 RestService.class,
                 DefaultRestService.class,
                 SpringRestService.class,

@@ -33,6 +33,15 @@ import org.apache.dubbo.registry.client.metadata.store.MetaCacheManager;
 import org.apache.dubbo.registry.client.support.MockServiceDiscovery;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -47,15 +56,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
@@ -83,36 +83,42 @@ public class ServiceInstancesChangedListenerWithoutEmptyProtectTest {
     static List<ServiceInstance> app1InstancesMultipleProtocols;
 
     static String metadata_111 = "{\"app\":\"app1\",\"revision\":\"111\",\"services\":{"
-        + "\"org.apache.dubbo.demo.DemoService:dubbo\":{\"name\":\"org.apache.dubbo.demo.DemoService\",\"protocol\":\"dubbo\",\"path\":\"org.apache.dubbo.demo.DemoService\",\"params\":{\"side\":\"provider\",\"release\":\"\",\"methods\":\"sayHello,sayHelloAsync\",\"deprecated\":\"false\",\"dubbo\":\"2.0.2\",\"pid\":\"72723\",\"interface\":\"org.apache.dubbo.demo.DemoService\",\"service-name-mapping\":\"true\",\"timeout\":\"3000\",\"generic\":\"false\",\"metadata-type\":\"remote\",\"delay\":\"5000\",\"application\":\"app1\",\"dynamic\":\"true\",\"REGISTRY_CLUSTER\":\"registry1\",\"anyhost\":\"true\",\"timestamp\":\"1625800233446\"}}"
-        + "}}";
+            + "\"org.apache.dubbo.demo.DemoService:dubbo\":{\"name\":\"org.apache.dubbo.demo.DemoService\",\"protocol\":\"dubbo\",\"path\":\"org.apache.dubbo.demo.DemoService\",\"params\":{\"side\":\"provider\",\"release\":\"\",\"methods\":\"sayHello,sayHelloAsync\",\"deprecated\":\"false\",\"dubbo\":\"2.0.2\",\"pid\":\"72723\",\"interface\":\"org.apache.dubbo.demo.DemoService\",\"service-name-mapping\":\"true\",\"timeout\":\"3000\",\"generic\":\"false\",\"metadata-type\":\"remote\",\"delay\":\"5000\",\"application\":\"app1\",\"dynamic\":\"true\",\"REGISTRY_CLUSTER\":\"registry1\",\"anyhost\":\"true\",\"timestamp\":\"1625800233446\"}}"
+            + "}}";
     static String metadata_222 = "{\"app\":\"app2\",\"revision\":\"222\",\"services\":{"
-        + "\"org.apache.dubbo.demo.DemoService:dubbo\":{\"name\":\"org.apache.dubbo.demo.DemoService\",\"protocol\":\"dubbo\",\"path\":\"org.apache.dubbo.demo.DemoService\",\"params\":{\"side\":\"provider\",\"release\":\"\",\"methods\":\"sayHello,sayHelloAsync\",\"deprecated\":\"false\",\"dubbo\":\"2.0.2\",\"pid\":\"72723\",\"interface\":\"org.apache.dubbo.demo.DemoService\",\"service-name-mapping\":\"true\",\"timeout\":\"3000\",\"generic\":\"false\",\"metadata-type\":\"remote\",\"delay\":\"5000\",\"application\":\"app2\",\"dynamic\":\"true\",\"REGISTRY_CLUSTER\":\"registry1\",\"anyhost\":\"true\",\"timestamp\":\"1625800233446\"}},"
-        + "\"org.apache.dubbo.demo.DemoService2:dubbo\":{\"name\":\"org.apache.dubbo.demo.DemoService2\",\"protocol\":\"dubbo\",\"path\":\"org.apache.dubbo.demo.DemoService2\",\"params\":{\"side\":\"provider\",\"release\":\"\",\"methods\":\"sayHello,sayHelloAsync\",\"deprecated\":\"false\",\"dubbo\":\"2.0.2\",\"pid\":\"72723\",\"interface\":\"org.apache.dubbo.demo.DemoService2\",\"service-name-mapping\":\"true\",\"timeout\":\"3000\",\"generic\":\"false\",\"metadata-type\":\"remote\",\"delay\":\"5000\",\"application\":\"app2\",\"dynamic\":\"true\",\"REGISTRY_CLUSTER\":\"registry1\",\"anyhost\":\"true\",\"timestamp\":\"1625800233446\"}}"
-        + "}}";
+            + "\"org.apache.dubbo.demo.DemoService:dubbo\":{\"name\":\"org.apache.dubbo.demo.DemoService\",\"protocol\":\"dubbo\",\"path\":\"org.apache.dubbo.demo.DemoService\",\"params\":{\"side\":\"provider\",\"release\":\"\",\"methods\":\"sayHello,sayHelloAsync\",\"deprecated\":\"false\",\"dubbo\":\"2.0.2\",\"pid\":\"72723\",\"interface\":\"org.apache.dubbo.demo.DemoService\",\"service-name-mapping\":\"true\",\"timeout\":\"3000\",\"generic\":\"false\",\"metadata-type\":\"remote\",\"delay\":\"5000\",\"application\":\"app2\",\"dynamic\":\"true\",\"REGISTRY_CLUSTER\":\"registry1\",\"anyhost\":\"true\",\"timestamp\":\"1625800233446\"}},"
+            + "\"org.apache.dubbo.demo.DemoService2:dubbo\":{\"name\":\"org.apache.dubbo.demo.DemoService2\",\"protocol\":\"dubbo\",\"path\":\"org.apache.dubbo.demo.DemoService2\",\"params\":{\"side\":\"provider\",\"release\":\"\",\"methods\":\"sayHello,sayHelloAsync\",\"deprecated\":\"false\",\"dubbo\":\"2.0.2\",\"pid\":\"72723\",\"interface\":\"org.apache.dubbo.demo.DemoService2\",\"service-name-mapping\":\"true\",\"timeout\":\"3000\",\"generic\":\"false\",\"metadata-type\":\"remote\",\"delay\":\"5000\",\"application\":\"app2\",\"dynamic\":\"true\",\"REGISTRY_CLUSTER\":\"registry1\",\"anyhost\":\"true\",\"timestamp\":\"1625800233446\"}}"
+            + "}}";
     static String metadata_333 = "{\"app\":\"app2\",\"revision\":\"333\",\"services\":{"
-        + "\"org.apache.dubbo.demo.DemoService:dubbo\":{\"name\":\"org.apache.dubbo.demo.DemoService\",\"protocol\":\"dubbo\",\"path\":\"org.apache.dubbo.demo.DemoService\",\"params\":{\"side\":\"provider\",\"release\":\"\",\"methods\":\"sayHello,sayHelloAsync\",\"deprecated\":\"false\",\"dubbo\":\"2.0.2\",\"pid\":\"72723\",\"interface\":\"org.apache.dubbo.demo.DemoService\",\"service-name-mapping\":\"true\",\"timeout\":\"3000\",\"generic\":\"false\",\"metadata-type\":\"remote\",\"delay\":\"5000\",\"application\":\"app2\",\"dynamic\":\"true\",\"REGISTRY_CLUSTER\":\"registry1\",\"anyhost\":\"true\",\"timestamp\":\"1625800233446\"}},"
-        + "\"org.apache.dubbo.demo.DemoService2:dubbo\":{\"name\":\"org.apache.dubbo.demo.DemoService2\",\"protocol\":\"dubbo\",\"path\":\"org.apache.dubbo.demo.DemoService2\",\"params\":{\"side\":\"provider\",\"release\":\"\",\"methods\":\"sayHello,sayHelloAsync\",\"deprecated\":\"false\",\"dubbo\":\"2.0.2\",\"pid\":\"72723\",\"interface\":\"org.apache.dubbo.demo.DemoService2\",\"service-name-mapping\":\"true\",\"timeout\":\"3000\",\"generic\":\"false\",\"metadata-type\":\"remote\",\"delay\":\"5000\",\"application\":\"app2\",\"dynamic\":\"true\",\"REGISTRY_CLUSTER\":\"registry1\",\"anyhost\":\"true\",\"timestamp\":\"1625800233446\"}},"
-        + "\"org.apache.dubbo.demo.DemoService3:dubbo\":{\"name\":\"org.apache.dubbo.demo.DemoService3\",\"protocol\":\"dubbo\",\"path\":\"org.apache.dubbo.demo.DemoService3\",\"params\":{\"side\":\"provider\",\"release\":\"\",\"methods\":\"sayHello,sayHelloAsync\",\"deprecated\":\"false\",\"dubbo\":\"2.0.2\",\"pid\":\"72723\",\"interface\":\"org.apache.dubbo.demo.DemoService3\",\"service-name-mapping\":\"true\",\"timeout\":\"3000\",\"generic\":\"false\",\"metadata-type\":\"remote\",\"delay\":\"5000\",\"application\":\"app2\",\"dynamic\":\"true\",\"REGISTRY_CLUSTER\":\"registry1\",\"anyhost\":\"true\",\"timestamp\":\"1625800233446\"}}"
-        + "}}";
+            + "\"org.apache.dubbo.demo.DemoService:dubbo\":{\"name\":\"org.apache.dubbo.demo.DemoService\",\"protocol\":\"dubbo\",\"path\":\"org.apache.dubbo.demo.DemoService\",\"params\":{\"side\":\"provider\",\"release\":\"\",\"methods\":\"sayHello,sayHelloAsync\",\"deprecated\":\"false\",\"dubbo\":\"2.0.2\",\"pid\":\"72723\",\"interface\":\"org.apache.dubbo.demo.DemoService\",\"service-name-mapping\":\"true\",\"timeout\":\"3000\",\"generic\":\"false\",\"metadata-type\":\"remote\",\"delay\":\"5000\",\"application\":\"app2\",\"dynamic\":\"true\",\"REGISTRY_CLUSTER\":\"registry1\",\"anyhost\":\"true\",\"timestamp\":\"1625800233446\"}},"
+            + "\"org.apache.dubbo.demo.DemoService2:dubbo\":{\"name\":\"org.apache.dubbo.demo.DemoService2\",\"protocol\":\"dubbo\",\"path\":\"org.apache.dubbo.demo.DemoService2\",\"params\":{\"side\":\"provider\",\"release\":\"\",\"methods\":\"sayHello,sayHelloAsync\",\"deprecated\":\"false\",\"dubbo\":\"2.0.2\",\"pid\":\"72723\",\"interface\":\"org.apache.dubbo.demo.DemoService2\",\"service-name-mapping\":\"true\",\"timeout\":\"3000\",\"generic\":\"false\",\"metadata-type\":\"remote\",\"delay\":\"5000\",\"application\":\"app2\",\"dynamic\":\"true\",\"REGISTRY_CLUSTER\":\"registry1\",\"anyhost\":\"true\",\"timestamp\":\"1625800233446\"}},"
+            + "\"org.apache.dubbo.demo.DemoService3:dubbo\":{\"name\":\"org.apache.dubbo.demo.DemoService3\",\"protocol\":\"dubbo\",\"path\":\"org.apache.dubbo.demo.DemoService3\",\"params\":{\"side\":\"provider\",\"release\":\"\",\"methods\":\"sayHello,sayHelloAsync\",\"deprecated\":\"false\",\"dubbo\":\"2.0.2\",\"pid\":\"72723\",\"interface\":\"org.apache.dubbo.demo.DemoService3\",\"service-name-mapping\":\"true\",\"timeout\":\"3000\",\"generic\":\"false\",\"metadata-type\":\"remote\",\"delay\":\"5000\",\"application\":\"app2\",\"dynamic\":\"true\",\"REGISTRY_CLUSTER\":\"registry1\",\"anyhost\":\"true\",\"timestamp\":\"1625800233446\"}}"
+            + "}}";
     // failed
     static String metadata_444 = "{\"app\":\"app1\",\"revision\":\"444\",\"services\":{"
-        + "\"org.apache.dubbo.demo.DemoService:dubbo\":{\"name\":\"org.apache.dubbo.demo.DemoService\",\"protocol\":\"dubbo\",\"path\":\"org.apache.dubbo.demo.DemoService\",\"params\":{\"side\":\"provider\",\"release\":\"\",\"methods\":\"sayHello,sayHelloAsync\",\"deprecated\":\"false\",\"dubbo\":\"2.0.2\",\"pid\":\"72723\",\"interface\":\"org.apache.dubbo.demo.DemoService\",\"service-name-mapping\":\"true\",\"timeout\":\"3000\",\"generic\":\"false\",\"metadata-type\":\"remote\",\"delay\":\"5000\",\"application\":\"app2\",\"dynamic\":\"true\",\"REGISTRY_CLUSTER\":\"registry1\",\"anyhost\":\"true\",\"timestamp\":\"1625800233446\"}}"
-        + "}}";
+            + "\"org.apache.dubbo.demo.DemoService:dubbo\":{\"name\":\"org.apache.dubbo.demo.DemoService\",\"protocol\":\"dubbo\",\"path\":\"org.apache.dubbo.demo.DemoService\",\"params\":{\"side\":\"provider\",\"release\":\"\",\"methods\":\"sayHello,sayHelloAsync\",\"deprecated\":\"false\",\"dubbo\":\"2.0.2\",\"pid\":\"72723\",\"interface\":\"org.apache.dubbo.demo.DemoService\",\"service-name-mapping\":\"true\",\"timeout\":\"3000\",\"generic\":\"false\",\"metadata-type\":\"remote\",\"delay\":\"5000\",\"application\":\"app2\",\"dynamic\":\"true\",\"REGISTRY_CLUSTER\":\"registry1\",\"anyhost\":\"true\",\"timestamp\":\"1625800233446\"}}"
+            + "}}";
     // only triple protocol enabled
     static String metadata_555_triple = "{\"app\":\"app1\",\"revision\":\"555\",\"services\":{"
-        + "\"org.apache.dubbo.demo.DemoService:dubbo\":{\"name\":\"org.apache.dubbo.demo.DemoService\",\"protocol\":\"tri\",\"path\":\"org.apache.dubbo.demo.DemoService\",\"params\":{\"side\":\"provider\",\"release\":\"\",\"methods\":\"sayHello,sayHelloAsync\",\"deprecated\":\"false\",\"dubbo\":\"2.0.2\",\"pid\":\"72723\",\"interface\":\"org.apache.dubbo.demo.DemoService\",\"service-name-mapping\":\"true\",\"timeout\":\"3000\",\"generic\":\"false\",\"metadata-type\":\"remote\",\"delay\":\"5000\",\"application\":\"app2\",\"dynamic\":\"true\",\"REGISTRY_CLUSTER\":\"registry1\",\"anyhost\":\"true\",\"timestamp\":\"1625800233446\"}}"
-        + "}}";
+            + "\"org.apache.dubbo.demo.DemoService:dubbo\":{\"name\":\"org.apache.dubbo.demo.DemoService\",\"protocol\":\"tri\",\"path\":\"org.apache.dubbo.demo.DemoService\",\"params\":{\"side\":\"provider\",\"release\":\"\",\"methods\":\"sayHello,sayHelloAsync\",\"deprecated\":\"false\",\"dubbo\":\"2.0.2\",\"pid\":\"72723\",\"interface\":\"org.apache.dubbo.demo.DemoService\",\"service-name-mapping\":\"true\",\"timeout\":\"3000\",\"generic\":\"false\",\"metadata-type\":\"remote\",\"delay\":\"5000\",\"application\":\"app2\",\"dynamic\":\"true\",\"REGISTRY_CLUSTER\":\"registry1\",\"anyhost\":\"true\",\"timestamp\":\"1625800233446\"}}"
+            + "}}";
 
     static String service1 = "org.apache.dubbo.demo.DemoService";
     static String service2 = "org.apache.dubbo.demo.DemoService2";
     static String service3 = "org.apache.dubbo.demo.DemoService3";
 
-    static URL consumerURL = URL.valueOf("dubbo://127.0.0.1/org.apache.dubbo.demo.DemoService?interface=org.apache.dubbo.demo.DemoService&protocol=dubbo&registry_cluster=default");
-    static URL consumerURL2 = URL.valueOf("dubbo://127.0.0.1/org.apache.dubbo.demo.DemoService2?interface=org.apache.dubbo.demo.DemoService2&protocol=dubbo&registry_cluster=default");
-    static URL consumerURL3 = URL.valueOf("dubbo://127.0.0.1/org.apache.dubbo.demo.DemoService3?interface=org.apache.dubbo.demo.DemoService3&protocol=dubbo&registry_cluster=default");
-    static URL multipleProtocolsConsumerURL = URL.valueOf("dubbo,tri://127.0.0.1/org.apache.dubbo.demo.DemoService?interface=org.apache.dubbo.demo.DemoService&protocol=dubbo,tri&registry_cluster=default");
-    static URL noProtocolConsumerURL = URL.valueOf("consumer://127.0.0.1/org.apache.dubbo.demo.DemoService?interface=org.apache.dubbo.demo.DemoService&registry_cluster=default");
-    static URL singleProtocolsConsumerURL = URL.valueOf("tri://127.0.0.1/org.apache.dubbo.demo.DemoService?interface=org.apache.dubbo.demo.DemoService&protocol=tri&registry_cluster=default");
+    static URL consumerURL = URL.valueOf(
+            "dubbo://127.0.0.1/org.apache.dubbo.demo.DemoService?interface=org.apache.dubbo.demo.DemoService&protocol=dubbo&registry_cluster=default");
+    static URL consumerURL2 = URL.valueOf(
+            "dubbo://127.0.0.1/org.apache.dubbo.demo.DemoService2?interface=org.apache.dubbo.demo.DemoService2&protocol=dubbo&registry_cluster=default");
+    static URL consumerURL3 = URL.valueOf(
+            "dubbo://127.0.0.1/org.apache.dubbo.demo.DemoService3?interface=org.apache.dubbo.demo.DemoService3&protocol=dubbo&registry_cluster=default");
+    static URL multipleProtocolsConsumerURL = URL.valueOf(
+            "dubbo,tri://127.0.0.1/org.apache.dubbo.demo.DemoService?interface=org.apache.dubbo.demo.DemoService&protocol=dubbo,tri&registry_cluster=default");
+    static URL noProtocolConsumerURL = URL.valueOf(
+            "consumer://127.0.0.1/org.apache.dubbo.demo.DemoService?interface=org.apache.dubbo.demo.DemoService&registry_cluster=default");
+    static URL singleProtocolsConsumerURL = URL.valueOf(
+            "tri://127.0.0.1/org.apache.dubbo.demo.DemoService?interface=org.apache.dubbo.demo.DemoService&protocol=tri&registry_cluster=default");
     static URL registryURL = URL.valueOf("dubbo://127.0.0.1:2181/org.apache.dubbo.demo.RegistryService");
 
     static MetadataInfo metadataInfo_111;
@@ -146,8 +152,8 @@ public class ServiceInstancesChangedListenerWithoutEmptyProtectTest {
         List<Object> urlsFailedRevision = new ArrayList<>();
         urlsFailedRevision.add("30.10.0.5:20880?revision=222");
         urlsFailedRevision.add("30.10.0.6:20880?revision=222");
-        urlsFailedRevision.add("30.10.0.7:20880?revision=444");// revision will fail
-        urlsFailedRevision.add("30.10.0.8:20880?revision=444");// revision will fail
+        urlsFailedRevision.add("30.10.0.7:20880?revision=444"); // revision will fail
+        urlsFailedRevision.add("30.10.0.8:20880?revision=444"); // revision will fail
 
         List<Object> urlsFailedRevision2 = new ArrayList<>();
         urlsFailedRevision2.add("30.10.0.1:20880?revision=222");
@@ -157,8 +163,8 @@ public class ServiceInstancesChangedListenerWithoutEmptyProtectTest {
         urlsWithoutRevision.add("30.10.0.1:20880");
 
         List<Object> urlsMultipleProtocols = new ArrayList<>();
-        urlsMultipleProtocols.add("30.10.0.1:20880?revision=555");//triple
-        urlsMultipleProtocols.addAll(urlsSameRevision);// dubbo
+        urlsMultipleProtocols.add("30.10.0.1:20880?revision=555"); // triple
+        urlsMultipleProtocols.addAll(urlsSameRevision); // dubbo
 
         app1Instances = buildInstances(urlsSameRevision);
         app2Instances = buildInstances(urlsDifferentRevision);
@@ -183,10 +189,10 @@ public class ServiceInstancesChangedListenerWithoutEmptyProtectTest {
         when(serviceDiscovery.getRemoteMetadata(eq("555"), anyList())).thenReturn(metadataInfo_555_tri);
     }
 
-
     @BeforeEach
     public void init() {
-        // Because all tests use the same ServiceDiscovery, the previous metadataCache should be cleared before next unit test
+        // Because all tests use the same ServiceDiscovery, the previous metadataCache should be cleared before next
+        // unit test
         // to avoid contaminating next unit test.
         clearMetadataCache();
     }
@@ -304,7 +310,8 @@ public class ServiceInstancesChangedListenerWithoutEmptyProtectTest {
         listener.onEvent(app2_event);
 
         // empty notification
-        ServiceInstancesChangedEvent app1_event_again = new ServiceInstancesChangedEvent("app1", Collections.EMPTY_LIST);
+        ServiceInstancesChangedEvent app1_event_again =
+                new ServiceInstancesChangedEvent("app1", Collections.EMPTY_LIST);
         listener.onEvent(app1_event_again);
 
         // check app1 cleared
@@ -328,7 +335,8 @@ public class ServiceInstancesChangedListenerWithoutEmptyProtectTest {
         assertTrue(serviceUrls3.get(0).getIp().contains("30.10."));
 
         // app2 empty notification
-        ServiceInstancesChangedEvent app2_event_again = new ServiceInstancesChangedEvent("app2", Collections.EMPTY_LIST);
+        ServiceInstancesChangedEvent app2_event_again =
+                new ServiceInstancesChangedEvent("app2", Collections.EMPTY_LIST);
         listener.onEvent(app2_event_again);
 
         // check app2 cleared
@@ -468,7 +476,8 @@ public class ServiceInstancesChangedListenerWithoutEmptyProtectTest {
         listener.addListenerAndNotify(singleProtocolsConsumerURL, demoServiceListener3);
 
         // notify app1 instance change
-        ServiceInstancesChangedEvent app1_event = new ServiceInstancesChangedEvent("app1", app1InstancesMultipleProtocols);
+        ServiceInstancesChangedEvent app1_event =
+                new ServiceInstancesChangedEvent("app1", app1InstancesMultipleProtocols);
         listener.onEvent(app1_event);
 
         // check instances expose framework supported default protocols(currently dubbo, triple and rest) are notified
@@ -606,9 +615,9 @@ public class ServiceInstancesChangedListenerWithoutEmptyProtectTest {
         serviceNames.add("app1");
         listener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
         // notify app1 instance change
-        ServiceInstancesChangedEvent failed_revision_event = new ServiceInstancesChangedEvent("app1", app1FailedInstances);
+        ServiceInstancesChangedEvent failed_revision_event =
+                new ServiceInstancesChangedEvent("app1", app1FailedInstances);
         listener.onEvent(failed_revision_event);
-
 
         ProtocolServiceKey protocolServiceKey1 = new ProtocolServiceKey(service1, null, null, "dubbo");
         ProtocolServiceKey protocolServiceKey2 = new ProtocolServiceKey(service2, null, null, "dubbo");
@@ -650,7 +659,8 @@ public class ServiceInstancesChangedListenerWithoutEmptyProtectTest {
         ProtocolServiceKey protocolServiceKey1 = new ProtocolServiceKey(service1, null, null, "dubbo");
         ProtocolServiceKey protocolServiceKey2 = new ProtocolServiceKey(service2, null, null, "dubbo");
 
-        Assertions.assertEquals(3, listener.getAddresses(protocolServiceKey1, consumerURL).size());
+        Assertions.assertEquals(
+                3, listener.getAddresses(protocolServiceKey1, consumerURL).size());
         assertTrue(isEmpty(listener.getAddresses(protocolServiceKey2, consumerURL)));
 
         //
@@ -666,7 +676,6 @@ public class ServiceInstancesChangedListenerWithoutEmptyProtectTest {
         Assertions.assertEquals(5, serviceUrls_after_retry.size());
         List<URL> serviceUrls2_after_retry = listener.getAddresses(protocolServiceKey2, consumerURL);
         Assertions.assertEquals(2, serviceUrls2_after_retry.size());
-
     }
 
     // Abnormal case. Instance does not have revision
@@ -718,7 +727,8 @@ public class ServiceInstancesChangedListenerWithoutEmptyProtectTest {
 
     private void clearMetadataCache() {
         try {
-            MockServiceDiscovery mockServiceDiscovery = (MockServiceDiscovery) ServiceInstancesChangedListenerWithoutEmptyProtectTest.serviceDiscovery;
+            MockServiceDiscovery mockServiceDiscovery =
+                    (MockServiceDiscovery) ServiceInstancesChangedListenerWithoutEmptyProtectTest.serviceDiscovery;
             MetaCacheManager metaCacheManager = mockServiceDiscovery.getMetaCacheManager();
             Field cacheField = metaCacheManager.getClass().getDeclaredField("cache");
             cacheField.setAccessible(true);

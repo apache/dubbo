@@ -14,14 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.proxy.bytebuddy;
-
-import net.bytebuddy.ByteBuddy;
-import net.bytebuddy.description.ByteCodeElement;
-import net.bytebuddy.implementation.MethodDelegation;
-import net.bytebuddy.matcher.ElementMatcher;
-import net.bytebuddy.matcher.ElementMatchers;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
@@ -31,6 +24,12 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
+
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.description.ByteCodeElement;
+import net.bytebuddy.implementation.MethodDelegation;
+import net.bytebuddy.matcher.ElementMatcher;
+import net.bytebuddy.matcher.ElementMatchers;
 
 import static org.apache.dubbo.common.constants.CommonConstants.MAX_PROXY_COUNT;
 
@@ -89,17 +88,18 @@ public class ByteBuddyProxy {
 
     private static Class<?> buildProxyClass(ClassLoader cl, Class<?>[] ics, InvocationHandler handler) {
         ElementMatcher.Junction<ByteCodeElement> methodMatcher = Arrays.stream(ics)
-            .map(ElementMatchers::isDeclaredBy).reduce(ElementMatcher.Junction::or)
-            .orElse(ElementMatchers.none()).and(ElementMatchers
-                .not(ElementMatchers.isDeclaredBy(Object.class)));
+                .map(ElementMatchers::isDeclaredBy)
+                .reduce(ElementMatcher.Junction::or)
+                .orElse(ElementMatchers.none())
+                .and(ElementMatchers.not(ElementMatchers.isDeclaredBy(Object.class)));
         return new ByteBuddy()
-            .subclass(Proxy.class)
-            .implement(ics)
-            .method(methodMatcher)
-            .intercept(MethodDelegation.to(new ByteBuddyInterceptor(handler)))
-            .make()
-            .load(cl)
-            .getLoaded();
+                .subclass(Proxy.class)
+                .implement(ics)
+                .method(methodMatcher)
+                .intercept(MethodDelegation.to(new ByteBuddyInterceptor(handler)))
+                .make()
+                .load(cl)
+                .getLoaded();
     }
 
     private static class CacheKey {

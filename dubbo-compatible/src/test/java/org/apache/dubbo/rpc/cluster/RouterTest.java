@@ -16,13 +16,13 @@
  */
 package org.apache.dubbo.rpc.cluster;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -32,7 +32,7 @@ class RouterTest {
     private static List<Router> routers = new ArrayList<>();
 
     @BeforeAll
-    public static void setUp () {
+    public static void setUp() {
         CompatibleRouter compatibleRouter = new CompatibleRouter();
         routers.add(compatibleRouter);
         CompatibleRouter2 compatibleRouter2 = new CompatibleRouter2();
@@ -42,7 +42,7 @@ class RouterTest {
     }
 
     @Test
-    void testCompareTo () {
+    void testCompareTo() {
         try {
             Collections.sort(routers);
             Assertions.assertTrue(true);

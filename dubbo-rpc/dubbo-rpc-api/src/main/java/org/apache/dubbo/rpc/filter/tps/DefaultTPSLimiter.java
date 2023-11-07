@@ -40,7 +40,8 @@ public class DefaultTPSLimiter implements TPSLimiter {
     @Override
     public boolean isAllowable(URL url, Invocation invocation) {
         int rate = url.getMethodParameter(RpcUtils.getMethodName(invocation), TPS_LIMIT_RATE_KEY, -1);
-        long interval = url.getMethodParameter(RpcUtils.getMethodName(invocation), TPS_LIMIT_INTERVAL_KEY, DEFAULT_TPS_LIMIT_INTERVAL);
+        long interval = url.getMethodParameter(
+                RpcUtils.getMethodName(invocation), TPS_LIMIT_INTERVAL_KEY, DEFAULT_TPS_LIMIT_INTERVAL);
         String serviceKey = url.getServiceKey();
         if (rate > 0) {
             StatItem statItem = stats.get(serviceKey);
@@ -48,7 +49,7 @@ public class DefaultTPSLimiter implements TPSLimiter {
                 stats.putIfAbsent(serviceKey, new StatItem(serviceKey, rate, interval));
                 statItem = stats.get(serviceKey);
             } else {
-                //rate or interval has changed, rebuild
+                // rate or interval has changed, rebuild
                 if (statItem.getRate() != rate || statItem.getInterval() != interval) {
                     stats.put(serviceKey, new StatItem(serviceKey, rate, interval));
                     statItem = stats.get(serviceKey);
@@ -64,5 +65,4 @@ public class DefaultTPSLimiter implements TPSLimiter {
 
         return true;
     }
-
 }

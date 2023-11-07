@@ -22,12 +22,12 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import java.util.HashMap;
-import java.util.Map;
 
 class TelnetHandlerAdapterTest {
 
@@ -54,7 +54,8 @@ class TelnetHandlerAdapterTest {
         Assertions.assertEquals(expectedResult, telnetHandlerAdapter.telnet(channel, message));
 
         message = "--no-prompt help";
-        expectedResult = "Command: help disabled for security reasons, please enable support by listing the commands through 'telnet'\r\n";
+        expectedResult =
+                "Command: help disabled for security reasons, please enable support by listing the commands through 'telnet'\r\n";
         Assertions.assertEquals(expectedResult, telnetHandlerAdapter.telnet(channel, message));
 
         message = "--no-prompt";
@@ -62,7 +63,8 @@ class TelnetHandlerAdapterTest {
         Assertions.assertEquals(expectedResult, telnetHandlerAdapter.telnet(channel, message));
 
         message = "help";
-        expectedResult = "Command: help disabled for security reasons, please enable support by listing the commands through 'telnet'\r\ndubbo>";
+        expectedResult =
+                "Command: help disabled for security reasons, please enable support by listing the commands through 'telnet'\r\ndubbo>";
         Assertions.assertEquals(expectedResult, telnetHandlerAdapter.telnet(channel, message));
     }
 }

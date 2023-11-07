@@ -35,16 +35,16 @@ import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_PROTOCOL_LISTENER_KEY;
 import static org.apache.dubbo.config.integration.Constants.SINGLE_CONFIG_CENTER_EXPORT_PROVIDER;
@@ -55,7 +55,8 @@ import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
  */
 class SingleRegistryCenterExportProviderIntegrationTest implements IntegrationTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(SingleRegistryCenterExportProviderIntegrationTest.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(SingleRegistryCenterExportProviderIntegrationTest.class);
 
     /**
      * Define the provider application name.
@@ -108,9 +109,9 @@ class SingleRegistryCenterExportProviderIntegrationTest implements IntegrationTe
 
         // initialize bootstrap
         DubboBootstrap.getInstance()
-            .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
-            .protocol(new ProtocolConfig(PROTOCOL_NAME, PROTOCOL_PORT))
-            .service(serviceConfig);
+                .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
+                .protocol(new ProtocolConfig(PROTOCOL_NAME, PROTOCOL_PORT))
+                .service(serviceConfig);
 
         RegistryConfig registryConfig = new RegistryConfig(ZookeeperRegistryCenterConfig.getConnectionAddress());
         Map<String, String> parameters = new HashMap<>();
@@ -129,18 +130,17 @@ class SingleRegistryCenterExportProviderIntegrationTest implements IntegrationTe
      * </ul>
      */
     private void beforeExport() {
-        registryProtocolListener = (SingleRegistryCenterExportProviderRegistryProtocolListener) ExtensionLoader
-            .getExtensionLoader(RegistryProtocolListener.class)
-            .getExtension(SINGLE_CONFIG_CENTER_EXPORT_PROVIDER);
-        exporterListener = (SingleRegistryCenterExportProviderExporterListener) ExtensionLoader
-            .getExtensionLoader(ExporterListener.class)
-            .getExtension(SINGLE_CONFIG_CENTER_EXPORT_PROVIDER);
-        filter = (SingleRegistryCenterExportProviderFilter) ExtensionLoader
-            .getExtensionLoader(Filter.class)
-            .getExtension(SINGLE_CONFIG_CENTER_EXPORT_PROVIDER);
-        serviceListener = (SingleRegistryCenterExportProviderServiceListener) ExtensionLoader
-            .getExtensionLoader(ServiceListener.class)
-            .getExtension(SINGLE_CONFIG_CENTER_EXPORT_PROVIDER);
+        registryProtocolListener = (SingleRegistryCenterExportProviderRegistryProtocolListener)
+                ExtensionLoader.getExtensionLoader(RegistryProtocolListener.class)
+                        .getExtension(SINGLE_CONFIG_CENTER_EXPORT_PROVIDER);
+        exporterListener = (SingleRegistryCenterExportProviderExporterListener)
+                ExtensionLoader.getExtensionLoader(ExporterListener.class)
+                        .getExtension(SINGLE_CONFIG_CENTER_EXPORT_PROVIDER);
+        filter = (SingleRegistryCenterExportProviderFilter)
+                ExtensionLoader.getExtensionLoader(Filter.class).getExtension(SINGLE_CONFIG_CENTER_EXPORT_PROVIDER);
+        serviceListener = (SingleRegistryCenterExportProviderServiceListener)
+                ExtensionLoader.getExtensionLoader(ServiceListener.class)
+                        .getExtension(SINGLE_CONFIG_CENTER_EXPORT_PROVIDER);
         // ---------------checkpoints--------------- //
         // ServiceConfig isn't exported
         Assertions.assertFalse(serviceConfig.isExported());
@@ -187,8 +187,9 @@ class SingleRegistryCenterExportProviderIntegrationTest implements IntegrationTe
         // The exported service is only one
         Assertions.assertEquals(serviceListener.getExportedServices().size(), 1);
         // The exported service is SingleRegistryCenterExportProviderService
-        Assertions.assertEquals(serviceListener.getExportedServices().get(0).getInterfaceClass(),
-            SingleRegistryCenterExportProviderService.class);
+        Assertions.assertEquals(
+                serviceListener.getExportedServices().get(0).getInterfaceClass(),
+                SingleRegistryCenterExportProviderService.class);
         // The SingleRegistryCenterExportProviderService is exported
         Assertions.assertTrue(serviceListener.getExportedServices().get(0).isExported());
         // The exported exporter are three
@@ -206,13 +207,15 @@ class SingleRegistryCenterExportProviderIntegrationTest implements IntegrationTe
         // registryKey: the registryKey is the default cluster, CommonConstants.DEFAULT_KEY
         // key: The exported interface's name
         // group: the group is "mapping", ServiceNameMapping.DEFAULT_MAPPING_GROUP
-        ConfigItem configItem = ApplicationModel.defaultModel().getBeanFactory().getBean(MetadataReportInstance.class).getMetadataReport(CommonConstants.DEFAULT_KEY)
-            .getConfigItem(serviceConfig.getInterface()
-                , ServiceNameMapping.DEFAULT_MAPPING_GROUP);
+        ConfigItem configItem = ApplicationModel.defaultModel()
+                .getBeanFactory()
+                .getBean(MetadataReportInstance.class)
+                .getMetadataReport(CommonConstants.DEFAULT_KEY)
+                .getConfigItem(serviceConfig.getInterface(), ServiceNameMapping.DEFAULT_MAPPING_GROUP);
         // Check if the exported service (provider) is registered
         Assertions.assertNotNull(configItem);
         // Check if registered service (provider)'s name is right
-        Assertions.assertEquals(PROVIDER_APPLICATION_NAME,configItem.getContent());
+        Assertions.assertEquals(PROVIDER_APPLICATION_NAME, configItem.getContent());
         // Check if registered service (provider)'s version exists
         Assertions.assertNotNull(configItem.getTicket());
     }

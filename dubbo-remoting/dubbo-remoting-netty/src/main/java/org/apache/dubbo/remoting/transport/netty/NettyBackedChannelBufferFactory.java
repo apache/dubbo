@@ -19,9 +19,9 @@ package org.apache.dubbo.remoting.transport.netty;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 import org.apache.dubbo.remoting.buffer.ChannelBufferFactory;
 
-import org.jboss.netty.buffer.ChannelBuffers;
-
 import java.nio.ByteBuffer;
+
+import org.jboss.netty.buffer.ChannelBuffers;
 
 /**
  * Wrap netty dynamic channel buffer.
@@ -34,12 +34,10 @@ public class NettyBackedChannelBufferFactory implements ChannelBufferFactory {
         return INSTANCE;
     }
 
-
     @Override
     public ChannelBuffer getBuffer(int capacity) {
         return new NettyBackedChannelBuffer(ChannelBuffers.dynamicBuffer(capacity));
     }
-
 
     @Override
     public ChannelBuffer getBuffer(byte[] array, int offset, int length) {
@@ -47,7 +45,6 @@ public class NettyBackedChannelBufferFactory implements ChannelBufferFactory {
         buffer.writeBytes(array, offset, length);
         return new NettyBackedChannelBuffer(buffer);
     }
-
 
     @Override
     public ChannelBuffer getBuffer(ByteBuffer nioBuffer) {

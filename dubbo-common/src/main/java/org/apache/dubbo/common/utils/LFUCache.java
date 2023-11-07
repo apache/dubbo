@@ -49,13 +49,11 @@ public class LFUCache<K, V> {
     @SuppressWarnings("unchecked")
     public LFUCache(final int maxCapacity, final float evictionFactor) {
         if (maxCapacity <= 0) {
-            throw new IllegalArgumentException("Illegal initial capacity: " +
-                    maxCapacity);
+            throw new IllegalArgumentException("Illegal initial capacity: " + maxCapacity);
         }
         boolean factorInRange = evictionFactor <= 1 && evictionFactor > 0;
         if (!factorInRange || Float.isNaN(evictionFactor)) {
-            throw new IllegalArgumentException("Illegal eviction factor value:"
-                    + evictionFactor);
+            throw new IllegalArgumentException("Illegal eviction factor value:" + evictionFactor);
         }
         this.capacity = maxCapacity;
         this.evictionCount = (int) (capacity * evictionFactor);
@@ -172,8 +170,7 @@ public class LFUCache<K, V> {
         V value;
         CacheDeque<K, V> owner;
 
-        CacheNode() {
-        }
+        CacheNode() {}
 
         CacheNode(final K key, final V value) {
             this.key = key;
@@ -190,8 +187,7 @@ public class LFUCache<K, V> {
          * @param <V>  value
          * @return retrieved node
          */
-        static <K, V> CacheNode<K, V> withdrawNode(
-                final CacheNode<K, V> node) {
+        static <K, V> CacheNode<K, V> withdrawNode(final CacheNode<K, V> node) {
             if (node != null && node.prev != null) {
                 node.prev.next = node.next;
                 if (node.next != null) {
@@ -200,7 +196,6 @@ public class LFUCache<K, V> {
             }
             return node;
         }
-
     }
 
     /**
@@ -280,7 +275,5 @@ public class LFUCache<K, V> {
         boolean isEmpty() {
             return last.next == first;
         }
-
     }
-
 }

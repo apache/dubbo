@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.model;
 
 import java.util.HashMap;
@@ -39,11 +38,10 @@ public class ConfigCenterMetric implements Metric {
     private String configCenter;
     private String changeType;
 
-    public ConfigCenterMetric() {
+    public ConfigCenterMetric() {}
 
-    }
-
-    public ConfigCenterMetric(String applicationName, String key, String group, String configCenter, String changeType) {
+    public ConfigCenterMetric(
+            String applicationName, String key, String group, String configCenter, String changeType) {
         this.applicationName = applicationName;
         this.key = key;
         this.group = group;
@@ -73,8 +71,7 @@ public class ConfigCenterMetric implements Metric {
 
         ConfigCenterMetric that = (ConfigCenterMetric) o;
 
-        if (!Objects.equals(applicationName, that.applicationName))
-            return false;
+        if (!Objects.equals(applicationName, that.applicationName)) return false;
         if (!Objects.equals(key, that.key)) return false;
         if (!Objects.equals(group, that.group)) return false;
         if (!Objects.equals(configCenter, that.configCenter)) return false;

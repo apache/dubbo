@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.config.annotation;
 
 import org.apache.dubbo.config.annotation.DubboReference;
@@ -127,6 +126,4 @@ public @interface Reference {
     String monitor() default "";
 
     String[] registry() default {};
-
 }
-

@@ -27,41 +27,44 @@ import java.lang.reflect.Type;
 import java.util.Set;
 
 public class HttpMessageCodecManager {
-    private static final Set<HttpMessageCodec> httpMessageCodecs =
-        FrameworkModel.defaultModel().getExtensionLoader(HttpMessageCodec.class).getSupportedExtensionInstances();
+    private static final Set<HttpMessageCodec> httpMessageCodecs = FrameworkModel.defaultModel()
+            .getExtensionLoader(HttpMessageCodec.class)
+            .getSupportedExtensionInstances();
 
-
-    public static Object httpMessageDecode(byte[] body, Class<?> type, Type actualType, MediaType mediaType) throws Exception {
+    public static Object httpMessageDecode(byte[] body, Class<?> type, Type actualType, MediaType mediaType)
+            throws Exception {
         if (body == null || body.length == 0) {
             return null;
         }
 
         for (HttpMessageCodec httpMessageCodec : httpMessageCodecs) {
             if (httpMessageCodec.contentTypeSupport(mediaType, type) || typeJudge(mediaType, type, httpMessageCodec)) {
-                return httpMessageCodec.decode(body, type,actualType);
+                return httpMessageCodec.decode(body, type, actualType);
             }
         }
         throw new UnSupportContentTypeException("UnSupport content-type :" + mediaType.value);
     }
 
-    public static MessageCodecResultPair httpMessageEncode(OutputStream outputStream, Object unSerializedBody, URL url, MediaType mediaType, Class<?> bodyType) throws Exception {
-
+    public static MessageCodecResultPair httpMessageEncode(
+            OutputStream outputStream, Object unSerializedBody, URL url, MediaType mediaType, Class<?> bodyType)
+            throws Exception {
 
         if (unSerializedBody == null) {
             for (HttpMessageCodec httpMessageCodec : httpMessageCodecs) {
-                if (httpMessageCodec.contentTypeSupport(mediaType, bodyType) || typeJudge(mediaType, bodyType, httpMessageCodec)) {
+                if (httpMessageCodec.contentTypeSupport(mediaType, bodyType)
+                        || typeJudge(mediaType, bodyType, httpMessageCodec)) {
                     return MessageCodecResultPair.pair(false, httpMessageCodec.contentType());
                 }
             }
         }
 
         for (HttpMessageCodec httpMessageCodec : httpMessageCodecs) {
-            if (httpMessageCodec.contentTypeSupport(mediaType, bodyType) || typeJudge(mediaType, bodyType, httpMessageCodec)) {
+            if (httpMessageCodec.contentTypeSupport(mediaType, bodyType)
+                    || typeJudge(mediaType, bodyType, httpMessageCodec)) {
                 httpMessageCodec.encode(outputStream, unSerializedBody, url);
                 return MessageCodecResultPair.pair(true, httpMessageCodec.contentType());
             }
         }
-
 
         throw new UnSupportContentTypeException("UnSupport content-type :" + mediaType.value);
     }
@@ -76,7 +79,8 @@ public class HttpMessageCodecManager {
      */
     private static boolean typeJudge(MediaType mediaType, Class<?> bodyType, HttpMessageCodec httpMessageCodec) {
         return (MediaType.ALL_VALUE.equals(mediaType) || mediaType == null)
-            && bodyType != null && httpMessageCodec.typeSupport(bodyType);
+                && bodyType != null
+                && httpMessageCodec.typeSupport(bodyType);
     }
 
     public static MediaType typeSupport(Class<?> type) {
@@ -85,11 +89,8 @@ public class HttpMessageCodecManager {
             if (httpMessageCodec.typeSupport(type)) {
                 return httpMessageCodec.contentType();
             }
-
         }
 
         return null;
     }
-
-
 }

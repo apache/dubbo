@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.config;
 
 import org.apache.dubbo.config.annotation.Reference;
@@ -22,8 +21,7 @@ import org.apache.dubbo.config.annotation.Reference;
 @Deprecated
 public class ReferenceConfig<T> extends org.apache.dubbo.config.ReferenceConfig<T> {
 
-    public ReferenceConfig() {
-    }
+    public ReferenceConfig() {}
 
     public ReferenceConfig(Reference reference) {
         super(reference);

@@ -16,15 +16,15 @@
  */
 package org.apache.dubbo.spring.boot.actuate.endpoint.condition;
 
-import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
-import org.springframework.boot.actuate.endpoint.annotation.EndpointExtension;
-import org.springframework.context.annotation.Conditional;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
+import org.springframework.boot.actuate.endpoint.annotation.EndpointExtension;
+import org.springframework.context.annotation.Conditional;
 
 /**
  * {@link Conditional} that checks whether or not an endpoint is enabled, which is compatible with

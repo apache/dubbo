@@ -14,13 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.rpc.service;
 
 @Deprecated
 public interface GenericService extends org.apache.dubbo.rpc.service.GenericService {
 
     @Override
-    Object $invoke(String method, String[] parameterTypes, Object[] args)
-            throws GenericException;
+    Object $invoke(String method, String[] parameterTypes, Object[] args) throws GenericException;
 }

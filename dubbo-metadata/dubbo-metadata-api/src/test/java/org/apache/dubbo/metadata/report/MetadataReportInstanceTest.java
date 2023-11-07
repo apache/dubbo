@@ -22,13 +22,13 @@ import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Collections;
+import java.util.Map;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.Collections;
-import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
@@ -48,7 +48,6 @@ class MetadataReportInstanceTest {
         ApplicationModel applicationModel = spy(ApplicationModel.defaultModel());
         metadataReportInstance = new MetadataReportInstance(applicationModel);
 
-
         URL url = URL.valueOf("metadata://127.0.0.1:20880/TestService?version=1.0.0&metadata=JTest");
         metadataReportConfig = mock(MetadataReportConfig.class);
         when(metadataReportConfig.getUsername()).thenReturn("username");
@@ -61,14 +60,15 @@ class MetadataReportInstanceTest {
 
         when(configManager.getMetadataConfigs()).thenReturn(Collections.emptyList());
         when(applicationModel.getApplicationConfigManager()).thenReturn(configManager);
-        when(applicationModel.getApplicationConfigManager().getApplicationOrElseThrow()).thenReturn(new ApplicationConfig("test"));
+        when(applicationModel.getApplicationConfigManager().getApplicationOrElseThrow())
+                .thenReturn(new ApplicationConfig("test"));
         when(applicationModel.getCurrentConfig()).thenReturn(new ApplicationConfig("test"));
-
     }
 
     @Test
     void test() {
-        Assertions.assertNull(metadataReportInstance.getMetadataReport(registryId), "the metadata report was not initialized.");
+        Assertions.assertNull(
+                metadataReportInstance.getMetadataReport(registryId), "the metadata report was not initialized.");
         assertThat(metadataReportInstance.getMetadataReports(true), Matchers.anEmptyMap());
 
         metadataReportInstance.init(Collections.singletonList(metadataReportConfig));
@@ -85,5 +85,4 @@ class MetadataReportInstanceTest {
         Assertions.assertEquals(metadataReportConfig.getUsername(), "username");
         Assertions.assertEquals(metadataReportConfig.getPassword(), "password");
     }
-
 }

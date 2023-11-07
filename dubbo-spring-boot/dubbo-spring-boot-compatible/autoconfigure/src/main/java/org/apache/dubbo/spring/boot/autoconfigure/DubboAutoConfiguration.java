@@ -22,6 +22,8 @@ import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotati
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationPostProcessor;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfig;
 
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -29,8 +31,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.Set;
 
 import static org.apache.dubbo.spring.boot.util.DubboUtils.BASE_PACKAGES_BEAN_NAME;
 import static org.apache.dubbo.spring.boot.util.DubboUtils.BASE_PACKAGES_PROPERTY_NAME;
@@ -62,9 +62,8 @@ public class DubboAutoConfiguration {
     @ConditionalOnProperty(prefix = DUBBO_SCAN_PREFIX, name = BASE_PACKAGES_PROPERTY_NAME)
     @ConditionalOnBean(name = BASE_PACKAGES_BEAN_NAME)
     @Bean
-    public ServiceAnnotationPostProcessor serviceAnnotationBeanProcessor(@Qualifier(BASE_PACKAGES_BEAN_NAME)
-                                                                       Set<String> packagesToScan) {
+    public ServiceAnnotationPostProcessor serviceAnnotationBeanProcessor(
+            @Qualifier(BASE_PACKAGES_BEAN_NAME) Set<String> packagesToScan) {
         return new ServiceAnnotationPostProcessor(packagesToScan);
     }
-
 }

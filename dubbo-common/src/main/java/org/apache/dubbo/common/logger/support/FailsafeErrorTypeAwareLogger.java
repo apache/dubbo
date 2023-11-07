@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.logger.support;
 
 import org.apache.dubbo.common.Version;
@@ -40,11 +39,12 @@ public class FailsafeErrorTypeAwareLogger extends FailsafeLogger implements Erro
         super(logger);
     }
 
-    private String appendContextMessageWithInstructions(String code, String cause, String extendedInformation, String msg) {
-        return " [DUBBO] " + msg + ", dubbo version: " + Version.getVersion() +
-            ", current host: " + NetUtils.getLocalHost() + ", error code: " + code +
-            ". This may be caused by " + cause + ", " +
-            "go to " + getErrorUrl(code) + " to find instructions. " + extendedInformation;
+    private String appendContextMessageWithInstructions(
+            String code, String cause, String extendedInformation, String msg) {
+        return " [DUBBO] " + msg + ", dubbo version: " + Version.getVersion() + ", current host: "
+                + NetUtils.getLocalHost() + ", error code: " + code + ". This may be caused by "
+                + cause + ", " + "go to "
+                + getErrorUrl(code) + " to find instructions. " + extendedInformation;
     }
 
     private String getErrorUrl(String code) {
@@ -64,8 +64,9 @@ public class FailsafeErrorTypeAwareLogger extends FailsafeLogger implements Erro
             errorCodeSegments[0] = Integer.parseInt(segments[0]);
             errorCodeSegments[1] = Integer.parseInt(segments[1]);
         } catch (NumberFormatException numberFormatException) {
-            error("Invalid error code: " + code + ", the format of error code is: X-X (where X is a number).",
-                numberFormatException);
+            error(
+                    "Invalid error code: " + code + ", the format of error code is: X-X (where X is a number).",
+                    numberFormatException);
 
             return "";
         }

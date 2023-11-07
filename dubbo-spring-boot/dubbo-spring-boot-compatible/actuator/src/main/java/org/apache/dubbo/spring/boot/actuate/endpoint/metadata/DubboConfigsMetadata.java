@@ -28,11 +28,11 @@ import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 
-import org.springframework.stereotype.Component;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
+
+import org.springframework.stereotype.Component;
 
 import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncludingAncestors;
 
@@ -60,13 +60,14 @@ public class DubboConfigsMetadata extends AbstractDubboMetadata {
         addDubboConfigBeans(ServiceConfig.class, configsMap);
 
         return configsMap;
-
     }
 
-    private void addDubboConfigBeans(Class<? extends AbstractConfig> dubboConfigClass,
-                                     Map<String, Map<String, Map<String, Object>>> configsMap) {
+    private void addDubboConfigBeans(
+            Class<? extends AbstractConfig> dubboConfigClass,
+            Map<String, Map<String, Map<String, Object>>> configsMap) {
 
-        Map<String, ? extends AbstractConfig> dubboConfigBeans = beansOfTypeIncludingAncestors(applicationContext, dubboConfigClass);
+        Map<String, ? extends AbstractConfig> dubboConfigBeans =
+                beansOfTypeIncludingAncestors(applicationContext, dubboConfigClass);
 
         String name = dubboConfigClass.getSimpleName();
 
@@ -78,10 +79,8 @@ public class DubboConfigsMetadata extends AbstractDubboMetadata {
             AbstractConfig configBean = entry.getValue();
             Map<String, Object> configBeanMeta = resolveBeanMetadata(configBean);
             beansMetadata.put(beanName, configBeanMeta);
-
         }
 
         configsMap.put(name, beansMetadata);
-
     }
 }

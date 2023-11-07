@@ -25,13 +25,14 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.spring.extension.SpringExtensionInjector;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import org.springframework.context.ApplicationContext;
-
 import javax.sql.DataSource;
+
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.util.Map;
+
+import org.springframework.context.ApplicationContext;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_WARN_STATUS_CHECKER;
 
@@ -41,7 +42,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_WARN_
 @Activate
 public class DataSourceStatusChecker implements StatusChecker {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DataSourceStatusChecker.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(DataSourceStatusChecker.class);
 
     private ApplicationModel applicationModel;
 
@@ -66,8 +68,7 @@ public class DataSourceStatusChecker implements StatusChecker {
             return new Status(Status.Level.UNKNOWN);
         }
 
-        Map<String, DataSource> dataSources =
-            applicationContext.getBeansOfType(DataSource.class, false, false);
+        Map<String, DataSource> dataSources = applicationContext.getBeansOfType(DataSource.class, false, false);
         if (CollectionUtils.isEmptyMap(dataSources)) {
             return new Status(Status.Level.UNKNOWN);
         }
@@ -100,5 +101,4 @@ public class DataSourceStatusChecker implements StatusChecker {
         }
         return new Status(level, buf.toString());
     }
-
 }

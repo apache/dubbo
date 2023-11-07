@@ -59,7 +59,10 @@ import static org.apache.dubbo.common.constants.FilterConstants.VALIDATION_KEY;
  * @see Filter
  * @see org.apache.dubbo.validation.support.AbstractValidation
  */
-@Activate(group = {CONSUMER, PROVIDER}, value = VALIDATION_KEY, order = 10000)
+@Activate(
+        group = {CONSUMER, PROVIDER},
+        value = VALIDATION_KEY,
+        order = 10000)
 public class ValidationFilter implements Filter {
 
     private Validation validation;
@@ -87,7 +90,8 @@ public class ValidationFilter implements Filter {
             try {
                 Validator validator = validation.getValidator(invoker.getUrl());
                 if (validator != null) {
-                    validator.validate(invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
+                    validator.validate(
+                            invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
                 }
             } catch (RpcException e) {
                 throw e;
@@ -99,7 +103,8 @@ public class ValidationFilter implements Filter {
     }
 
     private boolean needValidate(URL url, String methodName) {
-        return validation != null && !methodName.startsWith("$") && ConfigUtils.isNotEmpty(url.getMethodParameter(methodName, VALIDATION_KEY));
+        return validation != null
+                && !methodName.startsWith("$")
+                && ConfigUtils.isNotEmpty(url.getMethodParameter(methodName, VALIDATION_KEY));
     }
-
 }

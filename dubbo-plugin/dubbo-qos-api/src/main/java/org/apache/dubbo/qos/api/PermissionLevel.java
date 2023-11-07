@@ -39,7 +39,6 @@ public enum PermissionLevel {
      * It is the reserved  anonymous permission level, can not access any command
      */
     NONE(Integer.MIN_VALUE),
-
     ;
     private final int level;
 
@@ -55,13 +54,14 @@ public enum PermissionLevel {
     public static PermissionLevel from(String permissionLevel) {
         if (StringUtils.isNumber(permissionLevel)) {
             return Arrays.stream(values())
-                .filter(p -> String.valueOf(p.getLevel()).equals(permissionLevel.trim()))
-                .findFirst()
-                .orElse(PUBLIC);
+                    .filter(p -> String.valueOf(p.getLevel()).equals(permissionLevel.trim()))
+                    .findFirst()
+                    .orElse(PUBLIC);
         }
         return Arrays.stream(values())
-            .filter(p -> p.name().equalsIgnoreCase(String.valueOf(permissionLevel).trim()))
-            .findFirst()
-            .orElse(PUBLIC);
+                .filter(p -> p.name()
+                        .equalsIgnoreCase(String.valueOf(permissionLevel).trim()))
+                .findFirst()
+                .orElse(PUBLIC);
     }
 }

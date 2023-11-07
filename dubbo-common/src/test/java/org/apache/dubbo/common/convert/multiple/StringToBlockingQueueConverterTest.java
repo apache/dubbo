@@ -18,9 +18,6 @@ package org.apache.dubbo.common.convert.multiple;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,6 +34,9 @@ import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.TransferQueue;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -95,7 +95,8 @@ class StringToBlockingQueueConverterTest {
         values.offer(2);
         values.offer(3);
 
-        BlockingQueue<Integer> result = (BlockingQueue<Integer>) converter.convert("1,2,3", BlockingDeque.class, Integer.class);
+        BlockingQueue<Integer> result =
+                (BlockingQueue<Integer>) converter.convert("1,2,3", BlockingDeque.class, Integer.class);
 
         assertTrue(CollectionUtils.equals(values, result));
 
@@ -108,7 +109,6 @@ class StringToBlockingQueueConverterTest {
 
         assertNull(converter.convert(null, Collection.class, null));
         assertNull(converter.convert("", Collection.class, null));
-
     }
 
     @Test

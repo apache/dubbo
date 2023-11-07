@@ -16,13 +16,11 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
-
 /**
  * Only the server that implements servlet container
  * could support something like @Context injection of servlet objects.
  */
 public class RestServerFactory {
-
 
     public RestProtocolServer createServer(String name) {
         return new NettyHttpRestServer();

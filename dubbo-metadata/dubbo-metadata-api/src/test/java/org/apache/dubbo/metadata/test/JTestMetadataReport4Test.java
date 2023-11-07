@@ -36,15 +36,13 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 class JTestMetadataReport4Test extends AbstractMetadataReport {
 
-    private final static Logger logger = LoggerFactory.getLogger(JTestMetadataReport4Test.class);
-
+    private static final Logger logger = LoggerFactory.getLogger(JTestMetadataReport4Test.class);
 
     public JTestMetadataReport4Test(URL url) {
         super(url);
     }
 
     public volatile Map<String, String> store = new ConcurrentHashMap<>();
-
 
     private static String getProtocol(URL url) {
         String protocol = url.getSide();
@@ -58,7 +56,8 @@ class JTestMetadataReport4Test extends AbstractMetadataReport {
     }
 
     @Override
-    protected void doStoreConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, String serviceParameterString) {
+    protected void doStoreConsumerMetadata(
+            MetadataIdentifier consumerMetadataIdentifier, String serviceParameterString) {
         store.put(consumerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), serviceParameterString);
     }
 
@@ -101,7 +100,5 @@ class JTestMetadataReport4Test extends AbstractMetadataReport {
     }
 
     @Override
-    public void removeServiceAppMappingListener(String serviceKey, MappingListener listener) {
-
-    }
+    public void removeServiceAppMappingListener(String serviceKey, MappingListener listener) {}
 }

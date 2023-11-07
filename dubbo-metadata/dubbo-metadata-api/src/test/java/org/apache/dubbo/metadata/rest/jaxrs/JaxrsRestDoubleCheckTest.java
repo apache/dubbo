@@ -23,14 +23,15 @@ import org.apache.dubbo.metadata.rest.api.JaxrsRestDoubleCheckContainsPathVariab
 import org.apache.dubbo.metadata.rest.api.JaxrsRestDoubleCheckService;
 import org.apache.dubbo.metadata.rest.api.JaxrsUsingService;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
-public class JaxrsRestDoubleCheckTest {
-    private JAXRSServiceRestMetadataResolver instance = new JAXRSServiceRestMetadataResolver(ApplicationModel.defaultModel());
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
+public class JaxrsRestDoubleCheckTest {
+    private JAXRSServiceRestMetadataResolver instance =
+            new JAXRSServiceRestMetadataResolver(ApplicationModel.defaultModel());
 
     @Test
     void testDoubleCheckException() {
@@ -46,8 +47,6 @@ public class JaxrsRestDoubleCheckTest {
             resolve.setServiceInterface(JaxrsRestDoubleCheckContainsPathVariableService.class.getName());
             instance.resolve(JaxrsRestDoubleCheckContainsPathVariableService.class, resolve);
         });
-
-
     }
 
     @Test
@@ -63,14 +62,12 @@ public class JaxrsRestDoubleCheckTest {
         resolve.setServiceInterface(JaxrsUsingService.class.getName());
         instance.resolve(JaxrsUsingService.class, resolve);
 
-        Map<PathMatcher, RestMethodMetadata> pathContainPathVariableToServiceMap = resolve.getPathContainPathVariableToServiceMap();
+        Map<PathMatcher, RestMethodMetadata> pathContainPathVariableToServiceMap =
+                resolve.getPathContainPathVariableToServiceMap();
 
-
-        RestMethodMetadata restMethodMetadata = pathContainPathVariableToServiceMap.get(PathMatcher.getInvokeCreatePathMatcher("/usingService/aaa", null, null, null, "TEST"));
+        RestMethodMetadata restMethodMetadata = pathContainPathVariableToServiceMap.get(
+                PathMatcher.getInvokeCreatePathMatcher("/usingService/aaa", null, null, null, "TEST"));
 
         Assertions.assertNotNull(restMethodMetadata);
-
-
     }
-
 }

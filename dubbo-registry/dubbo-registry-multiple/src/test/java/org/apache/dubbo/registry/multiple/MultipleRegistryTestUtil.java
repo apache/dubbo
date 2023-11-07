@@ -80,15 +80,15 @@ public class MultipleRegistryTestUtil {
         // providers
         List<URL> providerURLs = categoryUrls.getOrDefault(PROVIDERS_CATEGORY, Collections.emptyList());
         return providerURLs;
-
     }
 
     private static boolean isValidCategory(URL url) {
         String category = url.getCategory(DEFAULT_CATEGORY);
-        if ((ROUTERS_CATEGORY.equals(category) || ROUTE_PROTOCOL.equals(url.getProtocol())) ||
-                PROVIDERS_CATEGORY.equals(category) ||
-                CONFIGURATORS_CATEGORY.equals(category) || DYNAMIC_CONFIGURATORS_CATEGORY.equals(category) ||
-                APP_DYNAMIC_CONFIGURATORS_CATEGORY.equals(category)) {
+        if ((ROUTERS_CATEGORY.equals(category) || ROUTE_PROTOCOL.equals(url.getProtocol()))
+                || PROVIDERS_CATEGORY.equals(category)
+                || CONFIGURATORS_CATEGORY.equals(category)
+                || DYNAMIC_CONFIGURATORS_CATEGORY.equals(category)
+                || APP_DYNAMIC_CONFIGURATORS_CATEGORY.equals(category)) {
             return true;
         }
         return false;

@@ -16,10 +16,10 @@
  */
 package org.apache.dubbo.common.convert;
 
+import java.time.Duration;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.time.Duration;
 
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -38,7 +38,8 @@ class StringToDurationConverterTest {
 
     @BeforeEach
     public void init() {
-        converter = (StringToDurationConverter) getExtensionLoader(Converter.class).getExtension("string-to-duration");
+        converter =
+                (StringToDurationConverter) getExtensionLoader(Converter.class).getExtension("string-to-duration");
     }
 
     @Test

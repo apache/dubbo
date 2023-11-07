@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metadata.rest;
 
-
 import org.apache.dubbo.common.extension.SPI;
 
 import java.util.List;

@@ -18,11 +18,11 @@ package org.apache.dubbo.config.bootstrap.builders;
 
 import org.apache.dubbo.config.AbstractConfig;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class AbstractBuilderTest {
 
@@ -112,6 +112,5 @@ class AbstractBuilderTest {
         }
     }
 
-    private static class Config extends AbstractConfig {
-    }
+    private static class Config extends AbstractConfig {}
 }

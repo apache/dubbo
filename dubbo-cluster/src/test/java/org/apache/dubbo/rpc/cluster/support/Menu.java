@@ -26,8 +26,7 @@ class Menu {
 
     private Map<String, List<String>> menus = new HashMap<String, List<String>>();
 
-    public Menu() {
-    }
+    public Menu() {}
 
     public Menu(Map<String, List<String>> menus) {
         for (Map.Entry<String, List<String>> entry : menus.entrySet()) {
@@ -62,5 +61,4 @@ class Menu {
             addMenu(entry.getKey(), entry.getValue());
         }
     }
-
 }

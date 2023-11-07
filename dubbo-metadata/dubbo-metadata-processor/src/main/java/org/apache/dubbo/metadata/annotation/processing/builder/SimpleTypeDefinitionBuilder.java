@@ -21,10 +21,10 @@ import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.type.DeclaredType;
+
 import java.util.Map;
 
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.isSimpleType;
-
 
 /**
  * {@link TypeBuilder} for {@link TypeUtils#SIMPLE_TYPES Java Simple Type}
@@ -39,7 +39,8 @@ public class SimpleTypeDefinitionBuilder implements DeclaredTypeDefinitionBuilde
     }
 
     @Override
-    public TypeDefinition build(ProcessingEnvironment processingEnv, DeclaredType type, Map<String, TypeDefinition> typeCache) {
+    public TypeDefinition build(
+            ProcessingEnvironment processingEnv, DeclaredType type, Map<String, TypeDefinition> typeCache) {
         TypeDefinition td = new TypeDefinition(type.toString());
         return td;
     }

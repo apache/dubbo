@@ -28,12 +28,13 @@ public abstract class AbstractRouter implements Router {
     private GovernanceRuleRepository ruleRepository;
 
     public AbstractRouter(URL url) {
-        this.ruleRepository = url.getOrDefaultModuleModel().getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
+        this.ruleRepository = url.getOrDefaultModuleModel()
+                .getExtensionLoader(GovernanceRuleRepository.class)
+                .getDefaultExtension();
         this.url = url;
     }
 
-    public AbstractRouter() {
-    }
+    public AbstractRouter() {}
 
     @Override
     public URL getUrl() {
@@ -67,8 +68,7 @@ public abstract class AbstractRouter implements Router {
         this.priority = priority;
     }
 
-    public GovernanceRuleRepository getRuleRepository(){
+    public GovernanceRuleRepository getRuleRepository() {
         return this.ruleRepository;
     }
-
 }

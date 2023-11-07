@@ -36,7 +36,8 @@ class StringToIntegerConverterTest {
 
     @BeforeEach
     public void init() {
-        converter = (StringToIntegerConverter) getExtensionLoader(Converter.class).getExtension("string-to-integer");
+        converter =
+                (StringToIntegerConverter) getExtensionLoader(Converter.class).getExtension("string-to-integer");
     }
 
     @Test

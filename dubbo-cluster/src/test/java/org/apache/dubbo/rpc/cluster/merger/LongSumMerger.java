@@ -25,7 +25,9 @@ public class LongSumMerger implements Merger<Long> {
 
     @Override
     public Long merge(Long... items) {
-        return Arrays.stream(items).filter(Objects::nonNull)
-            .mapToLong(Long::longValue).sum();
+        return Arrays.stream(items)
+                .filter(Objects::nonNull)
+                .mapToLong(Long::longValue)
+                .sum();
     }
 }

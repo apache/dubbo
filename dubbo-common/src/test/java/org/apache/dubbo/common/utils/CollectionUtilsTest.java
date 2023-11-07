@@ -18,9 +18,6 @@ package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.config.ProtocolConfig;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,6 +27,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
@@ -114,7 +114,8 @@ class CollectionUtilsTest {
         assertNull(CollectionUtils.splitAll(null, null));
         assertNull(CollectionUtils.splitAll(null, "-"));
 
-        assertTrue(CollectionUtils.splitAll(new HashMap<String, List<String>>(), "-").isEmpty());
+        assertTrue(CollectionUtils.splitAll(new HashMap<String, List<String>>(), "-")
+                .isEmpty());
 
         Map<String, List<String>> input = new HashMap<String, List<String>>();
         input.put("key1", Arrays.asList("1:a", "2:b", "3:c"));
@@ -150,8 +151,7 @@ class CollectionUtilsTest {
 
         Map<String, List<String>> output = CollectionUtils.joinAll(input, ":");
         for (Map.Entry<String, List<String>> entry : output.entrySet()) {
-            if (entry.getValue() == null)
-                continue;
+            if (entry.getValue() == null) continue;
             Collections.sort(entry.getValue());
         }
 
@@ -176,8 +176,10 @@ class CollectionUtilsTest {
         assertFalse(CollectionUtils.mapEquals(null, new HashMap<String, String>()));
         assertFalse(CollectionUtils.mapEquals(new HashMap<String, String>(), null));
 
-        assertTrue(CollectionUtils.mapEquals(CollectionUtils.toStringMap("1", "a", "2", "b"), CollectionUtils.toStringMap("1", "a", "2", "b")));
-        assertFalse(CollectionUtils.mapEquals(CollectionUtils.toStringMap("1", "a"), CollectionUtils.toStringMap("1", "a", "2", "b")));
+        assertTrue(CollectionUtils.mapEquals(
+                CollectionUtils.toStringMap("1", "a", "2", "b"), CollectionUtils.toStringMap("1", "a", "2", "b")));
+        assertFalse(CollectionUtils.mapEquals(
+                CollectionUtils.toStringMap("1", "a"), CollectionUtils.toStringMap("1", "a", "2", "b")));
     }
 
     @Test
@@ -204,7 +206,7 @@ class CollectionUtilsTest {
 
     @Test
     void testObjectToMap() throws Exception {
-        ProtocolConfig protocolConfig=new ProtocolConfig();
+        ProtocolConfig protocolConfig = new ProtocolConfig();
         protocolConfig.setSerialization("fastjson2");
 
         assertFalse(CollectionUtils.objToMap(protocolConfig).isEmpty());

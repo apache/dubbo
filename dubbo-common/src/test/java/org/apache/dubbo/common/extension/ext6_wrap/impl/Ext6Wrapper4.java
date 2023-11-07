@@ -23,7 +23,9 @@ import org.apache.dubbo.common.extension.ext6_wrap.WrappedExtWrapper;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-@Wrapper(mismatches = {"impl1", "impl2"}, order = 4)
+@Wrapper(
+        mismatches = {"impl1", "impl2"},
+        order = 4)
 public class Ext6Wrapper4 implements WrappedExt, WrappedExtWrapper {
     public static AtomicInteger echoCount = new AtomicInteger();
     WrappedExt origin;

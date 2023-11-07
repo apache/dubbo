@@ -68,13 +68,19 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
         try {
             doOpen();
             if (logger.isInfoEnabled()) {
-                logger.info("Start " + getClass().getSimpleName() + " bind " + getBindAddress() + ", export " + getLocalAddress());
+                logger.info("Start " + getClass().getSimpleName() + " bind " + getBindAddress() + ", export "
+                        + getLocalAddress());
             }
         } catch (Throwable t) {
-            throw new RemotingException(url.toInetSocketAddress(), null, "Failed to bind " + getClass().getSimpleName()
-                + " on " + bindAddress + ", cause: " + t.getMessage(), t);
+            throw new RemotingException(
+                    url.toInetSocketAddress(),
+                    null,
+                    "Failed to bind " + getClass().getSimpleName() + " on " + bindAddress + ", cause: "
+                            + t.getMessage(),
+                    t);
         }
-        executors.add(executorRepository.createExecutorIfAbsent(ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME)));
+        executors.add(
+                executorRepository.createExecutorIfAbsent(ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME)));
     }
 
     protected abstract void doOpen() throws Throwable;
@@ -100,7 +106,8 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
             logger.error(INTERNAL_ERROR, "unknown error in remoting module", "", t.getMessage(), t);
         }
 
-        ExecutorService executor = executorRepository.createExecutorIfAbsent(ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME));
+        ExecutorService executor =
+                executorRepository.createExecutorIfAbsent(ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME));
         executors.add(executor);
         executorRepository.updateThreadpool(url, executor);
         super.setUrl(getUrl().addParameters(url.getParameters()));
@@ -119,7 +126,8 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
     @Override
     public void close() {
         if (logger.isInfoEnabled()) {
-            logger.info("Close " + getClass().getSimpleName() + " bind " + getBindAddress() + ", export " + getLocalAddress());
+            logger.info("Close " + getClass().getSimpleName() + " bind " + getBindAddress() + ", export "
+                    + getLocalAddress());
         }
 
         for (ExecutorService executor : executors) {
@@ -164,13 +172,23 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
     public void connected(Channel ch) throws RemotingException {
         // If the server has entered the shutdown process, reject any new connection
         if (this.isClosing() || this.isClosed()) {
-            logger.warn(INTERNAL_ERROR, "unknown error in remoting module", "", "Close new channel " + ch + ", cause: server is closing or has been closed. For example, receive a new connect request while in shutdown process.");
+            logger.warn(
+                    INTERNAL_ERROR,
+                    "unknown error in remoting module",
+                    "",
+                    "Close new channel " + ch
+                            + ", cause: server is closing or has been closed. For example, receive a new connect request while in shutdown process.");
             ch.close();
             return;
         }
 
-        if (accepts > 0 && getChannelsSize()> accepts) {
-            logger.error(INTERNAL_ERROR, "unknown error in remoting module", "", "Close channel " + ch + ", cause: The server " + ch.getLocalAddress() + " connections greater than max config " + accepts);
+        if (accepts > 0 && getChannelsSize() > accepts) {
+            logger.error(
+                    INTERNAL_ERROR,
+                    "unknown error in remoting module",
+                    "",
+                    "Close channel " + ch + ", cause: The server " + ch.getLocalAddress()
+                            + " connections greater than max config " + accepts);
             ch.close();
             return;
         }
@@ -179,10 +197,13 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
 
     @Override
     public void disconnected(Channel ch) throws RemotingException {
-        if (getChannelsSize()==0) {
-            logger.warn(INTERNAL_ERROR, "unknown error in remoting module", "", "All clients has disconnected from " + ch.getLocalAddress() + ". You can graceful shutdown now.");
+        if (getChannelsSize() == 0) {
+            logger.warn(
+                    INTERNAL_ERROR,
+                    "unknown error in remoting module",
+                    "",
+                    "All clients has disconnected from " + ch.getLocalAddress() + ". You can graceful shutdown now.");
         }
         super.disconnected(ch);
     }
-
 }

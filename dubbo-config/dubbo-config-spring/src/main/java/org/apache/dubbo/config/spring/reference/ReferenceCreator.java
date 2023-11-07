@@ -35,14 +35,14 @@ import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.config.spring.util.ObjectUtils;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
+import java.util.Map;
+
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.DataBinder;
-
-import java.util.Map;
 
 /**
  * {@link ReferenceConfig} Creator for @{@link DubboReference}
@@ -52,7 +52,8 @@ import java.util.Map;
 public class ReferenceCreator {
 
     // Ignore those fields
-    static final String[] IGNORE_FIELD_NAMES = ObjectUtils.of("application", "module", "consumer", "monitor", "registry", "interfaceClass");
+    static final String[] IGNORE_FIELD_NAMES =
+            ObjectUtils.of("application", "module", "consumer", "monitor", "registry", "interfaceClass");
 
     private static final String ONRETURN = "onreturn";
 
@@ -80,8 +81,9 @@ public class ReferenceCreator {
         Assert.notNull(applicationContext, "The ApplicationContext must not be null!");
         this.attributes = attributes;
         this.applicationContext = applicationContext;
-        this.classLoader = applicationContext.getClassLoader() != null ?
-            applicationContext.getClassLoader() : Thread.currentThread().getContextClassLoader();
+        this.classLoader = applicationContext.getClassLoader() != null
+                ? applicationContext.getClassLoader()
+                : Thread.currentThread().getContextClassLoader();
         moduleModel = DubboBeanUtils.getModuleModel(applicationContext);
         Assert.notNull(moduleModel, "ModuleModel not found in Spring ApplicationContext");
     }
@@ -93,13 +95,11 @@ public class ReferenceCreator {
         configureBean(configBean);
 
         if (logger.isInfoEnabled()) {
-            logger.info("The configBean[type:" +
-                configBean.getClass().getSimpleName() + "<" + defaultInterfaceClass.getTypeName() + ">" +
-                "] has been built.");
+            logger.info("The configBean[type:" + configBean.getClass().getSimpleName() + "<"
+                    + defaultInterfaceClass.getTypeName() + ">" + "] has been built.");
         }
 
         return configBean;
-
     }
 
     protected void configureBean(ReferenceConfig referenceConfig) throws Exception {
@@ -111,7 +111,6 @@ public class ReferenceCreator {
         configureModuleConfig(referenceConfig);
 
         configureConsumerConfig(referenceConfig);
-
     }
 
     private void configureMonitorConfig(ReferenceConfig configBean) {
@@ -147,7 +146,10 @@ public class ReferenceCreator {
 
     private <T extends AbstractConfig> T getConfig(String configIdOrName, Class<T> configType) {
         // 1. find in ModuleConfigManager
-        T config = moduleModel.getConfigManager().getConfig(configType, configIdOrName).orElse(null);
+        T config = moduleModel
+                .getConfigManager()
+                .getConfig(configType, configIdOrName)
+                .orElse(null);
         if (config == null) {
             // 2. find in Spring ApplicationContext
             if (applicationContext.containsBean(configIdOrName)) {
@@ -175,16 +177,17 @@ public class ReferenceCreator {
         // convert String[] to Map (such as @Method.parameters())
         conversionService.addConverter(String[].class, Map.class, DubboAnnotationUtils::convertParameters);
 
-        //convert Map to MethodConfig
-        conversionService.addConverter(Map.class, MethodConfig.class, source -> createMethodConfig(source, conversionService));
+        // convert Map to MethodConfig
+        conversionService.addConverter(
+                Map.class, MethodConfig.class, source -> createMethodConfig(source, conversionService));
 
-        //convert @Method to MethodConfig
+        // convert @Method to MethodConfig
         conversionService.addConverter(Method.class, MethodConfig.class, source -> {
             Map<String, Object> methodAttributes = AnnotationUtils.getAnnotationAttributes(source, true);
             return createMethodConfig(methodAttributes, conversionService);
         });
 
-        //convert Map to ArgumentConfig
+        // convert Map to ArgumentConfig
         conversionService.addConverter(Map.class, ArgumentConfig.class, source -> {
             ArgumentConfig argumentConfig = new ArgumentConfig();
             DataBinder argDataBinder = new DataBinder(argumentConfig);
@@ -193,7 +196,7 @@ public class ReferenceCreator {
             return argumentConfig;
         });
 
-        //convert @Argument to ArgumentConfig
+        // convert @Argument to ArgumentConfig
         conversionService.addConverter(Argument.class, ArgumentConfig.class, source -> {
             ArgumentConfig argumentConfig = new ArgumentConfig();
             DataBinder argDataBinder = new DataBinder(argumentConfig);
@@ -204,16 +207,17 @@ public class ReferenceCreator {
 
         // Bind annotation attributes
         dataBinder.setConversionService(conversionService);
-        dataBinder.bind(new AnnotationPropertyValuesAdapter(attributes, applicationContext.getEnvironment(), IGNORE_FIELD_NAMES));
-
+        dataBinder.bind(new AnnotationPropertyValuesAdapter(
+                attributes, applicationContext.getEnvironment(), IGNORE_FIELD_NAMES));
     }
 
-    private MethodConfig createMethodConfig(Map<String, Object> methodAttributes, DefaultConversionService conversionService) {
-        String[] callbacks = new String[]{ONINVOKE, ONRETURN, ONTHROW};
+    private MethodConfig createMethodConfig(
+            Map<String, Object> methodAttributes, DefaultConversionService conversionService) {
+        String[] callbacks = new String[] {ONINVOKE, ONRETURN, ONTHROW};
         for (String callbackName : callbacks) {
             Object value = methodAttributes.get(callbackName);
             if (value instanceof String) {
-                //parse callback: beanName.methodName
+                // parse callback: beanName.methodName
                 String strValue = (String) value;
                 int index = strValue.lastIndexOf(".");
                 if (index != -1) {
@@ -231,7 +235,8 @@ public class ReferenceCreator {
         DataBinder mcDataBinder = new DataBinder(methodConfig);
         methodConfig.setReturn((Boolean) methodAttributes.get(ISRETURN));
         mcDataBinder.setConversionService(conversionService);
-        AnnotationPropertyValuesAdapter propertyValues = new AnnotationPropertyValuesAdapter(methodAttributes, applicationContext.getEnvironment());
+        AnnotationPropertyValuesAdapter propertyValues =
+                new AnnotationPropertyValuesAdapter(methodAttributes, applicationContext.getEnvironment());
         mcDataBinder.bind(propertyValues);
         return methodConfig;
     }
@@ -244,5 +249,4 @@ public class ReferenceCreator {
         this.defaultInterfaceClass = interfaceClass;
         return this;
     }
-
 }

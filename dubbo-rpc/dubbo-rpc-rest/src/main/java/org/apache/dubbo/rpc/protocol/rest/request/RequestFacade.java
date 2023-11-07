@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.request;
 
-
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 
@@ -52,10 +51,7 @@ public abstract class RequestFacade<T> {
         this.serviceDeployer = serviceDeployer;
     }
 
-    protected void initHeaders() {
-
-    }
-
+    protected void initHeaders() {}
 
     protected void initParameters() {
         String requestURI = getRequestURI();
@@ -84,7 +80,6 @@ public abstract class RequestFacade<T> {
                         parameters.put(name, values);
                     }
                     values.add(value);
-
                 }
             }
         } else {
@@ -92,21 +87,17 @@ public abstract class RequestFacade<T> {
         }
     }
 
-
     public T getRequest() {
         return request;
     }
 
     public abstract String getHeader(String name);
 
-
     public abstract Enumeration<String> getHeaders(String name);
-
 
     public abstract Enumeration<String> getHeaderNames();
 
     public abstract String getMethod();
-
 
     public abstract String getPath();
 

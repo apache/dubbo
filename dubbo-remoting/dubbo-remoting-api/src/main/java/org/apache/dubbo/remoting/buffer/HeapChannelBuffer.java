@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.remoting.buffer;
 
 import java.io.IOException;
@@ -115,13 +114,11 @@ public class HeapChannelBuffer extends AbstractChannelBuffer {
     }
 
     @Override
-    public void getBytes(int index, OutputStream out, int length)
-            throws IOException {
+    public void getBytes(int index, OutputStream out, int length) throws IOException {
         out.write(array, index, length);
     }
 
-    public int getBytes(int index, GatheringByteChannel out, int length)
-            throws IOException {
+    public int getBytes(int index, GatheringByteChannel out, int length) throws IOException {
         return out.write(ByteBuffer.wrap(array, index, length));
     }
 

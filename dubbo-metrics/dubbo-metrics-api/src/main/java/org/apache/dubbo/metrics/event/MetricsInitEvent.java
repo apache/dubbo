@@ -14,8 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.event;
+
 import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsSupport;
@@ -23,6 +23,7 @@ import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.metrics.model.key.TypeWrapper;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
 import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUESTS;
 
@@ -30,11 +31,12 @@ public class MetricsInitEvent extends TimeCounterEvent {
 
     private static final TypeWrapper METRIC_EVENT = new TypeWrapper(MetricsLevel.SERVICE, METRIC_REQUESTS);
 
-    public MetricsInitEvent(ApplicationModel source,TypeWrapper typeWrapper) {
-        super(source,typeWrapper);
+    public MetricsInitEvent(ApplicationModel source, TypeWrapper typeWrapper) {
+        super(source, typeWrapper);
     }
 
-    public static MetricsInitEvent toMetricsInitEvent(ApplicationModel applicationModel, Invocation invocation, boolean serviceLevel) {
+    public static MetricsInitEvent toMetricsInitEvent(
+            ApplicationModel applicationModel, Invocation invocation, boolean serviceLevel) {
         MethodMetric methodMetric = new MethodMetric(applicationModel, invocation, serviceLevel);
         MetricsInitEvent initEvent = new MetricsInitEvent(applicationModel, METRIC_EVENT);
         initEvent.putAttachment(MetricsConstants.INVOCATION, invocation);
@@ -43,6 +45,4 @@ public class MetricsInitEvent extends TimeCounterEvent {
         initEvent.putAttachment(MetricsConstants.INVOCATION_SIDE, MetricsSupport.getSide(invocation));
         return initEvent;
     }
-
-
 }

@@ -14,20 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 import org.apache.dubbo.service.Person;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import com.alibaba.dubbo.config.ArgumentConfig;
 import com.alibaba.dubbo.config.MethodConfig;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.apache.dubbo.config.Constants.ON_INVOKE_INSTANCE_ATTRIBUTE_KEY;
 import static org.apache.dubbo.config.Constants.ON_INVOKE_METHOD_ATTRIBUTE_KEY;
@@ -124,7 +123,7 @@ class MethodConfigTest {
         assertEquals(methodInfo.getOnreturnMethod(), Person.class.getMethod(methodName, String.class));
     }
 
-    //@Test
+    // @Test
     void testOnreturn() {
         MethodConfig method = new MethodConfig();
         method.setOnreturn("on-return-object");
@@ -150,7 +149,7 @@ class MethodConfigTest {
         assertThat(parameters.size(), is(0));
     }
 
-    //@Test
+    // @Test
     void testOnthrow() {
         MethodConfig method = new MethodConfig();
         method.setOnthrow("on-throw-object");
@@ -176,7 +175,7 @@ class MethodConfigTest {
         assertThat(parameters.size(), is(0));
     }
 
-    //@Test
+    // @Test
     void testOninvoke() {
         MethodConfig method = new MethodConfig();
         method.setOninvoke("on-invoke-object");

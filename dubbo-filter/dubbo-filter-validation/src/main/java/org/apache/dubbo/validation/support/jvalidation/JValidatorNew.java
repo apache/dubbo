@@ -25,12 +25,19 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.validation.MethodValidated;
 import org.apache.dubbo.validation.Validator;
 
-import jakarta.validation.Constraint;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Validation;
-import jakarta.validation.ValidatorFactory;
-import jakarta.validation.groups.Default;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtField;
@@ -54,19 +61,12 @@ import javassist.bytecode.annotation.MemberValue;
 import javassist.bytecode.annotation.ShortMemberValue;
 import javassist.bytecode.annotation.StringMemberValue;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import jakarta.validation.Constraint;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validation;
+import jakarta.validation.ValidatorFactory;
+import jakarta.validation.groups.Default;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FILTER_VALIDATION_EXCEPTION;
 
@@ -92,7 +92,9 @@ public class JValidatorNew implements Validator {
         String jvalidation = url.getParameter("jvalidationNew");
         ValidatorFactory factory;
         if (StringUtils.isNotEmpty(jvalidation)) {
-            factory = Validation.byProvider((Class) ReflectUtils.forName(jvalidation)).configure().buildValidatorFactory();
+            factory = Validation.byProvider((Class) ReflectUtils.forName(jvalidation))
+                    .configure()
+                    .buildValidatorFactory();
         } else {
             factory = Validation.buildDefaultValidatorFactory();
         }
@@ -152,11 +154,13 @@ public class JValidatorNew implements Validator {
                 Annotation[][] parameterAnnotations = method.getParameterAnnotations();
                 for (int i = 0; i < parameters.length; i++) {
                     Annotation[] annotations = parameterAnnotations[i];
-                    AnnotationsAttribute attribute = new AnnotationsAttribute(classFile.getConstPool(), AnnotationsAttribute.visibleTag);
+                    AnnotationsAttribute attribute =
+                            new AnnotationsAttribute(classFile.getConstPool(), AnnotationsAttribute.visibleTag);
                     for (Annotation annotation : annotations) {
                         if (annotation.annotationType().isAnnotationPresent(Constraint.class)) {
                             javassist.bytecode.annotation.Annotation ja = new javassist.bytecode.annotation.Annotation(
-                                    classFile.getConstPool(), pool.getCtClass(annotation.annotationType().getName()));
+                                    classFile.getConstPool(),
+                                    pool.getCtClass(annotation.annotationType().getName()));
                             Method[] members = annotation.annotationType().getMethods();
                             for (Method member : members) {
                                 if (Modifier.isPublic(member.getModifiers())
@@ -165,7 +169,9 @@ public class JValidatorNew implements Validator {
                                     Object value = member.invoke(annotation);
                                     if (null != value) {
                                         MemberValue memberValue = createMemberValue(
-                                                classFile.getConstPool(), pool.get(member.getReturnType().getName()), value);
+                                                classFile.getConstPool(),
+                                                pool.get(member.getReturnType().getName()),
+                                                value);
                                         ja.addMemberValue(member.getName(), memberValue);
                                     }
                                 }
@@ -176,7 +182,9 @@ public class JValidatorNew implements Validator {
                     Parameter parameter = parameters[i];
                     Class<?> type = parameter.getType();
                     String fieldName = parameter.getName();
-                    CtField ctField = CtField.make("public " + type.getCanonicalName() + " " + fieldName + ";", pool.getCtClass(parameterClassName));
+                    CtField ctField = CtField.make(
+                            "public " + type.getCanonicalName() + " " + fieldName + ";",
+                            pool.getCtClass(parameterClassName));
                     ctField.getFieldInfo().addAttribute(attribute);
                     ctClass.addField(ctField);
                 }
@@ -188,7 +196,8 @@ public class JValidatorNew implements Validator {
     }
 
     private static String generateMethodParameterClassName(Class<?> clazz, Method method) {
-        StringBuilder builder = new StringBuilder().append(clazz.getName())
+        StringBuilder builder = new StringBuilder()
+                .append(clazz.getName())
                 .append('_')
                 .append(toUpperMethodName(method.getName()))
                 .append("Parameter");
@@ -291,8 +300,12 @@ public class JValidatorNew implements Validator {
         }
 
         if (!violations.isEmpty()) {
-            logger.info("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations);
-            throw new ConstraintViolationException("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations, violations);
+            logger.info("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: "
+                    + violations);
+            throw new ConstraintViolationException(
+                    "Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: "
+                            + violations,
+                    violations);
         }
     }
 
@@ -304,7 +317,8 @@ public class JValidatorNew implements Validator {
             return cached == clazz ? null : cached;
         }
         try {
-            methodClass = Class.forName(methodClassName, false, Thread.currentThread().getContextClassLoader());
+            methodClass =
+                    Class.forName(methodClassName, false, Thread.currentThread().getContextClassLoader());
             methodClassMap.put(methodClassName, methodClass);
         } catch (ClassNotFoundException e) {
             methodClassMap.put(methodClassName, clazz);
@@ -332,5 +346,4 @@ public class JValidatorNew implements Validator {
             }
         }
     }
-
 }

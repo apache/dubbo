@@ -85,5 +85,4 @@ public abstract class AbstractCacheFactory implements CacheFactory {
      * @return Create and return new instance of cache store used as storage for caching return values.
      */
     protected abstract Cache createCache(URL url);
-
 }

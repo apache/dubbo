@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics;
 
 import org.apache.dubbo.common.constants.CommonConstants;
@@ -46,52 +45,77 @@ public interface DefaultConstants {
     String METRIC_THROWABLE = "metric_filter_throwable";
 
     List<MetricsKeyWrapper> METHOD_LEVEL_KEYS = Arrays.asList(
-        new MetricsKeyWrapper(METRIC_REQUESTS, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
-        new MetricsKeyWrapper(METRIC_REQUESTS, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
-        // METRIC_REQUESTS_PROCESSING use GAUGE
-        new MetricsKeyWrapper(METRIC_REQUESTS_PROCESSING, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)).setSampleType(MetricSample.Type.GAUGE),
-        new MetricsKeyWrapper(METRIC_REQUESTS_PROCESSING, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)).setSampleType(MetricSample.Type.GAUGE),
-        new MetricsKeyWrapper(METRIC_REQUESTS_SUCCEED, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_SUCCEED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
-        new MetricsKeyWrapper(METRIC_REQUEST_BUSINESS_FAILED, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
-        new MetricsKeyWrapper(METRIC_REQUEST_BUSINESS_FAILED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_TIMEOUT, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_TIMEOUT, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_LIMIT, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_LIMIT, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_FAILED, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_FAILED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_TOTAL_FAILED, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_TOTAL_FAILED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_NETWORK_FAILED, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_NETWORK_FAILED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_CODEC_FAILED, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_CODEC_FAILED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD))
-        );
+            new MetricsKeyWrapper(METRIC_REQUESTS, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
+            new MetricsKeyWrapper(METRIC_REQUESTS, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
+            // METRIC_REQUESTS_PROCESSING use GAUGE
+            new MetricsKeyWrapper(
+                            METRIC_REQUESTS_PROCESSING,
+                            MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD))
+                    .setSampleType(MetricSample.Type.GAUGE),
+            new MetricsKeyWrapper(
+                            METRIC_REQUESTS_PROCESSING,
+                            MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD))
+                    .setSampleType(MetricSample.Type.GAUGE),
+            new MetricsKeyWrapper(
+                    METRIC_REQUESTS_SUCCEED, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
+            new MetricsKeyWrapper(
+                    METRIC_REQUESTS_SUCCEED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
+            new MetricsKeyWrapper(
+                    METRIC_REQUEST_BUSINESS_FAILED,
+                    MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
+            new MetricsKeyWrapper(
+                    METRIC_REQUEST_BUSINESS_FAILED,
+                    MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
+            new MetricsKeyWrapper(
+                    METRIC_REQUESTS_TIMEOUT, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
+            new MetricsKeyWrapper(
+                    METRIC_REQUESTS_TIMEOUT, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
+            new MetricsKeyWrapper(
+                    METRIC_REQUESTS_LIMIT, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
+            new MetricsKeyWrapper(
+                    METRIC_REQUESTS_LIMIT, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
+            new MetricsKeyWrapper(
+                    METRIC_REQUESTS_FAILED, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
+            new MetricsKeyWrapper(
+                    METRIC_REQUESTS_FAILED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
+            new MetricsKeyWrapper(
+                    METRIC_REQUESTS_TOTAL_FAILED, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
+            new MetricsKeyWrapper(
+                    METRIC_REQUESTS_TOTAL_FAILED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
+            new MetricsKeyWrapper(
+                    METRIC_REQUESTS_NETWORK_FAILED,
+                    MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
+            new MetricsKeyWrapper(
+                    METRIC_REQUESTS_NETWORK_FAILED,
+                    MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
+            new MetricsKeyWrapper(
+                    METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED,
+                    MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
+            new MetricsKeyWrapper(
+                    METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED,
+                    MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
+            new MetricsKeyWrapper(
+                    METRIC_REQUESTS_CODEC_FAILED, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
+            new MetricsKeyWrapper(
+                    METRIC_REQUESTS_CODEC_FAILED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)));
 
     List<MetricsKey> INIT_AGG_METHOD_KEYS = Arrays.asList(
-                    MetricsKey.METRIC_REQUESTS_TOTAL_AGG,
-                    MetricsKey.METRIC_REQUESTS_SUCCEED_AGG,
-                    MetricsKey.METRIC_REQUESTS_FAILED_AGG,
-                    MetricsKey.METRIC_REQUEST_BUSINESS_FAILED_AGG,
-                    MetricsKey.METRIC_REQUESTS_TIMEOUT_AGG,
-                    MetricsKey.METRIC_REQUESTS_LIMIT_AGG,
-                    MetricsKey.METRIC_REQUESTS_TOTAL_FAILED_AGG,
-                    MetricsKey.METRIC_REQUESTS_NETWORK_FAILED_AGG,
-                    MetricsKey.METRIC_REQUESTS_CODEC_FAILED_AGG,
-                    MetricsKey.METRIC_REQUESTS_TOTAL_SERVICE_UNAVAILABLE_FAILED_AGG
-    );
+            MetricsKey.METRIC_REQUESTS_TOTAL_AGG,
+            MetricsKey.METRIC_REQUESTS_SUCCEED_AGG,
+            MetricsKey.METRIC_REQUESTS_FAILED_AGG,
+            MetricsKey.METRIC_REQUEST_BUSINESS_FAILED_AGG,
+            MetricsKey.METRIC_REQUESTS_TIMEOUT_AGG,
+            MetricsKey.METRIC_REQUESTS_LIMIT_AGG,
+            MetricsKey.METRIC_REQUESTS_TOTAL_FAILED_AGG,
+            MetricsKey.METRIC_REQUESTS_NETWORK_FAILED_AGG,
+            MetricsKey.METRIC_REQUESTS_CODEC_FAILED_AGG,
+            MetricsKey.METRIC_REQUESTS_TOTAL_SERVICE_UNAVAILABLE_FAILED_AGG);
 
     List<MetricsKey> INIT_DEFAULT_METHOD_KEYS = Arrays.asList(
-        MetricsKey.METRIC_REQUESTS,
-        MetricsKey.METRIC_REQUESTS_PROCESSING,
-        MetricsKey.METRIC_REQUESTS_FAILED_AGG,
-        MetricsKey.METRIC_REQUESTS_SUCCEED,
-        MetricsKey.METRIC_REQUESTS_TOTAL_FAILED,
-        MetricsKey.METRIC_REQUEST_BUSINESS_FAILED
-    );
-
-
+            MetricsKey.METRIC_REQUESTS,
+            MetricsKey.METRIC_REQUESTS_PROCESSING,
+            MetricsKey.METRIC_REQUESTS_FAILED_AGG,
+            MetricsKey.METRIC_REQUESTS_SUCCEED,
+            MetricsKey.METRIC_REQUESTS_TOTAL_FAILED,
+            MetricsKey.METRIC_REQUEST_BUSINESS_FAILED);
 }

@@ -138,5 +138,4 @@ public interface ServiceInstance extends Serializable {
     void setServiceMetadata(MetadataInfo serviceMetadata);
 
     InstanceAddressURL toURL(String protocol);
-
 }

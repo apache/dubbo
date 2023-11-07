@@ -46,10 +46,12 @@ public class JdkLoggerAdapter implements LoggerAdapter {
                 System.err.println("No such logging.properties in classpath for jdk logging config!");
             }
         } catch (Exception t) {
-            System.err.println("Failed to load logging.properties in classpath for jdk logging config, cause: " + t.getMessage());
+            System.err.println(
+                    "Failed to load logging.properties in classpath for jdk logging config, cause: " + t.getMessage());
         }
         try {
-            Handler[] handlers = java.util.logging.Logger.getLogger(GLOBAL_LOGGER_NAME).getHandlers();
+            Handler[] handlers =
+                    java.util.logging.Logger.getLogger(GLOBAL_LOGGER_NAME).getHandlers();
             for (Handler handler : handlers) {
                 if (handler instanceof FileHandler) {
                     FileHandler fileHandler = (FileHandler) handler;
@@ -123,7 +125,8 @@ public class JdkLoggerAdapter implements LoggerAdapter {
 
     @Override
     public Level getLevel() {
-        return fromJdkLevel(java.util.logging.Logger.getLogger(GLOBAL_LOGGER_NAME).getLevel());
+        return fromJdkLevel(
+                java.util.logging.Logger.getLogger(GLOBAL_LOGGER_NAME).getLevel());
     }
 
     @Override

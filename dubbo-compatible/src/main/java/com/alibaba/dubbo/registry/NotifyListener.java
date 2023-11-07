@@ -14,14 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.registry;
-
-import com.alibaba.dubbo.common.DelegateURL;
-import com.alibaba.dubbo.common.URL;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.alibaba.dubbo.common.DelegateURL;
+import com.alibaba.dubbo.common.URL;
 
 @Deprecated
 public interface NotifyListener {

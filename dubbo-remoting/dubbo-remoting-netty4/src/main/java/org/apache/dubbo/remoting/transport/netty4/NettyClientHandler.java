@@ -57,7 +57,8 @@ public class NettyClientHandler extends ChannelDuplexHandler {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
         handler.connected(channel);
         if (logger.isInfoEnabled()) {
-            logger.info("The connection of " + channel.getLocalAddress() + " -> " + channel.getRemoteAddress() + " is established.");
+            logger.info("The connection of " + channel.getLocalAddress() + " -> " + channel.getRemoteAddress()
+                    + " is established.");
         }
     }
 
@@ -71,7 +72,8 @@ public class NettyClientHandler extends ChannelDuplexHandler {
         }
 
         if (logger.isInfoEnabled()) {
-            logger.info("The connection of " + channel.getLocalAddress() + " -> " + channel.getRemoteAddress() + " is disconnected.");
+            logger.info("The connection of " + channel.getLocalAddress() + " -> " + channel.getRemoteAddress()
+                    + " is disconnected.");
         }
     }
 
@@ -109,8 +111,7 @@ public class NettyClientHandler extends ChannelDuplexHandler {
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-            throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
         try {
             handler.caught(channel, cause);
@@ -118,5 +119,4 @@ public class NettyClientHandler extends ChannelDuplexHandler {
             NettyChannel.removeChannelIfDisconnected(ctx.channel());
         }
     }
-
 }

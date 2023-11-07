@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.remoting.exchange.support;
 
 import java.util.ArrayList;
@@ -31,8 +30,7 @@ public final class MultiMessage implements Iterable {
 
     private final List messages = new ArrayList();
 
-    private MultiMessage() {
-    }
+    private MultiMessage() {}
 
     public static MultiMessage createFromCollection(Collection collection) {
         MultiMessage result = new MultiMessage();
@@ -82,5 +80,4 @@ public final class MultiMessage implements Iterable {
     public Iterator iterator() {
         return messages.iterator();
     }
-
 }

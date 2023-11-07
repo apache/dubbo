@@ -34,7 +34,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.WRITEABLE_EVENT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE_STREAM;
 
 public class DubboGracefulShutdown implements GracefulShutdown {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DubboGracefulShutdown.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(DubboGracefulShutdown.class);
     private final DubboProtocol dubboProtocol;
 
     public DubboGracefulShutdown(DubboProtocol dubboProtocol) {
@@ -63,7 +64,9 @@ public class DubboGracefulShutdown implements GracefulShutdown {
                 for (Channel channel : channels) {
                     try {
                         if (channel.isConnected()) {
-                            channel.send(request, channel.getUrl().getParameter(Constants.CHANNEL_READONLYEVENT_SENT_KEY, true));
+                            channel.send(
+                                    request,
+                                    channel.getUrl().getParameter(Constants.CHANNEL_READONLYEVENT_SENT_KEY, true));
                         }
                     } catch (RemotingException e) {
                         if (e.getCause() instanceof ClosedChannelException) {

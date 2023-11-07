@@ -56,5 +56,4 @@ class NettyClientToServerTest extends ClientToServerTest {
         url = url.setScopeModel(applicationModel);
         return Exchangers.connect(url);
     }
-
 }

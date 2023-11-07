@@ -32,7 +32,9 @@ import static org.apache.dubbo.metrics.observation.DubboObservationDocumentation
 class AbstractDefaultDubboObservationConvention {
     KeyValues getLowCardinalityKeyValues(Invocation invocation) {
         KeyValues keyValues = KeyValues.of(RPC_SYSTEM.withValue("apache_dubbo"));
-        String serviceName = StringUtils.hasText(invocation.getServiceName()) ? invocation.getServiceName() : readServiceName(invocation.getTargetServiceUniqueName());
+        String serviceName = StringUtils.hasText(invocation.getServiceName())
+                ? invocation.getServiceName()
+                : readServiceName(invocation.getTargetServiceUniqueName());
         keyValues = appendNonNull(keyValues, RPC_SERVICE, serviceName);
         return appendNonNull(keyValues, RPC_METHOD, RpcUtils.getMethodName(invocation));
     }
@@ -45,14 +47,17 @@ class AbstractDefaultDubboObservationConvention {
     }
 
     String getContextualName(Invocation invocation) {
-        String serviceName = StringUtils.hasText(invocation.getServiceName()) ? invocation.getServiceName() : readServiceName(invocation.getTargetServiceUniqueName());
+        String serviceName = StringUtils.hasText(invocation.getServiceName())
+                ? invocation.getServiceName()
+                : readServiceName(invocation.getTargetServiceUniqueName());
         String methodName = RpcUtils.getMethodName(invocation);
         String method = StringUtils.hasText(methodName) ? methodName : "";
         return serviceName + CommonConstants.PATH_SEPARATOR + method;
     }
 
     private String readServiceName(String targetServiceUniqueName) {
-        String[] splitByHyphen = targetServiceUniqueName.split(CommonConstants.PATH_SEPARATOR); // foo-provider/a.b.c:1.0.0 or a.b.c:1.0.0
+        String[] splitByHyphen = targetServiceUniqueName.split(
+                CommonConstants.PATH_SEPARATOR); // foo-provider/a.b.c:1.0.0 or a.b.c:1.0.0
         String withVersion = splitByHyphen.length == 1 ? targetServiceUniqueName : splitByHyphen[1];
         String[] splitByVersion = withVersion.split(CommonConstants.GROUP_CHAR_SEPARATOR); // a.b.c:1.0.0
         if (splitByVersion.length == 1) {

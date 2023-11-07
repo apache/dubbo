@@ -22,13 +22,14 @@ import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.transport.dispatcher.connection.ConnectionOrderedChannelHandler;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.atomic.AtomicInteger;
 
 class ConnectChannelHandlerTest extends WrappedChannelHandlerTest {
 
@@ -51,7 +52,7 @@ class ConnectChannelHandlerTest extends WrappedChannelHandlerTest {
             handler.disconnected(new MockedChannel());
             Assertions.assertTrue(executor.getActiveCount() <= 1, executor.getActiveCount() + " must <=1");
         }
-        //queue.size
+        // queue.size
         Assertions.assertEquals(taskCount - 1, executor.getQueue().size());
 
         for (int i = 0; i < taskCount; i++) {
@@ -62,13 +63,13 @@ class ConnectChannelHandlerTest extends WrappedChannelHandlerTest {
         Assertions.assertEquals(taskCount, executor.getCompletedTaskCount());
     }
 
-    @Test //biz error should not throw and affect biz thread.
+    @Test // biz error should not throw and affect biz thread.
     public void testConnectBizError() throws RemotingException {
         handler = new ConnectionOrderedChannelHandler(new BizChannelHandler(true), url);
         handler.connected(new MockedChannel());
     }
 
-    @Test //biz error should not throw and affect biz thread.
+    @Test // biz error should not throw and affect biz thread.
     public void testDisconnectBizError() throws RemotingException {
         handler = new ConnectionOrderedChannelHandler(new BizChannelHandler(true), url);
         handler.disconnected(new MockedChannel());
@@ -94,13 +95,13 @@ class ConnectChannelHandlerTest extends WrappedChannelHandlerTest {
         });
     }
 
-    //throw  ChannelEventRunnable.runtimeExeception(int logger) not in execute exception
-    @Test//(expected = RemotingException.class)
+    // throw  ChannelEventRunnable.runtimeExeception(int logger) not in execute exception
+    @Test // (expected = RemotingException.class)
     public void testMessageReceivedBizError() throws RemotingException {
         handler.received(new MockedChannel(), "");
     }
 
-    //throw  ChannelEventRunnable.runtimeExeception(int logger) not in execute exception
+    // throw  ChannelEventRunnable.runtimeExeception(int logger) not in execute exception
     @Test
     void testCaughtBizError() throws RemotingException {
         handler.caught(new MockedChannel(), new BizException());
@@ -134,13 +135,15 @@ class ConnectChannelHandlerTest extends WrappedChannelHandlerTest {
         Request req = new Request();
         req.setHeartbeat(true);
         final AtomicInteger count = new AtomicInteger(0);
-        handler.received(new MockedChannel() {
-            @Override
-            public void send(Object message) throws RemotingException {
-                Assertions.assertTrue(((Response) message).isHeartbeat(), "response.heartbeat");
-                count.incrementAndGet();
-            }
-        }, req);
+        handler.received(
+                new MockedChannel() {
+                    @Override
+                    public void send(Object message) throws RemotingException {
+                        Assertions.assertTrue(((Response) message).isHeartbeat(), "response.heartbeat");
+                        count.incrementAndGet();
+                    }
+                },
+                req);
         Assertions.assertEquals(1, count.get(), "channel.send must be invoke");
     }
 }

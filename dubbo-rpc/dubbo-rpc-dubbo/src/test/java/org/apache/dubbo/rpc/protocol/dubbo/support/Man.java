@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo.support;
 
-
 import java.io.Serializable;
 
 /**

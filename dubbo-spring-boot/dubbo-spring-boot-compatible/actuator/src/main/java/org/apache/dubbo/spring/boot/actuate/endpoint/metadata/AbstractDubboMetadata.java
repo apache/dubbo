@@ -21,13 +21,6 @@ import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.EnvironmentAware;
-import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.core.env.Environment;
-
 import java.beans.BeanInfo;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
@@ -38,6 +31,13 @@ import java.net.URL;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.EnvironmentAware;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.Environment;
 
 import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncludingAncestors;
 import static org.springframework.util.ClassUtils.isPrimitiveOrWrapper;
@@ -60,8 +60,7 @@ public abstract class AbstractDubboMetadata implements ApplicationContextAware, 
                 || type == BigInteger.class
                 || type == Date.class
                 || type == URL.class
-                || type == Class.class
-                ;
+                || type == Class.class;
     }
 
     @Override
@@ -97,7 +96,6 @@ public abstract class AbstractDubboMetadata implements ApplicationContextAware, 
                         beanMetadata.put(name, value);
                     }
                 }
-
             }
 
         } catch (Exception e) {
@@ -105,7 +103,6 @@ public abstract class AbstractDubboMetadata implements ApplicationContextAware, 
         }
 
         return beanMetadata;
-
     }
 
     protected Map<String, ServiceBean> getServiceBeansMap() {
@@ -119,6 +116,4 @@ public abstract class AbstractDubboMetadata implements ApplicationContextAware, 
     protected Map<String, ProtocolConfig> getProtocolConfigsBeanMap() {
         return beansOfTypeIncludingAncestors(applicationContext, ProtocolConfig.class);
     }
-
-
 }

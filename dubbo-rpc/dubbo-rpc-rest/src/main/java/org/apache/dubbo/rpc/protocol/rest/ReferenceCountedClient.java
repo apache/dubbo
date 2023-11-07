@@ -28,7 +28,8 @@ import java.util.concurrent.ConcurrentMap;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
 
 public class ReferenceCountedClient<T extends RestClient> extends ReferenceCountedResource {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ReferenceCountedClient.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(ReferenceCountedClient.class);
 
     private ConcurrentMap<String, ReferenceCountedClient<? extends RestClient>> clients;
     private URL url;
@@ -36,7 +37,11 @@ public class ReferenceCountedClient<T extends RestClient> extends ReferenceCount
 
     private T client;
 
-    public ReferenceCountedClient(T client, ConcurrentMap<String, ReferenceCountedClient<? extends RestClient>> clients, RestClientFactory clientFactory, URL url) {
+    public ReferenceCountedClient(
+            T client,
+            ConcurrentMap<String, ReferenceCountedClient<? extends RestClient>> clients,
+            RestClientFactory clientFactory,
+            URL url) {
         this.client = client;
         this.clients = clients;
         this.clientFactory = clientFactory;
@@ -55,7 +60,8 @@ public class ReferenceCountedClient<T extends RestClient> extends ReferenceCount
                     referenceCountedClient = clients.get(url.getAddress());
                     if (referenceCountedClient.isDestroyed()) {
                         RestClient restClient = clientFactory.createRestClient(url);
-                        clients.put(url.getAddress(), new ReferenceCountedClient(restClient, clients, clientFactory, url));
+                        clients.put(
+                                url.getAddress(), new ReferenceCountedClient(restClient, clients, clientFactory, url));
                         return (T) restClient;
                     } else {
                         return (T) referenceCountedClient.client;

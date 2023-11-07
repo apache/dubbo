@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.rest.util;
 
 import org.apache.dubbo.common.utils.StringUtils;
@@ -36,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 
 public class HttpHeaderUtil {
-
 
     /**
      * convert attachment to Map<String, List<String>>
@@ -66,7 +64,6 @@ public class HttpHeaderUtil {
         return attachments;
     }
 
-
     /**
      * add consumer attachment to request
      *
@@ -79,9 +76,7 @@ public class HttpHeaderUtil {
         attachments.entrySet().forEach(attachment -> {
             requestTemplate.addHeaders(appendPrefixToAttachRealHeader(attachment.getKey()), attachment.getValue());
         });
-
     }
-
 
     /**
      * add  provider attachment to response
@@ -89,13 +84,15 @@ public class HttpHeaderUtil {
      * @param nettyHttpResponse
      */
     public static void addResponseAttachments(NettyHttpResponse nettyHttpResponse) {
-        Map<String, List<String>> attachments = createAttachments(RpcContext.getServerContext().getObjectAttachments());
+        Map<String, List<String>> attachments =
+                createAttachments(RpcContext.getServerContext().getObjectAttachments());
 
         attachments.entrySet().stream().forEach(attachment -> {
-            nettyHttpResponse.getOutputHeaders().put(appendPrefixToAttachRealHeader(attachment.getKey()), attachment.getValue());
+            nettyHttpResponse
+                    .getOutputHeaders()
+                    .put(appendPrefixToAttachRealHeader(attachment.getKey()), attachment.getValue());
         });
     }
-
 
     /**
      * parse rest request header  attachment & header
@@ -118,10 +115,8 @@ public class HttpHeaderUtil {
 
             // attachment
             rpcInvocation.setAttachment(subRestAttachRealHeaderPrefix(header.trim()), requestFacade.getHeader(header));
-
         }
     }
-
 
     /**
      * for judge rest header or rest attachment
@@ -160,7 +155,6 @@ public class HttpHeaderUtil {
         return RestHeaderEnum.REST_HEADER_PREFIX.getHeader() + header;
     }
 
-
     /**
      *  parse request attribute
      * @param rpcInvocation
@@ -177,7 +171,6 @@ public class HttpHeaderUtil {
         rpcInvocation.put(RestConstant.REMOTE_PORT, remotePort);
         rpcInvocation.put(RestConstant.LOCAL_PORT, localPort);
     }
-
 
     /**
      *  parse request
@@ -211,7 +204,5 @@ public class HttpHeaderUtil {
                 appResponse.setAttribute(header, entry.getValue());
             }
         });
-
-
     }
 }

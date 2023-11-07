@@ -20,8 +20,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.qos.api.BaseCommand;
-import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.qos.api.Cmd;
+import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.qos.api.PermissionLevel;
 import org.apache.dubbo.qos.probe.ReadinessProbe;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -40,18 +40,18 @@ public class Ready implements BaseCommand {
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        String config = frameworkModel.getApplicationModels()
-            .stream()
-            .map(applicationModel -> applicationModel.getApplicationConfigManager().getApplication())
-            .map(o -> o.orElse(null))
-            .filter(Objects::nonNull)
-            .map(ApplicationConfig::getReadinessProbe)
-            .filter(Objects::nonNull)
-            .collect(Collectors.joining(","));
+        String config = frameworkModel.getApplicationModels().stream()
+                .map(applicationModel ->
+                        applicationModel.getApplicationConfigManager().getApplication())
+                .map(o -> o.orElse(null))
+                .filter(Objects::nonNull)
+                .map(ApplicationConfig::getReadinessProbe)
+                .filter(Objects::nonNull)
+                .collect(Collectors.joining(","));
 
-        URL url = URL.valueOf("application://")
-                .addParameter(CommonConstants.QOS_READY_PROBE_EXTENSION, config);
-        List<ReadinessProbe> readinessProbes = frameworkModel.getExtensionLoader(ReadinessProbe.class)
+        URL url = URL.valueOf("application://").addParameter(CommonConstants.QOS_READY_PROBE_EXTENSION, config);
+        List<ReadinessProbe> readinessProbes = frameworkModel
+                .getExtensionLoader(ReadinessProbe.class)
                 .getActivateExtension(url, CommonConstants.QOS_READY_PROBE_EXTENSION);
         if (!readinessProbes.isEmpty()) {
             for (ReadinessProbe readinessProbe : readinessProbes) {
@@ -66,5 +66,4 @@ public class Ready implements BaseCommand {
         commandContext.setHttpCode(200);
         return "true";
     }
-
 }

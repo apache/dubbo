@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.annotation;
 
-
 import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.consumer.BaseConsumerParamParser;
@@ -29,12 +28,13 @@ import java.util.Set;
 
 public class ParamParserManager {
 
+    private static final Set<BaseConsumerParamParser> consumerParamParsers = FrameworkModel.defaultModel()
+            .getExtensionLoader(BaseConsumerParamParser.class)
+            .getSupportedExtensionInstances();
 
-    private static final Set<BaseConsumerParamParser> consumerParamParsers =
-        FrameworkModel.defaultModel().getExtensionLoader(BaseConsumerParamParser.class).getSupportedExtensionInstances();
-
-    private static final Set<BaseProviderParamParser> providerParamParsers =
-        FrameworkModel.defaultModel().getExtensionLoader(BaseProviderParamParser.class).getSupportedExtensionInstances();
+    private static final Set<BaseProviderParamParser> providerParamParsers = FrameworkModel.defaultModel()
+            .getExtensionLoader(BaseProviderParamParser.class)
+            .getSupportedExtensionInstances();
 
     /**
      * provider  Design Description:
@@ -59,7 +59,6 @@ public class ParamParserManager {
         // TODO add param require or default & body arg size pre judge
         return parseContext.getArgs().toArray(new Object[0]);
     }
-
 
     /**
      * consumer  Design Description:
@@ -88,7 +87,6 @@ public class ParamParserManager {
         }
 
         // TODO add param require or default
-
 
     }
 }

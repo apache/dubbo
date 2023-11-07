@@ -16,19 +16,17 @@
  */
 package org.apache.dubbo.demo;
 
-
-import po.TestPO;
-
-import javax.ws.rs.Path;
-import javax.ws.rs.GET;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
+import po.TestPO;
 
 @Path("/demoService")
 public interface RestDemoService {
@@ -71,7 +69,6 @@ public interface RestDemoService {
     @Consumes({MediaType.TEXT_PLAIN})
     TestPO testBody2(TestPO b);
 
-
     @POST
     @Path("/testBody5")
     @Consumes({MediaType.APPLICATION_JSON})
@@ -83,7 +80,6 @@ public interface RestDemoService {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_PLAIN)
     String testForm1(@FormParam("name") String test);
-
 
     @POST
     @Path("/testForm2")

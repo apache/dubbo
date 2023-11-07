@@ -114,9 +114,7 @@ public class MetricsConfig extends AbstractConfig {
      */
     private String rpcLevel;
 
-
-    public MetricsConfig() {
-    }
+    public MetricsConfig() {}
 
     public MetricsConfig(ApplicationModel applicationModel) {
         super(applicationModel);

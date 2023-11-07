@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.URL;
@@ -26,11 +25,11 @@ import org.apache.dubbo.rpc.model.ServiceModel;
 import org.apache.dubbo.rpc.support.DemoService;
 import org.apache.dubbo.rpc.support.MyInvoker;
 
+import java.net.URLClassLoader;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import java.net.URLClassLoader;
 
 class ClassLoaderFilterTest {
 
@@ -41,7 +40,7 @@ class ClassLoaderFilterTest {
         URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1");
 
         String path = DemoService.class.getResource("/").getPath();
-        final URLClassLoader cl = new URLClassLoader(new java.net.URL[]{new java.net.URL("file:" + path)}) {
+        final URLClassLoader cl = new URLClassLoader(new java.net.URL[] {new java.net.URL("file:" + path)}) {
             @Override
             public Class<?> loadClass(String name) throws ClassNotFoundException {
                 try {

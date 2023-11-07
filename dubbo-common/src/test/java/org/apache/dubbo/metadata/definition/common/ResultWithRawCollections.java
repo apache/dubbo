@@ -28,8 +28,7 @@ public class ResultWithRawCollections {
     private Map map;
     private List list;
 
-    public ResultWithRawCollections() {
-    }
+    public ResultWithRawCollections() {}
 
     public ResultWithRawCollections(Map map, List list) {
         this.map = map;

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
@@ -29,8 +28,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class ConfigTest {
-    private com.alibaba.dubbo.config.ApplicationConfig applicationConfig = new com.alibaba.dubbo.config.ApplicationConfig("first-dubbo-test");
-    private com.alibaba.dubbo.config.RegistryConfig registryConfig = new com.alibaba.dubbo.config.RegistryConfig("multicast://224.5.6.7:1234");
+    private com.alibaba.dubbo.config.ApplicationConfig applicationConfig =
+            new com.alibaba.dubbo.config.ApplicationConfig("first-dubbo-test");
+    private com.alibaba.dubbo.config.RegistryConfig registryConfig =
+            new com.alibaba.dubbo.config.RegistryConfig("multicast://224.5.6.7:1234");
 
     @AfterEach
     public void tearDown() {

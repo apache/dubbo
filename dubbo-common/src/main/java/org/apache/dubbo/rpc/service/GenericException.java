@@ -31,8 +31,7 @@ public class GenericException extends RuntimeException {
 
     private String exceptionMessage;
 
-    public GenericException() {
-    }
+    public GenericException() {}
 
     public GenericException(String exceptionMessage) {
         super(exceptionMessage);
@@ -72,5 +71,4 @@ public class GenericException extends RuntimeException {
     public void setExceptionMessage(String exceptionMessage) {
         this.exceptionMessage = exceptionMessage;
     }
-
 }

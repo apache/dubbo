@@ -31,15 +31,17 @@ import java.io.IOException;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_DESERIALIZE;
 
 public class DefaultParamDeepCopyUtil implements ParamDeepCopyUtil {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DefaultParamDeepCopyUtil.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(DefaultParamDeepCopyUtil.class);
 
-    public final static String NAME = "default";
+    public static final String NAME = "default";
 
     @Override
     @SuppressWarnings({"unchecked"})
     public <T> T copy(URL url, Object src, Class<T> targetClass) {
-        Serialization serialization = url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(
-            UrlUtils.serializationOrDefault(url));
+        Serialization serialization = url.getOrDefaultFrameworkModel()
+                .getExtensionLoader(Serialization.class)
+                .getExtension(UrlUtils.serializationOrDefault(url));
 
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             ObjectOutput objectOutput = serialization.serialize(url, outputStream);
@@ -56,7 +58,6 @@ public class DefaultParamDeepCopyUtil implements ParamDeepCopyUtil {
         } catch (Throwable e) {
             logger.error(PROTOCOL_ERROR_DESERIALIZE, "", "", "Unable to deep copy parameter to target class.", e);
         }
-
 
         if (src.getClass().equals(targetClass)) {
             return (T) src;

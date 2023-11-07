@@ -22,11 +22,16 @@ import java.lang.reflect.Constructor;
 
 public class Dubbo2GenericExceptionUtils {
     private static final Class<? extends org.apache.dubbo.rpc.service.GenericException> GENERIC_EXCEPTION_CLASS;
-    private static final Constructor<? extends org.apache.dubbo.rpc.service.GenericException> GENERIC_EXCEPTION_CONSTRUCTOR;
-    private static final Constructor<? extends org.apache.dubbo.rpc.service.GenericException> GENERIC_EXCEPTION_CONSTRUCTOR_S;
-    private static final Constructor<? extends org.apache.dubbo.rpc.service.GenericException> GENERIC_EXCEPTION_CONSTRUCTOR_S_S;
-    private static final Constructor<? extends org.apache.dubbo.rpc.service.GenericException> GENERIC_EXCEPTION_CONSTRUCTOR_T;
-    private static final Constructor<? extends org.apache.dubbo.rpc.service.GenericException> GENERIC_EXCEPTION_CONSTRUCTOR_S_T_S_S;
+    private static final Constructor<? extends org.apache.dubbo.rpc.service.GenericException>
+            GENERIC_EXCEPTION_CONSTRUCTOR;
+    private static final Constructor<? extends org.apache.dubbo.rpc.service.GenericException>
+            GENERIC_EXCEPTION_CONSTRUCTOR_S;
+    private static final Constructor<? extends org.apache.dubbo.rpc.service.GenericException>
+            GENERIC_EXCEPTION_CONSTRUCTOR_S_S;
+    private static final Constructor<? extends org.apache.dubbo.rpc.service.GenericException>
+            GENERIC_EXCEPTION_CONSTRUCTOR_T;
+    private static final Constructor<? extends org.apache.dubbo.rpc.service.GenericException>
+            GENERIC_EXCEPTION_CONSTRUCTOR_S_T_S_S;
 
     static {
         GENERIC_EXCEPTION_CLASS = loadClass();
@@ -34,7 +39,8 @@ public class Dubbo2GenericExceptionUtils {
         GENERIC_EXCEPTION_CONSTRUCTOR_S = loadConstructor(String.class);
         GENERIC_EXCEPTION_CONSTRUCTOR_S_S = loadConstructor(String.class, String.class);
         GENERIC_EXCEPTION_CONSTRUCTOR_T = loadConstructor(Throwable.class);
-        GENERIC_EXCEPTION_CONSTRUCTOR_S_T_S_S = loadConstructor(String.class, Throwable.class, String.class, String.class);
+        GENERIC_EXCEPTION_CONSTRUCTOR_S_T_S_S =
+                loadConstructor(String.class, Throwable.class, String.class, String.class);
     }
 
     @SuppressWarnings("unchecked")
@@ -51,7 +57,8 @@ public class Dubbo2GenericExceptionUtils {
         }
     }
 
-    private static Constructor<? extends org.apache.dubbo.rpc.service.GenericException> loadConstructor(Class<?>... parameterTypes) {
+    private static Constructor<? extends org.apache.dubbo.rpc.service.GenericException> loadConstructor(
+            Class<?>... parameterTypes) {
         if (GENERIC_EXCEPTION_CLASS == null) {
             return null;
         }
@@ -63,9 +70,12 @@ public class Dubbo2GenericExceptionUtils {
     }
 
     public static boolean isGenericExceptionClassLoaded() {
-        return GENERIC_EXCEPTION_CLASS != null && GENERIC_EXCEPTION_CONSTRUCTOR != null
-            && GENERIC_EXCEPTION_CONSTRUCTOR_S != null && GENERIC_EXCEPTION_CONSTRUCTOR_S_S != null
-            && GENERIC_EXCEPTION_CONSTRUCTOR_T != null && GENERIC_EXCEPTION_CONSTRUCTOR_S_T_S_S != null;
+        return GENERIC_EXCEPTION_CLASS != null
+                && GENERIC_EXCEPTION_CONSTRUCTOR != null
+                && GENERIC_EXCEPTION_CONSTRUCTOR_S != null
+                && GENERIC_EXCEPTION_CONSTRUCTOR_S_S != null
+                && GENERIC_EXCEPTION_CONSTRUCTOR_T != null
+                && GENERIC_EXCEPTION_CONSTRUCTOR_S_T_S_S != null;
     }
 
     public static Class<? extends org.apache.dubbo.rpc.service.GenericException> getGenericExceptionClass() {
@@ -94,7 +104,8 @@ public class Dubbo2GenericExceptionUtils {
         }
     }
 
-    public static org.apache.dubbo.rpc.service.GenericException newGenericException(String exceptionClass, String exceptionMessage) {
+    public static org.apache.dubbo.rpc.service.GenericException newGenericException(
+            String exceptionClass, String exceptionMessage) {
         if (GENERIC_EXCEPTION_CONSTRUCTOR_S_S == null) {
             return null;
         }
@@ -116,7 +127,8 @@ public class Dubbo2GenericExceptionUtils {
         }
     }
 
-    public static org.apache.dubbo.rpc.service.GenericException newGenericException(String message, Throwable cause, String exceptionClass, String exceptionMessage) {
+    public static org.apache.dubbo.rpc.service.GenericException newGenericException(
+            String message, Throwable cause, String exceptionClass, String exceptionMessage) {
         if (GENERIC_EXCEPTION_CONSTRUCTOR_S_T_S_S == null) {
             return null;
         }

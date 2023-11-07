@@ -55,7 +55,6 @@ public interface ObjectInput extends DataInput {
      */
     <T> T readObject(Class<T> cls, Type type) throws IOException, ClassNotFoundException;
 
-
     /**
      * The following methods are customized for the requirement of Dubbo's RPC protocol implementation. Legacy protocol
      * implementation will try to write Map, Throwable and Null value directly to the stream, which does not meet the

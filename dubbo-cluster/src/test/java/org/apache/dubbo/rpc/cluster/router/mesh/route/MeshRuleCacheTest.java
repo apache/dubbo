@@ -25,13 +25,13 @@ import org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.DestinationRule
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.Subset;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -41,7 +41,8 @@ import static org.mockito.Mockito.when;
 class MeshRuleCacheTest {
 
     private Invoker<Object> createInvoker(String app) {
-        URL url = URL.valueOf("dubbo://localhost/DemoInterface?" + (StringUtils.isEmpty(app) ? "" : "remote.application=" + app));
+        URL url = URL.valueOf(
+                "dubbo://localhost/DemoInterface?" + (StringUtils.isEmpty(app) ? "" : "remote.application=" + app));
         Invoker invoker = Mockito.mock(Invoker.class);
         when(invoker.getUrl()).thenReturn(url);
         return invoker;
@@ -54,7 +55,6 @@ class MeshRuleCacheTest {
         when(url.getOriginalServiceParameter("test", "key2")).thenReturn("value2");
         when(url.getOriginalServiceParameter("test", "key3")).thenReturn("value3");
         when(url.getOriginalServiceParameter("test", "key4")).thenReturn("value4");
-
 
         Map<String, String> originMap = new HashMap<>();
 
@@ -71,13 +71,12 @@ class MeshRuleCacheTest {
 
         inputMap.put("key4", "value4");
         assertTrue(MeshRuleCache.isLabelMatch(url, "test", inputMap));
-
     }
-
 
     @Test
     void testBuild() {
-        BitList<Invoker<Object>> invokers = new BitList<>(Arrays.asList(createInvoker(""), createInvoker("unknown"), createInvoker("app1")));
+        BitList<Invoker<Object>> invokers =
+                new BitList<>(Arrays.asList(createInvoker(""), createInvoker("unknown"), createInvoker("app1")));
 
         Subset subset = new Subset();
         subset.setName("TestSubset");
@@ -99,7 +98,8 @@ class MeshRuleCacheTest {
         assertEquals(3, cache.getUnmatchedInvokers().size());
         assertEquals(0, cache.getSubsetInvokers("app1", "TestSubset").size());
 
-        invokers = new BitList<>(Arrays.asList(createInvoker(""), createInvoker("unknown"), createInvoker("app1"), createInvoker("app2")));
+        invokers = new BitList<>(Arrays.asList(
+                createInvoker(""), createInvoker("unknown"), createInvoker("app1"), createInvoker("app2")));
         subset.setLabels(null);
         cache = MeshRuleCache.build("test", invokers, vsDestinationGroupMap);
         assertEquals(3, cache.getUnmatchedInvokers().size());

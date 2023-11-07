@@ -16,14 +16,14 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
 import java.util.NoSuchElementException;
+
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_NETWORK_IGNORED_INTERFACE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -40,9 +40,10 @@ class NetUtilsInterfaceDisplayNameHasMetaCharactersTest {
         try (MockedStatic<NetworkInterface> mockedStaticNetif = Mockito.mockStatic(NetworkInterface.class)) {
             NetworkInterface mockIgnoredNetif = Mockito.mock(NetworkInterface.class);
             NetworkInterface mockSelectedNetif = Mockito.mock(NetworkInterface.class);
-            NetworkInterface[] mockNetifs = { mockIgnoredNetif, mockSelectedNetif };
+            NetworkInterface[] mockNetifs = {mockIgnoredNetif, mockSelectedNetif};
             Enumeration<NetworkInterface> mockEnumIfs = new Enumeration<NetworkInterface>() {
                 private int i = 0;
+
                 public NetworkInterface nextElement() {
                     if (mockNetifs != null && i < mockNetifs.length) {
                         NetworkInterface netif = mockNetifs[i++];
@@ -58,9 +59,10 @@ class NetUtilsInterfaceDisplayNameHasMetaCharactersTest {
             };
 
             InetAddress mockSelectedAddr = Mockito.mock(InetAddress.class);
-            InetAddress[] mockAddrs = { mockSelectedAddr };
+            InetAddress[] mockAddrs = {mockSelectedAddr};
             Enumeration<InetAddress> mockEnumAddrs = new Enumeration<InetAddress>() {
                 private int i = 0;
+
                 public InetAddress nextElement() {
                     if (mockAddrs != null && i < mockAddrs.length) {
                         InetAddress addr = mockAddrs[i++];
@@ -76,7 +78,11 @@ class NetUtilsInterfaceDisplayNameHasMetaCharactersTest {
             };
 
             // mock static method getNetworkInterfaces
-            mockedStaticNetif.when(() -> { NetworkInterface.getNetworkInterfaces(); }).thenReturn(mockEnumIfs);
+            mockedStaticNetif
+                    .when(() -> {
+                        NetworkInterface.getNetworkInterfaces();
+                    })
+                    .thenReturn(mockEnumIfs);
 
             Mockito.when(mockIgnoredNetif.isUp()).thenReturn(true);
             Mockito.when(mockIgnoredNetif.getDisplayName()).thenReturn(IGNORED_DISPLAY_NAME_HAS_METACHARACTERS);
@@ -98,16 +104,15 @@ class NetUtilsInterfaceDisplayNameHasMetaCharactersTest {
         }
     }
 
-    private String getIgnoredInterfaces(){
+    private String getIgnoredInterfaces() {
         return System.getProperty(DUBBO_NETWORK_IGNORED_INTERFACE);
     }
 
-    private void setIgnoredInterfaces(String ignoredInterfaces){
-        if(ignoredInterfaces!=null){
-            System.setProperty(DUBBO_NETWORK_IGNORED_INTERFACE,ignoredInterfaces);
-        }else{
-            System.setProperty(DUBBO_NETWORK_IGNORED_INTERFACE,"");
+    private void setIgnoredInterfaces(String ignoredInterfaces) {
+        if (ignoredInterfaces != null) {
+            System.setProperty(DUBBO_NETWORK_IGNORED_INTERFACE, ignoredInterfaces);
+        } else {
+            System.setProperty(DUBBO_NETWORK_IGNORED_INTERFACE, "");
         }
     }
-
 }

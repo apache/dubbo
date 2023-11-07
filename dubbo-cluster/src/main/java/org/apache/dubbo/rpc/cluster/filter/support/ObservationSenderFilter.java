@@ -50,7 +50,8 @@ public class ObservationSenderFilter implements ClusterFilter, BaseFilter.Listen
         applicationModel.getApplicationConfigManager().getTracing().ifPresent(cfg -> {
             if (Boolean.TRUE.equals(cfg.getEnabled())) {
                 observationRegistry = applicationModel.getBeanFactory().getBean(ObservationRegistry.class);
-                clientObservationConvention = applicationModel.getBeanFactory().getBean(DubboClientObservationConvention.class);
+                clientObservationConvention =
+                        applicationModel.getBeanFactory().getBean(DubboClientObservationConvention.class);
             }
         });
     }
@@ -64,7 +65,8 @@ public class ObservationSenderFilter implements ClusterFilter, BaseFilter.Listen
         final Observation observation = DubboObservationDocumentation.CLIENT.observation(
                 this.clientObservationConvention,
                 DefaultDubboClientObservationConvention.getInstance(),
-                () -> senderContext, observationRegistry);
+                () -> senderContext,
+                observationRegistry);
         invocation.put(Observation.class, observation.start());
         return observation.scoped(() -> invoker.invoke(invocation));
     }

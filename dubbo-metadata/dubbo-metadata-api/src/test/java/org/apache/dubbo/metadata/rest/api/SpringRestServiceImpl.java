@@ -17,13 +17,12 @@
 package org.apache.dubbo.metadata.rest.api;
 
 import org.apache.dubbo.metadata.rest.User;
+
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RestController;
 
-
 @RestController
 public class SpringRestServiceImpl implements SpringRestService {
-
 
     @Override
     public String param(String param) {
@@ -64,5 +63,4 @@ public class SpringRestServiceImpl implements SpringRestService {
     public int noAnnoPrimitive(int c) {
         return c;
     }
-
 }

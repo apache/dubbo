@@ -18,7 +18,7 @@ package org.apache.dubbo.common.model.person;
 
 import java.io.Serializable;
 
-public class Dgeneric<T,Y,Z> implements Serializable {
+public class Dgeneric<T, Y, Z> implements Serializable {
     public static String NAME = "D";
 
     private String name = NAME;

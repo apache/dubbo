@@ -24,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 
 public class DemoServiceExecutor extends ThreadPoolExecutor {
     public DemoServiceExecutor() {
-        super(10, 10, 60, TimeUnit.SECONDS, new LinkedBlockingDeque<>(),
-            new NamedThreadFactory("DemoServiceExecutor"));
+        super(10, 10, 60, TimeUnit.SECONDS, new LinkedBlockingDeque<>(), new NamedThreadFactory("DemoServiceExecutor"));
     }
 }

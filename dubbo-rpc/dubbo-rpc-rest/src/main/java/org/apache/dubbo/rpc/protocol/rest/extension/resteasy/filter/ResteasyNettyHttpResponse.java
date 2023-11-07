@@ -17,15 +17,17 @@
 package org.apache.dubbo.rpc.protocol.rest.extension.resteasy.filter;
 
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
-import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
-import org.jboss.resteasy.spi.HttpResponse;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.NewCookie;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
+
+import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
+import org.jboss.resteasy.spi.HttpResponse;
 
 public class ResteasyNettyHttpResponse implements HttpResponse {
 
@@ -43,7 +45,6 @@ public class ResteasyNettyHttpResponse implements HttpResponse {
             multivaluedMap.add(key, value);
         }
     }
-
 
     @Override
     public int getStatus() {
@@ -72,9 +73,7 @@ public class ResteasyNettyHttpResponse implements HttpResponse {
     }
 
     @Override
-    public void addNewCookie(NewCookie cookie) {
-
-    }
+    public void addNewCookie(NewCookie cookie) {}
 
     @Override
     public void sendError(int status) throws IOException {
@@ -99,7 +98,5 @@ public class ResteasyNettyHttpResponse implements HttpResponse {
     }
 
     @Override
-    public void flushBuffer() throws IOException {
-
-    }
+    public void flushBuffer() throws IOException {}
 }

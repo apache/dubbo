@@ -44,25 +44,29 @@ public class ExecutionException extends RemotingException {
         this.request = request;
     }
 
-    public ExecutionException(Object request, InetSocketAddress localAddress, InetSocketAddress remoteAddress, String message,
-                              Throwable cause) {
+    public ExecutionException(
+            Object request,
+            InetSocketAddress localAddress,
+            InetSocketAddress remoteAddress,
+            String message,
+            Throwable cause) {
         super(localAddress, remoteAddress, message, cause);
         this.request = request;
     }
 
-    public ExecutionException(Object request, InetSocketAddress localAddress, InetSocketAddress remoteAddress, String message) {
+    public ExecutionException(
+            Object request, InetSocketAddress localAddress, InetSocketAddress remoteAddress, String message) {
         super(localAddress, remoteAddress, message);
         this.request = request;
     }
 
-    public ExecutionException(Object request, InetSocketAddress localAddress, InetSocketAddress remoteAddress, Throwable cause) {
+    public ExecutionException(
+            Object request, InetSocketAddress localAddress, InetSocketAddress remoteAddress, Throwable cause) {
         super(localAddress, remoteAddress, cause);
         this.request = request;
     }
 
-
     public Object getRequest() {
         return request;
     }
-
 }

@@ -19,10 +19,10 @@ package org.apache.dubbo.qos.command.impl;
 import org.apache.dubbo.qos.api.Cmd;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-@Cmd(name = "online", summary = "online app addresses", example = {
-        "online dubbo",
-        "online xx.xx.xxx.service"
-})
+@Cmd(
+        name = "online",
+        summary = "online app addresses",
+        example = {"online dubbo", "online xx.xx.xxx.service"})
 public class Online extends BaseOnline {
     public Online(FrameworkModel frameworkModel) {
         super(frameworkModel);

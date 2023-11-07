@@ -25,13 +25,13 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.Directory;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.BDDMockito.given;
@@ -67,7 +67,6 @@ class ForkingClusterInvokerTest {
         invokers.add(invoker1);
         invokers.add(invoker2);
         invokers.add(invoker3);
-
     }
 
     private void resetInvokerToException() {
@@ -134,7 +133,9 @@ class ForkingClusterInvokerTest {
             invoker.invoke(invocation);
             Assertions.fail();
         } catch (RpcException expected) {
-            Assertions.assertTrue(expected.getMessage().contains("Failed to forking invoke provider"), "Succeeded to forking invoke provider !");
+            Assertions.assertTrue(
+                    expected.getMessage().contains("Failed to forking invoke provider"),
+                    "Succeeded to forking invoke provider !");
             assertFalse(expected.getCause() instanceof RpcException);
         }
         Map<String, Object> afterInvoke = RpcContext.getClientAttachment().getObjectAttachments();
@@ -165,5 +166,4 @@ class ForkingClusterInvokerTest {
         Result ret = invoker.invoke(invocation);
         Assertions.assertSame(result, ret);
     }
-
 }

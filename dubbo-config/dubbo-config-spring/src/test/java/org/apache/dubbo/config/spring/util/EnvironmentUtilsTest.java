@@ -16,6 +16,10 @@
  */
 package org.apache.dubbo.config.spring.util;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.SortedMap;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.env.CompositePropertySource;
@@ -23,10 +27,6 @@ import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.mock.env.MockEnvironment;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.SortedMap;
 
 import static org.apache.dubbo.config.spring.util.EnvironmentUtils.filterDubboProperties;
 
@@ -67,7 +67,6 @@ class EnvironmentUtilsTest {
         } finally {
             System.clearProperty(key);
         }
-
     }
 
     @Test
@@ -83,6 +82,5 @@ class EnvironmentUtilsTest {
         Assertions.assertEquals(2, dubboProperties.size());
         Assertions.assertEquals("zookeeper://10.10.10.1:2181", dubboProperties.get("dubbo.registry.address"));
         Assertions.assertEquals("false", dubboProperties.get("dubbo.consumer.check"));
-
     }
 }

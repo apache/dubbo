@@ -27,11 +27,19 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
  */
 class MetadataServiceURLBuilderTest {
 
-    static ServiceInstance serviceInstance = new DefaultServiceInstance("test", "127.0.0.1", 8080, ApplicationModel.defaultModel());
+    static ServiceInstance serviceInstance =
+            new DefaultServiceInstance("test", "127.0.0.1", 8080, ApplicationModel.defaultModel());
 
     static {
-        serviceInstance.getMetadata().put("dubbo.metadata-service.urls", "[ \"dubbo://192.168.0.102:20881/com.alibaba.cloud.dubbo.service.DubboMetadataService?anyhost=true&application=spring-cloud-alibaba-dubbo-provider&bind.ip=192.168.0.102&bind.port=20881&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&group=spring-cloud-alibaba-dubbo-provider&interface=com.alibaba.cloud.dubbo.service.DubboMetadataService&methods=getAllServiceKeys,getServiceRestMetadata,getExportedURLs,getAllExportedURLs&pid=17134&qos.enable=false&register=true&release=2.7.3&revision=1.0.0&side=provider&timestamp=1564826098503&version=1.0.0\" ]");
-        serviceInstance.getMetadata().put("dubbo.metadata-service.url-params", "{\"application\":\"dubbo-provider-demo\",\"protocol\":\"rest\",\"group\":\"dubbo-provider-demo\",\"version\":\"1.0.0\",\"timestamp\":\"1564845042651\",\"dubbo\":\"2.0.2\",\"host\":\"192.168.0.102\",\"port\":\"20880\"}");
+        serviceInstance
+                .getMetadata()
+                .put(
+                        "dubbo.metadata-service.urls",
+                        "[ \"dubbo://192.168.0.102:20881/com.alibaba.cloud.dubbo.service.DubboMetadataService?anyhost=true&application=spring-cloud-alibaba-dubbo-provider&bind.ip=192.168.0.102&bind.port=20881&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&group=spring-cloud-alibaba-dubbo-provider&interface=com.alibaba.cloud.dubbo.service.DubboMetadataService&methods=getAllServiceKeys,getServiceRestMetadata,getExportedURLs,getAllExportedURLs&pid=17134&qos.enable=false&register=true&release=2.7.3&revision=1.0.0&side=provider&timestamp=1564826098503&version=1.0.0\" ]");
+        serviceInstance
+                .getMetadata()
+                .put(
+                        "dubbo.metadata-service.url-params",
+                        "{\"application\":\"dubbo-provider-demo\",\"protocol\":\"rest\",\"group\":\"dubbo-provider-demo\",\"version\":\"1.0.0\",\"timestamp\":\"1564845042651\",\"dubbo\":\"2.0.2\",\"host\":\"192.168.0.102\",\"port\":\"20880\"}");
     }
-
 }

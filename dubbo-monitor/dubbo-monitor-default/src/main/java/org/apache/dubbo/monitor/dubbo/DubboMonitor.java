@@ -77,19 +77,34 @@ public class DubboMonitor implements Monitor {
     public DubboMonitor(Invoker<MonitorService> monitorInvoker, MonitorService monitorService) {
         this.monitorInvoker = monitorInvoker;
         this.monitorService = monitorService;
-        scheduledExecutorService = monitorInvoker.getUrl().getOrDefaultFrameworkModel().getBeanFactory()
-            .getBean(FrameworkExecutorRepository.class).getSharedScheduledExecutor();
+        scheduledExecutorService = monitorInvoker
+                .getUrl()
+                .getOrDefaultFrameworkModel()
+                .getBeanFactory()
+                .getBean(FrameworkExecutorRepository.class)
+                .getSharedScheduledExecutor();
         // The time interval for timer <b>scheduledExecutorService</b> to send data
-        final long monitorInterval = monitorInvoker.getUrl().getPositiveParameter(MONITOR_SEND_DATA_INTERVAL_KEY, DEFAULT_MONITOR_SEND_DATA_INTERVAL);
+        final long monitorInterval = monitorInvoker
+                .getUrl()
+                .getPositiveParameter(MONITOR_SEND_DATA_INTERVAL_KEY, DEFAULT_MONITOR_SEND_DATA_INTERVAL);
         // collect timer for collecting statistics data
-        sendFuture = scheduledExecutorService.scheduleWithFixedDelay(() -> {
-            try {
-                // collect data
-                send();
-            } catch (Throwable t) {
-                logger.error(COMMON_MONITOR_EXCEPTION, "", "", "Unexpected error occur at send statistic, cause: " + t.getMessage(), t);
-            }
-        }, monitorInterval, monitorInterval, TimeUnit.MILLISECONDS);
+        sendFuture = scheduledExecutorService.scheduleWithFixedDelay(
+                () -> {
+                    try {
+                        // collect data
+                        send();
+                    } catch (Throwable t) {
+                        logger.error(
+                                COMMON_MONITOR_EXCEPTION,
+                                "",
+                                "",
+                                "Unexpected error occur at send statistic, cause: " + t.getMessage(),
+                                t);
+                    }
+                },
+                monitorInterval,
+                monitorInterval,
+                TimeUnit.MILLISECONDS);
     }
 
     public void send() {
@@ -105,20 +120,33 @@ public class DubboMonitor implements Monitor {
             StatisticsItem statisticsItem = reference.get();
 
             // send statistics data
-            URL url = statistics.getUrl()
-                .addParameters(TIMESTAMP_KEY, timestamp,
-                    SUCCESS_KEY, String.valueOf(statisticsItem.getSuccess()),
-                    FAILURE_KEY, String.valueOf(statisticsItem.getFailure()),
-                    INPUT_KEY, String.valueOf(statisticsItem.getInput()),
-                    OUTPUT_KEY, String.valueOf(statisticsItem.getOutput()),
-                    ELAPSED_KEY, String.valueOf(statisticsItem.getElapsed()),
-                    CONCURRENT_KEY, String.valueOf(statisticsItem.getConcurrent()),
-                    MAX_INPUT_KEY, String.valueOf(statisticsItem.getMaxInput()),
-                    MAX_OUTPUT_KEY, String.valueOf(statisticsItem.getMaxOutput()),
-                    MAX_ELAPSED_KEY, String.valueOf(statisticsItem.getMaxElapsed()),
-                    MAX_CONCURRENT_KEY, String.valueOf(statisticsItem.getMaxConcurrent()),
-                    DEFAULT_PROTOCOL, getUrl().getParameter(DEFAULT_PROTOCOL)
-                );
+            URL url = statistics
+                    .getUrl()
+                    .addParameters(
+                            TIMESTAMP_KEY,
+                            timestamp,
+                            SUCCESS_KEY,
+                            String.valueOf(statisticsItem.getSuccess()),
+                            FAILURE_KEY,
+                            String.valueOf(statisticsItem.getFailure()),
+                            INPUT_KEY,
+                            String.valueOf(statisticsItem.getInput()),
+                            OUTPUT_KEY,
+                            String.valueOf(statisticsItem.getOutput()),
+                            ELAPSED_KEY,
+                            String.valueOf(statisticsItem.getElapsed()),
+                            CONCURRENT_KEY,
+                            String.valueOf(statisticsItem.getConcurrent()),
+                            MAX_INPUT_KEY,
+                            String.valueOf(statisticsItem.getMaxInput()),
+                            MAX_OUTPUT_KEY,
+                            String.valueOf(statisticsItem.getMaxOutput()),
+                            MAX_ELAPSED_KEY,
+                            String.valueOf(statisticsItem.getMaxElapsed()),
+                            MAX_CONCURRENT_KEY,
+                            String.valueOf(statisticsItem.getMaxConcurrent()),
+                            DEFAULT_PROTOCOL,
+                            getUrl().getParameter(DEFAULT_PROTOCOL));
             monitorService.collect(url.toSerializableURL());
 
             // reset
@@ -130,13 +158,12 @@ public class DubboMonitor implements Monitor {
                     update.setItems(0, 0, 0, 0, 0, 0);
                 } else {
                     update.setItems(
-                        current.getSuccess() - statisticsItem.getSuccess(),
-                        current.getFailure() - statisticsItem.getFailure(),
-                        current.getInput() - statisticsItem.getInput(),
-                        current.getOutput() - statisticsItem.getOutput(),
-                        current.getElapsed() - statisticsItem.getElapsed(),
-                        current.getConcurrent() - statisticsItem.getConcurrent()
-                    );
+                            current.getSuccess() - statisticsItem.getSuccess(),
+                            current.getFailure() - statisticsItem.getFailure(),
+                            current.getInput() - statisticsItem.getInput(),
+                            current.getOutput() - statisticsItem.getOutput(),
+                            current.getElapsed() - statisticsItem.getElapsed(),
+                            current.getConcurrent() - statisticsItem.getConcurrent());
                 }
             } while (!reference.compareAndSet(current, update));
         }
@@ -153,27 +180,28 @@ public class DubboMonitor implements Monitor {
         int concurrent = url.getParameter(CONCURRENT_KEY, 0);
         // init atomic reference
         Statistics statistics = new Statistics(url);
-        AtomicReference<StatisticsItem> reference = ConcurrentHashMapUtils.computeIfAbsent(statisticsMap, statistics, k -> new AtomicReference<>());
+        AtomicReference<StatisticsItem> reference =
+                ConcurrentHashMapUtils.computeIfAbsent(statisticsMap, statistics, k -> new AtomicReference<>());
         // use CompareAndSet to sum
         StatisticsItem current;
         StatisticsItem update = new StatisticsItem();
         do {
             current = reference.get();
             if (current == null) {
-                update.setItems(success, failure, input, output, elapsed, concurrent, input, output, elapsed, concurrent);
+                update.setItems(
+                        success, failure, input, output, elapsed, concurrent, input, output, elapsed, concurrent);
             } else {
                 update.setItems(
-                    current.getSuccess() + success,
-                    current.getFailure() + failure,
-                    current.getInput() + input,
-                    current.getOutput() + output,
-                    current.getElapsed() + elapsed,
-                    (current.getConcurrent() + concurrent) / 2,
-                    current.getMaxInput() > input ? current.getMaxInput() : input,
-                    current.getMaxOutput() > output ? current.getMaxOutput() : output,
-                    current.getMaxElapsed() > elapsed ? current.getMaxElapsed() : elapsed,
-                    current.getMaxConcurrent() > concurrent ? current.getMaxConcurrent() : concurrent
-                );
+                        current.getSuccess() + success,
+                        current.getFailure() + failure,
+                        current.getInput() + input,
+                        current.getOutput() + output,
+                        current.getElapsed() + elapsed,
+                        (current.getConcurrent() + concurrent) / 2,
+                        current.getMaxInput() > input ? current.getMaxInput() : input,
+                        current.getMaxOutput() > output ? current.getMaxOutput() : output,
+                        current.getMaxElapsed() > elapsed ? current.getMaxElapsed() : elapsed,
+                        current.getMaxConcurrent() > concurrent ? current.getMaxConcurrent() : concurrent);
             }
         } while (!reference.compareAndSet(current, update));
     }
@@ -198,9 +226,13 @@ public class DubboMonitor implements Monitor {
         try {
             ExecutorUtil.cancelScheduledFuture(sendFuture);
         } catch (Throwable t) {
-            logger.error(COMMON_MONITOR_EXCEPTION, "", "", "Unexpected error occur at cancel sender timer, cause: " + t.getMessage(), t);
+            logger.error(
+                    COMMON_MONITOR_EXCEPTION,
+                    "",
+                    "",
+                    "Unexpected error occur at cancel sender timer, cause: " + t.getMessage(),
+                    t);
         }
         monitorInvoker.destroy();
     }
-
 }

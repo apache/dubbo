@@ -23,5 +23,4 @@ public interface DemoService {
     String sayHello(String name);
 
     CompletableFuture<String> sayHelloAsync(String name);
-
 }

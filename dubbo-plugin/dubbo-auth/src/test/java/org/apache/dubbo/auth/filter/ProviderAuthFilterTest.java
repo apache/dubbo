@@ -39,7 +39,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-
 class ProviderAuthFilterTest {
     @Test
     void testAuthDisabled() {
@@ -67,7 +66,6 @@ class ProviderAuthFilterTest {
         verify(invocation, atLeastOnce()).getAttachment(anyString());
     }
 
-
     @Test
     void testAuthFailed() {
         URL url = URL.valueOf("dubbo://10.10.10.10:2181")
@@ -83,7 +81,6 @@ class ProviderAuthFilterTest {
         ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter(ApplicationModel.defaultModel());
         Result result = providerAuthFilter.invoke(invoker, invocation);
         assertTrue(result.hasException());
-
     }
 
     @Test
@@ -126,7 +123,7 @@ class ProviderAuthFilterTest {
     void testAuthFailedWhenParameterError() {
         String service = "org.apache.dubbo.DemoService";
         String method = "test";
-        Object[] originalParams = new Object[]{"dubbo1", "dubbo2"};
+        Object[] originalParams = new Object[] {"dubbo1", "dubbo2"};
         long currentTimeMillis = System.currentTimeMillis();
         URL url = URL.valueOf("dubbo://10.10.10.10:2181")
                 .setServiceInterface(service)
@@ -142,13 +139,16 @@ class ProviderAuthFilterTest {
         when(invocation.getObjectAttachment(CommonConstants.CONSUMER)).thenReturn("test-consumer");
         when(invocation.getObjectAttachment(Constants.REQUEST_TIMESTAMP_KEY)).thenReturn(currentTimeMillis);
         when(invocation.getMethodName()).thenReturn(method);
-        Object[] fakeParams = new Object[]{"dubbo1", "dubbo3"};
+        Object[] fakeParams = new Object[] {"dubbo1", "dubbo3"};
         when(invocation.getArguments()).thenReturn(fakeParams);
         when(invoker.getUrl()).thenReturn(url);
 
-
-        String requestString = String.format(Constants.SIGNATURE_STRING_FORMAT,
-                url.getColonSeparatedKey(), invocation.getMethodName(), "sk", currentTimeMillis);
+        String requestString = String.format(
+                Constants.SIGNATURE_STRING_FORMAT,
+                url.getColonSeparatedKey(),
+                invocation.getMethodName(),
+                "sk",
+                currentTimeMillis);
         String sign = SignatureUtils.sign(originalParams, requestString, "sk");
         when(invocation.getObjectAttachment(Constants.REQUEST_SIGNATURE_KEY)).thenReturn(sign);
 
@@ -177,9 +177,12 @@ class ProviderAuthFilterTest {
         when(invocation.getMethodName()).thenReturn(method);
         when(invoker.getUrl()).thenReturn(url);
 
-
-        String requestString = String.format(Constants.SIGNATURE_STRING_FORMAT,
-                url.getColonSeparatedKey(), invocation.getMethodName(), "sk", currentTimeMillis);
+        String requestString = String.format(
+                Constants.SIGNATURE_STRING_FORMAT,
+                url.getColonSeparatedKey(),
+                invocation.getMethodName(),
+                "sk",
+                currentTimeMillis);
         String sign = SignatureUtils.sign(requestString, "sk");
         when(invocation.getAttachment(Constants.REQUEST_SIGNATURE_KEY)).thenReturn(sign);
 

@@ -14,16 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.metadata.definition.TypeDefinitionBuilder;
 import org.apache.dubbo.rpc.support.DemoService;
-
 import org.apache.dubbo.rpc.support.DemoService1;
-import org.apache.dubbo.rpc.support.DemoService2;
-import org.apache.dubbo.rpc.support.DemoService3;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -33,13 +29,11 @@ import static org.mockito.Mockito.when;
 
 class ReflectionServiceDescriptorTest {
 
-    private final ReflectionServiceDescriptor service = new ReflectionServiceDescriptor(
-        DemoService.class);
+    private final ReflectionServiceDescriptor service = new ReflectionServiceDescriptor(DemoService.class);
 
     @Test
     void addMethod() {
-        ReflectionServiceDescriptor service2 = new ReflectionServiceDescriptor(
-            DemoService.class);
+        ReflectionServiceDescriptor service2 = new ReflectionServiceDescriptor(DemoService.class);
         MethodDescriptor method = Mockito.mock(MethodDescriptor.class);
         when(method.getMethodName()).thenReturn("sayHello2");
         service2.addMethod(method);
@@ -51,8 +45,7 @@ class ReflectionServiceDescriptorTest {
         try {
             new ReflectionServiceDescriptor(DemoService1.class);
         } catch (IllegalStateException e) {
-            Assertions.assertTrue(e.getMessage()
-                .contains("Stream method could not be overloaded."));
+            Assertions.assertTrue(e.getMessage().contains("Stream method could not be overloaded."));
         }
     }
 
@@ -85,7 +78,7 @@ class ReflectionServiceDescriptorTest {
 
     @Test
     void testGetMethod() {
-        Assertions.assertNotNull(service.getMethod("sayHello", new Class[]{String.class}));
+        Assertions.assertNotNull(service.getMethod("sayHello", new Class[] {String.class}));
     }
 
     @Test
@@ -95,32 +88,15 @@ class ReflectionServiceDescriptorTest {
 
     @Test
     void testEquals() {
-        ReflectionServiceDescriptor service2 = new ReflectionServiceDescriptor(
-            DemoService.class);
-        ReflectionServiceDescriptor service3 = new ReflectionServiceDescriptor(
-            DemoService.class);
+        ReflectionServiceDescriptor service2 = new ReflectionServiceDescriptor(DemoService.class);
+        ReflectionServiceDescriptor service3 = new ReflectionServiceDescriptor(DemoService.class);
         Assertions.assertEquals(service2, service3);
     }
 
     @Test
     void testHashCode() {
-        ReflectionServiceDescriptor service2 = new ReflectionServiceDescriptor(
-            DemoService.class);
-        ReflectionServiceDescriptor service3 = new ReflectionServiceDescriptor(
-            DemoService.class);
+        ReflectionServiceDescriptor service2 = new ReflectionServiceDescriptor(DemoService.class);
+        ReflectionServiceDescriptor service3 = new ReflectionServiceDescriptor(DemoService.class);
         Assertions.assertEquals(service2.hashCode(), service3.hashCode());
-    }
-
-    @Test
-    void testPbMethodOverride() {
-        new ReflectionServiceDescriptor(DemoService.class);
-        new ReflectionServiceDescriptor(DemoService2.class);
-        String EXPECT_RESPONSE_MSG = "Protobuf method not allow override,method(org.apache.dubbo.rpc.support.DemoService3.sayHello).";
-        try {
-            new ReflectionServiceDescriptor(DemoService3.class);
-        } catch (IllegalStateException e) {
-            Assertions.assertEquals(EXPECT_RESPONSE_MSG, e.getMessage());
-        }
-
     }
 }

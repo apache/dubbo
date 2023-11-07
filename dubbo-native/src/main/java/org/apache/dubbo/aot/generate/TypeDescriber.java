@@ -35,9 +35,13 @@ public class TypeDescriber implements ConditionalDescriber {
 
     private final Set<MemberCategory> memberCategories;
 
-    public TypeDescriber(String name, String reachableType, Set<FieldDescriber> fields,
-                         Set<ExecutableDescriber> constructors, Set<ExecutableDescriber> methods,
-                         Set<MemberCategory> memberCategories) {
+    public TypeDescriber(
+            String name,
+            String reachableType,
+            Set<FieldDescriber> fields,
+            Set<ExecutableDescriber> constructors,
+            Set<ExecutableDescriber> methods,
+            Set<MemberCategory> memberCategories) {
         this.name = name;
         this.reachableType = reachableType;
         this.fields = fields;
@@ -45,7 +49,6 @@ public class TypeDescriber implements ConditionalDescriber {
         this.methods = methods;
         this.memberCategories = memberCategories;
     }
-
 
     public String getName() {
         return name;

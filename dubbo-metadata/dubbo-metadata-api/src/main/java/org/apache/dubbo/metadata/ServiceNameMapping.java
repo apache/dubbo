@@ -64,8 +64,8 @@ public interface ServiceNameMapping extends Destroyable {
     }
 
     static String buildGroup(String serviceInterface) {
-        //the issue : https://github.com/apache/dubbo/issues/4671
-//        return DEFAULT_MAPPING_GROUP + SLASH + serviceInterface;
+        // the issue : https://github.com/apache/dubbo/issues/4671
+        //        return DEFAULT_MAPPING_GROUP + SLASH + serviceInterface;
         return serviceInterface;
     }
 
@@ -93,7 +93,7 @@ public interface ServiceNameMapping extends Destroyable {
 
     static Set<String> getMappingByUrl(URL consumerURL) {
         String providedBy = consumerURL.getParameter(RegistryConstants.PROVIDED_BY);
-        if(StringUtils.isBlank(providedBy)) {
+        if (StringUtils.isBlank(providedBy)) {
             return null;
         }
         return AbstractServiceNameMapping.parseServices(providedBy);

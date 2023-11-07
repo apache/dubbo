@@ -96,5 +96,5 @@ public @interface Activate {
      * Activate loadClass when the current extension when the specified className all match
      * @return className names to all match
      */
-    String [] onClass() default {};
+    String[] onClass() default {};
 }

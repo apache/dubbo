@@ -22,6 +22,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -104,10 +105,14 @@ public class Compiler {
     }
 
     public boolean compile(Class<?>... sourceClasses) {
-        JavaCompiler.CompilationTask task = javaCompiler.getTask(null, this.javaFileManager, null,
+        JavaCompiler.CompilationTask task = javaCompiler.getTask(
+                null,
+                this.javaFileManager,
+                null,
                 asList("-parameters", "-Xlint:unchecked", "-nowarn", "-Xlint:deprecation"),
-//                null,
-                null, getJavaFileObjects(sourceClasses));
+                //                null,
+                null,
+                getJavaFileObjects(sourceClasses));
         if (!processors.isEmpty()) {
             task.setProcessors(processors);
         }

@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.metadata.tools;
 
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
+
+import org.junit.jupiter.api.Test;
 
 /**
  * The Compiler test case
@@ -28,10 +28,6 @@ class CompilerTest {
     @Test
     void testCompile() throws IOException {
         Compiler compiler = new Compiler();
-        compiler.compile(
-                TestServiceImpl.class,
-                DefaultTestService.class,
-                GenericTestService.class);
+        compiler.compile(TestServiceImpl.class, DefaultTestService.class, GenericTestService.class);
     }
 }
-

@@ -40,15 +40,21 @@ public class FormBodyParameterProcessor extends AbstractAnnotatedMethodParameter
     }
 
     @Override
-    public void process(Annotation annotation, Parameter parameter, int parameterIndex, Method method, Class<?> serviceType, Class<?> serviceInterfaceClass, RestMethodMetadata restMethodMetadata) {
-        super.process(annotation, parameter, parameterIndex, method, serviceType, serviceInterfaceClass, restMethodMetadata);
+    public void process(
+            Annotation annotation,
+            Parameter parameter,
+            int parameterIndex,
+            Method method,
+            Class<?> serviceType,
+            Class<?> serviceInterfaceClass,
+            RestMethodMetadata restMethodMetadata) {
+        super.process(
+                annotation, parameter, parameterIndex, method, serviceType, serviceInterfaceClass, restMethodMetadata);
         restMethodMetadata.getRequest().getConsumes().add(APPLICATION_FORM_URLENCODED_VALUE.value);
-
     }
 
     @Override
     protected String getAnnotationValue(Annotation annotation, Parameter parameter, int parameterIndex) {
         return null;
     }
-
 }

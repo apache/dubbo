@@ -42,15 +42,32 @@ public abstract class AbstractFallbackJdkProxyFactory extends AbstractProxyFacto
             String factoryName = getClass().getSimpleName();
             try {
                 Invoker<T> invoker = jdkProxyFactory.getInvoker(proxy, type, url);
-                logger.error(PROXY_FAILED, "", "", "Failed to generate invoker by " + factoryName + " failed. Fallback to use JDK proxy success. " +
-                    "Interfaces: " + type, throwable);
+                logger.error(
+                        PROXY_FAILED,
+                        "",
+                        "",
+                        "Failed to generate invoker by " + factoryName + " failed. Fallback to use JDK proxy success. "
+                                + "Interfaces: " + type,
+                        throwable);
                 // log out error
                 return invoker;
             } catch (Throwable fromJdk) {
-                logger.error(PROXY_FAILED, "", "", "Failed to generate invoker by " + factoryName + " failed. Fallback to use JDK proxy is also failed. " +
-                    "Interfaces: " + type + " Javassist Error.", throwable);
-                logger.error(PROXY_FAILED, "", "", "Failed to generate invoker by " + factoryName + " failed. Fallback to use JDK proxy is also failed. " +
-                    "Interfaces: " + type + " JDK Error.", fromJdk);
+                logger.error(
+                        PROXY_FAILED,
+                        "",
+                        "",
+                        "Failed to generate invoker by " + factoryName
+                                + " failed. Fallback to use JDK proxy is also failed. " + "Interfaces: " + type
+                                + " Javassist Error.",
+                        throwable);
+                logger.error(
+                        PROXY_FAILED,
+                        "",
+                        "",
+                        "Failed to generate invoker by " + factoryName
+                                + " failed. Fallback to use JDK proxy is also failed. " + "Interfaces: " + type
+                                + " JDK Error.",
+                        fromJdk);
                 throw throwable;
             }
         }
@@ -65,14 +82,31 @@ public abstract class AbstractFallbackJdkProxyFactory extends AbstractProxyFacto
             String factoryName = getClass().getSimpleName();
             try {
                 T proxy = jdkProxyFactory.getProxy(invoker, interfaces);
-                logger.error(PROXY_FAILED, "", "", "Failed to generate proxy by " + factoryName + " failed. Fallback to use JDK proxy success. " +
-                    "Interfaces: " + Arrays.toString(interfaces), throwable);
+                logger.error(
+                        PROXY_FAILED,
+                        "",
+                        "",
+                        "Failed to generate proxy by " + factoryName + " failed. Fallback to use JDK proxy success. "
+                                + "Interfaces: " + Arrays.toString(interfaces),
+                        throwable);
                 return proxy;
             } catch (Throwable fromJdk) {
-                logger.error(PROXY_FAILED, "", "", "Failed to generate proxy by " + factoryName + " failed. Fallback to use JDK proxy is also failed. " +
-                    "Interfaces: " + Arrays.toString(interfaces) + " Javassist Error.", throwable);
-                logger.error(PROXY_FAILED, "", "", "Failed to generate proxy by " + factoryName + " failed. Fallback to use JDK proxy is also failed. " +
-                    "Interfaces: " + Arrays.toString(interfaces) + " JDK Error.", fromJdk);
+                logger.error(
+                        PROXY_FAILED,
+                        "",
+                        "",
+                        "Failed to generate proxy by " + factoryName
+                                + " failed. Fallback to use JDK proxy is also failed. " + "Interfaces: "
+                                + Arrays.toString(interfaces) + " Javassist Error.",
+                        throwable);
+                logger.error(
+                        PROXY_FAILED,
+                        "",
+                        "",
+                        "Failed to generate proxy by " + factoryName
+                                + " failed. Fallback to use JDK proxy is also failed. " + "Interfaces: "
+                                + Arrays.toString(interfaces) + " JDK Error.",
+                        fromJdk);
                 throw throwable;
             }
         }

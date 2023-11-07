@@ -28,5 +28,4 @@ public class MergeableCluster extends AbstractCluster {
     public <T> AbstractClusterInvoker<T> doJoin(Directory<T> directory) throws RpcException {
         return new MergeableClusterInvoker<T>(directory);
     }
-
 }

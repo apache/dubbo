@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.registry;
 
 import org.apache.dubbo.common.URL;
@@ -51,19 +50,22 @@ public interface Registry extends org.apache.dubbo.registry.Registry {
 
     @Override
     default void subscribe(URL url, NotifyListener listener) {
-        this.subscribe(new com.alibaba.dubbo.common.DelegateURL(url),
+        this.subscribe(
+                new com.alibaba.dubbo.common.DelegateURL(url),
                 new com.alibaba.dubbo.registry.NotifyListener.CompatibleNotifyListener(listener));
     }
 
     @Override
     default void unsubscribe(URL url, NotifyListener listener) {
-        this.unsubscribe(new com.alibaba.dubbo.common.DelegateURL(url),
+        this.unsubscribe(
+                new com.alibaba.dubbo.common.DelegateURL(url),
                 new com.alibaba.dubbo.registry.NotifyListener.CompatibleNotifyListener(listener));
     }
 
     @Override
     default List<URL> lookup(URL url) {
-        return this.lookup(new com.alibaba.dubbo.common.DelegateURL(url)).stream().map(u -> u.getOriginalURL()).
-                collect(Collectors.toList());
+        return this.lookup(new com.alibaba.dubbo.common.DelegateURL(url)).stream()
+                .map(u -> u.getOriginalURL())
+                .collect(Collectors.toList());
     }
 }

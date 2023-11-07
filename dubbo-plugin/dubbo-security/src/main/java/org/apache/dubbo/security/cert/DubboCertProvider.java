@@ -30,7 +30,6 @@ import java.nio.charset.StandardCharsets;
 public class DubboCertProvider implements CertProvider {
     private final DubboCertManager dubboCertManager;
 
-
     public DubboCertProvider(FrameworkModel frameworkModel) {
         dubboCertManager = frameworkModel.getBeanFactory().getBean(DubboCertManager.class);
     }
@@ -46,9 +45,11 @@ public class DubboCertProvider implements CertProvider {
         if (certPair == null) {
             return null;
         }
-        return new ProviderCert(certPair.getCertificate().getBytes(StandardCharsets.UTF_8),
-            certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8),
-            certPair.getTrustCerts().getBytes(StandardCharsets.UTF_8), AuthPolicy.NONE);
+        return new ProviderCert(
+                certPair.getCertificate().getBytes(StandardCharsets.UTF_8),
+                certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8),
+                certPair.getTrustCerts().getBytes(StandardCharsets.UTF_8),
+                AuthPolicy.NONE);
     }
 
     @Override
@@ -57,8 +58,9 @@ public class DubboCertProvider implements CertProvider {
         if (certPair == null) {
             return null;
         }
-        return new Cert(certPair.getCertificate().getBytes(StandardCharsets.UTF_8),
-            certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8),
-            certPair.getTrustCerts().getBytes(StandardCharsets.UTF_8));
+        return new Cert(
+                certPair.getCertificate().getBytes(StandardCharsets.UTF_8),
+                certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8),
+                certPair.getTrustCerts().getBytes(StandardCharsets.UTF_8));
     }
 }

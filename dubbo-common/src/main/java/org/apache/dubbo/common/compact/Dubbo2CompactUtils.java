@@ -84,6 +84,7 @@ public class Dubbo2CompactUtils {
             return null;
         }
     }
+
     public static boolean isReferenceClassLoaded() {
         return REFERENCE_CLASS != null;
     }

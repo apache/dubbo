@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.URL;
@@ -25,5 +24,4 @@ import org.apache.dubbo.common.extension.SPI;
 public interface PackableMethodFactory {
 
     PackableMethod create(MethodDescriptor methodDescriptor, URL url, String contentType);
-
 }

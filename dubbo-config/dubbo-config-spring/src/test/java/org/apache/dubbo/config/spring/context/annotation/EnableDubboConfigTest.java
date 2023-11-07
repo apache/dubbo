@@ -27,17 +27,16 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Collection;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.PropertySource;
 
-import java.util.Collection;
-
 import static com.alibaba.spring.util.BeanRegistrar.hasAlias;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-
 
 /**
  * {@link EnableDubboConfig} Test
@@ -56,7 +55,7 @@ class EnableDubboConfigTest {
         DubboBootstrap.reset();
     }
 
-    //@Test
+    // @Test
     public void testSingle() {
 
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
@@ -88,7 +87,6 @@ class EnableDubboConfigTest {
         ProviderConfig providerConfig = context.getBean(ProviderConfig.class);
         Assertions.assertEquals("127.0.0.1", providerConfig.getHost());
 
-
         // consumer
         ConsumerConfig consumerConfig = context.getBean(ConsumerConfig.class);
         Assertions.assertEquals("netty", consumerConfig.getClient());
@@ -98,7 +96,7 @@ class EnableDubboConfigTest {
         assertFalse(hasAlias(context, "org.apache.dubbo.config.MonitorConfig#0", "zookeeper"));
     }
 
-    //@Test
+    // @Test
     public void testMultiple() {
 
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
@@ -119,22 +117,17 @@ class EnableDubboConfigTest {
         configManager.getProtocol("rest").get();
         configManager.getProtocol("thrift").get();
 
-
         // asserts aliases
-//        assertTrue(hasAlias(context, "applicationBean2", "dubbo-demo-application2"));
-//        assertTrue(hasAlias(context, "applicationBean3", "dubbo-demo-application3"));
+        //        assertTrue(hasAlias(context, "applicationBean2", "dubbo-demo-application2"));
+        //        assertTrue(hasAlias(context, "applicationBean3", "dubbo-demo-application3"));
 
     }
 
     @EnableDubboConfig
     @PropertySource("META-INF/config.properties")
-    private static class TestMultipleConfig {
-
-    }
+    private static class TestMultipleConfig {}
 
     @EnableDubboConfig(multiple = false)
     @PropertySource("META-INF/config.properties")
-    private static class TestConfig {
-
-    }
+    private static class TestConfig {}
 }

@@ -25,9 +25,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
-
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.zookeeper.data.Stat;
 
 import java.util.Collection;
 import java.util.Map;
@@ -35,6 +33,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.zookeeper.data.Stat;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_CONNECT_REGISTRY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ZOOKEEPER_EXCEPTION;
@@ -50,29 +50,37 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
     private static final Long THREAD_KEEP_ALIVE_TIME = 0L;
     private final ApplicationModel applicationModel;
 
-    ZookeeperDynamicConfiguration(URL url, ZookeeperTransporter zookeeperTransporter, ApplicationModel applicationModel) {
+    ZookeeperDynamicConfiguration(
+            URL url, ZookeeperTransporter zookeeperTransporter, ApplicationModel applicationModel) {
         super(url);
 
         this.cacheListener = new CacheListener();
         this.applicationModel = applicationModel;
 
         final String threadName = this.getClass().getSimpleName();
-        this.executor = new ThreadPoolExecutor(DEFAULT_ZK_EXECUTOR_THREADS_NUM, DEFAULT_ZK_EXECUTOR_THREADS_NUM,
-            THREAD_KEEP_ALIVE_TIME, TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<>(DEFAULT_QUEUE),
-            new NamedThreadFactory(threadName, true),
-            new AbortPolicyWithReport(threadName, url));
+        this.executor = new ThreadPoolExecutor(
+                DEFAULT_ZK_EXECUTOR_THREADS_NUM,
+                DEFAULT_ZK_EXECUTOR_THREADS_NUM,
+                THREAD_KEEP_ALIVE_TIME,
+                TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<>(DEFAULT_QUEUE),
+                new NamedThreadFactory(threadName, true),
+                new AbortPolicyWithReport(threadName, url));
 
         zkClient = zookeeperTransporter.connect(url);
         boolean isConnected = zkClient.isConnected();
         if (!isConnected) {
 
-            IllegalStateException illegalStateException =
-                new IllegalStateException("Failed to connect with zookeeper, pls check if url " + url + " is correct.");
+            IllegalStateException illegalStateException = new IllegalStateException(
+                    "Failed to connect with zookeeper, pls check if url " + url + " is correct.");
 
             if (logger != null) {
-                logger.error(CONFIG_FAILED_CONNECT_REGISTRY, "configuration server offline", "",
-                    "Failed to connect with zookeeper", illegalStateException);
+                logger.error(
+                        CONFIG_FAILED_CONNECT_REGISTRY,
+                        "configuration server offline",
+                        "",
+                        "Failed to connect with zookeeper",
+                        illegalStateException);
             }
 
             throw illegalStateException;
@@ -153,7 +161,8 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
         if (cachedListener != null) {
             cachedListener.addListener(listener);
         } else {
-            ZookeeperDataListener addedListener = cacheListener.addListener(pathKey, listener, key, group, applicationModel);
+            ZookeeperDataListener addedListener =
+                    cacheListener.addListener(pathKey, listener, key, group, applicationModel);
             zkClient.addDataListener(pathKey, addedListener, executor);
         }
     }

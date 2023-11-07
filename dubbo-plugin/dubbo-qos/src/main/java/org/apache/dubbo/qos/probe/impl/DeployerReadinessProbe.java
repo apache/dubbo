@@ -47,5 +47,4 @@ public class DeployerReadinessProbe implements ReadinessProbe {
         }
         return true;
     }
-
 }

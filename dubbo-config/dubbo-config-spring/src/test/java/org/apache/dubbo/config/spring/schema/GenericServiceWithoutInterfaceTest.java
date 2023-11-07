@@ -59,10 +59,15 @@ class GenericServiceWithoutInterfaceTest {
     void testGenericWithoutInterface() {
 
         // Test generic service without interface class locally
-        Object result = genericServiceWithoutInterfaceRef.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{"generic"});
+        Object result = genericServiceWithoutInterfaceRef.$invoke(
+                "sayHello", new String[] {"java.lang.String"}, new Object[] {"generic"});
         Assertions.assertEquals("Welcome generic", result);
 
-        ReferenceConfigBase<Object> reference = DubboBootstrap.getInstance().getApplicationModel().getDefaultModule().getConfigManager().getReference("genericServiceWithoutInterfaceRef");
+        ReferenceConfigBase<Object> reference = DubboBootstrap.getInstance()
+                .getApplicationModel()
+                .getDefaultModule()
+                .getConfigManager()
+                .getReference("genericServiceWithoutInterfaceRef");
         Assertions.assertNull(reference.getServiceInterfaceClass());
         Assertions.assertEquals("org.apache.dubbo.config.spring.api.LocalMissClass", reference.getInterface());
         Assertions.assertThrows(ClassNotFoundException.class, () -> ClassUtils.forName(reference.getInterface()));

@@ -23,11 +23,11 @@ import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.List;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 import static org.apache.dubbo.registry.client.metadata.MetadataServiceURLBuilderTest.serviceInstance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -51,12 +51,13 @@ class StandardMetadataServiceURLBuilderTest {
 
     @Test
     void testBuild() {
-        ExtensionLoader<MetadataServiceURLBuilder> loader = ApplicationModel.defaultModel()
-            .getExtensionLoader(MetadataServiceURLBuilder.class);
+        ExtensionLoader<MetadataServiceURLBuilder> loader =
+                ApplicationModel.defaultModel().getExtensionLoader(MetadataServiceURLBuilder.class);
         MetadataServiceURLBuilder builder = loader.getExtension(StandardMetadataServiceURLBuilder.NAME);
 
         // test generateUrlWithoutMetadata
-        List<URL> urls = builder.build(new DefaultServiceInstance("test", "127.0.0.1", 8080, ApplicationModel.defaultModel()));
+        List<URL> urls =
+                builder.build(new DefaultServiceInstance("test", "127.0.0.1", 8080, ApplicationModel.defaultModel()));
         assertEquals(1, urls.size());
         URL url = urls.get(0);
         assertEquals("dubbo", url.getProtocol());
@@ -66,7 +67,7 @@ class StandardMetadataServiceURLBuilderTest {
         assertEquals("test", url.getGroup());
         assertEquals("consumer", url.getSide());
         assertEquals("1.0.0", url.getVersion());
-//        assertEquals(url.getParameters().get("getAndListenInstanceMetadata.1.callback"), "true");
+        //        assertEquals(url.getParameters().get("getAndListenInstanceMetadata.1.callback"), "true");
         assertEquals("false", url.getParameters().get("reconnect"));
         assertEquals("5000", url.getParameters().get("timeout"));
         assertEquals(ApplicationModel.defaultModel(), url.getApplicationModel());
@@ -85,5 +86,4 @@ class StandardMetadataServiceURLBuilderTest {
         assertEquals("dubbo-provider-demo", url.getApplication());
         assertEquals("5000", url.getParameters().get("timeout"));
     }
-
 }

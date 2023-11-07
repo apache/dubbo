@@ -23,6 +23,4 @@ import org.apache.dubbo.common.Node;
  *
  * @see org.apache.dubbo.monitor.MonitorFactory#getMonitor(org.apache.dubbo.common.URL)
  */
-public interface Monitor extends Node, MonitorService {
-
-}
+public interface Monitor extends Node, MonitorService {}

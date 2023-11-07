@@ -39,5 +39,4 @@ public interface Node {
      * destroy.
      */
     void destroy();
-
 }

@@ -26,12 +26,12 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcStatus;
 import org.apache.dubbo.rpc.support.BlockMyInvoker;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -58,7 +58,8 @@ class ExecuteLimitFilterTest {
     void testExecuteLimitInvoke() {
         Invoker invoker = Mockito.mock(Invoker.class);
         when(invoker.invoke(any(Invocation.class))).thenReturn(new AppResponse("result"));
-        when(invoker.getUrl()).thenReturn(URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&executes=10"));
+        when(invoker.getUrl())
+                .thenReturn(URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&executes=10"));
 
         Invocation invocation = Mockito.mock(Invocation.class);
         when(invocation.getMethodName()).thenReturn("testExecuteLimitInvoke");
@@ -70,8 +71,7 @@ class ExecuteLimitFilterTest {
     @Test
     void testExecuteLimitInvokeWithException() {
         Invoker invoker = Mockito.mock(Invoker.class);
-        doThrow(new RpcException())
-                .when(invoker).invoke(any(Invocation.class));
+        doThrow(new RpcException()).when(invoker).invoke(any(Invocation.class));
 
         URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&executes=10");
         when(invoker.getUrl()).thenReturn(url);
@@ -85,7 +85,8 @@ class ExecuteLimitFilterTest {
             Assertions.assertTrue(e instanceof RpcException);
             executeLimitFilter.onError(e, invoker, invocation);
         }
-        Assertions.assertEquals(1, RpcStatus.getStatus(url, invocation.getMethodName()).getFailed());
+        Assertions.assertEquals(
+                1, RpcStatus.getStatus(url, invocation.getMethodName()).getFailed());
         RpcStatus.removeStatus(url, invocation.getMethodName());
     }
 

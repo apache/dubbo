@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.frame;
+
+import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.Unpooled;
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 
 public class TriDecoder implements Deframer {
 
@@ -155,7 +155,6 @@ public class TriDecoder implements Deframer {
         return data;
     }
 
-
     private enum GrpcDecodeState {
         HEADER,
         PAYLOAD
@@ -166,7 +165,5 @@ public class TriDecoder implements Deframer {
         void onRawMessage(byte[] data);
 
         void close();
-
     }
-
 }

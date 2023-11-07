@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol.injvm;
 /**
  * <code>TestService</code>
  */
-
 public interface DemoService {
     void sayHello(String name);
 

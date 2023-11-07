@@ -50,7 +50,6 @@ import java.util.concurrent.locks.Lock;
  * and many Consumer Model which is about subscribed services.
  * <p>
  */
-
 public class ApplicationModel extends ScopeModel {
     protected static final Logger LOGGER = LoggerFactory.getLogger(ApplicationModel.class);
     public static final String NAME = "ApplicationModel";
@@ -112,7 +111,8 @@ public class ApplicationModel extends ScopeModel {
             this.internalModule = new ModuleModel(this, true);
             this.serviceRepository = new ServiceRepository(this);
 
-            ExtensionLoader<ApplicationInitListener> extensionLoader = this.getExtensionLoader(ApplicationInitListener.class);
+            ExtensionLoader<ApplicationInitListener> extensionLoader =
+                    this.getExtensionLoader(ApplicationInitListener.class);
             Set<String> listenerNames = extensionLoader.getSupportedExtensions();
             for (String listenerName : listenerNames) {
                 extensionLoader.getExtension(listenerName).init();
@@ -120,7 +120,8 @@ public class ApplicationModel extends ScopeModel {
 
             initApplicationExts();
 
-            ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader = this.getExtensionLoader(ScopeModelInitializer.class);
+            ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader =
+                    this.getExtensionLoader(ScopeModelInitializer.class);
             Set<ScopeModelInitializer> initializers = initializerExtensionLoader.getSupportedExtensionInstances();
             for (ScopeModelInitializer initializer : initializers) {
                 initializer.initializeApplicationModel(this);
@@ -128,7 +129,8 @@ public class ApplicationModel extends ScopeModel {
 
             Assert.notNull(getApplicationServiceRepository(), "ApplicationServiceRepository can not be null");
             Assert.notNull(getApplicationConfigManager(), "ApplicationConfigManager can not be null");
-            Assert.assertTrue(getApplicationConfigManager().isInitialized(), "ApplicationConfigManager can not be initialized");
+            Assert.assertTrue(
+                    getApplicationConfigManager().isInitialized(), "ApplicationConfigManager can not be initialized");
         }
     }
 
@@ -148,7 +150,8 @@ public class ApplicationModel extends ScopeModel {
 
             // 2. pre-destroy, set stopping
             if (deployer != null) {
-                // destroy registries and unregister services from registries first to notify consumers to stop consuming this instance.
+                // destroy registries and unregister services from registries first to notify consumers to stop
+                // consuming this instance.
                 deployer.preDestroy();
             }
 
@@ -203,16 +206,16 @@ public class ApplicationModel extends ScopeModel {
     @Override
     public Environment modelEnvironment() {
         if (environment == null) {
-            environment = (Environment) this.getExtensionLoader(ApplicationExt.class)
-                .getExtension(Environment.NAME);
+            environment =
+                    (Environment) this.getExtensionLoader(ApplicationExt.class).getExtension(Environment.NAME);
         }
         return environment;
     }
 
     public ConfigManager getApplicationConfigManager() {
         if (configManager == null) {
-            configManager = (ConfigManager) this.getExtensionLoader(ApplicationExt.class)
-                .getExtension(ConfigManager.NAME);
+            configManager = (ConfigManager)
+                    this.getExtensionLoader(ApplicationExt.class).getExtension(ConfigManager.NAME);
         }
         return configManager;
     }
@@ -238,7 +241,8 @@ public class ApplicationModel extends ScopeModel {
     }
 
     public String tryGetApplicationName() {
-        Optional<ApplicationConfig> appCfgOptional = getApplicationConfigManager().getApplication();
+        Optional<ApplicationConfig> appCfgOptional =
+                getApplicationConfigManager().getApplication();
         return appCfgOptional.isPresent() ? appCfgOptional.get().getName() : null;
     }
 
@@ -268,7 +272,7 @@ public class ApplicationModel extends ScopeModel {
     void tryDestroy() {
         synchronized (instLock) {
             if (this.moduleModels.isEmpty()
-                || (this.moduleModels.size() == 1 && this.moduleModels.get(0) == internalModule)) {
+                    || (this.moduleModels.size() == 1 && this.moduleModels.get(0) == internalModule)) {
                 destroy();
             }
         }
@@ -339,7 +343,8 @@ public class ApplicationModel extends ScopeModel {
     }
 
     protected boolean containsClassLoader(ClassLoader classLoader) {
-        return moduleModels.stream().anyMatch(moduleModel -> moduleModel.getClassLoaders().contains(classLoader));
+        return moduleModels.stream()
+                .anyMatch(moduleModel -> moduleModel.getClassLoaders().contains(classLoader));
     }
 
     public ApplicationDeployer getDeployer() {

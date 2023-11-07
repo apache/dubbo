@@ -32,7 +32,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_UNDEF
  */
 public class FrameworkModelCleaner implements ScopeModelDestroyListener<FrameworkModel> {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(FrameworkModelCleaner.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(FrameworkModelCleaner.class);
 
     private final AtomicBoolean protocolDestroyed = new AtomicBoolean(false);
 
@@ -72,5 +73,4 @@ public class FrameworkModelCleaner implements ScopeModelDestroyListener<Framewor
             }
         }
     }
-
 }

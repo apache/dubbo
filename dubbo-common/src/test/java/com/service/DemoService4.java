@@ -17,11 +17,9 @@
 package com.service;
 
 public abstract class DemoService4<T, R, Param extends DemoService5<T, R, Param>> {
-    public DemoService4() {
-    }
+    public DemoService4() {}
 
     public DemoService5<T, R, Param> getWrapper() {
         return null;
     }
-
 }

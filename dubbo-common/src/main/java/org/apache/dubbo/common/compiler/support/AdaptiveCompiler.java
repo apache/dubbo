@@ -52,5 +52,4 @@ public class AdaptiveCompiler implements Compiler, ScopeModelAware {
         }
         return compiler.compile(neighbor, code, classLoader);
     }
-
 }

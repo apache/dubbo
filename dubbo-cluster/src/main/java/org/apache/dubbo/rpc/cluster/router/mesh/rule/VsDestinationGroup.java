@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.rule;
 
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.DestinationRule;
@@ -22,7 +21,6 @@ import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.VirtualServi
 
 import java.util.LinkedList;
 import java.util.List;
-
 
 public class VsDestinationGroup {
     private String appName;

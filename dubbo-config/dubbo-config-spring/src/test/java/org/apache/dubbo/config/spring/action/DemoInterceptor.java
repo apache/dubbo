@@ -27,5 +27,4 @@ public class DemoInterceptor implements MethodInterceptor {
     public Object invoke(MethodInvocation invocation) throws Throwable {
         return "aop:" + invocation.proceed();
     }
-
 }

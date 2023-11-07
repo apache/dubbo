@@ -14,8 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.rest.netty;
+
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
+
+import java.net.InetSocketAddress;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -28,18 +36,9 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
-import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
-
-import java.net.InetSocketAddress;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_BOSS_POOL_NAME;
 import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_WORKER_POOL_NAME;
-
 
 public class NettyServer {
 
@@ -57,9 +56,7 @@ public class NettyServer {
     private Map<ChannelOption, Object> childChannelOptions = Collections.emptyMap();
     private UnSharedHandlerCreator unSharedHandlerCallBack;
 
-    public NettyServer() {
-    }
-
+    public NettyServer() {}
 
     /**
      * Specify the worker count to use. For more information about this please see the javadocs of {@link EventLoopGroup}
@@ -85,7 +82,6 @@ public class NettyServer {
     public void setPort(int port) {
         this.configuredPort = port;
     }
-
 
     /**
      * Add additional {@link io.netty.channel.ChannelHandler}s to the {@link io.netty.bootstrap.ServerBootstrap}.
@@ -114,7 +110,8 @@ public class NettyServer {
      * @see io.netty.bootstrap.ServerBootstrap#childOption(io.netty.channel.ChannelOption, Object)
      */
     public void setChildChannelOptions(final Map<ChannelOption, Object> channelOptions) {
-        this.childChannelOptions = channelOptions == null ? Collections.<ChannelOption, Object>emptyMap() : channelOptions;
+        this.childChannelOptions =
+                channelOptions == null ? Collections.<ChannelOption, Object>emptyMap() : channelOptions;
     }
 
     public void setUnSharedHandlerCallBack(UnSharedHandlerCreator unSharedHandlerCallBack) {
@@ -126,10 +123,10 @@ public class NettyServer {
         workerLoopGroup = new NioEventLoopGroup(ioWorkerCount, new NamedThreadFactory(EVENT_LOOP_WORKER_POOL_NAME));
 
         // Configure the server.
-        bootstrap.group(eventLoopGroup, workerLoopGroup)
-            .channel(NioServerSocketChannel.class)
-            .childHandler(setupHandlers(url));
-
+        bootstrap
+                .group(eventLoopGroup, workerLoopGroup)
+                .channel(NioServerSocketChannel.class)
+                .childHandler(setupHandlers(url));
 
         for (Map.Entry<ChannelOption, Object> entry : channelOptions.entrySet()) {
             bootstrap.option(entry.getKey(), entry.getValue());
@@ -150,7 +147,6 @@ public class NettyServer {
         runtimePort = ((InetSocketAddress) channel.localAddress()).getPort();
     }
 
-
     protected ChannelHandler setupHandlers(URL url) {
 
         return new ChannelInitializer<SocketChannel>() {
@@ -170,12 +166,9 @@ public class NettyServer {
                 for (ChannelHandler unSharedHandler : unSharedHandlers) {
                     channelPipeline.addLast(unSharedHandler);
                 }
-
             }
         };
-
     }
-
 
     public void stop() {
         runtimePort = -1;

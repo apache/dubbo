@@ -55,5 +55,4 @@ public enum Level {
      * OFF
      */
     OFF
-
 }
