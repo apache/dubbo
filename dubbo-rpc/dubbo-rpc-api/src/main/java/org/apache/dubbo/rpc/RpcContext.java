@@ -22,7 +22,6 @@ import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.net.InetSocketAddress;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -593,7 +592,7 @@ public class RpcContext {
      */
     @Deprecated
     public Map<String, String> getAttachments() {
-        return new AttachmentsAdapter.ObjectToStringMap(this.getObjectAttachments());
+        return new RpcContextStringMap(CLIENT_ATTACHMENT.get(), SERVER_ATTACHMENT.get());
     }
 
     /**
@@ -603,10 +602,7 @@ public class RpcContext {
      */
     @Experimental("Experiment api for supporting Object transmission")
     public Map<String, Object> getObjectAttachments() {
-        Map<String, Object> result = new HashMap<>((int) ((CLIENT_ATTACHMENT.get().attachments.size() + SERVER_ATTACHMENT.get().attachments.size()) / .75) + 1);
-        result.putAll(SERVER_ATTACHMENT.get().attachments);
-        result.putAll(CLIENT_ATTACHMENT.get().attachments);
-        return result;
+        return new RpcContextMap(CLIENT_ATTACHMENT.get(), SERVER_ATTACHMENT.get());
     }
 
     /**

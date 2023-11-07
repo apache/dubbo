@@ -113,6 +113,7 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
             }
         }
         RpcContext.removeClientResponseContext();
+        RpcContext.getClientAttachment().setOverrideAttachments(invocation.getObjectAttachments());
         return invoker.invoke(invocation);
     }
 
