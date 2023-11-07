@@ -21,8 +21,7 @@ import java.util.function.BiConsumer;
 @FunctionalInterface
 public interface TrailersCustomizer extends BiConsumer<HttpHeaders, Throwable>, HeadersCustomizer {
 
-    TrailersCustomizer NO_OP = (headers, throwable) -> {
-    };
+    TrailersCustomizer NO_OP = (headers, throwable) -> {};
 
     @Override
     default void accept(HttpHeaders headers) {

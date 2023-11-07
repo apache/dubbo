@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
@@ -23,15 +22,15 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PREFERRED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
@@ -66,7 +65,9 @@ class RegistryConfigTest {
     void testAddress() throws Exception {
         RegistryConfig registry = new RegistryConfig();
         registry.setAddress("zookeeper://mrh:123@localhost:9103/registry?backup=localhost:9104&k1=v1");
-        assertThat(registry.getAddress(), equalTo("zookeeper://mrh:123@localhost:9103/registry?backup=localhost:9104&k1=v1"));
+        assertThat(
+                registry.getAddress(),
+                equalTo("zookeeper://mrh:123@localhost:9103/registry?backup=localhost:9104&k1=v1"));
         assertThat(registry.getProtocol(), equalTo("zookeeper"));
         assertThat(registry.getUsername(), equalTo("mrh"));
         assertThat(registry.getPassword(), equalTo("123"));
@@ -228,15 +229,12 @@ class RegistryConfigTest {
         SysProps.setProperty("zookeeper.address", "localhost");
         SysProps.setProperty("zookeeper.port", "2188");
 
-
-        DubboBootstrap.getInstance()
-            .application("demo-app")
-            .initialize();
-        Collection<RegistryConfig> registries = ApplicationModel.defaultModel().getApplicationConfigManager().getRegistries();
+        DubboBootstrap.getInstance().application("demo-app").initialize();
+        Collection<RegistryConfig> registries =
+                ApplicationModel.defaultModel().getApplicationConfigManager().getRegistries();
         Assertions.assertEquals(1, registries.size());
         RegistryConfig registryConfig = registries.iterator().next();
         Assertions.assertEquals("zookeeper://localhost:2188", registryConfig.getAddress());
-
     }
 
     public void testPreferredWithTrueValue() {
@@ -261,5 +259,4 @@ class RegistryConfigTest {
         URL url = UrlUtils.parseURL(ZookeeperRegistryCenterConfig.getConnectionAddress1(), map);
         Assertions.assertFalse(url.getParameter(PREFERRED_KEY, false));
     }
-
 }

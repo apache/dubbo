@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
@@ -44,11 +43,12 @@ public class MeshRuleManager {
 
     public MeshRuleManager(ModuleModel moduleModel) {
         this.ruleRepository = moduleModel.getDefaultExtension(GovernanceRuleRepository.class);
-        Set<MeshEnvListenerFactory> envListenerFactories = moduleModel.getExtensionLoader(MeshEnvListenerFactory.class).getSupportedExtensionInstances();
+        Set<MeshEnvListenerFactory> envListenerFactories =
+                moduleModel.getExtensionLoader(MeshEnvListenerFactory.class).getSupportedExtensionInstances();
         this.envListeners = envListenerFactories.stream()
-            .map(MeshEnvListenerFactory::getListener)
-            .filter(Objects::nonNull)
-            .collect(Collectors.toSet());
+                .map(MeshEnvListenerFactory::getListener)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
     }
 
     private synchronized MeshAppRuleListener subscribeAppRule(String app) {
@@ -64,7 +64,12 @@ public class MeshRuleManager {
                 meshAppRuleListener.receiveConfigInfo(rawConfig);
             }
         } catch (Throwable throwable) {
-            logger.error(CLUSTER_FAILED_RECEIVE_RULE,"failed to get mesh app route rule","","get MeshRuleManager app rule failed.",throwable);
+            logger.error(
+                    CLUSTER_FAILED_RECEIVE_RULE,
+                    "failed to get mesh app route rule",
+                    "",
+                    "get MeshRuleManager app rule failed.",
+                    throwable);
         }
 
         ruleRepository.addListener(appRuleDataId, DynamicConfiguration.DEFAULT_GROUP, meshAppRuleListener);
@@ -93,7 +98,6 @@ public class MeshRuleManager {
                 envListener.onUnSubscribe(app);
             }
         }
-
     }
 
     public synchronized <T> void register(String app, MeshRuleListener subscriber) {

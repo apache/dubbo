@@ -117,8 +117,5 @@ public final class ServiceDefinitionBuilder {
         return JsonUtils.toJson(sd);
     }
 
-    private ServiceDefinitionBuilder() {
-    }
+    private ServiceDefinitionBuilder() {}
 }
-
-

@@ -27,9 +27,7 @@ public class GenericHttp2ServerTransportListenerFactory implements Http2ServerTr
     public static final Http2ServerTransportListenerFactory INSTANCE = new GenericHttp2ServerTransportListenerFactory();
 
     @Override
-    public Http2TransportListener newInstance(H2StreamChannel streamChannel,
-                                              URL url,
-                                              FrameworkModel frameworkModel) {
+    public Http2TransportListener newInstance(H2StreamChannel streamChannel, URL url, FrameworkModel frameworkModel) {
         return new GenericHttp2ServerTransportListener(streamChannel, url, frameworkModel);
     }
 

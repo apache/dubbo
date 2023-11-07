@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
 
-import com.google.protobuf.Message;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
@@ -26,6 +25,8 @@ import org.apache.dubbo.remoting.http12.message.MediaType;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import com.google.protobuf.Message;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOBUF_MESSAGE_CLASS_NAME;
 
@@ -44,8 +45,8 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
 
     private final WrapperHttpMessageCodec wrapperHttpMessageCodec;
 
-    public GrpcCompositeCodec(ProtobufHttpMessageCodec protobufHttpMessageCodec,
-                              WrapperHttpMessageCodec wrapperHttpMessageCodec) {
+    public GrpcCompositeCodec(
+            ProtobufHttpMessageCodec protobufHttpMessageCodec, WrapperHttpMessageCodec wrapperHttpMessageCodec) {
         this.protobufHttpMessageCodec = protobufHttpMessageCodec;
         this.wrapperHttpMessageCodec = wrapperHttpMessageCodec;
     }
@@ -58,11 +59,11 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
         this.wrapperHttpMessageCodec.setDecodeTypes(decodeTypes);
     }
 
-
     @Override
     public void encode(OutputStream outputStream, Object data) throws EncodeException {
-        //protobuf
-        //TODO int compressed = Identity.MESSAGE_ENCODING.equals(requestMetadata.compressor.getMessageEncoding()) ? 0 : 1;
+        // protobuf
+        // TODO int compressed = Identity.MESSAGE_ENCODING.equals(requestMetadata.compressor.getMessageEncoding()) ? 0 :
+        // 1;
         try {
             int compressed = 0;
             outputStream.write(compressed);
@@ -70,7 +71,7 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
                 ProtobufWriter.write(protobufHttpMessageCodec, outputStream, data);
                 return;
             }
-            //wrapper
+            // wrapper
             wrapperHttpMessageCodec.encode(outputStream, data);
         } catch (IOException e) {
             throw new EncodeException(e);
@@ -143,10 +144,9 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
 
         private static void write(HttpMessageCodec codec, OutputStream outputStream, Object data) {
             int serializedSize = ((Message) data).getSerializedSize();
-            //write length
+            // write length
             writeLength(outputStream, serializedSize);
             codec.encode(outputStream, data);
         }
-
     }
 }

@@ -22,9 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 public class GrpcUtils {
 
-    private GrpcUtils() {
-
-    }
+    private GrpcUtils() {}
 
     public static Long parseTimeoutToMills(String timeoutVal) {
         if (StringUtils.isEmpty(timeoutVal) || StringUtils.isContains(timeoutVal, "null")) {
@@ -50,5 +48,4 @@ public class GrpcUtils {
                 return null;
         }
     }
-
 }

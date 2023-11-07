@@ -27,11 +27,11 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 public class ApolloDynamicConfigurationFactory extends AbstractDynamicConfigurationFactory {
 
     private ApplicationModel applicationModel;
-    
+
     public ApolloDynamicConfigurationFactory(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
     }
-    
+
     @Override
     protected DynamicConfiguration createDynamicConfiguration(URL url) {
         return new ApolloDynamicConfiguration(url, applicationModel);

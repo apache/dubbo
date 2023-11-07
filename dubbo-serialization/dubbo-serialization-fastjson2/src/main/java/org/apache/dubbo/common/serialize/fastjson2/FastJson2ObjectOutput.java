@@ -16,10 +16,10 @@
  */
 package org.apache.dubbo.common.serialize.fastjson2;
 
+import org.apache.dubbo.common.serialize.ObjectOutput;
+
 import java.io.IOException;
 import java.io.OutputStream;
-
-import org.apache.dubbo.common.serialize.ObjectOutput;
 
 import com.alibaba.fastjson2.JSONB;
 import com.alibaba.fastjson2.JSONWriter;
@@ -36,9 +36,10 @@ public class FastJson2ObjectOutput implements ObjectOutput {
     private volatile ClassLoader classLoader;
     private final OutputStream os;
 
-    public FastJson2ObjectOutput(Fastjson2CreatorManager fastjson2CreatorManager,
-                                 Fastjson2SecurityManager fastjson2SecurityManager,
-                                 OutputStream out) {
+    public FastJson2ObjectOutput(
+            Fastjson2CreatorManager fastjson2CreatorManager,
+            Fastjson2SecurityManager fastjson2SecurityManager,
+            OutputStream out) {
         this.fastjson2CreatorManager = fastjson2CreatorManager;
         this.fastjson2SecurityManager = fastjson2SecurityManager;
         this.classLoader = Thread.currentThread().getContextClassLoader();
@@ -103,22 +104,26 @@ public class FastJson2ObjectOutput implements ObjectOutput {
         updateClassLoaderIfNeed();
         byte[] bytes;
         if (fastjson2SecurityManager.getSecurityFilter().isCheckSerializable()) {
-            bytes = JSONB.toBytes(obj, JSONWriter.Feature.WriteClassName,
-                JSONWriter.Feature.FieldBased,
-                JSONWriter.Feature.ErrorOnNoneSerializable,
-                JSONWriter.Feature.ReferenceDetection,
-                JSONWriter.Feature.WriteNulls,
-                JSONWriter.Feature.NotWriteDefaultValue,
-                JSONWriter.Feature.NotWriteHashMapArrayListClassName,
-                JSONWriter.Feature.WriteNameAsSymbol);
+            bytes = JSONB.toBytes(
+                    obj,
+                    JSONWriter.Feature.WriteClassName,
+                    JSONWriter.Feature.FieldBased,
+                    JSONWriter.Feature.ErrorOnNoneSerializable,
+                    JSONWriter.Feature.ReferenceDetection,
+                    JSONWriter.Feature.WriteNulls,
+                    JSONWriter.Feature.NotWriteDefaultValue,
+                    JSONWriter.Feature.NotWriteHashMapArrayListClassName,
+                    JSONWriter.Feature.WriteNameAsSymbol);
         } else {
-            bytes = JSONB.toBytes(obj, JSONWriter.Feature.WriteClassName,
-                JSONWriter.Feature.FieldBased,
-                JSONWriter.Feature.ReferenceDetection,
-                JSONWriter.Feature.WriteNulls,
-                JSONWriter.Feature.NotWriteDefaultValue,
-                JSONWriter.Feature.NotWriteHashMapArrayListClassName,
-                JSONWriter.Feature.WriteNameAsSymbol);
+            bytes = JSONB.toBytes(
+                    obj,
+                    JSONWriter.Feature.WriteClassName,
+                    JSONWriter.Feature.FieldBased,
+                    JSONWriter.Feature.ReferenceDetection,
+                    JSONWriter.Feature.WriteNulls,
+                    JSONWriter.Feature.NotWriteDefaultValue,
+                    JSONWriter.Feature.NotWriteHashMapArrayListClassName,
+                    JSONWriter.Feature.WriteNameAsSymbol);
         }
         writeLength(bytes.length);
         os.write(bytes);
@@ -147,5 +152,4 @@ public class FastJson2ObjectOutput implements ObjectOutput {
     public void flushBuffer() throws IOException {
         os.flush();
     }
-
 }

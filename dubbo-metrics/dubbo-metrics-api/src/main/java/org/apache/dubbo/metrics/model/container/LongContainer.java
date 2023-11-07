@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.model.container;
 
 import org.apache.dubbo.metrics.model.Metric;
@@ -49,7 +48,6 @@ public class LongContainer<N extends Number> extends ConcurrentHashMap<Metric, N
      * Data output function required by  {@link GaugeMetricSample GaugeMetricSample}
      */
     private transient Function<Metric, Long> valueSupplier;
-
 
     public LongContainer(MetricsKeyWrapper metricsKeyWrapper, Supplier<N> initFunc, BiConsumer<Long, N> consumerFunc) {
         super(128, 0.5f);
@@ -89,9 +87,7 @@ public class LongContainer<N extends Number> extends ConcurrentHashMap<Metric, N
 
     @Override
     public String toString() {
-        return "LongContainer{" +
-            "metricsKeyWrapper=" + metricsKeyWrapper +
-            '}';
+        return "LongContainer{" + "metricsKeyWrapper=" + metricsKeyWrapper + '}';
     }
 
     @Override

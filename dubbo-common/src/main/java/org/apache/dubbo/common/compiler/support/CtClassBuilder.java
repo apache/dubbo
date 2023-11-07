@@ -18,6 +18,10 @@ package org.apache.dubbo.common.compiler.support;
 
 import org.apache.dubbo.common.bytecode.DubboLoaderClassPath;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -26,11 +30,6 @@ import javassist.CtNewConstructor;
 import javassist.CtNewMethod;
 import javassist.LoaderClassPath;
 import javassist.NotFoundException;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * CtClassBuilder is builder for CtClass
@@ -122,7 +121,7 @@ public class CtClassBuilder {
 
     /**
      * get full qualified class name
-     * 
+     *
      * @param className super class name, maybe qualified or not
      */
     protected String getQualifiedClassName(String className) {
@@ -144,7 +143,7 @@ public class CtClassBuilder {
         ClassPool pool = new ClassPool(true);
         pool.insertClassPath(new LoaderClassPath(classLoader));
         pool.insertClassPath(new DubboLoaderClassPath());
-        
+
         // create class
         CtClass ctClass = pool.makeClass(className, pool.get(superClassName));
 
@@ -173,5 +172,4 @@ public class CtClassBuilder {
 
         return ctClass;
     }
-
 }

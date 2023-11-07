@@ -64,7 +64,7 @@ public interface LoadingStrategy extends Prioritized {
      * @since 3.0.4
      */
     default String[] onlyExtensionClassLoaderPackages() {
-        return new String[]{};
+        return new String[] {};
     }
 
     /**

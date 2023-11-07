@@ -20,7 +20,6 @@ package org.apache.dubbo.common.utils;
  * MyEnum
  */
 public enum MyEnum {
-
-    A, B
-
+    A,
+    B
 }

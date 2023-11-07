@@ -30,6 +30,12 @@ import org.apache.dubbo.remoting.api.WireProtocol;
 import org.apache.dubbo.remoting.api.pu.AbstractPortUnificationServer;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
 
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
@@ -39,12 +45,6 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.util.concurrent.Future;
-
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
@@ -59,7 +59,8 @@ import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_WORKER_POOL_NAME;
  */
 public class NettyPortUnificationServer extends AbstractPortUnificationServer {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NettyPortUnificationServer.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(NettyPortUnificationServer.class);
 
     private final int serverShutdownTimeoutMills;
     /**
@@ -70,19 +71,19 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
      * the boss channel that receive connections and dispatch these to worker channel.
      */
     private io.netty.channel.Channel channel;
+
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
     private final Map<String, Channel> dubboChannels = new ConcurrentHashMap<>();
 
-
     public NettyPortUnificationServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, ChannelHandlers.wrap(handler, url));
 
-        // you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in CommonConstants.
+        // you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in
+        // CommonConstants.
         // the handler will be wrapped: MultiMessageHandler->HeartbeatHandler->handler
         // read config before destroy
-        serverShutdownTimeoutMills = ConfigurationUtils.getServerShutdownTimeout(
-            getUrl().getOrDefaultModuleModel());
+        serverShutdownTimeoutMills = ConfigurationUtils.getServerShutdownTimeout(getUrl().getOrDefaultModuleModel());
     }
 
     @Override
@@ -109,27 +110,33 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
 
         bossGroup = NettyEventLoopFactory.eventLoopGroup(1, EVENT_LOOP_BOSS_POOL_NAME);
         workerGroup = NettyEventLoopFactory.eventLoopGroup(
-            getUrl().getPositiveParameter(IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS),
-            EVENT_LOOP_WORKER_POOL_NAME);
+                getUrl().getPositiveParameter(IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS),
+                EVENT_LOOP_WORKER_POOL_NAME);
 
-        bootstrap.group(bossGroup, workerGroup)
-            .channel(NettyEventLoopFactory.serverSocketChannelClass())
-            .option(ChannelOption.SO_REUSEADDR, Boolean.TRUE)
-            .childOption(ChannelOption.TCP_NODELAY, Boolean.TRUE)
-            .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-            .childHandler(new ChannelInitializer<SocketChannel>() {
-                @Override
-                protected void initChannel(SocketChannel ch) throws Exception {
-                    // Do not add idle state handler here, because it should be added in the protocol handler.
-                    final ChannelPipeline p = ch.pipeline();
-                    NettyChannelHandler nettyChannelHandler = new NettyChannelHandler(dubboChannels, getUrl(), NettyPortUnificationServer.this);
-                    NettyPortUnificationServerHandler puHandler = new NettyPortUnificationServerHandler(getUrl(), true, getProtocols(),
-                        NettyPortUnificationServer.this,
-                        getSupportedUrls(), getSupportedHandlers());
-                    p.addLast("channel-handler", nettyChannelHandler);
-                    p.addLast("negotiation-protocol", puHandler);
-                }
-            });
+        bootstrap
+                .group(bossGroup, workerGroup)
+                .channel(NettyEventLoopFactory.serverSocketChannelClass())
+                .option(ChannelOption.SO_REUSEADDR, Boolean.TRUE)
+                .childOption(ChannelOption.TCP_NODELAY, Boolean.TRUE)
+                .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+                .childHandler(new ChannelInitializer<SocketChannel>() {
+                    @Override
+                    protected void initChannel(SocketChannel ch) throws Exception {
+                        // Do not add idle state handler here, because it should be added in the protocol handler.
+                        final ChannelPipeline p = ch.pipeline();
+                        NettyChannelHandler nettyChannelHandler =
+                                new NettyChannelHandler(dubboChannels, getUrl(), NettyPortUnificationServer.this);
+                        NettyPortUnificationServerHandler puHandler = new NettyPortUnificationServerHandler(
+                                getUrl(),
+                                true,
+                                getProtocols(),
+                                NettyPortUnificationServer.this,
+                                getSupportedUrls(),
+                                getSupportedHandlers());
+                        p.addLast("channel-handler", nettyChannelHandler);
+                        p.addLast("negotiation-protocol", puHandler);
+                    }
+                });
         // bind
 
         String bindIp = getUrl().getParameter(Constants.BIND_IP_KEY, getUrl().getHost());
@@ -153,10 +160,9 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
             if (bootstrap != null) {
                 long timeout = ConfigurationUtils.reCalShutdownTime(serverShutdownTimeoutMills);
                 long quietPeriod = Math.min(2000L, timeout);
-                Future<?> bossGroupShutdownFuture = bossGroup.shutdownGracefully(quietPeriod,
-                    timeout, MILLISECONDS);
-                Future<?> workerGroupShutdownFuture = workerGroup.shutdownGracefully(quietPeriod,
-                    timeout, MILLISECONDS);
+                Future<?> bossGroupShutdownFuture = bossGroup.shutdownGracefully(quietPeriod, timeout, MILLISECONDS);
+                Future<?> workerGroupShutdownFuture =
+                        workerGroup.shutdownGracefully(quietPeriod, timeout, MILLISECONDS);
                 bossGroupShutdownFuture.awaitUninterruptibly(timeout, MILLISECONDS);
                 workerGroupShutdownFuture.awaitUninterruptibly(timeout, MILLISECONDS);
             }
@@ -230,5 +236,4 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
     public boolean canHandleIdle() {
         return true;
     }
-
 }

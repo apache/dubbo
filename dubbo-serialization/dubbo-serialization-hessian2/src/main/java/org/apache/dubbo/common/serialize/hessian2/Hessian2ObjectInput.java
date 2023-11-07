@@ -20,11 +20,11 @@ import org.apache.dubbo.common.serialize.Cleanable;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import com.alibaba.com.caucho.hessian.io.Hessian2Input;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
+
+import com.alibaba.com.caucho.hessian.io.Hessian2Input;
 
 /**
  * Hessian2 object input implementation
@@ -36,14 +36,17 @@ public class Hessian2ObjectInput implements ObjectInput, Cleanable {
     @Deprecated
     public Hessian2ObjectInput(InputStream is) {
         mH2i = new Hessian2Input(is);
-        this.hessian2FactoryManager = FrameworkModel.defaultModel().getBeanFactory().getOrRegisterBean(Hessian2FactoryManager.class);
-        mH2i.setSerializerFactory(hessian2FactoryManager.getSerializerFactory(Thread.currentThread().getContextClassLoader()));
+        this.hessian2FactoryManager =
+                FrameworkModel.defaultModel().getBeanFactory().getOrRegisterBean(Hessian2FactoryManager.class);
+        mH2i.setSerializerFactory(hessian2FactoryManager.getSerializerFactory(
+                Thread.currentThread().getContextClassLoader()));
     }
 
     public Hessian2ObjectInput(InputStream is, Hessian2FactoryManager hessian2FactoryManager) {
         mH2i = new Hessian2Input(is);
         this.hessian2FactoryManager = hessian2FactoryManager;
-        mH2i.setSerializerFactory(hessian2FactoryManager.getSerializerFactory(Thread.currentThread().getContextClassLoader()));
+        mH2i.setSerializerFactory(hessian2FactoryManager.getSerializerFactory(
+                Thread.currentThread().getContextClassLoader()));
     }
 
     @Override
@@ -93,26 +96,34 @@ public class Hessian2ObjectInput implements ObjectInput, Cleanable {
 
     @Override
     public Object readObject() throws IOException {
-        if (!mH2i.getSerializerFactory().getClassLoader().equals(Thread.currentThread().getContextClassLoader())) {
-            mH2i.setSerializerFactory(hessian2FactoryManager.getSerializerFactory(Thread.currentThread().getContextClassLoader()));
+        if (!mH2i.getSerializerFactory()
+                .getClassLoader()
+                .equals(Thread.currentThread().getContextClassLoader())) {
+            mH2i.setSerializerFactory(hessian2FactoryManager.getSerializerFactory(
+                    Thread.currentThread().getContextClassLoader()));
         }
         return mH2i.readObject();
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T readObject(Class<T> cls) throws IOException,
-            ClassNotFoundException {
-        if (!mH2i.getSerializerFactory().getClassLoader().equals(Thread.currentThread().getContextClassLoader())) {
-            mH2i.setSerializerFactory(hessian2FactoryManager.getSerializerFactory(Thread.currentThread().getContextClassLoader()));
+    public <T> T readObject(Class<T> cls) throws IOException, ClassNotFoundException {
+        if (!mH2i.getSerializerFactory()
+                .getClassLoader()
+                .equals(Thread.currentThread().getContextClassLoader())) {
+            mH2i.setSerializerFactory(hessian2FactoryManager.getSerializerFactory(
+                    Thread.currentThread().getContextClassLoader()));
         }
         return (T) mH2i.readObject(cls);
     }
 
     @Override
     public <T> T readObject(Class<T> cls, Type type) throws IOException, ClassNotFoundException {
-        if (!mH2i.getSerializerFactory().getClassLoader().equals(Thread.currentThread().getContextClassLoader())) {
-            mH2i.setSerializerFactory(hessian2FactoryManager.getSerializerFactory(Thread.currentThread().getContextClassLoader()));
+        if (!mH2i.getSerializerFactory()
+                .getClassLoader()
+                .equals(Thread.currentThread().getContextClassLoader())) {
+            mH2i.setSerializerFactory(hessian2FactoryManager.getSerializerFactory(
+                    Thread.currentThread().getContextClassLoader()));
         }
         return readObject(cls);
     }
@@ -123,7 +134,7 @@ public class Hessian2ObjectInput implements ObjectInput, Cleanable {
 
     @Override
     public void cleanup() {
-        if(mH2i != null) {
+        if (mH2i != null) {
             mH2i.reset();
         }
     }

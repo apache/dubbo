@@ -34,11 +34,8 @@ public abstract class AbstractWireProtocol implements WireProtocol {
     }
 
     @Override
-    public void configClientPipeline(URL url, ChannelOperator operator, ContextOperator contextOperator) {
-
-    }
+    public void configClientPipeline(URL url, ChannelOperator operator, ContextOperator contextOperator) {}
 
     @Override
-    public void close() {
-    }
+    public void close() {}
 }

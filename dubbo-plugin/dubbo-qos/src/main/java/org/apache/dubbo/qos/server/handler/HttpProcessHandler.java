@@ -19,12 +19,12 @@ package org.apache.dubbo.qos.server.handler;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.qos.api.CommandContext;
+import org.apache.dubbo.qos.api.QosConfiguration;
 import org.apache.dubbo.qos.command.CommandExecutor;
 import org.apache.dubbo.qos.command.DefaultCommandExecutor;
+import org.apache.dubbo.qos.command.decoder.HttpCommandDecoder;
 import org.apache.dubbo.qos.command.exception.NoSuchCommandException;
 import org.apache.dubbo.qos.command.exception.PermissionDenyException;
-import org.apache.dubbo.qos.command.decoder.HttpCommandDecoder;
-import org.apache.dubbo.qos.api.QosConfiguration;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import io.netty.buffer.Unpooled;
@@ -40,8 +40,8 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_COMMAND_NOT_FOUND;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_UNEXPECTED_EXCEPTION;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_PERMISSION_DENY_EXCEPTION;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_UNEXPECTED_EXCEPTION;
 
 /**
  * Parse HttpRequest for uri and parameters
@@ -67,8 +67,8 @@ public class HttpProcessHandler extends SimpleChannelInboundHandler<HttpRequest>
     }
 
     private static FullHttpResponse http(int httpCode, String result) {
-        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(httpCode)
-            , Unpooled.wrappedBuffer(result.getBytes()));
+        FullHttpResponse response = new DefaultFullHttpResponse(
+                HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(httpCode), Unpooled.wrappedBuffer(result.getBytes()));
         HttpHeaders httpHeaders = response.headers();
         httpHeaders.set(HttpHeaderNames.CONTENT_TYPE, "text/plain");
         httpHeaders.set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
@@ -76,7 +76,8 @@ public class HttpProcessHandler extends SimpleChannelInboundHandler<HttpRequest>
     }
 
     private static FullHttpResponse http(int httpCode) {
-        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(httpCode));
+        FullHttpResponse response =
+                new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(httpCode));
         HttpHeaders httpHeaders = response.headers();
         httpHeaders.set(HttpHeaderNames.CONTENT_TYPE, "text/plain");
         httpHeaders.set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
@@ -104,15 +105,24 @@ public class HttpProcessHandler extends SimpleChannelInboundHandler<HttpRequest>
                 FullHttpResponse response = http(404);
                 ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
             } catch (PermissionDenyException ex) {
-                log.error(QOS_PERMISSION_DENY_EXCEPTION, "", "", "permission deny to access command: " + commandContext, ex);
+                log.error(
+                        QOS_PERMISSION_DENY_EXCEPTION,
+                        "",
+                        "",
+                        "permission deny to access command: " + commandContext,
+                        ex);
                 FullHttpResponse response = http(403);
                 ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
             } catch (Exception qosEx) {
-                log.error(QOS_UNEXPECTED_EXCEPTION, "", "", "execute commandContext: " + commandContext + " got exception", qosEx);
+                log.error(
+                        QOS_UNEXPECTED_EXCEPTION,
+                        "",
+                        "",
+                        "execute commandContext: " + commandContext + " got exception",
+                        qosEx);
                 FullHttpResponse response = http(500, qosEx.getMessage());
                 ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
             }
         }
     }
-
 }

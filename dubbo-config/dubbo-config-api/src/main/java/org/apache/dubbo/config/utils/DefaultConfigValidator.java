@@ -58,5 +58,4 @@ public class DefaultConfigValidator implements ConfigValidator {
             ConfigValidationUtils.validateSslConfig((SslConfig) config);
         }
     }
-
 }

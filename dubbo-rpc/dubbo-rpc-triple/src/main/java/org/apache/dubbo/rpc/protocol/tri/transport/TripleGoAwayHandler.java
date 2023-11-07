@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
 import org.apache.dubbo.common.logger.Logger;
@@ -31,15 +30,16 @@ public class TripleGoAwayHandler extends ChannelDuplexHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(TripleGoAwayHandler.class);
 
-    public TripleGoAwayHandler() {
-    }
+    public TripleGoAwayHandler() {}
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof Http2GoAwayFrame) {
-            final ConnectionHandler connectionHandler = (ConnectionHandler) ctx.pipeline().get(Constants.CONNECTION_HANDLER_NAME);
+            final ConnectionHandler connectionHandler =
+                    (ConnectionHandler) ctx.pipeline().get(Constants.CONNECTION_HANDLER_NAME);
             if (logger.isInfoEnabled()) {
-                logger.info("Receive go away frame of " + ctx.channel().localAddress() + " -> " + ctx.channel().remoteAddress() + " and will reconnect later.");
+                logger.info("Receive go away frame of " + ctx.channel().localAddress() + " -> "
+                        + ctx.channel().remoteAddress() + " and will reconnect later.");
             }
             connectionHandler.onGoAway(ctx.channel());
         }

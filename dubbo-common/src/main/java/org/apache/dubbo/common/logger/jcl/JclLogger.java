@@ -163,5 +163,4 @@ public class JclLogger implements Logger {
     public boolean isErrorEnabled() {
         return logger.isErrorEnabled();
     }
-
 }

@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.rpc.service;
 
 @Deprecated
-public interface EchoService extends org.apache.dubbo.rpc.service.EchoService {
-}
+public interface EchoService extends org.apache.dubbo.rpc.service.EchoService {}

@@ -14,14 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.rpc.TriRpcStatus;
 
-import io.netty.util.concurrent.Future;
-
 import java.util.Map;
+
+import io.netty.util.concurrent.Future;
 
 /**
  * ClientStream is used to send request to server and receive response from server. Response is
@@ -41,8 +40,7 @@ public interface ClientStream extends Stream {
          *
          * @param attachments received from remote peer
          */
-        default void onComplete(TriRpcStatus status, Map<String, Object> attachments) {
-        }
+        default void onComplete(TriRpcStatus status, Map<String, Object> attachments) {}
 
         /**
          * Callback when request completed.
@@ -51,11 +49,13 @@ public interface ClientStream extends Stream {
          * @param attachments attachments received from remote peer
          * @param reserved    triple protocol reserved data
          */
-        default void onComplete(TriRpcStatus status, Map<String, Object> attachments,
-            Map<String, String> reserved, boolean isReturnTriException) {
+        default void onComplete(
+                TriRpcStatus status,
+                Map<String, Object> attachments,
+                Map<String, String> reserved,
+                boolean isReturnTriException) {
             onComplete(status, attachments);
         }
-
     }
 
     /**
@@ -73,5 +73,4 @@ public interface ClientStream extends Stream {
      * @return a future of send result
      */
     Future<?> halfClose();
-
 }

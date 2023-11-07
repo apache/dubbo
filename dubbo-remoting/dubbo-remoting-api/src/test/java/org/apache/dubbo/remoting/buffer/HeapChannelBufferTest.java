@@ -36,7 +36,7 @@ class HeapChannelBufferTest extends AbstractChannelBufferTest {
 
     @Override
     protected ChannelBuffer[] components() {
-        return new ChannelBuffer[]{buffer};
+        return new ChannelBuffer[] {buffer};
     }
 
     @Test

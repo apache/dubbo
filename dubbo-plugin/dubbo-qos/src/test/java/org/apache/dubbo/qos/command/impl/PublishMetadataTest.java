@@ -37,7 +37,6 @@ class PublishMetadataTest {
             ApplicationModel applicationModel = frameworkModel.newApplication();
             applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("APP_" + i));
         }
-
     }
 
     @AfterEach
@@ -50,22 +49,20 @@ class PublishMetadataTest {
         PublishMetadata publishMetadata = new PublishMetadata(frameworkModel);
 
         String result = publishMetadata.execute(Mockito.mock(CommandContext.class), new String[0]);
-        String expectResult = "publish metadata succeeded. App:APP_0\n" +
-            "publish metadata succeeded. App:APP_1\n" +
-            "publish metadata succeeded. App:APP_2\n";
+        String expectResult = "publish metadata succeeded. App:APP_0\n" + "publish metadata succeeded. App:APP_1\n"
+                + "publish metadata succeeded. App:APP_2\n";
         Assertions.assertEquals(result, expectResult);
 
         // delay 5s
-        result = publishMetadata.execute(Mockito.mock(CommandContext.class), new String[]{"5"});
-        expectResult = "publish task submitted, will publish in 5 seconds. App:APP_0\n" +
-            "publish task submitted, will publish in 5 seconds. App:APP_1\n" +
-            "publish task submitted, will publish in 5 seconds. App:APP_2\n";
+        result = publishMetadata.execute(Mockito.mock(CommandContext.class), new String[] {"5"});
+        expectResult = "publish task submitted, will publish in 5 seconds. App:APP_0\n"
+                + "publish task submitted, will publish in 5 seconds. App:APP_1\n"
+                + "publish task submitted, will publish in 5 seconds. App:APP_2\n";
         Assertions.assertEquals(result, expectResult);
 
         // wrong delay param
-        result = publishMetadata.execute(Mockito.mock(CommandContext.class), new String[]{"A"});
+        result = publishMetadata.execute(Mockito.mock(CommandContext.class), new String[] {"A"});
         expectResult = "publishMetadata failed! Wrong delay param!";
         Assertions.assertEquals(result, expectResult);
-
     }
 }

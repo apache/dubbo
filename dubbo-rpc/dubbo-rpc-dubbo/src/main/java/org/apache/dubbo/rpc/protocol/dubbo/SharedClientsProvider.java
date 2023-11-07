@@ -27,12 +27,14 @@ import java.util.Objects;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
 
 public class SharedClientsProvider implements ClientsProvider {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SharedClientsProvider.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(SharedClientsProvider.class);
     private final DubboProtocol dubboProtocol;
     private final String addressKey;
     private final List<ReferenceCountExchangeClient> clients;
 
-    public SharedClientsProvider(DubboProtocol dubboProtocol, String addressKey, List<ReferenceCountExchangeClient> clients) {
+    public SharedClientsProvider(
+            DubboProtocol dubboProtocol, String addressKey, List<ReferenceCountExchangeClient> clients) {
         this.dubboProtocol = dubboProtocol;
         this.addressKey = addressKey;
         this.clients = clients;
@@ -84,8 +86,9 @@ public class SharedClientsProvider implements ClientsProvider {
 
         // As long as one client is not available, you need to replace the unavailable client with the available one.
         return referenceCountExchangeClients.stream()
-            .noneMatch(referenceCountExchangeClient -> referenceCountExchangeClient == null
-                || referenceCountExchangeClient.getCount() <= 0 || referenceCountExchangeClient.isClosed());
+                .noneMatch(referenceCountExchangeClient -> referenceCountExchangeClient == null
+                        || referenceCountExchangeClient.getCount() <= 0
+                        || referenceCountExchangeClient.isClosed());
     }
 
     /**
@@ -98,8 +101,8 @@ public class SharedClientsProvider implements ClientsProvider {
             return;
         }
         referenceCountExchangeClients.stream()
-            .filter(Objects::nonNull)
-            .forEach(ReferenceCountExchangeClient::incrementAndGetCount);
+                .filter(Objects::nonNull)
+                .forEach(ReferenceCountExchangeClient::incrementAndGetCount);
     }
 
     /**
@@ -129,5 +132,4 @@ public class SharedClientsProvider implements ClientsProvider {
             logger.warn(PROTOCOL_ERROR_CLOSE_CLIENT, "", "", t.getMessage(), t);
         }
     }
-
 }

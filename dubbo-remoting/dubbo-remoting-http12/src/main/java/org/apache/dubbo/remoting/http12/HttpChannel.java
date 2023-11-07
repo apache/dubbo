@@ -30,5 +30,4 @@ public interface HttpChannel {
     SocketAddress remoteAddress();
 
     void flush();
-
 }

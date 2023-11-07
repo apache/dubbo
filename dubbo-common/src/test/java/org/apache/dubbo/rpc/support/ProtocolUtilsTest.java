@@ -49,8 +49,7 @@ class ProtocolUtilsTest {
     private void assertServiceKey(int port, String serviceName, String serviceVersion, String serviceGroup) {
         Assertions.assertEquals(
                 serviceKeyOldImpl(port, serviceName, serviceVersion, serviceGroup),
-                ProtocolUtils.serviceKey(port, serviceName, serviceVersion, serviceGroup)
-        );
+                ProtocolUtils.serviceKey(port, serviceName, serviceVersion, serviceGroup));
     }
 
     /**
@@ -71,5 +70,4 @@ class ProtocolUtilsTest {
         buf.append(port);
         return buf.toString();
     }
-
 }

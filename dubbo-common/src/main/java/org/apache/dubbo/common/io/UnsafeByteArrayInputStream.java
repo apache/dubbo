@@ -101,8 +101,7 @@ public class UnsafeByteArrayInputStream extends InputStream {
     }
 
     @Override
-    public void close() throws IOException {
-    }
+    public void close() throws IOException {}
 
     public int position() {
         return mPosition;

@@ -32,8 +32,7 @@ public class PropagationConfig implements Serializable {
      */
     private String type = W3C;
 
-    public PropagationConfig() {
-    }
+    public PropagationConfig() {}
 
     public PropagationConfig(String type) {
         this.type = type;
@@ -46,5 +45,4 @@ public class PropagationConfig implements Serializable {
     public void setType(String type) {
         this.type = type;
     }
-
 }

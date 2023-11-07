@@ -39,5 +39,4 @@ public class ThreadLocalCacheFactory extends AbstractCacheFactory {
     protected Cache createCache(URL url) {
         return new ThreadLocalCache(url);
     }
-
 }

@@ -24,15 +24,15 @@ import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.io.IOException;
+import java.util.List;
+
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import java.io.IOException;
-import java.util.List;
 
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.ENDPOINTS;
 import static org.hamcrest.Matchers.equalTo;
@@ -61,10 +61,12 @@ class ProtocolPortsMetadataCustomizerTest {
     public void init() {
         instance = createInstance();
 
-        URL dubboUrl = URL.valueOf("dubbo://30.10.104.63:20880/org.apache.dubbo.demo.GreetingService?" +
-            "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.demo.GreetingService&metadata-type=remote&methods=hello&pid=55805&release=&revision=1.0.0&service-name-mapping=true&side=provider&timeout=5000&timestamp=1630229110058&version=1.0.0");
-        URL triURL = URL.valueOf("tri://30.10.104.63:50332/org.apache.dubbo.demo.GreetingService?" +
-            "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.demo.GreetingService&metadata-type=remote&methods=hello&pid=55805&release=&revision=1.0.0&service-name-mapping=true&side=provider&timeout=5000&timestamp=1630229110058&version=1.0.0");
+        URL dubboUrl = URL.valueOf(
+                "dubbo://30.10.104.63:20880/org.apache.dubbo.demo.GreetingService?"
+                        + "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.demo.GreetingService&metadata-type=remote&methods=hello&pid=55805&release=&revision=1.0.0&service-name-mapping=true&side=provider&timeout=5000&timestamp=1630229110058&version=1.0.0");
+        URL triURL = URL.valueOf(
+                "tri://30.10.104.63:50332/org.apache.dubbo.demo.GreetingService?"
+                        + "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.demo.GreetingService&metadata-type=remote&methods=hello&pid=55805&release=&revision=1.0.0&service-name-mapping=true&side=provider&timeout=5000&timestamp=1630229110058&version=1.0.0");
 
         MetadataInfo metadataInfo = new MetadataInfo();
         metadataInfo.addService(dubboUrl);
@@ -85,7 +87,8 @@ class ProtocolPortsMetadataCustomizerTest {
         customizer.customize(instance, ApplicationModel.defaultModel());
         String endpoints = instance.getMetadata().get(ENDPOINTS);
         assertNotNull(endpoints);
-        List<DefaultServiceInstance.Endpoint> endpointList = JsonUtils.toJavaList(endpoints, DefaultServiceInstance.Endpoint.class);
+        List<DefaultServiceInstance.Endpoint> endpointList =
+                JsonUtils.toJavaList(endpoints, DefaultServiceInstance.Endpoint.class);
         assertEquals(2, endpointList.size());
         MatcherAssert.assertThat(endpointList, hasItem(hasProperty("protocol", equalTo("dubbo"))));
         MatcherAssert.assertThat(endpointList, hasItem(hasProperty("port", equalTo(20880))));

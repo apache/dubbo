@@ -30,15 +30,15 @@ import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 
+import java.io.IOException;
+import java.util.List;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.List;
 
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 
@@ -47,7 +47,8 @@ import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
  */
 class SingleRegistryCenterExportMetadataIntegrationTest implements IntegrationTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(SingleRegistryCenterExportMetadataIntegrationTest.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(SingleRegistryCenterExportMetadataIntegrationTest.class);
 
     /**
      * Define the provider application name.
@@ -91,9 +92,9 @@ class SingleRegistryCenterExportMetadataIntegrationTest implements IntegrationTe
 
         // initailize bootstrap
         DubboBootstrap.getInstance()
-            .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
-            .protocol(new ProtocolConfig(PROTOCOL_NAME))
-            .service(serviceConfig);
+                .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
+                .protocol(new ProtocolConfig(PROTOCOL_NAME))
+                .service(serviceConfig);
         RegistryConfig registryConfig = new RegistryConfig(ZookeeperRegistryCenterConfig.getConnectionAddress());
         DubboBootstrap.getInstance().registry(registryConfig);
     }
@@ -110,8 +111,10 @@ class SingleRegistryCenterExportMetadataIntegrationTest implements IntegrationTe
      */
     private void beforeExport() {
         // ---------------initialize--------------- //
-        serviceListener = (SingleRegistryCenterExportMetadataServiceListener) ExtensionLoader.getExtensionLoader(ServiceListener.class).getExtension(SPI_NAME);
-        exporterListener = (SingleRegistryCenterExportMetadataExporterListener) ExtensionLoader.getExtensionLoader(ExporterListener.class).getExtension(SPI_NAME);
+        serviceListener = (SingleRegistryCenterExportMetadataServiceListener)
+                ExtensionLoader.getExtensionLoader(ServiceListener.class).getExtension(SPI_NAME);
+        exporterListener = (SingleRegistryCenterExportMetadataExporterListener)
+                ExtensionLoader.getExtensionLoader(ExporterListener.class).getExtension(SPI_NAME);
 
         // ---------------checkpoints--------------- //
         // There is nothing in ServiceListener
@@ -146,8 +149,8 @@ class SingleRegistryCenterExportMetadataIntegrationTest implements IntegrationTe
         // The metadata service is only one
         Assertions.assertEquals(serviceListener.getExportedServices().size(), 1);
         // The exported service is MetadataService
-        Assertions.assertEquals(serviceListener.getExportedServices().get(0).getInterfaceClass(),
-            MetadataService.class);
+        Assertions.assertEquals(
+                serviceListener.getExportedServices().get(0).getInterfaceClass(), MetadataService.class);
         // The MetadataService is exported
         Assertions.assertTrue(serviceListener.getExportedServices().get(0).isExported());
         // There are two exported exporters

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.stub;
 
 import org.apache.dubbo.common.URL;
@@ -27,14 +26,14 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -76,7 +75,7 @@ class StubInvocationUtilTest {
 
     private MethodDescriptor createMockMethodDescriptor() {
         MethodDescriptor method = Mockito.mock(MethodDescriptor.class);
-        when(method.getParameterClasses()).thenReturn(new Class[]{String.class});
+        when(method.getParameterClasses()).thenReturn(new Class[] {String.class});
         when(method.getMethodName()).thenReturn("sayHello");
         return method;
     }
@@ -99,8 +98,10 @@ class StubInvocationUtilTest {
     }
 
     @Test
-    void unaryCall2(){
-        when(invoker.invoke(any(Invocation.class))).thenThrow(new RuntimeException("a")).thenThrow(new Error("b"));
+    void unaryCall2() {
+        when(invoker.invoke(any(Invocation.class)))
+                .thenThrow(new RuntimeException("a"))
+                .thenThrow(new Error("b"));
         try {
             StubInvocationUtil.unaryCall(invoker, method, request);
             fail();
@@ -127,8 +128,7 @@ class StubInvocationUtilTest {
             }
 
             @Override
-            public void onError(Throwable throwable) {
-            }
+            public void onError(Throwable throwable) {}
 
             @Override
             public void onCompleted() {
@@ -144,7 +144,8 @@ class StubInvocationUtilTest {
     void biOrClientStreamCall() throws InterruptedException {
         when(invoker.invoke(any(Invocation.class))).then(invocationOnMock -> {
             Invocation invocation = (Invocation) invocationOnMock.getArguments()[0];
-            StreamObserver<Object> observer = (StreamObserver<Object>) invocation.getArguments()[0];
+            StreamObserver<Object> observer =
+                    (StreamObserver<Object>) invocation.getArguments()[0];
             observer.onNext(response);
             observer.onCompleted();
             when(result.recreate()).then(invocationOnMock1 -> new StreamObserver<Object>() {
@@ -154,9 +155,7 @@ class StubInvocationUtilTest {
                 }
 
                 @Override
-                public void onError(Throwable throwable) {
-
-                }
+                public void onError(Throwable throwable) {}
 
                 @Override
                 public void onCompleted() {
@@ -173,8 +172,7 @@ class StubInvocationUtilTest {
             }
 
             @Override
-            public void onError(Throwable throwable) {
-            }
+            public void onError(Throwable throwable) {}
 
             @Override
             public void onCompleted() {
@@ -193,7 +191,8 @@ class StubInvocationUtilTest {
     void serverStreamCall() throws InterruptedException {
         when(invoker.invoke(any(Invocation.class))).then(invocationOnMock -> {
             Invocation invocation = (Invocation) invocationOnMock.getArguments()[0];
-            StreamObserver<Object> observer = (StreamObserver<Object>) invocation.getArguments()[1];
+            StreamObserver<Object> observer =
+                    (StreamObserver<Object>) invocation.getArguments()[1];
             for (int i = 0; i < 10; i++) {
                 observer.onNext(response);
             }
@@ -208,8 +207,7 @@ class StubInvocationUtilTest {
             }
 
             @Override
-            public void onError(Throwable throwable) {
-            }
+            public void onError(Throwable throwable) {}
 
             @Override
             public void onCompleted() {
@@ -219,5 +217,4 @@ class StubInvocationUtilTest {
         StubInvocationUtil.serverStreamCall(invoker, method, request, responseObserver);
         Assertions.assertTrue(latch.await(1, TimeUnit.SECONDS));
     }
-
 }

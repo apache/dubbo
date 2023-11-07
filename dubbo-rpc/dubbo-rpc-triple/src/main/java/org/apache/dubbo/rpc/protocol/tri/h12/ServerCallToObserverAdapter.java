@@ -21,5 +21,4 @@ import org.apache.dubbo.rpc.protocol.tri.ServerStreamObserver;
 public interface ServerCallToObserverAdapter<T> extends ServerStreamObserver<T> {
 
     void setExceptionCode(int exceptionCode);
-
 }

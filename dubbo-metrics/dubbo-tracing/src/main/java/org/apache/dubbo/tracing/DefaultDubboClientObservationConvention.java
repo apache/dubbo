@@ -22,9 +22,9 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcContextAttachment;
 import org.apache.dubbo.tracing.context.DubboClientContext;
 
-import io.micrometer.common.KeyValues;
-
 import java.util.List;
+
+import io.micrometer.common.KeyValues;
 
 import static org.apache.dubbo.tracing.DubboObservationDocumentation.LowCardinalityKeyNames.NET_PEER_NAME;
 import static org.apache.dubbo.tracing.DubboObservationDocumentation.LowCardinalityKeyNames.NET_PEER_PORT;
@@ -32,7 +32,8 @@ import static org.apache.dubbo.tracing.DubboObservationDocumentation.LowCardinal
 /**
  * Default implementation of the {@link DubboClientObservationConvention}.
  */
-public class DefaultDubboClientObservationConvention extends AbstractDefaultDubboObservationConvention implements DubboClientObservationConvention {
+public class DefaultDubboClientObservationConvention extends AbstractDefaultDubboObservationConvention
+        implements DubboClientObservationConvention {
     /**
      * Singleton instance of {@link DefaultDubboClientObservationConvention}.
      */
@@ -77,7 +78,9 @@ public class DefaultDubboClientObservationConvention extends AbstractDefaultDubb
         if (remotePort != null) {
             return remotePort;
         }
-        return rpcContextAttachment.getRemotePort() != 0 ? rpcContextAttachment.getRemotePort() : rpcContextAttachment.getLocalPort();
+        return rpcContextAttachment.getRemotePort() != 0
+                ? rpcContextAttachment.getRemotePort()
+                : rpcContextAttachment.getLocalPort();
     }
 
     private KeyValues withRemoteHostPort(KeyValues keyValues, String remoteHostName, int remotePort) {

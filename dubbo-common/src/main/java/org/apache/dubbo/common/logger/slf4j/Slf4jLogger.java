@@ -54,7 +54,8 @@ public class Slf4jLogger implements Logger {
     public void trace(String msg, Object... arguments) {
         if (locationAwareLogger != null) {
             FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
-            locationAwareLogger.log(null, FQCN, LocationAwareLogger.TRACE_INT, msg, ft.getArgArray(), ft.getThrowable());
+            locationAwareLogger.log(
+                    null, FQCN, LocationAwareLogger.TRACE_INT, msg, ft.getArgArray(), ft.getThrowable());
             return;
         }
         logger.trace(msg, arguments);
@@ -91,7 +92,8 @@ public class Slf4jLogger implements Logger {
     public void debug(String msg, Object... arguments) {
         if (locationAwareLogger != null) {
             FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
-            locationAwareLogger.log(null, FQCN, LocationAwareLogger.DEBUG_INT, msg, ft.getArgArray(), ft.getThrowable());
+            locationAwareLogger.log(
+                    null, FQCN, LocationAwareLogger.DEBUG_INT, msg, ft.getArgArray(), ft.getThrowable());
             return;
         }
         logger.debug(msg, arguments);
@@ -202,7 +204,8 @@ public class Slf4jLogger implements Logger {
     public void error(String msg, Object... arguments) {
         if (locationAwareLogger != null) {
             FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
-            locationAwareLogger.log(null, FQCN, LocationAwareLogger.ERROR_INT, msg, ft.getArgArray(), ft.getThrowable());
+            locationAwareLogger.log(
+                    null, FQCN, LocationAwareLogger.ERROR_INT, msg, ft.getArgArray(), ft.getThrowable());
             return;
         }
         logger.error(msg, arguments);
@@ -273,5 +276,4 @@ public class Slf4jLogger implements Logger {
     public Level getLevel() {
         return getLevel(logger);
     }
-
 }

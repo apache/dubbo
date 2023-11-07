@@ -21,5 +21,4 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @EnableConfigurationProperties(DubboConfigurationProperties.class)
-public class DubboMetadataGenerateAutoConfiguration {
-}
+public class DubboMetadataGenerateAutoConfiguration {}

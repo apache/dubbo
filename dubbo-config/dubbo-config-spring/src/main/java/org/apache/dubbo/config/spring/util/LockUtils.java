@@ -16,10 +16,10 @@
  */
 package org.apache.dubbo.config.spring.util;
 
+import java.lang.reflect.Method;
+
 import org.springframework.beans.factory.support.DefaultSingletonBeanRegistry;
 import org.springframework.context.ApplicationContext;
-
-import java.lang.reflect.Method;
 
 public class LockUtils {
 
@@ -29,7 +29,8 @@ public class LockUtils {
      * Get the mutex to lock the singleton in the specified {@link ApplicationContext}
      */
     public static synchronized Object getSingletonMutex(ApplicationContext applicationContext) {
-        DefaultSingletonBeanRegistry autowireCapableBeanFactory = (DefaultSingletonBeanRegistry) applicationContext.getAutowireCapableBeanFactory();
+        DefaultSingletonBeanRegistry autowireCapableBeanFactory =
+                (DefaultSingletonBeanRegistry) applicationContext.getAutowireCapableBeanFactory();
         try {
             return autowireCapableBeanFactory.getSingletonMutex();
         } catch (Throwable t1) {

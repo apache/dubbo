@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.aot;
 
-
 public abstract class NativeDetector {
 
     /**
@@ -30,5 +29,4 @@ public abstract class NativeDetector {
     public static boolean inNativeImage() {
         return IMAGE_CODE;
     }
-
 }

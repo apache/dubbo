@@ -36,7 +36,9 @@ public class Http1ServerStreamChannelObserver extends Http1ServerChannelObserver
     @Override
     protected void preOutputMessage(HttpOutputMessage httpMessage) throws IOException {
         HttpOutputMessage httpOutputMessage = this.getHttpChannel().newOutputMessage();
-        httpOutputMessage.getBody().write(SERVER_SENT_EVENT_DATA_PREFIX_BYTES, 0, SERVER_SENT_EVENT_DATA_PREFIX_BYTES.length);
+        httpOutputMessage
+                .getBody()
+                .write(SERVER_SENT_EVENT_DATA_PREFIX_BYTES, 0, SERVER_SENT_EVENT_DATA_PREFIX_BYTES.length);
         this.getHttpChannel().writeMessage(httpOutputMessage);
     }
 

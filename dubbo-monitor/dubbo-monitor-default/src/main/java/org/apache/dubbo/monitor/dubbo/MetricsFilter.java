@@ -36,16 +36,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
-import com.alibaba.metrics.FastCompass;
-import com.alibaba.metrics.MetricLevel;
-import com.alibaba.metrics.MetricManager;
-import com.alibaba.metrics.MetricName;
-import com.alibaba.metrics.MetricRegistry;
-import com.alibaba.metrics.common.CollectLevel;
-import com.alibaba.metrics.common.MetricObject;
-import com.alibaba.metrics.common.MetricsCollector;
-import com.alibaba.metrics.common.MetricsCollectorFactory;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -56,6 +46,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import com.alibaba.metrics.FastCompass;
+import com.alibaba.metrics.MetricLevel;
+import com.alibaba.metrics.MetricManager;
+import com.alibaba.metrics.MetricName;
+import com.alibaba.metrics.MetricRegistry;
+import com.alibaba.metrics.common.CollectLevel;
+import com.alibaba.metrics.common.MetricObject;
+import com.alibaba.metrics.common.MetricsCollector;
+import com.alibaba.metrics.common.MetricsCollectorFactory;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
@@ -94,21 +94,28 @@ public class MetricsFilter implements Filter, ExtensionAccessorAware, ScopeModel
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         if (exported.compareAndSet(false, true)) {
-            this.protocolName = invoker.getUrl().getParameter(METRICS_PROTOCOL) == null ?
-                DEFAULT_PROTOCOL : invoker.getUrl().getParameter(METRICS_PROTOCOL);
+            this.protocolName = invoker.getUrl().getParameter(METRICS_PROTOCOL) == null
+                    ? DEFAULT_PROTOCOL
+                    : invoker.getUrl().getParameter(METRICS_PROTOCOL);
 
-            Protocol protocol = extensionAccessor.getExtensionLoader(Protocol.class).getExtension(protocolName);
+            Protocol protocol =
+                    extensionAccessor.getExtensionLoader(Protocol.class).getExtension(protocolName);
 
-            this.port = invoker.getUrl().getParameter(METRICS_PORT) == null ?
-                protocol.getDefaultPort() : Integer.valueOf(invoker.getUrl().getParameter(METRICS_PORT));
+            this.port = invoker.getUrl().getParameter(METRICS_PORT) == null
+                    ? protocol.getDefaultPort()
+                    : Integer.valueOf(invoker.getUrl().getParameter(METRICS_PORT));
 
             Invoker<MetricsService> metricsInvoker = initMetricsInvoker();
 
             try {
                 protocol.export(metricsInvoker);
             } catch (RuntimeException e) {
-                logger.error(COMMON_METRICS_COLLECTOR_EXCEPTION, "", "", "Metrics Service need to be configured" +
-                    " when multiple processes are running on a host" + e.getMessage());
+                logger.error(
+                        COMMON_METRICS_COLLECTOR_EXCEPTION,
+                        "",
+                        "",
+                        "Metrics Service need to be configured" + " when multiple processes are running on a host"
+                                + e.getMessage());
             }
         }
 
@@ -160,27 +167,34 @@ public class MetricsFilter implements Filter, ExtensionAccessorAware, ScopeModel
         return (typeName == null ? "void" : typeName) + " " + method;
     }
 
-    private void reportMetrics(Invoker<?> invoker, Invocation invocation, long duration, String result, boolean isProvider) {
+    private void reportMetrics(
+            Invoker<?> invoker, Invocation invocation, long duration, String result, boolean isProvider) {
         String serviceName = invoker.getInterface().getName();
         String methodName = buildMethodName(invocation);
         MetricName global;
         MetricName method;
         if (isProvider) {
             global = new MetricName(DUBBO_PROVIDER, MetricLevel.MAJOR);
-            method = new MetricName(DUBBO_PROVIDER_METHOD, new HashMap<String, String>(4) {
-                {
-                    put(SERVICE, serviceName);
-                    put(METHOD_KEY, methodName);
-                }
-            }, MetricLevel.NORMAL);
+            method = new MetricName(
+                    DUBBO_PROVIDER_METHOD,
+                    new HashMap<String, String>(4) {
+                        {
+                            put(SERVICE, serviceName);
+                            put(METHOD_KEY, methodName);
+                        }
+                    },
+                    MetricLevel.NORMAL);
         } else {
             global = new MetricName(DUBBO_CONSUMER, MetricLevel.MAJOR);
-            method = new MetricName(DUBBO_CONSUMER_METHOD, new HashMap<String, String>(4) {
-                {
-                    put(SERVICE, serviceName);
-                    put(METHOD_KEY, methodName);
-                }
-            }, MetricLevel.NORMAL);
+            method = new MetricName(
+                    DUBBO_CONSUMER_METHOD,
+                    new HashMap<String, String>(4) {
+                        {
+                            put(SERVICE, serviceName);
+                            put(METHOD_KEY, methodName);
+                        }
+                    },
+                    MetricLevel.NORMAL);
         }
         setCompassQuantity(DUBBO_GROUP, result, duration, global, method);
     }
@@ -193,7 +207,8 @@ public class MetricsFilter implements Filter, ExtensionAccessorAware, ScopeModel
     }
 
     private List<MetricObject> getThreadPoolMessage() {
-        DataStore dataStore = extensionAccessor.getExtensionLoader(DataStore.class).getDefaultExtension();
+        DataStore dataStore =
+                extensionAccessor.getExtensionLoader(DataStore.class).getDefaultExtension();
         Map<String, Object> executors = dataStore.get(EXECUTOR_SERVICE_COMPONENT_KEY);
 
         List<MetricObject> threadPoolMtricList = new ArrayList<>();
@@ -203,9 +218,11 @@ public class MetricsFilter implements Filter, ExtensionAccessorAware, ScopeModel
             if (executor instanceof ThreadPoolExecutor) {
                 ThreadPoolExecutor tp = (ThreadPoolExecutor) executor;
 
-                threadPoolMtricList.add(value2MetricObject("threadPool.active", tp.getActiveCount(), MetricLevel.MAJOR));
+                threadPoolMtricList.add(
+                        value2MetricObject("threadPool.active", tp.getActiveCount(), MetricLevel.MAJOR));
                 threadPoolMtricList.add(value2MetricObject("threadPool.core", tp.getCorePoolSize(), MetricLevel.MAJOR));
-                threadPoolMtricList.add(value2MetricObject("threadPool.max", tp.getMaximumPoolSize(), MetricLevel.MAJOR));
+                threadPoolMtricList.add(
+                        value2MetricObject("threadPool.max", tp.getMaximumPoolSize(), MetricLevel.MAJOR));
                 threadPoolMtricList.add(value2MetricObject("threadPool.current", tp.getPoolSize(), MetricLevel.MAJOR));
             }
         }
@@ -218,11 +235,10 @@ public class MetricsFilter implements Filter, ExtensionAccessorAware, ScopeModel
             return null;
         }
 
-        return new MetricObject
-            .Builder(metric)
-            .withValue(value)
-            .withLevel(level)
-            .build();
+        return new MetricObject.Builder(metric)
+                .withValue(value)
+                .withLevel(level)
+                .build();
     }
 
     private Invoker<MetricsService> initMetricsInvoker() {
@@ -243,9 +259,8 @@ public class MetricsFilter implements Filter, ExtensionAccessorAware, ScopeModel
                 double rateFactor = TimeUnit.SECONDS.toSeconds(1);
                 double durationFactor = 1.0 / TimeUnit.MILLISECONDS.toNanos(1);
 
-
                 MetricsCollector collector = MetricsCollectorFactory.createNew(
-                    CollectLevel.NORMAL, Collections.EMPTY_MAP, rateFactor, durationFactor, null);
+                        CollectLevel.NORMAL, Collections.EMPTY_MAP, rateFactor, durationFactor, null);
 
                 for (Map.Entry<MetricName, FastCompass> entry : fastCompasses.entrySet()) {
                     collector.collect(entry.getKey(), entry.getValue(), timestamp);
@@ -258,7 +273,8 @@ public class MetricsFilter implements Filter, ExtensionAccessorAware, ScopeModel
 
             @Override
             public URL getUrl() {
-                return URL.valueOf(protocolName + "://" + NetUtils.getIpByConfig(applicationModel) + ":" + port + "/" + MetricsService.class.getName());
+                return URL.valueOf(protocolName + "://" + NetUtils.getIpByConfig(applicationModel) + ":" + port + "/"
+                        + MetricsService.class.getName());
             }
 
             @Override
@@ -267,9 +283,7 @@ public class MetricsFilter implements Filter, ExtensionAccessorAware, ScopeModel
             }
 
             @Override
-            public void destroy() {
-
-            }
+            public void destroy() {}
         };
 
         return metricsInvoker;

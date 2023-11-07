@@ -24,12 +24,12 @@ import org.apache.dubbo.remoting.http.servlet.DispatcherServlet;
 import org.apache.dubbo.remoting.http.servlet.ServletManager;
 import org.apache.dubbo.remoting.http.support.AbstractHttpServer;
 
+import java.io.File;
+
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
-
-import java.io.File;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREADS;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;

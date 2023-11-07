@@ -31,7 +31,8 @@ import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 
 import java.util.Map;
 
-public class Http2ServerStreamObserver extends Http2ServerChannelObserver implements ServerStreamObserver<Object>, AttachmentHolder {
+public class Http2ServerStreamObserver extends Http2ServerChannelObserver
+        implements ServerStreamObserver<Object>, AttachmentHolder {
 
     private final FrameworkModel frameworkModel;
 

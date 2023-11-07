@@ -21,8 +21,7 @@ import java.io.Serializable;
 public class HelloRequestSuper implements Serializable {
     private String su;
 
-    public HelloRequestSuper() {
-    }
+    public HelloRequestSuper() {}
 
     public HelloRequestSuper(String su) {
         this.su = su;

@@ -19,8 +19,8 @@ package org.apache.dubbo.rpc.protocol.tri.aot;
 import org.apache.dubbo.aot.api.MemberCategory;
 import org.apache.dubbo.aot.api.ReflectionTypeDescriberRegistrar;
 import org.apache.dubbo.aot.api.TypeDescriber;
-import org.apache.dubbo.rpc.protocol.tri.transport.TripleGoAwayHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleCommandOutBoundHandler;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleGoAwayHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleHttp2ClientResponseHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleHttp2FrameServerHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleServerConnectionHandler;
@@ -47,6 +47,7 @@ public class TripleReflectionTypeDescriberRegistrar implements ReflectionTypeDes
     private TypeDescriber buildTypeDescriberWithPublicMethod(Class<?> c) {
         Set<MemberCategory> memberCategories = new HashSet<>();
         memberCategories.add(MemberCategory.INVOKE_PUBLIC_METHODS);
-        return new TypeDescriber(c.getName(), null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
+        return new TypeDescriber(
+                c.getName(), null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
     }
 }

@@ -22,9 +22,7 @@ import java.util.List;
 
 public interface XdsRouteRuleListener {
 
-
     void onRuleChange(String appName, List<XdsRouteRule> xdsRouteRules);
 
     void clearRule(String appName);
-
 }

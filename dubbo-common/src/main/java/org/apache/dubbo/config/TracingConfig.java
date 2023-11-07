@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.config.nested.BaggageConfig;
@@ -60,8 +59,7 @@ public class TracingConfig extends AbstractConfig {
     @Nested
     private ExporterConfig tracingExporter = new ExporterConfig();
 
-    public TracingConfig() {
-    }
+    public TracingConfig() {}
 
     public TracingConfig(ApplicationModel applicationModel) {
         super(applicationModel);

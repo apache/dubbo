@@ -19,6 +19,12 @@ package org.apache.dubbo.registry.nacos.aot;
 import org.apache.dubbo.aot.api.MemberCategory;
 import org.apache.dubbo.aot.api.ReflectionTypeDescriberRegistrar;
 import org.apache.dubbo.aot.api.TypeDescriber;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.ability.ClientAbilities;
 import com.alibaba.nacos.api.config.ability.ClientConfigAbility;
@@ -75,22 +81,89 @@ import com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.netty.channel.socket.nio
 import com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.netty.handler.codec.ByteToMessageDecoder;
 import com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.netty.handler.codec.http2.Http2ConnectionHandler;
 import com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.netty.util.ReferenceCountUtil;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 
 public class NacosReflectionTypeDescriberRegistrar implements ReflectionTypeDescriberRegistrar {
 
     @Override
     public List<TypeDescriber> getTypeDescribers() {
         List<TypeDescriber> typeDescribers = new ArrayList<>();
-        Class[] classesWithDeclared = {ClientAbilities.class, ClientConfigAbility.class, AbstractConfigRequest.class, ConfigBatchListenRequest.class, ConfigListenContext.class, ConfigPublishRequest.class, ConfigQueryRequest.class, ConfigChangeBatchListenResponse.class, ConfigContext.class, ConfigPublishResponse.class, ConfigQueryResponse.class, ClientNamingAbility.class, Instance.class, ServiceInfo.class, AbstractNamingRequest.class, InstanceRequest.class, NotifySubscriberRequest.class, ServiceQueryRequest.class, SubscribeServiceRequest.class, InstanceResponse.class, NotifySubscriberResponse.class, QueryServiceResponse.class, SubscribeServiceResponse.class, ClientRemoteAbility.class, ConnectionSetupRequest.class, HealthCheckRequest.class, InternalRequest.class, Request.class, ServerCheckRequest.class, ServerRequest.class, HealthCheckResponse.class, Response.class, ServerCheckResponse.class, TlsConfig.class, RpcClientTlsConfig.class};
-        Class[] classesWithMethods = {Metadata.class, com.alibaba.nacos.api.grpc.auto.Metadata.Builder.class, com.alibaba.nacos.api.grpc.auto.Payload.class, com.alibaba.nacos.api.grpc.auto.Payload.Builder.class, NamingService.class, com.alibaba.nacos.api.remote.Payload.class, NacosClientAuthServiceImpl.class, RamClientAuthServiceImpl.class, NacosConfigService.class, NacosNamingService.class, DefaultPublisher.class, Any.class, com.alibaba.nacos.shaded.com.google.protobuf.Any.Builder.class, ExtensionRegistry.class, AbstractByteBufAllocator.class, ChannelDuplexHandler.class, ChannelInboundHandlerAdapter.class, NioSocketChannel.class, ByteToMessageDecoder.class, Http2ConnectionHandler.class, ReferenceCountUtil.class};
-        Class[] classesWithFields = {PropertyKeyConst.class, AbstractFuture.class, AbstractReferenceCountedByteBuf.class};
+        Class[] classesWithDeclared = {
+            ClientAbilities.class,
+            ClientConfigAbility.class,
+            AbstractConfigRequest.class,
+            ConfigBatchListenRequest.class,
+            ConfigListenContext.class,
+            ConfigPublishRequest.class,
+            ConfigQueryRequest.class,
+            ConfigChangeBatchListenResponse.class,
+            ConfigContext.class,
+            ConfigPublishResponse.class,
+            ConfigQueryResponse.class,
+            ClientNamingAbility.class,
+            Instance.class,
+            ServiceInfo.class,
+            AbstractNamingRequest.class,
+            InstanceRequest.class,
+            NotifySubscriberRequest.class,
+            ServiceQueryRequest.class,
+            SubscribeServiceRequest.class,
+            InstanceResponse.class,
+            NotifySubscriberResponse.class,
+            QueryServiceResponse.class,
+            SubscribeServiceResponse.class,
+            ClientRemoteAbility.class,
+            ConnectionSetupRequest.class,
+            HealthCheckRequest.class,
+            InternalRequest.class,
+            Request.class,
+            ServerCheckRequest.class,
+            ServerRequest.class,
+            HealthCheckResponse.class,
+            Response.class,
+            ServerCheckResponse.class,
+            TlsConfig.class,
+            RpcClientTlsConfig.class
+        };
+        Class[] classesWithMethods = {
+            Metadata.class,
+            com.alibaba.nacos.api.grpc.auto.Metadata.Builder.class,
+            com.alibaba.nacos.api.grpc.auto.Payload.class,
+            com.alibaba.nacos.api.grpc.auto.Payload.Builder.class,
+            NamingService.class,
+            com.alibaba.nacos.api.remote.Payload.class,
+            NacosClientAuthServiceImpl.class,
+            RamClientAuthServiceImpl.class,
+            NacosConfigService.class,
+            NacosNamingService.class,
+            DefaultPublisher.class,
+            Any.class,
+            com.alibaba.nacos.shaded.com.google.protobuf.Any.Builder.class,
+            ExtensionRegistry.class,
+            AbstractByteBufAllocator.class,
+            ChannelDuplexHandler.class,
+            ChannelInboundHandlerAdapter.class,
+            NioSocketChannel.class,
+            ByteToMessageDecoder.class,
+            Http2ConnectionHandler.class,
+            ReferenceCountUtil.class
+        };
+        Class[] classesWithFields = {PropertyKeyConst.class, AbstractFuture.class, AbstractReferenceCountedByteBuf.class
+        };
         Class[] classesWithDefault = {DnsNameResolverProvider.class, PickFirstLoadBalancerProvider.class};
-        String[] privateClasses = {"com.alibaba.nacos.shaded.com.google.common.util.concurrent.AbstractFuture.Waiter", "com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.grpc.netty.AbstractNettyHandler", "com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.grpc.netty.NettyClientHandler", "com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.grpc.netty.WriteBufferingAndExceptionHandler", "com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.netty.channel.DefaultChannelPipeline.HeadContext", "com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.netty.channel.DefaultChannelPipeline.TailContext", "com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueueColdProducerFields", "com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueueConsumerFields", "com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueueProducerFields", "com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.netty.util.internal.shaded.org.jctools.queues.MpscArrayQueueConsumerIndexField", "com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.netty.util.internal.shaded.org.jctools.queues.MpscArrayQueueProducerIndexField", "com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.netty.util.internal.shaded.org.jctools.queues.MpscArrayQueueProducerLimitField"};
+        String[] privateClasses = {
+            "com.alibaba.nacos.shaded.com.google.common.util.concurrent.AbstractFuture.Waiter",
+            "com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.grpc.netty.AbstractNettyHandler",
+            "com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.grpc.netty.NettyClientHandler",
+            "com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.grpc.netty.WriteBufferingAndExceptionHandler",
+            "com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.netty.channel.DefaultChannelPipeline.HeadContext",
+            "com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.netty.channel.DefaultChannelPipeline.TailContext",
+            "com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueueColdProducerFields",
+            "com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueueConsumerFields",
+            "com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueueProducerFields",
+            "com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.netty.util.internal.shaded.org.jctools.queues.MpscArrayQueueConsumerIndexField",
+            "com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.netty.util.internal.shaded.org.jctools.queues.MpscArrayQueueProducerIndexField",
+            "com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.netty.util.internal.shaded.org.jctools.queues.MpscArrayQueueProducerLimitField"
+        };
         for (Class className : classesWithDeclared) {
             typeDescribers.add(buildTypeDescriberWithDeclared(className));
         }
@@ -114,24 +187,28 @@ public class NacosReflectionTypeDescriberRegistrar implements ReflectionTypeDesc
         memberCategories.add(MemberCategory.INVOKE_DECLARED_METHODS);
         memberCategories.add(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
         memberCategories.add(MemberCategory.DECLARED_FIELDS);
-        return new TypeDescriber(cl.getName(), null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
+        return new TypeDescriber(
+                cl.getName(), null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
     }
 
     private TypeDescriber buildTypeDescriberWithFields(Class<?> cl) {
         Set<MemberCategory> memberCategories = new HashSet<>();
         memberCategories.add(MemberCategory.DECLARED_FIELDS);
-        return new TypeDescriber(cl.getName(), null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
+        return new TypeDescriber(
+                cl.getName(), null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
     }
 
     private TypeDescriber buildTypeDescriberWithMethods(Class<?> cl) {
         Set<MemberCategory> memberCategories = new HashSet<>();
         memberCategories.add(MemberCategory.INVOKE_DECLARED_METHODS);
         memberCategories.add(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
-        return new TypeDescriber(cl.getName(), null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
+        return new TypeDescriber(
+                cl.getName(), null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
     }
 
     private TypeDescriber buildTypeDescriberWithDefault(Class<?> cl) {
-        return new TypeDescriber(cl.getName(), null, new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>());
+        return new TypeDescriber(
+                cl.getName(), null, new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>());
     }
 
     private TypeDescriber buildTypeDescriberWithDeclared(String className) {
@@ -141,7 +218,7 @@ public class NacosReflectionTypeDescriberRegistrar implements ReflectionTypeDesc
         memberCategories.add(MemberCategory.DECLARED_FIELDS);
         return new TypeDescriber(className, null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
     }
-    
+
     private TypeDescriber buildTypeDescriberWithFields(String className) {
         Set<MemberCategory> memberCategories = new HashSet<>();
         memberCategories.add(MemberCategory.DECLARED_FIELDS);
@@ -158,6 +235,4 @@ public class NacosReflectionTypeDescriberRegistrar implements ReflectionTypeDesc
     private TypeDescriber buildTypeDescriberWithDefault(String className) {
         return new TypeDescriber(className, null, new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>());
     }
-
-
 }

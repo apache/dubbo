@@ -59,8 +59,7 @@ public class NacosServiceName {
 
     private String value;
 
-    public NacosServiceName() {
-    }
+    public NacosServiceName() {}
 
     public NacosServiceName(URL url) {
         serviceInterface = url.getParameter(INTERFACE_KEY);
@@ -129,8 +128,8 @@ public class NacosServiceName {
             return false;
         }
 
-        if (!StringUtils.isEquals(this.group, concreteServiceName.group) &&
-                !matchRange(this.group, concreteServiceName.group)) {
+        if (!StringUtils.isEquals(this.group, concreteServiceName.group)
+                && !matchRange(this.group, concreteServiceName.group)) {
             return false;
         }
 
@@ -201,9 +200,12 @@ public class NacosServiceName {
 
     private String toValue() {
         return new StringBuilder(category)
-                .append(NAME_SEPARATOR).append(serviceInterface)
-                .append(NAME_SEPARATOR).append(version)
-                .append(NAME_SEPARATOR).append(group)
+                .append(NAME_SEPARATOR)
+                .append(serviceInterface)
+                .append(NAME_SEPARATOR)
+                .append(version)
+                .append(NAME_SEPARATOR)
+                .append(group)
                 .toString();
     }
 

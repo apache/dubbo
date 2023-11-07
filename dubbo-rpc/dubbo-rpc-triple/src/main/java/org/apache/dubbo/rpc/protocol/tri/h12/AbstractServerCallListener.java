@@ -35,7 +35,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_TIM
 
 public abstract class AbstractServerCallListener implements ServerCallListener {
 
-    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(AbstractServerCallListener.class);
+    private static final ErrorTypeAwareLogger LOGGER =
+            LoggerFactory.getErrorTypeAwareLogger(AbstractServerCallListener.class);
 
     protected final RpcInvocation invocation;
 
@@ -43,9 +44,8 @@ public abstract class AbstractServerCallListener implements ServerCallListener {
 
     protected final StreamObserver<Object> responseObserver;
 
-    public AbstractServerCallListener(RpcInvocation invocation,
-                                      Invoker<?> invoker,
-                                      StreamObserver<Object> responseObserver) {
+    public AbstractServerCallListener(
+            RpcInvocation invocation, Invoker<?> invoker, StreamObserver<Object> responseObserver) {
         this.invocation = invocation;
         this.invoker = invoker;
         this.responseObserver = responseObserver;
@@ -53,13 +53,13 @@ public abstract class AbstractServerCallListener implements ServerCallListener {
 
     public void invoke() {
         if (responseObserver instanceof Http2CancelableStreamObserver) {
-            RpcContext.restoreCancellationContext(((Http2CancelableStreamObserver<Object>) responseObserver).getCancellationContext());
+            RpcContext.restoreCancellationContext(
+                    ((Http2CancelableStreamObserver<Object>) responseObserver).getCancellationContext());
         }
-        InetSocketAddress remoteAddress = (InetSocketAddress) invocation.getAttributes()
-            .remove(AbstractServerCall.REMOTE_ADDRESS_KEY);
+        InetSocketAddress remoteAddress =
+                (InetSocketAddress) invocation.getAttributes().remove(AbstractServerCall.REMOTE_ADDRESS_KEY);
         RpcContext.getServiceContext().setRemoteAddress(remoteAddress);
-        String remoteApp = (String) invocation.getAttributes()
-            .remove(TripleHeaderEnum.CONSUMER_APP_NAME_KEY);
+        String remoteApp = (String) invocation.getAttributes().remove(TripleHeaderEnum.CONSUMER_APP_NAME_KEY);
         if (null != remoteApp) {
             RpcContext.getServiceContext().setRemoteApplicationName(remoteApp);
             invocation.setAttachmentIfAbsent(REMOTE_APPLICATION_KEY, remoteApp);
@@ -82,11 +82,13 @@ public abstract class AbstractServerCallListener implements ServerCallListener {
                 final long cost = System.currentTimeMillis() - stInMillis;
                 Long timeout = (Long) invocation.get("timeout");
                 if (timeout != null && timeout < cost) {
-                    LOGGER.error(PROTOCOL_TIMEOUT_SERVER, "", "", String.format(
-                        "Invoke timeout at server side, ignored to send response. service=%s method=%s cost=%s",
-                        invocation.getTargetServiceUniqueName(),
-                        invocation.getMethodName(),
-                        cost));
+                    LOGGER.error(
+                            PROTOCOL_TIMEOUT_SERVER,
+                            "",
+                            "",
+                            String.format(
+                                    "Invoke timeout at server side, ignored to send response. service=%s method=%s cost=%s",
+                                    invocation.getTargetServiceUniqueName(), invocation.getMethodName(), cost));
                     HttpRequestTimeout serverSideTimeout = HttpRequestTimeout.serverSide();
                     responseObserver.onError(serverSideTimeout);
                     return;
@@ -106,5 +108,4 @@ public abstract class AbstractServerCallListener implements ServerCallListener {
     }
 
     public abstract void onReturn(Object value);
-
 }

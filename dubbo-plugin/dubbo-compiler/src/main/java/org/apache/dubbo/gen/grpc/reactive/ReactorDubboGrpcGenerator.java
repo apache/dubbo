@@ -19,8 +19,6 @@ package org.apache.dubbo.gen.grpc.reactive;
 import org.apache.dubbo.gen.AbstractGenerator;
 import org.apache.dubbo.gen.DubboGeneratorPlugin;
 
-
-
 public class ReactorDubboGrpcGenerator extends AbstractGenerator {
 
     @Override

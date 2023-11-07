@@ -54,8 +54,11 @@ public abstract class RegistryNotifier {
         this.url = registryUrl;
         this.delayTime = delayTime;
         if (scheduler == null) {
-            this.scheduler = registryUrl.getOrDefaultFrameworkModel().getBeanFactory()
-                .getBean(FrameworkExecutorRepository.class).getRegistryNotificationExecutor();
+            this.scheduler = registryUrl
+                    .getOrDefaultFrameworkModel()
+                    .getBeanFactory()
+                    .getBean(FrameworkExecutorRepository.class)
+                    .getRegistryNotificationExecutor();
         } else {
             this.scheduler = scheduler;
         }
@@ -73,7 +76,11 @@ public abstract class RegistryNotifier {
         // when the scheduler is shutdown, no notification is sent
         if (scheduler.isShutdown()) {
             if (logger.isWarnEnabled()) {
-                logger.warn(COMMON_FAILED_NOTIFY_EVENT, "", "", "Notification scheduler is off, no notifications are sent. Registry URL:  " + url);
+                logger.warn(
+                        COMMON_FAILED_NOTIFY_EVENT,
+                        "",
+                        "",
+                        "Notification scheduler is off, no notifications are sent. Registry URL:  " + url);
             }
             return;
         } else if (delay) {
@@ -132,5 +139,4 @@ public abstract class RegistryNotifier {
             }
         }
     }
-
 }

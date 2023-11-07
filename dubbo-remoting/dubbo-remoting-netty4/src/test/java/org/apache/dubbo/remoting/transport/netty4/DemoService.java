@@ -19,7 +19,6 @@ package org.apache.dubbo.remoting.transport.netty4;
 /**
  * <code>TestService</code>
  */
-
 public interface DemoService {
     void sayHello(String name);
 

@@ -42,7 +42,7 @@ class BaseServiceMetadataIdentifierTest {
 
     @Test
     void getIdentifierKey() {
-        String identifierKey = baseServiceMetadataIdentifier.getIdentifierKey( "appName");
+        String identifierKey = baseServiceMetadataIdentifier.getIdentifierKey("appName");
         Assertions.assertEquals(identifierKey, "BaseServiceMetadataIdentifierTest:1.0.0:test:provider:appName");
     }
 }

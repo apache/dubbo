@@ -14,14 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.config;
 
 @Deprecated
 public class RegistryConfig extends org.apache.dubbo.config.RegistryConfig {
 
-    public RegistryConfig() {
-    }
+    public RegistryConfig() {}
 
     public RegistryConfig(String address) {
         super(address);

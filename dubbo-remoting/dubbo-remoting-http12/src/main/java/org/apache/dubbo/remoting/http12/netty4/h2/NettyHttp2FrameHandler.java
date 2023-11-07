@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.remoting.http12.netty4.h2;
 
-import io.netty.channel.ChannelDuplexHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http2.Http2ResetFrame;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.http12.HttpStatus;
@@ -28,12 +25,16 @@ import org.apache.dubbo.remoting.http12.h2.Http2Header;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessage;
 import org.apache.dubbo.remoting.http12.h2.Http2TransportListener;
 
+import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http2.Http2ResetFrame;
+
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_RESPONSE;
 
 public class NettyHttp2FrameHandler extends ChannelDuplexHandler {
 
-    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(
-        NettyHttp2FrameHandler.class);
+    private static final ErrorTypeAwareLogger LOGGER =
+            LoggerFactory.getErrorTypeAwareLogger(NettyHttp2FrameHandler.class);
 
     private final H2StreamChannel h2StreamChannel;
 
@@ -57,7 +58,7 @@ public class NettyHttp2FrameHandler extends ChannelDuplexHandler {
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        //reset frame
+        // reset frame
         if (evt instanceof Http2ResetFrame) {
             long errorCode = ((Http2ResetFrame) evt).errorCode();
             transportListener.cancelByRemote(errorCode);
@@ -77,5 +78,4 @@ public class NettyHttp2FrameHandler extends ChannelDuplexHandler {
         }
         h2StreamChannel.writeResetFrame(statusCode);
     }
-
 }

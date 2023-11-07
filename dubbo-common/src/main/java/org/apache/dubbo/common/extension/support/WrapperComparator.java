@@ -66,11 +66,11 @@ public class WrapperComparator implements Comparator<Object> {
             // TODO: backward compatibility
             Activate activate = clazz.getAnnotation(Activate.class);
             info.order = activate.order();
-        } else if (Dubbo2CompactUtils.isEnabled() && Dubbo2ActivateUtils.isActivateLoaded() &&
-            clazz.isAnnotationPresent(Dubbo2ActivateUtils.getActivateClass())) {
+        } else if (Dubbo2CompactUtils.isEnabled()
+                && Dubbo2ActivateUtils.isActivateLoaded()
+                && clazz.isAnnotationPresent(Dubbo2ActivateUtils.getActivateClass())) {
             // TODO: backward compatibility
-            Annotation activate = clazz.getAnnotation(
-                Dubbo2ActivateUtils.getActivateClass());
+            Annotation activate = clazz.getAnnotation(Dubbo2ActivateUtils.getActivateClass());
             info.order = Dubbo2ActivateUtils.getOrder(activate);
         } else if (clazz.isAnnotationPresent(Wrapper.class)) {
             Wrapper wrapper = clazz.getAnnotation(Wrapper.class);

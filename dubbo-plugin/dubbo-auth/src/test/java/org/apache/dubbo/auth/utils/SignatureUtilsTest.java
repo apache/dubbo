@@ -16,10 +16,10 @@
  */
 package org.apache.dubbo.auth.utils;
 
+import java.util.ArrayList;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
 
 class SignatureUtilsTest {
 
@@ -29,7 +29,7 @@ class SignatureUtilsTest {
         String encryptWithObject = SignatureUtils.sign(objects, "TestMethod#hello", "TOKEN");
         Assertions.assertEquals(encryptWithObject, "t6c7PasKguovqSrVRcTQU4wTZt/ybl0jBCUMgAt/zQw=");
     }
-    
+
     @Test
     void testEncryptWithNoParameters() {
         String encryptWithNoParams = SignatureUtils.sign(null, "TestMethod#hello", "TOKEN");

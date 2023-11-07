@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.prometheus;
 
 import org.apache.dubbo.config.ApplicationConfig;
@@ -23,6 +22,16 @@ import org.apache.dubbo.config.nested.PrometheusConfig;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
 
 import com.sun.net.httpserver.HttpServer;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
@@ -34,16 +43,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 
@@ -78,8 +77,10 @@ class PrometheusMetricsReporterTest {
 
         PrometheusMeterRegistry prometheusRegistry = reporter.getPrometheusRegistry();
         Double d1 = prometheusRegistry.getPrometheusRegistry().getSampleValue("none_exist_metric");
-        Double d2 = prometheusRegistry.getPrometheusRegistry().getSampleValue("jvm_gc_memory_promoted_bytes_total",
-            new String[]{"application_name"}, new String[]{name});
+        Double d2 = prometheusRegistry
+                .getPrometheusRegistry()
+                .getSampleValue(
+                        "jvm_gc_memory_promoted_bytes_total", new String[] {"application_name"}, new String[] {name});
         Assertions.assertNull(d1);
         Assertions.assertNull(d2);
     }
@@ -87,7 +88,7 @@ class PrometheusMetricsReporterTest {
     @Test
     void testExporter() {
         int port = 31539;
-//            NetUtils.getAvailablePort();
+        //            NetUtils.getAvailablePort();
         PrometheusConfig prometheusConfig = new PrometheusConfig();
         PrometheusConfig.Exporter exporter = new PrometheusConfig.Exporter();
         exporter.setEnabled(true);
@@ -95,7 +96,9 @@ class PrometheusMetricsReporterTest {
         metricsConfig.setPrometheus(prometheusConfig);
         metricsConfig.setEnableJvm(true);
 
-        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(new ApplicationConfig("metrics-test"));
+        ApplicationModel.defaultModel()
+                .getApplicationConfigManager()
+                .setApplication(new ApplicationConfig("metrics-test"));
         PrometheusMetricsReporter reporter = new PrometheusMetricsReporter(metricsConfig.toUrl(), applicationModel);
         reporter.init();
         exportHttpServer(reporter, port);
@@ -108,7 +111,9 @@ class PrometheusMetricsReporterTest {
             HttpGet request = new HttpGet("http://localhost:" + port + "/metrics");
             CloseableHttpResponse response = client.execute(request);
             InputStream inputStream = response.getEntity().getContent();
-            String text = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n"));
+            String text = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+                    .lines()
+                    .collect(Collectors.joining("\n"));
             Assertions.assertTrue(text.contains("jvm_gc_memory_promoted_bytes_total"));
         } catch (Exception e) {
             Assertions.fail(e);
@@ -138,7 +143,6 @@ class PrometheusMetricsReporterTest {
         Assertions.assertTrue(executor.isTerminated() || executor.isShutdown());
     }
 
-
     private void exportHttpServer(PrometheusMetricsReporter reporter, int port) {
 
         try {
@@ -158,5 +162,4 @@ class PrometheusMetricsReporterTest {
             throw new RuntimeException(e);
         }
     }
-
 }

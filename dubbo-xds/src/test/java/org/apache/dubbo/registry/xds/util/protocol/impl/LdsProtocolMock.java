@@ -14,21 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.registry.xds.util.protocol.impl;
+
+import org.apache.dubbo.registry.xds.util.AdsObserver;
+import org.apache.dubbo.registry.xds.util.protocol.message.ListenerResult;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import org.apache.dubbo.registry.xds.util.AdsObserver;
-import org.apache.dubbo.registry.xds.util.protocol.message.ListenerResult;
-
 import io.envoyproxy.envoy.config.core.v3.Node;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryRequest;
 
-public class LdsProtocolMock extends LdsProtocol{
+public class LdsProtocolMock extends LdsProtocol {
 
     public LdsProtocolMock(AdsObserver adsObserver, Node node, int checkInterval) {
         super(adsObserver, node, checkInterval);
@@ -44,10 +43,10 @@ public class LdsProtocolMock extends LdsProtocol{
 
     protected DiscoveryRequest buildDiscoveryRequest(Set<String> resourceNames) {
         return DiscoveryRequest.newBuilder()
-            .setNode(node)
-            .setTypeUrl(getTypeUrl())
-            .addAllResourceNames(resourceNames)
-            .build();
+                .setNode(node)
+                .setTypeUrl(getTypeUrl())
+                .addAllResourceNames(resourceNames)
+                .build();
     }
 
     public Set<String> getObserveResourcesName() {
@@ -62,7 +61,8 @@ public class LdsProtocolMock extends LdsProtocol{
         return consumerObserveMap;
     }
 
-    public void setConsumerObserveMap(Map<Set<String>, List<Consumer<Map<String, ListenerResult>>>> consumerObserveMap) {
+    public void setConsumerObserveMap(
+            Map<Set<String>, List<Consumer<Map<String, ListenerResult>>>> consumerObserveMap) {
         this.consumerObserveMap = consumerObserveMap;
     }
 }

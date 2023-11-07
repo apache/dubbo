@@ -17,12 +17,13 @@
 package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.qos.api.BaseCommand;
-import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.qos.api.Cmd;
+import org.apache.dubbo.qos.api.CommandContext;
 
-@Cmd(name = "version", summary = "version command(show dubbo version)", example = {
-        "version"
-})
+@Cmd(
+        name = "version",
+        summary = "version command(show dubbo version)",
+        example = {"version"})
 public class Version implements BaseCommand {
 
     @Override
@@ -33,5 +34,4 @@ public class Version implements BaseCommand {
         versionDescBuilder.append('\"');
         return versionDescBuilder.toString();
     }
-
 }

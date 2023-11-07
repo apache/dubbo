@@ -31,5 +31,4 @@ public class AllDispatcher implements Dispatcher {
     public ChannelHandler dispatch(ChannelHandler handler, URL url) {
         return new AllChannelHandler(handler, url);
     }
-
 }

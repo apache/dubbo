@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.constants;
 
 import org.apache.dubbo.common.URL;
@@ -268,6 +267,7 @@ public interface CommonConstants {
      * generic call
      */
     String $INVOKE = "$invoke";
+
     String $INVOKE_ASYNC = "$invokeAsync";
     String GENERIC_PARAMETER_DESC = "Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Object;";
 
@@ -309,6 +309,7 @@ public interface CommonConstants {
 
     @Deprecated
     String SHUTDOWN_WAIT_SECONDS_KEY = "dubbo.service.shutdown.wait.seconds";
+
     String SHUTDOWN_WAIT_KEY = "dubbo.service.shutdown.wait";
     String DUBBO_PROTOCOL = "dubbo";
 
@@ -610,16 +611,15 @@ public interface CommonConstants {
      * used for thread isolation between services
      */
     String SERVICE_EXECUTOR = "service-executor";
+
     String EXECUTOR_MANAGEMENT_MODE = "executor-management-mode";
     String EXECUTOR_MANAGEMENT_MODE_DEFAULT = "default";
     String EXECUTOR_MANAGEMENT_MODE_ISOLATION = "isolation";
-
 
     /**
      * used in JVMUtil.java ,Control stack print lines, default is 32 lines
      */
     String DUBBO_JSTACK_MAXLINE = "dubbo.jstack-dump.max-line";
-
 
     String ENCODE_IN_IO_THREAD_KEY = "encode.in.io";
     boolean DEFAULT_ENCODE_IN_IO_THREAD = false;
@@ -645,12 +645,9 @@ public interface CommonConstants {
 
     String SERVICE_DEPLOYER_ATTRIBUTE_KEY = "serviceDeployer";
 
-
-
     String DUBBO_MANUAL_REGISTER_KEY = "dubbo.application.manual-register";
 
     String DUBBO2_COMPACT_ENABLE = "dubbo.compact.enable";
-
 
     String POD_NAMESPACE = "POD_NAMESPACE";
 
@@ -659,5 +656,4 @@ public interface CommonConstants {
     String EXT_PROTOCOL = "ext.protocol";
 
     String IS_EXTRA = "isExtra";
-
 }

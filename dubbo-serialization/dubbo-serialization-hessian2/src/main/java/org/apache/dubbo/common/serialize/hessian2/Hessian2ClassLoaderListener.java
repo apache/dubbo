@@ -27,7 +27,8 @@ public class Hessian2ClassLoaderListener implements ScopeClassLoaderListener<Fra
 
     @Override
     public void onRemoveClassLoader(FrameworkModel scopeModel, ClassLoader classLoader) {
-        Hessian2FactoryManager hessian2FactoryManager = scopeModel.getBeanFactory().getBean(Hessian2FactoryManager.class);
+        Hessian2FactoryManager hessian2FactoryManager =
+                scopeModel.getBeanFactory().getBean(Hessian2FactoryManager.class);
         hessian2FactoryManager.onRemoveClassLoader(classLoader);
     }
 }

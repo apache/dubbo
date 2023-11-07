@@ -32,5 +32,4 @@ public interface HttpOutputMessage {
     };
 
     OutputStream getBody();
-
 }

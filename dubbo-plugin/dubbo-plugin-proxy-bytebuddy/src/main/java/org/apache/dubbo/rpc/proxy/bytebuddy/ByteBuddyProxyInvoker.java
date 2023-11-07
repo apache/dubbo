@@ -24,16 +24,14 @@ class ByteBuddyProxyInvoker<T> extends AbstractProxyInvoker<T> {
 
     private final MethodInvoker methodInvoker;
 
-    private ByteBuddyProxyInvoker(T proxy,
-                                  Class<T> type,
-                                  URL url,
-                                  MethodInvoker methodInvoker) {
+    private ByteBuddyProxyInvoker(T proxy, Class<T> type, URL url, MethodInvoker methodInvoker) {
         super(proxy, type, url);
         this.methodInvoker = methodInvoker;
     }
 
     @Override
-    protected Object doInvoke(T instance, String methodName, Class<?>[] parameterTypes, Object[] arguments) throws Throwable {
+    protected Object doInvoke(T instance, String methodName, Class<?>[] parameterTypes, Object[] arguments)
+            throws Throwable {
         if ("getClass".equals(methodName)) {
             return instance.getClass();
         }

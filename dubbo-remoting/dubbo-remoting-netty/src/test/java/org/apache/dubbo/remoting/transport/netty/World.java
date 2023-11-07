@@ -27,8 +27,7 @@ public class World implements Serializable {
 
     private String name;
 
-    public World() {
-    }
+    public World() {}
 
     public World(String name) {
         this.name = name;
@@ -41,5 +40,4 @@ public class World implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
-
 }

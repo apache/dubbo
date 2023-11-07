@@ -138,8 +138,7 @@ public class MetadataReportConfig extends AbstractConfig {
      */
     private Boolean reportDefinition;
 
-    public MetadataReportConfig() {
-    }
+    public MetadataReportConfig() {}
 
     public MetadataReportConfig(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -170,9 +169,15 @@ public class MetadataReportConfig extends AbstractConfig {
         map.putAll(convert(map, null));
         // put the protocol of URL as the "metadata"
         map.put(METADATA, isEmpty(url.getProtocol()) ? map.get(PROTOCOL_KEY) : url.getProtocol());
-        return new ServiceConfigURL(METADATA, StringUtils.isBlank(url.getUsername()) ? this.getUsername() : url.getUsername(),
-            StringUtils.isBlank(url.getPassword()) ? this.getPassword() : url.getPassword(), url.getHost(),
-            url.getPort(), url.getPath(), map).setScopeModel(getScopeModel());
+        return new ServiceConfigURL(
+                        METADATA,
+                        StringUtils.isBlank(url.getUsername()) ? this.getUsername() : url.getUsername(),
+                        StringUtils.isBlank(url.getPassword()) ? this.getPassword() : url.getPassword(),
+                        url.getHost(),
+                        url.getPort(),
+                        url.getPath(),
+                        map)
+                .setScopeModel(getScopeModel());
     }
 
     public String getProtocol() {

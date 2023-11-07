@@ -16,12 +16,10 @@
  */
 package org.apache.dubbo.remoting.api;
 
-
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 
 import java.util.HashMap;
 import java.util.Map;
-
 
 /**
  * Determine incoming bytes belong to the specific protocol.
@@ -56,23 +54,23 @@ public interface ProtocolDetector {
             return flag;
         }
 
-        public static Result recognized(){
+        public static Result recognized() {
             return new Result(Flag.RECOGNIZED);
         }
 
-
-        public static Result unrecognized(){
+        public static Result unrecognized() {
             return new Result(Flag.UNRECOGNIZED);
         }
 
-
-        public static Result needMoreData(){
+        public static Result needMoreData() {
             return new Result(Flag.NEED_MORE_DATA);
         }
     }
 
     enum Flag {
-        RECOGNIZED, UNRECOGNIZED, NEED_MORE_DATA
+        RECOGNIZED,
+        UNRECOGNIZED,
+        NEED_MORE_DATA
     }
 
     default int getByteByIndex(ChannelBuffer buffer, int index) {

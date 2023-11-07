@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.common.store.support;
 
-import org.junit.jupiter.api.Test;
-
 import java.util.Map;
+
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;

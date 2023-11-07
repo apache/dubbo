@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.remoting.buffer;
 
+import java.nio.ByteBuffer;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.nio.ByteBuffer;
 /**
  * {@link DirectChannelBufferFactory}
  * {@link HeapChannelBufferFactory}
@@ -34,17 +34,16 @@ class ChannelBufferFactoryTest {
 
         ChannelBuffer directBuffer1 = directChannelBufferFactory.getBuffer(16);
         ChannelBuffer directBuffer2 = directChannelBufferFactory.getBuffer(ByteBuffer.allocate(16));
-        ChannelBuffer directBuffer3 = directChannelBufferFactory.getBuffer(new byte[]{1}, 0, 1);
+        ChannelBuffer directBuffer3 = directChannelBufferFactory.getBuffer(new byte[] {1}, 0, 1);
         Assertions.assertTrue(directBuffer1.isDirect());
         Assertions.assertTrue(directBuffer2.isDirect());
         Assertions.assertTrue(directBuffer3.isDirect());
 
         ChannelBuffer heapBuffer1 = heapChannelBufferFactory.getBuffer(16);
         ChannelBuffer heapBuffer2 = heapChannelBufferFactory.getBuffer(ByteBuffer.allocate(16));
-        ChannelBuffer heapBuffer3 = heapChannelBufferFactory.getBuffer(new byte[]{1}, 0, 1);
+        ChannelBuffer heapBuffer3 = heapChannelBufferFactory.getBuffer(new byte[] {1}, 0, 1);
         Assertions.assertTrue(heapBuffer1.hasArray());
         Assertions.assertTrue(heapBuffer2.hasArray());
         Assertions.assertTrue(heapBuffer3.hasArray());
     }
-
 }

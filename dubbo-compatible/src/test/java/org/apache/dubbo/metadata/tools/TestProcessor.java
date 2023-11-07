@@ -23,6 +23,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
+
 import java.util.Set;
 
 import static javax.lang.model.SourceVersion.latestSupported;
@@ -44,7 +45,7 @@ public class TestProcessor extends AbstractProcessor {
         return super.processingEnv;
     }
 
-    public SourceVersion getSupportedSourceVersion(){
+    public SourceVersion getSupportedSourceVersion() {
         return latestSupported();
     }
 }

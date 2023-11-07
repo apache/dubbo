@@ -41,9 +41,7 @@ public class DeltaListener implements DeltaResource<ListenerResult> {
 
     @Override
     public ListenerResult getResource() {
-        Set<String> set = data.values().stream()
-            .flatMap(Set::stream)
-            .collect(Collectors.toSet());
+        Set<String> set = data.values().stream().flatMap(Set::stream).collect(Collectors.toSet());
         return new ListenerResult(set);
     }
 }

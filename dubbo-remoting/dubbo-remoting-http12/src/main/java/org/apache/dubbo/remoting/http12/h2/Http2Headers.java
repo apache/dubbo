@@ -17,7 +17,6 @@
 package org.apache.dubbo.remoting.http12.h2;
 
 public enum Http2Headers {
-
     PATH(":path"),
 
     METHOD(":method"),
@@ -33,4 +32,4 @@ public enum Http2Headers {
     public String getName() {
         return name;
     }
-    }
+}

@@ -14,17 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.util;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class MeshRuleDispatcherTest {
 
@@ -50,9 +49,7 @@ class MeshRuleDispatcherTest {
             }
 
             @Override
-            public void clearRule(String appName) {
-
-            }
+            public void clearRule(String appName) {}
 
             @Override
             public String ruleSuffix() {
@@ -69,9 +66,7 @@ class MeshRuleDispatcherTest {
             }
 
             @Override
-            public void clearRule(String appName) {
-
-            }
+            public void clearRule(String appName) {}
 
             @Override
             public String ruleSuffix() {
@@ -112,13 +107,10 @@ class MeshRuleDispatcherTest {
 
         MeshRuleListener listener1 = new MeshRuleListener() {
             @Override
-            public void onRuleChange(String appName, List<Map<String, Object>> rules) {
-            }
+            public void onRuleChange(String appName, List<Map<String, Object>> rules) {}
 
             @Override
-            public void clearRule(String appName) {
-
-            }
+            public void clearRule(String appName) {}
 
             @Override
             public String ruleSuffix() {
@@ -129,7 +121,8 @@ class MeshRuleDispatcherTest {
         meshRuleDispatcher.register(listener1);
         meshRuleDispatcher.register(listener1);
 
-        Assertions.assertEquals(1, meshRuleDispatcher.getListenerMap().get("Type1").size());
+        Assertions.assertEquals(
+                1, meshRuleDispatcher.getListenerMap().get("Type1").size());
         Assertions.assertTrue(meshRuleDispatcher.getListenerMap().get("Type1").contains(listener1));
     }
 
@@ -139,13 +132,10 @@ class MeshRuleDispatcherTest {
 
         MeshRuleListener listener1 = new MeshRuleListener() {
             @Override
-            public void onRuleChange(String appName, List<Map<String, Object>> rules) {
-            }
+            public void onRuleChange(String appName, List<Map<String, Object>> rules) {}
 
             @Override
-            public void clearRule(String appName) {
-
-            }
+            public void clearRule(String appName) {}
 
             @Override
             public String ruleSuffix() {
@@ -155,13 +145,10 @@ class MeshRuleDispatcherTest {
 
         MeshRuleListener listener2 = new MeshRuleListener() {
             @Override
-            public void onRuleChange(String appName, List<Map<String, Object>> rules) {
-            }
+            public void onRuleChange(String appName, List<Map<String, Object>> rules) {}
 
             @Override
-            public void clearRule(String appName) {
-
-            }
+            public void clearRule(String appName) {}
 
             @Override
             public String ruleSuffix() {
@@ -171,13 +158,10 @@ class MeshRuleDispatcherTest {
 
         MeshRuleListener listener3 = new MeshRuleListener() {
             @Override
-            public void onRuleChange(String appName, List<Map<String, Object>> rules) {
-            }
+            public void onRuleChange(String appName, List<Map<String, Object>> rules) {}
 
             @Override
-            public void clearRule(String appName) {
-
-            }
+            public void clearRule(String appName) {}
 
             @Override
             public String ruleSuffix() {
@@ -189,21 +173,26 @@ class MeshRuleDispatcherTest {
         meshRuleDispatcher.register(listener2);
         meshRuleDispatcher.register(listener3);
 
-        Assertions.assertEquals(2, meshRuleDispatcher.getListenerMap().get("Type1").size());
+        Assertions.assertEquals(
+                2, meshRuleDispatcher.getListenerMap().get("Type1").size());
         Assertions.assertTrue(meshRuleDispatcher.getListenerMap().get("Type1").contains(listener1));
         Assertions.assertTrue(meshRuleDispatcher.getListenerMap().get("Type1").contains(listener2));
-        Assertions.assertEquals(1, meshRuleDispatcher.getListenerMap().get("Type2").size());
+        Assertions.assertEquals(
+                1, meshRuleDispatcher.getListenerMap().get("Type2").size());
         Assertions.assertTrue(meshRuleDispatcher.getListenerMap().get("Type2").contains(listener3));
 
         meshRuleDispatcher.unregister(listener1);
-        Assertions.assertEquals(1, meshRuleDispatcher.getListenerMap().get("Type1").size());
+        Assertions.assertEquals(
+                1, meshRuleDispatcher.getListenerMap().get("Type1").size());
         Assertions.assertTrue(meshRuleDispatcher.getListenerMap().get("Type1").contains(listener2));
-        Assertions.assertEquals(1, meshRuleDispatcher.getListenerMap().get("Type2").size());
+        Assertions.assertEquals(
+                1, meshRuleDispatcher.getListenerMap().get("Type2").size());
         Assertions.assertTrue(meshRuleDispatcher.getListenerMap().get("Type2").contains(listener3));
 
         meshRuleDispatcher.unregister(listener2);
         Assertions.assertNull(meshRuleDispatcher.getListenerMap().get("Type1"));
-        Assertions.assertEquals(1, meshRuleDispatcher.getListenerMap().get("Type2").size());
+        Assertions.assertEquals(
+                1, meshRuleDispatcher.getListenerMap().get("Type2").size());
         Assertions.assertTrue(meshRuleDispatcher.getListenerMap().get("Type2").contains(listener3));
 
         meshRuleDispatcher.unregister(listener3);

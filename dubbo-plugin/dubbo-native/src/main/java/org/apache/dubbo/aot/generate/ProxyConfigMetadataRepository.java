@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.aot.generate;
 
-
 import org.apache.dubbo.aot.api.JdkProxyDescriber;
 
 import java.util.LinkedHashSet;
@@ -39,10 +38,10 @@ public class ProxyConfigMetadataRepository {
     }
 
     public ProxyConfigMetadataRepository registerProxyDescribers(List<JdkProxyDescriber> describers) {
-        this.jdkProxyDescribers.addAll(describers.stream().filter(Objects::nonNull).collect(Collectors.toList()));
+        this.jdkProxyDescribers.addAll(
+                describers.stream().filter(Objects::nonNull).collect(Collectors.toList()));
         return this;
     }
-
 
     public Set<JdkProxyDescriber> getProxyDescribers() {
         return jdkProxyDescribers;

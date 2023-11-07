@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.spring6.utils;
 
-
 import java.io.Serializable;
 
 public class HelloResponse implements Serializable {

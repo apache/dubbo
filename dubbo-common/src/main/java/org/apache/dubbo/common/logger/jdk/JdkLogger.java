@@ -17,10 +17,11 @@
 package org.apache.dubbo.common.logger.jdk;
 
 import org.apache.dubbo.common.logger.Logger;
-import org.slf4j.helpers.FormattingTuple;
-import org.slf4j.helpers.MessageFormatter;
 
 import java.util.logging.Level;
+
+import org.slf4j.helpers.FormattingTuple;
+import org.slf4j.helpers.MessageFormatter;
 
 public class JdkLogger implements Logger {
 
@@ -159,5 +160,4 @@ public class JdkLogger implements Logger {
     public boolean isErrorEnabled() {
         return logger.isLoggable(Level.SEVERE);
     }
-
 }

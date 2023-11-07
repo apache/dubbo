@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.remoting.http12.netty4.h1;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.utils.Assert;
@@ -35,6 +33,9 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import java.util.List;
 import java.util.concurrent.Executor;
 
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+
 public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Http1Request> {
 
     private Http1ServerTransportListenerFactory http1ServerTransportListenerFactory;
@@ -50,24 +51,32 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
     public NettyHttp1ConnectionHandler(URL url, FrameworkModel frameworkModel) {
         this.url = url;
         this.frameworkModel = frameworkModel;
-        this.executor = url.getOrDefaultFrameworkModel().getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
+        this.executor = url.getOrDefaultFrameworkModel()
+                .getExtensionLoader(ThreadPool.class)
+                .getAdaptiveExtension()
+                .getExecutor(url);
     }
 
-    public NettyHttp1ConnectionHandler(URL url,
-                                       FrameworkModel frameworkModel,
-                                       Http1ServerTransportListenerFactory http1ServerTransportListenerFactory) {
+    public NettyHttp1ConnectionHandler(
+            URL url,
+            FrameworkModel frameworkModel,
+            Http1ServerTransportListenerFactory http1ServerTransportListenerFactory) {
         this.url = url;
         this.frameworkModel = frameworkModel;
-        this.executor = url.getOrDefaultFrameworkModel().getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
+        this.executor = url.getOrDefaultFrameworkModel()
+                .getExtensionLoader(ThreadPool.class)
+                .getAdaptiveExtension()
+                .getExecutor(url);
         this.http1ServerTransportListenerFactory = http1ServerTransportListenerFactory;
     }
 
-    public void setHttp1ServerTransportListenerFactory(Http1ServerTransportListenerFactory http1ServerTransportListenerFactory) {
+    public void setHttp1ServerTransportListenerFactory(
+            Http1ServerTransportListenerFactory http1ServerTransportListenerFactory) {
         this.http1ServerTransportListenerFactory = http1ServerTransportListenerFactory;
     }
 
     protected void channelRead0(ChannelHandlerContext ctx, Http1Request http1Request) {
-        //process h1 request
+        // process h1 request
         Http1ServerTransportListener http1TransportListener = initTransportListenerIfNecessary(ctx, http1Request);
         executor.execute(() -> {
             try {
@@ -79,18 +88,23 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
         });
     }
 
-    private Http1ServerTransportListener initTransportListenerIfNecessary(ChannelHandlerContext ctx, Http1Request http1Request) {
-        //each h1 request create http1TransportListener instance
-        Http1ServerTransportListenerFactory http1ServerTransportListenerFactory = this.http1ServerTransportListenerFactory;
+    private Http1ServerTransportListener initTransportListenerIfNecessary(
+            ChannelHandlerContext ctx, Http1Request http1Request) {
+        // each h1 request create http1TransportListener instance
+        Http1ServerTransportListenerFactory http1ServerTransportListenerFactory =
+                this.http1ServerTransportListenerFactory;
         Assert.notNull(http1ServerTransportListenerFactory, "http1ServerTransportListenerFactory must be not null.");
-        Http1ServerTransportListener http1TransportListener = http1ServerTransportListenerFactory.newInstance(new NettyHttp1Channel(ctx.channel()), url, frameworkModel);
+        Http1ServerTransportListener http1TransportListener = http1ServerTransportListenerFactory.newInstance(
+                new NettyHttp1Channel(ctx.channel()), url, frameworkModel);
 
         HttpHeaders headers = http1Request.headers();
         String contentType = headers.getFirst(HttpHeaderNames.CONTENT_TYPE.getName());
         if (!StringUtils.hasText(contentType)) {
             throw new UnsupportedMediaTypeException(contentType);
         }
-        HttpMessageCodecFactory codecFactory = findSuitableCodec(contentType, frameworkModel.getExtensionLoader(HttpMessageCodecFactory.class).getActivateExtensions());
+        HttpMessageCodecFactory codecFactory = findSuitableCodec(
+                contentType,
+                frameworkModel.getExtensionLoader(HttpMessageCodecFactory.class).getActivateExtensions());
         if (codecFactory == null) {
             throw new UnsupportedMediaTypeException(contentType);
         }
@@ -99,7 +113,8 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
         return http1TransportListener;
     }
 
-    private static HttpMessageCodecFactory findSuitableCodec(String contentType, List<HttpMessageCodecFactory> candidates) {
+    private static HttpMessageCodecFactory findSuitableCodec(
+            String contentType, List<HttpMessageCodecFactory> candidates) {
         for (HttpMessageCodecFactory factory : candidates) {
             if (factory.support(contentType)) {
                 return factory;

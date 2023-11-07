@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider;
 
-
 import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 
@@ -32,8 +31,5 @@ public abstract class ProviderParamParser implements BaseProviderParamParser {
     protected Object paramTypeConvert(Class targetType, String value) {
 
         return DataParseUtils.stringTypeConvert(targetType, value);
-
     }
-
-
 }

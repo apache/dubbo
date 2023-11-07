@@ -27,20 +27,6 @@ import org.apache.dubbo.common.utils.IOUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import io.grpc.Channel;
-import io.grpc.Metadata;
-import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
-import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
-import io.grpc.netty.shaded.io.netty.handler.ssl.util.InsecureTrustManagerFactory;
-import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
-import org.bouncycastle.operator.ContentSigner;
-import org.bouncycastle.operator.OperatorCreationException;
-import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
-import org.bouncycastle.pkcs.PKCS10CertificationRequest;
-import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
-import org.bouncycastle.util.io.pem.PemObject;
-
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -54,6 +40,20 @@ import java.security.SecureRandom;
 import java.security.spec.ECGenParameterSpec;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
+import io.grpc.Channel;
+import io.grpc.Metadata;
+import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
+import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
+import io.grpc.netty.shaded.io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
+import org.bouncycastle.util.io.pem.PemObject;
 
 import static io.grpc.stub.MetadataUtils.newAttachHeadersInterceptor;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_SSL_CERT_GENERATE_FAILED;
@@ -100,7 +100,8 @@ public class DubboCertManager {
             // No remote address configured, return
             return;
         }
-        if (StringUtils.isNotEmpty(certConfig.getEnvType()) && !"Kubernetes".equalsIgnoreCase(certConfig.getEnvType())) {
+        if (StringUtils.isNotEmpty(certConfig.getEnvType())
+                && !"Kubernetes".equalsIgnoreCase(certConfig.getEnvType())) {
             throw new IllegalArgumentException("Only support Kubernetes env now.");
         }
         // Create gRPC connection
@@ -118,9 +119,15 @@ public class DubboCertManager {
      * Create task to refresh cert pair for current Dubbo instance
      */
     protected void scheduleRefresh() {
-        FrameworkExecutorRepository repository = frameworkModel.getBeanFactory().getBean(FrameworkExecutorRepository.class);
-        refreshFuture = repository.getSharedScheduledExecutor().scheduleAtFixedRate(this::generateCert,
-            certConfig.getRefreshInterval(), certConfig.getRefreshInterval(), TimeUnit.MILLISECONDS);
+        FrameworkExecutorRepository repository =
+                frameworkModel.getBeanFactory().getBean(FrameworkExecutorRepository.class);
+        refreshFuture = repository
+                .getSharedScheduledExecutor()
+                .scheduleAtFixedRate(
+                        this::generateCert,
+                        certConfig.getRefreshInterval(),
+                        certConfig.getRefreshInterval(),
+                        TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -131,23 +138,26 @@ public class DubboCertManager {
     protected void connect0(CertConfig certConfig) {
         String caCertPath = certConfig.getCaCertPath();
         String remoteAddress = certConfig.getRemoteAddress();
-        logger.info("Try to connect to Dubbo Cert Authority server: " + remoteAddress + ", caCertPath: " + remoteAddress);
+        logger.info(
+                "Try to connect to Dubbo Cert Authority server: " + remoteAddress + ", caCertPath: " + remoteAddress);
         try {
             if (StringUtils.isNotEmpty(caCertPath)) {
                 channel = NettyChannelBuilder.forTarget(remoteAddress)
-                    .sslContext(
-                        GrpcSslContexts.forClient()
-                            .trustManager(new File(caCertPath))
-                            .build())
-                    .build();
+                        .sslContext(GrpcSslContexts.forClient()
+                                .trustManager(new File(caCertPath))
+                                .build())
+                        .build();
             } else {
-                logger.warn(CONFIG_SSL_CONNECT_INSECURE, "", "",
-                    "No caCertPath is provided, will use insecure connection.");
+                logger.warn(
+                        CONFIG_SSL_CONNECT_INSECURE,
+                        "",
+                        "",
+                        "No caCertPath is provided, will use insecure connection.");
                 channel = NettyChannelBuilder.forTarget(remoteAddress)
-                    .sslContext(GrpcSslContexts.forClient()
-                        .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                        .build())
-                    .build();
+                        .sslContext(GrpcSslContexts.forClient()
+                                .trustManager(InsecureTrustManagerFactory.INSTANCE)
+                                .build())
+                        .build();
             }
         } catch (Exception e) {
             logger.error(LoggerCodeConstants.CONFIG_SSL_PATH_LOAD_FAILED, "", "", "Failed to load SSL cert file.", e);
@@ -181,7 +191,11 @@ public class DubboCertManager {
                     if (certFromRemote != null) {
                         certPair = certFromRemote;
                     } else {
-                        logger.error(CONFIG_SSL_CERT_GENERATE_FAILED, "", "", "Generate Cert from Dubbo Certificate Authority failed.");
+                        logger.error(
+                                CONFIG_SSL_CERT_GENERATE_FAILED,
+                                "",
+                                "",
+                                "Generate Cert from Dubbo Certificate Authority failed.");
                     }
                 } catch (Exception e) {
                     logger.error(REGISTRY_FAILED_GENERATE_CERT_ISTIO, "", "", "Generate Cert from Istio failed.", e);
@@ -205,47 +219,64 @@ public class DubboCertManager {
         }
 
         if (keyPair == null) {
-            logger.error(CONFIG_SSL_CERT_GENERATE_FAILED, "", "", "Generate Key failed. Please check if your system support.");
+            logger.error(
+                    CONFIG_SSL_CERT_GENERATE_FAILED,
+                    "",
+                    "",
+                    "Generate Key failed. Please check if your system support.");
             return null;
         }
 
         String csr = generateCsr(keyPair);
-        DubboCertificateServiceGrpc.DubboCertificateServiceBlockingStub stub = DubboCertificateServiceGrpc.newBlockingStub(channel);
+        DubboCertificateServiceGrpc.DubboCertificateServiceBlockingStub stub =
+                DubboCertificateServiceGrpc.newBlockingStub(channel);
         stub = setHeaderIfNeed(stub);
 
         String privateKeyPem = generatePrivatePemKey(keyPair);
         DubboCertificateResponse certificateResponse = stub.createCertificate(generateRequest(csr));
 
         if (certificateResponse == null || !certificateResponse.getSuccess()) {
-            logger.error(CONFIG_SSL_CERT_GENERATE_FAILED, "", "", "Failed to generate cert from Dubbo Certificate Authority. " +
-                "Message: " + (certificateResponse == null ? "null" : certificateResponse.getMessage()));
+            logger.error(
+                    CONFIG_SSL_CERT_GENERATE_FAILED,
+                    "",
+                    "",
+                    "Failed to generate cert from Dubbo Certificate Authority. " + "Message: "
+                            + (certificateResponse == null ? "null" : certificateResponse.getMessage()));
             return null;
         }
-        logger.info("Successfully generate cert from Dubbo Certificate Authority. Cert expire time: " + certificateResponse.getExpireTime());
+        logger.info("Successfully generate cert from Dubbo Certificate Authority. Cert expire time: "
+                + certificateResponse.getExpireTime());
 
-        return new CertPair(privateKeyPem,
-            certificateResponse.getCertPem(),
-            String.join("\n", certificateResponse.getTrustCertsList()),
-            certificateResponse.getExpireTime());
+        return new CertPair(
+                privateKeyPem,
+                certificateResponse.getCertPem(),
+                String.join("\n", certificateResponse.getTrustCertsList()),
+                certificateResponse.getExpireTime());
     }
 
-    private DubboCertificateServiceGrpc.DubboCertificateServiceBlockingStub setHeaderIfNeed(DubboCertificateServiceGrpc.DubboCertificateServiceBlockingStub stub) throws IOException {
+    private DubboCertificateServiceGrpc.DubboCertificateServiceBlockingStub setHeaderIfNeed(
+            DubboCertificateServiceGrpc.DubboCertificateServiceBlockingStub stub) throws IOException {
         String oidcTokenPath = certConfig.getOidcTokenPath();
         if (StringUtils.isNotEmpty(oidcTokenPath)) {
             Metadata header = new Metadata();
             Metadata.Key<String> key = Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER);
-            header.put(key, "Bearer " +
-                IOUtils.read(new FileReader(oidcTokenPath))
-                    .replace("\n", "")
-                    .replace("\t", "")
-                    .replace("\r", "")
-                    .trim());
+            header.put(
+                    key,
+                    "Bearer "
+                            + IOUtils.read(new FileReader(oidcTokenPath))
+                                    .replace("\n", "")
+                                    .replace("\t", "")
+                                    .replace("\r", "")
+                                    .trim());
 
             stub = stub.withInterceptors(newAttachHeadersInterceptor(header));
             logger.info("Use oidc token from " + oidcTokenPath + " to connect to Dubbo Certificate Authority.");
         } else {
-            logger.warn(CONFIG_SSL_CONNECT_INSECURE, "", "",
-                "Use insecure connection to connect to Dubbo Certificate Authority. Reason: No oidc token is provided.");
+            logger.warn(
+                    CONFIG_SSL_CONNECT_INSECURE,
+                    "",
+                    "",
+                    "Use insecure connection to connect to Dubbo Certificate Authority. Reason: No oidc token is provided.");
         }
         return stub;
     }
@@ -266,7 +297,12 @@ public class DubboCertManager {
             ContentSigner signer = new JcaContentSignerBuilder("SHA256WithRSA").build(keypair.getPrivate());
             keyPair = new KeyPair(publicKey, privateKey, signer);
         } catch (NoSuchAlgorithmException | OperatorCreationException e) {
-            logger.error(CONFIG_SSL_CERT_GENERATE_FAILED, "", "", "Generate Key with SHA256WithRSA algorithm failed. Please check if your system support.", e);
+            logger.error(
+                    CONFIG_SSL_CERT_GENERATE_FAILED,
+                    "",
+                    "",
+                    "Generate Key with SHA256WithRSA algorithm failed. Please check if your system support.",
+                    e);
         }
         return keyPair;
     }
@@ -288,14 +324,22 @@ public class DubboCertManager {
             ContentSigner signer = new JcaContentSignerBuilder("SHA256withECDSA").build(privateKey);
             keyPair = new KeyPair(publicKey, privateKey, signer);
         } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException | OperatorCreationException e) {
-            logger.error(CONFIG_SSL_CERT_GENERATE_FAILED, "", "", "Generate Key with secp256r1 algorithm failed. Please check if your system support. "
-                + "Will attempt to generate with RSA2048.", e);
+            logger.error(
+                    CONFIG_SSL_CERT_GENERATE_FAILED,
+                    "",
+                    "",
+                    "Generate Key with secp256r1 algorithm failed. Please check if your system support. "
+                            + "Will attempt to generate with RSA2048.",
+                    e);
         }
         return keyPair;
     }
 
     private DubboCertificateRequest generateRequest(String csr) {
-        return DubboCertificateRequest.newBuilder().setCsr(csr).setType("CONNECTION").build();
+        return DubboCertificateRequest.newBuilder()
+                .setCsr(csr)
+                .setType("CONNECTION")
+                .build();
     }
 
     /**
@@ -340,8 +384,8 @@ public class DubboCertManager {
      */
     private String generateCsr(KeyPair keyPair) throws IOException {
         PKCS10CertificationRequest request = new JcaPKCS10CertificationRequestBuilder(
-            new X500Name("O=" + "cluster.domain"), keyPair.getPublicKey())
-            .build(keyPair.getSigner());
+                        new X500Name("O=" + "cluster.domain"), keyPair.getPublicKey())
+                .build(keyPair.getSigner());
 
         String csr = generatePemKey("CERTIFICATE REQUEST", request.getEncoded());
 

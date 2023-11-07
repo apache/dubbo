@@ -29,7 +29,8 @@ import org.junit.jupiter.api.Test;
 @SuppressWarnings("deprecation")
 public class DefaultDubboServerObservationConventionTest {
 
-    static DubboServerObservationConvention dubboServerObservationConvention = DefaultDubboServerObservationConvention.getInstance();
+    static DubboServerObservationConvention dubboServerObservationConvention =
+            DefaultDubboServerObservationConvention.getInstance();
 
     @Test
     void testGetName() {
@@ -51,7 +52,8 @@ public class DefaultDubboServerObservationConventionTest {
         KeyValues keyValues = dubboServerObservationConvention.getLowCardinalityKeyValues(context);
 
         Assertions.assertEquals("testMethod", ObservationConventionUtils.getValueForKey(keyValues, "rpc.method"));
-        Assertions.assertEquals("targetServiceName1", ObservationConventionUtils.getValueForKey(keyValues, "rpc.service"));
+        Assertions.assertEquals(
+                "targetServiceName1", ObservationConventionUtils.getValueForKey(keyValues, "rpc.service"));
         Assertions.assertEquals("apache_dubbo", ObservationConventionUtils.getValueForKey(keyValues, "rpc.system"));
     }
 

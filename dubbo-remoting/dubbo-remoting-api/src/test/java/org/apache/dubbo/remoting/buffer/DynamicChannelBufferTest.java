@@ -16,10 +16,10 @@
  */
 package org.apache.dubbo.remoting.buffer;
 
+import java.util.Random;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -40,7 +40,7 @@ class DynamicChannelBufferTest extends AbstractChannelBufferTest {
 
     @Override
     protected ChannelBuffer[] components() {
-        return new ChannelBuffer[]{buffer};
+        return new ChannelBuffer[] {buffer};
     }
 
     @Test
@@ -71,7 +71,5 @@ class DynamicChannelBufferTest extends AbstractChannelBufferTest {
         random.nextBytes(bytes);
         buf.writeBytes(bytes);
         Assertions.assertEquals(buf.capacity(), 128);
-
     }
 }
-

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.config.nested;
 
 import org.apache.dubbo.config.support.Nested;
@@ -74,8 +73,7 @@ public class ExporterConfig implements Serializable {
          */
         private Duration readTimeout = Duration.ofSeconds(10);
 
-        public ZipkinConfig() {
-        }
+        public ZipkinConfig() {}
 
         public ZipkinConfig(String endpoint) {
             this.endpoint = endpoint;
@@ -132,8 +130,7 @@ public class ExporterConfig implements Serializable {
 
         private Map<String, String> headers = new HashMap<>();
 
-        public OtlpConfig() {
-        }
+        public OtlpConfig() {}
 
         public OtlpConfig(String endpoint) {
             this.endpoint = endpoint;

@@ -70,19 +70,26 @@ public class NoAnnotationServiceRestMetadataResolver extends AbstractServiceRest
     }
 
     @Override
-    protected void processProduces(Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass, Set<String> produces) {
+    protected void processProduces(
+            Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass, Set<String> produces) {
         produces.add(CONTENT_TYPE);
     }
 
     @Override
-    protected void processConsumes(Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass, Set<String> consumes) {
+    protected void processConsumes(
+            Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass, Set<String> consumes) {
         consumes.add(CONTENT_TYPE);
     }
 
     @Override
-    protected void processAnnotatedMethodParameter(Parameter parameter, int parameterIndex, Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass, RestMethodMetadata metadata) {
+    protected void processAnnotatedMethodParameter(
+            Parameter parameter,
+            int parameterIndex,
+            Method serviceMethod,
+            Class<?> serviceType,
+            Class<?> serviceInterfaceClass,
+            RestMethodMetadata metadata) {
         ArgInfo argInfo = ArgInfo.build(parameterIndex, parameter);
         metadata.addArgInfo(argInfo);
-
     }
 }

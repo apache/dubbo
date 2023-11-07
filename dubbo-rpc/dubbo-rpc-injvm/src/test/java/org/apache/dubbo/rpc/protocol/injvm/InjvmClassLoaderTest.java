@@ -31,18 +31,6 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 
-import demo.Empty;
-import demo.MultiClassLoaderService;
-import demo.MultiClassLoaderServiceImpl;
-import demo.MultiClassLoaderServiceRequest;
-import demo.MultiClassLoaderServiceResult;
-import javassist.CannotCompileException;
-import javassist.ClassPool;
-import javassist.CtClass;
-import javassist.NotFoundException;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -50,11 +38,27 @@ import java.lang.reflect.Constructor;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
+import javassist.CannotCompileException;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.NotFoundException;
+
+import demo.Empty;
+import demo.MultiClassLoaderService;
+import demo.MultiClassLoaderServiceImpl;
+import demo.MultiClassLoaderServiceRequest;
+import demo.MultiClassLoaderServiceResult;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class InjvmClassLoaderTest {
     @Test
     void testDifferentClassLoaderRequest() throws Exception {
-        String basePath = DemoService.class.getProtectionDomain().getCodeSource().getLocation().getFile();
+        String basePath = DemoService.class
+                .getProtectionDomain()
+                .getCodeSource()
+                .getLocation()
+                .getFile();
         basePath = java.net.URLDecoder.decode(basePath, "UTF-8");
         TestClassLoader1 classLoader1 = new TestClassLoader1(basePath);
         TestClassLoader1 classLoader2 = new TestClassLoader1(basePath);
@@ -76,22 +80,21 @@ class InjvmClassLoaderTest {
         AtomicReference innerRequestReference = new AtomicReference();
         AtomicReference innerResultReference = new AtomicReference();
         innerResultReference.set(resultClazzCustom1.getDeclaredConstructor().newInstance());
-        Constructor<?> declaredConstructor = clazz1impl.getDeclaredConstructor(AtomicReference.class, AtomicReference.class);
-
+        Constructor<?> declaredConstructor =
+                clazz1impl.getDeclaredConstructor(AtomicReference.class, AtomicReference.class);
 
         // export provider
-        ProxyFactory proxyFactory = moduleModel.getExtensionLoader(ProxyFactory.class).getExtension("javassist");
+        ProxyFactory proxyFactory =
+                moduleModel.getExtensionLoader(ProxyFactory.class).getExtension("javassist");
         Protocol protocol = moduleModel.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         Object providerInstance = declaredConstructor.newInstance(innerRequestReference, innerResultReference);
 
-        URL url = URL.valueOf("injvm://localhost:0/" + MultiClassLoaderServiceImpl.class.getName() + "?interface=" + MultiClassLoaderServiceImpl.class.getName());
-        ServiceDescriptor providerServiceDescriptor = moduleModel.getServiceRepository().registerService(clazz1);
-        ProviderModel providerModel = new ProviderModel(
-            url.getServiceKey(),
-            providerInstance,
-            providerServiceDescriptor,
-            null,
-            null);
+        URL url = URL.valueOf("injvm://localhost:0/" + MultiClassLoaderServiceImpl.class.getName() + "?interface="
+                + MultiClassLoaderServiceImpl.class.getName());
+        ServiceDescriptor providerServiceDescriptor =
+                moduleModel.getServiceRepository().registerService(clazz1);
+        ProviderModel providerModel =
+                new ProviderModel(url.getServiceKey(), providerInstance, providerServiceDescriptor, null, null);
         providerModel.setClassLoader(classLoader1);
 
         URL providerUrl = url.setScopeModel(moduleModel).setServiceModel(providerModel);
@@ -106,9 +109,16 @@ class InjvmClassLoaderTest {
         classLoader3.loadedClass.put(resultClazzCustom3.getName(), resultClazzCustom3);
 
         // refer consumer
-        ServiceDescriptor consumerServiceDescriptor = moduleModel.getServiceRepository().registerService(clazz2);
-        ConsumerModel consumerModel = new ConsumerModel(clazz2.getName(), null, consumerServiceDescriptor,
-            ApplicationModel.defaultModel().getDefaultModule(), null, null, ClassUtils.getClassLoader(clazz2));
+        ServiceDescriptor consumerServiceDescriptor =
+                moduleModel.getServiceRepository().registerService(clazz2);
+        ConsumerModel consumerModel = new ConsumerModel(
+                clazz2.getName(),
+                null,
+                consumerServiceDescriptor,
+                ApplicationModel.defaultModel().getDefaultModule(),
+                null,
+                null,
+                ClassUtils.getClassLoader(clazz2));
         consumerModel.setClassLoader(classLoader3);
         URL consumerUrl = url.setScopeModel(moduleModel).setServiceModel(consumerModel);
 
@@ -116,20 +126,23 @@ class InjvmClassLoaderTest {
 
         java.lang.reflect.Method callBean1 = object1.getClass().getDeclaredMethod("call", requestClazzOrigin);
         callBean1.setAccessible(true);
-        Object result1 = callBean1.invoke(object1, requestClazzCustom2.getDeclaredConstructor().newInstance());
+        Object result1 = callBean1.invoke(
+                object1, requestClazzCustom2.getDeclaredConstructor().newInstance());
 
         // invoke result should load from classLoader3 ( sub classLoader of classLoader2 --> consumer side classLoader)
         Assertions.assertEquals(resultClazzCustom3, result1.getClass());
         Assertions.assertNotEquals(classLoader2, result1.getClass().getClassLoader());
 
         // invoke reqeust param should load from classLoader1 ( provider side classLoader )
-        Assertions.assertEquals(classLoader1, innerRequestReference.get().getClass().getClassLoader());
+        Assertions.assertEquals(
+                classLoader1, innerRequestReference.get().getClass().getClassLoader());
 
         exporter.unexport();
         applicationModel.destroy();
     }
 
-    private Class<?> compileCustomRequest(ClassLoader classLoader) throws NotFoundException, CannotCompileException, ClassNotFoundException {
+    private Class<?> compileCustomRequest(ClassLoader classLoader)
+            throws NotFoundException, CannotCompileException, ClassNotFoundException {
         CtClassBuilder builder = new CtClassBuilder();
         builder.setClassName(MultiClassLoaderServiceRequest.class.getName() + "A");
         builder.setSuperClassName(MultiClassLoaderServiceRequest.class.getName());
@@ -138,10 +151,15 @@ class InjvmClassLoaderTest {
         if (classLoader == null) {
             classLoader = cp.getClassLoader();
         }
-        return cp.toClass(cls, classLoader.loadClass(Empty.class.getName()), classLoader, JavassistCompiler.class.getProtectionDomain());
+        return cp.toClass(
+                cls,
+                classLoader.loadClass(Empty.class.getName()),
+                classLoader,
+                JavassistCompiler.class.getProtectionDomain());
     }
 
-    private Class<?> compileCustomResult(ClassLoader classLoader) throws NotFoundException, CannotCompileException, ClassNotFoundException {
+    private Class<?> compileCustomResult(ClassLoader classLoader)
+            throws NotFoundException, CannotCompileException, ClassNotFoundException {
         CtClassBuilder builder = new CtClassBuilder();
         builder.setClassName(MultiClassLoaderServiceResult.class.getName() + "A");
         builder.setSuperClassName(MultiClassLoaderServiceResult.class.getName());
@@ -150,7 +168,11 @@ class InjvmClassLoaderTest {
         if (classLoader == null) {
             classLoader = cp.getClassLoader();
         }
-        return cp.toClass(cls, classLoader.loadClass(Empty.class.getName()), classLoader, JavassistCompiler.class.getProtectionDomain());
+        return cp.toClass(
+                cls,
+                classLoader.loadClass(Empty.class.getName()),
+                classLoader,
+                JavassistCompiler.class.getProtectionDomain());
     }
 
     private static class TestClassLoader1 extends ClassLoader {
@@ -178,7 +200,8 @@ class InjvmClassLoaderTest {
                 return loadedClass.get(name);
             }
             if (name.startsWith("demo")) {
-                if (name.equals(MultiClassLoaderServiceRequest.class.getName()) || name.equals(MultiClassLoaderServiceResult.class.getName())) {
+                if (name.equals(MultiClassLoaderServiceRequest.class.getName())
+                        || name.equals(MultiClassLoaderServiceResult.class.getName())) {
                     return super.loadClass(name, resolve);
                 }
                 Class<?> aClass = this.findClass(name);
@@ -196,7 +219,6 @@ class InjvmClassLoaderTest {
                 }
             }
         }
-
 
         public byte[] loadClassData(String className) throws IOException {
             className = className.replaceAll("\\.", "/");
@@ -249,7 +271,6 @@ class InjvmClassLoaderTest {
                 return testClassLoader.loadClass(name, resolve);
             }
         }
-
 
         public byte[] loadClassData(String className) throws IOException {
             className = className.replaceAll("\\.", "/");

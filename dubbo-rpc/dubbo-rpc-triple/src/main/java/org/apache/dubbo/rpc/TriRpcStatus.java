@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.utils.StringUtils;
@@ -36,7 +35,6 @@ import static org.apache.dubbo.rpc.RpcException.UNKNOWN_EXCEPTION;
 /**
  * See https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
  */
-
 public class TriRpcStatus {
 
     public static final TriRpcStatus OK = fromCode(Code.OK);
@@ -169,9 +167,8 @@ public class TriRpcStatus {
         if (httpStatusCode >= 100 && httpStatusCode < 200) {
             return Code.INTERNAL;
         }
-        if (httpStatusCode == HttpResponseStatus.BAD_REQUEST.code() ||
-            httpStatusCode == HttpResponseStatus.REQUEST_HEADER_FIELDS_TOO_LARGE.code()
-        ) {
+        if (httpStatusCode == HttpResponseStatus.BAD_REQUEST.code()
+                || httpStatusCode == HttpResponseStatus.REQUEST_HEADER_FIELDS_TOO_LARGE.code()) {
             return Code.INTERNAL;
         } else if (httpStatusCode == HttpResponseStatus.UNAUTHORIZED.code()) {
             return Code.UNAUTHENTICATED;
@@ -180,9 +177,9 @@ public class TriRpcStatus {
         } else if (httpStatusCode == HttpResponseStatus.NOT_FOUND.code()) {
             return Code.UNIMPLEMENTED;
         } else if (httpStatusCode == HttpResponseStatus.BAD_GATEWAY.code()
-            || httpStatusCode == HttpResponseStatus.TOO_MANY_REQUESTS.code()
-            || httpStatusCode == HttpResponseStatus.SERVICE_UNAVAILABLE.code()
-            || httpStatusCode == HttpResponseStatus.GATEWAY_TIMEOUT.code()) {
+                || httpStatusCode == HttpResponseStatus.TOO_MANY_REQUESTS.code()
+                || httpStatusCode == HttpResponseStatus.SERVICE_UNAVAILABLE.code()
+                || httpStatusCode == HttpResponseStatus.GATEWAY_TIMEOUT.code()) {
             return Code.UNAVAILABLE;
         } else {
             return Code.UNKNOWN;
@@ -238,7 +235,6 @@ public class TriRpcStatus {
         return msg;
     }
 
-
     public enum Code {
         OK(0),
         CANCELLED(1),
@@ -280,5 +276,4 @@ public class TriRpcStatus {
             throw new IllegalStateException("Can not find status for code: " + code);
         }
     }
-
 }

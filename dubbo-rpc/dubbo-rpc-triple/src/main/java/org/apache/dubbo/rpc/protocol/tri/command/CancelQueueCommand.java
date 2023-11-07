@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.command;
+
+import org.apache.dubbo.rpc.protocol.tri.stream.TripleStreamChannelFuture;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
 import io.netty.handler.codec.http2.Http2Error;
-import org.apache.dubbo.rpc.protocol.tri.stream.TripleStreamChannelFuture;
 
 public class CancelQueueCommand extends StreamQueueCommand {
     private final Http2Error error;
@@ -34,7 +34,6 @@ public class CancelQueueCommand extends StreamQueueCommand {
     public static CancelQueueCommand createCommand(TripleStreamChannelFuture streamChannelFuture, Http2Error error) {
         return new CancelQueueCommand(streamChannelFuture, error);
     }
-
 
     @Override
     public void doSend(ChannelHandlerContext ctx, ChannelPromise promise) {

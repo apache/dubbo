@@ -25,16 +25,16 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.util.ObjectUtils;
-
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Dubbo spring initialization entry point
@@ -43,10 +43,10 @@ public class DubboSpringInitializer {
 
     private static final Logger logger = LoggerFactory.getLogger(DubboSpringInitializer.class);
 
-    private static final Map<BeanDefinitionRegistry, DubboSpringInitContext> REGISTRY_CONTEXT_MAP = new ConcurrentHashMap<>();
+    private static final Map<BeanDefinitionRegistry, DubboSpringInitContext> REGISTRY_CONTEXT_MAP =
+            new ConcurrentHashMap<>();
 
-    public DubboSpringInitializer() {
-    }
+    public DubboSpringInitializer() {}
 
     public static void initialize(BeanDefinitionRegistry registry) {
 
@@ -73,13 +73,12 @@ public class DubboSpringInitializer {
         AutowireCapableBeanFactory autowireCapableBeanFactory = springContext.getAutowireCapableBeanFactory();
         for (Map.Entry<BeanDefinitionRegistry, DubboSpringInitContext> entry : REGISTRY_CONTEXT_MAP.entrySet()) {
             DubboSpringInitContext initContext = entry.getValue();
-            if (initContext.getApplicationContext() == springContext ||
-                initContext.getBeanFactory() == autowireCapableBeanFactory ||
-                initContext.getRegistry() == autowireCapableBeanFactory
-            ) {
+            if (initContext.getApplicationContext() == springContext
+                    || initContext.getBeanFactory() == autowireCapableBeanFactory
+                    || initContext.getRegistry() == autowireCapableBeanFactory) {
                 DubboSpringInitContext context = REGISTRY_CONTEXT_MAP.remove(entry.getKey());
-                logger.info("Unbind " + safeGetModelDesc(context.getModuleModel()) + " from spring container: " +
-                    ObjectUtils.identityToString(entry.getKey()));
+                logger.info("Unbind " + safeGetModelDesc(context.getModuleModel()) + " from spring container: "
+                        + ObjectUtils.identityToString(entry.getKey()));
                 return true;
             }
         }
@@ -99,8 +98,10 @@ public class DubboSpringInitializer {
         return null;
     }
 
-    private static void initContext(DubboSpringInitContext context, BeanDefinitionRegistry registry,
-                                    ConfigurableListableBeanFactory beanFactory) {
+    private static void initContext(
+            DubboSpringInitContext context,
+            BeanDefinitionRegistry registry,
+            ConfigurableListableBeanFactory beanFactory) {
         context.setRegistry(registry);
         context.setBeanFactory(beanFactory);
 
@@ -128,7 +129,8 @@ public class DubboSpringInitializer {
         } else {
             logger.info("Use module model from customizer: " + moduleModel.getDesc());
         }
-        logger.info("Bind " + moduleModel.getDesc() + " to spring container: " + ObjectUtils.identityToString(registry));
+        logger.info(
+                "Bind " + moduleModel.getDesc() + " to spring container: " + ObjectUtils.identityToString(registry));
 
         // set module attributes
         Map<String, Object> moduleAttributes = context.getModuleAttributes();
@@ -143,7 +145,7 @@ public class DubboSpringInitializer {
         context.markAsBound();
         moduleModel.setLifeCycleManagedExternally(true);
 
-        if (!AotWithSpringDetector.useGeneratedArtifacts()){
+        if (!AotWithSpringDetector.useGeneratedArtifacts()) {
             // register common beans
             DubboBeanUtils.registerCommonBeans(registry);
         }
@@ -161,20 +163,23 @@ public class DubboSpringInitializer {
             GenericApplicationContext genericApplicationContext = (GenericApplicationContext) registry;
             beanFactory = genericApplicationContext.getBeanFactory();
         } else {
-            throw new IllegalStateException("Can not find Spring BeanFactory from registry: " + registry.getClass().getName());
+            throw new IllegalStateException("Can not find Spring BeanFactory from registry: "
+                    + registry.getClass().getName());
         }
         return beanFactory;
     }
 
-    private static void registerContextBeans(ConfigurableListableBeanFactory beanFactory, DubboSpringInitContext context) {
+    private static void registerContextBeans(
+            ConfigurableListableBeanFactory beanFactory, DubboSpringInitContext context) {
         // register singleton
-        if (!beanFactory.containsSingleton(DubboSpringInitContext.class.getName())){
+        if (!beanFactory.containsSingleton(DubboSpringInitContext.class.getName())) {
             registerSingleton(beanFactory, context);
         }
-        if (!beanFactory.containsSingleton(context.getApplicationModel().getClass().getName())){
+        if (!beanFactory.containsSingleton(
+                context.getApplicationModel().getClass().getName())) {
             registerSingleton(beanFactory, context.getApplicationModel());
         }
-        if (!beanFactory.containsSingleton(context.getModuleModel().getClass().getName())){
+        if (!beanFactory.containsSingleton(context.getModuleModel().getClass().getName())) {
             registerSingleton(beanFactory, context.getModuleModel());
         }
     }
@@ -196,8 +201,8 @@ public class DubboSpringInitializer {
 
         // find initialization customizers
         Set<DubboSpringInitCustomizer> customizers = FrameworkModel.defaultModel()
-            .getExtensionLoader(DubboSpringInitCustomizer.class)
-            .getSupportedExtensionInstances();
+                .getExtensionLoader(DubboSpringInitCustomizer.class)
+                .getSupportedExtensionInstances();
         for (DubboSpringInitCustomizer customizer : customizers) {
             customizer.customize(context);
         }
@@ -210,5 +215,4 @@ public class DubboSpringInitializer {
         }
         customizerHolder.clearCustomizers();
     }
-
 }

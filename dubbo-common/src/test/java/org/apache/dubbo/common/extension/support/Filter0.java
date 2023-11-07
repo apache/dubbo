@@ -19,5 +19,4 @@ package org.apache.dubbo.common.extension.support;
 import org.apache.dubbo.common.extension.SPI;
 
 @SPI
-public interface Filter0 {
-}
+public interface Filter0 {}

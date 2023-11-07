@@ -116,5 +116,4 @@ final class NettyHelper {
             return logger.toString();
         }
     }
-
 }

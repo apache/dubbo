@@ -16,9 +16,7 @@
  */
 package org.apache.dubbo.metadata.rest.feign;
 
-
-
-public class FeignClientControllerImpl implements FeignClientController{
+public class FeignClientControllerImpl implements FeignClientController {
 
     @Override
     public String hello() {

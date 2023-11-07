@@ -24,21 +24,26 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.*;
 import org.apache.dubbo.rpc.protocol.rest.rest.RestDemoService;
 import org.apache.dubbo.rpc.protocol.rest.rest.RestDemoServiceImpl;
+
+import javax.ws.rs.core.Response;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import javax.ws.rs.core.Response;
 
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
 
 public class ResteasyResponseTest {
 
-    private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("rest");
-    private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+    private Protocol protocol =
+            ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("rest");
+    private ProxyFactory proxy =
+            ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
     private final int availablePort = NetUtils.getAvailablePort();
-    private final URL exportUrl = URL.valueOf("rest://127.0.0.1:" + availablePort + "/rest?interface=org.apache.dubbo.rpc.protocol.rest.rest.RestDemoService");
-    private final ModuleServiceRepository repository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
+    private final URL exportUrl = URL.valueOf("rest://127.0.0.1:" + availablePort
+            + "/rest?interface=org.apache.dubbo.rpc.protocol.rest.rest.RestDemoService");
+    private final ModuleServiceRepository repository =
+            ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
     private static final String SERVER = "netty4";
 
     @AfterEach
@@ -46,6 +51,7 @@ public class ResteasyResponseTest {
         protocol.destroy();
         FrameworkModel.destroyAll();
     }
+
     @Test
     void testResponse() {
         RestDemoService server = new RestDemoServiceImpl();
@@ -64,16 +70,8 @@ public class ResteasyResponseTest {
 
     private URL registerProvider(URL url, Object impl, Class<?> interfaceClass) {
         ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
-        ProviderModel providerModel = new ProviderModel(
-            url.getServiceKey(),
-            impl,
-            serviceDescriptor,
-            null,
-            null);
+        ProviderModel providerModel = new ProviderModel(url.getServiceKey(), impl, serviceDescriptor, null, null);
         repository.registerProvider(providerModel);
         return url.setServiceModel(providerModel);
     }
-
-
-
 }

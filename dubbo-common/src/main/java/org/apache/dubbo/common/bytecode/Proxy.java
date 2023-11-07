@@ -147,17 +147,31 @@ public class Proxy {
                     Class<?> rt = method.getReturnType();
                     Class<?>[] pts = method.getParameterTypes();
 
-                    StringBuilder code = new StringBuilder("Object[] args = new Object[").append(pts.length).append("];");
+                    StringBuilder code = new StringBuilder("Object[] args = new Object[")
+                            .append(pts.length)
+                            .append("];");
                     for (int j = 0; j < pts.length; j++) {
-                        code.append(" args[").append(j).append("] = ($w)$").append(j + 1).append(';');
+                        code.append(" args[")
+                                .append(j)
+                                .append("] = ($w)$")
+                                .append(j + 1)
+                                .append(';');
                     }
-                    code.append(" Object ret = handler.invoke(this, methods[").append(ix).append("], args);");
+                    code.append(" Object ret = handler.invoke(this, methods[")
+                            .append(ix)
+                            .append("], args);");
                     if (!Void.TYPE.equals(rt)) {
                         code.append(" return ").append(asArgument(rt, "ret")).append(';');
                     }
 
                     methods.add(method);
-                    ccp.addMethod(method.getName(), method.getModifiers(), rt, pts, method.getExceptionTypes(), code.toString());
+                    ccp.addMethod(
+                            method.getName(),
+                            method.getModifiers(),
+                            rt,
+                            pts,
+                            method.getExceptionTypes(),
+                            code.toString());
                 }
             }
 
@@ -166,7 +180,8 @@ public class Proxy {
             ccp.setClassName(pcn);
             ccp.addField("public static java.lang.reflect.Method[] methods;");
             ccp.addField("private " + InvocationHandler.class.getName() + " handler;");
-            ccp.addConstructor(Modifier.PUBLIC, new Class<?>[]{InvocationHandler.class}, new Class<?>[0], "handler=$1;");
+            ccp.addConstructor(
+                    Modifier.PUBLIC, new Class<?>[] {InvocationHandler.class}, new Class<?>[0], "handler=$1;");
             ccp.addDefaultConstructor();
             Class<?> clazz = ccp.toClass(neighbor, cl, domain);
             clazz.getField("methods").set(null, methods.toArray(new Method[0]));

@@ -25,8 +25,7 @@ import org.apache.dubbo.remoting.transport.ChannelHandlerDispatcher;
  */
 public class Transporters {
 
-    private Transporters() {
-    }
+    private Transporters() {}
 
     public static RemotingServer bind(String url, ChannelHandler... handler) throws RemotingException {
         return bind(URL.valueOf(url), handler);
@@ -68,7 +67,8 @@ public class Transporters {
     }
 
     public static Transporter getTransporter(URL url) {
-        return url.getOrDefaultFrameworkModel().getExtensionLoader(Transporter.class).getAdaptiveExtension();
+        return url.getOrDefaultFrameworkModel()
+                .getExtensionLoader(Transporter.class)
+                .getAdaptiveExtension();
     }
-
 }

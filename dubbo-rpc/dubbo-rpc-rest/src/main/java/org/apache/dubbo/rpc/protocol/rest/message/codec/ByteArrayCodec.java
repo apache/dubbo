@@ -30,7 +30,6 @@ import java.lang.reflect.Type;
 @Activate("byteArray")
 public class ByteArrayCodec implements HttpMessageCodec<byte[], OutputStream> {
 
-
     @Override
     public Object decode(byte[] body, Class<?> targetType, Type type) throws Exception {
         return body;
@@ -50,7 +49,6 @@ public class ByteArrayCodec implements HttpMessageCodec<byte[], OutputStream> {
     public MediaType contentType() {
         return MediaType.OCTET_STREAM;
     }
-
 
     @Override
     public void encode(OutputStream outputStream, Object unSerializedBody, URL url) throws Exception {

@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.utils;
 
-
 import org.apache.dubbo.common.convert.ConverterUtil;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -75,22 +74,21 @@ public class ClassUtils {
      * @since 2.7.6
      */
     public static final Set<Class<?>> SIMPLE_TYPES = ofSet(
-        Void.class,
-        Boolean.class,
-        Character.class,
-        Byte.class,
-        Short.class,
-        Integer.class,
-        Long.class,
-        Float.class,
-        Double.class,
-        String.class,
-        BigDecimal.class,
-        BigInteger.class,
-        Date.class,
-        Object.class,
-        Duration.class
-    );
+            Void.class,
+            Boolean.class,
+            Character.class,
+            Byte.class,
+            Short.class,
+            Integer.class,
+            Long.class,
+            Float.class,
+            Double.class,
+            String.class,
+            BigDecimal.class,
+            BigInteger.class,
+            Date.class,
+            Object.class,
+            Duration.class);
     /**
      * Prefix for internal array class names: "[L"
      */
@@ -119,9 +117,15 @@ public class ClassUtils {
 
         Set<Class<?>> primitiveTypeNames = new HashSet<>(32);
         primitiveTypeNames.addAll(PRIMITIVE_WRAPPER_TYPE_MAP.values());
-        primitiveTypeNames.addAll(Arrays
-            .asList(boolean[].class, byte[].class, char[].class, double[].class,
-                float[].class, int[].class, long[].class, short[].class));
+        primitiveTypeNames.addAll(Arrays.asList(
+                boolean[].class,
+                byte[].class,
+                char[].class,
+                double[].class,
+                float[].class,
+                int[].class,
+                long[].class,
+                short[].class));
         for (Class<?> primitiveTypeName : primitiveTypeNames) {
             PRIMITIVE_TYPE_NAME_MAP.put(primitiveTypeName.getName(), primitiveTypeName);
         }
@@ -138,13 +142,11 @@ public class ClassUtils {
      */
     private static final char PACKAGE_SEPARATOR_CHAR = '.';
 
-    public static Class<?> forNameWithThreadContextClassLoader(String name)
-        throws ClassNotFoundException {
+    public static Class<?> forNameWithThreadContextClassLoader(String name) throws ClassNotFoundException {
         return forName(name, Thread.currentThread().getContextClassLoader());
     }
 
-    public static Class<?> forNameWithCallerClassLoader(String name, Class<?> caller)
-        throws ClassNotFoundException {
+    public static Class<?> forNameWithCallerClassLoader(String name, Class<?> caller) throws ClassNotFoundException {
         return forName(name, caller.getClassLoader());
     }
 
@@ -225,7 +227,6 @@ public class ClassUtils {
         }
     }
 
-
     /**
      * Replacement for <code>Class.forName()</code> that also returns Class
      * instances for primitives (like "int") and array class names (like
@@ -239,8 +240,7 @@ public class ClassUtils {
      * @throws LinkageError           if the class file could not be loaded
      * @see Class#forName(String, boolean, ClassLoader)
      */
-    public static Class<?> forName(String name, ClassLoader classLoader)
-        throws ClassNotFoundException, LinkageError {
+    public static Class<?> forName(String name, ClassLoader classLoader) throws ClassNotFoundException, LinkageError {
 
         Class<?> clazz = resolvePrimitiveClassName(name);
         if (clazz != null) {
@@ -259,8 +259,7 @@ public class ClassUtils {
         if (internalArrayMarker != -1 && name.endsWith(";")) {
             String elementClassName = null;
             if (internalArrayMarker == 0) {
-                elementClassName = name
-                    .substring(INTERNAL_ARRAY_PREFIX.length(), name.length() - 1);
+                elementClassName = name.substring(INTERNAL_ARRAY_PREFIX.length(), name.length() - 1);
             } else if (name.startsWith("[")) {
                 elementClassName = name.substring(1);
             }
@@ -303,7 +302,6 @@ public class ClassUtils {
             return "null";
         }
         return obj.getClass().getSimpleName() + "@" + System.identityHashCode(obj);
-
     }
 
     public static String simpleClassName(Class<?> clazz) {
@@ -317,7 +315,6 @@ public class ClassUtils {
         }
         return className;
     }
-
 
     /**
      * The specified type is primitive type or simple type
@@ -353,13 +350,13 @@ public class ClassUtils {
         Class<?> wrapperType = WRAPPER_PRIMITIVE_TYPE_MAP.getOrDefault(type, type);
         Object result = null;
         try {
-            result = frameworkModel.getBeanFactory().getBean(ConverterUtil.class).convertIfPossible(value, wrapperType);
+            result =
+                    frameworkModel.getBeanFactory().getBean(ConverterUtil.class).convertIfPossible(value, wrapperType);
         } catch (Exception e) {
             // ignore exception
         }
         return result;
     }
-
 
     /**
      * We only check boolean value at this moment.
@@ -369,8 +366,7 @@ public class ClassUtils {
      * @return
      */
     public static boolean isTypeMatch(Class<?> type, String value) {
-        if ((type == boolean.class || type == Boolean.class)
-            && !("true".equals(value) || "false".equals(value))) {
+        if ((type == boolean.class || type == Boolean.class) && !("true".equals(value) || "false".equals(value))) {
             return false;
         }
         return true;
@@ -423,19 +419,14 @@ public class ClassUtils {
 
             if (isNotEmpty(interfaces)) {
                 // add current interfaces
-                Arrays.stream(interfaces)
-                    .filter(resolved::add)
-                    .forEach(cls -> {
-                        allInterfaces.add(cls);
-                        waitResolve.add(cls);
-                    });
+                Arrays.stream(interfaces).filter(resolved::add).forEach(cls -> {
+                    allInterfaces.add(cls);
+                    waitResolve.add(cls);
+                });
             }
 
             // add all super classes to waitResolve
-            getAllSuperClasses(clazz)
-                .stream()
-                .filter(resolved::add)
-                .forEach(waitResolve::add);
+            getAllSuperClasses(clazz).stream().filter(resolved::add).forEach(waitResolve::add);
 
             clazz = waitResolve.poll();
         }
@@ -458,7 +449,6 @@ public class ClassUtils {
         types.addAll(getAllInterfaces(type, typeFilters));
         return unmodifiableSet(types);
     }
-
 
     /**
      * the semantics is same as {@link Class#isAssignableFrom(Class)}
@@ -538,7 +528,7 @@ public class ClassUtils {
         return false;
     }
 
-    private static final String[] OBJECT_METHODS = new String[]{"getClass", "hashCode", "toString", "equals"};
+    private static final String[] OBJECT_METHODS = new String[] {"getClass", "hashCode", "toString", "equals"};
 
     /**
      * get method name array.
@@ -549,14 +539,13 @@ public class ClassUtils {
         if (tClass == Object.class) {
             return OBJECT_METHODS;
         }
-        Method[] methods = Arrays.stream(tClass.getMethods())
-            .collect(Collectors.toList())
-            .toArray(new Method[]{});
+        Method[] methods =
+                Arrays.stream(tClass.getMethods()).collect(Collectors.toList()).toArray(new Method[] {});
         List<String> mns = new ArrayList<>(); // method names.
         boolean hasMethod = hasMethods(methods);
         if (hasMethod) {
             for (Method m : methods) {
-                //ignore Object's method.
+                // ignore Object's method.
                 if (m.getDeclaringClass() == Object.class) {
                     continue;
                 }
@@ -586,21 +575,21 @@ public class ClassUtils {
         if (from == boolean.class) {
             return to == Boolean.class;
         } else if (from == byte.class) {
-            return  to == Byte.class;
+            return to == Byte.class;
         } else if (from == char.class) {
-            return  to == Character.class;
+            return to == Character.class;
         } else if (from == short.class) {
-            return  to == Short.class;
+            return to == Short.class;
         } else if (from == int.class) {
-            return  to == Integer.class;
+            return to == Integer.class;
         } else if (from == long.class) {
-            return  to == Long.class;
+            return to == Long.class;
         } else if (from == float.class) {
-            return  to == Float.class;
+            return to == Float.class;
         } else if (from == double.class) {
-            return  to == Double.class;
+            return to == Double.class;
         } else if (from == void.class) {
-            return  to == Void.class;
+            return to == Void.class;
         }
         return false;
     }
@@ -614,14 +603,13 @@ public class ClassUtils {
         if (tClass == Object.class) {
             return OBJECT_METHODS;
         }
-        Method[] methods = Arrays.stream(tClass.getMethods())
-            .collect(Collectors.toList())
-            .toArray(new Method[]{});
+        Method[] methods =
+                Arrays.stream(tClass.getMethods()).collect(Collectors.toList()).toArray(new Method[] {});
         List<String> dmns = new ArrayList<>(); // method names.
         boolean hasMethod = hasMethods(methods);
         if (hasMethod) {
             for (Method m : methods) {
-                //ignore Object's method.
+                // ignore Object's method.
                 if (m.getDeclaringClass() == Object.class) {
                     continue;
                 }

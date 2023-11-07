@@ -61,8 +61,7 @@ public class DubboBootstrapApplicationListener implements ApplicationListener, A
     private boolean shouldInitConfigBeans;
     private ModuleModel moduleModel;
 
-    public DubboBootstrapApplicationListener() {
-    }
+    public DubboBootstrapApplicationListener() {}
 
     public DubboBootstrapApplicationListener(boolean shouldInitConfigBeans) {
         // maybe register DubboBootstrapApplicationListener manual during spring context starting
@@ -94,7 +93,11 @@ public class DubboBootstrapApplicationListener implements ApplicationListener, A
         if (applicationContext.containsBean(DubboConfigBeanInitializer.BEAN_NAME)) {
             applicationContext.getBean(DubboConfigBeanInitializer.BEAN_NAME, DubboConfigBeanInitializer.class);
         } else {
-            logger.warn(CONFIG_DUBBO_BEAN_NOT_FOUND, "", "", "Bean '" + DubboConfigBeanInitializer.BEAN_NAME + "' was not found");
+            logger.warn(
+                    CONFIG_DUBBO_BEAN_NOT_FOUND,
+                    "",
+                    "",
+                    "Bean '" + DubboConfigBeanInitializer.BEAN_NAME + "' was not found");
         }
 
         // All infrastructure config beans are loaded, initialize dubbo here
@@ -122,7 +125,7 @@ public class DubboBootstrapApplicationListener implements ApplicationListener, A
     private void onContextClosedEvent(ContextClosedEvent event) {
         if (bootstrap.getTakeoverMode() == BootstrapTakeoverMode.SPRING) {
             // will call dubboBootstrap.stop() through shutdown callback.
-            //bootstrap.getApplicationModel().getBeanFactory().getBean(DubboShutdownHook.class).run();
+            // bootstrap.getApplicationModel().getBeanFactory().getBean(DubboShutdownHook.class).run();
             moduleModel.getDeployer().stop();
         }
     }
@@ -155,12 +158,14 @@ public class DubboBootstrapApplicationListener implements ApplicationListener, A
     }
 
     private void checkCallStackAndInit() {
-        // check call stack whether contains org.springframework.context.support.AbstractApplicationContext.registerListeners()
+        // check call stack whether contains
+        // org.springframework.context.support.AbstractApplicationContext.registerListeners()
         Exception exception = new Exception();
         StackTraceElement[] stackTrace = exception.getStackTrace();
         boolean found = false;
         for (StackTraceElement frame : stackTrace) {
-            if (frame.getMethodName().equals("registerListeners") && frame.getClassName().endsWith("AbstractApplicationContext")) {
+            if (frame.getMethodName().equals("registerListeners")
+                    && frame.getClassName().endsWith("AbstractApplicationContext")) {
                 found = true;
                 break;
             }
@@ -169,8 +174,13 @@ public class DubboBootstrapApplicationListener implements ApplicationListener, A
             // init config beans here, compatible with spring 3.x/4.1.x
             initDubboConfigBeans();
         } else {
-            logger.warn(CONFIG_DUBBO_BEAN_INITIALIZER, "", "", "DubboBootstrapApplicationListener initialization is unexpected, " +
-                "it should be created in AbstractApplicationContext.registerListeners() method", exception);
+            logger.warn(
+                    CONFIG_DUBBO_BEAN_INITIALIZER,
+                    "",
+                    "",
+                    "DubboBootstrapApplicationListener initialization is unexpected, "
+                            + "it should be created in AbstractApplicationContext.registerListeners() method",
+                    exception);
         }
     }
 

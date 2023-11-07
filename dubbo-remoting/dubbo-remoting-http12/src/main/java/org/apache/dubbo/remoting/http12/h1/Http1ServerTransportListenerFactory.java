@@ -26,5 +26,4 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 public interface Http1ServerTransportListenerFactory {
 
     Http1ServerTransportListener newInstance(HttpChannel httpChannel, URL url, FrameworkModel frameworkModel);
-
 }

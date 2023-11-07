@@ -14,14 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.register;
 
-import io.micrometer.core.instrument.Meter;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
+
+import io.micrometer.core.instrument.Meter;
 
 public interface MetricRegister<S extends MetricSample, M extends Meter> {
 
     M register(S sample);
-
 }

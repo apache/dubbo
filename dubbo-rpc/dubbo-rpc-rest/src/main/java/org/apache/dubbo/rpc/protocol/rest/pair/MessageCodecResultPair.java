@@ -32,12 +32,10 @@ public class MessageCodecResultPair {
      */
     MediaType mediaType;
 
-
     public MessageCodecResultPair(boolean coded, MediaType mediaType) {
         this.coded = coded;
         this.mediaType = mediaType;
     }
-
 
     public boolean isCoded() {
         return coded;

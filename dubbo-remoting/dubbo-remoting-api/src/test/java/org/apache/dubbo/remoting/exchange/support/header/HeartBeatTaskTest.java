@@ -14,21 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.remoting.exchange.Request;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.remoting.Constants.HEARTBEAT_CHECK_TICK;
@@ -55,7 +54,9 @@ class HeartBeatTaskTest {
             }
         };
 
-        heartbeatTimerTask = new HeartbeatTimerTask(() -> Collections.singleton(channel), heartbeatTimer, tickDuration / HEARTBEAT_CHECK_TICK, (int) tickDuration);
+        heartbeatTimerTask = new HeartbeatTimerTask(
+                () -> Collections.singleton(channel), heartbeatTimer, tickDuration / HEARTBEAT_CHECK_TICK, (int)
+                        tickDuration);
     }
 
     @AfterEach
@@ -79,5 +80,4 @@ class HeartBeatTaskTest {
         Request request = (Request) obj;
         Assertions.assertTrue(request.isHeartbeat());
     }
-
 }

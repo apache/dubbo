@@ -60,10 +60,11 @@ public class RpcUtils {
 
     public static Class<?> getReturnType(Invocation invocation) {
         try {
-            if (invocation != null && invocation.getInvoker() != null
-                && invocation.getInvoker().getUrl() != null
-                && invocation.getInvoker().getInterface() != GenericService.class
-                && !invocation.getMethodName().startsWith("$")) {
+            if (invocation != null
+                    && invocation.getInvoker() != null
+                    && invocation.getInvoker().getUrl() != null
+                    && invocation.getInvoker().getInterface() != GenericService.class
+                    && !invocation.getMethodName().startsWith("$")) {
                 String service = invocation.getInvoker().getUrl().getServiceInterface();
                 if (StringUtils.isNotEmpty(service)) {
                     Method method = getMethodByService(invocation, service);
@@ -78,10 +79,11 @@ public class RpcUtils {
 
     public static Type[] getReturnTypes(Invocation invocation) {
         try {
-            if (invocation != null && invocation.getInvoker() != null
-                && invocation.getInvoker().getUrl() != null
-                && invocation.getInvoker().getInterface() != GenericService.class
-                && !invocation.getMethodName().startsWith("$")) {
+            if (invocation != null
+                    && invocation.getInvoker() != null
+                    && invocation.getInvoker().getUrl() != null
+                    && invocation.getInvoker().getInterface() != GenericService.class
+                    && !invocation.getMethodName().startsWith("$")) {
                 Type[] returnTypes = null;
                 if (invocation instanceof RpcInvocation) {
                     returnTypes = ((RpcInvocation) invocation).getReturnTypes();
@@ -137,9 +139,9 @@ public class RpcUtils {
 
     public static String getMethodName(Invocation invocation) {
         if ($INVOKE.equals(invocation.getMethodName())
-            && invocation.getArguments() != null
-            && invocation.getArguments().length > 0
-            && invocation.getArguments()[0] instanceof String) {
+                && invocation.getArguments() != null
+                && invocation.getArguments().length > 0
+                && invocation.getArguments()[0] instanceof String) {
             return (String) invocation.getArguments()[0];
         }
         return invocation.getMethodName();
@@ -147,9 +149,9 @@ public class RpcUtils {
 
     public static Object[] getArguments(Invocation invocation) {
         if ($INVOKE.equals(invocation.getMethodName())
-            && invocation.getArguments() != null
-            && invocation.getArguments().length > 2
-            && invocation.getArguments()[2] instanceof Object[]) {
+                && invocation.getArguments() != null
+                && invocation.getArguments().length > 2
+                && invocation.getArguments()[2] instanceof Object[]) {
             return (Object[]) invocation.getArguments()[2];
         }
         return invocation.getArguments();
@@ -157,9 +159,9 @@ public class RpcUtils {
 
     public static Class<?>[] getParameterTypes(Invocation invocation) {
         if ($INVOKE.equals(invocation.getMethodName())
-            && invocation.getArguments() != null
-            && invocation.getArguments().length > 1
-            && invocation.getArguments()[1] instanceof String[]) {
+                && invocation.getArguments() != null
+                && invocation.getArguments().length > 1
+                && invocation.getArguments()[1] instanceof String[]) {
             String[] types = (String[]) invocation.getArguments()[1];
             if (types == null) {
                 return new Class<?>[0];
@@ -207,7 +209,8 @@ public class RpcUtils {
 
     // check parameterTypesDesc to fix CVE-2020-1948
     public static boolean isGenericCall(String parameterTypesDesc, String method) {
-        return ($INVOKE.equals(method) || $INVOKE_ASYNC.equals(method)) && GENERIC_PARAMETER_DESC.equals(parameterTypesDesc);
+        return ($INVOKE.equals(method) || $INVOKE_ASYNC.equals(method))
+                && GENERIC_PARAMETER_DESC.equals(parameterTypesDesc);
     }
 
     // check parameterTypesDesc to fix CVE-2020-1948
@@ -244,8 +247,9 @@ public class RpcUtils {
 
     private static Method getMethodByService(Invocation invocation, String service) throws NoSuchMethodException {
         Class<?> invokerInterface = invocation.getInvoker().getInterface();
-        Class<?> cls = invokerInterface != null ? ReflectUtils.forName(invokerInterface.getClassLoader(), service)
-            : ReflectUtils.forName(service);
+        Class<?> cls = invokerInterface != null
+                ? ReflectUtils.forName(invokerInterface.getClassLoader(), service)
+                : ReflectUtils.forName(service);
         Method method = cls.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
         if (method.getReturnType() == void.class) {
             return null;
@@ -265,7 +269,8 @@ public class RpcUtils {
         return timeout;
     }
 
-    public static long getTimeout(URL url, String methodName, RpcContext context, Invocation invocation, long defaultTimeout) {
+    public static long getTimeout(
+            URL url, String methodName, RpcContext context, Invocation invocation, long defaultTimeout) {
         long timeout = defaultTimeout;
         Object timeoutFromContext = context.getObjectAttachment(TIMEOUT_KEY);
         Object timeoutFromInvocation = invocation.getObjectAttachment(TIMEOUT_KEY);
@@ -285,7 +290,8 @@ public class RpcUtils {
         int timeout = (int) defaultTimeout;
         if (countdown == null) {
             if (url != null) {
-                timeout = (int) RpcUtils.getTimeout(url, methodName, RpcContext.getClientAttachment(), invocation, defaultTimeout);
+                timeout = (int) RpcUtils.getTimeout(
+                        url, methodName, RpcContext.getClientAttachment(), invocation, defaultTimeout);
                 if (url.getMethodParameter(methodName, ENABLE_TIMEOUT_COUNTDOWN_KEY, false)) {
                     // pass timeout to remote server
                     invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY, timeout);

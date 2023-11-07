@@ -18,12 +18,11 @@ package org.apache.dubbo.demo.rest.api.consumer;
 
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.demo.rest.api.SpringRestDemoService;
+
 import org.springframework.stereotype.Component;
 
 @Component
 public class SpringRestDemoServiceConsumer {
-    @DubboReference(interfaceClass = SpringRestDemoService.class )
+    @DubboReference(interfaceClass = SpringRestDemoService.class)
     SpringRestDemoService springRestDemoService;
-
-
 }

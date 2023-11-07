@@ -38,6 +38,7 @@ public class DefaultMetricsReflectionTypeDescriberRegistrar implements Reflectio
     private TypeDescriber buildTypeDescriberWithDeclaredConstructors(Class<?> cl) {
         Set<MemberCategory> memberCategories = new HashSet<>();
         memberCategories.add(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
-        return new TypeDescriber(cl.getName(), null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
+        return new TypeDescriber(
+                cl.getName(), null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
     }
 }

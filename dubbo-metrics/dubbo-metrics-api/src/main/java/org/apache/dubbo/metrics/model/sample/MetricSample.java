@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.model.sample;
 
 import org.apache.dubbo.metrics.model.MetricsCategory;
@@ -33,11 +32,18 @@ public class MetricSample {
     private MetricsCategory category;
     private String baseUnit;
 
-    public MetricSample(String name, String description, Map<String, String> tags, Type type, MetricsCategory category) {
+    public MetricSample(
+            String name, String description, Map<String, String> tags, Type type, MetricsCategory category) {
         this(name, description, tags, type, category, null);
     }
 
-    public MetricSample(String name, String description, Map<String, String> tags, Type type, MetricsCategory category, String baseUnit) {
+    public MetricSample(
+            String name,
+            String description,
+            Map<String, String> tags,
+            Type type,
+            MetricsCategory category,
+            String baseUnit) {
         this.name = name;
         this.description = description;
         this.tags = tags;
@@ -99,9 +105,12 @@ public class MetricSample {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MetricSample that = (MetricSample) o;
-        return Objects.equals(name, that.name) && Objects.equals(description, that.description)
-            && Objects.equals(baseUnit, that.baseUnit) && type == that.type
-            && Objects.equals(category, that.category) && Objects.equals(tags, that.tags);
+        return Objects.equals(name, that.name)
+                && Objects.equals(description, that.description)
+                && Objects.equals(baseUnit, that.baseUnit)
+                && type == that.type
+                && Objects.equals(category, that.category)
+                && Objects.equals(tags, that.tags);
     }
 
     @Override
@@ -111,16 +120,14 @@ public class MetricSample {
 
     @Override
     public String toString() {
-        return "MetricSample{" +
-            "name='" + name + '\'' +
-            ", description='" + description + '\'' +
-            ", baseUnit='" + baseUnit + '\'' +
-            ", type=" + type +
-            ", category=" + category +
-            ", tags=" + tags +
-            '}';
+        return "MetricSample{" + "name='"
+                + name + '\'' + ", description='"
+                + description + '\'' + ", baseUnit='"
+                + baseUnit + '\'' + ", type="
+                + type + ", category="
+                + category + ", tags="
+                + tags + '}';
     }
-
 
     public enum Type {
         COUNTER,

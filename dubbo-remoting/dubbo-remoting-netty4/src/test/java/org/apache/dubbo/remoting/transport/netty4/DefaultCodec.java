@@ -24,9 +24,7 @@ import java.io.IOException;
 
 public class DefaultCodec implements Codec2 {
     @Override
-    public void encode(Channel channel, ChannelBuffer buffer, Object message) throws IOException {
-
-    }
+    public void encode(Channel channel, ChannelBuffer buffer, Object message) throws IOException {}
 
     @Override
     public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {

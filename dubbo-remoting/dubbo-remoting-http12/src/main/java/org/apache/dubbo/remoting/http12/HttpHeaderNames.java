@@ -17,7 +17,6 @@
 package org.apache.dubbo.remoting.http12;
 
 public enum HttpHeaderNames {
-
     STATUS(":status"),
 
     CONTENT_TYPE("content-type"),

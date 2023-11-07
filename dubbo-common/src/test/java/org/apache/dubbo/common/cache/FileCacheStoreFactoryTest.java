@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.common.cache;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -27,16 +24,21 @@ import java.net.URL;
 import java.nio.file.Paths;
 import java.util.Map;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 class FileCacheStoreFactoryTest {
 
     @Test
     void testSafeName() throws URISyntaxException {
         FileCacheStore store1 = FileCacheStoreFactory.getInstance(getDirectoryOfClassPath(), "../../../dubbo");
-        Assertions.assertEquals(getDirectoryOfClassPath() + "..%002f..%002f..%002fdubbo.dubbo.cache", getCacheFilePath(store1));
+        Assertions.assertEquals(
+                getDirectoryOfClassPath() + "..%002f..%002f..%002fdubbo.dubbo.cache", getCacheFilePath(store1));
         store1.destroy();
 
         FileCacheStore store2 = FileCacheStoreFactory.getInstance(getDirectoryOfClassPath(), "../../../中文");
-        Assertions.assertEquals(getDirectoryOfClassPath() + "..%002f..%002f..%002f%4e2d%6587.dubbo.cache", getCacheFilePath(store2));
+        Assertions.assertEquals(
+                getDirectoryOfClassPath() + "..%002f..%002f..%002f%4e2d%6587.dubbo.cache", getCacheFilePath(store2));
         store2.destroy();
     }
 

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.remoting.transport;
 
 import org.apache.dubbo.common.URL;
@@ -52,16 +51,21 @@ public class CodecSupport {
     private static final ThreadLocal<byte[]> TL_BUFFER = ThreadLocal.withInitial(() -> new byte[1024]);
 
     static {
-        ExtensionLoader<Serialization> extensionLoader = FrameworkModel.defaultModel().getExtensionLoader(Serialization.class);
+        ExtensionLoader<Serialization> extensionLoader =
+                FrameworkModel.defaultModel().getExtensionLoader(Serialization.class);
         Set<String> supportedExtensions = extensionLoader.getSupportedExtensions();
         for (String name : supportedExtensions) {
             Serialization serialization = extensionLoader.getExtension(name);
             byte idByte = serialization.getContentTypeId();
             if (ID_SERIALIZATION_MAP.containsKey(idByte)) {
-                logger.error(TRANSPORT_FAILED_SERIALIZATION, "", "", "Serialization extension " + serialization.getClass().getName()
-                    + " has duplicate id to Serialization extension "
-                    + ID_SERIALIZATION_MAP.get(idByte).getClass().getName()
-                    + ", ignore this Serialization extension");
+                logger.error(
+                        TRANSPORT_FAILED_SERIALIZATION,
+                        "",
+                        "",
+                        "Serialization extension " + serialization.getClass().getName()
+                                + " has duplicate id to Serialization extension "
+                                + ID_SERIALIZATION_MAP.get(idByte).getClass().getName()
+                                + ", ignore this Serialization extension");
                 continue;
             }
             ID_SERIALIZATION_MAP.put(idByte, serialization);
@@ -70,8 +74,7 @@ public class CodecSupport {
         }
     }
 
-    private CodecSupport() {
-    }
+    private CodecSupport() {}
 
     public static Serialization getSerializationById(Byte id) {
         return ID_SERIALIZATION_MAP.get(id);
@@ -82,7 +85,9 @@ public class CodecSupport {
     }
 
     public static Serialization getSerialization(URL url) {
-        return url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(UrlUtils.serializationOrDefault(url));
+        return url.getOrDefaultFrameworkModel()
+                .getExtensionLoader(Serialization.class)
+                .getExtension(UrlUtils.serializationOrDefault(url));
     }
 
     public static Serialization getSerialization(Byte id) throws IOException {
@@ -107,7 +112,7 @@ public class CodecSupport {
      */
     public static byte[] getNullBytesOf(Serialization s) {
         return ConcurrentHashMapUtils.computeIfAbsent(ID_NULLBYTES_MAP, s.getContentTypeId(), k -> {
-            //Pre-generated Null object bytes
+            // Pre-generated Null object bytes
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             byte[] nullBytes = new byte[0];
             try {
@@ -117,7 +122,12 @@ public class CodecSupport {
                 nullBytes = baos.toByteArray();
                 baos.close();
             } catch (Exception e) {
-                logger.warn(TRANSPORT_FAILED_SERIALIZATION, "", "", "Serialization extension " + s.getClass().getName() + " not support serializing null object, return an empty bytes instead.");
+                logger.warn(
+                        TRANSPORT_FAILED_SERIALIZATION,
+                        "",
+                        "",
+                        "Serialization extension " + s.getClass().getName()
+                                + " not support serializing null object, return an empty bytes instead.");
             }
             return nullBytes;
         });
@@ -165,14 +175,14 @@ public class CodecSupport {
         checkSerialization(requestSerializeName, all);
     }
 
-    public static void checkSerialization(String requestSerializeName, Collection<String> allSerializeName) throws IOException {
+    public static void checkSerialization(String requestSerializeName, Collection<String> allSerializeName)
+            throws IOException {
         for (String serialization : allSerializeName) {
             if (serialization.equals(requestSerializeName)) {
                 return;
             }
         }
-        throw new IOException("Unexpected serialization type:" + requestSerializeName + " received from network, please check if the peer send the right id.");
+        throw new IOException("Unexpected serialization type:" + requestSerializeName
+                + " received from network, please check if the peer send the right id.");
     }
-
-
 }

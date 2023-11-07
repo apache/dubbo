@@ -27,10 +27,8 @@ import org.apache.dubbo.rpc.RpcException;
 @Activate(Constants.APACHE_HTTP_CLIENT)
 public class ApacheHttpClientFactory extends AbstractHttpClientFactory {
 
-
     @Override
     protected RestClient doCreateRestClient(URL url) throws RpcException {
-
 
         return new HttpClientRestClient(httpClientConfig);
     }

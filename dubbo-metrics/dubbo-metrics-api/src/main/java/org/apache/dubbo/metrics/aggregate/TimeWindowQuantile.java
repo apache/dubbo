@@ -14,13 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.aggregate;
-
-import com.tdunning.math.stats.TDigest;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import com.tdunning.math.stats.TDigest;
 
 /**
  * Wrapper around TDigest.
@@ -33,7 +32,8 @@ public class TimeWindowQuantile {
 
     public TimeWindowQuantile(double compression, int bucketNum, int timeWindowSeconds) {
         this.compression = compression;
-        this.slidingWindow = new DigestSlidingWindow(compression, bucketNum, TimeUnit.SECONDS.toMillis(timeWindowSeconds));
+        this.slidingWindow =
+                new DigestSlidingWindow(compression, bucketNum, TimeUnit.SECONDS.toMillis(timeWindowSeconds));
     }
 
     public double quantile(double q) {

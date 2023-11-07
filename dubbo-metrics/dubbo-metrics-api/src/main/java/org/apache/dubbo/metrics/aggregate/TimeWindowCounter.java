@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.aggregate;
 
 import java.util.List;
@@ -42,11 +41,13 @@ public class TimeWindowCounter {
     }
 
     public long bucketLivedSeconds() {
-        return TimeUnit.MILLISECONDS.toSeconds(this.slidingWindow.values().size() * this.slidingWindow.getPaneIntervalInMs());
+        return TimeUnit.MILLISECONDS.toSeconds(
+                this.slidingWindow.values().size() * this.slidingWindow.getPaneIntervalInMs());
     }
 
     public long bucketLivedMillSeconds() {
-        return this.slidingWindow.getIntervalInMs() - (System.currentTimeMillis() - this.slidingWindow.currentPane().getEndInMs());
+        return this.slidingWindow.getIntervalInMs()
+                - (System.currentTimeMillis() - this.slidingWindow.currentPane().getEndInMs());
     }
 
     public void increment() {

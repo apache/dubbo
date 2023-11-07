@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.registry;
 
 import org.apache.dubbo.common.URL;
@@ -30,8 +29,10 @@ public class RegistryFactoryWrapper implements RegistryFactory {
 
     @Override
     public Registry getRegistry(URL url) {
-        return new ListenerRegistryWrapper(registryFactory.getRegistry(url),
-                Collections.unmodifiableList(url.getOrDefaultApplicationModel().getExtensionLoader(RegistryServiceListener.class)
+        return new ListenerRegistryWrapper(
+                registryFactory.getRegistry(url),
+                Collections.unmodifiableList(url.getOrDefaultApplicationModel()
+                        .getExtensionLoader(RegistryServiceListener.class)
                         .getActivateExtension(url, "registry.listeners")));
     }
 }

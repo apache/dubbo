@@ -62,10 +62,7 @@ public class JsonUtils {
                     }
                     if (jsonUtil == null) {
                         List<Class<? extends JsonUtil>> jsonClasses = Arrays.asList(
-                            FastJson2Impl.class,
-                            FastJsonImpl.class,
-                            GsonImpl.class,
-                            JacksonImpl.class);
+                                FastJson2Impl.class, FastJsonImpl.class, GsonImpl.class, JacksonImpl.class);
                         for (Class<? extends JsonUtil> jsonClass : jsonClasses) {
                             try {
                                 JsonUtil instance = jsonClass.getConstructor().newInstance();
@@ -79,8 +76,9 @@ public class JsonUtils {
                         }
                     }
                     if (jsonUtil == null) {
-                        throw new IllegalStateException("Dubbo unable to find out any json framework (e.g. fastjson2, fastjson, gson, jackson) from jvm env. " +
-                            "Please import at least one json framework.");
+                        throw new IllegalStateException(
+                                "Dubbo unable to find out any json framework (e.g. fastjson2, fastjson, gson, jackson) from jvm env. "
+                                        + "Please import at least one json framework.");
                     }
                 }
             }
@@ -100,64 +98,51 @@ public class JsonUtils {
         return getJson().toJavaObject(json, type);
     }
 
-
     public static <T> List<T> toJavaList(String json, Class<T> clazz) {
         return getJson().toJavaList(json, clazz);
     }
-
 
     public static String toJson(Object obj) {
         return getJson().toJson(obj);
     }
 
-
     public static List<?> getList(Map<String, ?> obj, String key) {
         return getJson().getList(obj, key);
     }
-
 
     public static List<Map<String, ?>> getListOfObjects(Map<String, ?> obj, String key) {
         return getJson().getListOfObjects(obj, key);
     }
 
-
     public static List<String> getListOfStrings(Map<String, ?> obj, String key) {
         return getJson().getListOfStrings(obj, key);
     }
-
 
     public static Map<String, ?> getObject(Map<String, ?> obj, String key) {
         return getJson().getObject(obj, key);
     }
 
-
     public static Double getNumberAsDouble(Map<String, ?> obj, String key) {
         return getJson().getNumberAsDouble(obj, key);
     }
-
 
     public static Integer getNumberAsInteger(Map<String, ?> obj, String key) {
         return getJson().getNumberAsInteger(obj, key);
     }
 
-
     public static Long getNumberAsLong(Map<String, ?> obj, String key) {
         return getJson().getNumberAsLong(obj, key);
     }
-
 
     public static String getString(Map<String, ?> obj, String key) {
         return getJson().getString(obj, key);
     }
 
-
     public static List<Map<String, ?>> checkObjectList(List<?> rawList) {
         return getJson().checkObjectList(rawList);
     }
 
-
     public static List<String> checkStringList(List<?> rawList) {
         return getJson().checkStringList(rawList);
     }
-
 }

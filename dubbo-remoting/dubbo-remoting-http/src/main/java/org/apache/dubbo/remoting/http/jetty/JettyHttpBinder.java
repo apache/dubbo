@@ -30,5 +30,4 @@ public class JettyHttpBinder implements HttpBinder {
     public HttpServer bind(URL url, HttpHandler handler) {
         return new JettyHttpServer(url, handler);
     }
-
 }

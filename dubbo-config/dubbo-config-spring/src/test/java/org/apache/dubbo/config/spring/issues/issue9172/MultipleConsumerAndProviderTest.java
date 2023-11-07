@@ -53,10 +53,14 @@ class MultipleConsumerAndProviderTest {
             ModuleConfigManager consumerConfigManager = consumerModuleModel.getConfigManager();
             ReferenceConfigBase helloServiceOneConfig = consumerConfigManager.getReference("helloServiceOne");
             ReferenceConfigBase demoServiceTwoConfig = consumerConfigManager.getReference("demoServiceTwo");
-            Assertions.assertEquals(consumerConfigManager.getConsumer("consumer-one").get(), helloServiceOneConfig.getConsumer());
-            Assertions.assertEquals(consumerConfigManager.getConsumer("consumer-two").get(), demoServiceTwoConfig.getConsumer());
-            Assertions.assertEquals(consumerConfigManager.getRegistry("registry-one").get(), helloServiceOneConfig.getRegistry());
-            Assertions.assertEquals(consumerConfigManager.getRegistry("registry-two").get(), demoServiceTwoConfig.getRegistry());
+            Assertions.assertEquals(
+                    consumerConfigManager.getConsumer("consumer-one").get(), helloServiceOneConfig.getConsumer());
+            Assertions.assertEquals(
+                    consumerConfigManager.getConsumer("consumer-two").get(), demoServiceTwoConfig.getConsumer());
+            Assertions.assertEquals(
+                    consumerConfigManager.getRegistry("registry-one").get(), helloServiceOneConfig.getRegistry());
+            Assertions.assertEquals(
+                    consumerConfigManager.getRegistry("registry-two").get(), demoServiceTwoConfig.getRegistry());
 
             HelloService helloServiceOne = consumerContext.getBean("helloServiceOne", HelloService.class);
             DemoService demoServiceTwo = consumerContext.getBean("demoServiceTwo", DemoService.class);
@@ -74,7 +78,6 @@ class MultipleConsumerAndProviderTest {
         }
     }
 
-
     @EnableDubbo(scanBasePackages = "")
     @PropertySource("classpath:/META-INF/issues/issue9172/consumer.properties")
     static class ConsumerConfiguration {
@@ -84,7 +87,6 @@ class MultipleConsumerAndProviderTest {
 
         @DubboReference(consumer = "consumer-two")
         private DemoService demoServiceTwo;
-
     }
 
     @EnableDubbo(scanBasePackages = "")

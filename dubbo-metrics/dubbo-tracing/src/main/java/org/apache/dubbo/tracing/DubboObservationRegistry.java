@@ -32,7 +32,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_NOT_F
 
 public class DubboObservationRegistry {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DubboObservationRegistry.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(DubboObservationRegistry.class);
 
     private final ApplicationModel applicationModel;
 
@@ -45,7 +46,8 @@ public class DubboObservationRegistry {
 
     public void initObservationRegistry() {
         // If get ObservationRegistry.class from external(eg Spring.), use external.
-        io.micrometer.observation.ObservationRegistry externalObservationRegistry = applicationModel.getBeanFactory().getBean(io.micrometer.observation.ObservationRegistry.class);
+        io.micrometer.observation.ObservationRegistry externalObservationRegistry =
+                applicationModel.getBeanFactory().getBean(io.micrometer.observation.ObservationRegistry.class);
         if (externalObservationRegistry != null) {
             if (logger.isDebugEnabled()) {
                 logger.debug("ObservationRegistry.class from external is existed.");
@@ -59,7 +61,11 @@ public class DubboObservationRegistry {
 
         TracerProvider tracerProvider = TracerProviderFactory.getProvider(applicationModel, tracingConfig);
         if (tracerProvider == null) {
-            logger.warn(COMMON_NOT_FOUND_TRACER_DEPENDENCY, "", "", "Can not found OpenTelemetry/Brave tracer dependencies, skip init ObservationRegistry.");
+            logger.warn(
+                    COMMON_NOT_FOUND_TRACER_DEPENDENCY,
+                    "",
+                    "",
+                    "Can not found OpenTelemetry/Brave tracer dependencies, skip init ObservationRegistry.");
             return;
         }
         // The real tracer will come from tracer implementation (OTel / Brave)
@@ -67,20 +73,28 @@ public class DubboObservationRegistry {
 
         // The real propagator will come from tracer implementation (OTel / Brave)
         PropagatorProvider propagatorProvider = PropagatorProviderFactory.getPropagatorProvider();
-        io.micrometer.tracing.propagation.Propagator propagator = propagatorProvider != null ? propagatorProvider.getPropagator() : io.micrometer.tracing.propagation.Propagator.NOOP;
+        io.micrometer.tracing.propagation.Propagator propagator = propagatorProvider != null
+                ? propagatorProvider.getPropagator()
+                : io.micrometer.tracing.propagation.Propagator.NOOP;
 
         io.micrometer.observation.ObservationRegistry registry = io.micrometer.observation.ObservationRegistry.create();
         registry.observationConfig()
                 // set up a first matching handler that creates spans - it comes from Micrometer Tracing.
                 // set up spans for sending and receiving data over the wire and a default one.
-                .observationHandler(new io.micrometer.observation.ObservationHandler.FirstMatchingCompositeObservationHandler(
-                        new io.micrometer.tracing.handler.PropagatingSenderTracingObservationHandler<>(tracer, propagator),
-                        new io.micrometer.tracing.handler.PropagatingReceiverTracingObservationHandler<>(tracer, propagator),
-                        new io.micrometer.tracing.handler.DefaultTracingObservationHandler(tracer)));
+                .observationHandler(
+                        new io.micrometer.observation.ObservationHandler.FirstMatchingCompositeObservationHandler(
+                                new io.micrometer.tracing.handler.PropagatingSenderTracingObservationHandler<>(
+                                        tracer, propagator),
+                                new io.micrometer.tracing.handler.PropagatingReceiverTracingObservationHandler<>(
+                                        tracer, propagator),
+                                new io.micrometer.tracing.handler.DefaultTracingObservationHandler(tracer)));
 
         if (MetricsSupportUtil.isSupportMetrics()) {
-            io.micrometer.core.instrument.MeterRegistry meterRegistry = MetricsGlobalRegistry.getCompositeRegistry(applicationModel);
-            registry.observationConfig().observationHandler(new io.micrometer.core.instrument.observation.DefaultMeterObservationHandler(meterRegistry));
+            io.micrometer.core.instrument.MeterRegistry meterRegistry =
+                    MetricsGlobalRegistry.getCompositeRegistry(applicationModel);
+            registry.observationConfig()
+                    .observationHandler(new io.micrometer.core.instrument.observation.DefaultMeterObservationHandler(
+                            meterRegistry));
         }
 
         applicationModel.getBeanFactory().registerBean(registry);

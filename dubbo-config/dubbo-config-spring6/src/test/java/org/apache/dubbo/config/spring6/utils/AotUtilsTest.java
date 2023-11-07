@@ -16,12 +16,11 @@
  */
 package org.apache.dubbo.config.spring6.utils;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.aot.hint.RuntimeHints;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AotUtilsTest {
 
@@ -72,5 +71,4 @@ public class AotUtilsTest {
         Assertions.assertTrue(containHelloRequestSuper.get());
         Assertions.assertTrue(containHelloResponse.get());
     }
-
 }

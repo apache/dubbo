@@ -76,9 +76,8 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     /**
      * Whether to support event in stub.
      */
-    //TODO solve merge problem
-    protected Boolean stubevent;//= Constants.DEFAULT_STUB_EVENT;
-
+    // TODO solve merge problem
+    protected Boolean stubevent; // = Constants.DEFAULT_STUB_EVENT;
 
     /**
      * declares which app or service this interface belongs to
@@ -120,8 +119,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
      */
     protected String protocol;
 
-    public AbstractReferenceConfig() {
-    }
+    public AbstractReferenceConfig() {}
 
     public AbstractReferenceConfig(ModuleModel moduleModel) {
         super(moduleModel);
@@ -270,7 +268,6 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     public void setSticky(Boolean sticky) {
         this.sticky = sticky;
     }
-
 
     @Parameter(key = PROVIDED_BY)
     public String getProvidedBy() {

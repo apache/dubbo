@@ -59,5 +59,4 @@ public @interface Parameter {
      * If append=true, append new value to exist value instead of overriding it.
      */
     boolean append() default false;
-
 }

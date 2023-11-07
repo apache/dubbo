@@ -14,20 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.registry.xds.util.protocol.impl;
+
+import org.apache.dubbo.registry.xds.util.AdsObserver;
+import org.apache.dubbo.registry.xds.util.protocol.message.EndpointResult;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import org.apache.dubbo.registry.xds.util.AdsObserver;
-import org.apache.dubbo.registry.xds.util.protocol.message.EndpointResult;
-
 import io.envoyproxy.envoy.config.core.v3.Node;
 
-public class EdsProtocolMock extends EdsProtocol{
+public class EdsProtocolMock extends EdsProtocol {
 
     public EdsProtocolMock(AdsObserver adsObserver, Node node, int checkInterval) {
         super(adsObserver, node, checkInterval);
@@ -41,12 +40,12 @@ public class EdsProtocolMock extends EdsProtocol{
         this.resourcesMap = resourcesMap;
     }
 
-    public void setConsumerObserveMap(Map<Set<String>, List<Consumer<Map<String, EndpointResult>>>> consumerObserveMap) {
+    public void setConsumerObserveMap(
+            Map<Set<String>, List<Consumer<Map<String, EndpointResult>>>> consumerObserveMap) {
         this.consumerObserveMap = consumerObserveMap;
     }
 
     public void setObserveResourcesName(Set<String> observeResourcesName) {
         this.observeResourcesName = observeResourcesName;
     }
-
 }

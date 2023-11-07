@@ -22,12 +22,12 @@ import org.apache.dubbo.config.spring.annotation.merged.MergedReference;
 import org.apache.dubbo.config.spring.annotation.merged.MergedService;
 import org.apache.dubbo.config.spring.api.DemoService;
 
+import java.lang.reflect.Field;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.util.ReflectionUtils;
-
-import java.lang.reflect.Field;
 
 class MergedAnnotationTest {
 
@@ -56,12 +56,10 @@ class MergedAnnotationTest {
     }
 
     @MergedService
-    public static class DemoServiceImpl1 {
-    }
+    public static class DemoServiceImpl1 {}
 
     @MergedService(group = "group", version = "2.0")
-    public static class DemoServiceImpl2 {
-    }
+    public static class DemoServiceImpl2 {}
 
     private static class TestBean1 {
         @MergedReference
@@ -72,5 +70,4 @@ class MergedAnnotationTest {
         @MergedReference(group = "group", version = "2.0")
         private DemoService demoService;
     }
-
 }

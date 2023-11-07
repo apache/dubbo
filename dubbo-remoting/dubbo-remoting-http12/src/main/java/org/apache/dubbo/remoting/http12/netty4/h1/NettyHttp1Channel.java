@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.remoting.http12.netty4.h1;
 
-import io.netty.buffer.ByteBufOutputStream;
-import io.netty.channel.Channel;
 import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
@@ -26,6 +24,9 @@ import org.apache.dubbo.remoting.http12.netty4.NettyHttpChannelFutureListener;
 
 import java.net.SocketAddress;
 import java.util.concurrent.CompletableFuture;
+
+import io.netty.buffer.ByteBufOutputStream;
+import io.netty.channel.Channel;
 
 public class NettyHttp1Channel implements HttpChannel {
 
@@ -60,7 +61,5 @@ public class NettyHttp1Channel implements HttpChannel {
     }
 
     @Override
-    public void flush() {
-
-    }
+    public void flush() {}
 }

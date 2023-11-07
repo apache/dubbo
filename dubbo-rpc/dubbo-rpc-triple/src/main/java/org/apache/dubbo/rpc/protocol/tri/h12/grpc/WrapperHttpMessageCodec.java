@@ -52,9 +52,8 @@ public class WrapperHttpMessageCodec implements HttpMessageCodec {
     public WrapperHttpMessageCodec(URL url, FrameworkModel frameworkModel) {
         this.url = url;
         this.serialization = frameworkModel
-            .getExtensionLoader(MultipleSerialization.class)
-            .getExtension(url.getParameter(Constants.MULTI_SERIALIZATION_KEY,
-                CommonConstants.DEFAULT_KEY));
+                .getExtensionLoader(MultipleSerialization.class)
+                .getExtension(url.getParameter(Constants.MULTI_SERIALIZATION_KEY, CommonConstants.DEFAULT_KEY));
     }
 
     public void setSerializeType(String serializeType) {
@@ -75,11 +74,11 @@ public class WrapperHttpMessageCodec implements HttpMessageCodec {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             serialization.serialize(url, serializeType, encodeTypes[0], data, bos);
             byte[] encoded = TripleCustomerProtocolWapper.TripleResponseWrapper.Builder.newBuilder()
-                .setSerializeType(serializeType)
-                .setType(encodeTypes[0].getName())
-                .setData(bos.toByteArray())
-                .build()
-                .toByteArray();
+                    .setSerializeType(serializeType)
+                    .setType(encodeTypes[0].getName())
+                    .setData(bos.toByteArray())
+                    .build()
+                    .toByteArray();
             writeLength(outputStream, encoded.length);
             outputStream.write(encoded);
         } catch (IOException e) {
@@ -89,12 +88,12 @@ public class WrapperHttpMessageCodec implements HttpMessageCodec {
 
     @Override
     public void encode(OutputStream outputStream, Object[] data) throws EncodeException {
-        //TODO
+        // TODO
     }
 
     @Override
     public Object decode(InputStream inputStream, Class<?> targetType) throws DecodeException {
-        Object[] decode = this.decode(inputStream, new Class[]{targetType});
+        Object[] decode = this.decode(inputStream, new Class[] {targetType});
         if (decode == null || decode.length == 0) {
             return null;
         }
@@ -110,13 +109,13 @@ public class WrapperHttpMessageCodec implements HttpMessageCodec {
             while ((len = inputStream.read(data)) != -1) {
                 bos.write(data, 0, len);
             }
-            TripleCustomerProtocolWapper.TripleRequestWrapper wrapper = TripleCustomerProtocolWapper.TripleRequestWrapper.parseFrom(
-                bos.toByteArray());
+            TripleCustomerProtocolWapper.TripleRequestWrapper wrapper =
+                    TripleCustomerProtocolWapper.TripleRequestWrapper.parseFrom(bos.toByteArray());
             setSerializeType(wrapper.getSerializeType());
             Object[] ret = new Object[wrapper.getArgs().size()];
             for (int i = 0; i < wrapper.getArgs().size(); i++) {
-                ByteArrayInputStream in = new ByteArrayInputStream(
-                    wrapper.getArgs().get(i));
+                ByteArrayInputStream in =
+                        new ByteArrayInputStream(wrapper.getArgs().get(i));
                 try {
                     ret[i] = this.serialization.deserialize(url, wrapper.getSerializeType(), targetTypes[i], in);
                 } catch (ClassNotFoundException e) {

@@ -16,13 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.extension.resteasy.filter;
 
-import org.jboss.resteasy.core.interception.jaxrs.SuspendableContainerRequestContext;
-import org.jboss.resteasy.plugins.server.netty.NettyHttpRequest;
-import org.jboss.resteasy.specimpl.BuiltResponse;
-import org.jboss.resteasy.specimpl.ResteasyHttpHeaders;
-import org.jboss.resteasy.spi.ApplicationException;
-import org.jboss.resteasy.spi.ResteasyProviderFactory;
-
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
@@ -31,6 +24,7 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -42,6 +36,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Supplier;
+
+import org.jboss.resteasy.core.interception.jaxrs.SuspendableContainerRequestContext;
+import org.jboss.resteasy.plugins.server.netty.NettyHttpRequest;
+import org.jboss.resteasy.specimpl.BuiltResponse;
+import org.jboss.resteasy.specimpl.ResteasyHttpHeaders;
+import org.jboss.resteasy.spi.ApplicationException;
+import org.jboss.resteasy.spi.ResteasyProviderFactory;
 
 public class DubboPreMatchContainerRequestContext implements SuspendableContainerRequestContext {
     protected final NettyHttpRequest httpRequest;
@@ -56,9 +57,10 @@ public class DubboPreMatchContainerRequestContext implements SuspendableContaine
     private Throwable throwable;
     private boolean startedContinuation;
 
-
-    public DubboPreMatchContainerRequestContext(final NettyHttpRequest request,
-                                                final ContainerRequestFilter[] requestFilters, final Supplier<BuiltResponse> continuation) {
+    public DubboPreMatchContainerRequestContext(
+            final NettyHttpRequest request,
+            final ContainerRequestFilter[] requestFilters,
+            final Supplier<BuiltResponse> continuation) {
         this.httpRequest = request;
         this.requestFilters = requestFilters;
         this.continuation = continuation;
@@ -200,15 +202,15 @@ public class DubboPreMatchContainerRequestContext implements SuspendableContaine
 
     @Override
     public synchronized void suspend() {
-        if (continuation == null)
-            throw new RuntimeException("Suspend not supported yet");
+        if (continuation == null) throw new RuntimeException("Suspend not supported yet");
         suspended = true;
     }
 
     @Override
     public synchronized void abortWith(Response response) {
         if (suspended && !inFilter) {
-            try (ResteasyProviderFactory.CloseableContext c = ResteasyProviderFactory.addCloseableContextDataLevel(contextDataMap)) {
+            try (ResteasyProviderFactory.CloseableContext c =
+                    ResteasyProviderFactory.addCloseableContextDataLevel(contextDataMap)) {
                 httpRequest.getAsyncContext().getAsyncResponse().resume(response);
             }
         } else {
@@ -220,8 +222,7 @@ public class DubboPreMatchContainerRequestContext implements SuspendableContaine
 
     @Override
     public synchronized void resume() {
-        if (!suspended)
-            throw new RuntimeException("Cannot resume: not suspended");
+        if (!suspended) throw new RuntimeException("Cannot resume: not suspended");
         if (inFilter) {
             // suspend/resume within filter, same thread: just ignore and move on
             suspended = false;
@@ -229,7 +230,8 @@ public class DubboPreMatchContainerRequestContext implements SuspendableContaine
         }
 
         // go on, but with proper exception handling
-        try (ResteasyProviderFactory.CloseableContext c = ResteasyProviderFactory.addCloseableContextDataLevel(contextDataMap)) {
+        try (ResteasyProviderFactory.CloseableContext c =
+                ResteasyProviderFactory.addCloseableContextDataLevel(contextDataMap)) {
             filter();
         } catch (Throwable t) {
             // don't throw to client
@@ -239,14 +241,14 @@ public class DubboPreMatchContainerRequestContext implements SuspendableContaine
 
     @Override
     public synchronized void resume(Throwable t) {
-        if (!suspended)
-            throw new RuntimeException("Cannot resume: not suspended");
+        if (!suspended) throw new RuntimeException("Cannot resume: not suspended");
         if (inFilter) {
             // not suspended, or suspend/abortWith within filter, same thread: collect and move on
             throwable = t;
             suspended = false;
         } else {
-            try (ResteasyProviderFactory.CloseableContext c = ResteasyProviderFactory.addCloseableContextDataLevel(contextDataMap)) {
+            try (ResteasyProviderFactory.CloseableContext c =
+                    ResteasyProviderFactory.addCloseableContextDataLevel(contextDataMap)) {
                 writeException(t);
             }
         }
@@ -297,8 +299,7 @@ public class DubboPreMatchContainerRequestContext implements SuspendableContaine
         // so if we get here we're still synchronous and don't have a continuation, which must be in
         // the caller
         startedContinuation = true;
-        if (continuation == null)
-            return null;
+        if (continuation == null) return null;
         // in any case, return the continuation: sync will use it, and async will ignore it
         return continuation.get();
     }

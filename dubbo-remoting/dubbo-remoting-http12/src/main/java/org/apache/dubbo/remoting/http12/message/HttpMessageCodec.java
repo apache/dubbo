@@ -33,15 +33,17 @@ public interface HttpMessageCodec {
     void encode(OutputStream outputStream, Object data) throws EncodeException;
 
     default void encode(OutputStream outputStream, Object[] data) throws EncodeException {
-        //default encode first data
+        // default encode first data
         this.encode(outputStream, data == null || data.length == 0 ? null : data[0]);
     }
 
     Object decode(InputStream inputStream, Class<?> targetType) throws DecodeException;
 
     default Object[] decode(InputStream inputStream, Class<?>[] targetTypes) throws DecodeException {
-        //default decode first target type
-        return new Object[]{this.decode(inputStream, targetTypes == null || targetTypes.length == 0 ? null : targetTypes[0])};
+        // default decode first target type
+        return new Object[] {
+            this.decode(inputStream, targetTypes == null || targetTypes.length == 0 ? null : targetTypes[0])
+        };
     }
 
     MediaType contentType();
@@ -50,5 +52,4 @@ public interface HttpMessageCodec {
         MediaType mediaType = this.contentType();
         return mediaType.getName().startsWith(contentType);
     }
-
 }

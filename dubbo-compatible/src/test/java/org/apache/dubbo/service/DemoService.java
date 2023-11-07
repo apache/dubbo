@@ -35,7 +35,7 @@ public interface DemoService {
 
     Type enumlength(Type... types);
 
-//  Type enumlength(Type type);
+    //  Type enumlength(Type type);
 
     String get(CustomArgument arg1);
 
@@ -43,6 +43,6 @@ public interface DemoService {
 
     String complexCompute(String input, ComplexObject co);
 
-    ComplexObject findComplexObject(String var1, int var2, long l, String[] var3, List<Integer> var4, ComplexObject.TestEnum testEnum);
-
+    ComplexObject findComplexObject(
+            String var1, int var2, long l, String[] var3, List<Integer> var4, ComplexObject.TestEnum testEnum);
 }

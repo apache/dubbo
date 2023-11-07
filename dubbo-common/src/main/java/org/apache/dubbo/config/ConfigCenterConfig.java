@@ -134,8 +134,7 @@ public class ConfigCenterConfig extends AbstractConfig {
      */
     private Map<String, String> appExternalConfiguration;
 
-    public ConfigCenterConfig() {
-    }
+    public ConfigCenterConfig() {}
 
     public ConfigCenterConfig(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -354,5 +353,4 @@ public class ConfigCenterConfig extends AbstractConfig {
             this.parameters.putAll(parameters);
         }
     }
-
 }

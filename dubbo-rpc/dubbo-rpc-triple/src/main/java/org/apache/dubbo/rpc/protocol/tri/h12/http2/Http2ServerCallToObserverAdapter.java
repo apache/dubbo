@@ -20,7 +20,8 @@ import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.h12.ServerCallToObserverAdapter;
 
-public class Http2ServerCallToObserverAdapter extends Http2ServerStreamObserver implements ServerCallToObserverAdapter<Object> {
+public class Http2ServerCallToObserverAdapter extends Http2ServerStreamObserver
+        implements ServerCallToObserverAdapter<Object> {
 
     private int exceptionCode;
 

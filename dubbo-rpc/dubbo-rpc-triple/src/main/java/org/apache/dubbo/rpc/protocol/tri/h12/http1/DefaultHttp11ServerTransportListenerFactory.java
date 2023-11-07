@@ -24,7 +24,8 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 
 public class DefaultHttp11ServerTransportListenerFactory implements Http1ServerTransportListenerFactory {
 
-    public static final Http1ServerTransportListenerFactory INSTANCE = new DefaultHttp11ServerTransportListenerFactory();
+    public static final Http1ServerTransportListenerFactory INSTANCE =
+            new DefaultHttp11ServerTransportListenerFactory();
 
     @Override
     public Http1ServerTransportListener newInstance(HttpChannel httpChannel, URL url, FrameworkModel frameworkModel) {

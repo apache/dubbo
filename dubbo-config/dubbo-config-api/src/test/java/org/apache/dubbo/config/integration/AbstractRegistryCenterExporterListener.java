@@ -63,9 +63,9 @@ public abstract class AbstractRegistryCenterExporterListener implements Exporter
             exportedExporters.add(exporter);
             return;
         }
-        FilterChainBuilder.CallbackRegistrationInvoker callbackRegistrationInvoker = (FilterChainBuilder.CallbackRegistrationInvoker) invoker;
-        if (callbackRegistrationInvoker == null ||
-            callbackRegistrationInvoker.getInterface() != getInterface()) {
+        FilterChainBuilder.CallbackRegistrationInvoker callbackRegistrationInvoker =
+                (FilterChainBuilder.CallbackRegistrationInvoker) invoker;
+        if (callbackRegistrationInvoker == null || callbackRegistrationInvoker.getInterface() != getInterface()) {
             return;
         }
         exportedExporters.add(exporter);
@@ -104,7 +104,8 @@ public abstract class AbstractRegistryCenterExporterListener implements Exporter
     /**
      * Use reflection to obtain {@link Filter}
      */
-    private FilterChainBuilder.CopyOfFilterChainNode getFilterChainNode(FilterChainBuilder.CallbackRegistrationInvoker callbackRegistrationInvoker) {
+    private FilterChainBuilder.CopyOfFilterChainNode getFilterChainNode(
+            FilterChainBuilder.CallbackRegistrationInvoker callbackRegistrationInvoker) {
         if (callbackRegistrationInvoker != null) {
             Field field = null;
             try {
@@ -138,7 +139,8 @@ public abstract class AbstractRegistryCenterExporterListener implements Exporter
     /**
      * Use reflection to obtain {@link FilterChainBuilder.CopyOfFilterChainNode}
      */
-    private FilterChainBuilder.CopyOfFilterChainNode getNextNode(FilterChainBuilder.CopyOfFilterChainNode filterChainNode) {
+    private FilterChainBuilder.CopyOfFilterChainNode getNextNode(
+            FilterChainBuilder.CopyOfFilterChainNode filterChainNode) {
         if (filterChainNode != null) {
             Field field = null;
             try {

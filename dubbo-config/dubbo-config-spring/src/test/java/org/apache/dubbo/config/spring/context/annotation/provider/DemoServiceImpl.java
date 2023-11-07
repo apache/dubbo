@@ -23,7 +23,6 @@ import org.apache.dubbo.config.spring.api.DemoService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 /**
  * {@link DemoService} Service implementation
  *
@@ -34,8 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
         application = "${demo.service.application}",
         protocol = "${demo.service.protocol}",
         registry = "${demo.service.registry}",
-        methods = @Method(timeout = 100,name = "sayName")
-)
+        methods = @Method(timeout = 100, name = "sayName"))
 @Service
 @Transactional
 public class DemoServiceImpl implements DemoService {

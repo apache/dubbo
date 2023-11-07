@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.model.key;
 
 import org.apache.dubbo.common.utils.Assert;
@@ -44,5 +43,4 @@ public class TypeWrapper {
         Assert.notNull(type, "Type can not be null");
         return type.equals(postType) || type.equals(finishType) || type.equals(errorType);
     }
-
 }

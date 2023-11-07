@@ -66,9 +66,11 @@ import static org.apache.dubbo.common.constants.CommonConstants.HEADER_FILTER_KE
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_PARSE;
 
-public abstract class AbstractServerTransportListener<HEADER extends RequestMetadata, MESSAGE extends HttpInputMessage> implements HttpTransportListener<HEADER, MESSAGE> {
+public abstract class AbstractServerTransportListener<HEADER extends RequestMetadata, MESSAGE extends HttpInputMessage>
+        implements HttpTransportListener<HEADER, MESSAGE> {
 
-    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(AbstractServerTransportListener.class);
+    private static final ErrorTypeAwareLogger LOGGER =
+            LoggerFactory.getErrorTypeAwareLogger(AbstractServerTransportListener.class);
 
     private final PathResolver pathResolver;
 
@@ -104,12 +106,14 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         this.frameworkModel = frameworkModel;
         this.url = url;
         this.httpChannel = httpChannel;
-        this.pathResolver = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
-        this.headerFilters = frameworkModel.getExtensionLoader(HeaderFilter.class).getActivateExtension(url, HEADER_FILTER_KEY);
+        this.pathResolver =
+                frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
+        this.headerFilters =
+                frameworkModel.getExtensionLoader(HeaderFilter.class).getActivateExtension(url, HEADER_FILTER_KEY);
     }
 
     protected Executor initializeExecutor(HEADER metadata) {
-        //default direct executor
+        // default direct executor
         return Runnable::run;
     }
 
@@ -142,13 +146,14 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         this.httpMetadata = metadata;
         String path = metadata.path();
         HttpHeaders headers = metadata.headers();
-        //1.check necessary header
+        // 1.check necessary header
         String contentType = headers.getFirst(HttpHeaderNames.CONTENT_TYPE.getName());
         if (contentType == null) {
-            throw new UnsupportedMediaTypeException("'" + HttpHeaderNames.CONTENT_TYPE.getName() + "' must be not null.");
+            throw new UnsupportedMediaTypeException(
+                    "'" + HttpHeaderNames.CONTENT_TYPE.getName() + "' must be not null.");
         }
 
-        //2. check service
+        // 2. check service
         String[] parts = path.split("/");
         if (parts.length != 3) {
             throw new IllegalPathException(path);
@@ -184,7 +189,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
     }
 
     protected void doOnData(MESSAGE message) {
-        //decode message
+        // decode message
         onPrepareData(message);
         InputStream body = message.getBody();
         httpMessageListener.onMessage(body);
@@ -192,23 +197,23 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
     }
 
     protected void onPrepareMetadata(HEADER header) {
-        //default no op
+        // default no op
     }
 
     protected void onMetadataCompletion(HEADER metadata) {
-        //default no op
+        // default no op
     }
 
     protected void onPrepareData(MESSAGE message) {
-        //default no op
+        // default no op
     }
 
     protected void onDataCompletion(MESSAGE message) {
-        //default no op
+        // default no op
     }
 
     protected void onError(Throwable throwable) {
-        //default rethrow
+        // default rethrow
         if (throwable instanceof RuntimeException) {
             throw ((RuntimeException) throwable);
         }
@@ -225,12 +230,12 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
 
     private Invoker<?> getInvoker(HEADER metadata, String serviceName) {
         HttpHeaders headers = metadata.headers();
-        final String version =
-            headers.containsKey(TripleHeaderEnum.SERVICE_VERSION.getHeader()) ? headers.get(
-                TripleHeaderEnum.SERVICE_VERSION.getHeader()).toString() : null;
-        final String group =
-            headers.containsKey(TripleHeaderEnum.SERVICE_GROUP.getHeader()) ? headers.get(
-                TripleHeaderEnum.SERVICE_GROUP.getHeader()).toString() : null;
+        final String version = headers.containsKey(TripleHeaderEnum.SERVICE_VERSION.getHeader())
+                ? headers.get(TripleHeaderEnum.SERVICE_VERSION.getHeader()).toString()
+                : null;
+        final String group = headers.containsKey(TripleHeaderEnum.SERVICE_GROUP.getHeader())
+                ? headers.get(TripleHeaderEnum.SERVICE_GROUP.getHeader()).toString()
+                : null;
         final String key = URL.buildKey(serviceName, group, version);
         Invoker<?> invoker = pathResolver.resolve(key);
         if (invoker == null && TripleProtocol.RESOLVE_FALLBACK_TO_DEFAULT) {
@@ -242,9 +247,9 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         return invoker;
     }
 
-
     protected HttpMessageCodec determineHttpMessageCodec(String contentType) {
-        for (HttpMessageCodecFactory httpMessageCodecFactory : frameworkModel.getExtensionLoader(HttpMessageCodecFactory.class).getActivateExtensions()) {
+        for (HttpMessageCodecFactory httpMessageCodecFactory :
+                frameworkModel.getExtensionLoader(HttpMessageCodecFactory.class).getActivateExtensions()) {
             if (httpMessageCodecFactory.support(contentType)) {
                 return httpMessageCodecFactory.createCodec(invoker.getUrl(), frameworkModel);
             }
@@ -252,7 +257,8 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         return null;
     }
 
-    private static ServiceDescriptor findServiceDescriptor(Invoker<?> invoker, String serviceName, boolean hasStub) throws UnimplementedException {
+    private static ServiceDescriptor findServiceDescriptor(Invoker<?> invoker, String serviceName, boolean hasStub)
+            throws UnimplementedException {
         ServiceDescriptor result;
         if (hasStub) {
             result = getStubServiceDescriptor(invoker.getUrl(), serviceName);
@@ -265,7 +271,9 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         return result;
     }
 
-    protected static MethodDescriptor findMethodDescriptor(ServiceDescriptor serviceDescriptor, String originalMethodName, boolean hasStub) throws UnimplementedException {
+    protected static MethodDescriptor findMethodDescriptor(
+            ServiceDescriptor serviceDescriptor, String originalMethodName, boolean hasStub)
+            throws UnimplementedException {
         MethodDescriptor result;
         if (hasStub) {
             result = serviceDescriptor.getMethods(originalMethodName).get(0);
@@ -275,27 +283,28 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         return result;
     }
 
-    protected RpcInvocation buildRpcInvocation(Invoker<?> invoker,
-                                               ServiceDescriptor serviceDescriptor,
-                                               MethodDescriptor methodDescriptor) {
+    protected RpcInvocation buildRpcInvocation(
+            Invoker<?> invoker, ServiceDescriptor serviceDescriptor, MethodDescriptor methodDescriptor) {
         final URL url = invoker.getUrl();
-        RpcInvocation inv = new RpcInvocation(url.getServiceModel(),
-            methodDescriptor.getMethodName(),
-            serviceDescriptor.getInterfaceName(), url.getProtocolServiceKey(),
-            methodDescriptor.getParameterClasses(),
-            new Object[0]);
+        RpcInvocation inv = new RpcInvocation(
+                url.getServiceModel(),
+                methodDescriptor.getMethodName(),
+                serviceDescriptor.getInterfaceName(),
+                url.getProtocolServiceKey(),
+                methodDescriptor.getParameterClasses(),
+                new Object[0]);
         inv.setTargetServiceUniqueName(url.getServiceKey());
         inv.setReturnTypes(methodDescriptor.getReturnTypes());
         Map<String, String> headers = getHttpMetadata().headers().toSingleValueMap();
         Map<String, Object> requestMetadata = headersToMap(headers, () -> {
             return Optional.ofNullable(headers.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader()))
-                .map(CharSequence::toString)
-                .orElse(null);
+                    .map(CharSequence::toString)
+                    .orElse(null);
         });
         inv.setObjectAttachments(StreamUtils.toAttachments(requestMetadata));
 
         inv.put("tri.remote.address", httpChannel.remoteAddress());
-        //customizer RpcInvocation
+        // customizer RpcInvocation
         headerFilters.forEach(f -> f.invoke(invoker, inv));
         return inv;
     }
@@ -303,9 +312,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
     protected static ServiceDescriptor getStubServiceDescriptor(URL url, String serviceName) {
         ServiceDescriptor serviceDescriptor;
         if (url.getServiceModel() != null) {
-            serviceDescriptor = url
-                .getServiceModel()
-                .getServiceModel();
+            serviceDescriptor = url.getServiceModel().getServiceModel();
         } else {
             serviceDescriptor = StubSuppliers.getServiceDescriptor(serviceName);
         }
@@ -325,26 +332,27 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
     }
 
     protected static boolean isGeneric(String methodName) {
-        return CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(
-            methodName);
+        return CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(methodName);
     }
 
-    protected static MethodDescriptor findReflectionMethodDescriptor(ServiceDescriptor serviceDescriptor, String methodName) {
+    protected static MethodDescriptor findReflectionMethodDescriptor(
+            ServiceDescriptor serviceDescriptor, String methodName) {
         MethodDescriptor methodDescriptor = null;
         if (isGeneric(methodName)) {
             // There should be one and only one
             methodDescriptor = ServiceDescriptorInternalCache.genericService()
-                .getMethods(methodName).get(0);
+                    .getMethods(methodName)
+                    .get(0);
         } else if (isEcho(methodName)) {
             // There should be one and only one
-            return ServiceDescriptorInternalCache.echoService().getMethods(methodName)
-                .get(0);
+            return ServiceDescriptorInternalCache.echoService()
+                    .getMethods(methodName)
+                    .get(0);
         } else {
             List<MethodDescriptor> methodDescriptors = serviceDescriptor.getMethods(methodName);
             // try lower-case method
             if (CollectionUtils.isEmpty(methodDescriptors)) {
-                final String lowerMethod =
-                    Character.toLowerCase(methodName.charAt(0)) + methodName.substring(1);
+                final String lowerMethod = Character.toLowerCase(methodName.charAt(0)) + methodName.substring(1);
                 methodDescriptors = serviceDescriptor.getMethods(lowerMethod);
             }
             if (CollectionUtils.isEmpty(methodDescriptors)) {
@@ -436,7 +444,8 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         return hasStub;
     }
 
-    protected Map<String, Object> headersToMap(Map<String, String> headers, Supplier<Object> convertUpperHeaderSupplier) {
+    protected Map<String, Object> headersToMap(
+            Map<String, String> headers, Supplier<Object> convertUpperHeaderSupplier) {
         if (headers == null) {
             return Collections.emptyMap();
         }
@@ -444,10 +453,9 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         for (Map.Entry<String, String> header : headers.entrySet()) {
             String key = header.getKey();
             if (key.endsWith(TripleConstant.HEADER_BIN_SUFFIX)
-                && key.length() > TripleConstant.HEADER_BIN_SUFFIX.length()) {
+                    && key.length() > TripleConstant.HEADER_BIN_SUFFIX.length()) {
                 try {
-                    String realKey = key.substring(0,
-                        key.length() - TripleConstant.HEADER_BIN_SUFFIX.length());
+                    String realKey = key.substring(0, key.length() - TripleConstant.HEADER_BIN_SUFFIX.length());
                     byte[] value = StreamUtils.decodeASCIIByte(header.getValue());
                     attachments.put(realKey, value);
                 } catch (Exception e) {
@@ -476,7 +484,11 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
             // If convertUpperHeaderSupplier does not return String, just fail...
             // Internal invocation, use INTERNAL_ERROR instead.
 
-            LOGGER.error(INTERNAL_ERROR, "wrong internal invocation", "", "Triple convertNoLowerCaseHeader error, obj is not String");
+            LOGGER.error(
+                    INTERNAL_ERROR,
+                    "wrong internal invocation",
+                    "",
+                    "Triple convertNoLowerCaseHeader error, obj is not String");
         }
         return attachments;
     }

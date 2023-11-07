@@ -31,12 +31,11 @@ public class HttpRequestTimeout extends HttpStatusException {
         return side;
     }
 
-    public static HttpRequestTimeout serverSide(){
+    public static HttpRequestTimeout serverSide() {
         return new HttpRequestTimeout("server");
     }
 
-    public static HttpRequestTimeout clientSide(){
+    public static HttpRequestTimeout clientSide() {
         return new HttpRequestTimeout("client");
     }
-
 }

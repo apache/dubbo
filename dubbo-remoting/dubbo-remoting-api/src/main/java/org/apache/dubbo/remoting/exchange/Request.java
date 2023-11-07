@@ -174,6 +174,7 @@ public class Request {
     @Override
     public String toString() {
         return "Request [id=" + mId + ", version=" + mVersion + ", twoWay=" + mTwoWay + ", event=" + mEvent
-            + ", broken=" + mBroken + ", mPayload=" + mPayload + ", data=" + (mData == this ? "this" : safeToString(mData)) + "]";
+                + ", broken=" + mBroken + ", mPayload=" + mPayload + ", data="
+                + (mData == this ? "this" : safeToString(mData)) + "]";
     }
 }

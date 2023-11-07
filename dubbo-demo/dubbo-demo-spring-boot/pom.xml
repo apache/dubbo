@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   Licensed to the Apache Software Foundation (ASF) under one or more
   contributor license agreements.  See the NOTICE file distributed with
@@ -14,66 +15,64 @@
   See the License for the specific language governing permissions and
   limitations under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <artifactId>dubbo-demo</artifactId>
-        <groupId>org.apache.dubbo</groupId>
-        <version>${revision}</version>
-    </parent>
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.dubbo</groupId>
+    <artifactId>dubbo-demo</artifactId>
+    <version>${revision}</version>
+  </parent>
 
-    <artifactId>dubbo-demo-spring-boot</artifactId>
-    <packaging>pom</packaging>
-    <modules>
-        <module>dubbo-demo-spring-boot-consumer</module>
-        <module>dubbo-demo-spring-boot-provider</module>
-        <module>dubbo-demo-spring-boot-interface</module>
-    </modules>
+  <artifactId>dubbo-demo-spring-boot</artifactId>
+  <packaging>pom</packaging>
+  <modules>
+    <module>dubbo-demo-spring-boot-consumer</module>
+    <module>dubbo-demo-spring-boot-provider</module>
+    <module>dubbo-demo-spring-boot-interface</module>
+  </modules>
 
-    <properties>
-        <skip_maven_deploy>true</skip_maven_deploy>
-        <spring-boot.version>2.7.17</spring-boot.version>
-        <slf4j-log4j12_version>1.7.33</slf4j-log4j12_version>
-        <spring-boot-maven-plugin.version>2.7.17</spring-boot-maven-plugin.version>
-        <micrometer-core.version>1.11.5</micrometer-core.version>
-    </properties>
+  <properties>
+    <skip_maven_deploy>true</skip_maven_deploy>
+    <spring-boot.version>2.7.17</spring-boot.version>
+    <slf4j-log4j12_version>1.7.33</slf4j-log4j12_version>
+    <spring-boot-maven-plugin.version>2.7.17</spring-boot-maven-plugin.version>
+    <micrometer-core.version>1.11.5</micrometer-core.version>
+  </properties>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring-boot.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-logging</artifactId>
-                <version>${spring-boot.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <artifactId>logback-classic</artifactId>
-                        <groupId>ch.qos.logback</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>log4j-to-slf4j</artifactId>
-                        <groupId>org.apache.logging.log4j</groupId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-log4j12</artifactId>
-                <version>${slf4j-log4j12_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.micrometer</groupId>
-                <artifactId>micrometer-core</artifactId>
-                <version>${micrometer-core.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring-boot.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-logging</artifactId>
+        <version>${spring-boot.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-to-slf4j</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-log4j12</artifactId>
+        <version>${slf4j-log4j12_version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.micrometer</groupId>
+        <artifactId>micrometer-core</artifactId>
+        <version>${micrometer-core.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 </project>

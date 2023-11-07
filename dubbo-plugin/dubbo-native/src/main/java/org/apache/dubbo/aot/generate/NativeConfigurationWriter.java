@@ -58,7 +58,10 @@ public class NativeConfigurationWriter {
     private File createIfNecessary(String filename) throws IOException {
         Path outputDirectory = this.basePath.resolve("META-INF").resolve("native-image");
         if (this.groupId != null && this.artifactId != null) {
-            outputDirectory = outputDirectory.resolve(this.groupId).resolve(this.artifactId).resolve("dubbo");
+            outputDirectory = outputDirectory
+                    .resolve(this.groupId)
+                    .resolve(this.artifactId)
+                    .resolve("dubbo");
         }
         outputDirectory.toFile().mkdirs();
         File file = outputDirectory.resolve(filename).toFile();
@@ -66,25 +69,19 @@ public class NativeConfigurationWriter {
         return file;
     }
 
-
     public void writeReflectionConfig(ReflectConfigMetadataRepository repository) {
-        writeTo("reflect-config.json", writer ->
-            ReflectionConfigWriter.INSTANCE.write(writer, repository));
+        writeTo("reflect-config.json", writer -> ReflectionConfigWriter.INSTANCE.write(writer, repository));
     }
 
     public void writeResourceConfig(ResourceConfigMetadataRepository repository) {
-        writeTo("resource-config.json", writer ->
-            ResourceConfigWriter.INSTANCE.write(writer, repository));
+        writeTo("resource-config.json", writer -> ResourceConfigWriter.INSTANCE.write(writer, repository));
     }
 
     public void writeProxyConfig(ProxyConfigMetadataRepository repository) {
-        writeTo("proxy-config.json", writer ->
-            ProxyConfigWriter.INSTANCE.write(writer, repository));
+        writeTo("proxy-config.json", writer -> ProxyConfigWriter.INSTANCE.write(writer, repository));
     }
 
     private BasicJsonWriter createJsonWriter(Writer out) {
         return new BasicJsonWriter(out);
     }
-
-
 }

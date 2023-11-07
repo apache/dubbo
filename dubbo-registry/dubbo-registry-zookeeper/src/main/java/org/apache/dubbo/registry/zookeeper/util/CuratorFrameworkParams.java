@@ -19,10 +19,10 @@ package org.apache.dubbo.registry.zookeeper.util;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.client.ServiceInstance;
 
-import org.apache.curator.framework.CuratorFramework;
-
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+
+import org.apache.curator.framework.CuratorFramework;
 
 import static org.apache.dubbo.registry.zookeeper.ZookeeperServiceDiscovery.DEFAULT_GROUP;
 
@@ -74,7 +74,6 @@ public enum CuratorFrameworkParams {
      * The unit of time related to blocking on connection to Zookeeper.
      */
     BLOCK_UNTIL_CONNECTED_UNIT("blockUntilConnectedUnit", TimeUnit.SECONDS, TimeUnit::valueOf),
-
     ;
 
     private final String name;
@@ -102,4 +101,3 @@ public enum CuratorFrameworkParams {
         return (T) value;
     }
 }
-

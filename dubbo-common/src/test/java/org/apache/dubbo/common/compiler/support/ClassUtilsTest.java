@@ -16,14 +16,14 @@
  */
 package org.apache.dubbo.common.compiler.support;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class ClassUtilsTest {
 
@@ -35,27 +35,36 @@ class ClassUtilsTest {
 
     @Test
     void testNewInstance0() {
-        Assertions.assertThrows(IllegalStateException.class, () -> ClassUtils.newInstance(PrivateHelloServiceImpl.class.getName()));
+        Assertions.assertThrows(
+                IllegalStateException.class, () -> ClassUtils.newInstance(PrivateHelloServiceImpl.class.getName()));
     }
 
     @Test
     void testNewInstance1() {
-        Assertions.assertThrows(IllegalStateException.class, () -> ClassUtils.newInstance("org.apache.dubbo.common.compiler.support.internal.HelloServiceInternalImpl"));
+        Assertions.assertThrows(
+                IllegalStateException.class,
+                () -> ClassUtils.newInstance(
+                        "org.apache.dubbo.common.compiler.support.internal.HelloServiceInternalImpl"));
     }
 
     @Test
     void testNewInstance2() {
-        Assertions.assertThrows(IllegalStateException.class, () -> ClassUtils.newInstance("org.apache.dubbo.common.compiler.support.internal.NotExistsImpl"));
+        Assertions.assertThrows(
+                IllegalStateException.class,
+                () -> ClassUtils.newInstance("org.apache.dubbo.common.compiler.support.internal.NotExistsImpl"));
     }
 
     @Test
     void testForName() {
-        ClassUtils.forName(new String[]{"org.apache.dubbo.common.compiler.support"}, "HelloServiceImpl0");
+        ClassUtils.forName(new String[] {"org.apache.dubbo.common.compiler.support"}, "HelloServiceImpl0");
     }
 
     @Test
     void testForName1() {
-        Assertions.assertThrows(IllegalStateException.class, () -> ClassUtils.forName(new String[]{"org.apache.dubbo.common.compiler.support"}, "HelloServiceImplXX"));
+        Assertions.assertThrows(
+                IllegalStateException.class,
+                () -> ClassUtils.forName(
+                        new String[] {"org.apache.dubbo.common.compiler.support"}, "HelloServiceImplXX"));
     }
 
     @Test
@@ -108,8 +117,8 @@ class ClassUtilsTest {
         Assertions.assertEquals((short) 0, ClassUtils.unboxed(Short.valueOf((short) 0)));
         Assertions.assertEquals(0, ClassUtils.unboxed(Integer.valueOf((int) 0)));
         Assertions.assertEquals((long) 0, ClassUtils.unboxed(Long.valueOf((long) 0)));
-//        Assertions.assertEquals((float) 0, ClassUtils.unboxed(Float.valueOf((float) 0)), ((float) 0));
-//        Assertions.assertEquals((double) 0, ClassUtils.unboxed(Double.valueOf((double) 0)), ((double) 0));
+        //        Assertions.assertEquals((float) 0, ClassUtils.unboxed(Float.valueOf((float) 0)), ((float) 0));
+        //        Assertions.assertEquals((double) 0, ClassUtils.unboxed(Double.valueOf((double) 0)), ((double) 0));
     }
 
     @Test
@@ -135,7 +144,7 @@ class ClassUtilsTest {
     void testGetSizeMethod() {
         Assertions.assertEquals("getLength()", ClassUtils.getSizeMethod(GenericClass3.class));
     }
-    
+
     @Test
     void testGetSimpleClassName() {
         Assertions.assertNull(ClassUtils.getSimpleClassName(null));
@@ -143,20 +152,15 @@ class ClassUtilsTest {
         Assertions.assertEquals("Map", ClassUtils.getSimpleClassName(Map.class.getSimpleName()));
     }
 
-    private interface GenericInterface<T> {
-    }
+    private interface GenericInterface<T> {}
 
-    private class GenericClass<T> implements GenericInterface<T> {
-    }
+    private class GenericClass<T> implements GenericInterface<T> {}
 
-    private class GenericClass0 implements GenericInterface<String> {
-    }
+    private class GenericClass0 implements GenericInterface<String> {}
 
-    private class GenericClass1 implements GenericInterface<Collection<String>> {
-    }
+    private class GenericClass1 implements GenericInterface<Collection<String>> {}
 
-    private class GenericClass2<T> implements GenericInterface<T[]> {
-    }
+    private class GenericClass2<T> implements GenericInterface<T[]> {}
 
     private class GenericClass3<T> implements GenericInterface<T[][]> {
         public int getLength() {
@@ -165,13 +169,11 @@ class ClassUtilsTest {
     }
 
     private class PrivateHelloServiceImpl implements HelloService {
-        private PrivateHelloServiceImpl() {
-        }
+        private PrivateHelloServiceImpl() {}
 
         @Override
         public String sayHello() {
             return "Hello world!";
         }
     }
-
 }

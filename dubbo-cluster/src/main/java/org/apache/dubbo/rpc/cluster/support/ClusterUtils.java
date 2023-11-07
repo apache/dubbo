@@ -26,7 +26,6 @@ import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.URL_MERGE_PROCESSOR_KEY;
 
-
 /**
  * ClusterUtils
  */
@@ -45,9 +44,13 @@ public class ClusterUtils implements ScopeModelAware {
         ProviderURLMergeProcessor providerUrlMergeProcessor;
 
         if (StringUtils.isNotEmpty(ump)) {
-            providerUrlMergeProcessor = applicationModel.getExtensionLoader(ProviderURLMergeProcessor.class).getExtension(ump);
+            providerUrlMergeProcessor = applicationModel
+                    .getExtensionLoader(ProviderURLMergeProcessor.class)
+                    .getExtension(ump);
         } else {
-            providerUrlMergeProcessor = applicationModel.getExtensionLoader(ProviderURLMergeProcessor.class).getExtension("default");
+            providerUrlMergeProcessor = applicationModel
+                    .getExtensionLoader(ProviderURLMergeProcessor.class)
+                    .getExtension("default");
         }
 
         return providerUrlMergeProcessor.mergeUrl(remoteUrl, localMap);
@@ -58,13 +61,15 @@ public class ClusterUtils implements ScopeModelAware {
         ProviderURLMergeProcessor providerUrlMergeProcessor;
 
         if (StringUtils.isNotEmpty(ump)) {
-            providerUrlMergeProcessor = applicationModel.getExtensionLoader(ProviderURLMergeProcessor.class).getExtension(ump);
+            providerUrlMergeProcessor = applicationModel
+                    .getExtensionLoader(ProviderURLMergeProcessor.class)
+                    .getExtension(ump);
         } else {
-            providerUrlMergeProcessor = applicationModel.getExtensionLoader(ProviderURLMergeProcessor.class).getExtension("default");
+            providerUrlMergeProcessor = applicationModel
+                    .getExtensionLoader(ProviderURLMergeProcessor.class)
+                    .getExtension("default");
         }
 
         return providerUrlMergeProcessor.mergeLocalParams(localMap);
-
     }
-
 }

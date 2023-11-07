@@ -21,5 +21,4 @@ public interface HttpTransportListener<HEADER extends HttpMetadata, MESSAGE exte
     void onMetadata(HEADER metadata);
 
     void onData(MESSAGE message);
-
 }

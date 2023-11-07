@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metadata.tools;
 
-
 import org.apache.dubbo.config.annotation.Service;
 
 import java.util.EventListener;
@@ -26,10 +25,7 @@ import java.util.EventListener;
  *
  * @since 2.7.6
  */
-@Service(
-        version = "2.0.0",
-        group = "generic"
-)
+@Service(version = "2.0.0", group = "generic")
 public class GenericTestService extends DefaultTestService implements TestService, EventListener {
     @Override
     public String echo(String message) {

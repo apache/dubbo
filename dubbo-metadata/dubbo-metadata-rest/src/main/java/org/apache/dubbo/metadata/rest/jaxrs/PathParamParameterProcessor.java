@@ -32,6 +32,4 @@ public class PathParamParameterProcessor extends AbstractAnnotatedMethodParamete
     public String getAnnotationName() {
         return PATH_PARAM_ANNOTATION_CLASS_NAME;
     }
-
-
 }

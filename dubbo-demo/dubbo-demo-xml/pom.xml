@@ -17,48 +17,47 @@
   ~ specific language governing permissions and limitations
   ~ under the License.
   -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-demo</artifactId>
-        <version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
-    <modelVersion>4.0.0</modelVersion>
-    <packaging>pom</packaging>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.dubbo</groupId>
+    <artifactId>dubbo-demo</artifactId>
+    <version>${revision}</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
 
-    <artifactId>dubbo-demo-xml</artifactId>
+  <artifactId>dubbo-demo-xml</artifactId>
+  <packaging>pom</packaging>
 
-    <properties>
-        <skip_maven_deploy>true</skip_maven_deploy>
-        <spring-boot-maven-plugin.version>2.7.17</spring-boot-maven-plugin.version>
-    </properties>
+  <modules>
+    <module>dubbo-demo-xml-provider</module>
+    <module>dubbo-demo-xml-consumer</module>
+    <module>dubbo-demo-jaxrs-rest-consumer</module>
+    <module>dubbo-demo-jaxrs-rest-provider</module>
+    <module>dubbo-demo-spring-mvc-rest-consumer</module>
+    <module>dubbo-demo-spring-mvc-rest-provider</module>
+  </modules>
 
-    <modules>
-        <module>dubbo-demo-xml-provider</module>
-        <module>dubbo-demo-xml-consumer</module>
-        <module>dubbo-demo-jaxrs-rest-consumer</module>
-        <module>dubbo-demo-jaxrs-rest-provider</module>
-        <module>dubbo-demo-spring-mvc-rest-consumer</module>
-        <module>dubbo-demo-spring-mvc-rest-provider</module>
-    </modules>
+  <properties>
+    <skip_maven_deploy>true</skip_maven_deploy>
+    <spring-boot-maven-plugin.version>2.7.17</spring-boot-maven-plugin.version>
+  </properties>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${spring-boot-maven-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring-boot-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>

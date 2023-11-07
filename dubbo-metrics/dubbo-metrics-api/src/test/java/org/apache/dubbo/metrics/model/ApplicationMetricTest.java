@@ -18,10 +18,11 @@ package org.apache.dubbo.metrics.model;
 
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 import java.util.Map;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.*;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
@@ -41,17 +42,21 @@ class ApplicationMetricTest {
     void getApplicationName() {
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         String mockMetrics = "MockMetrics";
-        applicationModel.getApplicationConfigManager().setApplication(new org.apache.dubbo.config.ApplicationConfig(mockMetrics));
+        applicationModel
+                .getApplicationConfigManager()
+                .setApplication(new org.apache.dubbo.config.ApplicationConfig(mockMetrics));
         ApplicationMetric applicationMetric = new ApplicationMetric(applicationModel);
         Assertions.assertNotNull(applicationMetric);
-        Assertions.assertEquals(mockMetrics,applicationMetric.getApplicationName());
+        Assertions.assertEquals(mockMetrics, applicationMetric.getApplicationName());
     }
 
     @Test
     void getTags() {
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         String mockMetrics = "MockMetrics";
-        applicationModel.getApplicationConfigManager().setApplication(new org.apache.dubbo.config.ApplicationConfig(mockMetrics));
+        applicationModel
+                .getApplicationConfigManager()
+                .setApplication(new org.apache.dubbo.config.ApplicationConfig(mockMetrics));
         ApplicationMetric applicationMetric = new ApplicationMetric(applicationModel);
         Map<String, String> tags = applicationMetric.getTags();
         Assertions.assertEquals(tags.get(TAG_IP), getLocalHost());
@@ -64,7 +69,9 @@ class ApplicationMetricTest {
     void gitTags() {
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         String mockMetrics = "MockMetrics";
-        applicationModel.getApplicationConfigManager().setApplication(new org.apache.dubbo.config.ApplicationConfig(mockMetrics));
+        applicationModel
+                .getApplicationConfigManager()
+                .setApplication(new org.apache.dubbo.config.ApplicationConfig(mockMetrics));
         ApplicationMetric applicationMetric = new ApplicationMetric(applicationModel);
         Map<String, String> tags = applicationMetric.getTags();
         Assertions.assertEquals(tags.get(METADATA_GIT_COMMITID_METRIC.getName()), Version.getLastCommitId());
@@ -74,7 +81,9 @@ class ApplicationMetricTest {
     void hostTags() {
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         String mockMetrics = "MockMetrics";
-        applicationModel.getApplicationConfigManager().setApplication(new org.apache.dubbo.config.ApplicationConfig(mockMetrics));
+        applicationModel
+                .getApplicationConfigManager()
+                .setApplication(new org.apache.dubbo.config.ApplicationConfig(mockMetrics));
         ApplicationMetric applicationMetric = new ApplicationMetric(applicationModel);
         Map<String, String> tags = applicationMetric.getTags();
         Assertions.assertEquals(tags.get(TAG_IP), getLocalHost());
@@ -82,18 +91,14 @@ class ApplicationMetricTest {
     }
 
     @Test
-    void getExtraInfo() {
-    }
+    void getExtraInfo() {}
 
     @Test
-    void setExtraInfo() {
-    }
+    void setExtraInfo() {}
 
     @Test
-    void testEquals() {
-    }
+    void testEquals() {}
 
     @Test
-    void testHashCode() {
-    }
+    void testHashCode() {}
 }

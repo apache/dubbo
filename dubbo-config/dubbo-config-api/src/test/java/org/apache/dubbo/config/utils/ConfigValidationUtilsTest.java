@@ -21,21 +21,20 @@ import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
 
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-
-import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-
 
 class ConfigValidationUtilsTest {
 
@@ -66,8 +65,10 @@ class ConfigValidationUtilsTest {
 
     @Test
     void testValidateApplicationConfig() throws Exception {
-        try (MockedStatic<ConfigValidationUtils> mockedStatic = Mockito.mockStatic(ConfigValidationUtils.class);) {
-            mockedStatic.when(() -> ConfigValidationUtils.validateApplicationConfig(any())).thenCallRealMethod();
+        try (MockedStatic<ConfigValidationUtils> mockedStatic = Mockito.mockStatic(ConfigValidationUtils.class); ) {
+            mockedStatic
+                    .when(() -> ConfigValidationUtils.validateApplicationConfig(any()))
+                    .thenCallRealMethod();
             ApplicationConfig config = new ApplicationConfig();
             Assertions.assertThrows(IllegalStateException.class, () -> {
                 ConfigValidationUtils.validateApplicationConfig(config);
@@ -83,15 +84,21 @@ class ConfigValidationUtilsTest {
             map.put("k2", "v2");
             config.setParameters(map);
             ConfigValidationUtils.validateApplicationConfig(config);
-            mockedStatic.verify(() -> {
-                ConfigValidationUtils.checkName(any(), any());
-            }, times(4));
-            mockedStatic.verify(() -> {
-                ConfigValidationUtils.checkMultiName(any(), any());
-            }, times(1));
-            mockedStatic.verify(() -> {
-                ConfigValidationUtils.checkParameterName(any());
-            }, times(1));
+            mockedStatic.verify(
+                    () -> {
+                        ConfigValidationUtils.checkName(any(), any());
+                    },
+                    times(4));
+            mockedStatic.verify(
+                    () -> {
+                        ConfigValidationUtils.checkMultiName(any(), any());
+                    },
+                    times(1));
+            mockedStatic.verify(
+                    () -> {
+                        ConfigValidationUtils.checkParameterName(any());
+                    },
+                    times(1));
         }
     }
 
@@ -116,8 +123,5 @@ class ConfigValidationUtilsTest {
         field.set(null, newValue);
     }
 
-    public static class InterfaceConfig extends AbstractInterfaceConfig {
-
-    }
-
+    public static class InterfaceConfig extends AbstractInterfaceConfig {}
 }

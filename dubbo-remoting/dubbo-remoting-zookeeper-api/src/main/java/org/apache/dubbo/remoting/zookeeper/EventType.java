@@ -30,8 +30,7 @@ public enum EventType {
     CONNECTION_LOST(12),
     INITIALIZED(10);
 
-
-    private final int intValue;     // Integer representation of value
+    private final int intValue; // Integer representation of value
     // for sending over wire
 
     EventType(int intValue) {

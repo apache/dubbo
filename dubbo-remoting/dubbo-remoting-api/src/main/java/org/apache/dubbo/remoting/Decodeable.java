@@ -14,11 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.remoting;
 
 public interface Decodeable {
 
     void decode() throws Exception;
-
 }

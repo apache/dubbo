@@ -27,7 +27,6 @@ public interface JaxrsRestDoubleCheckContainsPathVariableService {
     @GET
     String param(@QueryParam("param") String param);
 
-
     @Path("/{b}/b")
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.TEXT_PLAIN)

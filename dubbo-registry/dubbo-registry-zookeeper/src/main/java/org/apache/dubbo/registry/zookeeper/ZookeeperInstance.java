@@ -35,8 +35,7 @@ public class ZookeeperInstance {
     private Map<String, String> metadata = new HashMap<>();
 
     @SuppressWarnings("unused")
-    private ZookeeperInstance() {
-    }
+    private ZookeeperInstance() {}
 
     public ZookeeperInstance(String id, String name, Map<String, String> metadata) {
         this.id = id;
@@ -70,8 +69,7 @@ public class ZookeeperInstance {
 
     @Override
     public String toString() {
-        return "ZookeeperInstance{" + "id='" + this.id + '\'' + ", name='" + this.name
-                + '\'' + ", metadata=" + this.metadata + '}';
+        return "ZookeeperInstance{" + "id='" + this.id + '\'' + ", name='" + this.name + '\'' + ", metadata="
+                + this.metadata + '}';
     }
-
 }

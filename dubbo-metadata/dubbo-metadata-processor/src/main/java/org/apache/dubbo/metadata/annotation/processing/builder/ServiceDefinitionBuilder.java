@@ -21,6 +21,7 @@ import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,8 +51,7 @@ public interface ServiceDefinitionBuilder {
                 .forEach(t -> TypeDefinitionBuilder.build(processingEnv, t, types));
 
         // Get all declared methods that will be added into ServiceDefinition#getMethods()
-        getPublicNonStaticMethods(type, Object.class)
-                .stream()
+        getPublicNonStaticMethods(type, Object.class).stream()
                 .map(method -> MethodDefinitionBuilder.build(processingEnv, method, types))
                 .forEach(serviceDefinition.getMethods()::add);
 

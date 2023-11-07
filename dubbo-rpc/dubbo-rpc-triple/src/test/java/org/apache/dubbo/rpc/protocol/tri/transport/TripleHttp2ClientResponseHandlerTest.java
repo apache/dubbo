@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
-
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.Channel;
@@ -40,7 +39,6 @@ class TripleHttp2ClientResponseHandlerTest {
     private ChannelHandlerContext ctx;
     private AbstractH2TransportListener transportListener;
 
-
     @BeforeEach
     public void init() {
         transportListener = Mockito.mock(AbstractH2TransportListener.class);
@@ -53,8 +51,8 @@ class TripleHttp2ClientResponseHandlerTest {
     @Test
     void testUserEventTriggered() throws Exception {
         // test Http2GoAwayFrame
-        Http2GoAwayFrame goAwayFrame = new DefaultHttp2GoAwayFrame(Http2Error.NO_ERROR, ByteBufUtil
-                .writeAscii(ByteBufAllocator.DEFAULT, "app_requested"));
+        Http2GoAwayFrame goAwayFrame = new DefaultHttp2GoAwayFrame(
+                Http2Error.NO_ERROR, ByteBufUtil.writeAscii(ByteBufAllocator.DEFAULT, "app_requested"));
         handler.userEventTriggered(ctx, goAwayFrame);
         Mockito.verify(ctx, Mockito.times(1)).close();
 

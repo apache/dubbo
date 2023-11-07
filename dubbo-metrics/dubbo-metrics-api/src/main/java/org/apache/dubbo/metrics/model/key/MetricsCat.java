@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.model.key;
 
 import org.apache.dubbo.metrics.collector.CombMetricsCollector;
@@ -38,14 +37,17 @@ public class MetricsCat {
      * @param metricsKey The key corresponding to the listening event, not necessarily the export key(export key may be dynamic)
      * @param biFunc Binary function, corresponding to MetricsKey with less content, corresponding to post event
      */
-    public MetricsCat(MetricsKey metricsKey, BiFunction<MetricsKey, CombMetricsCollector, AbstractMetricsKeyListener> biFunc) {
+    public MetricsCat(
+            MetricsKey metricsKey, BiFunction<MetricsKey, CombMetricsCollector, AbstractMetricsKeyListener> biFunc) {
         this.eventFunc = collector -> biFunc.apply(metricsKey, collector);
     }
 
     /**
      * @param tpFunc   Ternary function, corresponding to finish and error events, because an additional record rt is required, and the type of metricsKey is required
      */
-    public MetricsCat(MetricsKey metricsKey, TpFunction<MetricsKey, MetricsPlaceValue, CombMetricsCollector, AbstractMetricsKeyListener> tpFunc) {
+    public MetricsCat(
+            MetricsKey metricsKey,
+            TpFunction<MetricsKey, MetricsPlaceValue, CombMetricsCollector, AbstractMetricsKeyListener> tpFunc) {
         this.eventFunc = collector -> tpFunc.apply(metricsKey, placeType, collector);
     }
 
@@ -57,7 +59,6 @@ public class MetricsCat {
     public Function<CombMetricsCollector, AbstractMetricsKeyListener> getEventFunc() {
         return eventFunc;
     }
-
 
     @FunctionalInterface
     public interface TpFunction<T, U, K, R> {

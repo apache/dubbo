@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.common.function;
 
-import org.junit.jupiter.api.Test;
-
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
+
+import org.junit.jupiter.api.Test;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;

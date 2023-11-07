@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.filter;
 
 import org.apache.dubbo.common.URL;
@@ -38,17 +37,17 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_PARAMETER_DESC;
@@ -76,7 +75,6 @@ class MetricsFilterTest {
 
     private AtomicBoolean initApplication = new AtomicBoolean(false);
 
-
     @BeforeEach
     public void setup() {
         ApplicationConfig config = new ApplicationConfig();
@@ -94,7 +92,8 @@ class MetricsFilterTest {
         filter.setApplicationModel(applicationModel);
         side = CommonConstants.CONSUMER;
         invocation.setInvoker(new TestMetricsInvoker(side));
-        RpcContext.getServiceContext().setUrl(URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&side=" + side));
+        RpcContext.getServiceContext()
+                .setUrl(URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&side=" + side));
     }
 
     @AfterEach
@@ -111,7 +110,6 @@ class MetricsFilterTest {
         metricsMap.remove(MetricsKey.APPLICATION_METRIC_INFO.getName());
         Assertions.assertTrue(metricsMap.isEmpty());
     }
-
 
     @Test
     void testUnknownFailedRequests() {
@@ -167,7 +165,6 @@ class MetricsFilterTest {
         Assertions.assertEquals(tags.get(TAG_VERSION_KEY), VERSION);
     }
 
-
     @Test
     void testTimeoutRequests() {
         collector.setCollectEnabled(true);
@@ -192,7 +189,8 @@ class MetricsFilterTest {
         MetricSample timeoutSample = metricsMap.get(MetricsKey.METRIC_REQUESTS_TIMEOUT.getNameByType(side));
         Assertions.assertSame(((CounterMetricSample) timeoutSample).getValue().longValue(), count);
 
-        CounterMetricSample failedSample = (CounterMetricSample) metricsMap.get(MetricsKey.METRIC_REQUESTS_TOTAL_FAILED.getNameByType(side));
+        CounterMetricSample failedSample =
+                (CounterMetricSample) metricsMap.get(MetricsKey.METRIC_REQUESTS_TOTAL_FAILED.getNameByType(side));
         Assertions.assertSame(failedSample.getValue().longValue(), count);
     }
 
@@ -250,7 +248,7 @@ class MetricsFilterTest {
         given(invoker.invoke(invocation)).willReturn(new AppResponse("success"));
         invocation.setTargetServiceUniqueName(INTERFACE_NAME + ":" + VERSION);
         invocation.setMethodName(METHOD_NAME);
-        invocation.setParameterTypes(new Class[]{String.class});
+        invocation.setParameterTypes(new Class[] {String.class});
 
         Result result = filter.invoke(invoker, invocation);
 
@@ -273,9 +271,9 @@ class MetricsFilterTest {
         testFilterError(RpcException.NETWORK_EXCEPTION, MetricsKey.METRIC_REQUESTS_NETWORK_FAILED);
     }
 
-
     private void testFilterError(int errorCode, MetricsKey metricsKey) {
-        String targetKey = new MetricsKeyWrapper(metricsKey, MetricsPlaceValue.of(side, MetricsLevel.METHOD)).targetKey();
+        String targetKey =
+                new MetricsKeyWrapper(metricsKey, MetricsPlaceValue.of(side, MetricsLevel.METHOD)).targetKey();
         setup();
         collector.setCollectEnabled(true);
         given(invoker.invoke(invocation)).willThrow(new RpcException(errorCode));
@@ -298,7 +296,6 @@ class MetricsFilterTest {
 
         Assertions.assertSame(((CounterMetricSample<?>) sample).getValue().longValue(), count);
 
-
         Assertions.assertFalse(metricsMap.containsKey(metricsKey.getName()));
         Map<String, String> tags = sample.getTags();
 
@@ -316,7 +313,7 @@ class MetricsFilterTest {
         given(invoker.invoke(invocation)).willReturn(new AppResponse("success"));
         invocation.setTargetServiceUniqueName(GROUP + "/" + INTERFACE_NAME);
         invocation.setMethodName(METHOD_NAME);
-        invocation.setParameterTypes(new Class[]{String.class});
+        invocation.setParameterTypes(new Class[] {String.class});
 
         Result result = filter.invoke(invoker, invocation);
 
@@ -339,7 +336,7 @@ class MetricsFilterTest {
         given(invoker.invoke(invocation)).willReturn(new AppResponse("success"));
         invocation.setTargetServiceUniqueName(INTERFACE_NAME);
         invocation.setMethodName(METHOD_NAME);
-        invocation.setParameterTypes(new Class[]{String.class});
+        invocation.setParameterTypes(new Class[] {String.class});
 
         Result result = filter.invoke(invoker, invocation);
 
@@ -362,13 +359,13 @@ class MetricsFilterTest {
         given(invoker.invoke(invocation)).willReturn(new AppResponse("success"));
         invocation.setTargetServiceUniqueName(INTERFACE_NAME);
         invocation.setMethodName(METHOD_NAME);
-        invocation.setParameterTypes(new Class[]{String.class});
+        invocation.setParameterTypes(new Class[] {String.class});
 
         Result result = filter.invoke(invoker, invocation);
 
         invocation.setMethodName($INVOKE);
         invocation.setParameterTypesDesc(GENERIC_PARAMETER_DESC);
-        invocation.setArguments(new Object[]{METHOD_NAME, new String[]{"java.lang.String"}, new Object[]{"mock"}});
+        invocation.setArguments(new Object[] {METHOD_NAME, new String[] {"java.lang.String"}, new Object[] {"mock"}});
 
         filter.onResponse(result, invoker, invocation);
 
@@ -384,7 +381,7 @@ class MetricsFilterTest {
     private void initParam() {
         invocation.setTargetServiceUniqueName(GROUP + "/" + INTERFACE_NAME + ":" + VERSION);
         invocation.setMethodName(METHOD_NAME);
-        invocation.setParameterTypes(new Class[]{String.class});
+        invocation.setParameterTypes(new Class[] {String.class});
     }
 
     private Map<String, MetricSample> getMetricsMap() {
@@ -403,7 +400,7 @@ class MetricsFilterTest {
     void testThrowable() {
         invocation.setTargetServiceUniqueName(INTERFACE_NAME);
         invocation.setMethodName(METHOD_NAME);
-        invocation.setParameterTypes(new Class[]{String.class});
+        invocation.setParameterTypes(new Class[] {String.class});
         given(invoker.invoke(invocation)).willReturn(new AppResponse("success"));
         Result result = filter.invoke(invoker, invocation);
         result.setException(new RuntimeException("failed"));

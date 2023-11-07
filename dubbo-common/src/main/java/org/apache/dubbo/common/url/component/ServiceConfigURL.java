@@ -28,14 +28,13 @@ import java.util.concurrent.ConcurrentMap;
 
 public class ServiceConfigURL extends URL {
 
-
-    private volatile transient ConcurrentMap<String, URL> urls;
-    private volatile transient ConcurrentMap<String, Number> numbers;
-    private volatile transient ConcurrentMap<String, Map<String, Number>> methodNumbers;
-    private volatile transient String full;
-    private volatile transient String string;
-    private volatile transient String identity;
-    private volatile transient String parameter;
+    private transient volatile ConcurrentMap<String, URL> urls;
+    private transient volatile ConcurrentMap<String, Number> numbers;
+    private transient volatile ConcurrentMap<String, Map<String, Number>> methodNumbers;
+    private transient volatile String full;
+    private transient volatile String string;
+    private transient volatile String identity;
+    private transient volatile String parameter;
 
     public ServiceConfigURL() {
         super();
@@ -45,12 +44,15 @@ public class ServiceConfigURL extends URL {
         super(urlAddress, urlParam, attributes);
     }
 
-
     public ServiceConfigURL(String protocol, String host, int port) {
         this(protocol, null, null, host, port, null, (Map<String, String>) null);
     }
 
-    public ServiceConfigURL(String protocol, String host, int port, String[] pairs) { // varargs ... conflict with the following path argument, use array instead.
+    public ServiceConfigURL(
+            String protocol,
+            String host,
+            int port,
+            String[] pairs) { // varargs ... conflict with the following path argument, use array instead.
         this(protocol, null, null, host, port, null, CollectionUtils.toStringMap(pairs));
     }
 
@@ -74,29 +76,35 @@ public class ServiceConfigURL extends URL {
         this(protocol, username, password, host, port, path, (Map<String, String>) null);
     }
 
-    public ServiceConfigURL(String protocol, String username, String password, String host, int port, String path, String... pairs) {
+    public ServiceConfigURL(
+            String protocol, String username, String password, String host, int port, String path, String... pairs) {
         this(protocol, username, password, host, port, path, CollectionUtils.toStringMap(pairs));
     }
 
-    public ServiceConfigURL(String protocol,
-                            String username,
-                            String password,
-                            String host,
-                            int port,
-                            String path,
-                            Map<String, String> parameters) {
+    public ServiceConfigURL(
+            String protocol,
+            String username,
+            String password,
+            String host,
+            int port,
+            String path,
+            Map<String, String> parameters) {
         this(new PathURLAddress(protocol, username, password, path, host, port), URLParam.parse(parameters), null);
     }
 
-    public ServiceConfigURL(String protocol,
-                            String username,
-                            String password,
-                            String host,
-                            int port,
-                            String path,
-                            Map<String, String> parameters,
-                            Map<String, Object> attributes) {
-        this(new PathURLAddress(protocol, username, password, path, host, port), URLParam.parse(parameters), attributes);
+    public ServiceConfigURL(
+            String protocol,
+            String username,
+            String password,
+            String host,
+            int port,
+            String path,
+            Map<String, String> parameters,
+            Map<String, Object> attributes) {
+        this(
+                new PathURLAddress(protocol, username, password, path, host, port),
+                URLParam.parse(parameters),
+                attributes);
     }
 
     @Override
@@ -165,7 +173,6 @@ public class ServiceConfigURL extends URL {
         }
         return parameter = super.toParameterString();
     }
-
 
     @Override
     public URL getUrlParameter(String key) {
@@ -527,7 +534,6 @@ public class ServiceConfigURL extends URL {
         return b;
     }
 
-
     private Map<String, URL> getUrls() {
         // concurrent initialization is tolerant
         if (urls == null) {
@@ -553,7 +559,8 @@ public class ServiceConfigURL extends URL {
     }
 
     private void updateCachedNumber(String method, String key, Number n) {
-        Map<String, Number> keyNumber = ConcurrentHashMapUtils.computeIfAbsent(getMethodNumbers(), method, m -> new HashMap<>());
+        Map<String, Number> keyNumber =
+                ConcurrentHashMapUtils.computeIfAbsent(getMethodNumbers(), method, m -> new HashMap<>());
         keyNumber.put(key, n);
     }
 
@@ -571,5 +578,4 @@ public class ServiceConfigURL extends URL {
     protected Map<String, Map<String, Number>> getServiceMethodNumbers(String service) {
         return getMethodNumbers();
     }
-
 }

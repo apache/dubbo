@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.filter.support;
-
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
@@ -76,9 +74,15 @@ public class MetricsClusterFilter implements ClusterFilter, BaseFilter.Listener,
         if (t instanceof RpcException) {
             RpcException e = (RpcException) t;
             if (e.isForbidden()) {
-                MetricsEventBus.publish(RequestEvent.toRequestErrorEvent(applicationModel, appName, metricsDispatcher, invocation, CONSUMER_SIDE, e.getCode(), serviceLevel));
+                MetricsEventBus.publish(RequestEvent.toRequestErrorEvent(
+                        applicationModel,
+                        appName,
+                        metricsDispatcher,
+                        invocation,
+                        CONSUMER_SIDE,
+                        e.getCode(),
+                        serviceLevel));
             }
         }
     }
-
 }

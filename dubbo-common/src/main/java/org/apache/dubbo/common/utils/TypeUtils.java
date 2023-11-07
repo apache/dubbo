@@ -121,13 +121,10 @@ public interface TypeUtils {
         genericTypes.add(rawClass.getGenericSuperclass());
         genericTypes.addAll(asList(rawClass.getGenericInterfaces()));
 
-        return unmodifiableList(
-                filterList(genericTypes, TypeUtils::isParameterizedType)
-                        .stream()
-                        .map(ParameterizedType.class::cast)
-                        .filter(and(typeFilters))
-                        .collect(toList())
-        );
+        return unmodifiableList(filterList(genericTypes, TypeUtils::isParameterizedType).stream()
+                .map(ParameterizedType.class::cast)
+                .filter(and(typeFilters))
+                .collect(toList()));
     }
 
     /**
@@ -168,8 +165,7 @@ public interface TypeUtils {
         // Add all super classes
         allTypes.addAll(getAllSuperClasses(rawClass, NON_OBJECT_TYPE_FILTER));
 
-        List<ParameterizedType> allGenericSuperClasses = allTypes
-                .stream()
+        List<ParameterizedType> allGenericSuperClasses = allTypes.stream()
                 .map(Class::getGenericSuperclass)
                 .filter(TypeUtils::isParameterizedType)
                 .map(ParameterizedType.class::cast)
@@ -201,8 +197,7 @@ public interface TypeUtils {
         // Add all super interfaces
         allTypes.addAll(getAllInterfaces(rawClass));
 
-        List<ParameterizedType> allGenericInterfaces = allTypes
-                .stream()
+        List<ParameterizedType> allGenericInterfaces = allTypes.stream()
                 .map(Class::getGenericInterfaces)
                 .map(Arrays::asList)
                 .flatMap(Collection::stream)
@@ -218,8 +213,6 @@ public interface TypeUtils {
     }
 
     static Set<String> getClassNames(Iterable<? extends Type> types) {
-        return stream(types.spliterator(), false)
-                .map(TypeUtils::getClassName)
-                .collect(toSet());
+        return stream(types.spliterator(), false).map(TypeUtils::getClassName).collect(toSet());
     }
 }

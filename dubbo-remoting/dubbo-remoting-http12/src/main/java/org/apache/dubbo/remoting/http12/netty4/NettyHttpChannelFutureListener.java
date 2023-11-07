@@ -16,10 +16,10 @@
  */
 package org.apache.dubbo.remoting.http12.netty4;
 
+import java.util.concurrent.CompletableFuture;
+
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
-
-import java.util.concurrent.CompletableFuture;
 
 public class NettyHttpChannelFutureListener extends CompletableFuture<Void> implements ChannelFutureListener {
 

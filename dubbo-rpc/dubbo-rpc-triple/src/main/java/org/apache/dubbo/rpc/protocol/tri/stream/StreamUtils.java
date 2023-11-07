@@ -14,10 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
-import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.JsonUtils;
@@ -34,6 +32,8 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import io.netty.handler.codec.http2.DefaultHttp2Headers;
+
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNSUPPORTED;
 
 public class StreamUtils {
@@ -42,7 +42,6 @@ public class StreamUtils {
 
     private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
     private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder().withoutPadding();
-
 
     private static final int MAX_LRU_HEADER_MAP_SIZE = 10000;
 
@@ -83,9 +82,8 @@ public class StreamUtils {
      * @param attachments          KV pairs
      * @param needConvertHeaderKey convert flag
      */
-    public static void convertAttachment(DefaultHttp2Headers headers,
-                                         Map<String, Object> attachments,
-                                         boolean needConvertHeaderKey) {
+    public static void convertAttachment(
+            DefaultHttp2Headers headers, Map<String, Object> attachments, boolean needConvertHeaderKey) {
         if (attachments == null) {
             return;
         }
@@ -115,9 +113,8 @@ public class StreamUtils {
         }
     }
 
-    public static void convertAttachment(HttpHeaders headers,
-                                         Map<String, Object> attachments,
-                                         boolean needConvertHeaderKey) {
+    public static void convertAttachment(
+            HttpHeaders headers, Map<String, Object> attachments, boolean needConvertHeaderKey) {
         if (attachments == null) {
             return;
         }
@@ -147,9 +144,7 @@ public class StreamUtils {
         }
     }
 
-
-    public static void convertAttachment(DefaultHttp2Headers headers,
-                                         Map<String, Object> attachments) {
+    public static void convertAttachment(DefaultHttp2Headers headers, Map<String, Object> attachments) {
         convertAttachment(headers, attachments, false);
     }
 
@@ -169,11 +164,20 @@ public class StreamUtils {
                 String str = encodeBase64ASCII((byte[]) v);
                 headers.set(key + TripleConstant.HEADER_BIN_SUFFIX, str);
             } else {
-                LOGGER.warn(PROTOCOL_UNSUPPORTED, "", "", "Unsupported attachment k: " + key + " class: " + v.getClass().getName());
+                LOGGER.warn(
+                        PROTOCOL_UNSUPPORTED,
+                        "",
+                        "",
+                        "Unsupported attachment k: " + key + " class: "
+                                + v.getClass().getName());
             }
         } catch (Throwable t) {
-            LOGGER.warn(PROTOCOL_UNSUPPORTED, "", "", "Meet exception when convert single attachment key:" + key + " value=" + v,
-                t);
+            LOGGER.warn(
+                    PROTOCOL_UNSUPPORTED,
+                    "",
+                    "",
+                    "Meet exception when convert single attachment key:" + key + " value=" + v,
+                    t);
         }
     }
 
@@ -186,13 +190,20 @@ public class StreamUtils {
                 String str = encodeBase64ASCII((byte[]) v);
                 headers.set(key + TripleConstant.HEADER_BIN_SUFFIX, str);
             } else {
-                LOGGER.warn(PROTOCOL_UNSUPPORTED, "", "", "Unsupported attachment k: " + key + " class: " + v.getClass().getName());
+                LOGGER.warn(
+                        PROTOCOL_UNSUPPORTED,
+                        "",
+                        "",
+                        "Unsupported attachment k: " + key + " class: "
+                                + v.getClass().getName());
             }
         } catch (Throwable t) {
-            LOGGER.warn(PROTOCOL_UNSUPPORTED, "", "", "Meet exception when convert single attachment key:" + key + " value=" + v,
-                t);
+            LOGGER.warn(
+                    PROTOCOL_UNSUPPORTED,
+                    "",
+                    "",
+                    "Meet exception when convert single attachment key:" + key + " value=" + v,
+                    t);
         }
     }
-
-
 }

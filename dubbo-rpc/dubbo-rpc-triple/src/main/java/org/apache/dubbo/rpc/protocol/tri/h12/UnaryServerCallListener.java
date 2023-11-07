@@ -26,9 +26,8 @@ public class UnaryServerCallListener extends AbstractServerCallListener {
 
     private boolean applyCustomizeException = false;
 
-    public UnaryServerCallListener(RpcInvocation invocation,
-                                   Invoker<?> invoker,
-                                   StreamObserver<Object> responseObserver) {
+    public UnaryServerCallListener(
+            RpcInvocation invocation, Invoker<?> invoker, StreamObserver<Object> responseObserver) {
         super(invocation, invoker, responseObserver);
     }
 
@@ -47,7 +46,7 @@ public class UnaryServerCallListener extends AbstractServerCallListener {
         if (message instanceof Object[]) {
             invocation.setArguments((Object[]) message);
         } else {
-            invocation.setArguments(new Object[]{message});
+            invocation.setArguments(new Object[] {message});
         }
     }
 
@@ -66,12 +65,11 @@ public class UnaryServerCallListener extends AbstractServerCallListener {
         } else {
             super.onResponseException(t);
         }
-
     }
 
     @Override
     public void onCancel(long code) {
-        //ignore
+        // ignore
     }
 
     @Override

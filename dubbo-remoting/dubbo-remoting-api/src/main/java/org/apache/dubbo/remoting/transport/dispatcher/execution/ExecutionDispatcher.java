@@ -31,5 +31,4 @@ public class ExecutionDispatcher implements Dispatcher {
     public ChannelHandler dispatch(ChannelHandler handler, URL url) {
         return new ExecutionChannelHandler(handler, url);
     }
-
 }

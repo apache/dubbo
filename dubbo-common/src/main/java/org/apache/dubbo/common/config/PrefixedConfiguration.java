@@ -41,5 +41,4 @@ public class PrefixedConfiguration implements Configuration {
         }
         return null;
     }
-
 }

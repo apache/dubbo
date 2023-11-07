@@ -42,7 +42,7 @@ public class TestMetricsInvoker implements Invoker {
 
     @Override
     public URL getUrl() {
-        return URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&side="+side);
+        return URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&side=" + side);
     }
 
     @Override
@@ -51,7 +51,5 @@ public class TestMetricsInvoker implements Invoker {
     }
 
     @Override
-    public void destroy() {
-
-    }
+    public void destroy() {}
 }

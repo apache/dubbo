@@ -61,10 +61,11 @@ public class ServiceBeanNameBuilder {
         this.environment = environment;
     }
 
-    private ServiceBeanNameBuilder(AnnotationAttributes attributes, Class<?> defaultInterfaceClass, Environment environment) {
+    private ServiceBeanNameBuilder(
+            AnnotationAttributes attributes, Class<?> defaultInterfaceClass, Environment environment) {
         this(resolveInterfaceName(attributes, defaultInterfaceClass), environment);
-        this.group(AnnotationUtils.getAttribute(attributes,"group"));
-        this.version(AnnotationUtils.getAttribute(attributes,"version"));
+        this.group(AnnotationUtils.getAttribute(attributes, "group"));
+        this.version(AnnotationUtils.getAttribute(attributes, "version"));
     }
 
     /**
@@ -74,7 +75,8 @@ public class ServiceBeanNameBuilder {
      * @return
      * @since 2.7.3
      */
-    public static ServiceBeanNameBuilder create(AnnotationAttributes attributes, Class<?> defaultInterfaceClass, Environment environment) {
+    public static ServiceBeanNameBuilder create(
+            AnnotationAttributes attributes, Class<?> defaultInterfaceClass, Environment environment) {
         return new ServiceBeanNameBuilder(attributes, defaultInterfaceClass, environment);
     }
 

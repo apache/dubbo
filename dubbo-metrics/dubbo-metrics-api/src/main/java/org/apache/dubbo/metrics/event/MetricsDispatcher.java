@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.event;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
@@ -34,13 +33,11 @@ public class MetricsDispatcher extends SimpleMetricsEventMulticaster {
         ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
         ExtensionLoader<MetricsCollector> extensionLoader = applicationModel.getExtensionLoader(MetricsCollector.class);
         if (extensionLoader != null) {
-            List<MetricsCollector> customizeCollectors = extensionLoader
-                .getActivateExtensions();
+            List<MetricsCollector> customizeCollectors = extensionLoader.getActivateExtensions();
             for (MetricsCollector customizeCollector : customizeCollectors) {
                 beanFactory.registerBean(customizeCollector);
             }
             customizeCollectors.forEach(this::addListener);
         }
     }
-
 }
