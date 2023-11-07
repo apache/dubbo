@@ -37,13 +37,15 @@ import java.util.Map;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
+import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_PREFIX;
+
 /**
  * Dubbo {@link ConfigurationProperties Config Properties} only used to generate JSON metadata (non-public class)
  *
  * @see ConfigKeys
  * @since 2.7.1
  */
-@ConfigurationProperties("dubbo")
+@ConfigurationProperties(DUBBO_PREFIX)
 public class DubboConfigurationProperties {
 
     /**

@@ -1,4 +1,4 @@
-# About dubbo-spring-boot-configuration-metadata-compatible module
+# About spring-configuration-metadata
 
 ## Why
 
@@ -10,9 +10,7 @@ This leads to missing comments and a lack of nested configuration options. There
 
 1. Copy classes under `org/apache/dubbo/config` from `dubbo-common` to the `generated-sources` directory.
 2. Replace `@Nest` with `@NestedConfigurationProperty`.
-3. Copy the class `DubboConfigurationProperties.java` from `autoconfigure` to the `generated-sources` directory.
-4. Use an annotation-only option to compile and generate `spring-configuration-metadata.json`.
-5. During `autoconfigure` module compilation, will read `spring-configuration-metadata.json` from this module.
+3. Use an annotation-only option to compile and generate `spring-configuration-metadata.json`.
 
 ## How to add a new configuration option
 
