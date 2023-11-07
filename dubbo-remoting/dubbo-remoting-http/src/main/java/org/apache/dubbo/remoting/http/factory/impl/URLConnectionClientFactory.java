@@ -31,6 +31,6 @@ public class URLConnectionClientFactory extends AbstractHttpClientFactory {
     @Override
     protected RestClient doCreateRestClient(URL url) throws RpcException {
 
-        return new URLConnectionRestClient(httpClientConfig);
+        return new URLConnectionRestClient(httpClientConfig,url);
     }
 }

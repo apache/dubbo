@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.config;
 
+import java.util.regex.Pattern;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_WHITELIST_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE_COMPATIBLE;
@@ -151,7 +152,25 @@ public interface Constants {
 
     String CLIENT_THREAD_POOL_NAME = "DubboClientHandler";
 
-    String REST_PROTOCOL="rest";
+    String REST_PROTOCOL = "rest";
+
+    /**
+     * rest client host name verify switch property
+     */
+    String REST_CLIENT_HOST_NAME_VERIFIER_SWITCH_PROPERTY = "rest_client_host_name_verifier_switch_property";
+
+    /**
+     *  pem cert pattern
+     */
+    Pattern CERT_HEADER = Pattern.compile(
+        "-+BEGIN\\s[^-\\r\\n]*CERTIFICATE[^-\\r\\n]*-+(?:\\s|\\r|\\n)+");
+    Pattern CERT_FOOTER = Pattern.compile(
+        "-+END\\s[^-\\r\\n]*CERTIFICATE[^-\\r\\n]*-+(?:\\s|\\r|\\n)*");
+    Pattern KEY_HEADER = Pattern.compile(
+        "-+BEGIN\\s[^-\\r\\n]*PRIVATE\\s+KEY[^-\\r\\n]*-+(?:\\s|\\r|\\n)+");
+    Pattern KEY_FOOTER = Pattern.compile(
+        "-+END\\s[^-\\r\\n]*PRIVATE\\s+KEY[^-\\r\\n]*-+(?:\\s|\\r|\\n)*");
+    Pattern BODY = Pattern.compile("[a-z0-9+/=][a-z0-9+/=\\r\\n]*", Pattern.CASE_INSENSITIVE);
 
     String DEFAULT_NATIVE_COMPILER="jdk";
 

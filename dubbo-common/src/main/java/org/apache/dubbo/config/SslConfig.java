@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.beans.Transient;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 
 /**
  * Configuration for ssl.
@@ -138,6 +139,10 @@ public class SslConfig extends AbstractConfig {
      * Path to the OIDC (OpenID Connect) token file.
      */
     private String oidcTokenPath;
+    /**
+     * cert is .pem file,default is pem
+     */
+    private boolean isPem = true;
 
     public SslConfig() {
     }
@@ -318,7 +323,32 @@ public class SslConfig extends AbstractConfig {
         return clientTrustCertCollectionPathStream;
     }
 
+    @Parameter(excluded = true, attribute = false)
+    public boolean isPem() {
+        return isPem;
+    }
+
     public void setClientTrustCertCollectionPathStream(InputStream clientTrustCertCollectionPathStream) {
         this.clientTrustCertCollectionPathStream = clientTrustCertCollectionPathStream;
+    }
+
+    /**
+     * for provider ssl context cache key
+     *
+     * @return
+     */
+    @Parameter(excluded = true, attribute = false)
+    public String getSslConfigUniqueProviderKey() {
+        return Arrays.toString(new String[]{getServerKeyCertChainPath(), getServerPrivateKeyPath(), getServerTrustCertCollectionPath(), getServerKeyPassword()});
+    }
+
+    /**
+     * for consumer ssl context cache key
+     *
+     * @return
+     */
+    @Parameter(excluded = true, attribute = false)
+    public String getSslConfigUniqueConsumerKey() {
+        return Arrays.toString(new String[]{getClientKeyCertChainPath(), getClientPrivateKeyPath(), getClientTrustCertCollectionPath(), getClientKeyPassword()});
     }
 }

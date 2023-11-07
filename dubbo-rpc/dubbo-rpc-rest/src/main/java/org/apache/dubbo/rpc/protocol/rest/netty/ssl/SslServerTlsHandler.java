@@ -29,13 +29,18 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.ssl.AuthPolicy;
 import org.apache.dubbo.common.ssl.CertManager;
 import org.apache.dubbo.common.ssl.ProviderCert;
+import org.apache.dubbo.config.SslConfig;
+import org.apache.dubbo.remoting.http.ssl.JdkSSLContextFactory;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLSession;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 
 public class SslServerTlsHandler extends ByteToMessageDecoder {
+
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SslServerTlsHandler.class);
 
     private final URL url;
@@ -95,8 +100,7 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
         }
 
         if (isSsl(byteBuf)) {
-            SslContext sslContext = SslContexts.buildServerSslContext(providerConnectionConfig);
-            enableSsl(channelHandlerContext, sslContext);
+            enableSsl(channelHandlerContext, buildSslContext(url, providerConnectionConfig, channelHandlerContext));
             return;
         }
 
@@ -109,13 +113,44 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
         channelHandlerContext.close();
     }
 
+    private Object buildSslContext(URL url, ProviderCert providerConnectionConfig, ChannelHandlerContext channelHandlerContext) {
+
+        SslConfig sslConfig = url.getOrDefaultApplicationModel().getApplicationConfigManager().getSsl().get();
+
+        try {
+            if (sslConfig.isPem()) {
+                return new NettyServerSSLContextFactory().buildServerSSLContext(url, providerConnectionConfig);
+            } else {
+                // build context by jdk
+                return new JdkSSLContextFactory().buildServerSSLContext(url, providerConnectionConfig);
+            }
+        } catch (Throwable e) {
+            logger.error("", e.getMessage(), "", "Rest SslServerTlsHandler build ssl context failed cause: ", e);
+            throw e;
+        }
+    }
+
     private boolean isSsl(ByteBuf buf) {
         return SslHandler.isEncrypted(buf);
     }
 
-    private void enableSsl(ChannelHandlerContext ctx, SslContext sslContext) {
+    private void enableSsl(ChannelHandlerContext ctx, Object sslContext) {
+
+        SslHandler sslHandler = null;
+        if (sslContext instanceof SslContext) {
+            sslHandler = ((SslContext) sslContext).newHandler(ctx.alloc());
+        } else {
+
+            SSLEngine sslEngine = ((SSLContext) sslContext).createSSLEngine();
+            sslEngine.setUseClientMode(false);
+            sslEngine.setNeedClientAuth(true);
+
+            sslHandler = new SslHandler(sslEngine);
+        }
+
         ChannelPipeline p = ctx.pipeline();
-        ctx.pipeline().addAfter(ctx.name(), null, sslContext.newHandler(ctx.alloc()));
+
+        p.addAfter(ctx.name(), null, sslHandler);
         p.addLast("unificationA", new SslServerTlsHandler(url, true));
         p.remove(this);
     }

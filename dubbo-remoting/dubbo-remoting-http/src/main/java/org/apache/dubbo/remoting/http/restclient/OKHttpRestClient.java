@@ -16,8 +16,9 @@
  */
 package org.apache.dubbo.remoting.http.restclient;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.http.BaseRestClient;
 import org.apache.dubbo.remoting.http.RequestTemplate;
-import org.apache.dubbo.remoting.http.RestClient;
 import org.apache.dubbo.remoting.http.RestResult;
 import org.apache.dubbo.remoting.http.config.HttpClientConfig;
 
@@ -29,7 +30,12 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okhttp3.internal.http.HttpMethod;
+import org.apache.dubbo.remoting.http.ssl.RestClientSSLContexts;
+import org.apache.dubbo.remoting.http.ssl.RestClientSSLContextSetter;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -38,17 +44,21 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 // TODO add version 4.0 implements ,and default version is < 4.0,for dependency conflict
-public class OKHttpRestClient implements RestClient {
+public class OKHttpRestClient extends BaseRestClient {
     private final OkHttpClient okHttpClient;
-    private final HttpClientConfig httpClientConfig;
+
+    public OKHttpRestClient(HttpClientConfig clientConfig, URL url) {
+        super(clientConfig, url);
+        this.okHttpClient = createHttpClient(clientConfig);
+    }
 
     public OKHttpRestClient(HttpClientConfig clientConfig) {
-        this.okHttpClient = createHttpClient(clientConfig);
-        this.httpClientConfig = clientConfig;
+
+        this(clientConfig, null);
     }
 
     @Override
-    public CompletableFuture<RestResult> send(RequestTemplate requestTemplate) {
+    public CompletableFuture<RestResult> doSend(RequestTemplate requestTemplate) {
 
         Request.Builder builder = new Request.Builder();
         // url
@@ -142,11 +152,29 @@ public class OKHttpRestClient implements RestClient {
     }
 
     public OkHttpClient createHttpClient(HttpClientConfig httpClientConfig) {
-        OkHttpClient client = new OkHttpClient.Builder().
-            readTimeout(httpClientConfig.getReadTimeout(), TimeUnit.SECONDS).
-            writeTimeout(httpClientConfig.getWriteTimeout(), TimeUnit.SECONDS).
-            connectTimeout(httpClientConfig.getConnectTimeout(), TimeUnit.SECONDS).
-            build();
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+
+        OkHttpClient.Builder finalBuilder = builder;
+        builder = RestClientSSLContexts.buildClientSSLContext(getUrl(), new RestClientSSLContextSetter() {
+            @Override
+            public void initSSLContext(SSLContext sslContext, TrustManager[] trustAllCerts) {
+                    finalBuilder.sslSocketFactory(sslContext.getSocketFactory());
+            }
+
+            @Override
+            public void setHostnameVerifier(HostnameVerifier hostnameVerifier) {
+
+                finalBuilder.hostnameVerifier(hostnameVerifier);
+            }
+        }, builder);
+
+        OkHttpClient client =
+            builder.readTimeout(httpClientConfig.getReadTimeout(), TimeUnit.SECONDS).
+                writeTimeout(httpClientConfig.getWriteTimeout(), TimeUnit.SECONDS).
+                connectTimeout(httpClientConfig.getConnectTimeout(), TimeUnit.SECONDS).
+                build();
         return client;
     }
+
+
 }

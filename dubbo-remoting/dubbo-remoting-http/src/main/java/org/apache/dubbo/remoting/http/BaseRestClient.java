@@ -17,27 +17,70 @@
 package org.apache.dubbo.remoting.http;
 
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.ssl.Cert;
+import org.apache.dubbo.common.ssl.CertManager;
 import org.apache.dubbo.remoting.http.config.HttpClientConfig;
 
-public abstract class BaseRestClient<CLIENT> implements RestClient {
+import java.util.concurrent.CompletableFuture;
 
-    protected CLIENT client;
+public abstract class BaseRestClient implements RestClient {
+    protected final HttpClientConfig httpClientConfig;
+    protected final URL url;
 
-    protected HttpClientConfig clientConfig;
 
-    public BaseRestClient(HttpClientConfig clientConfig) {
-        this.clientConfig = clientConfig;
-        client = createHttpClient(clientConfig);
+    public BaseRestClient(HttpClientConfig httpClientConfig, URL url) {
+        this.httpClientConfig = httpClientConfig;
+        this.url = url;
     }
 
-    protected abstract CLIENT createHttpClient(HttpClientConfig clientConfig);
 
-
-    public HttpClientConfig getClientConfig() {
-        return clientConfig;
+    public URL getUrl() {
+        return url;
     }
 
-    public CLIENT getClient() {
-        return client;
+    public HttpClientConfig getHttpClientConfig() {
+        return httpClientConfig;
     }
+
+    /**
+     *  ssl config check
+     * @return
+     */
+    public boolean isEnableSSL() {
+        Cert consumerConnectionConfig = null;
+        try {
+            CertManager certManager = url.getOrDefaultFrameworkModel().getBeanFactory().getBean(CertManager.class);
+            consumerConnectionConfig = certManager.getConsumerConnectionConfig(url);
+        } catch (Exception e) {
+            return false;
+        }
+
+        if (consumerConnectionConfig == null) {
+            return false;
+        }
+        return true;
+
+    }
+
+    /**
+     * set protocol by sslConfig
+     *
+     * @param requestTemplate
+     */
+    private void preSend(RequestTemplate requestTemplate) {
+        if (isEnableSSL()) {
+            requestTemplate.setHttpsProtocol();
+        } else {
+            requestTemplate.setHttpProtocol();
+        }
+    }
+
+    @Override
+    public CompletableFuture<RestResult> send(RequestTemplate message) {
+        preSend(message);
+        return doSend(message);
+    }
+
+    protected abstract CompletableFuture<RestResult> doSend(RequestTemplate message);
 }

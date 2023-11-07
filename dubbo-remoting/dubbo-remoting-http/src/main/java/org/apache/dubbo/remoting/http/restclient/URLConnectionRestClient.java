@@ -16,13 +16,19 @@
  */
 package org.apache.dubbo.remoting.http.restclient;
 
+import org.apache.dubbo.remoting.http.BaseRestClient;
 import org.apache.dubbo.remoting.http.RequestTemplate;
-import org.apache.dubbo.remoting.http.RestClient;
 import org.apache.dubbo.remoting.http.RestResult;
 import org.apache.dubbo.remoting.http.config.HttpClientConfig;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.dubbo.remoting.http.ssl.RestClientSSLContexts;
+import org.apache.dubbo.remoting.http.ssl.RestClientSSLContextSetter;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -34,20 +40,44 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPOutputStream;
 
 
-public class URLConnectionRestClient implements RestClient {
+public class URLConnectionRestClient extends BaseRestClient {
     private final HttpClientConfig clientConfig;
 
     public URLConnectionRestClient(HttpClientConfig clientConfig) {
+
+        this(clientConfig, null);
+    }
+
+    public URLConnectionRestClient(HttpClientConfig clientConfig, org.apache.dubbo.common.URL url) {
+        super(clientConfig, url);
         this.clientConfig = clientConfig;
     }
 
     @Override
-    public CompletableFuture<RestResult> send(RequestTemplate requestTemplate) {
+    public CompletableFuture<RestResult> doSend(RequestTemplate requestTemplate) {
 
         CompletableFuture<RestResult> future = new CompletableFuture<>();
 
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL(requestTemplate.getURL()).openConnection();
+            HttpURLConnection connection = null;
+            if (isEnableSSL()) {
+                HttpsURLConnection tmp = (HttpsURLConnection) new URL(requestTemplate.getURL()).openConnection();
+
+                connection = RestClientSSLContexts.buildClientSSLContext(getUrl(), new RestClientSSLContextSetter() {
+                    @Override
+                    public void initSSLContext(SSLContext sslContext, TrustManager[] trustAllCerts) {
+                        tmp.setSSLSocketFactory(sslContext.getSocketFactory());
+                    }
+
+                    @Override
+                    public void setHostnameVerifier(HostnameVerifier hostnameVerifier) {
+
+                        tmp.setHostnameVerifier(hostnameVerifier);
+                    }
+                }, tmp);
+            } else {
+                connection = (HttpURLConnection) new URL(requestTemplate.getURL()).openConnection();
+            }
             connection.setConnectTimeout(clientConfig.getConnectTimeout());
             connection.setReadTimeout(clientConfig.getReadTimeout());
             connection.setRequestMethod(requestTemplate.getHttpMethod());

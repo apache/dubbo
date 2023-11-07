@@ -45,6 +45,8 @@ public class RequestTemplate implements Serializable {
     private Object body;
     private byte[] byteBody = new byte[0];
     private String protocol = "http://";
+    private static final String HTTP_PROTOCOL = "http://";
+    private static final String HTTPS_PROTOCOL = "https://";
     private final Invocation invocation;
     private String contextPath = "";
     private Class<?> bodyType;
@@ -132,7 +134,7 @@ public class RequestTemplate implements Serializable {
         return getUnSerializedBody() == null;
     }
 
-    public RequestTemplate body(Object body,Class bodyType) {
+    public RequestTemplate body(Object body, Class bodyType) {
         this.body = body;
         setBodyType(bodyType);
         return this;
@@ -281,6 +283,13 @@ public class RequestTemplate implements Serializable {
         this.protocol = protocol;
     }
 
+    public void setHttpProtocol() {
+        this.protocol = HTTP_PROTOCOL;
+    }
+
+    public void setHttpsProtocol() {
+        this.protocol = HTTPS_PROTOCOL;
+    }
 
     public Invocation getInvocation() {
         return invocation;

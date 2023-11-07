@@ -16,12 +16,15 @@
  */
 package org.apache.dubbo.remoting.http.restclient;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.http.BaseRestClient;
 import org.apache.dubbo.remoting.http.RequestTemplate;
-import org.apache.dubbo.remoting.http.RestClient;
 import org.apache.dubbo.remoting.http.RestResult;
 import org.apache.dubbo.remoting.http.config.HttpClientConfig;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.dubbo.remoting.http.ssl.RestClientSSLContexts;
+import org.apache.dubbo.remoting.http.ssl.RestClientSSLContextSetter;
 import org.apache.http.Header;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.client.config.RequestConfig;
@@ -38,9 +41,12 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpTrace;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -51,17 +57,21 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 
-public class HttpClientRestClient implements RestClient {
+public class HttpClientRestClient extends BaseRestClient {
     private final CloseableHttpClient closeableHttpClient;
-    private final HttpClientConfig httpClientConfig;
+
+    public HttpClientRestClient(HttpClientConfig clientConfig, URL url) {
+        super(clientConfig, url);
+        closeableHttpClient = createHttpClient();
+    }
 
     public HttpClientRestClient(HttpClientConfig clientConfig) {
-        closeableHttpClient = createHttpClient();
-        httpClientConfig = clientConfig;
+
+        this(clientConfig, null);
     }
 
     @Override
-    public CompletableFuture<RestResult> send(RequestTemplate requestTemplate) {
+    public CompletableFuture<RestResult> doSend(RequestTemplate requestTemplate) {
 
         HttpRequestBase httpRequest = null;
         String httpMethod = requestTemplate.getHttpMethod();
@@ -159,8 +169,23 @@ public class HttpClientRestClient implements RestClient {
     }
 
     public CloseableHttpClient createHttpClient() {
-        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
-        return HttpClients.custom().setConnectionManager(connectionManager).build();
+
+        HttpClientBuilder custom = HttpClients.custom();
+        HttpClientBuilder finalCustom = custom;
+        custom = RestClientSSLContexts.buildClientSSLContext(getUrl(), new RestClientSSLContextSetter() {
+            @Override
+            public void initSSLContext(SSLContext sslContext, TrustManager[] trustAllCerts) {
+                finalCustom.setSSLContext(sslContext);
+            }
+
+            @Override
+            public void setHostnameVerifier(HostnameVerifier hostnameVerifier) {
+
+                finalCustom.setSSLHostnameVerifier(hostnameVerifier);
+            }
+        }, finalCustom);
+
+        return custom.build();
     }
 
     protected HttpRequestBase createHttpUriRequest(String httpMethod, RequestTemplate requestTemplate) {

@@ -14,23 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http.factory.impl;
+package org.apache.dubbo.remoting.http.ssl;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.http.RestClient;
-import org.apache.dubbo.remoting.http.factory.AbstractHttpClientFactory;
-import org.apache.dubbo.remoting.http.restclient.OKHttpRestClient;
-import org.apache.dubbo.rpc.RpcException;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
 
-@Activate(Constants.OK_HTTP)
-public class OkHttpClientFactory extends AbstractHttpClientFactory {
+/**
+ *  for config rest client ssl context
+ */
+public interface RestClientSSLContextSetter {
+    void initSSLContext(SSLContext sslContext, TrustManager[] trustAllCerts);
 
-
-    @Override
-    protected RestClient doCreateRestClient(URL url) throws RpcException {
-
-        return new OKHttpRestClient(httpClientConfig, url);
-    }
+    void setHostnameVerifier(HostnameVerifier hostnameVerifier);
 }
