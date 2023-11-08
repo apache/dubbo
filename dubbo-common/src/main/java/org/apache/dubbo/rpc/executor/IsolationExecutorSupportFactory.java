@@ -28,9 +28,9 @@ public interface IsolationExecutorSupportFactory {
 
     static ExecutorSupport getIsolationExecutorSupport(URL url) {
         ApplicationModel applicationModel = url.getOrDefaultApplicationModel();
-        ExtensionLoader<IsolationExecutorSupportFactory> extensionLoader = applicationModel.getExtensionLoader(IsolationExecutorSupportFactory.class);
+        ExtensionLoader<IsolationExecutorSupportFactory> extensionLoader =
+                applicationModel.getExtensionLoader(IsolationExecutorSupportFactory.class);
         IsolationExecutorSupportFactory factory = extensionLoader.getOrDefaultExtension(url.getProtocol());
         return factory.createIsolationExecutorSupport(url);
     }
-
 }

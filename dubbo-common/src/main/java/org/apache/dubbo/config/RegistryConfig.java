@@ -33,157 +33,177 @@ import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.PojoUtils.updatePropertyIfAbsent;
 
 /**
- * RegistryConfig
+ * Configuration for service registration and discovery.
  *
  * @export
  */
 public class RegistryConfig extends AbstractConfig {
 
-    public static final String NO_AVAILABLE = "N/A";
     private static final long serialVersionUID = 5508512956753757169L;
 
+    public static final String NO_AVAILABLE = "N/A";
+
     /**
-     * Register center address
+     * Register center address.
      */
     private String address;
 
     /**
-     * Username to login register center
+     * Username to login the register center.
      */
     private String username;
 
     /**
-     * Password to login register center
+     * Password to login the register center.
      */
     private String password;
 
     /**
-     * Default port for register center
+     * Default port for the register center.
      */
     private Integer port;
 
     /**
-     * Protocol for register center
+     * Protocol used for the register center.
      */
     private String protocol;
 
     /**
-     * Network transmission type
+     * Network transmission type.
      */
     private String transporter;
 
+    /**
+     * Server implementation.
+     */
     private String server;
 
+    /**
+     * Client implementation.
+     */
     private String client;
 
     /**
-     * Affects how traffic distributes among registries, useful when subscribing multiple registries, available options:
-     * 1. zone-aware, a certain type of traffic always goes to one Registry according to where the traffic is originated.
+     * Affects how traffic distributes among registries, useful when subscribing to multiple registries.
+     * Available options:
+     * - "zone-aware": A certain type of traffic always goes to one Registry according to where the traffic is originated.
      */
     private String cluster;
 
     /**
-     * The region where the registry belongs, usually used to isolate traffics
+     * The region where the registry belongs, usually used to isolate traffics.
      */
     private String zone;
 
     /**
-     * The group that services registry in
+     * The group that services registry belongs to.
      */
     private String group;
 
+    /**
+     * Version of the registry.
+     */
     private String version;
 
     /**
-     * Connect timeout in milliseconds for register center
+     * Connect timeout in milliseconds for the register center.
      */
     private Integer timeout;
 
     /**
-     * Session timeout in milliseconds for register center
+     * Session timeout in milliseconds for the register center.
      */
     private Integer session;
 
     /**
-     * File for saving register center dynamic list
+     * File for saving the register center dynamic list.
      */
     private String file;
 
     /**
-     * Wait time before stop
+     * Wait time before stopping.
      */
     private Integer wait;
 
     /**
-     * Whether to check if register center is available when boot up
+     * Whether to check if the register center is available when booting up.
      */
     private Boolean check;
 
     /**
-     * Whether to allow dynamic service to register on the register center
+     * Whether to allow dynamic service registration on the register center.
      */
     private Boolean dynamic;
 
     /**
-     * Whether to allow exporting service on the register center
+     * Whether to allow exporting service on the register center.
      */
     private Boolean register;
 
     /**
-     * Whether to allow subscribing service on the register center
+     * Whether to allow subscribing to services on the register center.
      */
     private Boolean subscribe;
 
     /**
-     * The customized parameters
+     * Customized parameters.
      */
     private Map<String, String> parameters;
 
     /**
-     * Simple the registry. both useful for provider and consumer
+     * Simplify the registry, useful for both providers and consumers.
      *
      * @since 2.7.0
      */
     private Boolean simplified;
+
     /**
-     * After simplify the registry, should add some parameter individually. just for provider.
-     * <p>
-     * such as: extra-keys = A,b,c,d
+     * After simplifying the registry, add some parameters individually, useful for providers.
+     * Example: extra-keys = "A, b, c, d".
      *
      * @since 2.7.0
      */
     private String extraKeys;
 
     /**
-     * the address work as config center or not
+     * Indicates whether the address works as a configuration center or not.
      */
     private Boolean useAsConfigCenter;
 
     /**
-     * the address work as remote metadata center or not
+     * Indicates whether the address works as a remote metadata center or not.
      */
     private Boolean useAsMetadataCenter;
 
     /**
-     * list of rpc protocols accepted by this registry, for example, "dubbo,rest"
+     * List of RPC protocols accepted by this registry, e.g., "dubbo,rest".
      */
     private String accepts;
 
     /**
-     * Always use this registry first if set to true, useful when subscribe to multiple registries
+     * Always use this registry first if set to true, useful when subscribing to multiple registries.
      */
     private Boolean preferred;
 
     /**
-     * Affects traffic distribution among registries, useful when subscribe to multiple registries
-     * Take effect only when no preferred registry is specified.
+     * Affects traffic distribution among registries, useful when subscribing to multiple registries.
+     * Takes effect only when no preferred registry is specified.
      */
     private Integer weight;
 
+    /**
+     * Register mode.
+     */
     private String registerMode;
 
+    /**
+     * Enable empty protection.
+     */
     private Boolean enableEmptyProtection;
 
+    /**
+     * Security settings.
+     */
     private String secure;
 
     public String getSecure() {
@@ -194,8 +214,7 @@ public class RegistryConfig extends AbstractConfig {
         this.secure = secure;
     }
 
-    public RegistryConfig() {
-    }
+    public RegistryConfig() {}
 
     public RegistryConfig(ApplicationModel applicationModel) {
         super(applicationModel);

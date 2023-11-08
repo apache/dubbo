@@ -29,7 +29,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 public class ConsumerMethodModel {
     private final Method method;
     //    private final boolean isCallBack;
-//    private final boolean isFuture;
+    //    private final boolean isFuture;
     private final String[] parameterTypes;
     private final Class<?>[] parameterClasses;
     private final Class<?> returnClass;
@@ -37,7 +37,6 @@ public class ConsumerMethodModel {
     private final boolean generic;
 
     private final ConcurrentMap<String, Object> attributeMap = new ConcurrentHashMap<>();
-
 
     public ConsumerMethodModel(Method method) {
         this.method = method;
@@ -52,9 +51,9 @@ public class ConsumerMethodModel {
         return method;
     }
 
-//    public ConcurrentMap<String, Object> getAttributeMap() {
-//        return attributeMap;
-//    }
+    //    public ConcurrentMap<String, Object> getAttributeMap() {
+    //        return attributeMap;
+    //    }
 
     public void addAttribute(String key, Object value) {
         this.attributeMap.put(key, value);
@@ -63,7 +62,6 @@ public class ConsumerMethodModel {
     public Object getAttribute(String key) {
         return this.attributeMap.get(key);
     }
-
 
     public Class<?> getReturnClass() {
         return returnClass;
@@ -79,7 +77,7 @@ public class ConsumerMethodModel {
 
     private String[] createParamSignature(Class<?>[] args) {
         if (args == null || args.length == 0) {
-            return new String[]{};
+            return new String[] {};
         }
         String[] paramSig = new String[args.length];
         for (int x = 0; x < args.length; x++) {
@@ -88,7 +86,6 @@ public class ConsumerMethodModel {
         return paramSig;
     }
 
-
     public boolean isGeneric() {
         return generic;
     }
@@ -96,6 +93,4 @@ public class ConsumerMethodModel {
     public Class<?>[] getParameterClasses() {
         return parameterClasses;
     }
-
-
 }

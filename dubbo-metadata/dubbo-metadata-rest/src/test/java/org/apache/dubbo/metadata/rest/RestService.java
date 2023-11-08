@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metadata.rest;
 
-
 import java.util.Map;
 
 /**
@@ -41,6 +40,8 @@ public interface RestService {
     Map<String, Object> requestBodyUser(User user);
 
     void noAnnotationJsonBody(User user);
+
     void noAnnotationFormBody(User user);
-    void noAnnotationParam(String  text);
+
+    void noAnnotationParam(String text);
 }

@@ -68,5 +68,4 @@ public interface HttpServer extends Resetable, RemotingServer {
      * @return closed
      */
     boolean isClosed();
-
 }

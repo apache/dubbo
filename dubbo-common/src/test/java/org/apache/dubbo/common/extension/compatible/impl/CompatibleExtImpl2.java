@@ -31,5 +31,4 @@ public class CompatibleExtImpl2 implements CompatibleExt {
     public String bang(URL url, int i) {
         return "bang2";
     }
-
 }

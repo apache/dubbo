@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.support.wrapper;
 
 import org.apache.dubbo.common.URL;
@@ -61,7 +60,6 @@ import static org.apache.dubbo.rpc.cluster.Constants.PEER_KEY;
 public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChangeListener {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ScopeClusterInvoker.class);
-
 
     private final Object createLock = new Object();
     private Protocol protocolSPI;
@@ -144,26 +142,30 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
         // When broadcasting, it should be called remotely.
         if (isBroadcast()) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Performing broadcast call for method: " + RpcUtils.getMethodName(invocation) + " of service: " + getUrl().getServiceKey());
+                logger.debug("Performing broadcast call for method: " + RpcUtils.getMethodName(invocation)
+                        + " of service: " + getUrl().getServiceKey());
             }
             return invoker.invoke(invocation);
         }
         if (peerFlag) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Performing point-to-point call for method: " + RpcUtils.getMethodName(invocation) + " of service: " + getUrl().getServiceKey());
+                logger.debug("Performing point-to-point call for method: " + RpcUtils.getMethodName(invocation)
+                        + " of service: " + getUrl().getServiceKey());
             }
             // If it's a point-to-point direct connection, invoke the original Invoker
             return invoker.invoke(invocation);
         }
         if (isInjvmExported()) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Performing local JVM call for method: " + RpcUtils.getMethodName(invocation) + " of service: " + getUrl().getServiceKey());
+                logger.debug("Performing local JVM call for method: " + RpcUtils.getMethodName(invocation)
+                        + " of service: " + getUrl().getServiceKey());
             }
             // If it's exported to the local JVM, invoke the corresponding Invoker
             return injvmInvoker.invoke(invocation);
         }
         if (logger.isDebugEnabled()) {
-            logger.debug("Performing remote call for method: " + RpcUtils.getMethodName(invocation) + " of service: " + getUrl().getServiceKey());
+            logger.debug("Performing remote call for method: " + RpcUtils.getMethodName(invocation) + " of service: "
+                    + getUrl().getServiceKey());
         }
         // Otherwise, delegate the invocation to the original Invoker
         return invoker.invoke(invocation);
@@ -179,7 +181,7 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
             return;
         }
         if (getUrl().getServiceKey().equals(exporter.getInvoker().getUrl().getServiceKey())
-            && exporter.getInvoker().getUrl().getProtocol().equalsIgnoreCase(LOCAL_PROTOCOL)) {
+                && exporter.getInvoker().getUrl().getProtocol().equalsIgnoreCase(LOCAL_PROTOCOL)) {
             createInjvmInvoker(exporter);
             isExported.compareAndSet(false, true);
         }
@@ -188,7 +190,7 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
     @Override
     public void onExporterChangeUnExport(Exporter<?> exporter) {
         if (getUrl().getServiceKey().equals(exporter.getInvoker().getUrl().getServiceKey())
-            && exporter.getInvoker().getUrl().getProtocol().equalsIgnoreCase(LOCAL_PROTOCOL)) {
+                && exporter.getInvoker().getUrl().getProtocol().equalsIgnoreCase(LOCAL_PROTOCOL)) {
             destroyInjvmInvoker();
             isExported.compareAndSet(true, false);
         }
@@ -211,21 +213,26 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
             return;
         }
         // Check if the service has been exported through Injvm protocol
-        if (injvmInvoker == null && LOCAL_PROTOCOL.equalsIgnoreCase(getRegistryUrl().getProtocol())) {
+        if (injvmInvoker == null
+                && LOCAL_PROTOCOL.equalsIgnoreCase(getRegistryUrl().getProtocol())) {
             injvmInvoker = invoker;
             isExported.compareAndSet(false, true);
             injvmFlag = true;
             return;
         }
         // Check if the service has been exported through Injvm protocol or the SCOPE_LOCAL parameter is set
-        if (Boolean.TRUE.toString().equalsIgnoreCase(isInjvm) || SCOPE_LOCAL.equalsIgnoreCase(getUrl().getParameter(SCOPE_KEY))) {
+        if (Boolean.TRUE.toString().equalsIgnoreCase(isInjvm)
+                || SCOPE_LOCAL.equalsIgnoreCase(getUrl().getParameter(SCOPE_KEY))) {
             injvmFlag = true;
         } else if (isInjvm == null) {
             injvmFlag = isNotRemoteOrGeneric();
         }
 
-        protocolSPI = getUrl().getApplicationModel().getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        injvmExporterListener = getUrl().getOrDefaultFrameworkModel().getBeanFactory().getBean(InjvmExporterListener.class);
+        protocolSPI = getUrl().getApplicationModel()
+                .getExtensionLoader(Protocol.class)
+                .getAdaptiveExtension();
+        injvmExporterListener =
+                getUrl().getOrDefaultFrameworkModel().getBeanFactory().getBean(InjvmExporterListener.class);
         injvmExporterListener.addExporterChangeListener(this, getUrl().getServiceKey());
     }
 
@@ -235,8 +242,8 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
      * @return boolean
      */
     private boolean isNotRemoteOrGeneric() {
-        return !SCOPE_REMOTE.equalsIgnoreCase(getUrl().getParameter(SCOPE_KEY)) &&
-            !getUrl().getParameter(GENERIC_KEY, false);
+        return !SCOPE_REMOTE.equalsIgnoreCase(getUrl().getParameter(SCOPE_KEY))
+                && !getUrl().getParameter(GENERIC_KEY, false);
     }
 
     /**
@@ -262,15 +269,16 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
         // When calling locally, determine whether it does not meet the requirements
         if (!isExportedValue && (isForceLocal() || localOnce)) {
             // If it's supposed to be exported to the local JVM ,but it's not, throw an exception
-            throw new RpcException("Local service for " + getUrl().getServiceInterface() + " has not been exposed yet!");
+            throw new RpcException(
+                    "Local service for " + getUrl().getServiceInterface() + " has not been exposed yet!");
         }
 
         return isExportedValue && injvmFlag;
     }
 
     private boolean isForceLocal() {
-        return SCOPE_LOCAL.equalsIgnoreCase(getUrl().getParameter(SCOPE_KEY)) ||
-            Boolean.TRUE.toString().equalsIgnoreCase(getUrl().getParameter(LOCAL_PROTOCOL));
+        return SCOPE_LOCAL.equalsIgnoreCase(getUrl().getParameter(SCOPE_KEY))
+                || Boolean.TRUE.toString().equalsIgnoreCase(getUrl().getParameter(LOCAL_PROTOCOL));
     }
 
     /**
@@ -280,18 +288,26 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
         if (injvmInvoker == null) {
             synchronized (createLock) {
                 if (injvmInvoker == null) {
-                    URL url = new ServiceConfigURL(LOCAL_PROTOCOL, NetUtils.getLocalHost(), getUrl().getPort(),
-                        getInterface().getName(), getUrl().getParameters());
+                    URL url = new ServiceConfigURL(
+                            LOCAL_PROTOCOL,
+                            NetUtils.getLocalHost(),
+                            getUrl().getPort(),
+                            getInterface().getName(),
+                            getUrl().getParameters());
                     url = url.setScopeModel(getUrl().getScopeModel());
                     url = url.setServiceModel(getUrl().getServiceModel());
 
-                    DubboServiceAddressURL consumerUrl = new DubboServiceAddressURL(url.getUrlAddress(), url.getUrlParam(),
-                        exporter.getInvoker().getUrl(), null);
+                    DubboServiceAddressURL consumerUrl = new DubboServiceAddressURL(
+                            url.getUrlAddress(),
+                            url.getUrlParam(),
+                            exporter.getInvoker().getUrl(),
+                            null);
 
                     Invoker<?> invoker = protocolSPI.refer(getInterface(), consumerUrl);
                     List<Invoker<?>> invokers = new ArrayList<>();
                     invokers.add(invoker);
-                    injvmInvoker = Cluster.getCluster(url.getScopeModel(), Cluster.DEFAULT, false).join(new StaticDirectory(url, invokers), true);
+                    injvmInvoker = Cluster.getCluster(url.getScopeModel(), Cluster.DEFAULT, false)
+                            .join(new StaticDirectory(url, invokers), true);
                 }
             }
         }
@@ -309,11 +325,10 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
 
     @Override
     public String toString() {
-        return "ScopeClusterInvoker{" +
-            "directory=" + directory +
-            ", isExported=" + isExported +
-            ", peerFlag=" + peerFlag +
-            ", injvmFlag=" + injvmFlag +
-            '}';
+        return "ScopeClusterInvoker{" + "directory="
+                + directory + ", isExported="
+                + isExported + ", peerFlag="
+                + peerFlag + ", injvmFlag="
+                + injvmFlag + '}';
     }
 }

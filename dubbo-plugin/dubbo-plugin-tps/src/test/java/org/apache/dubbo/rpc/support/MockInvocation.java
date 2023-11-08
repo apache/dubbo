@@ -68,11 +68,11 @@ public class MockInvocation extends RpcInvocation {
     }
 
     public Class<?>[] getParameterTypes() {
-        return new Class[]{String.class};
+        return new Class[] {String.class};
     }
 
     public Object[] getArguments() {
-        return new Object[]{"aa"};
+        return new Object[] {"aa"};
     }
 
     public Map<String, String> getAttachments() {
@@ -119,9 +119,7 @@ public class MockInvocation extends RpcInvocation {
     }
 
     @Override
-    public void setServiceModel(ServiceModel serviceModel) {
-
-    }
+    public void setServiceModel(ServiceModel serviceModel) {}
 
     @Override
     public ServiceModel getServiceModel() {
@@ -164,5 +162,4 @@ public class MockInvocation extends RpcInvocation {
         }
         return result;
     }
-
 }

@@ -28,7 +28,11 @@ final class ServerInfoImpl extends Bootstrapper.ServerInfo {
 
     private final boolean ignoreResourceDeletion;
 
-    ServerInfoImpl(String target, ChannelCredentials channelCredentials, boolean useProtocolV3, boolean ignoreResourceDeletion) {
+    ServerInfoImpl(
+            String target,
+            ChannelCredentials channelCredentials,
+            boolean useProtocolV3,
+            boolean ignoreResourceDeletion) {
         this.target = target;
         this.channelCredentials = channelCredentials;
         this.useProtocolV3 = useProtocolV3;
@@ -58,11 +62,10 @@ final class ServerInfoImpl extends Bootstrapper.ServerInfo {
     @Override
     public String toString() {
         return "ServerInfo{"
-            + "target=" + target + ", "
-            + "channelCredentials=" + channelCredentials + ", "
-            + "useProtocolV3=" + useProtocolV3 + ", "
-            + "ignoreResourceDeletion=" + ignoreResourceDeletion
-            + "}";
+                + "target=" + target + ", "
+                + "channelCredentials=" + channelCredentials + ", "
+                + "useProtocolV3=" + useProtocolV3 + ", "
+                + "ignoreResourceDeletion=" + ignoreResourceDeletion
+                + "}";
     }
-
 }

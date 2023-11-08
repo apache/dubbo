@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.registry;
 
 import org.apache.dubbo.metrics.model.key.MetricsKey;
@@ -61,22 +60,25 @@ public interface RegistryMetricsConstants {
     List<MetricsKey> APP_LEVEL_KEYS = Collections.singletonList(NOTIFY_METRIC_REQUESTS);
 
     // Registry-level
-    List<MetricsKey> REGISTER_LEVEL_KEYS = Arrays.asList(REGISTER_METRIC_REQUESTS, REGISTER_METRIC_REQUESTS_SUCCEED, REGISTER_METRIC_REQUESTS_FAILED,
-        SUBSCRIBE_METRIC_NUM, SUBSCRIBE_METRIC_NUM_SUCCEED, SUBSCRIBE_METRIC_NUM_FAILED
-    );
+    List<MetricsKey> REGISTER_LEVEL_KEYS = Arrays.asList(
+            REGISTER_METRIC_REQUESTS,
+            REGISTER_METRIC_REQUESTS_SUCCEED,
+            REGISTER_METRIC_REQUESTS_FAILED,
+            SUBSCRIBE_METRIC_NUM,
+            SUBSCRIBE_METRIC_NUM_SUCCEED,
+            SUBSCRIBE_METRIC_NUM_FAILED);
 
     // Service-level
     List<MetricsKeyWrapper> SERVICE_LEVEL_KEYS = Arrays.asList(
-        new MetricsKeyWrapper(NOTIFY_METRIC_NUM_LAST, OP_TYPE_NOTIFY),
-        new MetricsKeyWrapper(SERVICE_REGISTER_METRIC_REQUESTS, OP_TYPE_REGISTER_SERVICE),
-        new MetricsKeyWrapper(SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED, OP_TYPE_REGISTER_SERVICE),
-        new MetricsKeyWrapper(SERVICE_REGISTER_METRIC_REQUESTS_FAILED, OP_TYPE_REGISTER_SERVICE),
-        new MetricsKeyWrapper(SERVICE_SUBSCRIBE_METRIC_NUM, OP_TYPE_SUBSCRIBE_SERVICE),
-        new MetricsKeyWrapper(SERVICE_SUBSCRIBE_METRIC_NUM_SUCCEED, OP_TYPE_SUBSCRIBE_SERVICE),
-        new MetricsKeyWrapper(SERVICE_SUBSCRIBE_METRIC_NUM_FAILED, OP_TYPE_SUBSCRIBE_SERVICE),
-        new MetricsKeyWrapper(DIRECTORY_METRIC_NUM_VALID, OP_TYPE_DIRECTORY),
-        new MetricsKeyWrapper(DIRECTORY_METRIC_NUM_TO_RECONNECT, OP_TYPE_DIRECTORY),
-        new MetricsKeyWrapper(DIRECTORY_METRIC_NUM_DISABLE, OP_TYPE_DIRECTORY),
-        new MetricsKeyWrapper(DIRECTORY_METRIC_NUM_ALL, OP_TYPE_DIRECTORY)
-    );
+            new MetricsKeyWrapper(NOTIFY_METRIC_NUM_LAST, OP_TYPE_NOTIFY),
+            new MetricsKeyWrapper(SERVICE_REGISTER_METRIC_REQUESTS, OP_TYPE_REGISTER_SERVICE),
+            new MetricsKeyWrapper(SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED, OP_TYPE_REGISTER_SERVICE),
+            new MetricsKeyWrapper(SERVICE_REGISTER_METRIC_REQUESTS_FAILED, OP_TYPE_REGISTER_SERVICE),
+            new MetricsKeyWrapper(SERVICE_SUBSCRIBE_METRIC_NUM, OP_TYPE_SUBSCRIBE_SERVICE),
+            new MetricsKeyWrapper(SERVICE_SUBSCRIBE_METRIC_NUM_SUCCEED, OP_TYPE_SUBSCRIBE_SERVICE),
+            new MetricsKeyWrapper(SERVICE_SUBSCRIBE_METRIC_NUM_FAILED, OP_TYPE_SUBSCRIBE_SERVICE),
+            new MetricsKeyWrapper(DIRECTORY_METRIC_NUM_VALID, OP_TYPE_DIRECTORY),
+            new MetricsKeyWrapper(DIRECTORY_METRIC_NUM_TO_RECONNECT, OP_TYPE_DIRECTORY),
+            new MetricsKeyWrapper(DIRECTORY_METRIC_NUM_DISABLE, OP_TYPE_DIRECTORY),
+            new MetricsKeyWrapper(DIRECTORY_METRIC_NUM_ALL, OP_TYPE_DIRECTORY));
 }

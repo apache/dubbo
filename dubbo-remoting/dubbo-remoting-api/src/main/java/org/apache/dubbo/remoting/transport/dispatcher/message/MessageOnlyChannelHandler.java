@@ -41,12 +41,11 @@ public class MessageOnlyChannelHandler extends WrappedChannelHandler {
         try {
             executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
         } catch (Throwable t) {
-            if(message instanceof Request && t instanceof RejectedExecutionException){
+            if (message instanceof Request && t instanceof RejectedExecutionException) {
                 sendFeedback(channel, (Request) message, t);
                 return;
             }
             throw new ExecutionException(message, channel, getClass() + " error when process received event .", t);
         }
     }
-
 }

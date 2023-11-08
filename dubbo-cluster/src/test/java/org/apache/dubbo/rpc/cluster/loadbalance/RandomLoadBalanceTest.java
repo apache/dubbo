@@ -19,11 +19,11 @@ package org.apache.dubbo.rpc.cluster.loadbalance;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcStatus;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * RandomLoadBalance Test
@@ -35,7 +35,9 @@ class RandomLoadBalanceTest extends LoadBalanceBaseTest {
         Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, RandomLoadBalance.NAME);
         for (Map.Entry<Invoker, AtomicLong> entry : counter.entrySet()) {
             Long count = entry.getValue().get();
-            Assertions.assertTrue(Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()), "abs diff should < avg");
+            Assertions.assertTrue(
+                    Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()),
+                    "abs diff should < avg");
         }
 
         for (int i = 0; i < 5; i++) {
@@ -84,5 +86,4 @@ class RandomLoadBalanceTest extends LoadBalanceBaseTest {
         System.out.println(sumInvoker3);
         Assertions.assertEquals(sumInvoker1 + sumInvoker2 + sumInvoker3, loop, "select failed!");
     }
-
 }

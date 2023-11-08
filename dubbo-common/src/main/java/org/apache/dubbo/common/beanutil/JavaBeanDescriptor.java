@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.beanutil;
 
 import java.io.Serializable;
@@ -35,6 +34,7 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
      * @see org.apache.dubbo.common.utils.ReflectUtils#isPrimitive(Class)
      */
     public static final int TYPE_PRIMITIVE = 6;
+
     public static final int TYPE_BEAN = 7;
 
     private static final String ENUM_PROPERTY_NAME = "name";

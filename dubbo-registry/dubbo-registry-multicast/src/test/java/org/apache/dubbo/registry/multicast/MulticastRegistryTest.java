@@ -20,10 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
@@ -31,6 +27,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.hamcrest.CoreMatchers.is;
@@ -43,8 +43,7 @@ class MulticastRegistryTest {
 
     private String service = "org.apache.dubbo.test.injvmServie";
     private URL registryUrl = URL.valueOf("multicast://239.239.239.239/");
-    private URL serviceUrl = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + "/" + service
-            + "?methods=test1,test2");
+    private URL serviceUrl = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + "/" + service + "?methods=test1,test2");
     private URL adminUrl = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + "/*");
     private URL consumerUrl = URL.valueOf("subscribe://" + NetUtils.getLocalHost() + "/" + service + "?arg1=1&arg2=2");
     private MulticastRegistry registry = new MulticastRegistry(registryUrl);
@@ -269,7 +268,5 @@ class MulticastRegistryTest {
                 multicastSocket.close();
             }
         }
-
     }
-
 }

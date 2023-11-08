@@ -31,7 +31,6 @@ public class StringToLongConverter implements StringConverter<Long> {
         return isNotEmpty(source) ? valueOf(source) : null;
     }
 
-
     @Override
     public int getPriority() {
         return NORMAL_PRIORITY + 1;

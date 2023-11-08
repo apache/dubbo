@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.URL;
@@ -32,12 +31,13 @@ import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.transport.dispatcher.FakeChannelHandlers;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
 
@@ -70,9 +70,9 @@ class HeartbeatHandlerTest {
     void testServerHeartbeat() throws Exception {
         FakeChannelHandlers.resetChannelHandlers();
         URL serverURL = URL.valueOf("telnet://localhost:" + NetUtils.getAvailablePort(56780))
-            .addParameter(Constants.EXCHANGER_KEY, HeaderExchanger.NAME)
-            .addParameter(Constants.TRANSPORTER_KEY, "netty3")
-            .addParameter(Constants.HEARTBEAT_KEY, 1000);
+                .addParameter(Constants.EXCHANGER_KEY, HeaderExchanger.NAME)
+                .addParameter(Constants.TRANSPORTER_KEY, "netty3")
+                .addParameter(Constants.HEARTBEAT_KEY, 1000);
         CountDownLatch connect = new CountDownLatch(1);
         CountDownLatch disconnect = new CountDownLatch(1);
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
@@ -101,10 +101,10 @@ class HeartbeatHandlerTest {
     @Test
     void testHeartbeat() throws Exception {
         URL serverURL = URL.valueOf("telnet://localhost:" + NetUtils.getAvailablePort(56785))
-            .addParameter(Constants.EXCHANGER_KEY, HeaderExchanger.NAME)
-            .addParameter(Constants.TRANSPORTER_KEY, "netty3")
-            .addParameter(Constants.HEARTBEAT_KEY, 1000)
-            .addParameter(Constants.CODEC_KEY, "telnet");
+                .addParameter(Constants.EXCHANGER_KEY, HeaderExchanger.NAME)
+                .addParameter(Constants.TRANSPORTER_KEY, "netty3")
+                .addParameter(Constants.HEARTBEAT_KEY, 1000)
+                .addParameter(Constants.CODEC_KEY, "telnet");
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
         applicationConfig.setExecutorManagementMode(EXECUTOR_MANAGEMENT_MODE_DEFAULT);
@@ -128,9 +128,9 @@ class HeartbeatHandlerTest {
     void testClientHeartbeat() throws Exception {
         FakeChannelHandlers.setTestingChannelHandlers();
         URL serverURL = URL.valueOf("telnet://localhost:" + NetUtils.getAvailablePort(56790))
-            .addParameter(Constants.EXCHANGER_KEY, HeaderExchanger.NAME)
-            .addParameter(Constants.TRANSPORTER_KEY, "netty3")
-            .addParameter(Constants.CODEC_KEY, "telnet");
+                .addParameter(Constants.EXCHANGER_KEY, HeaderExchanger.NAME)
+                .addParameter(Constants.TRANSPORTER_KEY, "netty3")
+                .addParameter(Constants.CODEC_KEY, "telnet");
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
         applicationConfig.setExecutorManagementMode(EXECUTOR_MANAGEMENT_MODE_DEFAULT);
@@ -179,9 +179,7 @@ class HeartbeatHandlerTest {
         }
 
         @Override
-        public void sent(Channel channel, Object message) throws RemotingException {
-
-        }
+        public void sent(Channel channel, Object message) throws RemotingException {}
 
         @Override
         public void received(Channel channel, Object message) throws RemotingException {
@@ -197,5 +195,4 @@ class HeartbeatHandlerTest {
             return message;
         }
     }
-
 }

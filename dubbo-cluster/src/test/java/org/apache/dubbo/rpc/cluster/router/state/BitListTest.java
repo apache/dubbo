@@ -16,16 +16,16 @@
  */
 package org.apache.dubbo.rpc.cluster.router.state;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.provider.ValueSource;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class BitListTest {
     @Test
@@ -151,7 +151,6 @@ class BitListTest {
 
         Assertions.assertEquals(3, bitList1.size());
         Assertions.assertFalse(bitList1.hasMoreElementInTailList());
-
 
         bitList1.addAll(bitList2);
 
@@ -353,7 +352,10 @@ class BitListTest {
     }
 
     @Test
-    @ValueSource(ints = {2, })
+    @ValueSource(
+            ints = {
+                2,
+            })
     void testListIterator2() {
         List<String> list = Arrays.asList("A", "B", "C", "D", "E");
         BitList<String> bitList = new BitList<>(list);
@@ -434,7 +436,6 @@ class BitListTest {
         }
 
         Assertions.assertEquals(expectedResult, bitList);
-
 
         while (listIterator.hasPrevious()) {
             Assertions.assertEquals(expectedIterator.previousIndex(), listIterator.previousIndex());

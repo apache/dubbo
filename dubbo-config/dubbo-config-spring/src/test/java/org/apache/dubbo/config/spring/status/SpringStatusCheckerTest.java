@@ -33,17 +33,17 @@ import static org.mockito.Mockito.mock;
 
 class SpringStatusCheckerTest {
 
-//    @Mock
-//    private ApplicationLifeCycle applicationContext;
+    //    @Mock
+    //    private ApplicationLifeCycle applicationContext;
 
     @BeforeEach
     public void setUp() throws Exception {
-        //initMocks(this);
+        // initMocks(this);
     }
 
     @AfterEach
     public void tearDown() throws Exception {
-        //Mockito.reset(applicationContext);
+        // Mockito.reset(applicationContext);
     }
 
     @Test
@@ -57,7 +57,7 @@ class SpringStatusCheckerTest {
     @Test
     void testWithLifeCycleRunning() {
         ApplicationLifeCycle applicationLifeCycle = mock(ApplicationLifeCycle.class);
-        given(applicationLifeCycle.getConfigLocations()).willReturn(new String[]{"test1", "test2"});
+        given(applicationLifeCycle.getConfigLocations()).willReturn(new String[] {"test1", "test2"});
         given(applicationLifeCycle.isRunning()).willReturn(true);
 
         SpringStatusChecker springStatusChecker = new SpringStatusChecker(applicationLifeCycle);
@@ -92,5 +92,4 @@ class SpringStatusCheckerTest {
         Status status = checker.check();
         Assertions.assertEquals(Status.Level.OK, status.getLevel());
     }
-
 }

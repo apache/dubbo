@@ -38,7 +38,8 @@ public class MultiplexProtocolConnectionManager implements ConnectionManager {
 
     @Override
     public AbstractConnectionClient connect(URL url, ChannelHandler handler) {
-        final ConnectionManager manager = ConcurrentHashMapUtils.computeIfAbsent(protocols, url.getProtocol(), this::createSingleProtocolConnectionManager);
+        final ConnectionManager manager = ConcurrentHashMapUtils.computeIfAbsent(
+                protocols, url.getProtocol(), this::createSingleProtocolConnectionManager);
         return manager.connect(url, handler);
     }
 
@@ -48,6 +49,8 @@ public class MultiplexProtocolConnectionManager implements ConnectionManager {
     }
 
     private ConnectionManager createSingleProtocolConnectionManager(String protocol) {
-        return frameworkModel.getExtensionLoader(ConnectionManager.class).getExtension(SingleProtocolConnectionManager.NAME);
+        return frameworkModel
+                .getExtensionLoader(ConnectionManager.class)
+                .getExtension(SingleProtocolConnectionManager.NAME);
     }
 }

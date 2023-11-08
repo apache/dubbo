@@ -63,8 +63,6 @@ public class ListenerResult {
 
     @Override
     public String toString() {
-        return "ListenerResult{" +
-            "routeConfigNames=" + routeConfigNames +
-            '}';
+        return "ListenerResult{" + "routeConfigNames=" + routeConfigNames + '}';
     }
 }

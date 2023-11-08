@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.support;
 /**
  * DemoServiceImpl
  */
-
 public class DemoServiceImpl implements DemoService {
     public String echo(String text) {
         return text;

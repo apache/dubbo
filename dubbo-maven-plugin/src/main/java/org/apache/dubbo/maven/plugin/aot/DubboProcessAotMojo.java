@@ -16,20 +16,22 @@
  */
 package org.apache.dubbo.maven.plugin.aot;
 
+import java.io.File;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
-import java.io.File;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-
-@Mojo(name = "dubbo-process-aot", defaultPhase = LifecyclePhase.PREPARE_PACKAGE, threadSafe = true,
-    requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME,
-    requiresDependencyCollection = ResolutionScope.COMPILE_PLUS_RUNTIME)
+@Mojo(
+        name = "dubbo-process-aot",
+        defaultPhase = LifecyclePhase.PREPARE_PACKAGE,
+        threadSafe = true,
+        requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME,
+        requiresDependencyCollection = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public class DubboProcessAotMojo extends AbstractAotMojo {
 
     private static final String AOT_PROCESSOR_CLASS_NAME = "org.apache.dubbo.aot.generate.AotProcessor";
@@ -66,13 +68,11 @@ public class DubboProcessAotMojo extends AbstractAotMojo {
     @Parameter(property = "dubbo.aot.main-class")
     private String mainClass;
 
-
     /**
      * Application arguments that should be taken into account for AOT processing.
      */
     @Parameter
     private String[] arguments;
-
 
     @Override
     protected void executeAot() throws Exception {
@@ -96,7 +96,7 @@ public class DubboProcessAotMojo extends AbstractAotMojo {
     }
 
     private List<URL> getClassPath() throws Exception {
-        File[] directories = new File[]{this.classesDirectory, this.generatedClasses};
+        File[] directories = new File[] {this.classesDirectory, this.generatedClasses};
         return getClassPath(directories, new ExcludeTestScopeArtifactFilter());
     }
 }

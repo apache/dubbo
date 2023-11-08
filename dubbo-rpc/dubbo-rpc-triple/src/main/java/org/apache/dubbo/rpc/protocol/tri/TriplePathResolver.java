@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.rpc.Invoker;
@@ -61,5 +60,4 @@ public class TriplePathResolver implements PathResolver {
     public void destroy() {
         path2Invoker.clear();
     }
-
 }

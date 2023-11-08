@@ -64,7 +64,7 @@ public class SubMigrationRule {
         return interfaceMigrationRule;
     }
 
-    public SubMigrationRule(){}
+    public SubMigrationRule() {}
 
     public SubMigrationRule(String serviceKey, MigrationStep step, Float threshold, Integer proportion) {
         this.serviceKey = serviceKey;

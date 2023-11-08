@@ -21,10 +21,10 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.monitor.Monitor;
 import org.apache.dubbo.monitor.MonitorFactory;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 /**
  * AbstractMonitorFactoryTest
@@ -46,16 +46,13 @@ class AbstractMonitorFactoryTest {
                 }
 
                 @Override
-                public void destroy() {
-                }
+                public void destroy() {}
 
-                public void collect(URL statistics) {
-                }
+                public void collect(URL statistics) {}
 
                 public List<URL> lookup(URL query) {
                     return null;
                 }
-
             };
         }
     };
@@ -99,5 +96,4 @@ class AbstractMonitorFactoryTest {
         }
         Assertions.assertNotSame(monitor1, monitor2);
     }
-
 }

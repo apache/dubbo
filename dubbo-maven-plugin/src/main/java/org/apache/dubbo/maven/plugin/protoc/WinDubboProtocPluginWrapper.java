@@ -16,14 +16,14 @@
  */
 package org.apache.dubbo.maven.plugin.protoc;
 
-import org.apache.maven.plugin.logging.Log;
-import org.codehaus.plexus.util.FileUtils;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
+
+import org.apache.maven.plugin.logging.Log;
+import org.codehaus.plexus.util.FileUtils;
 
 public class WinDubboProtocPluginWrapper implements DubboProtocPluginWrapper {
 
@@ -49,12 +49,14 @@ public class WinDubboProtocPluginWrapper implements DubboProtocPluginWrapper {
     public File createProtocPlugin(DubboProtocPlugin dubboProtocPlugin, Log log) {
         createPluginDirectory(dubboProtocPlugin.getPluginDirectory());
         final File javaHome = new File(dubboProtocPlugin.getJavaHome());
-        final File jvmLocation = findJvmLocation(javaHome,
-            "jre/bin/server/jvm.dll",
-            "bin/server/jvm.dll",
-            "jre/bin/client/jvm.dll",
-            "bin/client/jvm.dll");
-        final File winRun4JIniFile = new File(dubboProtocPlugin.getPluginDirectory(), dubboProtocPlugin.getId() + ".ini");
+        final File jvmLocation = findJvmLocation(
+                javaHome,
+                "jre/bin/server/jvm.dll",
+                "bin/server/jvm.dll",
+                "jre/bin/client/jvm.dll",
+                "bin/client/jvm.dll");
+        final File winRun4JIniFile =
+                new File(dubboProtocPlugin.getPluginDirectory(), dubboProtocPlugin.getId() + ".ini");
 
         if (winJvmDataModel != null) {
             if (!(winJvmDataModel.equals(WIN_JVM_DATA_MODEL_32) || winJvmDataModel.equals(WIN_JVM_DATA_MODEL_64))) {
@@ -109,14 +111,12 @@ public class WinDubboProtocPluginWrapper implements DubboProtocPluginWrapper {
             out.println("[ErrorMessages]");
             out.println("show.popup=false");
         } catch (IOException e) {
-            throw new RuntimeException(
-                "Could not write WinRun4J ini file: " + winRun4JIniFile.getAbsolutePath(), e);
+            throw new RuntimeException("Could not write WinRun4J ini file: " + winRun4JIniFile.getAbsolutePath(), e);
         }
         final String executablePath = getWinrun4jExecutablePath();
         final URL url = Thread.currentThread().getContextClassLoader().getResource(executablePath);
         if (url == null) {
-            throw new RuntimeException(
-                "Could not locate WinRun4J executable at path: " + executablePath);
+            throw new RuntimeException("Could not locate WinRun4J executable at path: " + executablePath);
         }
         File pluginExecutableFile = getPluginExecutableFile(dubboProtocPlugin);
         try {
@@ -124,22 +124,22 @@ public class WinDubboProtocPluginWrapper implements DubboProtocPluginWrapper {
             return pluginExecutableFile;
         } catch (IOException e) {
             throw new RuntimeException(
-                "Could not copy WinRun4J executable to: " + pluginExecutableFile.getAbsolutePath(), e);
+                    "Could not copy WinRun4J executable to: " + pluginExecutableFile.getAbsolutePath(), e);
         }
     }
 
     private void createPluginDirectory(File pluginDirectory) {
         pluginDirectory.mkdirs();
         if (!pluginDirectory.isDirectory()) {
-            throw new RuntimeException("Could not create protoc plugin directory: "
-                + pluginDirectory.getAbsolutePath());
+            throw new RuntimeException(
+                    "Could not create protoc plugin directory: " + pluginDirectory.getAbsolutePath());
         }
     }
 
     private boolean archDirectoryExists(String arch, String javaHome) {
         return javaHome != null
-            && (new File(javaHome, "jre/lib/" + arch).isDirectory()
-            || new File(javaHome, "lib/" + arch).isDirectory());
+                && (new File(javaHome, "jre/lib/" + arch).isDirectory()
+                        || new File(javaHome, "lib/" + arch).isDirectory());
     }
 
     private String getWinrun4jExecutablePath() {
@@ -149,5 +149,4 @@ public class WinDubboProtocPluginWrapper implements DubboProtocPluginWrapper {
     public File getPluginExecutableFile(DubboProtocPlugin dubboProtocPlugin) {
         return new File(dubboProtocPlugin.getPluginDirectory(), "protoc-gen-" + dubboProtocPlugin.getId() + ".exe");
     }
-
 }

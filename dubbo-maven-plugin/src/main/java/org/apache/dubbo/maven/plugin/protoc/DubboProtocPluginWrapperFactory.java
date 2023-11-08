@@ -16,26 +16,22 @@
  */
 package org.apache.dubbo.maven.plugin.protoc;
 
-
-import org.codehaus.plexus.util.Os;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.codehaus.plexus.util.Os;
 
 public class DubboProtocPluginWrapperFactory {
 
     private final LinuxDubboProtocPluginWrapper linuxProtocCommandBuilder = new LinuxDubboProtocPluginWrapper();
     private final WinDubboProtocPluginWrapper winDubboProtocPluginWrapper = new WinDubboProtocPluginWrapper();
 
-
     private final Map<String, DubboProtocPluginWrapper> dubboProtocPluginWrappers = new HashMap<>();
-
 
     public DubboProtocPluginWrapperFactory() {
         dubboProtocPluginWrappers.put("linux", linuxProtocCommandBuilder);
         dubboProtocPluginWrappers.put("windows", winDubboProtocPluginWrapper);
     }
-
 
     public DubboProtocPluginWrapper findByOs() {
         if (Os.isFamily(Os.FAMILY_WINDOWS)) {

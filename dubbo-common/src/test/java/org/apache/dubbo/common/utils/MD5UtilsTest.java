@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,13 +24,18 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 class MD5UtilsTest {
 
     @Test
     void test() {
         MD5Utils sharedMd5Utils = new MD5Utils();
-        final String[] input = {"provider-appgroup-one/org.apache.dubbo.config.spring.api.HelloService:dubboorg.apache.dubbo.config.spring.api.HelloService{REGISTRY_CLUSTER=registry-one, anyhost=true, application=provider-app, background=false, compiler=javassist, deprecated=false, dubbo=2.0.2, dynamic=true, file.cache=false, generic=false, group=group-one, interface=org.apache.dubbo.config.spring.api.HelloService, logger=slf4j, metadata-type=remote, methods=sayHello, organization=test, owner=com.test, release=, service-name-mapping=true, side=provider}",
-            "provider-appgroup-two/org.apache.dubbo.config.spring.api.DemoService:dubboorg.apache.dubbo.config.spring.api.DemoService{REGISTRY_CLUSTER=registry-two, anyhost=true, application=provider-app, background=false, compiler=javassist, deprecated=false, dubbo=2.0.2, dynamic=true, file.cache=false, generic=false, group=group-two, interface=org.apache.dubbo.config.spring.api.DemoService, logger=slf4j, metadata-type=remote, methods=sayName,getBox, organization=test, owner=com.test, release=, service-name-mapping=true, side=provider}"};
+        final String[] input = {
+            "provider-appgroup-one/org.apache.dubbo.config.spring.api.HelloService:dubboorg.apache.dubbo.config.spring.api.HelloService{REGISTRY_CLUSTER=registry-one, anyhost=true, application=provider-app, background=false, compiler=javassist, deprecated=false, dubbo=2.0.2, dynamic=true, file.cache=false, generic=false, group=group-one, interface=org.apache.dubbo.config.spring.api.HelloService, logger=slf4j, metadata-type=remote, methods=sayHello, organization=test, owner=com.test, release=, service-name-mapping=true, side=provider}",
+            "provider-appgroup-two/org.apache.dubbo.config.spring.api.DemoService:dubboorg.apache.dubbo.config.spring.api.DemoService{REGISTRY_CLUSTER=registry-two, anyhost=true, application=provider-app, background=false, compiler=javassist, deprecated=false, dubbo=2.0.2, dynamic=true, file.cache=false, generic=false, group=group-two, interface=org.apache.dubbo.config.spring.api.DemoService, logger=slf4j, metadata-type=remote, methods=sayName,getBox, organization=test, owner=com.test, release=, service-name-mapping=true, side=provider}"
+        };
         final String[] result = {sharedMd5Utils.getMd5(input[0]), new MD5Utils().getMd5(input[1])};
 
         System.out.println("Expected result: " + Arrays.asList(result));
@@ -65,7 +67,12 @@ class MD5UtilsTest {
         private final CountDownLatch latch;
         private final List<Throwable> errorCollector;
 
-        public Md5Task(String input, String expected, MD5Utils md5Utils, CountDownLatch latch, List<Throwable> errorCollector) {
+        public Md5Task(
+                String input,
+                String expected,
+                MD5Utils md5Utils,
+                CountDownLatch latch,
+                List<Throwable> errorCollector) {
             this.input = input;
             this.expected = expected;
             this.md5Utils = md5Utils;

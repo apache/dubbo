@@ -44,5 +44,4 @@ public class JCacheFactory extends AbstractCacheFactory {
     protected Cache createCache(URL url) {
         return new JCache(url);
     }
-
 }

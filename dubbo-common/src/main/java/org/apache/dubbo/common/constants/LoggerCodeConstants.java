@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.constants;
 
 /**
@@ -93,11 +92,6 @@ public interface LoggerCodeConstants {
     String VULNERABILITY_WARNING = "0-28";
 
     String COMMON_NOT_FOUND_TRACER_DEPENDENCY = "0-29";
-
-    /**
-     * Used in annotation processor to indicate a deprecated method is invoked.
-     */
-    String COMMON_DEPRECATED_METHOD_INVOKED = "0-99";
 
     // Registry module
 

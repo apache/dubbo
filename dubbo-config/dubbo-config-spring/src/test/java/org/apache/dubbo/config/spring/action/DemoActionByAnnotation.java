@@ -31,5 +31,4 @@ public class DemoActionByAnnotation {
     public DemoService getDemoService() {
         return demoService;
     }
-
 }

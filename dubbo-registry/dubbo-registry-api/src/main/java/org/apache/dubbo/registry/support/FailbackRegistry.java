@@ -36,8 +36,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_NOTIFY_EVENT;
+import static org.apache.dubbo.common.constants.CommonConstants.IS_EXTRA;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_NOTIFY_EVENT;
 import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY_RETRY_PERIOD;
 import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
 
@@ -70,7 +71,8 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         this.retryPeriod = url.getParameter(REGISTRY_RETRY_PERIOD_KEY, DEFAULT_REGISTRY_RETRY_PERIOD);
 
         // since the retry task will not be very much. 128 ticks is enough.
-        retryTimer = new HashedWheelTimer(new NamedThreadFactory("DubboRegistryRetryTimer", true), retryPeriod, TimeUnit.MILLISECONDS, 128);
+        retryTimer = new HashedWheelTimer(
+                new NamedThreadFactory("DubboRegistryRetryTimer", true), retryPeriod, TimeUnit.MILLISECONDS, 128);
     }
 
     public void removeFailedRegisteredTask(URL url) {
@@ -192,11 +194,9 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         return failedUnsubscribed;
     }
 
-
     @Override
     public void register(URL url) {
-        if (!acceptable(url)) {
-            logger.info("URL " + url + " will not be registered to Registry. Registry " + this.getUrl() + " does not accept service of this protocol type.");
+        if (!shouldRegister(url)) {
             return;
         }
         super.register(url);
@@ -210,16 +210,24 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
             // If the startup detection is opened, the Exception is thrown directly.
             boolean check = getUrl().getParameter(Constants.CHECK_KEY, true)
-                && url.getParameter(Constants.CHECK_KEY, true)
-                && (url.getPort() != 0);
+                    && url.getParameter(Constants.CHECK_KEY, true)
+                    && (url.getPort() != 0);
             boolean skipFailback = t instanceof SkipFailbackWrapperException;
             if (check || skipFailback) {
                 if (skipFailback) {
                     t = t.getCause();
                 }
-                throw new IllegalStateException("Failed to register " + url + " to registry " + getUrl().getAddress() + ", cause: " + t.getMessage(), t);
+                throw new IllegalStateException(
+                        "Failed to register " + url + " to registry " + getUrl().getAddress() + ", cause: "
+                                + t.getMessage(),
+                        t);
             } else {
-                logger.error(INTERNAL_ERROR, "unknown error in registry module", "", "Failed to register " + url + ", waiting for retry, cause: " + t.getMessage(), t);
+                logger.error(
+                        INTERNAL_ERROR,
+                        "unknown error in registry module",
+                        "",
+                        "Failed to register " + url + ", waiting for retry, cause: " + t.getMessage(),
+                        t);
             }
 
             // Record a failed registration request to a failed list, retry regularly
@@ -227,10 +235,24 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
     }
 
+    protected boolean shouldRegister(URL providerURL) {
+        // extra protocol url must not be registered for interface based service discovery
+        if (providerURL.getParameter(IS_EXTRA, false)) {
+            return false;
+        }
+        if (!acceptable(providerURL)) {
+            logger.info("URL " + providerURL + " will not be registered to Registry. Registry " + this.getUrl()
+                    + " does not accept service of this protocol type.");
+            return false;
+        }
+        return true;
+    }
+
     @Override
     public void reExportRegister(URL url) {
         if (!acceptable(url)) {
-            logger.info("URL " + url + " will not be registered to Registry. Registry " + url + " does not accept service of this protocol type.");
+            logger.info("URL " + url + " will not be registered to Registry. Registry " + url
+                    + " does not accept service of this protocol type.");
             return;
         }
         super.register(url);
@@ -241,7 +263,10 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             doRegister(url);
         } catch (Exception e) {
             if (!(e instanceof SkipFailbackWrapperException)) {
-                throw new IllegalStateException("Failed to register (re-export) " + url + " to registry " + getUrl().getAddress() + ", cause: " + e.getMessage(), e);
+                throw new IllegalStateException(
+                        "Failed to register (re-export) " + url + " to registry " + getUrl().getAddress() + ", cause: "
+                                + e.getMessage(),
+                        e);
             }
         }
     }
@@ -259,16 +284,24 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
             // If the startup detection is opened, the Exception is thrown directly.
             boolean check = getUrl().getParameter(Constants.CHECK_KEY, true)
-                && url.getParameter(Constants.CHECK_KEY, true)
-                && (url.getPort() != 0);
+                    && url.getParameter(Constants.CHECK_KEY, true)
+                    && (url.getPort() != 0);
             boolean skipFailback = t instanceof SkipFailbackWrapperException;
             if (check || skipFailback) {
                 if (skipFailback) {
                     t = t.getCause();
                 }
-                throw new IllegalStateException("Failed to unregister " + url + " to registry " + getUrl().getAddress() + ", cause: " + t.getMessage(), t);
+                throw new IllegalStateException(
+                        "Failed to unregister " + url + " to registry " + getUrl().getAddress() + ", cause: "
+                                + t.getMessage(),
+                        t);
             } else {
-                logger.error(INTERNAL_ERROR, "unknown error in registry module", "", "Failed to unregister " + url + ", waiting for retry, cause: " + t.getMessage(), t);
+                logger.error(
+                        INTERNAL_ERROR,
+                        "unknown error in registry module",
+                        "",
+                        "Failed to unregister " + url + ", waiting for retry, cause: " + t.getMessage(),
+                        t);
             }
 
             // Record a failed registration request to a failed list, retry regularly
@@ -286,7 +319,10 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             doUnregister(url);
         } catch (Exception e) {
             if (!(e instanceof SkipFailbackWrapperException)) {
-                throw new IllegalStateException("Failed to unregister(re-export) " + url + " to registry " + getUrl().getAddress() + ", cause: " + e.getMessage(), e);
+                throw new IllegalStateException(
+                        "Failed to unregister(re-export) " + url + " to registry " + getUrl().getAddress() + ", cause: "
+                                + e.getMessage(),
+                        e);
             }
         }
     }
@@ -304,11 +340,17 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             List<URL> urls = getCacheUrls(url);
             if (CollectionUtils.isNotEmpty(urls)) {
                 notify(url, listener, urls);
-                logger.error(REGISTRY_FAILED_NOTIFY_EVENT, "", "", "Failed to subscribe " + url + ", Using cached list: " + urls + " from cache file: " + getCacheFile().getName() + ", cause: " + t.getMessage(), t);
+                logger.error(
+                        REGISTRY_FAILED_NOTIFY_EVENT,
+                        "",
+                        "",
+                        "Failed to subscribe " + url + ", Using cached list: " + urls + " from cache file: "
+                                + getCacheFile().getName() + ", cause: " + t.getMessage(),
+                        t);
             } else {
                 // If the startup detection is opened, the Exception is thrown directly.
-                boolean check = getUrl().getParameter(Constants.CHECK_KEY, true)
-                    && url.getParameter(Constants.CHECK_KEY, true);
+                boolean check =
+                        getUrl().getParameter(Constants.CHECK_KEY, true) && url.getParameter(Constants.CHECK_KEY, true);
                 boolean skipFailback = t instanceof SkipFailbackWrapperException;
                 if (check || skipFailback) {
                     if (skipFailback) {
@@ -316,7 +358,12 @@ public abstract class FailbackRegistry extends AbstractRegistry {
                     }
                     throw new IllegalStateException("Failed to subscribe " + url + ", cause: " + t.getMessage(), t);
                 } else {
-                    logger.error(REGISTRY_FAILED_NOTIFY_EVENT, "", "", "Failed to subscribe " + url + ", waiting for retry, cause: " + t.getMessage(), t);
+                    logger.error(
+                            REGISTRY_FAILED_NOTIFY_EVENT,
+                            "",
+                            "",
+                            "Failed to subscribe " + url + ", waiting for retry, cause: " + t.getMessage(),
+                            t);
                 }
             }
 
@@ -336,16 +383,24 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             Throwable t = e;
 
             // If the startup detection is opened, the Exception is thrown directly.
-            boolean check = getUrl().getParameter(Constants.CHECK_KEY, true)
-                && url.getParameter(Constants.CHECK_KEY, true);
+            boolean check =
+                    getUrl().getParameter(Constants.CHECK_KEY, true) && url.getParameter(Constants.CHECK_KEY, true);
             boolean skipFailback = t instanceof SkipFailbackWrapperException;
             if (check || skipFailback) {
                 if (skipFailback) {
                     t = t.getCause();
                 }
-                throw new IllegalStateException("Failed to unsubscribe " + url + " to registry " + getUrl().getAddress() + ", cause: " + t.getMessage(), t);
+                throw new IllegalStateException(
+                        "Failed to unsubscribe " + url + " to registry " + getUrl().getAddress() + ", cause: "
+                                + t.getMessage(),
+                        t);
             } else {
-                logger.error(REGISTRY_FAILED_NOTIFY_EVENT, "", "", "Failed to unsubscribe " + url + ", waiting for retry, cause: " + t.getMessage(), t);
+                logger.error(
+                        REGISTRY_FAILED_NOTIFY_EVENT,
+                        "",
+                        "",
+                        "Failed to unsubscribe " + url + ", waiting for retry, cause: " + t.getMessage(),
+                        t);
             }
 
             // Record a failed registration request to a failed list, retry regularly
@@ -365,7 +420,12 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             doNotify(url, listener, urls);
         } catch (Exception t) {
             // Record a failed registration request to a failed list
-            logger.error(REGISTRY_FAILED_NOTIFY_EVENT, "", "", "Failed to notify addresses for subscribe " + url + ", cause: " + t.getMessage(), t);
+            logger.error(
+                    REGISTRY_FAILED_NOTIFY_EVENT,
+                    "",
+                    "",
+                    "Failed to notify addresses for subscribe " + url + ", cause: " + t.getMessage(),
+                    t);
         }
     }
 

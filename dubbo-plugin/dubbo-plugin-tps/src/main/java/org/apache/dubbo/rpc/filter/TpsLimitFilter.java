@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.constants.CommonConstants;
@@ -47,12 +46,13 @@ public class TpsLimitFilter implements Filter {
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
 
         if (!tpsLimiter.isAllowable(invoker.getUrl(), invocation)) {
-            return AsyncRpcResult.newDefaultAsyncResult(new RpcException("Failed to invoke service " +
-                    invoker.getInterface().getName() + "." + RpcUtils.getMethodName(invocation) + " because exceed max service tps.")
-                , invocation);
+            return AsyncRpcResult.newDefaultAsyncResult(
+                    new RpcException(
+                            "Failed to invoke service " + invoker.getInterface().getName() + "."
+                                    + RpcUtils.getMethodName(invocation) + " because exceed max service tps."),
+                    invocation);
         }
 
         return invoker.invoke(invocation);
     }
-
 }

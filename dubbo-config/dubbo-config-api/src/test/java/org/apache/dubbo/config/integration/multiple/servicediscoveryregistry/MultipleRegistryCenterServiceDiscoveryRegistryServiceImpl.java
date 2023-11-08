@@ -18,7 +18,8 @@ package org.apache.dubbo.config.integration.multiple.servicediscoveryregistry;
 /**
  * The simple implementation for {@link MultipleRegistryCenterServiceDiscoveryRegistryService}
  */
-public class MultipleRegistryCenterServiceDiscoveryRegistryServiceImpl implements MultipleRegistryCenterServiceDiscoveryRegistryService {
+public class MultipleRegistryCenterServiceDiscoveryRegistryServiceImpl
+        implements MultipleRegistryCenterServiceDiscoveryRegistryService {
     /**
      * {@inheritDoc}
      */

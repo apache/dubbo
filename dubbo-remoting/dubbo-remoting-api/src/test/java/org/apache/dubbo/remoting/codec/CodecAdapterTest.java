@@ -26,5 +26,4 @@ class CodecAdapterTest extends ExchangeCodecTest {
     public void setUp() throws Exception {
         codec = new CodecAdapter(new DeprecatedExchangeCodec());
     }
-
 }

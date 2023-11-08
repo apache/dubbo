@@ -14,13 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.compressor;
 
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import java.io.OutputStream;
 
 /**
  * compress payload for grpc request， and decompress response payload Configure it in files,
@@ -51,4 +52,5 @@ public interface Compressor extends MessageEncoding {
      */
     byte[] compress(byte[] payloadByteArr);
 
+    OutputStream decorate(OutputStream outputStream);
 }

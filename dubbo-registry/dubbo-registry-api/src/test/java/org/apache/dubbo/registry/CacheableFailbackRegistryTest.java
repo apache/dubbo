@@ -21,14 +21,14 @@ import org.apache.dubbo.common.URLStrParser;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
@@ -57,9 +57,12 @@ class CacheableFailbackRegistryTest {
         service = "org.apache.dubbo.test.DemoService";
         serviceUrl = URL.valueOf("dubbo://127.0.0.1/org.apache.dubbo.test.DemoService?category=providers");
         registryUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A");
-        urlStr = "dubbo%3A%2F%2F172.19.4.113%3A20880%2Forg.apache.dubbo.demo.DemoService%3Fside%3Dprovider%26timeout%3D3000";
-        urlStr2 = "dubbo%3A%2F%2F172.19.4.114%3A20880%2Forg.apache.dubbo.demo.DemoService%3Fside%3Dprovider%26timeout%3D3000";
-        urlStr3 = "dubbo%3A%2F%2F172.19.4.115%3A20880%2Forg.apache.dubbo.demo.DemoService%3Fside%3Dprovider%26timeout%3D3000";
+        urlStr =
+                "dubbo%3A%2F%2F172.19.4.113%3A20880%2Forg.apache.dubbo.demo.DemoService%3Fside%3Dprovider%26timeout%3D3000";
+        urlStr2 =
+                "dubbo%3A%2F%2F172.19.4.114%3A20880%2Forg.apache.dubbo.demo.DemoService%3Fside%3Dprovider%26timeout%3D3000";
+        urlStr3 =
+                "dubbo%3A%2F%2F172.19.4.115%3A20880%2Forg.apache.dubbo.demo.DemoService%3Fside%3Dprovider%26timeout%3D3000";
     }
 
     @AfterEach
@@ -237,7 +240,6 @@ class CacheableFailbackRegistryTest {
         emptyRegistry.clearChildren();
         assertEquals(0, currentUrls.get().size());
         assertEquals(EMPTY_LIST, currentUrls.get());
-
     }
 
     @Test
@@ -284,6 +286,5 @@ class CacheableFailbackRegistryTest {
         assertEquals(2, resCount.get());
         emptyRegistry.clearChildren();
         assertEquals(2, currentUrls.get().size());
-
     }
 }

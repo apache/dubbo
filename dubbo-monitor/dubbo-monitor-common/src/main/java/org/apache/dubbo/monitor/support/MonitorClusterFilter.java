@@ -22,5 +22,4 @@ import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 
 @Activate(group = {CONSUMER})
-public class MonitorClusterFilter extends MonitorFilter implements ClusterFilter {
-}
+public class MonitorClusterFilter extends MonitorFilter implements ClusterFilter {}

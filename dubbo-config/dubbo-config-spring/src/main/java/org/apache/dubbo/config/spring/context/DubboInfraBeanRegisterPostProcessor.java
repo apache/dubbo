@@ -18,13 +18,11 @@ package org.apache.dubbo.config.spring.context;
 
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-
 
 /**
  * Register some infrastructure beans if not exists.
@@ -34,7 +32,7 @@ import org.springframework.context.ApplicationContextAware;
  * @see org.springframework.context.support.PostProcessorRegistrationDelegate#invokeBeanFactoryPostProcessors(
  *org.springframework.beans.factory.config.ConfigurableListableBeanFactory, java.util.List)
  */
-public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware {
+public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegistryPostProcessor {
 
     /**
      * The bean name of {@link ReferenceAnnotationBeanPostProcessor}
@@ -42,7 +40,6 @@ public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegist
     public static final String BEAN_NAME = "dubboInfraBeanRegisterPostProcessor";
 
     private BeanDefinitionRegistry registry;
-    private ApplicationContext applicationContext;
 
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
@@ -52,12 +49,14 @@ public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegist
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 
-        // In Spring 3.2.x, registry may be null because do not call postProcessBeanDefinitionRegistry method before postProcessBeanFactory
+        // In Spring 3.2.x, registry may be null because do not call postProcessBeanDefinitionRegistry method before
+        // postProcessBeanFactory
         if (registry != null) {
-            // register ReferenceAnnotationBeanPostProcessor early before PropertySourcesPlaceholderConfigurer/PropertyPlaceholderConfigurer
+            // register ReferenceAnnotationBeanPostProcessor early before
+            // PropertySourcesPlaceholderConfigurer/PropertyPlaceholderConfigurer
             // for processing early init ReferenceBean
             ReferenceAnnotationBeanPostProcessor referenceAnnotationBeanPostProcessor = beanFactory.getBean(
-                ReferenceAnnotationBeanPostProcessor.BEAN_NAME, ReferenceAnnotationBeanPostProcessor.class);
+                    ReferenceAnnotationBeanPostProcessor.BEAN_NAME, ReferenceAnnotationBeanPostProcessor.class);
             beanFactory.addBeanPostProcessor(referenceAnnotationBeanPostProcessor);
 
             // register PropertySourcesPlaceholderConfigurer bean if not exits
@@ -65,13 +64,8 @@ public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegist
         }
 
         // fix https://github.com/apache/dubbo/issues/10278
-        if (registry != null){
+        if (registry != null) {
             registry.removeBeanDefinition(BEAN_NAME);
         }
-    }
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
     }
 }

@@ -101,12 +101,11 @@ public class ConditionMatch {
 
     @Override
     public String toString() {
-        return "ConditionMatch{" +
-            "address='" + address + '\'' +
-            "providerAddress='" + providerAddress + '\'' +
-            ", service='" + service + '\'' +
-            ", app='" + app + '\'' +
-            ", param='" + param + '\'' +
-            '}';
+        return "ConditionMatch{" + "address='"
+                + address + '\'' + "providerAddress='"
+                + providerAddress + '\'' + ", service='"
+                + service + '\'' + ", app='"
+                + app + '\'' + ", param='"
+                + param + '\'' + '}';
     }
 }

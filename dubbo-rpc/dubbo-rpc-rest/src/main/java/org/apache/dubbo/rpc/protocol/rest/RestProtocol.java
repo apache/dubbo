@@ -36,7 +36,6 @@ import org.apache.dubbo.rpc.protocol.rest.annotation.metadata.MetadataResolver;
 import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployerManager;
 
-
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -58,23 +57,25 @@ public class RestProtocol extends AbstractProtocol {
 
     private static final int DEFAULT_PORT = 80;
 
-    private final ConcurrentMap<String, ReferenceCountedClient<? extends RestClient>> clients = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ReferenceCountedClient<? extends RestClient>> clients =
+            new ConcurrentHashMap<>();
 
     private final RestClientFactory clientFactory;
 
     private final Set<HttpConnectionPreBuildIntercept> httpConnectionPreBuildIntercepts;
 
     public RestProtocol(FrameworkModel frameworkModel) {
-        this.clientFactory = frameworkModel.getExtensionLoader(RestClientFactory.class).getAdaptiveExtension();
-        this.httpConnectionPreBuildIntercepts = new LinkedHashSet<>(frameworkModel.getExtensionLoader(HttpConnectionPreBuildIntercept.class).getActivateExtensions());
+        this.clientFactory =
+                frameworkModel.getExtensionLoader(RestClientFactory.class).getAdaptiveExtension();
+        this.httpConnectionPreBuildIntercepts = new LinkedHashSet<>(frameworkModel
+                .getExtensionLoader(HttpConnectionPreBuildIntercept.class)
+                .getActivateExtensions());
     }
-
 
     @Override
     public int getDefaultPort() {
         return DEFAULT_PORT;
     }
-
 
     @Override
     @SuppressWarnings("unchecked")
@@ -89,16 +90,13 @@ public class RestProtocol extends AbstractProtocol {
             }
         }
 
-
         // resolve metadata
-        ServiceRestMetadata serviceRestMetadata =
-            MetadataResolver.resolveProviderServiceMetadata(url.getServiceModel().getProxyObject().getClass(),
-                url, getContextPath(url));
+        ServiceRestMetadata serviceRestMetadata = MetadataResolver.resolveProviderServiceMetadata(
+                url.getServiceModel().getProxyObject().getClass(), url, getContextPath(url));
 
         // check json compatibility
         String jsonCheckLevel = url.getUrlParam().getParameter(JSON_CHECK_LEVEL);
         checkJsonCompatibility(invoker.getInterface(), jsonCheckLevel);
-
 
         // deploy service
         URL newURL = ServiceDeployerManager.deploy(url, serviceRestMetadata, invoker);
@@ -106,8 +104,8 @@ public class RestProtocol extends AbstractProtocol {
         // create server
         PortUnificationExchanger.bind(newURL, new DefaultPuHandler());
 
-        ServiceDeployer serviceDeployer = (ServiceDeployer) newURL.getAttribute(REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY);
-
+        ServiceDeployer serviceDeployer =
+                (ServiceDeployer) newURL.getAttribute(REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY);
 
         URL finalUrl = newURL;
         exporter = new AbstractExporter<T>(invoker) {
@@ -129,22 +127,33 @@ public class RestProtocol extends AbstractProtocol {
             if (!compatibility) {
                 List<String> unsupportedMethods = JsonCompatibilityUtil.getUnsupportedMethods(clazz);
                 assert unsupportedMethods != null;
-                logger.warn("", "", "", String.format("Interface %s does not support json serialization, the specific methods are %s.", clazz.getName(), unsupportedMethods));
+                logger.warn(
+                        "",
+                        "",
+                        "",
+                        String.format(
+                                "Interface %s does not support json serialization, the specific methods are %s.",
+                                clazz.getName(), unsupportedMethods));
             } else {
-                logger.debug("Check json compatibility complete, all methods of {} can be serialized using json.", clazz.getName());
+                logger.debug(
+                        "Check json compatibility complete, all methods of {} can be serialized using json.",
+                        clazz.getName());
             }
         } else if (JSON_CHECK_LEVEL_STRICT.equals(jsonCheckLevel)) {
             boolean compatibility = JsonCompatibilityUtil.checkClassCompatibility(clazz);
             if (!compatibility) {
                 List<String> unsupportedMethods = JsonCompatibilityUtil.getUnsupportedMethods(clazz);
                 assert unsupportedMethods != null;
-                throw new IllegalStateException(String.format("Interface %s does not support json serialization, the specific methods are %s.", clazz.getName(), unsupportedMethods));
+                throw new IllegalStateException(String.format(
+                        "Interface %s does not support json serialization, the specific methods are %s.",
+                        clazz.getName(), unsupportedMethods));
             } else {
-                logger.debug("Check json compatibility complete, all methods of {} can be serialized using json.", clazz.getName());
+                logger.debug(
+                        "Check json compatibility complete, all methods of {} can be serialized using json.",
+                        clazz.getName());
             }
         }
     }
-
 
     @Override
     protected <T> Invoker<T> protocolBindingRefer(final Class<T> type, final URL url) throws RpcException {
@@ -154,26 +163,25 @@ public class RestProtocol extends AbstractProtocol {
             synchronized (clients) {
                 refClient = clients.get(url.getAddress());
                 if (refClient == null || refClient.isDestroyed()) {
-                    refClient = ConcurrentHashMapUtils.computeIfAbsent(clients, url.getAddress(), _key -> createReferenceCountedClient(url));
+                    refClient = ConcurrentHashMapUtils.computeIfAbsent(
+                            clients, url.getAddress(), _key -> createReferenceCountedClient(url));
                 }
             }
         }
         refClient.retain();
 
-
         String contextPathFromUrl = getContextPath(url);
 
         // resolve metadata
         ServiceRestMetadata serviceRestMetadata =
-            MetadataResolver.resolveConsumerServiceMetadata(type, url, contextPathFromUrl);
+                MetadataResolver.resolveConsumerServiceMetadata(type, url, contextPathFromUrl);
 
-        Invoker<T> invoker = new RestInvoker<T>(type, url,
-            refClient, httpConnectionPreBuildIntercepts, serviceRestMetadata);
+        Invoker<T> invoker =
+                new RestInvoker<T>(type, url, refClient, httpConnectionPreBuildIntercepts, serviceRestMetadata);
 
         invokers.add(invoker);
         return invoker;
     }
-
 
     /**
      * create rest ReferenceCountedClient
@@ -189,7 +197,6 @@ public class RestProtocol extends AbstractProtocol {
 
         return new ReferenceCountedClient<>(restClient, clients, clientFactory, url);
     }
-
 
     @Override
     public void destroy() {
@@ -244,12 +251,13 @@ public class RestProtocol extends AbstractProtocol {
             if (contextPath.endsWith(url.getParameter(INTERFACE_KEY))) {
                 contextPath = contextPath.substring(0, contextPath.lastIndexOf(url.getParameter(INTERFACE_KEY)));
             }
-            return contextPath.endsWith(PATH_SEPARATOR) ? contextPath.substring(0, contextPath.length() - 1) : contextPath;
+            return contextPath.endsWith(PATH_SEPARATOR)
+                    ? contextPath.substring(0, contextPath.length() - 1)
+                    : contextPath;
         } else {
             return "";
         }
     }
-
 
     private void destroyInternal(URL url) {
         try {
@@ -258,7 +266,13 @@ public class RestProtocol extends AbstractProtocol {
                 clients.remove(url.getAddress());
             }
         } catch (Exception e) {
-            logger.warn(PROTOCOL_ERROR_CLOSE_CLIENT, "", "", "Failed to close unused resources in rest protocol. interfaceName [" + url.getServiceInterface() + "]", e);
+            logger.warn(
+                    PROTOCOL_ERROR_CLOSE_CLIENT,
+                    "",
+                    "",
+                    "Failed to close unused resources in rest protocol. interfaceName [" + url.getServiceInterface()
+                            + "]",
+                    e);
         }
     }
 }

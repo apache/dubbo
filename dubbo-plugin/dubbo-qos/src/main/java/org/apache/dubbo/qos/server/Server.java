@@ -24,6 +24,8 @@ import org.apache.dubbo.qos.api.QosConfiguration;
 import org.apache.dubbo.qos.server.handler.QosProcessHandler;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -32,8 +34,6 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.concurrent.DefaultThreadFactory;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A server serves for both telnet access and http access
@@ -102,15 +102,16 @@ public class Server {
 
             @Override
             protected void initChannel(Channel ch) throws Exception {
-                ch.pipeline().addLast(new QosProcessHandler(frameworkModel,
-                        QosConfiguration.builder()
-                                .welcome(welcome)
-                                .acceptForeignIp(acceptForeignIp)
-                                .acceptForeignIpWhitelist(acceptForeignIpWhitelist)
-                                .anonymousAccessPermissionLevel(anonymousAccessPermissionLevel)
-                                .anonymousAllowCommands(anonymousAllowCommands)
-                                .build()
-                ));
+                ch.pipeline()
+                        .addLast(new QosProcessHandler(
+                                frameworkModel,
+                                QosConfiguration.builder()
+                                        .welcome(welcome)
+                                        .acceptForeignIp(acceptForeignIp)
+                                        .acceptForeignIpWhitelist(acceptForeignIpWhitelist)
+                                        .anonymousAccessPermissionLevel(anonymousAccessPermissionLevel)
+                                        .anonymousAllowCommands(anonymousAllowCommands)
+                                        .build()));
             }
         });
         try {

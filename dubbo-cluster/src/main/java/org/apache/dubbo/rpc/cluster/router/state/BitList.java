@@ -55,7 +55,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class BitList<E> extends AbstractList<E> implements Cloneable {
     private final BitSet rootSet;
     private volatile List<E> originList;
-    private final static BitList emptyList = new BitList(Collections.emptyList());
+    private static final BitList emptyList = new BitList(Collections.emptyList());
     private volatile List<E> tailList = null;
 
     public BitList(List<E> originList) {
@@ -367,7 +367,8 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
                 copiedTailList = null;
                 resultSet.set(toIndex, resultSet.length(), false);
             } else {
-                copiedTailList = copiedTailList == null ? null : copiedTailList.subList(0, toIndex - rootSet.cardinality());
+                copiedTailList =
+                        copiedTailList == null ? null : copiedTailList.subList(0, toIndex - rootSet.cardinality());
             }
         }
         if (fromIndex > 0) {
@@ -375,7 +376,9 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
                 resultSet.set(0, fromIndex, false);
             } else {
                 resultSet.clear();
-                copiedTailList = copiedTailList == null ? null : copiedTailList.subList(fromIndex - rootSet.cardinality(), copiedTailList.size());
+                copiedTailList = copiedTailList == null
+                        ? null
+                        : copiedTailList.subList(fromIndex - rootSet.cardinality(), copiedTailList.size());
             }
         }
         return new BitList<>(originList, resultSet, copiedTailList);
@@ -551,6 +554,7 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
 
     @Override
     public BitList<E> clone() {
-        return new BitList<>(originList, (BitSet) rootSet.clone(), tailList == null ? null : new LinkedList<>(tailList));
+        return new BitList<>(
+                originList, (BitSet) rootSet.clone(), tailList == null ? null : new LinkedList<>(tailList));
     }
 }

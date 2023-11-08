@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.dubbo;
 
 /**
@@ -55,11 +54,9 @@ public interface Constants {
 
     boolean DEFAULT_LAZY_REQUEST_WITH_WARNING = false;
 
-
     String ON_CONNECT_KEY = "onconnect";
 
     String ON_DISCONNECT_KEY = "ondisconnect";
 
     String ASYNC_METHOD_INFO = "async-method-info";
-
 }

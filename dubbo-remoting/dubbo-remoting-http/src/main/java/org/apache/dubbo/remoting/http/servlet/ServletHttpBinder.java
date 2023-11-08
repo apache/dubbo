@@ -30,5 +30,4 @@ public class ServletHttpBinder implements HttpBinder {
     public HttpServer bind(URL url, HttpHandler handler) {
         return new ServletHttpServer(url, handler);
     }
-
 }

@@ -49,7 +49,8 @@ public abstract class AbstractRegistryService implements RegistryService {
 
     // subscribed services
     // Map<serviceName, queryString>
-    private final ConcurrentMap<String, Map<String, String>> subscribed = new ConcurrentHashMap<String, Map<String, String>>();
+    private final ConcurrentMap<String, Map<String, String>> subscribed =
+            new ConcurrentHashMap<String, Map<String, String>>();
 
     // notified services
     // Map<serviceName, Map<url, queryString>>
@@ -57,7 +58,8 @@ public abstract class AbstractRegistryService implements RegistryService {
 
     // notification listeners for the subscribed services
     // Map<serviceName, List<notificationListener>>
-    private final ConcurrentMap<String, List<NotifyListener>> notifyListeners = new ConcurrentHashMap<String, List<NotifyListener>>();
+    private final ConcurrentMap<String, List<NotifyListener>> notifyListeners =
+            new ConcurrentHashMap<String, List<NotifyListener>>();
 
     @Override
     public void register(URL url) {
@@ -163,7 +165,8 @@ public abstract class AbstractRegistryService implements RegistryService {
         if (listener == null) {
             return;
         }
-        List<NotifyListener> listeners = ConcurrentHashMapUtils.computeIfAbsent(notifyListeners, service, k -> new CopyOnWriteArrayList<>());
+        List<NotifyListener> listeners =
+                ConcurrentHashMapUtils.computeIfAbsent(notifyListeners, service, k -> new CopyOnWriteArrayList<>());
         if (!listeners.contains(listener)) {
             listeners.add(listener);
         }
@@ -187,7 +190,13 @@ public abstract class AbstractRegistryService implements RegistryService {
                 try {
                     notify(service, urls, listener);
                 } catch (Throwable t) {
-                    logger.error(CONFIG_FAILED_NOTIFY_EVENT, "", "", "Failed to notify registry event, service: " + service + ", urls: " + urls + ", cause: " + t.getMessage(), t);
+                    logger.error(
+                            CONFIG_FAILED_NOTIFY_EVENT,
+                            "",
+                            "",
+                            "Failed to notify registry event, service: " + service + ", urls: " + urls + ", cause: "
+                                    + t.getMessage(),
+                            t);
                 }
             }
         }
@@ -202,8 +211,7 @@ public abstract class AbstractRegistryService implements RegistryService {
     }
 
     protected final void notify(String service, List<URL> urls) {
-        if (StringUtils.isEmpty(service)
-            || CollectionUtils.isEmpty(urls)) {
+        if (StringUtils.isEmpty(service) || CollectionUtils.isEmpty(urls)) {
             return;
         }
         doNotify(service, urls);
@@ -236,5 +244,4 @@ public abstract class AbstractRegistryService implements RegistryService {
     public Map<String, List<NotifyListener>> getListeners() {
         return Collections.unmodifiableMap(notifyListeners);
     }
-
 }

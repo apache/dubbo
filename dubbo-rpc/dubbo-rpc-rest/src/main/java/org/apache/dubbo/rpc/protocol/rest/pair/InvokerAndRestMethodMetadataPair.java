@@ -43,7 +43,6 @@ public class InvokerAndRestMethodMetadataPair {
         return restMethodMetadata;
     }
 
-
     public static InvokerAndRestMethodMetadataPair pair(Invoker invoker, RestMethodMetadata restMethodMetadata) {
         return new InvokerAndRestMethodMetadataPair(invoker, restMethodMetadata);
     }
@@ -63,21 +62,17 @@ public class InvokerAndRestMethodMetadataPair {
             return false;
         }
 
-
         Method beforeServiceMethod = beforeMetadata.getRestMethodMetadata().getReflectMethod();
 
         Method currentReflectMethod = this.restMethodMetadata.getReflectMethod();
 
         if (beforeServiceMethod.getName().equals(currentReflectMethod.getName()) // method name
-            // method param types
-            && Arrays.toString(beforeServiceMethod.getParameterTypes()).equals(Arrays.toString(currentReflectMethod.getParameterTypes()))) {
+                // method param types
+                && Arrays.toString(beforeServiceMethod.getParameterTypes())
+                        .equals(Arrays.toString(currentReflectMethod.getParameterTypes()))) {
             return true;
         }
 
         return false;
-
-
     }
-
-
 }

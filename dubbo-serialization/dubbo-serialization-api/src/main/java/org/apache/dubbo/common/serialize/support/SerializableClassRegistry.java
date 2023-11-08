@@ -25,7 +25,6 @@ import java.util.Map;
  */
 public abstract class SerializableClassRegistry {
 
-
     private static final Map<Class<?>, Object> REGISTRATIONS = new HashMap<>();
 
     /**

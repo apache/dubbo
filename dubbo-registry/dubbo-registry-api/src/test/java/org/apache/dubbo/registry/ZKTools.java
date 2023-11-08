@@ -19,6 +19,14 @@ package org.apache.dubbo.registry;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.api.CuratorEvent;
@@ -30,51 +38,46 @@ import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.curator.framework.recipes.cache.TreeCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 /**
  *
  */
 public class ZKTools {
     private static CuratorFramework client;
-    private static ExecutorService executor = Executors.newFixedThreadPool(1, new NamedThreadFactory("ZKTools-test", true));
+    private static ExecutorService executor =
+            Executors.newFixedThreadPool(1, new NamedThreadFactory("ZKTools-test", true));
 
     public static void main(String[] args) throws Exception {
-        client = CuratorFrameworkFactory.newClient("127.0.0.1:2181", 60 * 1000, 60 * 1000,
-                new ExponentialBackoffRetry(1000, 3));
+        client = CuratorFrameworkFactory.newClient(
+                "127.0.0.1:2181", 60 * 1000, 60 * 1000, new ExponentialBackoffRetry(1000, 3));
         client.start();
 
-        client.getCuratorListenable().addListener(new CuratorListener() {
-            @Override
-            public void eventReceived(CuratorFramework client, CuratorEvent event) throws Exception {
-                System.out.println("event notification: " + event.getPath());
-                System.out.println(event);
-            }
-        }, executor);
+        client.getCuratorListenable()
+                .addListener(
+                        new CuratorListener() {
+                            @Override
+                            public void eventReceived(CuratorFramework client, CuratorEvent event) throws Exception {
+                                System.out.println("event notification: " + event.getPath());
+                                System.out.println(event);
+                            }
+                        },
+                        executor);
 
-//        testMigrationRule();
+        //        testMigrationRule();
         testAppMigrationRule();
-//        tesConditionRule();
-//        testStartupConfig();
-//        testProviderConfig();
-//        testPathCache();
-//        testTreeCache();
-//        testCuratorListener();
-//       Thread.sleep(100000);
+        //        tesConditionRule();
+        //        testStartupConfig();
+        //        testProviderConfig();
+        //        testPathCache();
+        //        testTreeCache();
+        //        testCuratorListener();
+        //       Thread.sleep(100000);
     }
 
     public static void testMigrationRule() {
-        String serviceStr = "key: demo-consumer\n" +
-                "interfaces:\n" +
-                "  - serviceKey: org.apache.dubbo.demo.DemoService:1.0.0\n" +
-                "    threshold: 1.0\n" +
-                "    step: FORCE_APPLICATION";
+        String serviceStr = "key: demo-consumer\n" + "interfaces:\n"
+                + "  - serviceKey: org.apache.dubbo.demo.DemoService:1.0.0\n"
+                + "    threshold: 1.0\n"
+                + "    step: FORCE_APPLICATION";
         try {
             String servicePath = "/dubbo/config/DUBBO_SERVICEDISCOVERY_MIGRATION/demo-consumer.migration";
             if (client.checkExists().forPath(servicePath) == null) {
@@ -87,15 +90,14 @@ public class ZKTools {
     }
 
     public static void testAppMigrationRule() {
-        String serviceStr = "key: demo-consumer\n" +
-                "applications:\n" +
-                "  - name: demo-provider\n" +
-                "    step: FORCE_APPLICATION\n" +
-                "    threshold: 0.8\n" +
-                "interfaces:\n" +
-                "  - serviceKey: org.apache.dubbo.demo.DemoService\n" +
-                "    threshold: 1.0\n" +
-                "    step: FORCE_APPLICATION";
+        String serviceStr = "key: demo-consumer\n" + "applications:\n"
+                + "  - name: demo-provider\n"
+                + "    step: FORCE_APPLICATION\n"
+                + "    threshold: 0.8\n"
+                + "interfaces:\n"
+                + "  - serviceKey: org.apache.dubbo.demo.DemoService\n"
+                + "    threshold: 1.0\n"
+                + "    step: FORCE_APPLICATION";
         try {
             String servicePath = "/dubbo/config/DUBBO_SERVICEDISCOVERY_MIGRATION/demo-consumer.migration";
             if (client.checkExists().forPath(servicePath) == null) {
@@ -108,13 +110,13 @@ public class ZKTools {
     }
 
     public static void testStartupConfig() {
-        String str = "dubbo.registry.address=zookeeper://127.0.0.1:2181\n" +
-                "dubbo.registry.group=dubboregistrygroup1\n" +
-                "dubbo.metadata-report.address=zookeeper://127.0.0.1:2181\n" +
-                "dubbo.protocol.port=20990\n" +
-                "dubbo.service.org.apache.dubbo.demo.DemoService.timeout=9999\n";
+        String str =
+                "dubbo.registry.address=zookeeper://127.0.0.1:2181\n" + "dubbo.registry.group=dubboregistrygroup1\n"
+                        + "dubbo.metadata-report.address=zookeeper://127.0.0.1:2181\n"
+                        + "dubbo.protocol.port=20990\n"
+                        + "dubbo.service.org.apache.dubbo.demo.DemoService.timeout=9999\n";
 
-//        System.out.println(str);
+        //        System.out.println(str);
 
         try {
             String path = "/dubboregistrygroup1/config/dubbo/dubbo.properties";
@@ -128,19 +130,18 @@ public class ZKTools {
     }
 
     public static void testProviderConfig() {
-        String str = "---\n" +
-                "apiVersion: v2.7\n" +
-                "scope: service\n" +
-                "key: dd-test/org.apache.dubbo.demo.DemoService:1.0.4\n" +
-                "enabled: true\n" +
-                "configs:\n" +
-                "- addresses: ['0.0.0.0:20880']\n" +
-                "  side: provider\n" +
-                "  parameters:\n" +
-                "    timeout: 6000\n" +
-                "...";
+        String str = "---\n" + "apiVersion: v2.7\n"
+                + "scope: service\n"
+                + "key: dd-test/org.apache.dubbo.demo.DemoService:1.0.4\n"
+                + "enabled: true\n"
+                + "configs:\n"
+                + "- addresses: ['0.0.0.0:20880']\n"
+                + "  side: provider\n"
+                + "  parameters:\n"
+                + "    timeout: 6000\n"
+                + "...";
 
-//        System.out.println(str);
+        //        System.out.println(str);
 
         try {
             String path = "/dubbo/config/dd-test*org.apache.dubbo.demo.DemoService:1.0.4/configurators";
@@ -166,35 +167,33 @@ public class ZKTools {
     }
 
     public static void testConsumerConfig() {
-        String serviceStr = "---\n" +
-                "scope: service\n" +
-                "key: org.apache.dubbo.demo.DemoService\n" +
-                "configs:\n" +
-                " - addresses: [30.5.121.156]\n" +
-                "   side: consumer\n" +
-                "   rules:\n" +
-                "    cluster:\n" +
-                "     loadbalance: random\n" +
-                "     cluster: failfast\n" +
-                "    config:\n" +
-                "     timeout: 9999\n" +
-                "     weight: 222\n" +
-                "...";
-        String appStr = "---\n" +
-                "scope: application\n" +
-                "key: demo-consumer\n" +
-                "configs:\n" +
-                " - addresses: [30.5.121.156]\n" +
-                "   services: [org.apache.dubbo.demo.DemoService]\n" +
-                "   side: consumer\n" +
-                "   rules:\n" +
-                "    cluster:\n" +
-                "     loadbalance: random\n" +
-                "     cluster: failfast\n" +
-                "    config:\n" +
-                "     timeout: 4444\n" +
-                "     weight: 222\n" +
-                "...";
+        String serviceStr = "---\n" + "scope: service\n"
+                + "key: org.apache.dubbo.demo.DemoService\n"
+                + "configs:\n"
+                + " - addresses: [30.5.121.156]\n"
+                + "   side: consumer\n"
+                + "   rules:\n"
+                + "    cluster:\n"
+                + "     loadbalance: random\n"
+                + "     cluster: failfast\n"
+                + "    config:\n"
+                + "     timeout: 9999\n"
+                + "     weight: 222\n"
+                + "...";
+        String appStr = "---\n" + "scope: application\n"
+                + "key: demo-consumer\n"
+                + "configs:\n"
+                + " - addresses: [30.5.121.156]\n"
+                + "   services: [org.apache.dubbo.demo.DemoService]\n"
+                + "   side: consumer\n"
+                + "   rules:\n"
+                + "    cluster:\n"
+                + "     loadbalance: random\n"
+                + "     cluster: failfast\n"
+                + "    config:\n"
+                + "     timeout: 4444\n"
+                + "     weight: 222\n"
+                + "...";
         try {
             String servicePath = "/dubbo/config/org.apache.dubbo.demo.DemoService/configurators";
             if (client.checkExists().forPath(servicePath) == null) {
@@ -213,14 +212,13 @@ public class ZKTools {
     }
 
     public static void tesConditionRule() {
-        String serviceStr = "---\n" +
-                "scope: application\n" +
-                "force: true\n" +
-                "runtime: false\n" +
-                "conditions:\n" +
-                "  - method!=sayHello =>\n" +
-                "  - method=routeMethod1 => 30.5.121.156:20880\n" +
-                "...";
+        String serviceStr = "---\n" + "scope: application\n"
+                + "force: true\n"
+                + "runtime: false\n"
+                + "conditions:\n"
+                + "  - method!=sayHello =>\n"
+                + "  - method=routeMethod1 => 30.5.121.156:20880\n"
+                + "...";
         try {
             String servicePath = "/dubbo/config/demo-consumer/routers";
             if (client.checkExists().forPath(servicePath) == null) {
@@ -237,26 +235,31 @@ public class ZKTools {
     }
 
     public static void testPathCache() throws Exception {
-        CuratorFramework client = CuratorFrameworkFactory.newClient("127.0.0.1:2181", 60 * 1000, 60 * 1000,
-                new ExponentialBackoffRetry(1000, 3));
+        CuratorFramework client = CuratorFrameworkFactory.newClient(
+                "127.0.0.1:2181", 60 * 1000, 60 * 1000, new ExponentialBackoffRetry(1000, 3));
         client.start();
         PathChildrenCache pathChildrenCache = new PathChildrenCache(client, "/dubbo/config", true);
         pathChildrenCache.start(true);
-        pathChildrenCache.getListenable().addListener((zkClient, event) -> {
-            System.out.println(event.getData().getPath());
-        }, Executors.newFixedThreadPool(1));
+        pathChildrenCache
+                .getListenable()
+                .addListener(
+                        (zkClient, event) -> {
+                            System.out.println(event.getData().getPath());
+                        },
+                        Executors.newFixedThreadPool(1));
         List<ChildData> dataList = pathChildrenCache.getCurrentData();
         dataList.stream().map(ChildData::getPath).forEach(System.out::println);
     }
 
     public static void testTreeCache() throws Exception {
-        CuratorFramework client = CuratorFrameworkFactory.newClient("127.0.0.1:2181", 60 * 1000, 60 * 1000,
-                new ExponentialBackoffRetry(1000, 3));
+        CuratorFramework client = CuratorFrameworkFactory.newClient(
+                "127.0.0.1:2181", 60 * 1000, 60 * 1000, new ExponentialBackoffRetry(1000, 3));
         client.start();
 
         CountDownLatch latch = new CountDownLatch(1);
 
-        TreeCache treeCache = TreeCache.newBuilder(client, "/dubbo/config").setCacheData(true).build();
+        TreeCache treeCache =
+                TreeCache.newBuilder(client, "/dubbo/config").setCacheData(true).build();
         treeCache.start();
         treeCache.getListenable().addListener(new TreeCacheListener() {
             @Override
@@ -302,7 +305,7 @@ public class ZKTools {
 
         latch.await();
 
-       /* Map<String, ChildData> dataMap = treeCache.getCurrentChildren("/dubbo/config");
+        /* Map<String, ChildData> dataMap = treeCache.getCurrentChildren("/dubbo/config");
         dataMap.forEach((k, v) -> {
             System.out.println(k);
             treeCache.getCurrentChildren("/dubbo/config/" + k).forEach((ck, cv) -> {
@@ -319,21 +322,21 @@ public class ZKTools {
     }
 
     public static void testCuratorListener() throws Exception {
-        CuratorFramework client = CuratorFrameworkFactory.newClient("127.0.0.1:2181", 60 * 1000, 60 * 1000,
-                new ExponentialBackoffRetry(1000, 3));
+        CuratorFramework client = CuratorFrameworkFactory.newClient(
+                "127.0.0.1:2181", 60 * 1000, 60 * 1000, new ExponentialBackoffRetry(1000, 3));
         client.start();
 
         List<String> children = client.getChildren().forPath("/dubbo/config");
         children.forEach(System.out::println);
-/*
+        /*
 
-        client.getCuratorListenable().addListener(new CuratorListener() {
-            @Override
-            public void eventReceived(CuratorFramework curatorFramework, CuratorEvent curatorEvent) throws Exception {
-                curatorEvent.get
-            }
-        });
-*/
+                client.getCuratorListenable().addListener(new CuratorListener() {
+                    @Override
+                    public void eventReceived(CuratorFramework curatorFramework, CuratorEvent curatorEvent) throws Exception {
+                        curatorEvent.get
+                    }
+                });
+        */
 
         /*client.getChildren().usingWatcher(new CuratorWatcher() {
             @Override

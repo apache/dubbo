@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.spring.aot;
 
 import org.apache.dubbo.common.aot.NativeDetector;
+
 import org.springframework.core.SpringProperties;
 
 public abstract class AotWithSpringDetector {
@@ -39,5 +40,4 @@ public abstract class AotWithSpringDetector {
     public static boolean useGeneratedArtifacts() {
         return (NativeDetector.inNativeImage() || SpringProperties.getFlag(AOT_ENABLED));
     }
-
 }

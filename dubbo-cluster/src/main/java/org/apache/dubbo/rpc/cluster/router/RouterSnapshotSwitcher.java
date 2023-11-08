@@ -26,7 +26,7 @@ public class RouterSnapshotSwitcher {
     private volatile boolean enable;
     private final Set<String> enabledService = new ConcurrentHashSet<>();
 
-    private final static int MAX_LENGTH = 1 << 5; // 2 ^ 5 = 31
+    private static final int MAX_LENGTH = 1 << 5; // 2 ^ 5 = 31
 
     private final AtomicInteger offset = new AtomicInteger(0);
     private volatile String[] recentSnapshot = new String[MAX_LENGTH];

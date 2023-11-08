@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.compact.Dubbo2CompactUtils;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.RegexProperties;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -44,7 +45,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.UNLOAD_CLUSTER_R
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 
 /**
- * ReferenceConfig
+ * Base configuration for the service reference.
  *
  * @export
  */
@@ -55,24 +56,23 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     private static final String ORIGIN_CONFIG = "ORIGIN_CONFIG";
 
     /**
-     * The interface class of the reference service
+     * The interface class of the reference service.
      */
     protected Class<?> interfaceClass;
 
-
     /**
-     * The url for peer-to-peer invocation
+     * The URL for peer-to-peer invocation.
      */
     protected String url;
 
     /**
-     * The consumer config (default)
+     * The default consumer configuration.
      */
     protected ConsumerConfig consumer;
 
     /**
-     * In the mesh mode, uninstall the directory, router and load balance related to the cluster in the currently invoked invoker.
-     * Delegate retry, load balancing, timeout and other traffic management capabilities to Sidecar.
+     * In mesh mode, this flag uninstalls the directory, router, and load balancing configurations related to the cluster in the currently invoked invoker.
+     * It delegates retry, load balancing, timeout, and other traffic management capabilities to Sidecar.
      */
     protected Boolean unloadClusterRelated;
 
@@ -133,8 +133,8 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         super.preProcessRefresh();
         if (consumer == null) {
             consumer = getModuleConfigManager()
-                .getDefaultConsumer()
-                .orElseThrow(() -> new IllegalStateException("Default consumer is not initialized"));
+                    .getDefaultConsumer()
+                    .orElseThrow(() -> new IllegalStateException("Default consumer is not initialized"));
         }
         // try set properties from `dubbo.reference` if not set in current config
         refreshWithPrefixes(super.getPrefixes(), ConfigMode.OVERRIDE_IF_ABSENT);
@@ -227,7 +227,9 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     public static Class<?> determineInterfaceClass(String generic, String interfaceName, ClassLoader classLoader) {
         if (ProtocolUtils.isGeneric(generic)) {
-            return com.alibaba.dubbo.rpc.service.GenericService.class;
+            return Dubbo2CompactUtils.isEnabled() && Dubbo2CompactUtils.isGenericServiceClassLoaded()
+                    ? Dubbo2CompactUtils.getGenericServiceClass()
+                    : GenericService.class;
         }
         try {
             if (StringUtils.isNotEmpty(interfaceName)) {
@@ -258,12 +260,15 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         } else {
             if (interfaceClass != null) {
                 try {
-                    if (!interfaceClass.equals(Class.forName(interfaceClass.getName(), false, getInterfaceClassLoader()))) {
-                        // interfaceClass is not visible from origin classloader, override the classloader from interfaceClass into referenceConfig
+                    if (!interfaceClass.equals(
+                            Class.forName(interfaceClass.getName(), false, getInterfaceClassLoader()))) {
+                        // interfaceClass is not visible from origin classloader, override the classloader from
+                        // interfaceClass into referenceConfig
                         setInterfaceClassLoader(interfaceClass.getClassLoader());
                     }
                 } catch (ClassNotFoundException e) {
-                    // class not found from origin classloader, override the classloader from interfaceClass into referenceConfig
+                    // class not found from origin classloader, override the classloader from interfaceClass into
+                    // referenceConfig
                     setInterfaceClassLoader(interfaceClass.getClassLoader());
                 }
             }
@@ -327,9 +332,18 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
             url = resolve;
             if (logger.isWarnEnabled()) {
                 if (resolveFile != null) {
-                    logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "Using default dubbo resolve file " + resolveFile + " replace " + interfaceName + "" + resolve + " to p2p invoke remote service.");
+                    logger.warn(
+                            COMMON_UNEXPECTED_EXCEPTION,
+                            "",
+                            "",
+                            "Using default dubbo resolve file " + resolveFile + " replace " + interfaceName + ""
+                                    + resolve + " to p2p invoke remote service.");
                 } else {
-                    logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "Using -D" + interfaceName + "=" + resolve + " to p2p invoke remote service.");
+                    logger.warn(
+                            COMMON_UNEXPECTED_EXCEPTION,
+                            "",
+                            "",
+                            "Using -D" + interfaceName + "=" + resolve + " to p2p invoke remote service.");
                 }
             }
         }
@@ -351,7 +365,9 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     @Override
     public String getVersion() {
-        return StringUtils.isEmpty(this.version) ? (consumer != null ? consumer.getVersion() : this.version) : this.version;
+        return StringUtils.isEmpty(this.version)
+                ? (consumer != null ? consumer.getVersion() : this.version)
+                : this.version;
     }
 
     @Override
@@ -382,5 +398,4 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     public void destroy() {
         getModuleConfigManager().removeConfig(this);
     }
-
 }

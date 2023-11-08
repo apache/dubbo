@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.constants;
 
 public interface RegistryConstants {
@@ -143,5 +142,4 @@ public interface RegistryConstants {
     boolean DEFAULT_ENABLE_EMPTY_PROTECTION = false;
     String REGISTER_CONSUMER_URL_KEY = "register-consumer-url";
     String REGISTRY_PROTOCOL_TYPE = "registry-protocol-type";
-
 }

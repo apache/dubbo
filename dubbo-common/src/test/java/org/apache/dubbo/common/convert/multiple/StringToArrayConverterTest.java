@@ -52,8 +52,8 @@ class StringToArrayConverterTest {
 
     @Test
     void testConvert() {
-        assertTrue(deepEquals(new Integer[]{123}, converter.convert("123", Integer[].class, Integer.class)));
-        assertTrue(deepEquals(new Integer[]{1, 2, 3}, converter.convert("1,2,3", Integer[].class, null)));
+        assertTrue(deepEquals(new Integer[] {123}, converter.convert("123", Integer[].class, Integer.class)));
+        assertTrue(deepEquals(new Integer[] {1, 2, 3}, converter.convert("1,2,3", Integer[].class, null)));
         assertNull(converter.convert("", Integer[].class, null));
         assertNull(converter.convert(null, Integer[].class, null));
     }

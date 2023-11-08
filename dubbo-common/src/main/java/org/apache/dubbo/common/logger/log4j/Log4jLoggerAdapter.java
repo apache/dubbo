@@ -20,12 +20,12 @@ import org.apache.dubbo.common.logger.Level;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerAdapter;
 
+import java.io.File;
+import java.util.Enumeration;
+
 import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.LogManager;
-
-import java.io.File;
-import java.util.Enumeration;
 
 public class Log4jLoggerAdapter implements LoggerAdapter {
 

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.spring.boot.observability.autoconfigure.exporter.zipkin;
 
 import org.springframework.http.HttpHeaders;
@@ -68,7 +67,8 @@ class ZipkinWebClientSender extends HttpSender {
         }
 
         private Mono<ResponseEntity<Void>> sendRequest() {
-            return this.webClient.post()
+            return this.webClient
+                    .post()
                     .uri(this.endpoint)
                     .headers(this::addDefaultHeaders)
                     .bodyValue(getBody())
@@ -79,6 +79,5 @@ class ZipkinWebClientSender extends HttpSender {
         private void addDefaultHeaders(HttpHeaders headers) {
             headers.addAll(getDefaultHeaders());
         }
-
     }
 }

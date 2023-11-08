@@ -16,15 +16,14 @@
  */
 package org.apache.dubbo.spring.boot.actuate.endpoint;
 
-
 import org.apache.dubbo.spring.boot.actuate.endpoint.metadata.DubboMetadata;
+
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.endpoint.AbstractEndpoint;
 import org.springframework.boot.actuate.endpoint.Endpoint;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-
-import java.util.Map;
 
 /**
  * Actuator {@link Endpoint} to expose Dubbo Meta Data

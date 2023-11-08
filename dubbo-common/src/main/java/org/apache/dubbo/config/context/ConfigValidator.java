@@ -21,5 +21,4 @@ import org.apache.dubbo.config.AbstractConfig;
 public interface ConfigValidator {
 
     void validate(AbstractConfig config);
-
 }

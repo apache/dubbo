@@ -27,5 +27,4 @@ public interface Resetable {
      * @param url
      */
     void reset(URL url);
-
 }

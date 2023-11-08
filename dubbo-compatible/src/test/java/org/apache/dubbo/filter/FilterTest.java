@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.filter;
 
 import org.apache.dubbo.rpc.RpcException;
@@ -48,7 +47,8 @@ class FilterTest {
     @Test
     void testDefault() throws Throwable {
         Invoker<FilterTest> invoker = new LegacyInvoker<FilterTest>(null);
-        org.apache.dubbo.rpc.Invocation invocation = new RpcInvocation(null, "echo", "DemoService", "DemoService", new Class[]{String.class}, new Object[]{"bbb"});
+        org.apache.dubbo.rpc.Invocation invocation = new RpcInvocation(
+                null, "echo", "DemoService", "DemoService", new Class[] {String.class}, new Object[] {"bbb"});
         org.apache.dubbo.rpc.Result res = myFilter.invoke(invoker, invocation);
         Assertions.assertEquals("alibaba", res.recreate());
     }
@@ -56,7 +56,8 @@ class FilterTest {
     @Test
     void testRecreate() throws Throwable {
         Invoker<FilterTest> invoker = new LegacyInvoker<FilterTest>(null);
-        org.apache.dubbo.rpc.Invocation invocation = new RpcInvocation(null, "echo", "DemoService", "DemoService", new Class[]{String.class}, new Object[]{"cc"});
+        org.apache.dubbo.rpc.Invocation invocation = new RpcInvocation(
+                null, "echo", "DemoService", "DemoService", new Class[] {String.class}, new Object[] {"cc"});
         org.apache.dubbo.rpc.Result res = myFilter.invoke(invoker, invocation);
         Assertions.assertEquals("123test", res.recreate());
     }

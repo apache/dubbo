@@ -19,6 +19,7 @@ package org.apache.dubbo.common.utils;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -70,8 +71,10 @@ public interface MethodUtils {
     static boolean isGetter(Method method) {
         String name = method.getName();
         return (name.startsWith("get") || name.startsWith("is"))
-                && !"get".equals(name) && !"is".equals(name)
-                && !"getClass".equals(name) && !"getObject".equals(name)
+                && !"get".equals(name)
+                && !"is".equals(name)
+                && !"getClass".equals(name)
+                && !"getObject".equals(name)
                 && Modifier.isPublic(method.getModifiers())
                 && method.getParameterTypes().length == 0
                 && ClassUtils.isPrimitive(method.getReturnType());
@@ -119,7 +122,6 @@ public interface MethodUtils {
         return method.getAnnotation(Deprecated.class) != null;
     }
 
-
     /**
      * Create an instance of {@link Predicate} for {@link Method} to exclude the specified declared class
      *
@@ -141,8 +143,11 @@ public interface MethodUtils {
      * @return non-null read-only {@link List}
      * @since 2.7.6
      */
-    static List<Method> getMethods(Class<?> declaringClass, boolean includeInheritedTypes, boolean publicOnly,
-                                   Predicate<Method>... methodsToFilter) {
+    static List<Method> getMethods(
+            Class<?> declaringClass,
+            boolean includeInheritedTypes,
+            boolean publicOnly,
+            Predicate<Method>... methodsToFilter) {
 
         if (declaringClass == null || declaringClass.isPrimitive()) {
             return emptyList();
@@ -223,11 +228,11 @@ public interface MethodUtils {
         return getMethods(declaringClass, true, true, methodsToFilter);
     }
 
-//    static List<Method> getOverriderMethods(Class<?> implementationClass, Class<?>... superTypes) {
+    //    static List<Method> getOverriderMethods(Class<?> implementationClass, Class<?>... superTypes) {
 
-//
+    //
 
-//    }
+    //    }
 
     /**
      * Find the {@link Method} by the the specified type and method name without the parameter types
@@ -278,7 +283,8 @@ public interface MethodUtils {
         T value = null;
 
         if (method == null) {
-            throw new IllegalStateException(String.format("cannot find method %s,class: %s", methodName, type.getName()));
+            throw new IllegalStateException(
+                    String.format("cannot find method %s,class: %s", methodName, type.getName()));
         }
 
         try {
@@ -295,7 +301,6 @@ public interface MethodUtils {
 
         return value;
     }
-
 
     /**
      * Tests whether one method, as a member of a given type,
@@ -458,4 +463,3 @@ public interface MethodUtils {
         }
     }
 }
-

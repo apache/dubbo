@@ -14,8 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.compressor;
+
+import java.io.OutputStream;
 
 /**
  * Default compressor
@@ -36,6 +37,11 @@ public class Identity implements Compressor, DeCompressor {
     @Override
     public byte[] compress(byte[] payloadByteArr) {
         return payloadByteArr;
+    }
+
+    @Override
+    public OutputStream decorate(OutputStream outputStream) {
+        return outputStream;
     }
 
     @Override

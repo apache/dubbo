@@ -40,13 +40,15 @@ public class ClassUtils {
     public static final String JAVA_EXTENSION = ".java";
     private static final int JIT_LIMIT = 5 * 1024;
 
-    private ClassUtils() {
-    }
+    private ClassUtils() {}
 
     public static Object newInstance(String name) {
         try {
             return forName(name).getDeclaredConstructor().newInstance();
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+        } catch (InstantiationException
+                | IllegalAccessException
+                | InvocationTargetException
+                | NoSuchMethodException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
@@ -127,9 +129,10 @@ public class ClassUtils {
     }
 
     private static Class<?> arrayForName(String className) throws ClassNotFoundException {
-        return Class.forName(className.endsWith("[]")
-                ? "[L" + className.substring(0, className.length() - 2) + ";"
-                : className, true, Thread.currentThread().getContextClassLoader());
+        return Class.forName(
+                className.endsWith("[]") ? "[L" + className.substring(0, className.length() - 2) + ";" : className,
+                true,
+                Thread.currentThread().getContextClassLoader());
     }
 
     public static Class<?> getBoxedClass(Class<?> type) {
@@ -254,9 +257,12 @@ public class ClassUtils {
     }
 
     public static boolean isBeforeJava5(String javaVersion) {
-        return (StringUtils.isEmpty(javaVersion) || "1.0".equals(javaVersion)
-                || "1.1".equals(javaVersion) || "1.2".equals(javaVersion)
-                || "1.3".equals(javaVersion) || "1.4".equals(javaVersion));
+        return (StringUtils.isEmpty(javaVersion)
+                || "1.0".equals(javaVersion)
+                || "1.1".equals(javaVersion)
+                || "1.2".equals(javaVersion)
+                || "1.3".equals(javaVersion)
+                || "1.4".equals(javaVersion));
     }
 
     public static boolean isBeforeJava6(String javaVersion) {
@@ -281,7 +287,8 @@ public class ClassUtils {
 
     public static void checkBytecode(String name, byte[] bytecode) {
         if (bytecode.length > JIT_LIMIT) {
-            System.err.println("The template bytecode too long, may be affect the JIT compiler. template class: " + name);
+            System.err.println(
+                    "The template bytecode too long, may be affect the JIT compiler. template class: " + name);
         }
     }
 
@@ -335,7 +342,8 @@ public class ClassUtils {
         return method.getName() + "(" + buf + ")";
     }
 
-    public static Method searchMethod(Class<?> currentClass, String name, Class<?>[] parameterTypes) throws NoSuchMethodException {
+    public static Method searchMethod(Class<?> currentClass, String name, Class<?>[] parameterTypes)
+            throws NoSuchMethodException {
         if (currentClass == null) {
             throw new NoSuchMethodException("class == null");
         }
@@ -403,5 +411,4 @@ public class ClassUtils {
         int i = qualifiedName.lastIndexOf('.');
         return i < 0 ? qualifiedName : qualifiedName.substring(i + 1);
     }
-
 }

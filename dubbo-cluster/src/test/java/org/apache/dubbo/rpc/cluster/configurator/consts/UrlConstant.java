@@ -20,12 +20,17 @@ package org.apache.dubbo.rpc.cluster.configurator.consts;
  * test case url constant
  */
 public class UrlConstant {
-    public static final String URL_CONSUMER = "dubbo://10.20.153.10:20880/com.foo.BarService?application=foo&side=consumer";
-    public static final String URL_ONE = "dubbo://10.20.153.10:20880/com.foo.BarService?application=foo&timeout=1000&side=consumer";
-    public static final String APPLICATION_BAR_SIDE_CONSUMER_11 = "dubbo://10.20.153.11:20880/com.foo.BarService?application=bar&side=consumer";
-    public static final String TIMEOUT_1000_SIDE_CONSUMER_11 = "dubbo://10.20.153.11:20880/com.foo.BarService?application=bar&timeout=1000&side=consumer";
+    public static final String URL_CONSUMER =
+            "dubbo://10.20.153.10:20880/com.foo.BarService?application=foo&side=consumer";
+    public static final String URL_ONE =
+            "dubbo://10.20.153.10:20880/com.foo.BarService?application=foo&timeout=1000&side=consumer";
+    public static final String APPLICATION_BAR_SIDE_CONSUMER_11 =
+            "dubbo://10.20.153.11:20880/com.foo.BarService?application=bar&side=consumer";
+    public static final String TIMEOUT_1000_SIDE_CONSUMER_11 =
+            "dubbo://10.20.153.11:20880/com.foo.BarService?application=bar&timeout=1000&side=consumer";
     public static final String SERVICE_TIMEOUT_200 = "override://10.20.153.10/com.foo.BarService?timeout=200";
-    public static final String APPLICATION_BAR_SIDE_CONSUMER_10 = "dubbo://10.20.153.10:20880/com.foo.BarService?application=bar&side=consumer";
-    public static final String TIMEOUT_1000_SIDE_CONSUMER_10 = "dubbo://10.20.153.10:20880/com.foo.BarService?application=bar&timeout=1000&side=consumer";
-
+    public static final String APPLICATION_BAR_SIDE_CONSUMER_10 =
+            "dubbo://10.20.153.10:20880/com.foo.BarService?application=bar&side=consumer";
+    public static final String TIMEOUT_1000_SIDE_CONSUMER_10 =
+            "dubbo://10.20.153.10:20880/com.foo.BarService?application=bar&timeout=1000&side=consumer";
 }

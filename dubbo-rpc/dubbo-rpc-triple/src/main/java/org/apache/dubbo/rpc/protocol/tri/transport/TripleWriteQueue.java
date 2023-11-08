@@ -14,22 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelPromise;
 import org.apache.dubbo.common.BatchExecutorQueue;
 import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
 
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
 
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelPromise;
+
 public class TripleWriteQueue extends BatchExecutorQueue<QueuedCommand> {
 
-    public TripleWriteQueue() {
-    }
+    public TripleWriteQueue() {}
 
     public TripleWriteQueue(int chunkSize) {
         super(chunkSize);

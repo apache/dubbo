@@ -20,8 +20,6 @@ import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.annotation.Service;
 
-import org.junit.jupiter.api.Test;
-
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -33,6 +31,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import org.junit.jupiter.api.Test;
 
 import static java.util.Arrays.asList;
 import static org.apache.dubbo.common.utils.AnnotationUtils.excludedType;
@@ -160,11 +160,11 @@ class AnnotationUtilsTest {
 
         annotations = getAllDeclaredAnnotations(findMethod(A.class, "execute"));
         MyAdaptive myAdaptive = (MyAdaptive) annotations.get(0);
-        assertArrayEquals(new String[]{"e"}, myAdaptive.value());
+        assertArrayEquals(new String[] {"e"}, myAdaptive.value());
 
         annotations = getAllDeclaredAnnotations(findMethod(B.class, "execute"));
         Adaptive adaptive = (Adaptive) annotations.get(0);
-        assertArrayEquals(new String[]{"f"}, adaptive.value());
+        assertArrayEquals(new String[] {"f"}, adaptive.value());
     }
 
     @Test
@@ -210,32 +210,38 @@ class AnnotationUtilsTest {
         assertEquals(set3, set4);
     }
 
-
     @Test
     void testIsAnnotationPresent() {
         assertTrue(isAnnotationPresent(A.class, true, Service.class));
-        assertTrue(isAnnotationPresent(A.class, true, Service.class, com.alibaba.dubbo.config.annotation.Service.class));
+        //        assertTrue(isAnnotationPresent(A.class, true, Service.class,
+        // com.alibaba.dubbo.config.annotation.Service.class));
         assertTrue(isAnnotationPresent(A.class, Service.class));
         assertTrue(isAnnotationPresent(A.class, "org.apache.dubbo.config.annotation.Service"));
-        assertTrue(AnnotationUtils.isAllAnnotationPresent(A.class, Service.class, Service.class, com.alibaba.dubbo.config.annotation.Service.class));
+        //        assertTrue(AnnotationUtils.isAllAnnotationPresent(A.class, Service.class, Service.class,
+        // com.alibaba.dubbo.config.annotation.Service.class));
+        assertTrue(AnnotationUtils.isAllAnnotationPresent(A.class, Service.class, Service.class));
         assertTrue(isAnnotationPresent(A.class, Deprecated.class));
     }
 
     @Test
     void testIsAnyAnnotationPresent() {
-        assertTrue(isAnyAnnotationPresent(A.class, Service.class, com.alibaba.dubbo.config.annotation.Service.class, Deprecated.class));
-        assertTrue(isAnyAnnotationPresent(A.class, Service.class, com.alibaba.dubbo.config.annotation.Service.class));
+        //        assertTrue(isAnyAnnotationPresent(A.class, Service.class,
+        // com.alibaba.dubbo.config.annotation.Service.class, Deprecated.class));
+        //        assertTrue(isAnyAnnotationPresent(A.class, Service.class,
+        // com.alibaba.dubbo.config.annotation.Service.class));
         assertTrue(isAnyAnnotationPresent(A.class, Service.class, Deprecated.class));
-        assertTrue(isAnyAnnotationPresent(A.class, com.alibaba.dubbo.config.annotation.Service.class, Deprecated.class));
+        //        assertTrue(isAnyAnnotationPresent(A.class, com.alibaba.dubbo.config.annotation.Service.class,
+        // Deprecated.class));
+        assertTrue(isAnyAnnotationPresent(A.class, Deprecated.class));
         assertTrue(isAnyAnnotationPresent(A.class, Service.class));
-        assertTrue(isAnyAnnotationPresent(A.class, com.alibaba.dubbo.config.annotation.Service.class));
+        //        assertTrue(isAnyAnnotationPresent(A.class, com.alibaba.dubbo.config.annotation.Service.class));
         assertTrue(isAnyAnnotationPresent(A.class, Deprecated.class));
     }
 
     @Test
     void testGetAnnotation() {
         assertNotNull(getAnnotation(A.class, "org.apache.dubbo.config.annotation.Service"));
-        assertNotNull(getAnnotation(A.class, "com.alibaba.dubbo.config.annotation.Service"));
+        //        assertNotNull(getAnnotation(A.class, "com.alibaba.dubbo.config.annotation.Service"));
         assertNotNull(getAnnotation(A.class, "org.apache.dubbo.common.extension.Adaptive"));
         assertNull(getAnnotation(A.class, "java.lang.Deprecated"));
         assertNull(getAnnotation(A.class, "java.lang.String"));
@@ -282,16 +288,11 @@ class AnnotationUtilsTest {
     }
 
     @Service(interfaceName = "java.lang.CharSequence", interfaceClass = CharSequence.class)
-    @com.alibaba.dubbo.config.annotation.Service(interfaceName = "java.lang.CharSequence", interfaceClass = CharSequence.class)
     @Adaptive(value = {"a", "b", "c"})
     static class A {
 
         @MyAdaptive("e")
-        public void execute() {
-
-        }
-
-
+        public void execute() {}
     }
 
     @Documented
@@ -299,40 +300,28 @@ class AnnotationUtilsTest {
     @Target({ElementType.TYPE})
     @Inherited
     @DubboService(interfaceClass = Cloneable.class)
-    @interface Service2 {
-
-
-    }
+    @interface Service2 {}
 
     @Documented
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.TYPE})
     @Inherited
     @Service2
-    @interface Service3 {
-
-
-    }
+    @interface Service3 {}
 
     @Documented
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.TYPE})
     @Inherited
     @Service3
-    @interface Service4 {
-
-
-    }
+    @interface Service4 {}
 
     @Documented
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.TYPE})
     @Inherited
     @Service4
-    @interface Service5 {
-
-
-    }
+    @interface Service5 {}
 
     @Documented
     @Retention(RetentionPolicy.RUNTIME)
@@ -342,7 +331,6 @@ class AnnotationUtilsTest {
     @interface MyAdaptive {
 
         String[] value() default {};
-
     }
 
     @Service5
@@ -350,44 +338,31 @@ class AnnotationUtilsTest {
 
         @Adaptive("f")
         @Override
-        public void execute() {
-
-        }
-
-
+        public void execute() {}
     }
 
     @MyAdaptive
-    static class C extends B {
-
-    }
+    static class C extends B {}
 
     private void assertADeclaredAnnotations(List<Annotation> annotations, int offset) {
-        int size = 3 + offset;
+        int size = 2 + offset;
         assertEquals(size, annotations.size());
         boolean apacheServiceFound = false;
-        boolean alibabaServiceFound = false;
         boolean adaptiveFound = false;
 
-        for (Annotation annotation: annotations) {
+        for (Annotation annotation : annotations) {
             if (!apacheServiceFound && (annotation instanceof Service)) {
-                assertEquals("java.lang.CharSequence", ((Service)annotation).interfaceName());
-                assertEquals(CharSequence.class, ((Service)annotation).interfaceClass());
+                assertEquals("java.lang.CharSequence", ((Service) annotation).interfaceName());
+                assertEquals(CharSequence.class, ((Service) annotation).interfaceClass());
                 apacheServiceFound = true;
                 continue;
             }
-            if (!alibabaServiceFound && (annotation instanceof com.alibaba.dubbo.config.annotation.Service)) {
-                assertEquals("java.lang.CharSequence", ((com.alibaba.dubbo.config.annotation.Service)annotation).interfaceName());
-                assertEquals(CharSequence.class, ((com.alibaba.dubbo.config.annotation.Service)annotation).interfaceClass());
-                alibabaServiceFound = true;
-                continue;
-            }
             if (!adaptiveFound && (annotation instanceof Adaptive)) {
-                assertArrayEquals(new String[]{"a", "b", "c"}, ((Adaptive)annotation).value());
+                assertArrayEquals(new String[] {"a", "b", "c"}, ((Adaptive) annotation).value());
                 adaptiveFound = true;
                 continue;
             }
         }
-        assertTrue(apacheServiceFound && alibabaServiceFound && adaptiveFound);
+        assertTrue(apacheServiceFound && adaptiveFound);
     }
 }

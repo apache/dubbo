@@ -29,7 +29,7 @@ class CompositeConfigurationTest {
         InmemoryConfiguration inmemoryConfiguration1 = new InmemoryConfiguration();
         InmemoryConfiguration inmemoryConfiguration2 = new InmemoryConfiguration();
         InmemoryConfiguration inmemoryConfiguration3 = new InmemoryConfiguration();
-        CompositeConfiguration configuration = new CompositeConfiguration(new Configuration[]{inmemoryConfiguration1});
+        CompositeConfiguration configuration = new CompositeConfiguration(new Configuration[] {inmemoryConfiguration1});
         configuration.addConfiguration(inmemoryConfiguration2);
         configuration.addConfigurationFirst(inmemoryConfiguration3);
 

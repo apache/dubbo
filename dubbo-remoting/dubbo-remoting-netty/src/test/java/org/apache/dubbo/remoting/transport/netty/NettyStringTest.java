@@ -23,6 +23,7 @@ import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -39,8 +40,8 @@ class NettyStringTest {
 
     @BeforeAll
     public static void setUp() throws Exception {
-        //int port = (int) (1000 * Math.random() + 10000);
-        //int port = 10001;
+        // int port = (int) (1000 * Math.random() + 10000);
+        // int port = 10001;
         int port = NetUtils.getAvailablePort();
         System.out.println(port);
         URL serverURL = URL.valueOf("telnet://0.0.0.0:" + port + "?server=netty3&codec=telnet");
@@ -59,17 +60,15 @@ class NettyStringTest {
     @AfterAll
     public static void tearDown() {
         try {
-            if (server != null)
-                server.close();
+            if (server != null) server.close();
         } finally {
-            if (client != null)
-                client.close();
+            if (client != null) client.close();
         }
     }
 
     @Test
     void testHandler() {
-        //Thread.sleep(20000);
+        // Thread.sleep(20000);
         /*client.request("world\r\n");
         Future future = client.request("world", 10000);
         String result = (String)future.get();

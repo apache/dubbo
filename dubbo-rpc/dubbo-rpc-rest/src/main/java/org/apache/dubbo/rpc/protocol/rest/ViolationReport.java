@@ -19,11 +19,12 @@ package org.apache.dubbo.rpc.protocol.rest;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
+
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
-@XmlRootElement(name="violationReport")
+@XmlRootElement(name = "violationReport")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class ViolationReport implements Serializable {
 

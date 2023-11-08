@@ -59,12 +59,13 @@ class EchoFilterTest {
 
     Invocation createMockRpcInvocation() {
         Invocation invocation = mock(RpcInvocation.class);
-        given(invocation.getParameterTypes()).willReturn(new Class<?>[]{Enum.class});
-        given(invocation.getArguments()).willReturn(new Object[]{"hello"});
+        given(invocation.getParameterTypes()).willReturn(new Class<?>[] {Enum.class});
+        given(invocation.getArguments()).willReturn(new Object[] {"hello"});
         given(invocation.getObjectAttachments()).willReturn(null);
         return invocation;
     }
-    Invoker<DemoService> createMockInvoker(Invocation invocation){
+
+    Invoker<DemoService> createMockInvoker(Invocation invocation) {
         Invoker<DemoService> invoker = mock(Invoker.class);
         given(invoker.isAvailable()).willReturn(true);
         given(invoker.getInterface()).willReturn(DemoService.class);

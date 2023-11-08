@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.compressor;
 
 import org.apache.dubbo.rpc.RpcException;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * snappy compressor, Provide high-speed compression speed and reasonable compression ratio
@@ -40,12 +40,16 @@ public class Snappy implements Compressor, DeCompressor {
         if (null == payloadByteArr || 0 == payloadByteArr.length) {
             return new byte[0];
         }
-
         try {
             return org.xerial.snappy.Snappy.compress(payloadByteArr);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    @Override
+    public OutputStream decorate(OutputStream outputStream) {
+        return outputStream;
     }
 
     @Override

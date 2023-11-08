@@ -25,7 +25,9 @@ public class IntSumMerger implements Merger<Integer> {
 
     @Override
     public Integer merge(Integer... items) {
-        return Arrays.stream(items).filter(Objects::nonNull)
-            .mapToInt(Integer::intValue).sum();
+        return Arrays.stream(items)
+                .filter(Objects::nonNull)
+                .mapToInt(Integer::intValue)
+                .sum();
     }
 }

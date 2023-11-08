@@ -32,11 +32,12 @@ public class ApiProvider {
         serviceConfig.setRef(new GreeterServiceImpl());
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
-        bootstrap.application(new ApplicationConfig("dubbo-demo-triple-api-provider"))
-            .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
-            .protocol(new ProtocolConfig(CommonConstants.TRIPLE, -1))
-            .service(serviceConfig)
-            .start()
-            .await();
+        bootstrap
+                .application(new ApplicationConfig("dubbo-demo-triple-api-provider"))
+                .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
+                .protocol(new ProtocolConfig(CommonConstants.TRIPLE, -1))
+                .service(serviceConfig)
+                .start()
+                .await();
     }
 }

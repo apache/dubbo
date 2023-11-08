@@ -39,5 +39,4 @@ public class LruCacheFactory extends AbstractCacheFactory {
     protected Cache createCache(URL url) {
         return new LruCache(url);
     }
-
 }

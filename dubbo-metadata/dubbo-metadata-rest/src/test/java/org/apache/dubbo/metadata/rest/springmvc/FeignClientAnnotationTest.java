@@ -21,14 +21,16 @@ import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 import org.apache.dubbo.metadata.rest.feign.FeignClientController;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 public class FeignClientAnnotationTest {
 
-    private SpringMvcServiceRestMetadataResolver instance = new SpringMvcServiceRestMetadataResolver(ApplicationModel.defaultModel());
+    private SpringMvcServiceRestMetadataResolver instance =
+            new SpringMvcServiceRestMetadataResolver(ApplicationModel.defaultModel());
 
     @Test
     void testFeignClientAnnotationResolve() {
@@ -40,8 +42,10 @@ public class FeignClientAnnotationTest {
 
         ServiceRestMetadata resolve = instance.resolve(service, serviceRestMetadata);
 
-        Map<PathMatcher, RestMethodMetadata> unContainPathVariableToServiceMap = resolve.getPathUnContainPathVariableToServiceMap();
-        RestMethodMetadata restMethodMetadata = unContainPathVariableToServiceMap.get(PathMatcher.getInvokeCreatePathMatcher("/feign/context/hello", null, null, null, "GET"));
+        Map<PathMatcher, RestMethodMetadata> unContainPathVariableToServiceMap =
+                resolve.getPathUnContainPathVariableToServiceMap();
+        RestMethodMetadata restMethodMetadata = unContainPathVariableToServiceMap.get(
+                PathMatcher.getInvokeCreatePathMatcher("/feign/context/hello", null, null, null, "GET"));
         Assertions.assertNotNull(restMethodMetadata);
     }
 }

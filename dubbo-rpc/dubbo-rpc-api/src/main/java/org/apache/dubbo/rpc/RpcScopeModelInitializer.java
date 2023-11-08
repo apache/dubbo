@@ -33,12 +33,8 @@ public class RpcScopeModelInitializer implements ScopeModelInitializer {
     }
 
     @Override
-    public void initializeApplicationModel(ApplicationModel applicationModel) {
-
-    }
+    public void initializeApplicationModel(ApplicationModel applicationModel) {}
 
     @Override
-    public void initializeModuleModel(ModuleModel moduleModel) {
-
-    }
+    public void initializeModuleModel(ModuleModel moduleModel) {}
 }

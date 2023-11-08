@@ -19,11 +19,12 @@ package org.apache.dubbo.config.spring.isolation.spring.annotation.consumer.tri;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.spring.api.Box;
 import org.apache.dubbo.config.spring.api.DemoService;
+
 import org.springframework.stereotype.Component;
 
 @Component("tri-demoServiceV1")
 public class DemoServiceV1 implements DemoService {
-    @DubboReference(version = "1.0.0",group = "Group1", scope = "remote", protocol = "tri")
+    @DubboReference(version = "1.0.0", group = "Group1", scope = "remote", protocol = "tri")
     private DemoService demoService;
 
     @Override

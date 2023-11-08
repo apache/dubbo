@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.proxy;
 
 import org.apache.dubbo.common.URL;
@@ -34,7 +33,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_TIMEOUT_REQUEST;
 
 public class InvocationUtil {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(InvokerInvocationHandler.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(InvokerInvocationHandler.class);
 
     public static Object invoke(Invoker<?> invoker, RpcInvocation rpcInvocation) throws Throwable {
         RpcContext.RestoreServiceContext originServiceContext = RpcContext.storeServiceContext();
@@ -51,39 +51,51 @@ public class InvocationUtil {
                 ProfilerEntry parentProfiler = Profiler.getBizProfiler();
                 ProfilerEntry bizProfiler;
                 if (parentProfiler != null) {
-                    bizProfiler = Profiler.enter(parentProfiler,
-                        "Receive request. Client invoke begin. ServiceKey: " + serviceKey + " MethodName:" + rpcInvocation.getMethodName());
+                    bizProfiler = Profiler.enter(
+                            parentProfiler,
+                            "Receive request. Client invoke begin. ServiceKey: " + serviceKey + " MethodName:"
+                                    + rpcInvocation.getMethodName());
                 } else {
-                    bizProfiler = Profiler.start("Receive request. Client invoke begin. ServiceKey: " + serviceKey + " " + "MethodName:" + rpcInvocation.getMethodName());
+                    bizProfiler = Profiler.start("Receive request. Client invoke begin. ServiceKey: " + serviceKey + " "
+                            + "MethodName:" + rpcInvocation.getMethodName());
                 }
                 rpcInvocation.put(Profiler.PROFILER_KEY, bizProfiler);
                 try {
                     return invoker.invoke(rpcInvocation).recreate();
                 } finally {
                     Profiler.release(bizProfiler);
-                    Long timeout = RpcUtils.convertToNumber(rpcInvocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY));
+                    Long timeout =
+                            RpcUtils.convertToNumber(rpcInvocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY));
 
                     if (timeout == null) {
-                        timeout = (long) url.getMethodPositiveParameter(rpcInvocation.getMethodName(),
-                            TIMEOUT_KEY,
-                            DEFAULT_TIMEOUT);
+                        timeout = (long) url.getMethodPositiveParameter(
+                                rpcInvocation.getMethodName(), TIMEOUT_KEY, DEFAULT_TIMEOUT);
                     }
                     long usage = bizProfiler.getEndTime() - bizProfiler.getStartTime();
                     if ((usage / (1000_000L * ProfilerSwitch.getWarnPercent())) > timeout) {
                         StringBuilder attachment = new StringBuilder();
                         rpcInvocation.foreachAttachment((entry) -> {
-                            attachment.append(entry.getKey()).append("=").append(entry.getValue()).append(";\n");
+                            attachment
+                                    .append(entry.getKey())
+                                    .append("=")
+                                    .append(entry.getValue())
+                                    .append(";\n");
                         });
 
-                        logger.warn(PROXY_TIMEOUT_REQUEST, "", "", String.format(
-                            "[Dubbo-Consumer] execute service %s#%s cost %d.%06d ms, this invocation almost (maybe already) timeout. Timeout: %dms\n" + "invocation context:\n%s" + "thread info: \n%s",
-                            rpcInvocation.getProtocolServiceKey(),
-                            rpcInvocation.getMethodName(),
-                            usage / 1000_000,
-                            usage % 1000_000,
-                            timeout,
-                            attachment,
-                            Profiler.buildDetail(bizProfiler)));
+                        logger.warn(
+                                PROXY_TIMEOUT_REQUEST,
+                                "",
+                                "",
+                                String.format(
+                                        "[Dubbo-Consumer] execute service %s#%s cost %d.%06d ms, this invocation almost (maybe already) timeout. Timeout: %dms\n"
+                                                + "invocation context:\n%s" + "thread info: \n%s",
+                                        rpcInvocation.getProtocolServiceKey(),
+                                        rpcInvocation.getMethodName(),
+                                        usage / 1000_000,
+                                        usage % 1000_000,
+                                        timeout,
+                                        attachment,
+                                        Profiler.buildDetail(bizProfiler)));
                     }
                 }
             }

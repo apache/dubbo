@@ -27,7 +27,6 @@ import org.apache.dubbo.rpc.RpcException;
 @Activate(Constants.URL_CONNECTION)
 public class URLConnectionClientFactory extends AbstractHttpClientFactory {
 
-
     @Override
     protected RestClient doCreateRestClient(URL url) throws RpcException {
 

@@ -22,6 +22,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -68,8 +69,7 @@ public interface MemberUtils {
     }
 
     static List<? extends Element> getAllDeclaredMembers(TypeMirror type) {
-        return getHierarchicalTypes(type)
-                .stream()
+        return getHierarchicalTypes(type).stream()
                 .map(MemberUtils::getDeclaredMembers)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());

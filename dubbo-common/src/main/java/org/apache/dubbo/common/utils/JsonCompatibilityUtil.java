@@ -32,13 +32,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-
 public class JsonCompatibilityUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(JsonCompatibilityUtil.class);
 
-    private static final Set<String> unsupportedClasses = new HashSet<>(Arrays.asList("java.util.Optional", "java.util.Calendar", "java.util.Iterator", "java.io.InputStream", "java.io.OutputStream"));
-
+    private static final Set<String> unsupportedClasses = new HashSet<>(Arrays.asList(
+            "java.util.Optional",
+            "java.util.Calendar",
+            "java.util.Iterator",
+            "java.io.InputStream",
+            "java.io.OutputStream"));
 
     /**
      * Determine whether a Class can be serialized by JSON.
@@ -60,7 +63,6 @@ public class JsonCompatibilityUtil {
         return true;
     }
 
-
     /**
      * Determine whether a Method can be serialized by JSON.
      * @param method Incoming Method.
@@ -73,7 +75,7 @@ public class JsonCompatibilityUtil {
 
         Type[] types = method.getGenericParameterTypes();
         List<Type> typeList = new ArrayList<>(Arrays.asList(types));
-        Type returnType =  method.getGenericReturnType();
+        Type returnType = method.getGenericReturnType();
         typeList.add(returnType);
         for (Type type : typeList) {
             result = checkType(type);
@@ -84,7 +86,6 @@ public class JsonCompatibilityUtil {
 
         return true;
     }
-
 
     /**
      * Get unsupported methods.
@@ -105,7 +106,6 @@ public class JsonCompatibilityUtil {
 
         return unsupportedMethods.size() > 0 ? unsupportedMethods : null;
     }
-
 
     /**
      * Determine whether a Type can be serialized by JSON.
@@ -137,7 +137,7 @@ public class JsonCompatibilityUtil {
             Type componentType = ((GenericArrayType) classType).getGenericComponentType();
             result = checkType(componentType);
             return result;
-        } else if (classType instanceof Class<?> ) {
+        } else if (classType instanceof Class<?>) {
             Class<?> clazz = (Class<?>) classType;
 
             String className = clazz.getName();
@@ -164,9 +164,9 @@ public class JsonCompatibilityUtil {
                     return true;
                 }
                 // deal with case of record
-//                if (clazz.isRecord()) {
-//                    return false;
-//                }
+                //                if (clazz.isRecord()) {
+                //                    return false;
+                //                }
                 // deal with field one by one
                 for (Field field : clazz.getDeclaredFields()) {
                     Type type = field.getGenericType();
@@ -181,5 +181,4 @@ public class JsonCompatibilityUtil {
 
         return true;
     }
-
 }

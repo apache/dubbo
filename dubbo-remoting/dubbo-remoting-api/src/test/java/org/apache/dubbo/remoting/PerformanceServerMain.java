@@ -24,5 +24,4 @@ public class PerformanceServerMain {
     public static void main(String[] args) throws Exception {
         new PerformanceServerTest().testServer();
     }
-
 }

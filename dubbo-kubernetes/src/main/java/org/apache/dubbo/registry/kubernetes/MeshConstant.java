@@ -22,22 +22,24 @@ public class MeshConstant {
     public static CustomResourceDefinitionContext getVsDefinition() {
         // TODO cache
         return new CustomResourceDefinitionContext.Builder()
-            .withGroup("service.dubbo.apache.org")
-            .withVersion("v1alpha1")
-            .withScope("Namespaced")
-            .withName("virtualservices.service.dubbo.apache.org")
-            .withPlural("virtualservices")
-            .withKind("VirtualService").build();
+                .withGroup("service.dubbo.apache.org")
+                .withVersion("v1alpha1")
+                .withScope("Namespaced")
+                .withName("virtualservices.service.dubbo.apache.org")
+                .withPlural("virtualservices")
+                .withKind("VirtualService")
+                .build();
     }
 
     public static CustomResourceDefinitionContext getDrDefinition() {
         // TODO cache
         return new CustomResourceDefinitionContext.Builder()
-            .withGroup("service.dubbo.apache.org")
-            .withVersion("v1alpha1")
-            .withScope("Namespaced")
-            .withName("destinationrules.service.dubbo.apache.org")
-            .withPlural("destinationrules")
-            .withKind("DestinationRule").build();
+                .withGroup("service.dubbo.apache.org")
+                .withVersion("v1alpha1")
+                .withScope("Namespaced")
+                .withName("destinationrules.service.dubbo.apache.org")
+                .withPlural("destinationrules")
+                .withKind("DestinationRule")
+                .build();
     }
 }

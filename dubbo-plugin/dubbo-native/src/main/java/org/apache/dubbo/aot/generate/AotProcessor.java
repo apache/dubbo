@@ -40,18 +40,22 @@ public class AotProcessor {
         NativeConfigurationWriter writer = new NativeConfigurationWriter(Paths.get(args[2]), args[4], args[5]);
 
         ResourceConfigMetadataRepository resourceRepository = new ResourceConfigMetadataRepository();
-        resourceRepository.registerIncludesPatterns(ResourceScanner.INSTANCE.distinctSpiResource().toArray(new String[]{}));
-        resourceRepository.registerIncludesPatterns(ResourceScanner.INSTANCE.distinctSecurityResource().toArray(new String[]{}));
+        resourceRepository.registerIncludesPatterns(
+                ResourceScanner.INSTANCE.distinctSpiResource().toArray(new String[] {}));
+        resourceRepository.registerIncludesPatterns(
+                ResourceScanner.INSTANCE.distinctSecurityResource().toArray(new String[] {}));
         writer.writeResourceConfig(resourceRepository);
-
 
         ReflectConfigMetadataRepository reflectRepository = new ReflectConfigMetadataRepository();
         reflectRepository
-            .registerSpiExtensionType(new ArrayList<>(ClassSourceScanner.INSTANCE.distinctSpiExtensionClasses(ResourceScanner.INSTANCE.distinctSpiResource()).values()))
-            .registerAdaptiveType(new ArrayList<>(ClassSourceScanner.INSTANCE.adaptiveClasses().values()))
-            .registerBeanType(ClassSourceScanner.INSTANCE.scopeModelInitializer())
-            .registerConfigType(ClassSourceScanner.INSTANCE.configClasses())
-            .registerTypeDescriber(getTypes());
+                .registerSpiExtensionType(new ArrayList<>(ClassSourceScanner.INSTANCE
+                        .distinctSpiExtensionClasses(ResourceScanner.INSTANCE.distinctSpiResource())
+                        .values()))
+                .registerAdaptiveType(new ArrayList<>(
+                        ClassSourceScanner.INSTANCE.adaptiveClasses().values()))
+                .registerBeanType(ClassSourceScanner.INSTANCE.scopeModelInitializer())
+                .registerConfigType(ClassSourceScanner.INSTANCE.configClasses())
+                .registerTypeDescriber(getTypes());
         writer.writeReflectionConfig(reflectRepository);
 
         ProxyConfigMetadataRepository proxyRepository = new ProxyConfigMetadataRepository();
@@ -61,30 +65,37 @@ public class AotProcessor {
 
     private static List<TypeDescriber> getTypes() {
         List<TypeDescriber> typeDescribers = new ArrayList<>();
-        FrameworkModel.defaultModel().defaultApplication().getExtensionLoader(ReflectionTypeDescriberRegistrar.class).getSupportedExtensionInstances().forEach(reflectionTypeDescriberRegistrar -> {
-            List<TypeDescriber> describers = new ArrayList<>();
-            try {
-                describers = reflectionTypeDescriberRegistrar.getTypeDescribers();
-            } catch (Throwable e) {
-                // The ReflectionTypeDescriberRegistrar implementation classes are shaded, causing some unused classes to be loaded.
-                // When loading a dependent class may appear that cannot be found, it does not affect.
-                // ignore
-            }
+        FrameworkModel.defaultModel()
+                .defaultApplication()
+                .getExtensionLoader(ReflectionTypeDescriberRegistrar.class)
+                .getSupportedExtensionInstances()
+                .forEach(reflectionTypeDescriberRegistrar -> {
+                    List<TypeDescriber> describers = new ArrayList<>();
+                    try {
+                        describers = reflectionTypeDescriberRegistrar.getTypeDescribers();
+                    } catch (Throwable e) {
+                        // The ReflectionTypeDescriberRegistrar implementation classes are shaded, causing some unused
+                        // classes to be loaded.
+                        // When loading a dependent class may appear that cannot be found, it does not affect.
+                        // ignore
+                    }
 
-            typeDescribers.addAll(describers);
-        });
+                    typeDescribers.addAll(describers);
+                });
 
         return typeDescribers;
     }
 
     private static List<JdkProxyDescriber> getProxyDescribers() {
         List<JdkProxyDescriber> jdkProxyDescribers = new ArrayList<>();
-        FrameworkModel.defaultModel().defaultApplication().getExtensionLoader(ProxyDescriberRegistrar.class).getSupportedExtensionInstances().forEach(reflectionTypeDescriberRegistrar -> {
-            jdkProxyDescribers.addAll(reflectionTypeDescriberRegistrar.getJdkProxyDescribers());
-        });
+        FrameworkModel.defaultModel()
+                .defaultApplication()
+                .getExtensionLoader(ProxyDescriberRegistrar.class)
+                .getSupportedExtensionInstances()
+                .forEach(reflectionTypeDescriberRegistrar -> {
+                    jdkProxyDescribers.addAll(reflectionTypeDescriberRegistrar.getJdkProxyDescribers());
+                });
 
         return jdkProxyDescribers;
     }
-
-
 }

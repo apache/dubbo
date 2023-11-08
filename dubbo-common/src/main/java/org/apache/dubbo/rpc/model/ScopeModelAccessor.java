@@ -34,5 +34,4 @@ public interface ScopeModelAccessor {
     default ModuleModel getModuleModel() {
         return ScopeModelUtil.getModuleModel(getScopeModel());
     }
-
 }

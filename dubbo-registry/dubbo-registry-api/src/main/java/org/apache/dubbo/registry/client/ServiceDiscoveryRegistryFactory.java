@@ -39,5 +39,4 @@ public class ServiceDiscoveryRegistryFactory extends AbstractRegistryFactory {
         }
         return new ServiceDiscoveryRegistry(url, applicationModel);
     }
-
 }

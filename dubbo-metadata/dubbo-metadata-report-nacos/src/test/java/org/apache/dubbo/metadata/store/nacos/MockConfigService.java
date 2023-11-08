@@ -32,9 +32,7 @@ public class MockConfigService implements ConfigService {
     }
 
     @Override
-    public void addListener(String dataId, String group, Listener listener) {
-
-    }
+    public void addListener(String dataId, String group, Listener listener) {}
 
     @Override
     public boolean publishConfig(String dataId, String group, String content) {
@@ -62,9 +60,7 @@ public class MockConfigService implements ConfigService {
     }
 
     @Override
-    public void removeListener(String dataId, String group, Listener listener) {
-
-    }
+    public void removeListener(String dataId, String group, Listener listener) {}
 
     @Override
     public String getServerStatus() {
@@ -72,7 +68,5 @@ public class MockConfigService implements ConfigService {
     }
 
     @Override
-    public void shutDown() {
-
-    }
+    public void shutDown() {}
 }

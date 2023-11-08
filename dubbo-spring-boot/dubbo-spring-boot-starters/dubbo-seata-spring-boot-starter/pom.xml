@@ -15,42 +15,39 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-spring-boot-starters</artifactId>
-        <version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
-
-    <artifactId>dubbo-seata-spring-boot-starter</artifactId>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.dubbo</groupId>
+    <artifactId>dubbo-spring-boot-starters</artifactId>
     <version>${revision}</version>
-    <packaging>jar</packaging>
-    <description>Apache Dubbo Seata Spring Boot Starter</description>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
 
-    <properties>
-    </properties>
+  <artifactId>dubbo-seata-spring-boot-starter</artifactId>
+  <version>${revision}</version>
+  <packaging>jar</packaging>
+  <description>Apache Dubbo Seata Spring Boot Starter</description>
 
-    <dependencies>
-        <!-- seata dependency -->
-        <dependency>
-            <groupId>io.seata</groupId>
-            <artifactId>seata-spring-boot-starter</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>io.seata</groupId>
-                    <artifactId>seata-core</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+  <properties />
 
-        <dependency>
-            <groupId>io.seata</groupId>
-            <artifactId>seata-core</artifactId>
-        </dependency>
-    </dependencies>
+  <dependencies>
+    <!-- seata dependency -->
+    <dependency>
+      <groupId>io.seata</groupId>
+      <artifactId>seata-spring-boot-starter</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>io.seata</groupId>
+          <artifactId>seata-core</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>io.seata</groupId>
+      <artifactId>seata-core</artifactId>
+    </dependency>
+  </dependencies>
 
 </project>

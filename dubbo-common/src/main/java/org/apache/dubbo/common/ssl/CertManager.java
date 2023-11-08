@@ -26,7 +26,8 @@ public class CertManager {
     private final List<CertProvider> certProviders;
 
     public CertManager(FrameworkModel frameworkModel) {
-        this.certProviders = frameworkModel.getExtensionLoader(CertProvider.class).getActivateExtensions();
+        this.certProviders =
+                frameworkModel.getExtensionLoader(CertProvider.class).getActivateExtensions();
     }
 
     public ProviderCert getProviderConnectionConfig(URL localAddress, SocketAddress remoteAddress) {

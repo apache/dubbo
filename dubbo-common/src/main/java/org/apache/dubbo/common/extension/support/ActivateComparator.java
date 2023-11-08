@@ -16,12 +16,15 @@
  */
 package org.apache.dubbo.common.extension.support;
 
+import org.apache.dubbo.common.compact.Dubbo2ActivateUtils;
+import org.apache.dubbo.common.compact.Dubbo2CompactUtils;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionDirector;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.utils.ArrayUtils;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -150,12 +153,13 @@ public class ActivateComparator implements Comparator<Class<?>> {
             info.before = activate.before();
             info.after = activate.after();
             info.order = activate.order();
-        } else if (clazz.isAnnotationPresent(com.alibaba.dubbo.common.extension.Activate.class)) {
-            com.alibaba.dubbo.common.extension.Activate activate = clazz.getAnnotation(
-                com.alibaba.dubbo.common.extension.Activate.class);
-            info.before = activate.before();
-            info.after = activate.after();
-            info.order = activate.order();
+        } else if (Dubbo2CompactUtils.isEnabled()
+                && Dubbo2ActivateUtils.isActivateLoaded()
+                && clazz.isAnnotationPresent(Dubbo2ActivateUtils.getActivateClass())) {
+            Annotation activate = clazz.getAnnotation(Dubbo2ActivateUtils.getActivateClass());
+            info.before = Dubbo2ActivateUtils.getBefore(activate);
+            info.after = Dubbo2ActivateUtils.getAfter(activate);
+            info.order = Dubbo2ActivateUtils.getOrder(activate);
         } else {
             info.order = 0;
         }

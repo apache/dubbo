@@ -25,6 +25,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
+
 import java.lang.reflect.Array;
 import java.util.Set;
 
@@ -58,19 +59,23 @@ public class SpringMvcServiceRestMetadataResolver extends AbstractServiceRestMet
     }
 
     @Override
-    protected boolean supports(ProcessingEnvironment processingEnv, TypeElement serviceType,
-                               TypeElement serviceInterfaceType, ExecutableElement method) {
+    protected boolean supports(
+            ProcessingEnvironment processingEnv,
+            TypeElement serviceType,
+            TypeElement serviceInterfaceType,
+            ExecutableElement method) {
         return isAnnotationPresent(method, REQUEST_MAPPING_ANNOTATION_CLASS_NAME);
     }
 
     public static boolean supports(TypeElement serviceType) {
         // class @Controller or @RequestMapping
-        return isAnnotationPresent(serviceType, CONTROLLER_ANNOTATION_CLASS_NAME) || isAnnotationPresent(serviceType, REQUEST_MAPPING_ANNOTATION_CLASS_NAME);
+        return isAnnotationPresent(serviceType, CONTROLLER_ANNOTATION_CLASS_NAME)
+                || isAnnotationPresent(serviceType, REQUEST_MAPPING_ANNOTATION_CLASS_NAME);
     }
 
     @Override
-    protected String resolveRequestPath(ProcessingEnvironment processingEnv, TypeElement serviceType,
-                                        ExecutableElement method) {
+    protected String resolveRequestPath(
+            ProcessingEnvironment processingEnv, TypeElement serviceType, ExecutableElement method) {
 
         String requestPathFromType = getRequestPath(serviceType);
 
@@ -79,10 +84,9 @@ public class SpringMvcServiceRestMetadataResolver extends AbstractServiceRestMet
         return buildPath(requestPathFromType, requestPathFromMethod);
     }
 
-
     @Override
-    protected String resolveRequestMethod(ProcessingEnvironment processingEnv, TypeElement serviceType,
-                                          ExecutableElement method) {
+    protected String resolveRequestMethod(
+            ProcessingEnvironment processingEnv, TypeElement serviceType, ExecutableElement method) {
 
         AnnotationMirror requestMapping = getRequestMapping(method);
 
@@ -108,14 +112,20 @@ public class SpringMvcServiceRestMetadataResolver extends AbstractServiceRestMet
     }
 
     @Override
-    protected void processProduces(ProcessingEnvironment processingEnv, TypeElement serviceType,
-                                   ExecutableElement method, Set<String> produces) {
+    protected void processProduces(
+            ProcessingEnvironment processingEnv,
+            TypeElement serviceType,
+            ExecutableElement method,
+            Set<String> produces) {
         addMediaTypes(method, "produces", produces);
     }
 
     @Override
-    protected void processConsumes(ProcessingEnvironment processingEnv, TypeElement serviceType,
-                                   ExecutableElement method, Set<String> consumes) {
+    protected void processConsumes(
+            ProcessingEnvironment processingEnv,
+            TypeElement serviceType,
+            ExecutableElement method,
+            Set<String> consumes) {
         addMediaTypes(method, "consumes", consumes);
     }
 
@@ -131,17 +141,17 @@ public class SpringMvcServiceRestMetadataResolver extends AbstractServiceRestMet
     }
 
     private AnnotationMirror getMappingAnnotation(Element element) {
-        return computeIfAbsent(valueOf(element), key ->
-            filterFirst(getAllAnnotations(element), annotation -> {
-                DeclaredType annotationType = annotation.getAnnotationType();
-                // try "@RequestMapping" first
-                if (REQUEST_MAPPING_ANNOTATION_CLASS_NAME.equals(annotationType.toString())) {
-                    return true;
-                }
-                // try meta annotation
-                return isAnnotationPresent(annotationType.asElement(), REQUEST_MAPPING_ANNOTATION_CLASS_NAME);
-            })
-        );
+        return computeIfAbsent(
+                valueOf(element),
+                key -> filterFirst(getAllAnnotations(element), annotation -> {
+                    DeclaredType annotationType = annotation.getAnnotationType();
+                    // try "@RequestMapping" first
+                    if (REQUEST_MAPPING_ANNOTATION_CLASS_NAME.equals(annotationType.toString())) {
+                        return true;
+                    }
+                    // try meta annotation
+                    return isAnnotationPresent(annotationType.asElement(), REQUEST_MAPPING_ANNOTATION_CLASS_NAME);
+                }));
     }
 
     private String getRequestPath(Element element) {

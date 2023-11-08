@@ -16,24 +16,22 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.rest;
 
-
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.protocol.rest.RestRPCInvocationUtil;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
-import org.junit.jupiter.api.Assertions;
 
 import java.lang.reflect.Method;
 
-public class TestGetInvokerServiceImpl implements TestGetInvokerService {
+import org.junit.jupiter.api.Assertions;
 
+public class TestGetInvokerServiceImpl implements TestGetInvokerService {
 
     @Override
     public String getInvoker() {
         Object request = RpcContext.getServiceContext().getRequest();
         RequestFacade requestFacade = (RequestFacade) request;
         Invoker invokerByRequest = RestRPCInvocationUtil.getInvokerByRequest((RequestFacade) request);
-
 
         Method hello = null;
         Method hashcode = null;
@@ -45,10 +43,11 @@ public class TestGetInvokerServiceImpl implements TestGetInvokerService {
 
         }
 
-        Invoker invokerByServiceInvokeMethod = RestRPCInvocationUtil.getInvokerByServiceInvokeMethod(hello,requestFacade.getServiceDeployer());
+        Invoker invokerByServiceInvokeMethod =
+                RestRPCInvocationUtil.getInvokerByServiceInvokeMethod(hello, requestFacade.getServiceDeployer());
 
-        Invoker invoker = RestRPCInvocationUtil.getInvokerByServiceInvokeMethod(hashcode,requestFacade.getServiceDeployer());
-
+        Invoker invoker =
+                RestRPCInvocationUtil.getInvokerByServiceInvokeMethod(hashcode, requestFacade.getServiceDeployer());
 
         Assertions.assertEquals(invokerByRequest, invokerByServiceInvokeMethod);
         Assertions.assertNull(invoker);

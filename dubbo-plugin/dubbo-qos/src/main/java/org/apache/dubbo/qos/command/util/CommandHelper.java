@@ -41,25 +41,28 @@ public class CommandHelper {
         }
 
         return command != null;
-
     }
 
     public List<Class<?>> getAllCommandClass() {
-        final Set<String> commandList = frameworkModel.getExtensionLoader(BaseCommand.class).getSupportedExtensions();
+        final Set<String> commandList =
+                frameworkModel.getExtensionLoader(BaseCommand.class).getSupportedExtensions();
         final List<Class<?>> classes = new ArrayList<Class<?>>();
 
         for (String commandName : commandList) {
-            BaseCommand command = frameworkModel.getExtensionLoader(BaseCommand.class).getExtension(commandName);
+            BaseCommand command =
+                    frameworkModel.getExtensionLoader(BaseCommand.class).getExtension(commandName);
             classes.add(command.getClass());
         }
 
         return classes;
     }
 
-
     public Class<?> getCommandClass(String commandName) {
         if (hasCommand(commandName)) {
-            return frameworkModel.getExtensionLoader(BaseCommand.class).getExtension(commandName).getClass();
+            return frameworkModel
+                    .getExtensionLoader(BaseCommand.class)
+                    .getExtension(commandName)
+                    .getClass();
         } else {
             return null;
         }

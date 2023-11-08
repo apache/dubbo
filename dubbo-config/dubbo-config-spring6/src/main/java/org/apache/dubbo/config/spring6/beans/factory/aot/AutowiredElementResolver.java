@@ -14,8 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.config.spring6.beans.factory.aot;
+
+import javax.lang.model.element.Element;
+
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -23,9 +26,6 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.core.log.LogMessage;
-
-import javax.lang.model.element.Element;
-import java.util.Set;
 
 /**
  * Base class for resolvers that support autowiring related to an
@@ -35,19 +35,17 @@ abstract class AutowiredElementResolver {
 
     private final Log logger = LogFactory.getLog(getClass());
 
-    protected final void registerDependentBeans(ConfigurableBeanFactory beanFactory,
-                                                String beanName, Set<String> autowiredBeanNames) {
+    protected final void registerDependentBeans(
+            ConfigurableBeanFactory beanFactory, String beanName, Set<String> autowiredBeanNames) {
 
         for (String autowiredBeanName : autowiredBeanNames) {
             if (beanFactory.containsBean(autowiredBeanName)) {
                 beanFactory.registerDependentBean(autowiredBeanName, beanName);
             }
             logger.trace(LogMessage.format(
-                "Autowiring by type from bean name %s' to bean named '%s'", beanName,
-                autowiredBeanName));
+                    "Autowiring by type from bean name %s' to bean named '%s'", beanName, autowiredBeanName));
         }
     }
-
 
     /**
      * {@link DependencyDescriptor} that supports shortcut bean resolution.
@@ -59,19 +57,15 @@ abstract class AutowiredElementResolver {
 
         private final Class<?> requiredType;
 
-
-        public ShortcutDependencyDescriptor(DependencyDescriptor original,
-                                            String shortcut, Class<?> requiredType) {
+        public ShortcutDependencyDescriptor(DependencyDescriptor original, String shortcut, Class<?> requiredType) {
             super(original);
             this.shortcut = shortcut;
             this.requiredType = requiredType;
         }
-
 
         @Override
         public Object resolveShortcut(BeanFactory beanFactory) {
             return beanFactory.getBean(this.shortcut, this.requiredType);
         }
     }
-
 }

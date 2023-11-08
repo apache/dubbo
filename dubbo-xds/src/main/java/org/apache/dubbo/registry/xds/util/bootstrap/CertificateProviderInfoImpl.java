@@ -40,10 +40,6 @@ final class CertificateProviderInfoImpl extends Bootstrapper.CertificateProvider
 
     @Override
     public String toString() {
-        return "CertificateProviderInfo{"
-            + "pluginName=" + pluginName + ", "
-            + "config=" + config
-            + "}";
+        return "CertificateProviderInfo{" + "pluginName=" + pluginName + ", " + "config=" + config + "}";
     }
-
 }

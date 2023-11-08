@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.model;
 
 import org.apache.dubbo.common.utils.StringUtils;
@@ -41,7 +40,6 @@ public class MethodMetric extends ServiceKeyMetric {
     private String group;
     private String version;
 
-
     public MethodMetric(ApplicationModel applicationModel, Invocation invocation, boolean serviceLevel) {
         super(applicationModel, MetricsSupport.getInterfaceName(invocation));
         this.side = MetricsSupport.getSide(invocation);
@@ -50,9 +48,8 @@ public class MethodMetric extends ServiceKeyMetric {
         this.methodName = serviceLevel ? null : RpcUtils.getMethodName(invocation);
     }
 
-
     public static boolean isServiceLevel(ApplicationModel applicationModel) {
-        if(applicationModel == null){
+        if (applicationModel == null) {
             return false;
         }
         ConfigManager applicationConfigManager = applicationModel.getApplicationConfigManager();
@@ -105,14 +102,13 @@ public class MethodMetric extends ServiceKeyMetric {
 
     @Override
     public String toString() {
-        return "MethodMetric{" +
-            "applicationName='" + getApplicationName() + '\'' +
-            ", side='" + side + '\'' +
-            ", interfaceName='" + getServiceKey() + '\'' +
-            ", methodName='" + methodName + '\'' +
-            ", group='" + group + '\'' +
-            ", version='" + version + '\'' +
-            '}';
+        return "MethodMetric{" + "applicationName='"
+                + getApplicationName() + '\'' + ", side='"
+                + side + '\'' + ", interfaceName='"
+                + getServiceKey() + '\'' + ", methodName='"
+                + methodName + '\'' + ", group='"
+                + group + '\'' + ", version='"
+                + version + '\'' + '}';
     }
 
     @Override
@@ -120,7 +116,12 @@ public class MethodMetric extends ServiceKeyMetric {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MethodMetric that = (MethodMetric) o;
-        return Objects.equals(getApplicationModel(), that.getApplicationModel()) && Objects.equals(side, that.side) && Objects.equals(getServiceKey(), that.getServiceKey()) && Objects.equals(methodName, that.methodName) && Objects.equals(group, that.group) && Objects.equals(version, that.version);
+        return Objects.equals(getApplicationModel(), that.getApplicationModel())
+                && Objects.equals(side, that.side)
+                && Objects.equals(getServiceKey(), that.getServiceKey())
+                && Objects.equals(methodName, that.methodName)
+                && Objects.equals(group, that.group)
+                && Objects.equals(version, that.version);
     }
 
     private volatile int hashCode = 0;

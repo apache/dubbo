@@ -24,9 +24,7 @@ import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 
 public class MetadataScopeModelInitializer implements ScopeModelInitializer {
     @Override
-    public void initializeFrameworkModel(FrameworkModel frameworkModel) {
-
-    }
+    public void initializeFrameworkModel(FrameworkModel frameworkModel) {}
 
     @Override
     public void initializeApplicationModel(ApplicationModel applicationModel) {
@@ -35,7 +33,5 @@ public class MetadataScopeModelInitializer implements ScopeModelInitializer {
     }
 
     @Override
-    public void initializeModuleModel(ModuleModel moduleModel) {
-
-    }
+    public void initializeModuleModel(ModuleModel moduleModel) {}
 }

@@ -27,6 +27,7 @@ import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
 import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -78,5 +79,4 @@ class PortUnificationExchangerTest {
         PortUnificationExchanger.close();
         Assertions.assertEquals(0, PortUnificationExchanger.getServers().size());
     }
-
 }

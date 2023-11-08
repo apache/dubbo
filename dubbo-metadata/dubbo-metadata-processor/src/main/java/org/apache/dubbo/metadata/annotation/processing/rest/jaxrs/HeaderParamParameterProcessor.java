@@ -41,9 +41,14 @@ public class HeaderParamParameterProcessor extends AbstractAnnotatedMethodParame
     }
 
     @Override
-    protected void process(String headerName, String defaultValue, AnnotationMirror annotation,
-                           VariableElement parameter, int parameterIndex,
-                           ExecutableElement method, RestMethodMetadata restMethodMetadata) {
+    protected void process(
+            String headerName,
+            String defaultValue,
+            AnnotationMirror annotation,
+            VariableElement parameter,
+            int parameterIndex,
+            ExecutableElement method,
+            RestMethodMetadata restMethodMetadata) {
         RequestMetadata requestMetadata = restMethodMetadata.getRequest();
         // Add the placeholder as header value
         requestMetadata.addHeader(headerName, buildDefaultValue(parameterIndex));

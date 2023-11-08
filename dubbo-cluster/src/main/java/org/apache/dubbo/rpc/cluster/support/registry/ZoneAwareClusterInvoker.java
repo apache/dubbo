@@ -55,7 +55,8 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
     public ZoneAwareClusterInvoker(Directory<T> directory) {
         super(directory);
-        ExtensionLoader<ZoneDetector> loader = directory.getConsumerUrl().getOrDefaultApplicationModel().getExtensionLoader(ZoneDetector.class);
+        ExtensionLoader<ZoneDetector> loader =
+                directory.getConsumerUrl().getOrDefaultApplicationModel().getExtensionLoader(ZoneDetector.class);
         if (loader.hasExtension("default")) {
             zoneDetector = loader.getExtension("default");
         }
@@ -63,12 +64,13 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public Result doInvoke(Invocation invocation, final List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
-        // First, pick the invoker (XXXClusterInvoker) that comes from the local registry, distinguish by a 'preferred' key.
+    public Result doInvoke(Invocation invocation, final List<Invoker<T>> invokers, LoadBalance loadbalance)
+            throws RpcException {
+        // First, pick the invoker (XXXClusterInvoker) that comes from the local registry, distinguish by a 'preferred'
+        // key.
         for (Invoker<T> invoker : invokers) {
             ClusterInvoker<T> clusterInvoker = (ClusterInvoker<T>) invoker;
-            if (clusterInvoker.isAvailable() && clusterInvoker.getRegistryUrl()
-                    .getParameter(PREFERRED_KEY, false)) {
+            if (clusterInvoker.isAvailable() && clusterInvoker.getRegistryUrl().getParameter(PREFERRED_KEY, false)) {
                 return clusterInvoker.invoke(invocation);
             }
         }
@@ -85,25 +87,32 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
         if (StringUtils.isNotEmpty(zone)) {
             for (Invoker<T> invoker : invokers) {
                 ClusterInvoker<T> clusterInvoker = (ClusterInvoker<T>) invoker;
-                if (clusterInvoker.isAvailable() && zone.equals(clusterInvoker.getRegistryUrl().getParameter(ZONE_KEY))) {
+                if (clusterInvoker.isAvailable()
+                        && zone.equals(clusterInvoker.getRegistryUrl().getParameter(ZONE_KEY))) {
                     return clusterInvoker.invoke(invocation);
                 }
             }
             if (StringUtils.isNotEmpty(force) && "true".equalsIgnoreCase(force)) {
-                throw new IllegalStateException("No registry instance in zone or no available providers in the registry, zone: "
-                        + zone
-                        + ", registries: " + invokers.stream().map(invoker -> ((ClusterInvoker<T>) invoker).getRegistryUrl().toString()).collect(Collectors.joining(",")));
+                throw new IllegalStateException(
+                        "No registry instance in zone or no available providers in the registry, zone: "
+                                + zone
+                                + ", registries: "
+                                + invokers.stream()
+                                        .map(invoker -> ((ClusterInvoker<T>) invoker)
+                                                .getRegistryUrl()
+                                                .toString())
+                                        .collect(Collectors.joining(",")));
             }
         }
 
-
         // load balance among all registries, with registry weight count in.
         Invoker<T> balancedInvoker = select(loadbalance, invocation, invokers, null);
-        if (balancedInvoker!=null && balancedInvoker.isAvailable()) {
+        if (balancedInvoker != null && balancedInvoker.isAvailable()) {
             return balancedInvoker.invoke(invocation);
         }
 
-        // If none of the invokers has a preferred signal or is picked by the loadbalancer, pick the first one available.
+        // If none of the invokers has a preferred signal or is picked by the loadbalancer, pick the first one
+        // available.
         for (Invoker<T> invoker : invokers) {
             ClusterInvoker<T> clusterInvoker = (ClusterInvoker<T>) invoker;
             if (clusterInvoker.isAvailable()) {
@@ -113,5 +122,4 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
         throw new RpcException("No provider available in " + invokers);
     }
-
 }

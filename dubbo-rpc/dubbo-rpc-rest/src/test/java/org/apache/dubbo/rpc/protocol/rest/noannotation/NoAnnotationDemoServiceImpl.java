@@ -16,14 +16,11 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.noannotation;
 
-
 import org.apache.dubbo.rpc.protocol.rest.User;
 
 import java.util.List;
 
-
 public class NoAnnotationDemoServiceImpl implements NoAnnotationDemoService {
-
 
     @Override
     public Integer hello(Integer a, Integer b) {
@@ -37,7 +34,7 @@ public class NoAnnotationDemoServiceImpl implements NoAnnotationDemoService {
 
     @Override
     public String sayHello(String name) {
-        return "Hello, "+name;
+        return "Hello, " + name;
     }
 
     @Override

@@ -47,7 +47,8 @@ import static org.apache.dubbo.rpc.protocol.dubbo.Constants.LAZY_REQUEST_WITH_WA
 @SuppressWarnings("deprecation")
 final class LazyConnectExchangeClient implements ExchangeClient {
 
-    private final static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(LazyConnectExchangeClient.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(LazyConnectExchangeClient.class);
     private final boolean requestWithWarning;
     private final URL url;
     private final ExchangeHandler requestHandler;
@@ -119,7 +120,8 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     }
 
     @Override
-    public CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor) throws RemotingException {
+    public CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor)
+            throws RemotingException {
         warning();
         checkClient();
         return client.request(request, timeout, executor);
@@ -131,7 +133,12 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     private void warning() {
         if (requestWithWarning) {
             if (warningCount.get() % warningPeriod == 0) {
-                logger.warn(PROTOCOL_FAILED_REQUEST, "", "", url.getAddress() + " " + url.getServiceKey() + " safe guard client , should not be called ,must have a bug.");
+                logger.warn(
+                        PROTOCOL_FAILED_REQUEST,
+                        "",
+                        "",
+                        url.getAddress() + " " + url.getServiceKey()
+                                + " safe guard client , should not be called ,must have a bug.");
             }
             warningCount.incrementAndGet();
         }
@@ -268,8 +275,8 @@ final class LazyConnectExchangeClient implements ExchangeClient {
         }
 
         if (!isConnected() && !needReconnect) {
-            throw new IllegalStateException("LazyConnectExchangeClient is not connected normally, " +
-                "and send.reconnect is configured as false, the request fails quickly" + url);
+            throw new IllegalStateException("LazyConnectExchangeClient is not connected normally, "
+                    + "and send.reconnect is configured as false, the request fails quickly" + url);
         }
     }
 }

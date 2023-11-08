@@ -17,6 +17,7 @@
 package org.apache.dubbo.demo.rest.api.impl;
 
 import org.apache.dubbo.demo.rest.api.HttpMethodService;
+
 import org.springframework.stereotype.Service;
 
 @Service("httpMethodService")
@@ -57,4 +58,3 @@ public class HttpMethodServiceImpl implements HttpMethodService {
         return hello;
     }
 }
-

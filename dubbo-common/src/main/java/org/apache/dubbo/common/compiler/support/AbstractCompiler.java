@@ -71,7 +71,8 @@ public abstract class AbstractCompiler implements Compiler {
             } catch (RuntimeException t) {
                 throw t;
             } catch (Throwable t) {
-                throw new IllegalStateException("Failed to compile class, cause: " + t.getMessage() + ", class: " + className + ", code: \n" + code + "\n, stack: " + ClassUtils.toString(t));
+                throw new IllegalStateException("Failed to compile class, cause: " + t.getMessage() + ", class: "
+                        + className + ", code: \n" + code + "\n, stack: " + ClassUtils.toString(t));
             }
         } finally {
             lock.unlock();
@@ -82,8 +83,8 @@ public abstract class AbstractCompiler implements Compiler {
         return null;
     }
 
-    protected Class<?> doCompile(Class<?> neighbor,ClassLoader classLoader, String name, String source) throws Throwable {
+    protected Class<?> doCompile(Class<?> neighbor, ClassLoader classLoader, String name, String source)
+            throws Throwable {
         return doCompile(classLoader, name, source);
     }
-
 }

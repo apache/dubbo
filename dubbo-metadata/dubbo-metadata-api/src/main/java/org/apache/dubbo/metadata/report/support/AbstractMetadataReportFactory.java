@@ -32,7 +32,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_FAILED
 
 public abstract class AbstractMetadataReportFactory implements MetadataReportFactory {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractMetadataReportFactory.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(AbstractMetadataReportFactory.class);
     private static final String EXPORT_KEY = "export";
     private static final String REFER_KEY = "refer";
 
@@ -48,8 +49,7 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
 
     @Override
     public MetadataReport getMetadataReport(URL url) {
-        url = url.setPath(MetadataReport.class.getName())
-            .removeParameters(EXPORT_KEY, REFER_KEY);
+        url = url.setPath(MetadataReport.class.getName()).removeParameters(EXPORT_KEY, REFER_KEY);
         String key = url.toServiceString();
 
         MetadataReport metadataReport = serviceStoreMap.get(key);

@@ -23,57 +23,54 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.concurrent.CountDownLatch;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import java.util.concurrent.CountDownLatch;
-
 import static org.awaitility.Awaitility.await;
 
 class MigrationRuleListenerTest {
 
-    private String localRule = "key: demo-consumer\n" +
-        "step: APPLICATION_FIRST\n" +
-        "threshold: 1.0\n" +
-        "proportion: 60\n" +
-        "delay: 60\n" +
-        "force: false\n" +
-        "interfaces:\n" +
-        "  - serviceKey: DemoService:1.0.0\n" +
-        "    threshold: 0.5\n" +
-        "    proportion: 30\n" +
-        "    delay: 30\n" +
-        "    force: true\n" +
-        "    step: APPLICATION_FIRST\n" +
-        "  - serviceKey: GreetingService:1.0.0\n" +
-        "    step: FORCE_APPLICATION";
+    private String localRule = "key: demo-consumer\n" + "step: APPLICATION_FIRST\n"
+            + "threshold: 1.0\n"
+            + "proportion: 60\n"
+            + "delay: 60\n"
+            + "force: false\n"
+            + "interfaces:\n"
+            + "  - serviceKey: DemoService:1.0.0\n"
+            + "    threshold: 0.5\n"
+            + "    proportion: 30\n"
+            + "    delay: 30\n"
+            + "    force: true\n"
+            + "    step: APPLICATION_FIRST\n"
+            + "  - serviceKey: GreetingService:1.0.0\n"
+            + "    step: FORCE_APPLICATION";
 
-    private String remoteRule = "key: demo-consumer\n" +
-        "step: FORCE_APPLICATION\n" +
-        "threshold: 1.0\n" +
-        "proportion: 60\n" +
-        "delay: 60\n" +
-        "force: false\n" +
-        "interfaces:\n" +
-        "  - serviceKey: DemoService:1.0.0\n" +
-        "    threshold: 0.5\n" +
-        "    proportion: 30\n" +
-        "    delay: 30\n" +
-        "    force: true\n" +
-        "    step: FORCE_APPLICATION\n" +
-        "  - serviceKey: GreetingService:1.0.0\n" +
-        "    step: FORCE_INTERFACE";
+    private String remoteRule = "key: demo-consumer\n" + "step: FORCE_APPLICATION\n"
+            + "threshold: 1.0\n"
+            + "proportion: 60\n"
+            + "delay: 60\n"
+            + "force: false\n"
+            + "interfaces:\n"
+            + "  - serviceKey: DemoService:1.0.0\n"
+            + "    threshold: 0.5\n"
+            + "    proportion: 30\n"
+            + "    delay: 30\n"
+            + "    force: true\n"
+            + "    step: FORCE_APPLICATION\n"
+            + "  - serviceKey: GreetingService:1.0.0\n"
+            + "    step: FORCE_INTERFACE";
 
-    private String dynamicRemoteRule = "key: demo-consumer\n" +
-        "step: APPLICATION_FIRST\n" +
-        "threshold: 1.0\n" +
-        "proportion: 60\n" +
-        "delay: 60\n" +
-        "force: false\n" +
-        "interfaces:\n";
+    private String dynamicRemoteRule = "key: demo-consumer\n" + "step: APPLICATION_FIRST\n"
+            + "threshold: 1.0\n"
+            + "proportion: 60\n"
+            + "delay: 60\n"
+            + "force: false\n"
+            + "interfaces:\n";
 
     @AfterEach
     public void tearDown() {
@@ -90,7 +87,10 @@ class MigrationRuleListenerTest {
         DynamicConfiguration dynamicConfiguration = Mockito.mock(DynamicConfiguration.class);
 
         ApplicationModel.reset();
-        ApplicationModel.defaultModel().getDefaultModule().modelEnvironment().setDynamicConfiguration(dynamicConfiguration);
+        ApplicationModel.defaultModel()
+                .getDefaultModule()
+                .modelEnvironment()
+                .setDynamicConfiguration(dynamicConfiguration);
         ApplicationModel.defaultModel().getDefaultModule().modelEnvironment().setLocalMigrationRule(localRule);
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("demo-consumer");
@@ -101,20 +101,22 @@ class MigrationRuleListenerTest {
         Mockito.when(consumerURL.getParameter("timestamp")).thenReturn("1");
 
         System.setProperty("dubbo.application.migration.delay", "1");
-        MigrationRuleHandler<?> handler = Mockito.mock(MigrationRuleHandler.class, Mockito.withSettings().verboseLogging());
+        MigrationRuleHandler<?> handler =
+                Mockito.mock(MigrationRuleHandler.class, Mockito.withSettings().verboseLogging());
 
         CountDownLatch countDownLatch = new CountDownLatch(1);
-        MigrationRuleListener migrationRuleListener = new MigrationRuleListener(ApplicationModel.defaultModel().getDefaultModule()) {
-            @Override
-            public synchronized void process(ConfigChangedEvent event) {
-                try {
-                    countDownLatch.await();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                super.process(event);
-            }
-        };
+        MigrationRuleListener migrationRuleListener =
+                new MigrationRuleListener(ApplicationModel.defaultModel().getDefaultModule()) {
+                    @Override
+                    public synchronized void process(ConfigChangedEvent event) {
+                        try {
+                            countDownLatch.await();
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                        super.process(event);
+                    }
+                };
 
         MigrationInvoker<?> migrationInvoker = Mockito.mock(MigrationInvoker.class);
         migrationRuleListener.getHandlers().put(migrationInvoker, handler);
@@ -123,7 +125,7 @@ class MigrationRuleListenerTest {
         await().untilAsserted(() -> {
             Mockito.verify(handler).doMigrate(Mockito.any());
         });
-//        Mockito.verify(handler, Mockito.timeout(5000)).doMigrate(Mockito.any());
+        //        Mockito.verify(handler, Mockito.timeout(5000)).doMigrate(Mockito.any());
 
         migrationRuleListener.onRefer(null, migrationInvoker, consumerURL, null);
         Mockito.verify(handler, Mockito.times(2)).doMigrate(Mockito.any());
@@ -145,9 +147,11 @@ class MigrationRuleListenerTest {
         Mockito.when(consumerURL.getParameter("timestamp")).thenReturn("1");
 
         System.setProperty("dubbo.application.migration.delay", "1000");
-        MigrationRuleHandler<?> handler = Mockito.mock(MigrationRuleHandler.class, Mockito.withSettings().verboseLogging());
+        MigrationRuleHandler<?> handler =
+                Mockito.mock(MigrationRuleHandler.class, Mockito.withSettings().verboseLogging());
 
-        MigrationRuleListener migrationRuleListener = new MigrationRuleListener(ApplicationModel.defaultModel().getDefaultModule());
+        MigrationRuleListener migrationRuleListener =
+                new MigrationRuleListener(ApplicationModel.defaultModel().getDefaultModule());
         MigrationInvoker<?> migrationInvoker = Mockito.mock(MigrationInvoker.class);
         migrationRuleListener.getHandlers().put(migrationInvoker, handler);
         migrationRuleListener.onRefer(null, migrationInvoker, consumerURL, null);
@@ -170,7 +174,10 @@ class MigrationRuleListenerTest {
         DynamicConfiguration dynamicConfiguration = Mockito.mock(DynamicConfiguration.class);
         Mockito.doReturn(remoteRule).when(dynamicConfiguration).getConfig(Mockito.anyString(), Mockito.anyString());
 
-        ApplicationModel.defaultModel().getDefaultModule().modelEnvironment().setDynamicConfiguration(dynamicConfiguration);
+        ApplicationModel.defaultModel()
+                .getDefaultModule()
+                .modelEnvironment()
+                .setDynamicConfiguration(dynamicConfiguration);
         ApplicationModel.defaultModel().getDefaultModule().modelEnvironment().setLocalMigrationRule(localRule);
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("demo-consumer");
@@ -185,12 +192,15 @@ class MigrationRuleListenerTest {
         Mockito.when(consumerURL2.getParameter("timestamp")).thenReturn("2");
 
         System.setProperty("dubbo.application.migration.delay", "10");
-        MigrationRuleHandler<?> handler = Mockito.mock(MigrationRuleHandler.class, Mockito.withSettings().verboseLogging());
-        MigrationRuleHandler<?> handler2 = Mockito.mock(MigrationRuleHandler.class, Mockito.withSettings().verboseLogging());
+        MigrationRuleHandler<?> handler =
+                Mockito.mock(MigrationRuleHandler.class, Mockito.withSettings().verboseLogging());
+        MigrationRuleHandler<?> handler2 =
+                Mockito.mock(MigrationRuleHandler.class, Mockito.withSettings().verboseLogging());
 
         // Both local rule and remote rule are here
         // Local rule with one delayed task started to apply
-        MigrationRuleListener migrationRuleListener = new MigrationRuleListener(ApplicationModel.defaultModel().getDefaultModule());
+        MigrationRuleListener migrationRuleListener =
+                new MigrationRuleListener(ApplicationModel.defaultModel().getDefaultModule());
         Assertions.assertNotNull(migrationRuleListener.localRuleMigrationFuture);
         Assertions.assertNull(migrationRuleListener.ruleMigrationFuture);
         MigrationInvoker<?> migrationInvoker = Mockito.mock(MigrationInvoker.class);
@@ -216,7 +226,6 @@ class MigrationRuleListenerTest {
         Mockito.verify(handler2, Mockito.times(1)).doMigrate(captor2.capture());
         Assertions.assertEquals(tmpRemoteRule, captor2.getValue());
 
-
         migrationRuleListener.process(new ConfigChangedEvent("key", "group", dynamicRemoteRule));
 
         await().until(migrationRuleListener.ruleQueue::isEmpty);
@@ -228,8 +237,10 @@ class MigrationRuleListenerTest {
         Assertions.assertNotNull(migrationRuleListener.ruleMigrationFuture);
         ArgumentCaptor<MigrationRule> captor_event = ArgumentCaptor.forClass(MigrationRule.class);
         Mockito.verify(handler, Mockito.times(2)).doMigrate(captor_event.capture());
-        Assertions.assertEquals("APPLICATION_FIRST", captor_event.getValue().getStep().toString());
+        Assertions.assertEquals(
+                "APPLICATION_FIRST", captor_event.getValue().getStep().toString());
         Mockito.verify(handler2, Mockito.times(2)).doMigrate(captor_event.capture());
-        Assertions.assertEquals("APPLICATION_FIRST", captor_event.getValue().getStep().toString());
+        Assertions.assertEquals(
+                "APPLICATION_FIRST", captor_event.getValue().getStep().toString());
     }
 }

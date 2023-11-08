@@ -32,5 +32,4 @@ public class DemoActionBySetter {
     public void setDemoService(DemoService demoService) {
         this.demoService = demoService;
     }
-
 }

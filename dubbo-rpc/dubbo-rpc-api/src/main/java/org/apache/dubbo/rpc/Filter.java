@@ -66,6 +66,4 @@ import org.apache.dubbo.common.extension.SPI;
  * @see org.apache.dubbo.rpc.filter.TpsLimitFilter
  */
 @SPI(scope = ExtensionScope.MODULE)
-public interface Filter extends BaseFilter {
-}
-
+public interface Filter extends BaseFilter {}

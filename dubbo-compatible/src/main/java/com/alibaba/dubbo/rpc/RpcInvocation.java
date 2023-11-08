@@ -14,11 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.rpc;
-
-import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.URL;
 
 import java.beans.Transient;
 import java.io.Serializable;
@@ -27,6 +23,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.URL;
 
 @Deprecated
 public class RpcInvocation implements Invocation, Serializable {
@@ -43,12 +42,14 @@ public class RpcInvocation implements Invocation, Serializable {
 
     private transient Invoker<?> invoker;
 
-    public RpcInvocation() {
-    }
+    public RpcInvocation() {}
 
     public RpcInvocation(Invocation invocation, Invoker<?> invoker) {
-        this(invocation.getMethodName(), invocation.getParameterTypes(),
-                invocation.getArguments(), new HashMap<String, String>(invocation.getAttachments()),
+        this(
+                invocation.getMethodName(),
+                invocation.getParameterTypes(),
+                invocation.getArguments(),
+                new HashMap<String, String>(invocation.getAttachments()),
                 invocation.getInvoker());
         if (invoker != null) {
             URL url = invoker.getUrl();
@@ -75,8 +76,12 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     public RpcInvocation(Invocation invocation) {
-        this(invocation.getMethodName(), invocation.getParameterTypes(),
-                invocation.getArguments(), invocation.getAttachments(), invocation.getInvoker());
+        this(
+                invocation.getMethodName(),
+                invocation.getParameterTypes(),
+                invocation.getArguments(),
+                invocation.getAttachments(),
+                invocation.getInvoker());
     }
 
     public RpcInvocation(Method method, Object[] arguments) {
@@ -91,11 +96,17 @@ public class RpcInvocation implements Invocation, Serializable {
         this(methodName, parameterTypes, arguments, null, null);
     }
 
-    public RpcInvocation(String methodName, Class<?>[] parameterTypes, Object[] arguments, Map<String, String> attachments) {
+    public RpcInvocation(
+            String methodName, Class<?>[] parameterTypes, Object[] arguments, Map<String, String> attachments) {
         this(methodName, parameterTypes, arguments, attachments, null);
     }
 
-    public RpcInvocation(String methodName, Class<?>[] parameterTypes, Object[] arguments, Map<String, String> attachments, Invoker<?> invoker) {
+    public RpcInvocation(
+            String methodName,
+            Class<?>[] parameterTypes,
+            Object[] arguments,
+            Map<String, String> attachments,
+            Invoker<?> invoker) {
         this.methodName = methodName;
         this.parameterTypes = parameterTypes == null ? new Class<?>[0] : parameterTypes;
         this.arguments = arguments == null ? new Object[0] : arguments;
@@ -218,5 +229,4 @@ public class RpcInvocation implements Invocation, Serializable {
                 + Arrays.toString(parameterTypes) + ", arguments=" + Arrays.toString(arguments)
                 + ", attachments=" + attachments + "]";
     }
-
 }

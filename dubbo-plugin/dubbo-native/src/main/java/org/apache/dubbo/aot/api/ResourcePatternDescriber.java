@@ -47,12 +47,9 @@ public class ResourcePatternDescriber implements ConditionalDescriber {
         String prefix = (this.pattern.startsWith("*") ? ".*" : "");
         String suffix = (this.pattern.endsWith("*") ? ".*" : "");
         String regex = Arrays.stream(this.pattern.split("\\*"))
-            .filter(s -> !s.isEmpty())
-            .map(Pattern::quote)
-            .collect(Collectors.joining(".*", prefix, suffix));
+                .filter(s -> !s.isEmpty())
+                .map(Pattern::quote)
+                .collect(Collectors.joining(".*", prefix, suffix));
         return Pattern.compile(regex);
     }
-
-
-
 }

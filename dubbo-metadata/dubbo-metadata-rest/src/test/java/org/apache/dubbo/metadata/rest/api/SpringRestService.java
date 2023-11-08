@@ -17,45 +17,73 @@
 package org.apache.dubbo.metadata.rest.api;
 
 import org.apache.dubbo.metadata.rest.User;
+
 import org.springframework.http.MediaType;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PathVariable;
-
 
 @RestController
 public interface SpringRestService {
 
-
-    @RequestMapping(value = "/param", method = RequestMethod.GET, consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+    @RequestMapping(
+            value = "/param",
+            method = RequestMethod.GET,
+            consumes = MediaType.TEXT_PLAIN_VALUE,
+            produces = MediaType.TEXT_PLAIN_VALUE)
     String param(@RequestParam("param") String param);
 
-    @RequestMapping(value = "/header", method = RequestMethod.GET, consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+    @RequestMapping(
+            value = "/header",
+            method = RequestMethod.GET,
+            consumes = MediaType.TEXT_PLAIN_VALUE,
+            produces = MediaType.TEXT_PLAIN_VALUE)
     String header(@RequestHeader("header") String header);
 
-    @RequestMapping(value = "/body", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(
+            value = "/body",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     User body(@RequestBody User user);
 
-    @RequestMapping(value = "/multiValue", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @RequestMapping(
+            value = "/multiValue",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     MultiValueMap multiValue(@RequestBody MultiValueMap map);
 
-
-    @RequestMapping(value = "/pathVariable/{a}", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @RequestMapping(
+            value = "/pathVariable/{a}",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     String pathVariable(@PathVariable String a);
 
-    @RequestMapping(value = "/noAnnoParam", method = RequestMethod.POST, consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+    @RequestMapping(
+            value = "/noAnnoParam",
+            method = RequestMethod.POST,
+            consumes = MediaType.TEXT_PLAIN_VALUE,
+            produces = MediaType.TEXT_PLAIN_VALUE)
     String noAnnoParam(String a);
 
-    @RequestMapping(value = "/noAnnoNumber", method = RequestMethod.POST, consumes = MediaType.ALL_VALUE, produces = MediaType.ALL_VALUE)
+    @RequestMapping(
+            value = "/noAnnoNumber",
+            method = RequestMethod.POST,
+            consumes = MediaType.ALL_VALUE,
+            produces = MediaType.ALL_VALUE)
     int noAnnoNumber(Integer b);
 
-
-    @RequestMapping(value = "/noAnnoPrimitive", method = RequestMethod.POST, consumes = MediaType.ALL_VALUE, produces = MediaType.ALL_VALUE)
+    @RequestMapping(
+            value = "/noAnnoPrimitive",
+            method = RequestMethod.POST,
+            consumes = MediaType.ALL_VALUE,
+            produces = MediaType.ALL_VALUE)
     int noAnnoPrimitive(int c);
-
 }

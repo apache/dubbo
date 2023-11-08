@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.spring.context.properties;
 
-
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
@@ -63,6 +62,5 @@ class DefaultDubboConfigBinderTest {
         ProtocolConfig protocolConfig = new ProtocolConfig();
         dubboConfigBinder.bind("dubbo.protocol", protocolConfig);
         Assertions.assertEquals(Integer.valueOf(20881), protocolConfig.getPort());
-
     }
 }

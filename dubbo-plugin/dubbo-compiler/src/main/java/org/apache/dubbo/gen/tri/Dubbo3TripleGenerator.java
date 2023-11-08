@@ -45,7 +45,6 @@ public class Dubbo3TripleGenerator extends AbstractGenerator {
         return "Dubbo3TripleInterfaceStub.mustache";
     }
 
-
     @Override
     protected String getSingleTemplateFileName() {
         throw new IllegalStateException("Do not support single template!");

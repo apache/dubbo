@@ -16,17 +16,16 @@
  */
 package org.apache.dubbo.common.version;
 
-
 import org.apache.dubbo.common.Version;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.Enumeration;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class VersionTest {
 
@@ -99,9 +98,11 @@ class VersionTest {
     }
 
     @Test
-    void testGetVersion() throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    void testGetVersion()
+            throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         Class<?> versionClass = reloadVersionClass();
-        Assertions.assertEquals("1.0.0", versionClass.getDeclaredMethod("getVersion").invoke(null));
+        Assertions.assertEquals(
+                "1.0.0", versionClass.getDeclaredMethod("getVersion").invoke(null));
     }
 
     private static Class<?> reloadVersionClass() throws ClassNotFoundException {
@@ -125,10 +126,13 @@ class VersionTest {
                 }
             }
 
-
             public byte[] loadClassData(String className) throws IOException {
                 className = className.replaceAll("\\.", "/");
-                String path = Version.class.getProtectionDomain().getCodeSource().getLocation().getPath() + className + ".class";
+                String path = Version.class
+                                .getProtectionDomain()
+                                .getCodeSource()
+                                .getLocation()
+                                .getPath() + className + ".class";
                 FileInputStream fileInputStream;
                 byte[] classBytes;
                 fileInputStream = new FileInputStream(path);
@@ -153,8 +157,11 @@ class VersionTest {
     }
 
     @Test
-    void testGetLastCommitId() throws NoSuchMethodException, ClassNotFoundException, InvocationTargetException, IllegalAccessException {
+    void testGetLastCommitId()
+            throws NoSuchMethodException, ClassNotFoundException, InvocationTargetException, IllegalAccessException {
         Class<?> versionClass = reloadVersionClass();
-        Assertions.assertEquals("82a29fcd674216fe9bea10b6efef3196929dd7ca", versionClass.getDeclaredMethod("getLastCommitId").invoke(null));
+        Assertions.assertEquals(
+                "82a29fcd674216fe9bea10b6efef3196929dd7ca",
+                versionClass.getDeclaredMethod("getLastCommitId").invoke(null));
     }
 }

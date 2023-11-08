@@ -14,16 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.configcenter.support.nacos;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.AbstractDynamicConfigurationFactory;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import com.alibaba.nacos.api.PropertyKeyConst;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**
  * The nacos implementation of {@link AbstractDynamicConfigurationFactory}
@@ -31,7 +30,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 public class NacosDynamicConfigurationFactory extends AbstractDynamicConfigurationFactory {
 
     private ApplicationModel applicationModel;
-    
+
     public NacosDynamicConfigurationFactory(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
     }

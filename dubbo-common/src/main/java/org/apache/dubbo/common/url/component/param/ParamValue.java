@@ -25,7 +25,6 @@ public interface ParamValue {
      */
     String getN(int n);
 
-
     /**
      * max index is 2^31 - 1
      *

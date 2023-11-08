@@ -41,40 +41,37 @@ import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATT
 
 public class ServiceDeployer {
 
-
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
-
 
     private final PathAndInvokerMapper pathAndInvokerMapper = new PathAndInvokerMapper();
     private final ExceptionMapper exceptionMapper = createExceptionMapper();
 
     private final Set<Object> extensions = new HashSet<>();
 
-
     public void deploy(ServiceRestMetadata serviceRestMetadata, Invoker invoker) {
         Map<PathMatcher, RestMethodMetadata> pathToServiceMapContainPathVariable =
-            serviceRestMetadata.getPathContainPathVariableToServiceMap();
+                serviceRestMetadata.getPathContainPathVariableToServiceMap();
         pathAndInvokerMapper.addPathAndInvoker(pathToServiceMapContainPathVariable, invoker);
 
         Map<PathMatcher, RestMethodMetadata> pathToServiceMapUnContainPathVariable =
-            serviceRestMetadata.getPathUnContainPathVariableToServiceMap();
+                serviceRestMetadata.getPathUnContainPathVariableToServiceMap();
         pathAndInvokerMapper.addPathAndInvoker(pathToServiceMapUnContainPathVariable, invoker);
     }
 
     public void undeploy(ServiceRestMetadata serviceRestMetadata) {
         Map<PathMatcher, RestMethodMetadata> pathToServiceMapContainPathVariable =
-            serviceRestMetadata.getPathContainPathVariableToServiceMap();
+                serviceRestMetadata.getPathContainPathVariableToServiceMap();
         pathToServiceMapContainPathVariable.keySet().stream().forEach(pathAndInvokerMapper::removePath);
 
         Map<PathMatcher, RestMethodMetadata> pathToServiceMapUnContainPathVariable =
-            serviceRestMetadata.getPathUnContainPathVariableToServiceMap();
+                serviceRestMetadata.getPathUnContainPathVariableToServiceMap();
         pathToServiceMapUnContainPathVariable.keySet().stream().forEach(pathAndInvokerMapper::removePath);
-
     }
 
     public void registerExtension(URL url) {
 
-        for (String clazz : COMMA_SPLIT_PATTERN.split(url.getParameter(Constants.EXTENSION_KEY, RpcExceptionMapper.class.getName()))) {
+        for (String clazz : COMMA_SPLIT_PATTERN.split(
+                url.getParameter(Constants.EXTENSION_KEY, RpcExceptionMapper.class.getName()))) {
 
             if (StringUtils.isEmpty(clazz)) {
                 continue;
@@ -87,15 +84,12 @@ public class ServiceDeployer {
                     exceptionMapper.registerMapper(clazz);
                 } else {
 
-
                     extensions.add(aClass.newInstance());
                 }
 
             } catch (Exception e) {
                 logger.warn("", "", "dubbo rest registerExtension error: ", e.getMessage(), e);
             }
-
-
         }
     }
 
@@ -126,7 +120,6 @@ public class ServiceDeployer {
             return exts;
         }
 
-
         for (Object extension : extensions) {
             if (extensionClass.isAssignableFrom(extension.getClass())) {
                 exts.add((T) extension);
@@ -137,12 +130,12 @@ public class ServiceDeployer {
     }
 
     private ExceptionMapper createExceptionMapper() {
-        if (ClassUtils.isPresent("javax.ws.rs.ext.ExceptionMapper", Thread.currentThread().getContextClassLoader())) {
+        if (ClassUtils.isPresent(
+                "javax.ws.rs.ext.ExceptionMapper", Thread.currentThread().getContextClassLoader())) {
             return new RestEasyExceptionMapper();
         }
         return new ExceptionMapper();
     }
-
 
     public boolean isMethodAllowed(PathMatcher pathMatcher) {
         return pathAndInvokerMapper.isHttpMethodAllowed(pathMatcher);

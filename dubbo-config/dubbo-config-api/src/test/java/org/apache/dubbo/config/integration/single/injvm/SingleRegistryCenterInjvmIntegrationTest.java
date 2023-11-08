@@ -29,14 +29,14 @@ import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 
+import java.io.IOException;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 
@@ -89,9 +89,9 @@ class SingleRegistryCenterInjvmIntegrationTest implements IntegrationTest {
 
         // initailize bootstrap
         DubboBootstrap.getInstance()
-            .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
-            .protocol(new ProtocolConfig("injvm"))
-            .service(serviceConfig);
+                .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
+                .protocol(new ProtocolConfig("injvm"))
+                .service(serviceConfig);
         RegistryConfig registryConfig = new RegistryConfig(ZookeeperRegistryCenterConfig.getConnectionAddress());
         DubboBootstrap.getInstance().registry(registryConfig);
     }
@@ -108,9 +108,12 @@ class SingleRegistryCenterInjvmIntegrationTest implements IntegrationTest {
      */
     private void beforeExport() {
         // ---------------initialize--------------- //
-        serviceListener = (SingleRegistryCenterInjvmServiceListener) ExtensionLoader.getExtensionLoader(ServiceListener.class).getExtension(SPI_NAME);
-        exporterListener = (SingleRegistryCenterInjvmExporterListener) ExtensionLoader.getExtensionLoader(ExporterListener.class).getExtension(SPI_NAME);
-        filter = (SingleRegistryCenterInjvmFilter) ExtensionLoader.getExtensionLoader(Filter.class).getExtension(SPI_NAME);
+        serviceListener = (SingleRegistryCenterInjvmServiceListener)
+                ExtensionLoader.getExtensionLoader(ServiceListener.class).getExtension(SPI_NAME);
+        exporterListener = (SingleRegistryCenterInjvmExporterListener)
+                ExtensionLoader.getExtensionLoader(ExporterListener.class).getExtension(SPI_NAME);
+        filter = (SingleRegistryCenterInjvmFilter)
+                ExtensionLoader.getExtensionLoader(Filter.class).getExtension(SPI_NAME);
 
         // ---------------checkpoints--------------- //
         // There is nothing in ServiceListener
@@ -151,8 +154,9 @@ class SingleRegistryCenterInjvmIntegrationTest implements IntegrationTest {
         // The exported service is only one
         Assertions.assertEquals(serviceListener.getExportedServices().size(), 1);
         // The exported service is SingleRegistryCenterInjvmService
-        Assertions.assertEquals(serviceListener.getExportedServices().get(0).getInterfaceClass(),
-            SingleRegistryCenterInjvmService.class);
+        Assertions.assertEquals(
+                serviceListener.getExportedServices().get(0).getInterfaceClass(),
+                SingleRegistryCenterInjvmService.class);
         // The SingleRegistryCenterInjvmService is exported
         Assertions.assertTrue(serviceListener.getExportedServices().get(0).isExported());
         // The exported exporter is only one

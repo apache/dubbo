@@ -20,59 +20,59 @@ public class KubernetesClientConst {
     public static final String DEFAULT_MASTER_PLACEHOLDER = "DEFAULT_MASTER_HOST";
     public static final String DEFAULT_MASTER_URL = "https://kubernetes.default.svc";
 
-    public final static String ENABLE_REGISTER = "enableRegister";
+    public static final String ENABLE_REGISTER = "enableRegister";
 
-    public final static String TRUST_CERTS = "trustCerts";
+    public static final String TRUST_CERTS = "trustCerts";
 
-    public final static String USE_HTTPS = "useHttps";
+    public static final String USE_HTTPS = "useHttps";
 
     public static final String HTTP2_DISABLE = "http2Disable";
 
-    public final static String NAMESPACE = "namespace";
+    public static final String NAMESPACE = "namespace";
 
-    public final static String API_VERSION = "apiVersion";
+    public static final String API_VERSION = "apiVersion";
 
-    public final static String CA_CERT_FILE = "caCertFile";
+    public static final String CA_CERT_FILE = "caCertFile";
 
-    public final static String CA_CERT_DATA = "caCertData";
+    public static final String CA_CERT_DATA = "caCertData";
 
-    public final static String CLIENT_CERT_FILE = "clientCertFile";
+    public static final String CLIENT_CERT_FILE = "clientCertFile";
 
-    public final static String CLIENT_CERT_DATA = "clientCertData";
+    public static final String CLIENT_CERT_DATA = "clientCertData";
 
-    public final static String CLIENT_KEY_FILE = "clientKeyFile";
+    public static final String CLIENT_KEY_FILE = "clientKeyFile";
 
-    public final static String CLIENT_KEY_DATA = "clientKeyData";
+    public static final String CLIENT_KEY_DATA = "clientKeyData";
 
-    public final static String CLIENT_KEY_ALGO = "clientKeyAlgo";
+    public static final String CLIENT_KEY_ALGO = "clientKeyAlgo";
 
-    public final static String CLIENT_KEY_PASSPHRASE = "clientKeyPassphrase";
+    public static final String CLIENT_KEY_PASSPHRASE = "clientKeyPassphrase";
 
-    public final static String OAUTH_TOKEN = "oauthToken";
+    public static final String OAUTH_TOKEN = "oauthToken";
 
-    public final static String USERNAME = "username";
+    public static final String USERNAME = "username";
 
-    public final static String PASSWORD = "password";
+    public static final String PASSWORD = "password";
 
-    public final static String WATCH_RECONNECT_INTERVAL = "watchReconnectInterval";
+    public static final String WATCH_RECONNECT_INTERVAL = "watchReconnectInterval";
 
-    public final static String WATCH_RECONNECT_LIMIT = "watchReconnectLimit";
+    public static final String WATCH_RECONNECT_LIMIT = "watchReconnectLimit";
 
-    public final static String CONNECTION_TIMEOUT = "connectionTimeout";
+    public static final String CONNECTION_TIMEOUT = "connectionTimeout";
 
-    public final static String REQUEST_TIMEOUT = "requestTimeout";
+    public static final String REQUEST_TIMEOUT = "requestTimeout";
 
-    public final static String ROLLING_TIMEOUT = "rollingTimeout";
+    public static final String ROLLING_TIMEOUT = "rollingTimeout";
 
-    public final static String LOGGING_INTERVAL = "loggingInterval";
+    public static final String LOGGING_INTERVAL = "loggingInterval";
 
-    public final static String HTTP_PROXY = "httpProxy";
+    public static final String HTTP_PROXY = "httpProxy";
 
-    public final static String HTTPS_PROXY = "httpsProxy";
+    public static final String HTTPS_PROXY = "httpsProxy";
 
-    public final static String PROXY_USERNAME = "proxyUsername";
+    public static final String PROXY_USERNAME = "proxyUsername";
 
-    public final static String PROXY_PASSWORD = "proxyPassword";
+    public static final String PROXY_PASSWORD = "proxyPassword";
 
-    public final static String NO_PROXY = "noProxy";
+    public static final String NO_PROXY = "noProxy";
 }

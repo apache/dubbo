@@ -66,8 +66,7 @@ public class ShutdownHookCallbacks implements Disposable {
     }
 
     private void loadCallbacks() {
-        ExtensionLoader<ShutdownHookCallback> loader =
-            applicationModel.getExtensionLoader(ShutdownHookCallback.class);
+        ExtensionLoader<ShutdownHookCallback> loader = applicationModel.getExtensionLoader(ShutdownHookCallback.class);
         loader.getSupportedExtensionInstances().forEach(this::addCallback);
     }
 

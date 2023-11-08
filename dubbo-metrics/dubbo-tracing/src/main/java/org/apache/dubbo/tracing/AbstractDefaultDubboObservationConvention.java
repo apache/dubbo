@@ -16,14 +16,14 @@
  */
 package org.apache.dubbo.tracing;
 
-import io.micrometer.common.KeyValues;
-import io.micrometer.common.docs.KeyName;
-import io.micrometer.common.lang.Nullable;
-
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.support.RpcUtils;
+
+import io.micrometer.common.KeyValues;
+import io.micrometer.common.docs.KeyName;
+import io.micrometer.common.lang.Nullable;
 
 import static org.apache.dubbo.tracing.DubboObservationDocumentation.LowCardinalityKeyNames.RPC_METHOD;
 import static org.apache.dubbo.tracing.DubboObservationDocumentation.LowCardinalityKeyNames.RPC_SERVICE;
@@ -32,7 +32,9 @@ import static org.apache.dubbo.tracing.DubboObservationDocumentation.LowCardinal
 class AbstractDefaultDubboObservationConvention {
     KeyValues getLowCardinalityKeyValues(Invocation invocation) {
         KeyValues keyValues = KeyValues.of(RPC_SYSTEM.withValue("apache_dubbo"));
-        String serviceName = StringUtils.hasText(invocation.getServiceName()) ? invocation.getServiceName() : readServiceName(invocation.getTargetServiceUniqueName());
+        String serviceName = StringUtils.hasText(invocation.getServiceName())
+                ? invocation.getServiceName()
+                : readServiceName(invocation.getTargetServiceUniqueName());
         keyValues = appendNonNull(keyValues, RPC_SERVICE, serviceName);
         return appendNonNull(keyValues, RPC_METHOD, RpcUtils.getMethodName(invocation));
     }
@@ -45,14 +47,17 @@ class AbstractDefaultDubboObservationConvention {
     }
 
     String getContextualName(Invocation invocation) {
-        String serviceName = StringUtils.hasText(invocation.getServiceName()) ? invocation.getServiceName() : readServiceName(invocation.getTargetServiceUniqueName());
+        String serviceName = StringUtils.hasText(invocation.getServiceName())
+                ? invocation.getServiceName()
+                : readServiceName(invocation.getTargetServiceUniqueName());
         String methodName = RpcUtils.getMethodName(invocation);
         String method = StringUtils.hasText(methodName) ? methodName : "";
         return serviceName + CommonConstants.PATH_SEPARATOR + method;
     }
 
     private String readServiceName(String targetServiceUniqueName) {
-        String[] splitByHyphen = targetServiceUniqueName.split(CommonConstants.PATH_SEPARATOR); // foo-provider/a.b.c:1.0.0 or a.b.c:1.0.0
+        String[] splitByHyphen = targetServiceUniqueName.split(
+                CommonConstants.PATH_SEPARATOR); // foo-provider/a.b.c:1.0.0 or a.b.c:1.0.0
         String withVersion = splitByHyphen.length == 1 ? targetServiceUniqueName : splitByHyphen[1];
         String[] splitByVersion = withVersion.split(CommonConstants.GROUP_CHAR_SEPARATOR); // a.b.c:1.0.0
         if (splitByVersion.length == 1) {

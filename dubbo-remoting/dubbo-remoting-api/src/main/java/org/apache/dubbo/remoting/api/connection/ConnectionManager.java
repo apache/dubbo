@@ -29,5 +29,4 @@ public interface ConnectionManager {
     AbstractConnectionClient connect(URL url, ChannelHandler handler);
 
     void forEachConnection(Consumer<AbstractConnectionClient> connectionConsumer);
-
 }

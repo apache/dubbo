@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.model;
 
 /**
@@ -47,7 +46,6 @@ public interface PackableMethod {
         return getResponsePack().pack(response);
     }
 
-
     default boolean needWrapper() {
         return false;
     }
@@ -59,5 +57,4 @@ public interface PackableMethod {
     UnPack getResponseUnpack();
 
     UnPack getRequestUnpack();
-
 }

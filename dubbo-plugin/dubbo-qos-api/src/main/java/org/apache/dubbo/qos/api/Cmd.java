@@ -62,5 +62,4 @@ public @interface Cmd {
      * @return command permission level
      */
     PermissionLevel requiredPermissionLevel() default PermissionLevel.PROTECTED;
-
 }

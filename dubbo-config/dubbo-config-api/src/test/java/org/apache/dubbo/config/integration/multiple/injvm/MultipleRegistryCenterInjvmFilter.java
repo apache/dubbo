@@ -25,7 +25,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 
 @Activate(group = CommonConstants.PROVIDER, order = 10200)
-public class MultipleRegistryCenterInjvmFilter implements Filter,Filter.Listener{
+public class MultipleRegistryCenterInjvmFilter implements Filter, Filter.Listener {
 
     /**
      * The filter is called or not

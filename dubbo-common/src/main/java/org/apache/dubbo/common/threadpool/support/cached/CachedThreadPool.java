@@ -49,7 +49,8 @@ public class CachedThreadPool implements ThreadPool {
 
     @Override
     public Executor getExecutor(URL url) {
-        String name = url.getParameter(THREAD_NAME_KEY, (String) url.getAttribute(THREAD_NAME_KEY, DEFAULT_THREAD_NAME));
+        String name =
+                url.getParameter(THREAD_NAME_KEY, (String) url.getAttribute(THREAD_NAME_KEY, DEFAULT_THREAD_NAME));
         int cores = url.getParameter(CORE_THREADS_KEY, DEFAULT_CORE_THREADS);
         int threads = url.getParameter(THREADS_KEY, Integer.MAX_VALUE);
         int queues = url.getParameter(QUEUES_KEY, DEFAULT_QUEUES);
@@ -65,7 +66,13 @@ public class CachedThreadPool implements ThreadPool {
             blockingQueue = new LinkedBlockingQueue<>(queues);
         }
 
-        return new ThreadPoolExecutor(cores, threads, alive, TimeUnit.MILLISECONDS, blockingQueue,
-                new NamedInternalThreadFactory(name, true), new AbortPolicyWithReport(name, url));
+        return new ThreadPoolExecutor(
+                cores,
+                threads,
+                alive,
+                TimeUnit.MILLISECONDS,
+                blockingQueue,
+                new NamedInternalThreadFactory(name, true),
+                new AbortPolicyWithReport(name, url));
     }
 }

@@ -24,6 +24,8 @@ import org.apache.dubbo.config.spring.util.EnvironmentUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
+import java.util.SortedMap;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -34,15 +36,13 @@ import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
 
-import java.util.SortedMap;
-
-
-public class DubboContextPostProcessor implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware, EnvironmentAware {
+public class DubboContextPostProcessor
+        implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware, EnvironmentAware {
 
     /**
      * The bean name of {@link DubboConfigConfigurationRegistrar}
      */
-    public final static String BEAN_NAME = "dubboContextPostProcessor";
+    public static final String BEAN_NAME = "dubboContextPostProcessor";
 
     private ApplicationContext applicationContext;
 
@@ -65,7 +65,6 @@ public class DubboContextPostProcessor implements BeanDefinitionRegistryPostProc
 
         // register ConfigManager singleton
         beanFactory.registerSingleton(ConfigManager.BEAN_NAME, applicationModel.getApplicationConfigManager());
-
     }
 
     @Override

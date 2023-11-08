@@ -37,5 +37,4 @@ public class UrlParamConditionMatcher extends AbstractConditionMatcher {
     protected String getValue(Map<String, String> sample, URL url, Invocation invocation) {
         return getSampleValueFromUrl(key, sample, url, invocation);
     }
-
 }

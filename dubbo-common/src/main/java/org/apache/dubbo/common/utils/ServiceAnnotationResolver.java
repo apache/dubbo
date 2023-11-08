@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.compact.Dubbo2CompactUtils;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.annotation.Service;
 
@@ -45,7 +46,15 @@ public class ServiceAnnotationResolver {
      *
      * @since 2.7.9
      */
-    public static List<Class<? extends Annotation>> SERVICE_ANNOTATION_CLASSES = unmodifiableList(asList(DubboService.class, Service.class, com.alibaba.dubbo.config.annotation.Service.class));
+    public static List<Class<? extends Annotation>> SERVICE_ANNOTATION_CLASSES = loadServiceAnnotationClasses();
+
+    private static List<Class<? extends Annotation>> loadServiceAnnotationClasses() {
+        if (Dubbo2CompactUtils.isEnabled() && Dubbo2CompactUtils.isServiceClassLoaded()) {
+            return unmodifiableList(asList(DubboService.class, Service.class, Dubbo2CompactUtils.getServiceClass()));
+        } else {
+            return unmodifiableList(asList(DubboService.class, Service.class));
+        }
+    }
 
     private final Annotation serviceAnnotation;
 
@@ -68,10 +77,9 @@ public class ServiceAnnotationResolver {
         }
 
         if (serviceAnnotation == null) {
-            throw new IllegalArgumentException(format("Any annotation of [%s] can't be annotated in the service type[%s].",
-                    SERVICE_ANNOTATION_CLASSES,
-                    serviceType.getName()
-            ));
+            throw new IllegalArgumentException(format(
+                    "Any annotation of [%s] can't be annotated in the service type[%s].",
+                    SERVICE_ANNOTATION_CLASSES, serviceType.getName()));
         }
 
         return serviceAnnotation;
