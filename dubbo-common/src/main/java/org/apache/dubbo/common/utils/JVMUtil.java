@@ -66,11 +66,12 @@ public class JVMUtil {
         String jstackMaxLineStr = System.getProperty(CommonConstants.DUBBO_JSTACK_MAXLINE);
         if (StringUtils.isNotEmpty(jstackMaxLineStr)) {
             try {
-                printStackDepth = Math.min(stackTrace.length, Integer.parseInt(jstackMaxLineStr));
-                if (printStackDepth < 0) {
+                int specifiedDepth = Integer.parseInt(jstackMaxLineStr);
+                if (specifiedDepth < 0) {
                     // if set to a negative number, print all lines instead
-                    printStackDepth = stackTrace.length;
+                    specifiedDepth = stackTrace.length;
                 }
+                printStackDepth = Math.min(stackTrace.length, specifiedDepth);
             } catch (Exception ignore) {
             }
         }
