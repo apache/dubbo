@@ -62,14 +62,14 @@ public class JVMUtil {
         // calculate stack print depth
         StackTraceElement[] stackTrace = threadInfo.getStackTrace();
         // default is 32, means only print up to 32 lines
-        int jstackMaxLine = Math.min(32, stackTrace.length);
+        int printStackDepth = Math.min(32, stackTrace.length);
         String jstackMaxLineStr = System.getProperty(CommonConstants.DUBBO_JSTACK_MAXLINE);
         if (StringUtils.isNotEmpty(jstackMaxLineStr)) {
             try {
-                jstackMaxLine = Integer.parseInt(jstackMaxLineStr);
-                if (jstackMaxLine < 0) {
+                printStackDepth = Integer.parseInt(jstackMaxLineStr);
+                if (printStackDepth < 0) {
                     // if set to a negative number, print all lines instead
-                    jstackMaxLine = stackTrace.length;
+                    printStackDepth = stackTrace.length;
                 }
             } catch (Exception ignore) {
             }
@@ -77,7 +77,7 @@ public class JVMUtil {
 
         // print stack trace info and monitor info
         MonitorInfo[] lockedMonitors = threadInfo.getLockedMonitors();
-        for (int i = 0; i < jstackMaxLine; i++) {
+        for (int i = 0; i < printStackDepth; i++) {
             StackTraceElement ste = stackTrace[i];
             stream.write(String.format("\tat %s\n", ste).getBytes());
             if (i == 0 && threadInfo.getLockInfo() != null) {
@@ -97,11 +97,12 @@ public class JVMUtil {
                 }
             }
         }
-        if (jstackMaxLine < stackTrace.length) {
+        if (printStackDepth < stackTrace.length) {
+            // current stack is deeper than the number of lines printed
             stream.write("\"\\t...\"\n".getBytes());
         }
 
-        // lock info
+        // print lock info
         LockInfo[] locks = threadInfo.getLockedSynchronizers();
         if (locks.length > 0) {
             stream.write(String.format("\n\tNumber of locked synchronizers = %d\n", locks.length)
