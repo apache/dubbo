@@ -357,7 +357,6 @@
         <configuration>
           <useSystemClassLoader>true</useSystemClassLoader>
           <forkCount>1</forkCount>
-          <reuseForks>false</reuseForks>
           <argLine>${argline} ${jacocoArgLine}</argLine>
           <systemProperties>
             <!-- common shared -->
@@ -761,7 +760,6 @@
             <configuration>
               <useSystemClassLoader>true</useSystemClassLoader>
               <forkCount>1</forkCount>
-              <reuseForks>false</reuseForks>
               <argLine>${argline} ${jacocoArgLine}
                                 --add-opens java.base/java.lang=ALL-UNNAMED
                                 --add-opens java.base/java.math=ALL-UNNAMED
@@ -786,7 +784,6 @@
             <configuration>
               <useSystemClassLoader>true</useSystemClassLoader>
               <forkCount>1</forkCount>
-              <reuseForks>false</reuseForks>
               <argLine>${argline} ${jacocoArgLine}</argLine>
               <systemProperties>
                 <!-- common shared -->
