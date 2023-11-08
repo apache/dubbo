@@ -25,7 +25,9 @@ public class DoubleSumMerger implements Merger<Double> {
 
     @Override
     public Double merge(Double... items) {
-        return Arrays.stream(items).filter(Objects::nonNull)
-            .mapToDouble(Double::doubleValue).sum();
+        return Arrays.stream(items)
+                .filter(Objects::nonNull)
+                .mapToDouble(Double::doubleValue)
+                .sum();
     }
 }

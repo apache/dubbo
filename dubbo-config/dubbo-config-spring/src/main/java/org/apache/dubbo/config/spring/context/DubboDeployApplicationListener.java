@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.context;
 
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.deploy.DeployListenerAdapter;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
@@ -25,9 +26,12 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.spring.context.event.DubboApplicationStateEvent;
 import org.apache.dubbo.config.spring.context.event.DubboModuleStateEvent;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
+import org.apache.dubbo.config.spring.util.LockUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModelConstants;
 import org.apache.dubbo.rpc.model.ModuleModel;
+
+import java.util.concurrent.Future;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -38,8 +42,6 @@ import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
 
-import java.util.concurrent.Future;
-
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_START_MODEL;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_STOP_DUBBO_ERROR;
 import static org.springframework.util.ObjectUtils.nullSafeEquals;
@@ -47,9 +49,11 @@ import static org.springframework.util.ObjectUtils.nullSafeEquals;
 /**
  * An ApplicationListener to control Dubbo application.
  */
-public class DubboDeployApplicationListener implements ApplicationListener<ApplicationContextEvent>, ApplicationContextAware, Ordered {
+public class DubboDeployApplicationListener
+        implements ApplicationListener<ApplicationContextEvent>, ApplicationContextAware, Ordered {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DubboDeployApplicationListener.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(DubboDeployApplicationListener.class);
 
     private ApplicationContext applicationContext;
 
@@ -62,7 +66,7 @@ public class DubboDeployApplicationListener implements ApplicationListener<Appli
         this.applicationModel = DubboBeanUtils.getApplicationModel(applicationContext);
         this.moduleModel = DubboBeanUtils.getModuleModel(applicationContext);
         // listen deploy events and publish DubboApplicationStateEvent
-        applicationModel.getDeployer().addDeployListener(new DeployListenerAdapter<ApplicationModel>(){
+        applicationModel.getDeployer().addDeployListener(new DeployListenerAdapter<ApplicationModel>() {
             @Override
             public void onStarting(ApplicationModel scopeModel) {
                 publishApplicationEvent(DeployState.STARTING);
@@ -88,7 +92,7 @@ public class DubboDeployApplicationListener implements ApplicationListener<Appli
                 publishApplicationEvent(DeployState.FAILED, cause);
             }
         });
-        moduleModel.getDeployer().addDeployListener(new DeployListenerAdapter<ModuleModel>(){
+        moduleModel.getDeployer().addDeployListener(new DeployListenerAdapter<ModuleModel>() {
             @Override
             public void onStarting(ModuleModel scopeModel) {
                 publishModuleEvent(DeployState.STARTING);
@@ -146,17 +150,30 @@ public class DubboDeployApplicationListener implements ApplicationListener<Appli
     private void onContextRefreshedEvent(ContextRefreshedEvent event) {
         ModuleDeployer deployer = moduleModel.getDeployer();
         Assert.notNull(deployer, "Module deployer is null");
+        Object singletonMutex = LockUtils.getSingletonMutex(applicationContext);
         // start module
-        Future future = deployer.start();
+        Future future = null;
+        synchronized (singletonMutex) {
+            future = deployer.start();
+        }
 
         // if the module does not start in background, await finish
         if (!deployer.isBackground()) {
             try {
                 future.get();
             } catch (InterruptedException e) {
-                logger.warn(CONFIG_FAILED_START_MODEL, "", "", "Interrupted while waiting for dubbo module start: " + e.getMessage());
+                logger.warn(
+                        CONFIG_FAILED_START_MODEL,
+                        "",
+                        "",
+                        "Interrupted while waiting for dubbo module start: " + e.getMessage());
             } catch (Exception e) {
-                logger.warn(CONFIG_FAILED_START_MODEL, "", "", "An error occurred while waiting for dubbo module start: " + e.getMessage(), e);
+                logger.warn(
+                        CONFIG_FAILED_START_MODEL,
+                        "",
+                        "",
+                        "An error occurred while waiting for dubbo module start: " + e.getMessage(),
+                        e);
             }
         }
     }
@@ -164,12 +181,20 @@ public class DubboDeployApplicationListener implements ApplicationListener<Appli
     private void onContextClosedEvent(ContextClosedEvent event) {
         try {
             Object value = moduleModel.getAttribute(ModelConstants.KEEP_RUNNING_ON_SPRING_CLOSED);
+            if (value == null) {
+                value = ConfigurationUtils.getProperty(moduleModel, ModelConstants.KEEP_RUNNING_ON_SPRING_CLOSED_KEY);
+            }
             boolean keepRunningOnClosed = Boolean.parseBoolean(String.valueOf(value));
             if (!keepRunningOnClosed && !moduleModel.isDestroyed()) {
                 moduleModel.destroy();
             }
         } catch (Exception e) {
-            logger.error(CONFIG_STOP_DUBBO_ERROR, "", "", "Unexpected error occurred when stop dubbo module: " + e.getMessage(), e);
+            logger.error(
+                    CONFIG_STOP_DUBBO_ERROR,
+                    "",
+                    "",
+                    "Unexpected error occurred when stop dubbo module: " + e.getMessage(),
+                    e);
         }
         // remove context bind cache
         DubboSpringInitializer.remove(event.getApplicationContext());
@@ -179,5 +204,4 @@ public class DubboDeployApplicationListener implements ApplicationListener<Appli
     public int getOrder() {
         return LOWEST_PRECEDENCE;
     }
-
 }

@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.demo.rest.api;
 
-
-
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 
@@ -27,5 +25,4 @@ public interface ExceptionMapperService {
     @POST
     @Path("/exception")
     String exception(String message);
-
 }

@@ -167,5 +167,4 @@ public interface Logger {
      * @return true if error is enabled
      */
     boolean isErrorEnabled();
-
 }

@@ -38,7 +38,6 @@ public class FormConsumerParamParser implements BaseConsumerParamParser {
     @Override
     public void parse(ConsumerParseContext parseContext, ArgInfo argInfo) {
 
-
         List<Object> args = parseContext.getArgs();
 
         RequestTemplate requestTemplate = parseContext.getRequestTemplate();
@@ -47,7 +46,6 @@ public class FormConsumerParamParser implements BaseConsumerParamParser {
         if (value == null) {
             return;
         }
-
 
         Map<String, List<String>> tmp = new HashMap<>();
         if (DataParseUtils.isTextType(value.getClass())) {
@@ -59,11 +57,9 @@ public class FormConsumerParamParser implements BaseConsumerParamParser {
             Set<String> allFieldNames = ReflectUtils.getAllFieldNames(value.getClass());
 
             allFieldNames.stream().forEach(entry -> {
-
-                    Object fieldValue = ReflectUtils.getFieldValue(value, entry);
-                    tmp.put(String.valueOf(entry), Arrays.asList(String.valueOf(fieldValue)));
-                }
-            );
+                Object fieldValue = ReflectUtils.getFieldValue(value, entry);
+                tmp.put(String.valueOf(entry), Arrays.asList(String.valueOf(fieldValue)));
+            });
 
             requestTemplate.body(tmp, Map.class);
         }
@@ -72,8 +68,6 @@ public class FormConsumerParamParser implements BaseConsumerParamParser {
         if (CollectionUtils.isEmpty(headers)) {
             requestTemplate.addHeader(RestConstant.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE.value);
         }
-
-
     }
 
     @Override

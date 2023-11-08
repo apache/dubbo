@@ -21,6 +21,11 @@ import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotati
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationPostProcessor;
 import org.apache.dubbo.config.spring.context.DubboSpringInitializer;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -30,11 +35,6 @@ import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.ClassUtils;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 
@@ -75,16 +75,17 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
         builder.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
         AbstractBeanDefinition beanDefinition = builder.getBeanDefinition();
         BeanDefinitionReaderUtils.registerWithGeneratedName(beanDefinition, registry);
-
     }
 
     private Set<String> getPackagesToScan(AnnotationMetadata metadata) {
-        // get from @DubboComponentScan 
-        Set<String> packagesToScan = getPackagesToScan0(metadata, DubboComponentScan.class, "basePackages", "basePackageClasses");
+        // get from @DubboComponentScan
+        Set<String> packagesToScan =
+                getPackagesToScan0(metadata, DubboComponentScan.class, "basePackages", "basePackageClasses");
 
         // get from @EnableDubbo, compatible with spring 3.x
         if (packagesToScan.isEmpty()) {
-            packagesToScan = getPackagesToScan0(metadata, EnableDubbo.class, "scanBasePackages", "scanBasePackageClasses");
+            packagesToScan =
+                    getPackagesToScan0(metadata, EnableDubbo.class, "scanBasePackages", "scanBasePackageClasses");
         }
 
         if (packagesToScan.isEmpty()) {
@@ -93,10 +94,14 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
         return packagesToScan;
     }
 
-    private Set<String> getPackagesToScan0(AnnotationMetadata metadata, Class annotationClass, String basePackagesName, String basePackageClassesName) {
+    private Set<String> getPackagesToScan0(
+            AnnotationMetadata metadata,
+            Class annotationClass,
+            String basePackagesName,
+            String basePackageClassesName) {
 
-        AnnotationAttributes attributes = AnnotationAttributes.fromMap(
-                metadata.getAnnotationAttributes(annotationClass.getName()));
+        AnnotationAttributes attributes =
+                AnnotationAttributes.fromMap(metadata.getAnnotationAttributes(annotationClass.getName()));
         if (attributes == null) {
             return Collections.emptySet();
         }
@@ -117,5 +122,4 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
         }
         return packagesToScan;
     }
-
 }

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.constants;
 
 /**
@@ -23,6 +22,8 @@ package org.apache.dubbo.common.constants;
 public interface QosConstants {
 
     String QOS_ENABLE = "qos.enable";
+
+    String QOS_CHECK = "qos.check";
 
     String QOS_HOST = "qos.host";
 

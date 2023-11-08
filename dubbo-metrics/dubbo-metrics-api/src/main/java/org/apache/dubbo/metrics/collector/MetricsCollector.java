@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.collector;
 
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.listener.MetricsLifeListener;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -42,4 +42,14 @@ public interface MetricsCollector<E extends TimeCounterEvent> extends MetricsLif
      */
     List<MetricSample> collect();
 
+    /**
+     * Check if samples have been changed.
+     * Note that this method will reset the changed flag to false using CAS.
+     *
+     * @return true if samples have been changed
+     */
+    boolean calSamplesChanged();
+
+    default void initMetrics(MetricsEvent event) {}
+    ;
 }

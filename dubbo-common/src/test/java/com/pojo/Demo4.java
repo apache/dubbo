@@ -16,5 +16,4 @@
  */
 package com.pojo;
 
-public class Demo4 extends Demo3 {
-}
+public class Demo4 extends Demo3 {}

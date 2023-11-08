@@ -29,11 +29,11 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicReference;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class InjvmDeepCopyTest {
 
@@ -49,26 +49,32 @@ class InjvmDeepCopyTest {
         Demo demo = new Demo(requestReference, responseReference);
 
         // export provider
-        ProxyFactory proxyFactory = moduleModel.getExtensionLoader(ProxyFactory.class).getExtension("javassist");
+        ProxyFactory proxyFactory =
+                moduleModel.getExtensionLoader(ProxyFactory.class).getExtension("javassist");
         Protocol protocol = moduleModel.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
-        URL url = URL.valueOf("injvm://localhost:0/" + DemoInterface.class.getName() + "?interface=" + DemoInterface.class.getName());
-        ServiceDescriptor providerServiceDescriptor = moduleModel.getServiceRepository().registerService(DemoInterface.class);
-        ProviderModel providerModel = new ProviderModel(
-            url.getServiceKey(),
-            demo,
-            providerServiceDescriptor,
-            null,
-            null);
+        URL url = URL.valueOf(
+                "injvm://localhost:0/" + DemoInterface.class.getName() + "?interface=" + DemoInterface.class.getName());
+        ServiceDescriptor providerServiceDescriptor =
+                moduleModel.getServiceRepository().registerService(DemoInterface.class);
+        ProviderModel providerModel =
+                new ProviderModel(url.getServiceKey(), demo, providerServiceDescriptor, null, null);
 
         URL providerUrl = url.setScopeModel(moduleModel).setServiceModel(providerModel);
         Invoker invoker = proxyFactory.getInvoker(demo, DemoInterface.class, providerUrl);
         Exporter<?> exporter = protocol.export(invoker);
 
         // refer consumer
-        ServiceDescriptor consumerServiceDescriptor = moduleModel.getServiceRepository().registerService(DemoInterface.class);
-        ConsumerModel consumerModel = new ConsumerModel(DemoInterface.class.getName(), null, consumerServiceDescriptor,
-            ApplicationModel.defaultModel().getDefaultModule(), null, null, ClassUtils.getClassLoader(DemoInterface.class));
+        ServiceDescriptor consumerServiceDescriptor =
+                moduleModel.getServiceRepository().registerService(DemoInterface.class);
+        ConsumerModel consumerModel = new ConsumerModel(
+                DemoInterface.class.getName(),
+                null,
+                consumerServiceDescriptor,
+                ApplicationModel.defaultModel().getDefaultModule(),
+                null,
+                null,
+                ClassUtils.getClassLoader(DemoInterface.class));
         URL consumerUrl = url.setScopeModel(moduleModel).setServiceModel(consumerModel);
 
         DemoInterface stub = proxyFactory.getProxy(protocol.refer(DemoInterface.class, consumerUrl));
@@ -114,7 +120,5 @@ class InjvmDeepCopyTest {
         }
     }
 
-    private static class Data implements Serializable {
-
-    }
+    private static class Data implements Serializable {}
 }

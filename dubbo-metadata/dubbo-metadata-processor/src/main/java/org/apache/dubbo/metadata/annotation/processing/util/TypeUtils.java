@@ -28,6 +28,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
+
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URL;
@@ -61,12 +62,8 @@ import static org.apache.dubbo.common.utils.MethodUtils.invokeMethod;
  */
 public interface TypeUtils {
 
-    List<String> SIMPLE_TYPES = asList(
-            ClassUtils.SIMPLE_TYPES
-                    .stream()
-                    .map(Class::getName)
-                    .toArray(String[]::new)
-    );
+    List<String> SIMPLE_TYPES =
+            asList(ClassUtils.SIMPLE_TYPES.stream().map(Class::getName).toArray(String[]::new));
 
     static boolean isSimpleType(Element element) {
         return element != null && isSimpleType(element.asType());
@@ -152,19 +149,22 @@ public interface TypeUtils {
     }
 
     static Set<DeclaredType> getHierarchicalTypes(TypeMirror type, Type... excludedTypes) {
-        return getHierarchicalTypes(type, of(excludedTypes).map(Type::getTypeName).toArray(String[]::new));
+        return getHierarchicalTypes(
+                type, of(excludedTypes).map(Type::getTypeName).toArray(String[]::new));
     }
 
     static Set<DeclaredType> getHierarchicalTypes(TypeMirror type, CharSequence... excludedTypeNames) {
-        Set<String> typeNames = of(excludedTypeNames).map(CharSequence::toString).collect(toSet());
+        Set<String> typeNames =
+                of(excludedTypeNames).map(CharSequence::toString).collect(toSet());
         return getHierarchicalTypes(type, t -> !typeNames.contains(t.toString()));
     }
 
-    static Set<TypeElement> getHierarchicalTypes(TypeElement type,
-                                                 boolean includeSelf,
-                                                 boolean includeSuperTypes,
-                                                 boolean includeSuperInterfaces,
-                                                 Predicate<TypeElement>... typeFilters) {
+    static Set<TypeElement> getHierarchicalTypes(
+            TypeElement type,
+            boolean includeSelf,
+            boolean includeSuperTypes,
+            boolean includeSuperInterfaces,
+            Predicate<TypeElement>... typeFilters) {
 
         if (type == null) {
             return emptySet();
@@ -187,18 +187,16 @@ public interface TypeUtils {
         return filterAll(hierarchicalTypes, typeFilters);
     }
 
-    static Set<DeclaredType> getHierarchicalTypes(TypeMirror type,
-                                                  boolean includeSelf,
-                                                  boolean includeSuperTypes,
-                                                  boolean includeSuperInterfaces) {
-        return ofDeclaredTypes(getHierarchicalTypes(ofTypeElement(type),
-                includeSelf,
-                includeSuperTypes,
-                includeSuperInterfaces));
+    static Set<DeclaredType> getHierarchicalTypes(
+            TypeMirror type, boolean includeSelf, boolean includeSuperTypes, boolean includeSuperInterfaces) {
+        return ofDeclaredTypes(
+                getHierarchicalTypes(ofTypeElement(type), includeSelf, includeSuperTypes, includeSuperInterfaces));
     }
 
     static List<TypeMirror> getInterfaces(TypeElement type, Predicate<TypeMirror>... interfaceFilters) {
-        return type == null ? emptyList() : filterAll((List<TypeMirror>) ofTypeElement(type).getInterfaces(), interfaceFilters);
+        return type == null
+                ? emptyList()
+                : filterAll((List<TypeMirror>) ofTypeElement(type).getInterfaces(), interfaceFilters);
     }
 
     static List<TypeMirror> getInterfaces(TypeMirror type, Predicate<TypeMirror>... interfaceFilters) {
@@ -320,9 +318,9 @@ public interface TypeUtils {
     }
 
     static Set<DeclaredType> ofDeclaredTypes(Iterable<? extends Element> elements) {
-        return elements == null ?
-                emptySet() :
-                stream(elements.spliterator(), false)
+        return elements == null
+                ? emptySet()
+                : stream(elements.spliterator(), false)
                         .map(TypeUtils::ofTypeElement)
                         .filter(Objects::nonNull)
                         .map(Element::asType)
@@ -332,9 +330,9 @@ public interface TypeUtils {
     }
 
     static Set<TypeElement> ofTypeElements(Iterable<? extends TypeMirror> types) {
-        return types == null ?
-                emptySet() :
-                stream(types.spliterator(), false)
+        return types == null
+                ? emptySet()
+                : stream(types.spliterator(), false)
                         .map(TypeUtils::ofTypeElement)
                         .filter(Objects::nonNull)
                         .collect(LinkedHashSet::new, Set::add, Set::addAll);
@@ -361,7 +359,8 @@ public interface TypeUtils {
         URL resource = null;
         try {
             if (relativeName != null) {
-                FileObject fileObject = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "", relativeName);
+                FileObject fileObject =
+                        processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "", relativeName);
                 resource = fileObject.toUri().toURL();
                 // try to open it
                 resource.getContent();

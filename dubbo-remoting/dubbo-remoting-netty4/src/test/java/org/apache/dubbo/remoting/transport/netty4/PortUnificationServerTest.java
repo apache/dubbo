@@ -21,11 +21,10 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
-
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -34,7 +33,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEM
 class PortUnificationServerTest {
 
     @Test
-    void testBind() throws RemotingException {
+    void testBind() throws Throwable {
         int port = NetUtils.getAvailablePort();
         URL url = URL.valueOf("empty://127.0.0.1:" + port + "?foo=bar");
         ApplicationModel applicationModel = ApplicationModel.defaultModel();

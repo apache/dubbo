@@ -50,8 +50,7 @@ class AtomicPositiveIntegerTest {
             i1.set(-1);
             fail();
         } catch (IllegalArgumentException expected) {
-            assertThat(expected.getMessage(),
-                    allOf(containsString("new value"), containsString("< 0")));
+            assertThat(expected.getMessage(), allOf(containsString("new value"), containsString("< 0")));
         }
     }
 
@@ -124,8 +123,7 @@ class AtomicPositiveIntegerTest {
         try {
             i1.getAndSet(-1);
         } catch (IllegalArgumentException expected) {
-            assertThat(expected.getMessage(),
-                    allOf(containsString("new value"), containsString("< 0")));
+            assertThat(expected.getMessage(), allOf(containsString("new value"), containsString("< 0")));
         }
     }
 
@@ -143,7 +141,6 @@ class AtomicPositiveIntegerTest {
         assertEquals(Integer.MAX_VALUE, get);
         assertEquals(2, i3.get());
     }
-
 
     @Test
     void testAddAndGet() {

@@ -28,9 +28,7 @@ public class HttpClientConfig {
     private int HTTP_CLIENT_CONNECTION_MANAGER_CLOSE_WAIT_TIME_MS = 1000;
     private int HTTP_CLIENT_CONNECTION_MANAGER_CLOSE_IDLE_TIME_S = 30;
 
-
-    public HttpClientConfig() {
-    }
+    public HttpClientConfig() {}
 
     public int getReadTimeout() {
         return readTimeout;

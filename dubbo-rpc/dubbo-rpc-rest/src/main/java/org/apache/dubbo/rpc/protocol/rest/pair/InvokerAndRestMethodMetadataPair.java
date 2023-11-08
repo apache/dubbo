@@ -19,8 +19,11 @@ package org.apache.dubbo.rpc.protocol.rest.pair;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.rpc.Invoker;
 
+import java.lang.reflect.Method;
+import java.util.Arrays;
+
 /**
- *  for invoker & restMethodMetadata pair
+ * for invoker & restMethodMetadata pair
  */
 public class InvokerAndRestMethodMetadataPair {
 
@@ -40,10 +43,36 @@ public class InvokerAndRestMethodMetadataPair {
         return restMethodMetadata;
     }
 
-
     public static InvokerAndRestMethodMetadataPair pair(Invoker invoker, RestMethodMetadata restMethodMetadata) {
         return new InvokerAndRestMethodMetadataPair(invoker, restMethodMetadata);
     }
 
+    /**
+     * same interface  & same  method desc
+     *
+     * @param beforeMetadata
+     * @return
+     */
+    public boolean compareServiceMethod(InvokerAndRestMethodMetadataPair beforeMetadata) {
 
+        Class currentServiceInterface = this.invoker.getInterface();
+        Class<?> beforeServiceInterface = beforeMetadata.getInvoker().getInterface();
+
+        if (!currentServiceInterface.equals(beforeServiceInterface)) {
+            return false;
+        }
+
+        Method beforeServiceMethod = beforeMetadata.getRestMethodMetadata().getReflectMethod();
+
+        Method currentReflectMethod = this.restMethodMetadata.getReflectMethod();
+
+        if (beforeServiceMethod.getName().equals(currentReflectMethod.getName()) // method name
+                // method param types
+                && Arrays.toString(beforeServiceMethod.getParameterTypes())
+                        .equals(Arrays.toString(currentReflectMethod.getParameterTypes()))) {
+            return true;
+        }
+
+        return false;
+    }
 }

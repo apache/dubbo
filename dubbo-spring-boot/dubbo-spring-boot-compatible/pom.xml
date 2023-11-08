@@ -15,66 +15,63 @@
   See the License for the specific language governing permissions and
   limitations under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-spring-boot</artifactId>
-        <version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.dubbo</groupId>
+    <artifactId>dubbo-spring-boot</artifactId>
+    <version>${revision}</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
 
-    <artifactId>dubbo-spring-boot-compatible</artifactId>
-    <packaging>pom</packaging>
-    <description>Apache Dubbo Spring Boot Compatible for Spring Boot 1.x</description>
+  <artifactId>dubbo-spring-boot-compatible</artifactId>
+  <packaging>pom</packaging>
+  <description>Apache Dubbo Spring Boot Compatible for Spring Boot 1.x</description>
 
-    <properties>
-        <spring-boot.version>1.5.22.RELEASE</spring-boot.version>
-    </properties>
+  <modules>
+    <module>autoconfigure</module>
+    <module>actuator</module>
+  </modules>
 
-    <modules>
-        <module>autoconfigure</module>
-        <module>actuator</module>
-    </modules>
+  <properties>
+    <spring-boot.version>1.5.22.RELEASE</spring-boot.version>
+  </properties>
 
-    <profiles>
+  <profiles>
 
-        <profile>
-            <!-- Spring Boot 1.4 -->
-            <id>spring-boot-1.4</id>
-            <properties>
-                <spring-boot.version>1.4.7.RELEASE</spring-boot.version>
-            </properties>
-        </profile>
-        <profile>
-            <id>jdk15ge-simple</id>
-            <activation>
-                <jdk>[15,</jdk>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <useSystemClassLoader>true</useSystemClassLoader>
-                            <forkMode>once</forkMode>
-                            <argLine>${argline} ${jacocoArgLine}
+    <profile>
+      <!-- Spring Boot 1.4 -->
+      <id>spring-boot-1.4</id>
+      <properties>
+        <spring-boot.version>1.4.7.RELEASE</spring-boot.version>
+      </properties>
+    </profile>
+    <profile>
+      <id>jdk15ge-simple</id>
+      <activation>
+        <jdk>[15,</jdk>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <useSystemClassLoader>true</useSystemClassLoader>
+              <forkMode>once</forkMode>
+              <argLine>${argline} ${jacocoArgLine}
                                 --add-opens java.base/java.lang=ALL-UNNAMED
                                 --add-opens java.base/java.math=ALL-UNNAMED
-                                --add-opens java.base/java.util=ALL-UNNAMED
-                            </argLine>
-                            <systemProperties>
-                                <!-- common shared -->
-                            </systemProperties>
-                            <!-- Activate the use of TCP to transmit events to the plugin to fix Corrupted STDOUT issue -->
-                            <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory"/>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
+                                --add-opens java.base/java.util=ALL-UNNAMED</argLine>
+              <systemProperties>
+                <!-- common shared -->
+              </systemProperties>
+              <!-- Activate the use of TCP to transmit events to the plugin to fix Corrupted STDOUT issue -->
+              <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory" />
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

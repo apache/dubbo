@@ -16,20 +16,22 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
-
-import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import org.apache.dubbo.rpc.RpcContext;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.HeaderParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
+
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import io.netty.handler.codec.http.DefaultFullHttpRequest;
 
 @Path("/demoService")
 public class DemoServiceImpl implements DemoService {
@@ -49,7 +51,6 @@ public class DemoServiceImpl implements DemoService {
     public Long testFormBody(Long number) {
         return number;
     }
-
 
     public boolean isCalled() {
         return called;
@@ -76,9 +77,7 @@ public class DemoServiceImpl implements DemoService {
     }
 
     @Override
-    public void request(DefaultFullHttpRequest defaultFullHttpRequest) {
-
-    }
+    public void request(DefaultFullHttpRequest defaultFullHttpRequest) {}
 
     @Override
     public String testMapParam(Map<String, String> params) {
@@ -91,7 +90,7 @@ public class DemoServiceImpl implements DemoService {
     }
 
     @Override
-    public List<String> testMapForm(MultivaluedMap<String,String> params) {
+    public List<String> testMapForm(MultivaluedMap<String, String> params) {
         return params.get("form");
     }
 
@@ -110,7 +109,6 @@ public class DemoServiceImpl implements DemoService {
         return param;
     }
 
-
     @Override
     public String noStringHeader(String header) {
         return header;
@@ -120,7 +118,7 @@ public class DemoServiceImpl implements DemoService {
     @Path("/noIntHeader")
     @Consumes({javax.ws.rs.core.MediaType.TEXT_PLAIN})
     @Override
-    public int noIntHeader(@HeaderParam("header")int header) {
+    public int noIntHeader(@HeaderParam("header") int header) {
         return header;
     }
 
@@ -128,7 +126,7 @@ public class DemoServiceImpl implements DemoService {
     @Path("/noIntParam")
     @Consumes({javax.ws.rs.core.MediaType.TEXT_PLAIN})
     @Override
-    public int noIntParam(@QueryParam("header")int header) {
+    public int noIntParam(@QueryParam("header") int header) {
         return header;
     }
 
@@ -145,7 +143,6 @@ public class DemoServiceImpl implements DemoService {
         return a + b;
     }
 
-
     @GET
     @Path("/error")
     @Override
@@ -155,5 +152,36 @@ public class DemoServiceImpl implements DemoService {
 
     public static Map<String, Object> getAttachments() {
         return context;
+    }
+
+    @Override
+    public List<User> list(List<User> users) {
+        return users;
+    }
+
+    @Override
+    public Set<User> set(Set<User> users) {
+        return users;
+    }
+
+    @Override
+    public User[] array(User[] users) {
+        return users;
+    }
+
+    @Override
+    public Map<String, User> stringMap(Map<String, User> userMap) {
+        return userMap;
+    }
+
+    @Override
+    public Map<User, User> userMap(Map<User, User> userMap) {
+        return userMap;
+    }
+
+    @Override
+    public User formBody(User user) {
+        user.setName("formBody");
+        return user;
     }
 }

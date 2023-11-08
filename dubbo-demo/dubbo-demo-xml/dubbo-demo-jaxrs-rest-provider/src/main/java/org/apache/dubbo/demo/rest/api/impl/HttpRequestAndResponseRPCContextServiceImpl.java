@@ -16,15 +16,16 @@
  */
 package org.apache.dubbo.demo.rest.api.impl;
 
+import org.apache.dubbo.demo.rest.api.HttpRequestAndResponseRPCContextService;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
-import org.apache.dubbo.demo.rest.api.HttpRequestAndResponseRPCContextService;
-import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.stereotype.Service;
 
 @Service("httpRequestAndResponseRPCContextService")
 public class HttpRequestAndResponseRPCContextServiceImpl implements HttpRequestAndResponseRPCContextService {
@@ -46,7 +47,6 @@ public class HttpRequestAndResponseRPCContextServiceImpl implements HttpRequestA
         Map<String, List<String>> outputHeaders = ((NettyHttpResponse) response).getOutputHeaders();
         String responseKey = "response";
         outputHeaders.put(responseKey, Arrays.asList(hello));
-
 
         return outputHeaders.get(responseKey);
     }

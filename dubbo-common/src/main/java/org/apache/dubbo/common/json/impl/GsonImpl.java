@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.common.json.impl;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
 import java.lang.reflect.Type;
 import java.util.List;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 public class GsonImpl extends AbstractJSONImpl {
     // weak reference of com.google.gson.Gson, prevent throw exception when init
@@ -33,7 +33,8 @@ public class GsonImpl extends AbstractJSONImpl {
 
     @Override
     public <T> List<T> toJavaList(String json, Class<T> clazz) {
-        return getGson().fromJson(json, TypeToken.getParameterized(List.class, clazz).getType());
+        return getGson()
+                .fromJson(json, TypeToken.getParameterized(List.class, clazz).getType());
     }
 
     @Override

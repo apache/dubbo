@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo;
 
-
 import org.apache.dubbo.common.Parameters;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -40,7 +39,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAI
 @SuppressWarnings("deprecation")
 final class ReferenceCountExchangeClient implements ExchangeClient {
 
-    private final static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ReferenceCountExchangeClient.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(ReferenceCountExchangeClient.class);
     private final URL url;
     private final AtomicInteger referenceCount = new AtomicInteger(0);
     private final AtomicInteger disconnectCount = new AtomicInteger(0);
@@ -90,7 +90,8 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     }
 
     @Override
-    public CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor) throws RemotingException {
+    public CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor)
+            throws RemotingException {
         return client.request(request, timeout, executor);
     }
 
@@ -185,7 +186,12 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     private void replaceWithLazyClient() {
         // start warning at second replaceWithLazyClient()
         if (disconnectCount.getAndIncrement() % warningPeriod == 1) {
-            logger.warn(PROTOCOL_FAILED_REQUEST, "", "", url.getAddress() + " " + url.getServiceKey() + " safe guard client , should not be called ,must have a bug.");
+            logger.warn(
+                    PROTOCOL_FAILED_REQUEST,
+                    "",
+                    "",
+                    url.getAddress() + " " + url.getServiceKey()
+                            + " safe guard client , should not be called ,must have a bug.");
         }
 
         // the order of judgment in the if statement cannot be changed.
@@ -218,4 +224,3 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
         this.shutdownWaitTime = shutdownWaitTime;
     }
 }
-

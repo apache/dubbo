@@ -19,6 +19,10 @@ package org.apache.dubbo.spring.boot.context.event;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfig;
 
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactoryUtils;
@@ -33,10 +37,6 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.Environment;
 
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import static org.springframework.beans.factory.BeanFactoryUtils.beanNamesForTypeIncludingAncestors;
 import static org.springframework.context.ConfigurableApplicationContext.ENVIRONMENT_BEAN_NAME;
 
@@ -47,8 +47,8 @@ import static org.springframework.context.ConfigurableApplicationContext.ENVIRON
  * @see ApplicationListener
  * @since 2.7.5
  */
-public class DubboConfigBeanDefinitionConflictApplicationListener implements ApplicationListener<ContextRefreshedEvent>,
-    Ordered {
+public class DubboConfigBeanDefinitionConflictApplicationListener
+        implements ApplicationListener<ContextRefreshedEvent>, Ordered {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -64,7 +64,8 @@ public class DubboConfigBeanDefinitionConflictApplicationListener implements App
         if (beanFactory instanceof BeanDefinitionRegistry) {
             return (BeanDefinitionRegistry) beanFactory;
         }
-        throw new IllegalStateException("The BeanFactory in the ApplicationContext must bea subclass of BeanDefinitionRegistry");
+        throw new IllegalStateException(
+                "The BeanFactory in the ApplicationContext must bea subclass of BeanDefinitionRegistry");
     }
 
     /**
@@ -86,33 +87,31 @@ public class DubboConfigBeanDefinitionConflictApplicationListener implements App
 
         // Remove ApplicationConfig Beans that are configured by "dubbo.application.*"
         Stream.of(beansNames)
-            .filter(beansName -> isConfiguredApplicationConfigBeanName(environment, beansName))
-            .forEach(registry::removeBeanDefinition);
+                .filter(beansName -> isConfiguredApplicationConfigBeanName(environment, beansName))
+                .forEach(registry::removeBeanDefinition);
 
         beansNames = beanNamesForTypeIncludingAncestors(beanFactory, ApplicationConfig.class);
 
         if (beansNames.length > 1) {
-            throw new IllegalStateException(String.format("There are more than one instances of %s, whose bean definitions : %s",
-                ApplicationConfig.class.getSimpleName(),
-                Stream.of(beansNames)
-                    .map(registry::getBeanDefinition)
-                    .collect(Collectors.toList()))
-            );
+            throw new IllegalStateException(String.format(
+                    "There are more than one instances of %s, whose bean definitions : %s",
+                    ApplicationConfig.class.getSimpleName(),
+                    Stream.of(beansNames).map(registry::getBeanDefinition).collect(Collectors.toList())));
         }
     }
 
     private boolean isConfiguredApplicationConfigBeanName(Environment environment, String beanName) {
         boolean removed = BeanFactoryUtils.isGeneratedBeanName(beanName)
-            // Dubbo ApplicationConfig id as bean name
-            || Objects.equals(beanName, environment.getProperty("dubbo.application.id"));
+                // Dubbo ApplicationConfig id as bean name
+                || Objects.equals(beanName, environment.getProperty("dubbo.application.id"));
 
         if (removed && logger.isDebugEnabled()) {
-            logger.debug("The {} bean [ name : {} ] has been removed!", ApplicationConfig.class.getSimpleName(), beanName);
+            logger.debug(
+                    "The {} bean [ name : {} ] has been removed!", ApplicationConfig.class.getSimpleName(), beanName);
         }
 
         return removed;
     }
-
 
     @Override
     public int getOrder() {

@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.transport.netty;
 
-
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 
 import org.jboss.netty.buffer.ChannelBuffers;

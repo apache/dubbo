@@ -31,5 +31,4 @@ public interface ConnectionHandler {
      * @param channel Channel
      */
     void reconnect(Object channel);
-
 }

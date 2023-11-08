@@ -16,5 +16,4 @@
  */
 package com.service.deep1.deep2.deep3;
 
-public interface DemoService3 {
-}
+public interface DemoService3 {}

@@ -37,6 +37,8 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.remoting.Constants.HEARTBEAT_CHECK_TICK;
 import static org.apache.dubbo.remoting.Constants.LEAST_HEARTBEAT_DURATION;
+import static org.apache.dubbo.remoting.Constants.LEAST_RECONNECT_DURATION;
+import static org.apache.dubbo.remoting.Constants.LEAST_RECONNECT_DURATION_KEY;
 import static org.apache.dubbo.remoting.Constants.TICKS_PER_WHEEL;
 import static org.apache.dubbo.remoting.utils.UrlUtils.getHeartbeat;
 import static org.apache.dubbo.remoting.utils.UrlUtils.getIdleTimeout;
@@ -49,10 +51,13 @@ public class HeaderExchangeClient implements ExchangeClient {
     private final Client client;
     private final ExchangeChannel channel;
 
-    public static GlobalResourceInitializer<HashedWheelTimer> IDLE_CHECK_TIMER = new GlobalResourceInitializer<>(() ->
-        new HashedWheelTimer(new NamedThreadFactory("dubbo-client-heartbeat-reconnect", true), 1,
-            TimeUnit.SECONDS, TICKS_PER_WHEEL),
-        HashedWheelTimer::stop);
+    public static GlobalResourceInitializer<HashedWheelTimer> IDLE_CHECK_TIMER = new GlobalResourceInitializer<>(
+            () -> new HashedWheelTimer(
+                    new NamedThreadFactory("dubbo-client-heartbeat-reconnect", true),
+                    1,
+                    TimeUnit.SECONDS,
+                    TICKS_PER_WHEEL),
+            HashedWheelTimer::stop);
 
     private ReconnectTimerTask reconnectTimerTask;
     private HeartbeatTimerTask heartBeatTimerTask;
@@ -99,7 +104,8 @@ public class HeaderExchangeClient implements ExchangeClient {
     }
 
     @Override
-    public CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor) throws RemotingException {
+    public CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor)
+            throws RemotingException {
         return channel.request(request, timeout, executor);
     }
 
@@ -207,14 +213,19 @@ public class HeaderExchangeClient implements ExchangeClient {
         if (!client.canHandleIdle()) {
             int heartbeat = getHeartbeat(url);
             long heartbeatTick = calculateLeastDuration(heartbeat);
-            heartBeatTimerTask = new HeartbeatTimerTask(() -> Collections.singleton(this), IDLE_CHECK_TIMER.get(), heartbeatTick, heartbeat);
+            heartBeatTimerTask = new HeartbeatTimerTask(
+                    () -> Collections.singleton(this), IDLE_CHECK_TIMER.get(), heartbeatTick, heartbeat);
         }
     }
 
     private void startReconnectTask(URL url) {
         if (shouldReconnect(url)) {
             long heartbeatTimeoutTick = calculateLeastDuration(idleTimeout);
-            reconnectTimerTask = new ReconnectTimerTask(() -> Collections.singleton(this), IDLE_CHECK_TIMER.get(), heartbeatTimeoutTick, idleTimeout);
+            reconnectTimerTask = new ReconnectTimerTask(
+                    () -> Collections.singleton(this),
+                    IDLE_CHECK_TIMER.get(),
+                    calculateReconnectDuration(url, heartbeatTimeoutTick),
+                    idleTimeout);
         }
     }
 
@@ -240,8 +251,13 @@ public class HeaderExchangeClient implements ExchangeClient {
         }
     }
 
-    private boolean shouldReconnect(URL url) {
-        return url.getParameter(Constants.RECONNECT_KEY, true);
+    private long calculateReconnectDuration(URL url, long tick) {
+        long leastReconnectDuration = url.getParameter(LEAST_RECONNECT_DURATION_KEY, LEAST_RECONNECT_DURATION);
+        return Math.max(leastReconnectDuration, tick);
+    }
+
+    protected boolean shouldReconnect(URL url) {
+        return !Boolean.FALSE.toString().equalsIgnoreCase(url.getParameter(Constants.RECONNECT_KEY));
     }
 
     @Override

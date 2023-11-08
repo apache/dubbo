@@ -28,19 +28,19 @@ import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
 import org.apache.dubbo.rpc.RpcException;
 
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
@@ -61,7 +61,6 @@ public class RedisMetadataReport extends AbstractMetadataReport {
     private Set<HostAndPort> jedisClusterNodes;
     private int timeout;
     private String password;
-
 
     public RedisMetadataReport(URL url) {
         super(url);
@@ -132,10 +131,12 @@ public class RedisMetadataReport extends AbstractMetadataReport {
     }
 
     private void storeMetadataInCluster(BaseMetadataIdentifier metadataIdentifier, String v) {
-        try (JedisCluster jedisCluster = new JedisCluster(jedisClusterNodes, timeout, timeout, 2, password, new GenericObjectPoolConfig<>())) {
+        try (JedisCluster jedisCluster =
+                new JedisCluster(jedisClusterNodes, timeout, timeout, 2, password, new GenericObjectPoolConfig<>())) {
             jedisCluster.set(metadataIdentifier.getIdentifierKey() + META_DATA_STORE_TAG, v);
         } catch (Throwable e) {
-            String msg = "Failed to put " + metadataIdentifier + " to redis cluster " + v + ", cause: " + e.getMessage();
+            String msg =
+                    "Failed to put " + metadataIdentifier + " to redis cluster " + v + ", cause: " + e.getMessage();
             logger.error(TRANSPORT_FAILED_RESPONSE, "", "", msg, e);
             throw new RpcException(msg, e);
         }
@@ -160,7 +161,8 @@ public class RedisMetadataReport extends AbstractMetadataReport {
     }
 
     private void deleteMetadataInCluster(BaseMetadataIdentifier metadataIdentifier) {
-        try (JedisCluster jedisCluster = new JedisCluster(jedisClusterNodes, timeout, timeout, 2, password, new GenericObjectPoolConfig<>())) {
+        try (JedisCluster jedisCluster =
+                new JedisCluster(jedisClusterNodes, timeout, timeout, 2, password, new GenericObjectPoolConfig<>())) {
             jedisCluster.del(metadataIdentifier.getIdentifierKey() + META_DATA_STORE_TAG);
         } catch (Throwable e) {
             String msg = "Failed to delete " + metadataIdentifier + " from redis cluster , cause: " + e.getMessage();
@@ -188,7 +190,8 @@ public class RedisMetadataReport extends AbstractMetadataReport {
     }
 
     private String getMetadataInCluster(BaseMetadataIdentifier metadataIdentifier) {
-        try (JedisCluster jedisCluster = new JedisCluster(jedisClusterNodes, timeout, timeout, 2, password, new GenericObjectPoolConfig<>())) {
+        try (JedisCluster jedisCluster =
+                new JedisCluster(jedisClusterNodes, timeout, timeout, 2, password, new GenericObjectPoolConfig<>())) {
             return jedisCluster.get(metadataIdentifier.getIdentifierKey() + META_DATA_STORE_TAG);
         } catch (Throwable e) {
             String msg = "Failed to get " + metadataIdentifier + " from redis cluster , cause: " + e.getMessage();
@@ -206,5 +209,4 @@ public class RedisMetadataReport extends AbstractMetadataReport {
             throw new RpcException(msg, e);
         }
     }
-
 }

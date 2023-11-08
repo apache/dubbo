@@ -14,12 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.rpc;
 
 @Deprecated
 public class RpcException extends org.apache.dubbo.rpc.RpcException {
-    
+
     public RpcException() {
         super();
     }
@@ -50,5 +49,9 @@ public class RpcException extends org.apache.dubbo.rpc.RpcException {
 
     public RpcException(int code, Throwable cause) {
         super(code, cause);
+    }
+
+    public boolean isForbidded() {
+        return isForbidden();
     }
 }

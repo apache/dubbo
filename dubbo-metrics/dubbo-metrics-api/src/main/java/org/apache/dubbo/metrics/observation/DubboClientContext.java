@@ -16,11 +16,12 @@
  */
 package org.apache.dubbo.metrics.observation;
 
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
+
 import java.util.Objects;
 
 import io.micrometer.observation.transport.SenderContext;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
 
 /**
  * Provider context for RPC.

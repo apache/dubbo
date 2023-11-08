@@ -23,11 +23,10 @@ import org.apache.dubbo.rpc.cluster.support.wrapper.AbstractCluster;
 
 public class ZoneAwareCluster extends AbstractCluster {
 
-    public final static String NAME = "zone-aware";
+    public static final String NAME = "zone-aware";
 
     @Override
     protected <T> AbstractClusterInvoker<T> doJoin(Directory<T> directory) throws RpcException {
         return new ZoneAwareClusterInvoker<T>(directory);
     }
-
 }

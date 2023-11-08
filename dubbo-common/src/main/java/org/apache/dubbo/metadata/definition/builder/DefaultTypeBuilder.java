@@ -60,6 +60,5 @@ public final class DefaultTypeBuilder {
         return td;
     }
 
-    private DefaultTypeBuilder() {
-    }
+    private DefaultTypeBuilder() {}
 }

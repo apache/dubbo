@@ -20,11 +20,11 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 
-import org.junit.jupiter.api.Test;
-import org.mockito.internal.verification.VerificationModeFactory;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
+
+import org.junit.jupiter.api.Test;
+import org.mockito.internal.verification.VerificationModeFactory;
 
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -46,10 +46,11 @@ class AbstractCodecTest {
         try {
             AbstractCodec.checkPayload(channel, 15 * 1024 * 1024);
         } catch (IOException expected) {
-            assertThat(expected.getMessage(), allOf(
-                containsString("Data length too large: "),
-                containsString("max payload: " + 8 * 1024 * 1024)
-            ));
+            assertThat(
+                    expected.getMessage(),
+                    allOf(
+                            containsString("Data length too large: "),
+                            containsString("max payload: " + 8 * 1024 * 1024)));
         }
 
         verify(channel, VerificationModeFactory.atLeastOnce()).getUrl();
@@ -65,19 +66,19 @@ class AbstractCodecTest {
         try {
             AbstractCodec.checkPayload(channel, 1024 * 1024, 1024 * 1024);
         } catch (IOException expected) {
-            assertThat(expected.getMessage(), allOf(
-                containsString("Data length too large: "),
-                containsString("max payload: " + 1024 * 1024)
-            ));
+            assertThat(
+                    expected.getMessage(),
+                    allOf(containsString("Data length too large: "), containsString("max payload: " + 1024 * 1024)));
         }
 
         try {
             AbstractCodec.checkPayload(channel, 0, 15 * 1024 * 1024);
         } catch (IOException expected) {
-            assertThat(expected.getMessage(), allOf(
-                containsString("Data length too large: "),
-                containsString("max payload: " + 8 * 1024 * 1024)
-            ));
+            assertThat(
+                    expected.getMessage(),
+                    allOf(
+                            containsString("Data length too large: "),
+                            containsString("max payload: " + 8 * 1024 * 1024)));
         }
 
         verify(channel, VerificationModeFactory.atLeastOnce()).getUrl();
@@ -107,15 +108,12 @@ class AbstractCodecTest {
         given(channel.getUrl()).willReturn(URL.valueOf("dubbo://172.24.157.13:9103"));
         assertThat(codec.isClientSide(channel), is(false));
         assertThat(codec.isServerSide(channel), is(true));
-
     }
 
     private AbstractCodec getAbstractCodec() {
         AbstractCodec codec = new AbstractCodec() {
             @Override
-            public void encode(Channel channel, ChannelBuffer buffer, Object message) {
-
-            }
+            public void encode(Channel channel, ChannelBuffer buffer, Object message) {}
 
             @Override
             public Object decode(Channel channel, ChannelBuffer buffer) {

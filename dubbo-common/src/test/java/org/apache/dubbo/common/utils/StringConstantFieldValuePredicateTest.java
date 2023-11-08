@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.junit.jupiter.api.Test;
-
 import java.util.function.Predicate;
+
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of;
 import static org.junit.jupiter.api.Assertions.assertFalse;

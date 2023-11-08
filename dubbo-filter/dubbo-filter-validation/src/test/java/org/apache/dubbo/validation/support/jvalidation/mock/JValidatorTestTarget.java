@@ -18,9 +18,13 @@ package org.apache.dubbo.validation.support.jvalidation.mock;
 
 import org.apache.dubbo.validation.MethodValidated;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+
 import java.util.List;
 import java.util.Map;
+
+import org.hibernate.validator.constraints.NotBlank;
 
 public interface JValidatorTestTarget {
     @MethodValidated
@@ -35,7 +39,41 @@ public interface JValidatorTestTarget {
 
     void someMethod5(Map<String, String> map);
 
-    @interface Test2 {
+    void someMethod6(
+            Integer intValue,
+            @NotBlank(message = "string must not be blank") String string,
+            @NotNull(message = "longValue must not be null") Long longValue);
+
+    void someMethod7(@NotNull BaseParam<Param> baseParam);
+
+    @interface Test2 {}
+
+    class BaseParam<T> {
+
+        @Valid
+        @NotNull(message = "body must not be null")
+        private T body;
+
+        public T getBody() {
+            return body;
+        }
+
+        public void setBody(T body) {
+            this.body = body;
+        }
     }
 
+    class Param {
+
+        @NotNull(message = "name must not be null")
+        private String name;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+    }
 }

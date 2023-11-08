@@ -22,14 +22,14 @@ import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import org.apache.dubbo.rpc.protocol.dubbo.decode.MockChannel;
 
+import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-
-import java.net.InetSocketAddress;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * {@link ServerStatusChecker}
@@ -49,9 +49,9 @@ class ServerStatusCheckerTest {
         Mockito.when(dubboProtocol.getServers()).thenReturn(servers);
         Mockito.when(protocolServer.getRemotingServer()).thenReturn(remotingServer);
         Mockito.when(remotingServer.isBound()).thenReturn(true);
-        Mockito.when(remotingServer.getLocalAddress()).thenReturn(InetSocketAddress.createUnresolved("127.0.0.1", 9999));
+        Mockito.when(remotingServer.getLocalAddress())
+                .thenReturn(InetSocketAddress.createUnresolved("127.0.0.1", 9999));
         Mockito.when(remotingServer.getChannels()).thenReturn(Arrays.asList(new MockChannel()));
-
 
         try (MockedStatic<DubboProtocol> mockDubboProtocol = Mockito.mockStatic(DubboProtocol.class)) {
             mockDubboProtocol.when(() -> DubboProtocol.getDubboProtocol()).thenReturn(dubboProtocol);

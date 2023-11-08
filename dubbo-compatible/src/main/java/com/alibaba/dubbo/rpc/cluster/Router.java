@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.rpc.cluster;
 
 import org.apache.dubbo.common.URL;
@@ -27,14 +26,15 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Deprecated
-public interface Router extends org.apache.dubbo.rpc.cluster.Router{
+public interface Router extends org.apache.dubbo.rpc.cluster.Router {
 
     @Override
     com.alibaba.dubbo.common.URL getUrl();
 
-    <T> List<com.alibaba.dubbo.rpc.Invoker<T>> route(List<com.alibaba.dubbo.rpc.Invoker<T>> invokers,
-                                                     com.alibaba.dubbo.common.URL url,
-                                                     com.alibaba.dubbo.rpc.Invocation invocation)
+    <T> List<com.alibaba.dubbo.rpc.Invoker<T>> route(
+            List<com.alibaba.dubbo.rpc.Invoker<T>> invokers,
+            com.alibaba.dubbo.common.URL url,
+            com.alibaba.dubbo.rpc.Invocation invocation)
             throws com.alibaba.dubbo.rpc.RpcException;
 
     int compareTo(Router o);
@@ -42,12 +42,19 @@ public interface Router extends org.apache.dubbo.rpc.cluster.Router{
     // Add since 2.7.0
     @Override
     default <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
-        List<com.alibaba.dubbo.rpc.Invoker<T>> invs = invokers.stream().map(invoker -> new com.alibaba.dubbo.rpc.Invoker.CompatibleInvoker<T>(invoker)).
-                collect(Collectors.toList());
+        List<com.alibaba.dubbo.rpc.Invoker<T>> invs = invokers.stream()
+                .map(invoker -> new com.alibaba.dubbo.rpc.Invoker.CompatibleInvoker<T>(invoker))
+                .collect(Collectors.toList());
 
-        List<com.alibaba.dubbo.rpc.Invoker<T>> res = this.route(invs, new com.alibaba.dubbo.common.DelegateURL(url), new com.alibaba.dubbo.rpc.Invocation.CompatibleInvocation(invocation));
+        List<com.alibaba.dubbo.rpc.Invoker<T>> res = this.route(
+                invs,
+                new com.alibaba.dubbo.common.DelegateURL(url),
+                new com.alibaba.dubbo.rpc.Invocation.CompatibleInvocation(invocation));
 
-        return res.stream().map(inv -> inv.getOriginal()).filter(Objects::nonNull).collect(Collectors.toList());
+        return res.stream()
+                .map(inv -> inv.getOriginal())
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -66,11 +73,11 @@ public interface Router extends org.apache.dubbo.rpc.cluster.Router{
     }
 
     @Override
-    default int compareTo (org.apache.dubbo.rpc.cluster.Router o) {
+    default int compareTo(org.apache.dubbo.rpc.cluster.Router o) {
         if (!(o instanceof Router)) {
             return 1;
         }
 
-        return this.compareTo((Router)o);
+        return this.compareTo((Router) o);
     }
 }

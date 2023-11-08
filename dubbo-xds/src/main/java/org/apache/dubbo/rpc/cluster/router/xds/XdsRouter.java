@@ -16,15 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.router.xds;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
@@ -45,6 +36,16 @@ import org.apache.dubbo.rpc.cluster.router.xds.rule.HeaderMatcher;
 import org.apache.dubbo.rpc.cluster.router.xds.rule.HttpRequestMatch;
 import org.apache.dubbo.rpc.cluster.router.xds.rule.PathMatcher;
 import org.apache.dubbo.rpc.cluster.router.xds.rule.XdsRouteRule;
+import org.apache.dubbo.rpc.support.RpcUtils;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 public class XdsRouter<T> extends AbstractStateRouter<T> implements XdsRouteRuleListener, EdsEndpointListener {
 
@@ -67,7 +68,8 @@ public class XdsRouter<T> extends AbstractStateRouter<T> implements XdsRouteRule
     public XdsRouter(URL url) {
         super(url);
         isEnable = PilotExchanger.isEnabled();
-        rdsRouteRuleManager = url.getOrDefaultApplicationModel().getBeanFactory().getBean(RdsRouteRuleManager.class);
+        rdsRouteRuleManager =
+                url.getOrDefaultApplicationModel().getBeanFactory().getBean(RdsRouteRuleManager.class);
         edsEndpointManager = url.getOrDefaultApplicationModel().getBeanFactory().getBean(EdsEndpointManager.class);
         subscribeApplications = new ConcurrentHashSet<>();
         destinationSubsetMap = new ConcurrentHashMap<>();
@@ -78,7 +80,8 @@ public class XdsRouter<T> extends AbstractStateRouter<T> implements XdsRouteRule
     /**
      * @deprecated only for uts
      */
-    protected XdsRouter(URL url, RdsRouteRuleManager rdsRouteRuleManager, EdsEndpointManager edsEndpointManager, boolean isEnable) {
+    protected XdsRouter(
+            URL url, RdsRouteRuleManager rdsRouteRuleManager, EdsEndpointManager edsEndpointManager, boolean isEnable) {
         super(url);
         this.isEnable = isEnable;
         this.rdsRouteRuleManager = rdsRouteRuleManager;
@@ -90,12 +93,18 @@ public class XdsRouter<T> extends AbstractStateRouter<T> implements XdsRouteRule
     }
 
     @Override
-    protected BitList<Invoker<T>> doRoute(BitList<Invoker<T>> invokers, URL url, Invocation invocation,
-                                          boolean needToPrintMessage, Holder<RouterSnapshotNode<T>> nodeHolder,
-                                          Holder<String> messageHolder) throws RpcException {
+    protected BitList<Invoker<T>> doRoute(
+            BitList<Invoker<T>> invokers,
+            URL url,
+            Invocation invocation,
+            boolean needToPrintMessage,
+            Holder<RouterSnapshotNode<T>> nodeHolder,
+            Holder<String> messageHolder)
+            throws RpcException {
         if (!isEnable) {
             if (needToPrintMessage) {
-                messageHolder.set("Directly Return. Reason: Pilot exchanger has not been initialized, may not in mesh mode.");
+                messageHolder.set(
+                        "Directly Return. Reason: Pilot exchanger has not been initialized, may not in mesh mode.");
             }
             return invokers;
         }
@@ -133,7 +142,12 @@ public class XdsRouter<T> extends AbstractStateRouter<T> implements XdsRouteRule
             }
             if (matchCluster != null) {
                 if (stringBuilder != null) {
-                    stringBuilder.append("Match App: ").append(subscribeApplication).append(" Cluster: ").append(matchCluster).append(' ');
+                    stringBuilder
+                            .append("Match App: ")
+                            .append(subscribeApplication)
+                            .append(" Cluster: ")
+                            .append(matchCluster)
+                            .append(' ');
                 }
                 break;
             }
@@ -171,7 +185,7 @@ public class XdsRouter<T> extends AbstractStateRouter<T> implements XdsRouteRule
         }
         PathMatcher pathMatcher = requestMatch.getPathMatcher();
         if (pathMatcher != null) {
-            String path = "/" + invocation.getInvoker().getUrl().getPath() + "/" + invocation.getMethodName();
+            String path = "/" + invocation.getInvoker().getUrl().getPath() + "/" + RpcUtils.getMethodName(invocation);
             if (!pathMatcher.isMatch(path)) {
                 return null;
             }
@@ -196,7 +210,8 @@ public class XdsRouter<T> extends AbstractStateRouter<T> implements XdsRouteRule
     }
 
     private String computeWeightCluster(List<ClusterWeight> weightedClusters) {
-        int totalWeight = Math.max(weightedClusters.stream().mapToInt(ClusterWeight::getWeight).sum(), 1);
+        int totalWeight = Math.max(
+                weightedClusters.stream().mapToInt(ClusterWeight::getWeight).sum(), 1);
         // target must greater than 0
         // if weight is 0, the destination will not receive any traffic.
         int target = ThreadLocalRandom.current().nextInt(1, totalWeight + 1);
@@ -246,19 +261,20 @@ public class XdsRouter<T> extends AbstractStateRouter<T> implements XdsRouteRule
                 computeSubset(subset, allInvokers);
             }
         }
-
     }
 
     private void computeSubset(DestinationSubset<T> subset, BitList<Invoker<T>> invokers) {
         Set<Endpoint> endpoints = subset.getEndpoints();
-        List<Invoker<T>> filterInvokers = invokers.stream().filter(inv -> {
-            String host = inv.getUrl().getHost();
-            int port = inv.getUrl().getPort();
-            Optional<Endpoint> any = endpoints.stream()
-                .filter(end -> host.equals(end.getAddress()) && port == end.getPortValue())
-                .findAny();
-            return any.isPresent();
-        }).collect(Collectors.toList());
+        List<Invoker<T>> filterInvokers = invokers.stream()
+                .filter(inv -> {
+                    String host = inv.getUrl().getHost();
+                    int port = inv.getUrl().getPort();
+                    Optional<Endpoint> any = endpoints.stream()
+                            .filter(end -> host.equals(end.getAddress()) && port == end.getPortValue())
+                            .findAny();
+                    return any.isPresent();
+                })
+                .collect(Collectors.toList());
         subset.setInvokers(new BitList<>(filterInvokers));
     }
 
@@ -344,7 +360,6 @@ public class XdsRouter<T> extends AbstractStateRouter<T> implements XdsRouteRule
         }
     }
 
-
     @Deprecated
     Set<String> getSubscribeApplications() {
         return subscribeApplications;
@@ -366,7 +381,6 @@ public class XdsRouter<T> extends AbstractStateRouter<T> implements XdsRouteRule
         return xdsRouteRuleMap;
     }
 
-
     /**
      * for ut only
      */
@@ -374,5 +388,4 @@ public class XdsRouter<T> extends AbstractStateRouter<T> implements XdsRouteRule
     ConcurrentHashMap<String, DestinationSubset<T>> getDestinationSubsetMap() {
         return destinationSubsetMap;
     }
-
 }

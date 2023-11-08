@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.collector;
 
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
+import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.rpc.Invocation;
 
@@ -26,8 +26,9 @@ import org.apache.dubbo.rpc.Invocation;
  */
 public interface MethodMetricsCollector<E extends TimeCounterEvent> extends MetricsCollector<E> {
 
-    void increment(Invocation invocation, MetricsKeyWrapper wrapper, int size);
+    void increment(MethodMetric methodMetric, MetricsKeyWrapper wrapper, int size);
 
-    void addRt(Invocation invocation, String registryOpType, Long responseTime);
+    void addMethodRt(Invocation invocation, String registryOpType, Long responseTime);
+
+    void init(Invocation invocation, MetricsKeyWrapper wrapper);
 }
-

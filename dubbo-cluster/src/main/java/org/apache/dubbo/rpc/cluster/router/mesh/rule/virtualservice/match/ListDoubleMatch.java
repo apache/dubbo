@@ -14,11 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
 
 import java.util.List;
-
 
 public class ListDoubleMatch {
     private List<DoubleMatch> oneof;

@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -36,7 +37,8 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
 
     private static final int RECYCLE_PERIOD = 60000;
 
-    private final ConcurrentMap<String, ConcurrentMap<String, WeightedRoundRobin>> methodWeightMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ConcurrentMap<String, WeightedRoundRobin>> methodWeightMap =
+            new ConcurrentHashMap<>();
 
     protected static class WeightedRoundRobin {
         private int weight;
@@ -79,7 +81,7 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
      * @return
      */
     protected <T> Collection<String> getInvokerAddrList(List<Invoker<T>> invokers, Invocation invocation) {
-        String key = invokers.get(0).getUrl().getServiceKey() + "." + invocation.getMethodName();
+        String key = invokers.get(0).getUrl().getServiceKey() + "." + RpcUtils.getMethodName(invocation);
         Map<String, WeightedRoundRobin> map = methodWeightMap.get(key);
         if (map != null) {
             return map.keySet();
@@ -89,8 +91,9 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
 
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
-        String key = invokers.get(0).getUrl().getServiceKey() + "." + invocation.getMethodName();
-        ConcurrentMap<String, WeightedRoundRobin> map = ConcurrentHashMapUtils.computeIfAbsent(methodWeightMap, key, k -> new ConcurrentHashMap<>());
+        String key = invokers.get(0).getUrl().getServiceKey() + "." + RpcUtils.getMethodName(invocation);
+        ConcurrentMap<String, WeightedRoundRobin> map =
+                ConcurrentHashMapUtils.computeIfAbsent(methodWeightMap, key, k -> new ConcurrentHashMap<>());
         int totalWeight = 0;
         long maxCurrent = Long.MIN_VALUE;
         long now = System.currentTimeMillis();
@@ -106,7 +109,7 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
             });
 
             if (weight != weightedRoundRobin.getWeight()) {
-                //weight changed
+                // weight changed
                 weightedRoundRobin.setWeight(weight);
             }
             long cur = weightedRoundRobin.increaseCurrent();
@@ -128,5 +131,4 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
         // should not happen here
         return invokers.get(0);
     }
-
 }

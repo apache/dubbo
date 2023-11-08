@@ -25,6 +25,7 @@ import org.apache.dubbo.rpc.RpcStatus;
 import org.apache.dubbo.rpc.cluster.Constants;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -58,9 +59,15 @@ public class ShortestResponseLoadBalance extends AbstractLoadBalance implements 
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
-        slidePeriod = applicationModel.getModelEnvironment().getConfiguration().getInt(Constants.SHORTEST_RESPONSE_SLIDE_PERIOD, 30_000);
-        executorService = applicationModel.getFrameworkModel().getBeanFactory()
-            .getBean(FrameworkExecutorRepository.class).getSharedExecutor();
+        slidePeriod = applicationModel
+                .modelEnvironment()
+                .getConfiguration()
+                .getInt(Constants.SHORTEST_RESPONSE_SLIDE_PERIOD, 30_000);
+        executorService = applicationModel
+                .getFrameworkModel()
+                .getBeanFactory()
+                .getBean(FrameworkExecutorRepository.class)
+                .getSharedExecutor();
     }
 
     protected static class SlideWindowData {
@@ -116,10 +123,12 @@ public class ShortestResponseLoadBalance extends AbstractLoadBalance implements 
         // Filter out all the shortest response invokers
         for (int i = 0; i < length; i++) {
             Invoker<T> invoker = invokers.get(i);
-            RpcStatus rpcStatus = RpcStatus.getStatus(invoker.getUrl(), invocation.getMethodName());
-            SlideWindowData slideWindowData = ConcurrentHashMapUtils.computeIfAbsent(methodMap, rpcStatus, SlideWindowData::new);
+            RpcStatus rpcStatus = RpcStatus.getStatus(invoker.getUrl(), RpcUtils.getMethodName(invocation));
+            SlideWindowData slideWindowData =
+                    ConcurrentHashMapUtils.computeIfAbsent(methodMap, rpcStatus, SlideWindowData::new);
 
-            // Calculate the estimated response time from the product of active connections and succeeded average elapsed time.
+            // Calculate the estimated response time from the product of active connections and succeeded average
+            // elapsed time.
             long estimateResponse = slideWindowData.getEstimateResponse();
             int afterWarmup = getWeight(invoker, invocation);
             weights[i] = afterWarmup;
@@ -134,16 +143,15 @@ public class ShortestResponseLoadBalance extends AbstractLoadBalance implements 
             } else if (estimateResponse == shortestResponse) {
                 shortestIndexes[shortestCount++] = i;
                 totalWeight += afterWarmup;
-                if (sameWeight && i > 0
-                    && afterWarmup != firstWeight) {
+                if (sameWeight && i > 0 && afterWarmup != firstWeight) {
                     sameWeight = false;
                 }
             }
         }
 
         if (System.currentTimeMillis() - lastUpdateTime > slidePeriod
-            && onResetSlideWindow.compareAndSet(false, true)) {
-            //reset slideWindowData in async way
+                && onResetSlideWindow.compareAndSet(false, true)) {
+            // reset slideWindowData in async way
             executorService.execute(() -> {
                 methodMap.values().forEach(SlideWindowData::reset);
                 lastUpdateTime = System.currentTimeMillis();

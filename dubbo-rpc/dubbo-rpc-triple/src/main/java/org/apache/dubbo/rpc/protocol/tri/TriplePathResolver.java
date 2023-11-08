@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.rpc.Invoker;
@@ -28,8 +27,13 @@ public class TriplePathResolver implements PathResolver {
     private final ConcurrentHashMap<String, Object> nativeStub = new ConcurrentHashMap<>();
 
     @Override
-    public void add(String path, Invoker<?> invoker) {
-        path2Invoker.put(path, invoker);
+    public Invoker<?> add(String path, Invoker<?> invoker) {
+        return path2Invoker.put(path, invoker);
+    }
+
+    @Override
+    public Invoker<?> addIfAbsent(String path, Invoker<?> invoker) {
+        return path2Invoker.putIfAbsent(path, invoker);
     }
 
     @Override
@@ -56,5 +60,4 @@ public class TriplePathResolver implements PathResolver {
     public void destroy() {
         path2Invoker.clear();
     }
-
 }

@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.model.container;
-
 
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 
@@ -24,6 +22,9 @@ import java.util.concurrent.atomic.LongAccumulator;
 
 public class LongAccumulatorContainer extends LongContainer<LongAccumulator> {
     public LongAccumulatorContainer(MetricsKeyWrapper metricsKeyWrapper, LongAccumulator accumulator) {
-        super(metricsKeyWrapper, () -> accumulator, (responseTime, longAccumulator) -> longAccumulator.accumulate(responseTime));
+        super(
+                metricsKeyWrapper,
+                () -> accumulator,
+                (responseTime, longAccumulator) -> longAccumulator.accumulate(responseTime));
     }
 }

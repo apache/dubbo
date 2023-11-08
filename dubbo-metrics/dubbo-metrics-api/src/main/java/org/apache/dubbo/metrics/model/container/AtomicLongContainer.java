@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.model.container;
-
 
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 
@@ -32,5 +30,4 @@ public class AtomicLongContainer extends LongContainer<AtomicLong> {
     public AtomicLongContainer(MetricsKeyWrapper metricsKeyWrapper, BiConsumer<Long, AtomicLong> consumerFunc) {
         super(metricsKeyWrapper, AtomicLong::new, consumerFunc);
     }
-
 }

@@ -29,8 +29,7 @@ public class UserVo {
         this.age = age;
     }
 
-    public UserVo() {
-    }
+    public UserVo() {}
 
     public String getName() {
         return name;
@@ -62,11 +61,7 @@ public class UserVo {
 
     @Override
     public String toString() {
-        return "UserVo{" +
-            "name='" + name + '\'' +
-            ", addr='" + addr + '\'' +
-            ", age=" + age +
-            '}';
+        return "UserVo{" + "name='" + name + '\'' + ", addr='" + addr + '\'' + ", age=" + age + '}';
     }
 
     @Override

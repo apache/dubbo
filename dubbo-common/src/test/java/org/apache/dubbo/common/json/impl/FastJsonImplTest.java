@@ -18,14 +18,13 @@ package org.apache.dubbo.common.json.impl;
 
 import java.lang.reflect.Type;
 
+import com.alibaba.fastjson.JSON;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-
-import com.alibaba.fastjson.JSON;
 
 import static org.mockito.Answers.CALLS_REAL_METHODS;
 
@@ -54,11 +53,15 @@ class FastJsonImplTest {
         Assertions.assertFalse(new FastJsonImpl().isSupport());
         fastjsonMock.reset();
 
-        fastjsonMock.when(() -> JSON.parseObject((String) Mockito.any(), (Type) Mockito.any())).thenReturn(null);
+        fastjsonMock
+                .when(() -> JSON.parseObject((String) Mockito.any(), (Type) Mockito.any()))
+                .thenReturn(null);
         Assertions.assertFalse(new FastJsonImpl().isSupport());
         fastjsonMock.reset();
 
-        fastjsonMock.when(() -> JSON.parseArray(Mockito.any(), (Class) Mockito.any())).thenReturn(null);
+        fastjsonMock
+                .when(() -> JSON.parseArray(Mockito.any(), (Class) Mockito.any()))
+                .thenReturn(null);
         Assertions.assertFalse(new FastJsonImpl().isSupport());
         fastjsonMock.reset();
     }

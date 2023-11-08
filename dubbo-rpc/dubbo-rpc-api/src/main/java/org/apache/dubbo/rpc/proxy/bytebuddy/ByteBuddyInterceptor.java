@@ -16,13 +16,13 @@
  */
 package org.apache.dubbo.rpc.proxy.bytebuddy;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+
 import net.bytebuddy.implementation.bind.annotation.AllArguments;
 import net.bytebuddy.implementation.bind.annotation.Origin;
 import net.bytebuddy.implementation.bind.annotation.RuntimeType;
 import net.bytebuddy.implementation.bind.annotation.This;
-
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
 
 public class ByteBuddyInterceptor {
 
@@ -33,8 +33,8 @@ public class ByteBuddyInterceptor {
     }
 
     @RuntimeType
-    public Object intercept(@This Object obj, @AllArguments Object[] allArguments,
-                            @Origin Method method) throws Throwable {
+    public Object intercept(@This Object obj, @AllArguments Object[] allArguments, @Origin Method method)
+            throws Throwable {
         return handler.invoke(obj, method, allArguments);
     }
 }

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.metadata.collector;
 
 import org.apache.dubbo.common.extension.Activate;
@@ -39,7 +38,6 @@ import java.util.Optional;
 import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_PUSH;
 import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_STORE_PROVIDER_INTERFACE;
 import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_SUBSCRIBE;
-
 
 /**
  * Registry implementation of {@link MetricsCollector}
@@ -99,4 +97,8 @@ public class MetadataMetricsCollector extends CombMetricsCollector<MetadataEvent
         return list;
     }
 
+    @Override
+    public boolean calSamplesChanged() {
+        return stats.calSamplesChanged();
+    }
 }

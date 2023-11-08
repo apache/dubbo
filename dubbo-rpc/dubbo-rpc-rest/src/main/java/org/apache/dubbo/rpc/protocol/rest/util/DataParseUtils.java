@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Type;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
@@ -57,7 +58,6 @@ public class DataParseUtils {
         }
 
         return value;
-
     }
 
     public static boolean isTextType(Class targetType) {
@@ -65,11 +65,12 @@ public class DataParseUtils {
             return false;
         }
 
-        return targetType == Boolean.class || targetType == boolean.class ||
-            targetType == String.class ||
-            Number.class.isAssignableFrom(targetType) || targetType.isPrimitive();
+        return targetType == Boolean.class
+                || targetType == boolean.class
+                || targetType == String.class
+                || Number.class.isAssignableFrom(targetType)
+                || targetType.isPrimitive();
     }
-
 
     /**
      * content-type text
@@ -148,13 +149,11 @@ public class DataParseUtils {
         }
 
         return object.toString().getBytes();
-
     }
 
-    public static Object jsonConvert(Class targetType, byte[] body) throws Exception {
+    public static Object jsonConvert(Type targetType, byte[] body) throws Exception {
         return JsonUtils.toJavaObject(new String(body, StandardCharsets.UTF_8), targetType);
     }
-
 
     public static Object multipartFormConvert(byte[] body, Charset charset, Class<?> targetType) throws Exception {
         String[] pairs = tokenizeToStringArray(new String(body, StandardCharsets.UTF_8), "&");
@@ -177,13 +176,12 @@ public class DataParseUtils {
         return multipartFormConvert(body, Charset.defaultCharset(), targetType);
     }
 
-
     public static String[] tokenizeToStringArray(String str, String delimiters) {
         return tokenizeToStringArray(str, delimiters, true, true);
     }
 
-    public static String[] tokenizeToStringArray(String str, String delimiters, boolean trimTokens,
-                                                 boolean ignoreEmptyTokens) {
+    public static String[] tokenizeToStringArray(
+            String str, String delimiters, boolean trimTokens, boolean ignoreEmptyTokens) {
         if (str == null) {
             return null;
         } else {

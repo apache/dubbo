@@ -81,13 +81,17 @@ public class JettyHttpServer extends AbstractHttpServer {
         // TODO Context.SESSIONS is the best option here? (In jetty 9.x, it becomes ServletContextHandler.SESSIONS)
         ServletContextHandler context = new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
         context.setServletHandler(servletHandler);
-        ServletManager.getInstance().addServletContext(url.getParameter(Constants.BIND_PORT_KEY, url.getPort()), context.getServletContext());
+        ServletManager.getInstance()
+                .addServletContext(
+                        url.getParameter(Constants.BIND_PORT_KEY, url.getPort()), context.getServletContext());
 
         try {
             server.start();
         } catch (Exception e) {
-            throw new IllegalStateException("Failed to start jetty server on " + url.getParameter(Constants.BIND_IP_KEY) + ":" + url.getParameter(Constants.BIND_PORT_KEY) + ", cause: "
-                + e.getMessage(), e);
+            throw new IllegalStateException(
+                    "Failed to start jetty server on " + url.getParameter(Constants.BIND_IP_KEY) + ":"
+                            + url.getParameter(Constants.BIND_PORT_KEY) + ", cause: " + e.getMessage(),
+                    e);
         }
     }
 
@@ -106,5 +110,4 @@ public class JettyHttpServer extends AbstractHttpServer {
             }
         }
     }
-
 }

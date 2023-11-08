@@ -41,5 +41,4 @@ public interface ExtensionAccessor {
         ExtensionLoader<T> extensionLoader = getExtensionLoader(type);
         return extensionLoader != null ? extensionLoader.getDefaultExtension() : null;
     }
-
 }

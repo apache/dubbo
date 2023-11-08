@@ -27,7 +27,8 @@ import java.util.stream.Collectors;
 
 public class ConverterUtil {
     private final FrameworkModel frameworkModel;
-    private final ConcurrentMap<Class<?>, ConcurrentMap<Class<?>, List<Converter>>> converterCache = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Class<?>, ConcurrentMap<Class<?>, List<Converter>>> converterCache =
+            new ConcurrentHashMap<>();
 
     public ConverterUtil(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
@@ -42,12 +43,14 @@ public class ConverterUtil {
      * @see ExtensionLoader#getSupportedExtensionInstances()
      */
     public Converter<?, ?> getConverter(Class<?> sourceType, Class<?> targetType) {
-        ConcurrentMap<Class<?>, List<Converter>> toTargetMap = ConcurrentHashMapUtils.computeIfAbsent(converterCache, sourceType, (k) -> new ConcurrentHashMap<>());
-        List<Converter> converters = ConcurrentHashMapUtils.computeIfAbsent(toTargetMap, targetType, (k) -> frameworkModel.getExtensionLoader(Converter.class)
-            .getSupportedExtensionInstances()
-            .stream()
-            .filter(converter -> converter.accept(sourceType, targetType))
-            .collect(Collectors.toList()));
+        ConcurrentMap<Class<?>, List<Converter>> toTargetMap =
+                ConcurrentHashMapUtils.computeIfAbsent(converterCache, sourceType, (k) -> new ConcurrentHashMap<>());
+        List<Converter> converters = ConcurrentHashMapUtils.computeIfAbsent(
+                toTargetMap,
+                targetType,
+                (k) -> frameworkModel.getExtensionLoader(Converter.class).getSupportedExtensionInstances().stream()
+                        .filter(converter -> converter.accept(sourceType, targetType))
+                        .collect(Collectors.toList()));
 
         return converters.size() > 0 ? converters.get(0) : null;
     }

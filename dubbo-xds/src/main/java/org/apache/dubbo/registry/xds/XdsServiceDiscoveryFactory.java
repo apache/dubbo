@@ -27,7 +27,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERR
 
 public class XdsServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(XdsServiceDiscoveryFactory.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(XdsServiceDiscoveryFactory.class);
 
     @Override
     protected ServiceDiscovery createDiscovery(URL registryURL) {
@@ -35,7 +36,12 @@ public class XdsServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory 
         try {
             xdsServiceDiscovery.doInitialize(registryURL);
         } catch (Exception e) {
-            logger.error(REGISTRY_ERROR_INITIALIZE_XDS, "", "", "Error occurred when initialize xDS service discovery impl.", e);
+            logger.error(
+                    REGISTRY_ERROR_INITIALIZE_XDS,
+                    "",
+                    "",
+                    "Error occurred when initialize xDS service discovery impl.",
+                    e);
         }
         return xdsServiceDiscovery;
     }

@@ -41,7 +41,8 @@ public class ThreadPoolStatusChecker implements StatusChecker {
 
     @Override
     public Status check() {
-        DataStore dataStore = applicationModel.getExtensionLoader(DataStore.class).getDefaultExtension();
+        DataStore dataStore =
+                applicationModel.getExtensionLoader(DataStore.class).getDefaultExtension();
         Map<String, Object> executors = dataStore.get(CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY);
 
         StringBuilder msg = new StringBuilder();
@@ -62,12 +63,22 @@ public class ThreadPoolStatusChecker implements StatusChecker {
                 if (msg.length() > 0) {
                     msg.append(';');
                 }
-                msg.append("Pool status:").append(lvl).append(", max:").append(tp.getMaximumPoolSize()).append(", core:")
-                    .append(tp.getCorePoolSize()).append(", largest:").append(tp.getLargestPoolSize()).append(", active:")
-                    .append(tp.getActiveCount()).append(", task:").append(tp.getTaskCount()).append(", service port: ").append(port);
+                msg.append("Pool status:")
+                        .append(lvl)
+                        .append(", max:")
+                        .append(tp.getMaximumPoolSize())
+                        .append(", core:")
+                        .append(tp.getCorePoolSize())
+                        .append(", largest:")
+                        .append(tp.getLargestPoolSize())
+                        .append(", active:")
+                        .append(tp.getActiveCount())
+                        .append(", task:")
+                        .append(tp.getTaskCount())
+                        .append(", service port: ")
+                        .append(port);
             }
         }
         return msg.length() == 0 ? new Status(Status.Level.UNKNOWN) : new Status(level, msg.toString());
     }
-
 }

@@ -14,14 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.observer;
 
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 
 public interface CallStreamObserver<T> extends StreamObserver<T> {
-
 
     /**
      * Requests the peer to produce {@code count} more messages to be delivered to the 'inbound'
@@ -50,5 +48,4 @@ public interface CallStreamObserver<T> extends StreamObserver<T> {
      * specified.
      */
     void disableAutoFlowControl();
-
 }

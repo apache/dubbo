@@ -27,6 +27,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 public class AccessKeyAuthenticator implements Authenticator {
     private final ApplicationModel applicationModel;
@@ -39,7 +40,9 @@ public class AccessKeyAuthenticator implements Authenticator {
     public void sign(Invocation invocation, URL url) {
         String currentTime = String.valueOf(System.currentTimeMillis());
         AccessKeyPair accessKeyPair = getAccessKeyPair(invocation, url);
-        invocation.setAttachment(Constants.REQUEST_SIGNATURE_KEY, getSignature(url, invocation, accessKeyPair.getSecretKey(), currentTime));
+        invocation.setAttachment(
+                Constants.REQUEST_SIGNATURE_KEY,
+                getSignature(url, invocation, accessKeyPair.getSecretKey(), currentTime));
         invocation.setAttachment(Constants.REQUEST_TIMESTAMP_KEY, currentTime);
         invocation.setAttachment(Constants.AK_KEY, accessKeyPair.getAccessKey());
         invocation.setAttachment(CommonConstants.CONSUMER, url.getApplication());
@@ -54,7 +57,7 @@ public class AccessKeyAuthenticator implements Authenticator {
         if (StringUtils.isAnyEmpty(accessKeyId, consumer, requestTimestamp, originSignature)) {
             throw new RpcAuthenticationException("Failed to authenticate, maybe consumer side did not enable the auth");
         }
-        
+
         AccessKeyPair accessKeyPair;
         try {
             accessKeyPair = getAccessKeyPair(invocation, url);
@@ -70,13 +73,15 @@ public class AccessKeyAuthenticator implements Authenticator {
     }
 
     AccessKeyPair getAccessKeyPair(Invocation invocation, URL url) {
-        AccessKeyStorage accessKeyStorage = applicationModel.getExtensionLoader(AccessKeyStorage.class)
+        AccessKeyStorage accessKeyStorage = applicationModel
+                .getExtensionLoader(AccessKeyStorage.class)
                 .getExtension(url.getParameter(Constants.ACCESS_KEY_STORAGE_KEY, Constants.DEFAULT_ACCESS_KEY_STORAGE));
 
         AccessKeyPair accessKeyPair;
         try {
             accessKeyPair = accessKeyStorage.getAccessKey(url, invocation);
-            if (accessKeyPair == null || StringUtils.isAnyEmpty(accessKeyPair.getAccessKey(), accessKeyPair.getSecretKey())) {
+            if (accessKeyPair == null
+                    || StringUtils.isAnyEmpty(accessKeyPair.getAccessKey(), accessKeyPair.getSecretKey())) {
                 throw new AccessKeyNotFoundException("AccessKeyId or secretAccessKey not found");
             }
         } catch (Exception e) {
@@ -86,7 +91,12 @@ public class AccessKeyAuthenticator implements Authenticator {
     }
 
     String getSignature(URL url, Invocation invocation, String secretKey, String time) {
-        String requestString = String.format(Constants.SIGNATURE_STRING_FORMAT, url.getColonSeparatedKey(), invocation.getMethodName(), secretKey, time);
+        String requestString = String.format(
+                Constants.SIGNATURE_STRING_FORMAT,
+                url.getColonSeparatedKey(),
+                RpcUtils.getMethodName(invocation),
+                secretKey,
+                time);
         boolean parameterEncrypt = url.getParameter(Constants.PARAMETER_SIGNATURE_ENABLE_KEY, false);
         if (parameterEncrypt) {
             return SignatureUtils.sign(invocation.getArguments(), requestString, secretKey);

@@ -35,11 +35,12 @@ public class ApiWrapperConsumer {
         referenceConfig.setLazy(true);
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
-        bootstrap.application(new ApplicationConfig("dubbo-demo-triple-api-wrapper-consumer"))
-            .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
-            .protocol(new ProtocolConfig(CommonConstants.TRIPLE, -1))
-            .reference(referenceConfig)
-            .start();
+        bootstrap
+                .application(new ApplicationConfig("dubbo-demo-triple-api-wrapper-consumer"))
+                .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
+                .protocol(new ProtocolConfig(CommonConstants.TRIPLE, -1))
+                .reference(referenceConfig)
+                .start();
 
         final GreeterWrapperService greeterWrapperService = referenceConfig.get();
         System.out.println("dubbo referenceConfig started");

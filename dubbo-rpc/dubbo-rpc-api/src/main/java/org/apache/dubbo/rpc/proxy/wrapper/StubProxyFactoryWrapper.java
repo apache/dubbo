@@ -48,7 +48,8 @@ import static org.apache.dubbo.rpc.Constants.STUB_KEY;
  */
 public class StubProxyFactoryWrapper implements ProxyFactory {
 
-    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(StubProxyFactoryWrapper.class);
+    private static final ErrorTypeAwareLogger LOGGER =
+            LoggerFactory.getErrorTypeAwareLogger(StubProxyFactoryWrapper.class);
 
     private final ProxyFactory proxyFactory;
 
@@ -80,15 +81,19 @@ public class StubProxyFactoryWrapper implements ProxyFactory {
                 try {
                     Class<?> stubClass = ReflectUtils.forName(stub);
                     if (!serviceType.isAssignableFrom(stubClass)) {
-                        throw new IllegalStateException("The stub implementation class " + stubClass.getName() + " not implement interface " + serviceType.getName());
+                        throw new IllegalStateException("The stub implementation class " + stubClass.getName()
+                                + " not implement interface " + serviceType.getName());
                     }
                     try {
                         Constructor<?> constructor = ReflectUtils.findConstructor(stubClass, serviceType);
-                        proxy = (T) constructor.newInstance(new Object[]{proxy});
-                        //export stub service
+                        proxy = (T) constructor.newInstance(new Object[] {proxy});
+                        // export stub service
                         URLBuilder urlBuilder = URLBuilder.from(url);
                         if (url.getParameter(STUB_EVENT_KEY, DEFAULT_STUB_EVENT)) {
-                            urlBuilder.addParameter(STUB_EVENT_METHODS_KEY, StringUtils.join(Wrapper.getWrapper(proxy.getClass()).getDeclaredMethodNames(), ","));
+                            urlBuilder.addParameter(
+                                    STUB_EVENT_METHODS_KEY,
+                                    StringUtils.join(
+                                            Wrapper.getWrapper(proxy.getClass()).getDeclaredMethodNames(), ","));
                             urlBuilder.addParameter(IS_SERVER_KEY, Boolean.FALSE.toString());
                             try {
                                 export(proxy, invoker.getInterface(), urlBuilder.build());
@@ -97,16 +102,26 @@ public class StubProxyFactoryWrapper implements ProxyFactory {
                             }
                         }
                     } catch (NoSuchMethodException e) {
-                        throw new IllegalStateException("No such constructor \"public " + stubClass.getSimpleName() + "(" + serviceType.getName() + ")\" in stub implementation class " + stubClass.getName(), e);
+                        throw new IllegalStateException(
+                                "No such constructor \"public " + stubClass.getSimpleName() + "("
+                                        + serviceType.getName() + ")\" in stub implementation class "
+                                        + stubClass.getName(),
+                                e);
                     }
                 } catch (Throwable t) {
-                    LOGGER.error(PROXY_FAILED_EXPORT_SERVICE, "", "", "Failed to create stub implementation class " + stub + " in consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", cause: " + t.getMessage(), t);
+                    LOGGER.error(
+                            PROXY_FAILED_EXPORT_SERVICE,
+                            "",
+                            "",
+                            "Failed to create stub implementation class " + stub + " in consumer "
+                                    + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion()
+                                    + ", cause: " + t.getMessage(),
+                            t);
                     // ignore
                 }
             }
         }
         return proxy;
-
     }
 
     @Override
@@ -123,5 +138,4 @@ public class StubProxyFactoryWrapper implements ProxyFactory {
     private <T> Exporter<T> export(T instance, Class<T> type, URL url) {
         return protocol.export(proxyFactory.getInvoker(instance, type, url));
     }
-
 }

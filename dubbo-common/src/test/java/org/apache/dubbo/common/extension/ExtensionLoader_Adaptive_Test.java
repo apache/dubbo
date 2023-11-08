@@ -30,11 +30,11 @@ import org.apache.dubbo.common.extension.ext6_inject.impl.Ext6Impl2;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.LogUtil;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -95,7 +95,8 @@ class ExtensionLoader_Adaptive_Test {
 
     @Test
     void test_getAdaptiveExtension_protocolKey() throws Exception {
-        UseProtocolKeyExt ext = ExtensionLoader.getExtensionLoader(UseProtocolKeyExt.class).getAdaptiveExtension();
+        UseProtocolKeyExt ext =
+                ExtensionLoader.getExtensionLoader(UseProtocolKeyExt.class).getAdaptiveExtension();
 
         {
             String echo = ext.echo(URL.valueOf("1.2.3.4:20880"), "s");
@@ -113,7 +114,6 @@ class ExtensionLoader_Adaptive_Test {
         }
 
         {
-
             Map<String, String> map = new HashMap<String, String>();
             URL url = new ServiceConfigURL(null, "1.2.3.4", 1010, "path1", map);
             String yell = ext.yell(url, "s");
@@ -147,18 +147,26 @@ class ExtensionLoader_Adaptive_Test {
             ExtensionLoader.getExtensionLoader(NoAdaptiveMethodExt.class).getAdaptiveExtension();
             fail();
         } catch (IllegalStateException expected) {
-            assertThat(expected.getMessage(),
-                    allOf(containsString("Can't create adaptive extension interface org.apache.dubbo.common.extension.ext5.NoAdaptiveMethodExt"),
-                            containsString("No adaptive method exist on extension org.apache.dubbo.common.extension.ext5.NoAdaptiveMethodExt, refuse to create the adaptive class")));
+            assertThat(
+                    expected.getMessage(),
+                    allOf(
+                            containsString(
+                                    "Can't create adaptive extension interface org.apache.dubbo.common.extension.ext5.NoAdaptiveMethodExt"),
+                            containsString(
+                                    "No adaptive method exist on extension org.apache.dubbo.common.extension.ext5.NoAdaptiveMethodExt, refuse to create the adaptive class")));
         }
         // report same error when get is invoked for multiple times
         try {
             ExtensionLoader.getExtensionLoader(NoAdaptiveMethodExt.class).getAdaptiveExtension();
             fail();
         } catch (IllegalStateException expected) {
-            assertThat(expected.getMessage(),
-                    allOf(containsString("Can't create adaptive extension interface org.apache.dubbo.common.extension.ext5.NoAdaptiveMethodExt"),
-                            containsString("No adaptive method exist on extension org.apache.dubbo.common.extension.ext5.NoAdaptiveMethodExt, refuse to create the adaptive class")));
+            assertThat(
+                    expected.getMessage(),
+                    allOf(
+                            containsString(
+                                    "Can't create adaptive extension interface org.apache.dubbo.common.extension.ext5.NoAdaptiveMethodExt"),
+                            containsString(
+                                    "No adaptive method exist on extension org.apache.dubbo.common.extension.ext5.NoAdaptiveMethodExt, refuse to create the adaptive class")));
         }
     }
 
@@ -176,7 +184,8 @@ class ExtensionLoader_Adaptive_Test {
             assertThat(expected.getMessage(), containsString("method "));
             assertThat(
                     expected.getMessage(),
-                    containsString("of interface org.apache.dubbo.common.extension.ext1.SimpleExt is not adaptive method!"));
+                    containsString(
+                            "of interface org.apache.dubbo.common.extension.ext1.SimpleExt is not adaptive method!"));
         }
     }
 
@@ -187,7 +196,9 @@ class ExtensionLoader_Adaptive_Test {
             fail();
         } catch (Exception expected) {
             assertThat(expected.getMessage(), containsString("Failed to create adaptive class for interface "));
-            assertThat(expected.getMessage(), containsString(": not found url parameter or url attribute in parameters of method "));
+            assertThat(
+                    expected.getMessage(),
+                    containsString(": not found url parameter or url attribute in parameters of method "));
         }
     }
 
@@ -291,7 +302,10 @@ class ExtensionLoader_Adaptive_Test {
             ext.echo(holder, "haha");
             fail();
         } catch (IllegalStateException expected) {
-            assertThat(expected.getMessage(), containsString("Failed to get extension (org.apache.dubbo.common.extension.ext2.Ext2) name from url"));
+            assertThat(
+                    expected.getMessage(),
+                    containsString(
+                            "Failed to get extension (org.apache.dubbo.common.extension.ext2.Ext2) name from url"));
         }
     }
 
@@ -310,7 +324,6 @@ class ExtensionLoader_Adaptive_Test {
 
         url = url.addParameters("simple.ext", "impl2");
         assertEquals("Ext6Impl1-echo-Ext1Impl2-echo", ext.echo(url, "ha"));
-
     }
 
     @Test

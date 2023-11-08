@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.common.convert.multiple;
 
-import org.junit.jupiter.api.Test;
-
 import java.util.Collection;
 import java.util.Deque;
 import java.util.List;
@@ -27,6 +25,8 @@ import java.util.Set;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TransferQueue;
+
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

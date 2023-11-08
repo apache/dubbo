@@ -21,7 +21,8 @@ import io.micrometer.common.KeyValues;
 /**
  * Default implementation of the {@link DubboServerObservationConvention}.
  */
-public class DefaultDubboServerObservationConvention extends AbstractDefaultDubboObservationConvention implements DubboServerObservationConvention {
+public class DefaultDubboServerObservationConvention extends AbstractDefaultDubboObservationConvention
+        implements DubboServerObservationConvention {
 
     /**
      * Singleton instance of {@link DefaultDubboServerObservationConvention}.

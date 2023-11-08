@@ -84,7 +84,8 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
         super(url);
         this.setForce(force);
         this.enabled = enabled;
-        matcherFactories = moduleModel.getExtensionLoader(ConditionMatcherFactory.class).getActivateExtensions();
+        matcherFactories =
+                moduleModel.getExtensionLoader(ConditionMatcherFactory.class).getActivateExtensions();
         if (enabled) {
             this.init(rule);
         }
@@ -94,7 +95,8 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
         super(url);
         this.setUrl(url);
         this.setForce(url.getParameter(FORCE_KEY, false));
-        matcherFactories = moduleModel.getExtensionLoader(ConditionMatcherFactory.class).getActivateExtensions();
+        matcherFactories =
+                moduleModel.getExtensionLoader(ConditionMatcherFactory.class).getActivateExtensions();
         this.enabled = url.getParameter(ENABLED_KEY, true);
         if (enabled) {
             init(url.getParameterAndDecoded(RULE_KEY));
@@ -110,8 +112,10 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
             int i = rule.indexOf("=>");
             String whenRule = i < 0 ? null : rule.substring(0, i).trim();
             String thenRule = i < 0 ? rule.trim() : rule.substring(i + 2).trim();
-            Map<String, ConditionMatcher> when = StringUtils.isBlank(whenRule) || "true".equals(whenRule) ? new HashMap<>() : parseRule(whenRule);
-            Map<String, ConditionMatcher> then = StringUtils.isBlank(thenRule) || "false".equals(thenRule) ? null : parseRule(thenRule);
+            Map<String, ConditionMatcher> when =
+                    StringUtils.isBlank(whenRule) || "true".equals(whenRule) ? new HashMap<>() : parseRule(whenRule);
+            Map<String, ConditionMatcher> then =
+                    StringUtils.isBlank(thenRule) || "false".equals(thenRule) ? null : parseRule(thenRule);
             // NOTE: It should be determined on the business level whether the `When condition` can be empty or not.
             this.whenCondition = when;
             this.thenCondition = then;
@@ -120,8 +124,7 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
         }
     }
 
-    private Map<String, ConditionMatcher> parseRule(String rule)
-        throws ParseException {
+    private Map<String, ConditionMatcher> parseRule(String rule) throws ParseException {
         Map<String, ConditionMatcher> condition = new HashMap<>();
         if (StringUtils.isBlank(rule)) {
             return condition;
@@ -151,10 +154,12 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
             // The Value in the KV part.
             else if ("=".equals(separator)) {
                 if (matcherPair == null) {
-                    throw new ParseException("Illegal route rule \""
-                        + rule + "\", The error char '" + separator
-                        + "' at index " + matcher.start() + " before \""
-                        + content + "\".", matcher.start());
+                    throw new ParseException(
+                            "Illegal route rule \""
+                                    + rule + "\", The error char '" + separator
+                                    + "' at index " + matcher.start() + " before \""
+                                    + content + "\".",
+                            matcher.start());
                 }
 
                 values = matcherPair.getMatches();
@@ -163,10 +168,12 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
             // The Value in the KV part.
             else if ("!=".equals(separator)) {
                 if (matcherPair == null) {
-                    throw new ParseException("Illegal route rule \""
-                        + rule + "\", The error char '" + separator
-                        + "' at index " + matcher.start() + " before \""
-                        + content + "\".", matcher.start());
+                    throw new ParseException(
+                            "Illegal route rule \""
+                                    + rule + "\", The error char '" + separator
+                                    + "' at index " + matcher.start() + " before \""
+                                    + content + "\".",
+                            matcher.start());
                 }
 
                 values = matcherPair.getMismatches();
@@ -175,25 +182,34 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
             // The Value in the KV part, if Value have more than one items.
             else if (",".equals(separator)) { // Should be separated by ','
                 if (values == null || values.isEmpty()) {
-                    throw new ParseException("Illegal route rule \""
-                            + rule + "\", The error char '" + separator
-                            + "' at index " + matcher.start() + " before \""
-                            + content + "\".", matcher.start());
+                    throw new ParseException(
+                            "Illegal route rule \""
+                                    + rule + "\", The error char '" + separator
+                                    + "' at index " + matcher.start() + " before \""
+                                    + content + "\".",
+                            matcher.start());
                 }
                 values.add(content);
             } else {
-                throw new ParseException("Illegal route rule \"" + rule
-                        + "\", The error char '" + separator + "' at index "
-                        + matcher.start() + " before \"" + content + "\".", matcher.start());
+                throw new ParseException(
+                        "Illegal route rule \"" + rule
+                                + "\", The error char '" + separator + "' at index "
+                                + matcher.start() + " before \"" + content + "\".",
+                        matcher.start());
             }
         }
         return condition;
     }
 
     @Override
-    protected BitList<Invoker<T>> doRoute(BitList<Invoker<T>> invokers, URL url, Invocation invocation,
-                                          boolean needToPrintMessage, Holder<RouterSnapshotNode<T>> nodeHolder,
-                                          Holder<String> messageHolder) throws RpcException {
+    protected BitList<Invoker<T>> doRoute(
+            BitList<Invoker<T>> invokers,
+            URL url,
+            Invocation invocation,
+            boolean needToPrintMessage,
+            Holder<RouterSnapshotNode<T>> nodeHolder,
+            Holder<String> messageHolder)
+            throws RpcException {
         if (!enabled) {
             if (needToPrintMessage) {
                 messageHolder.set("Directly return. Reason: ConditionRouter disabled.");
@@ -215,7 +231,13 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
                 return invokers;
             }
             if (thenCondition == null) {
-                logger.warn(CLUSTER_CONDITIONAL_ROUTE_LIST_EMPTY,"condition state router thenCondition is empty","","The current consumer in the service blacklist. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey());                if (needToPrintMessage) {
+                logger.warn(
+                        CLUSTER_CONDITIONAL_ROUTE_LIST_EMPTY,
+                        "condition state router thenCondition is empty",
+                        "",
+                        "The current consumer in the service blacklist. consumer: " + NetUtils.getLocalHost()
+                                + ", service: " + url.getServiceKey());
+                if (needToPrintMessage) {
                     messageHolder.set("Empty return. Reason: ThenCondition is empty.");
                 }
                 return BitList.emptyList();
@@ -229,14 +251,26 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
                 }
                 return result;
             } else if (this.isForce()) {
-                logger.warn(CLUSTER_CONDITIONAL_ROUTE_LIST_EMPTY,"execute condition state router result list is empty. and force=true","","The route result is empty and force execute. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey() + ", router: " + url.getParameterAndDecoded(RULE_KEY));
+                logger.warn(
+                        CLUSTER_CONDITIONAL_ROUTE_LIST_EMPTY,
+                        "execute condition state router result list is empty. and force=true",
+                        "",
+                        "The route result is empty and force execute. consumer: " + NetUtils.getLocalHost()
+                                + ", service: " + url.getServiceKey() + ", router: "
+                                + url.getParameterAndDecoded(RULE_KEY));
                 if (needToPrintMessage) {
                     messageHolder.set("Empty return. Reason: Empty result from condition and condition is force.");
                 }
                 return result;
             }
         } catch (Throwable t) {
-            logger.error(CLUSTER_FAILED_EXEC_CONDITION_ROUTER,"execute condition state router exception","","Failed to execute condition router rule: " + getUrl() + ", invokers: " + invokers + ", cause: " + t.getMessage(),t);
+            logger.error(
+                    CLUSTER_FAILED_EXEC_CONDITION_ROUTER,
+                    "execute condition state router exception",
+                    "",
+                    "Failed to execute condition router rule: " + getUrl() + ", invokers: " + invokers + ", cause: "
+                            + t.getMessage(),
+                    t);
         }
         if (needToPrintMessage) {
             messageHolder.set("Directly return. Reason: Error occurred ( or result is empty ).");
@@ -247,7 +281,7 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
     @Override
     public boolean isRuntime() {
         // We always return true for previously defined Router, that is, old Router doesn't support cache anymore.
-//        return true;
+        //        return true;
         return this.getUrl().getParameter(RUNTIME_KEY, false);
     }
 
@@ -257,7 +291,10 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
                 return factory.createMatcher(key, moduleModel);
             }
         }
-        return moduleModel.getExtensionLoader(ConditionMatcherFactory.class).getExtension("param").createMatcher(key, moduleModel);
+        return moduleModel
+                .getExtensionLoader(ConditionMatcherFactory.class)
+                .getExtension("param")
+                .createMatcher(key, moduleModel);
     }
 
     boolean matchWhen(URL url, Invocation invocation) {
@@ -276,7 +313,12 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
         return doMatch(url, param, null, thenCondition, false);
     }
 
-    private boolean doMatch(URL url, URL param, Invocation invocation, Map<String, ConditionMatcher> conditions, boolean isWhenCondition) {
+    private boolean doMatch(
+            URL url,
+            URL param,
+            Invocation invocation,
+            Map<String, ConditionMatcher> conditions,
+            boolean isWhenCondition) {
         Map<String, String> sample = url.toOriginalMap();
         for (Map.Entry<String, ConditionMatcher> entry : conditions.entrySet()) {
             ConditionMatcher matchPair = entry.getValue();

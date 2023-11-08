@@ -22,13 +22,13 @@ import org.apache.dubbo.test.check.exception.DubboTestException;
 import org.apache.dubbo.test.check.registrycenter.Processor;
 import org.apache.dubbo.test.check.registrycenter.context.ZookeeperWindowsContext;
 
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.Executor;
-
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.Executor;
 
 /**
  * Create {@link Process} to start zookeeper on Windows OS.
@@ -55,17 +55,19 @@ public class StartZookeeperWindowsProcessor extends ZookeeperWindowsProcessor {
         this.killPidProcessor.process(context);
         for (int clientPort : context.getClientPorts()) {
             logger.info(String.format("The zookeeper-%d is starting...", clientPort));
-            Path zookeeperBin = Paths.get(context.getSourceFile().getParent().toString(),
-                String.valueOf(clientPort),
-                context.getUnpackedDirectory(),
-                "bin");
+            Path zookeeperBin = Paths.get(
+                    context.getSourceFile().getParent().toString(),
+                    String.valueOf(clientPort),
+                    context.getUnpackedDirectory(),
+                    "bin");
             Executor executor = new DefaultExecutor();
             executor.setExitValues(null);
             executor.setWatchdog(context.getWatchdog());
             CommandLine cmdLine = new CommandLine("cmd.exe");
             cmdLine.addArgument("/c");
             cmdLine.addArgument(Paths.get(zookeeperBin.toString(), "zkServer.cmd")
-                .toAbsolutePath().toString());
+                    .toAbsolutePath()
+                    .toString());
             context.getExecutorService().submit(() -> executor.execute(cmdLine));
         }
         try {

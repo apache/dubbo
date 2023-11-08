@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.concurrent;
 
 import java.util.Queue;
@@ -28,5 +27,4 @@ public class AbortPolicy<E> implements Rejector<E> {
     public void reject(final E e, final Queue<E> queue) {
         throw new RejectException("no more memory can be used !");
     }
-
 }

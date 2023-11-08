@@ -33,9 +33,7 @@ public class BigPerson implements Serializable {
 
     PersonInfo infoProfile;
 
-    public BigPerson() {
-
-    }
+    public BigPerson() {}
 
     public BigPerson(String id) {
         this.personId = id;
@@ -104,40 +102,26 @@ public class BigPerson implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
         BigPerson other = (BigPerson) obj;
         if (email == null) {
-            if (other.email != null)
-                return false;
-        } else if (!email.equals(other.email))
-            return false;
+            if (other.email != null) return false;
+        } else if (!email.equals(other.email)) return false;
         if (infoProfile == null) {
-            if (other.infoProfile != null)
-                return false;
-        } else if (!infoProfile.equals(other.infoProfile))
-            return false;
+            if (other.infoProfile != null) return false;
+        } else if (!infoProfile.equals(other.infoProfile)) return false;
         if (loginName == null) {
-            if (other.loginName != null)
-                return false;
-        } else if (!loginName.equals(other.loginName))
-            return false;
+            if (other.loginName != null) return false;
+        } else if (!loginName.equals(other.loginName)) return false;
         if (penName == null) {
-            if (other.penName != null)
-                return false;
-        } else if (!penName.equals(other.penName))
-            return false;
+            if (other.penName != null) return false;
+        } else if (!penName.equals(other.penName)) return false;
         if (personId == null) {
-            if (other.personId != null)
-                return false;
-        } else if (!personId.equals(other.personId))
-            return false;
-        if (status != other.status)
-            return false;
+            if (other.personId != null) return false;
+        } else if (!personId.equals(other.personId)) return false;
+        if (status != other.status) return false;
         return true;
     }
 
@@ -147,5 +131,4 @@ public class BigPerson implements Serializable {
                 + status + ", email=" + email + ", penName=" + penName + ", infoProfile="
                 + infoProfile + "]";
     }
-
 }

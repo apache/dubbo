@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.test.common.impl;
 
-
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.test.common.api.RestDemoService;
 
@@ -30,7 +29,6 @@ public class RestDemoServiceImpl implements RestDemoService {
         called = true;
         return "Hello, " + name;
     }
-
 
     public boolean isCalled() {
         return called;

@@ -60,5 +60,4 @@ class Issue6252Test {
             context.close();
         }
     }
-
 }

@@ -20,15 +20,6 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import org.apache.commons.lang3.StringUtils;
-import org.junit.platform.engine.TestExecutionResult;
-import org.junit.platform.engine.TestSource;
-import org.junit.platform.engine.support.descriptor.ClassSource;
-import org.junit.platform.engine.support.descriptor.MethodSource;
-import org.junit.platform.launcher.TestExecutionListener;
-import org.junit.platform.launcher.TestIdentifier;
-import org.junit.platform.launcher.TestPlan;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -40,6 +31,15 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.junit.platform.engine.TestExecutionResult;
+import org.junit.platform.engine.TestSource;
+import org.junit.platform.engine.support.descriptor.ClassSource;
+import org.junit.platform.engine.support.descriptor.MethodSource;
+import org.junit.platform.launcher.TestExecutionListener;
+import org.junit.platform.launcher.TestIdentifier;
+import org.junit.platform.launcher.TestPlan;
 
 /**
  * A test listener to check unclosed threads of test.
@@ -136,7 +136,8 @@ public class DubboTestChecker implements TestExecutionListener {
         String defaultReportDir = "target/";
         String defaultReportFileName = "test-check-report.txt";
         if (checkThreads) {
-            String reportFilePath = properties.getProperty(CONFIG_REPORT_FILE, defaultReportDir + defaultReportFileName);
+            String reportFilePath =
+                    properties.getProperty(CONFIG_REPORT_FILE, defaultReportDir + defaultReportFileName);
             this.reportFile = new File(reportFilePath);
             if (reportFile.isDirectory()) {
                 reportFile.mkdirs();
@@ -148,8 +149,9 @@ public class DubboTestChecker implements TestExecutionListener {
         }
 
         log("Project dir: " + projectDir);
-        log(String.format("Dubbo test checker configs: checkMode=%s, checkThreads=%s, threadDumpWaitTimeMs=%s, forceDestroy=%s, reportFile=%s",
-            checkMode, checkThreads, threadDumpWaitTimeMs, forceDestroyDubboAfterClass, reportFileCanonicalPath));
+        log(String.format(
+                "Dubbo test checker configs: checkMode=%s, checkThreads=%s, threadDumpWaitTimeMs=%s, forceDestroy=%s, reportFile=%s",
+                checkMode, checkThreads, threadDumpWaitTimeMs, forceDestroyDubboAfterClass, reportFileCanonicalPath));
         flushReportFile();
     }
 
@@ -170,7 +172,8 @@ public class DubboTestChecker implements TestExecutionListener {
     private void printThreadCheckingSummaryReport() {
         log("===== Thread Checking Summary Report ======");
         log("Project dir: " + projectDir);
-        log("Total found " + unclosedThreadMap.size() + " unclosed threads in " + unclosedThreadsOfTestMap.size() + " tests.");
+        log("Total found " + unclosedThreadMap.size() + " unclosed threads in " + unclosedThreadsOfTestMap.size()
+                + " tests.");
         log("");
         unclosedThreadsOfTestMap.forEach((testClassName, threads) -> {
             printUnclosedThreads(threads, testClassName);
@@ -199,8 +202,8 @@ public class DubboTestChecker implements TestExecutionListener {
     public void executionStarted(TestIdentifier testIdentifier) {
         TestSource testSource = testIdentifier.getSource().orElse(null);
         if (testSource instanceof ClassSource) {
-//            ClassSource source = (ClassSource) testSource;
-//            log("Run test class: " + source.getClassName());
+            //            ClassSource source = (ClassSource) testSource;
+            //            log("Run test class: " + source.getClassName());
         } else if (testSource instanceof MethodSource) {
             MethodSource source = (MethodSource) testSource;
             log("Run test method: " + source.getClassName() + "#" + source.getMethodName());
@@ -218,7 +221,7 @@ public class DubboTestChecker implements TestExecutionListener {
             }
             MethodSource methodSource = (MethodSource) testSource;
             testClassName = methodSource.getClassName();
-            //log("Finish test method: " + methodSource.getClassName() + "#" + methodSource.getMethodName());
+            // log("Finish test method: " + methodSource.getClassName() + "#" + methodSource.getMethodName());
         } else if (testSource instanceof ClassSource) {
             if (forceDestroyDubboAfterClass) {
                 // make sure destroy dubbo engine
@@ -231,7 +234,7 @@ public class DubboTestChecker implements TestExecutionListener {
 
             ClassSource source = (ClassSource) testSource;
             testClassName = source.getClassName();
-            //log("Finish test class: " + source.getClassName());
+            // log("Finish test class: " + source.getClassName());
         } else {
             return;
         }
@@ -251,12 +254,19 @@ public class DubboTestChecker implements TestExecutionListener {
 
         Map<Thread, StackTraceElement[]> threadStacks = Thread.getAllStackTraces();
         List<Thread> unclosedThreads = threadStacks.keySet().stream()
-            .filter(thread -> !StringUtils.startsWithAny(thread.getName(),
-                "Reference Handler", "Finalizer", "Signal Dispatcher", "Attach Listener", "process reaper", "main" // jvm
-                , "surefire-forkedjvm-" // surefire plugin
-            ))
-            .filter(thread -> !unclosedThreadMap.containsKey(thread))
-            .collect(Collectors.toList());
+                .filter(thread -> !StringUtils.startsWithAny(
+                        thread.getName(),
+                        "Reference Handler",
+                        "Finalizer",
+                        "Signal Dispatcher",
+                        "Attach Listener",
+                        "process reaper",
+                        "main" // jvm
+                        ,
+                        "surefire-forkedjvm-" // surefire plugin
+                        ))
+                .filter(thread -> !unclosedThreadMap.containsKey(thread))
+                .collect(Collectors.toList());
         unclosedThreads.sort(Comparator.comparing(Thread::getName));
         if (unclosedThreads.size() > 0) {
             for (Thread thread : unclosedThreads) {
@@ -295,8 +305,7 @@ public class DubboTestChecker implements TestExecutionListener {
     }
 
     public static String getFullStacktrace(Thread thread, StackTraceElement[] stackTrace) {
-        StringBuilder sb = new StringBuilder("Thread: \"" + thread.getName() + "\"" + " Id="
-            + thread.getId());
+        StringBuilder sb = new StringBuilder("Thread: \"" + thread.getName() + "\"" + " Id=" + thread.getId());
         sb.append(' ').append(thread.getState());
         sb.append('\n');
         if (stackTrace == null) {
@@ -308,5 +317,4 @@ public class DubboTestChecker implements TestExecutionListener {
         }
         return sb.toString();
     }
-
 }

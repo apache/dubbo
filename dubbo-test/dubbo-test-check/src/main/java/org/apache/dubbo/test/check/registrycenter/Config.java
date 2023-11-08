@@ -24,7 +24,7 @@ public interface Config {
     /**
      * Returns the default connection address in single registry center.
      */
-    default String getConnectionAddress(){
+    default String getConnectionAddress() {
         return getConnectionAddress1();
     }
 

@@ -39,17 +39,17 @@ class TriBuiltinServiceTest {
     }
 
     @Test
-    void testForceEnable(){
+    void testForceEnable() {
         FrameworkModel frameworkModel = new FrameworkModel();
         TriBuiltinService triBuiltinService = new TriBuiltinService(frameworkModel);
         triBuiltinService.init();
         String serviceName = DubboHealthTriple.SERVICE_NAME;
         Assertions.assertNotNull(triBuiltinService.getHealthStatusManager());
-        PathResolver pathResolver = frameworkModel.getExtensionLoader(PathResolver.class)
-            .getDefaultExtension();
+        PathResolver pathResolver =
+                frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
         Assertions.assertNotNull(pathResolver.resolve(serviceName));
-        ModuleServiceRepository repository = frameworkModel.getInternalApplicationModel()
-            .getInternalModule().getServiceRepository();
+        ModuleServiceRepository repository =
+                frameworkModel.getInternalApplicationModel().getInternalModule().getServiceRepository();
         Assertions.assertFalse(repository.getAllServices().isEmpty());
         Assertions.assertNotNull(StubSuppliers.getServiceDescriptor(serviceName));
     }

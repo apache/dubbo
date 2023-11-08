@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
@@ -233,7 +233,7 @@ class ApplicationConfigTest {
     void testMetaData() {
         ApplicationConfig config = new ApplicationConfig();
         Map<String, String> metaData = config.getMetaData();
-        Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: "+metaData);
+        Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: " + metaData);
     }
 
     @Test
@@ -245,9 +245,7 @@ class ApplicationConfigTest {
 
         ApplicationConfig applicationConfig = new ApplicationConfig();
 
-        DubboBootstrap.getInstance()
-            .application(applicationConfig)
-            .initialize();
+        DubboBootstrap.getInstance().application(applicationConfig).initialize();
 
         Assertions.assertEquals(owner, applicationConfig.getOwner());
         Assertions.assertEquals("1.2.3", applicationConfig.getVersion());
@@ -265,9 +263,7 @@ class ApplicationConfigTest {
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setId("demo-app");
 
-        DubboBootstrap.getInstance()
-                .application(applicationConfig)
-                .initialize();
+        DubboBootstrap.getInstance().application(applicationConfig).initialize();
 
         Assertions.assertEquals("demo-app", applicationConfig.getId());
         Assertions.assertEquals("demo-app", applicationConfig.getName());
@@ -286,9 +282,7 @@ class ApplicationConfigTest {
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("demo-app");
 
-        DubboBootstrap.getInstance()
-                .application(applicationConfig)
-                .initialize();
+        DubboBootstrap.getInstance().application(applicationConfig).initialize();
 
         Assertions.assertEquals(owner, applicationConfig.getOwner());
         Assertions.assertEquals("1.2.3", applicationConfig.getVersion());
@@ -302,8 +296,7 @@ class ApplicationConfigTest {
         SysProps.setProperty("dubbo.applications.demo-app.owner", owner);
         SysProps.setProperty("dubbo.applications.demo-app.version", "1.2.3");
 
-        DubboBootstrap.getInstance()
-                .initialize();
+        DubboBootstrap.getInstance().initialize();
 
         ApplicationConfig applicationConfig = DubboBootstrap.getInstance().getApplication();
 
@@ -322,8 +315,7 @@ class ApplicationConfigTest {
         SysProps.setProperty("dubbo.application.qos_host", "127.0.0.1");
         SysProps.setProperty("dubbo.application.qosPort", "2345");
 
-        DubboBootstrap.getInstance()
-                .initialize();
+        DubboBootstrap.getInstance().initialize();
 
         ApplicationConfig applicationConfig = DubboBootstrap.getInstance().getApplication();
 
@@ -339,8 +331,7 @@ class ApplicationConfigTest {
     void testDefaultValue() {
         SysProps.setProperty("dubbo.application.NAME", "demo-app");
 
-        DubboBootstrap.getInstance()
-            .initialize();
+        DubboBootstrap.getInstance().initialize();
 
         ApplicationConfig applicationConfig = DubboBootstrap.getInstance().getApplication();
 

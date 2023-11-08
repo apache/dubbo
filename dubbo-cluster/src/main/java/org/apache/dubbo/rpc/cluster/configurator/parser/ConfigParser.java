@@ -23,13 +23,13 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfigItem;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfiguratorConfig;
 
-import org.yaml.snakeyaml.LoaderOptions;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.SafeConstructor;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import org.yaml.snakeyaml.LoaderOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
@@ -104,7 +104,12 @@ public class ConfigParser {
             if (CollectionUtils.isNotEmpty(apps)) {
                 apps.forEach(app -> {
                     StringBuilder tmpUrlBuilder = new StringBuilder(urlBuilder);
-                    urls.add(appendMatchCondition(URL.valueOf(tmpUrlBuilder.append("&application=").append(app).toString()), item));
+                    urls.add(appendMatchCondition(
+                            URL.valueOf(tmpUrlBuilder
+                                    .append("&application=")
+                                    .append(app)
+                                    .toString()),
+                            item));
                 });
             } else {
                 urls.add(appendMatchCondition(URL.valueOf(urlBuilder.toString()), item));
@@ -155,8 +160,8 @@ public class ConfigParser {
         }
         Map<String, String> parameters = item.getParameters();
         if (CollectionUtils.isEmptyMap(parameters)) {
-            throw new IllegalStateException("Invalid configurator rule, please specify at least one parameter " +
-                "you want to change in the rule.");
+            throw new IllegalStateException("Invalid configurator rule, please specify at least one parameter "
+                    + "you want to change in the rule.");
         }
 
         parameters.forEach((k, v) -> {

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -23,7 +22,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import java.util.concurrent.Executor;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_NOTIFY_EVENT;
-
 
 public class ExecutableListener implements Runnable {
 
@@ -42,7 +40,6 @@ public class ExecutableListener implements Runnable {
     public ExecutableListener(Executor executor, CancellationListener listener) {
         this(executor, listener, null);
     }
-
 
     public void deliver() {
         try {

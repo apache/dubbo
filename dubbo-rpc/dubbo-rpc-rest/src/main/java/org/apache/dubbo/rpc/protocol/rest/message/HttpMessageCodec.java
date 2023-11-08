@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.message;
 
-
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.metadata.rest.media.MediaType;
@@ -27,8 +26,8 @@ import org.apache.dubbo.metadata.rest.media.MediaType;
  * @param <OutputStream>
  */
 @SPI(scope = ExtensionScope.FRAMEWORK)
-public interface HttpMessageCodec<InputStream, OutputStream> extends HttpMessageDecode<InputStream>, HttpMessageEncode<OutputStream> {
-
+public interface HttpMessageCodec<InputStream, OutputStream>
+        extends HttpMessageDecode<InputStream>, HttpMessageEncode<OutputStream> {
 
     /**
      *  content-type support judge
@@ -46,5 +45,4 @@ public interface HttpMessageCodec<InputStream, OutputStream> extends HttpMessage
     boolean typeSupport(Class<?> targetType);
 
     MediaType contentType();
-
 }

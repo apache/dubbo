@@ -16,25 +16,23 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.mvc;
 
-
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.protocol.rest.User;
-import org.springframework.util.LinkedMultiValueMap;
 
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.util.LinkedMultiValueMap;
+
 public class SpringDemoServiceImpl implements SpringRestDemoService {
     private static Map<String, Object> context;
     private boolean called;
-
 
     @Override
     public String sayHello(String name) {
         called = true;
         return "Hello, " + name;
     }
-
 
     @Override
     public boolean isCalled() {
@@ -67,7 +65,6 @@ public class SpringDemoServiceImpl implements SpringRestDemoService {
         return a + b;
     }
 
-
     @Override
     public String error() {
         throw new RuntimeException();
@@ -76,7 +73,6 @@ public class SpringDemoServiceImpl implements SpringRestDemoService {
     public static Map<String, Object> getAttachments() {
         return context;
     }
-
 
     @Override
     public int primitiveInt(int a, int b) {
@@ -97,7 +93,4 @@ public class SpringDemoServiceImpl implements SpringRestDemoService {
     public long primitiveShort(short a, Long b, int c) {
         return a + b;
     }
-
-
-
 }

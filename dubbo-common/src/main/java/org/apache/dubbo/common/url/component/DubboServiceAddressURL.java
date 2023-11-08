@@ -41,7 +41,8 @@ public class DubboServiceAddressURL extends ServiceAddressURL {
 
     private ServiceConfigURL overrideURL;
 
-    public DubboServiceAddressURL(URLAddress urlAddress, URLParam urlParam, URL consumerURL, ServiceConfigURL overrideURL) {
+    public DubboServiceAddressURL(
+            URLAddress urlAddress, URLParam urlParam, URL consumerURL, ServiceConfigURL overrideURL) {
         super(urlAddress, urlParam, consumerURL);
         this.overrideURL = overrideURL;
     }
@@ -98,7 +99,8 @@ public class DubboServiceAddressURL extends ServiceAddressURL {
      */
     @Override
     public Map<String, String> getAllParameters() {
-        Map<String, String> allParameters = new HashMap<>((int)(super.getParameters().size()/.75 + 1));
+        Map<String, String> allParameters =
+                new HashMap<>((int) (super.getParameters().size() / .75 + 1));
         allParameters.putAll(super.getParameters());
         if (consumerURL != null) {
             allParameters.putAll(consumerURL.getParameters());
@@ -155,7 +157,8 @@ public class DubboServiceAddressURL extends ServiceAddressURL {
             return super.equals(obj);
         } else {
             DubboServiceAddressURL other = (DubboServiceAddressURL) obj;
-            boolean overrideEquals = Objects.equals(overrideURL.getParameters(), other.getOverrideURL().getParameters());
+            boolean overrideEquals = Objects.equals(
+                    overrideURL.getParameters(), other.getOverrideURL().getParameters());
             if (!overrideEquals) {
                 return false;
             }

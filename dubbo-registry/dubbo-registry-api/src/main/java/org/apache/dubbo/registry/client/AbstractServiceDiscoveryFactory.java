@@ -50,8 +50,12 @@ public abstract class AbstractServiceDiscoveryFactory implements ServiceDiscover
 
     @Override
     public ServiceDiscovery getServiceDiscovery(URL registryURL) {
-        String key = registryURL.toServiceStringWithoutResolving();
+        String key = createRegistryCacheKey(registryURL);
         return ConcurrentHashMapUtils.computeIfAbsent(discoveries, key, k -> createDiscovery(registryURL));
+    }
+
+    protected String createRegistryCacheKey(URL url) {
+        return url.toServiceStringWithoutResolving();
     }
 
     protected abstract ServiceDiscovery createDiscovery(URL registryURL);

@@ -14,10 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.observation;
 
-import io.micrometer.tracing.test.SampleTestRunner;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.rpc.AppResponse;
@@ -25,6 +23,8 @@ import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import io.micrometer.tracing.test.SampleTestRunner;
 import org.junit.jupiter.api.AfterEach;
 
 import static org.mockito.BDDMockito.given;
@@ -80,5 +80,4 @@ abstract class AbstractObservationFilterTest extends SampleTestRunner {
         invocation.setMethodName(METHOD_NAME);
         invocation.setParameterTypes(new Class[] {String.class});
     }
-
 }

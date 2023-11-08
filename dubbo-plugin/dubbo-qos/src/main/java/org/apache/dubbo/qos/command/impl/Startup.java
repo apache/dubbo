@@ -20,8 +20,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.qos.api.BaseCommand;
-import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.qos.api.Cmd;
+import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.qos.api.PermissionLevel;
 import org.apache.dubbo.qos.probe.StartupProbe;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -41,18 +41,18 @@ public class Startup implements BaseCommand {
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        String config = frameworkModel.getApplicationModels()
-            .stream()
-            .map(applicationModel -> applicationModel.getApplicationConfigManager().getApplication())
-            .map(o -> o.orElse(null))
-            .filter(Objects::nonNull)
-            .map(ApplicationConfig::getStartupProbe)
-            .filter(Objects::nonNull)
-            .collect(Collectors.joining(","));
+        String config = frameworkModel.getApplicationModels().stream()
+                .map(applicationModel ->
+                        applicationModel.getApplicationConfigManager().getApplication())
+                .map(o -> o.orElse(null))
+                .filter(Objects::nonNull)
+                .map(ApplicationConfig::getStartupProbe)
+                .filter(Objects::nonNull)
+                .collect(Collectors.joining(","));
 
-        URL url = URL.valueOf("application://")
-                .addParameter(CommonConstants.QOS_STARTUP_PROBE_EXTENSION, config);
-        List<StartupProbe> startupProbes = frameworkModel.getExtensionLoader(StartupProbe.class)
+        URL url = URL.valueOf("application://").addParameter(CommonConstants.QOS_STARTUP_PROBE_EXTENSION, config);
+        List<StartupProbe> startupProbes = frameworkModel
+                .getExtensionLoader(StartupProbe.class)
                 .getActivateExtension(url, CommonConstants.QOS_STARTUP_PROBE_EXTENSION);
         if (!startupProbes.isEmpty()) {
             for (StartupProbe startupProbe : startupProbes) {

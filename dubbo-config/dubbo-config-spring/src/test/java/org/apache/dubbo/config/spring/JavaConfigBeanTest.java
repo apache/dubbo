@@ -33,6 +33,9 @@ import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 
+import java.util.Collection;
+import java.util.Map;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,9 +43,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.Collection;
-import java.util.Map;
 
 class JavaConfigBeanTest {
 
@@ -91,8 +91,10 @@ class JavaConfigBeanTest {
             Assertions.assertEquals(MY_PROTOCOL_ID, protocolConfig.getId());
 
             ApplicationModel applicationModel = consumerContext.getBean(ApplicationModel.class);
-            ModuleConfigManager moduleConfigManager = applicationModel.getDefaultModule().getConfigManager();
-            ConsumerConfig consumerConfig = moduleConfigManager.getDefaultConsumer().get();
+            ModuleConfigManager moduleConfigManager =
+                    applicationModel.getDefaultModule().getConfigManager();
+            ConsumerConfig consumerConfig =
+                    moduleConfigManager.getDefaultConsumer().get();
             Assertions.assertEquals(1000, consumerConfig.getTimeout());
             Assertions.assertEquals("demo", consumerConfig.getGroup());
             Assertions.assertEquals(false, consumerConfig.isCheck());
@@ -110,16 +112,14 @@ class JavaConfigBeanTest {
             Assertions.assertEquals(5, referenceConfig.getRetries());
 
             DemoService referProxy = (DemoService) referenceConfig.get();
-            Assertions.assertTrue( referProxy instanceof DemoService);
+            Assertions.assertTrue(referProxy instanceof DemoService);
             String result = referProxy.sayName("dubbo");
             Assertions.assertEquals("say:dubbo", result);
 
         } finally {
             consumerContext.close();
         }
-
     }
-
 
     @EnableDubbo(scanBasePackages = "org.apache.dubbo.config.spring.annotation.consumer")
     @Configuration
@@ -166,7 +166,6 @@ class JavaConfigBeanTest {
         public ReferenceBean<DemoService> demoService() {
             return new ReferenceBean<>();
         }
-
     }
 
     @Configuration

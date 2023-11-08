@@ -16,8 +16,6 @@
  */
 package com.alibaba.dubbo.container.page;
 
-import com.alibaba.dubbo.common.Constants;
-
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -26,6 +24,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,6 +34,8 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.alibaba.dubbo.common.Constants;
 
 /**
  * ResourceServlet
@@ -63,8 +64,7 @@ public class ResourceFilter implements Filter {
         }
     }
 
-    public void destroy() {
-    }
+    public void destroy() {}
 
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
             throws IOException, ServletException {
@@ -138,7 +138,9 @@ public class ResourceFilter implements Filter {
                 if (isFile(path)) {
                     return new FileInputStream(path);
                 } else if (path.startsWith(CLASSPATH_PREFIX)) {
-                    return Thread.currentThread().getContextClassLoader().getResourceAsStream(path.substring(CLASSPATH_PREFIX.length()));
+                    return Thread.currentThread()
+                            .getContextClassLoader()
+                            .getResourceAsStream(path.substring(CLASSPATH_PREFIX.length()));
                 } else {
                     return new URL(path).openStream();
                 }
@@ -147,5 +149,4 @@ public class ResourceFilter implements Filter {
         }
         return null;
     }
-
 }

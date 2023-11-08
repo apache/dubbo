@@ -45,7 +45,8 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
     public AbstractEndpoint(URL url, ChannelHandler handler) {
         super(url, handler);
         this.codec = getChannelCodec(url);
-        this.connectTimeout = url.getPositiveParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT);
+        this.connectTimeout =
+                url.getPositiveParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT);
     }
 
     protected static Codec2 getChannelCodec(URL url) {
@@ -58,8 +59,8 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
         if (frameworkModel.getExtensionLoader(Codec2.class).hasExtension(codecName)) {
             return frameworkModel.getExtensionLoader(Codec2.class).getExtension(codecName);
         } else if (frameworkModel.getExtensionLoader(Codec.class).hasExtension(codecName)) {
-            return new CodecAdapter(frameworkModel.getExtensionLoader(Codec.class)
-                .getExtension(codecName));
+            return new CodecAdapter(
+                    frameworkModel.getExtensionLoader(Codec.class).getExtension(codecName));
         } else {
             return frameworkModel.getExtensionLoader(Codec2.class).getExtension("default");
         }
@@ -68,8 +69,8 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
     @Override
     public void reset(URL url) {
         if (isClosed()) {
-            throw new IllegalStateException("Failed to reset parameters "
-                + url + ", cause: Channel closed. channel: " + getLocalAddress());
+            throw new IllegalStateException(
+                    "Failed to reset parameters " + url + ", cause: Channel closed. channel: " + getLocalAddress());
         }
 
         try {
@@ -104,5 +105,4 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
     protected int getConnectTimeout() {
         return connectTimeout;
     }
-
 }

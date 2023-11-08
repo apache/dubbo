@@ -20,10 +20,10 @@ import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.RegistryConfig;
 
+import java.util.Collections;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.Collections;
 
 class ModuleBuilderTest {
 
@@ -94,8 +94,13 @@ class ModuleBuilderTest {
         MonitorConfig monitor = new MonitorConfig();
 
         ModuleBuilder builder = new ModuleBuilder();
-        builder.name("name").version("version").owner("owner").organization("organization").addRegistry(registry)
-                .monitor(monitor).isDefault(false);
+        builder.name("name")
+                .version("version")
+                .owner("owner")
+                .organization("organization")
+                .addRegistry(registry)
+                .monitor(monitor)
+                .isDefault(false);
 
         ModuleConfig config = builder.build();
         ModuleConfig config2 = builder.build();

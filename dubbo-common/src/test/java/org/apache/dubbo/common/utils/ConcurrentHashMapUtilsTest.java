@@ -14,17 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.utils;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
 
-import java.util.concurrent.ConcurrentHashMap;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-
 
 class ConcurrentHashMapUtilsTest {
 
@@ -42,14 +40,14 @@ class ConcurrentHashMapUtilsTest {
 
     @Test
     @EnabledForJreRange(max = org.junit.jupiter.api.condition.JRE.JAVA_8)
-    public void issue11986ForJava8Test(){
+    public void issue11986ForJava8Test() {
         // https://github.com/apache/dubbo/issues/11986
-        final ConcurrentHashMap<String,Integer> map=new ConcurrentHashMap<>();
+        final ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<>();
         // // map.computeIfAbsent("AaAa", key->map.computeIfAbsent("BBBB",key2->42));
 
         // In JDK8，for the bug of JDK-8161372，may cause dead cycle when use computeIfAbsent
         // ConcurrentHashMapUtils.computeIfAbsent method to resolve this bug
-        ConcurrentHashMapUtils.computeIfAbsent(map, "AaAa", key->map.computeIfAbsent("BBBB",key2->42));
+        ConcurrentHashMapUtils.computeIfAbsent(map, "AaAa", key -> map.computeIfAbsent("BBBB", key2 -> 42));
         assertEquals(2, map.size());
         assertEquals(Integer.valueOf(42), map.get("AaAa"));
         assertEquals(Integer.valueOf(42), map.get("BBBB"));
@@ -57,13 +55,13 @@ class ConcurrentHashMapUtilsTest {
 
     @Test
     @EnabledForJreRange(min = org.junit.jupiter.api.condition.JRE.JAVA_9)
-    public void issue11986ForJava17Test(){
+    public void issue11986ForJava17Test() {
         // https://github.com/apache/dubbo/issues/11986
-        final ConcurrentHashMap<String,Integer> map=new ConcurrentHashMap<>();
+        final ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<>();
 
         // JDK9+ has been resolved JDK-8161372 bug, when cause dead then throw IllegalStateException
-        assertThrows(IllegalStateException.class, ()->{
-            ConcurrentHashMapUtils.computeIfAbsent(map, "AaAa", key->map.computeIfAbsent("BBBB",key2->42));
+        assertThrows(IllegalStateException.class, () -> {
+            ConcurrentHashMapUtils.computeIfAbsent(map, "AaAa", key -> map.computeIfAbsent("BBBB", key2 -> 42));
         });
     }
 }

@@ -32,12 +32,18 @@ public class CacheListener {
 
     private final ConcurrentMap<String, ZookeeperDataListener> pathKeyListeners = new ConcurrentHashMap<>();
 
-    public CacheListener() {
-    }
+    public CacheListener() {}
 
-    public ZookeeperDataListener addListener(String pathKey, ConfigurationListener configurationListener, String key, String group, ApplicationModel applicationModel) {
-        ZookeeperDataListener zookeeperDataListener = ConcurrentHashMapUtils.computeIfAbsent(pathKeyListeners, pathKey,
-            _pathKey -> new ZookeeperDataListener(_pathKey, key, group, applicationModel));
+    public ZookeeperDataListener addListener(
+            String pathKey,
+            ConfigurationListener configurationListener,
+            String key,
+            String group,
+            ApplicationModel applicationModel) {
+        ZookeeperDataListener zookeeperDataListener = ConcurrentHashMapUtils.computeIfAbsent(
+                pathKeyListeners,
+                pathKey,
+                _pathKey -> new ZookeeperDataListener(_pathKey, key, group, applicationModel));
         zookeeperDataListener.addListener(configurationListener);
         return zookeeperDataListener;
     }
@@ -65,4 +71,3 @@ public class CacheListener {
         pathKeyListeners.clear();
     }
 }
-

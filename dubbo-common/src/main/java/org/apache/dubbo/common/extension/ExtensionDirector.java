@@ -73,8 +73,8 @@ public class ExtensionDirector implements ExtensionAccessor {
             throw new IllegalArgumentException("Extension type (" + type + ") is not an interface!");
         }
         if (!withExtensionAnnotation(type)) {
-            throw new IllegalArgumentException("Extension type (" + type +
-                ") is not an extension, because it is NOT annotated with @" + SPI.class.getSimpleName() + "!");
+            throw new IllegalArgumentException("Extension type (" + type
+                    + ") is not an extension, because it is NOT annotated with @" + SPI.class.getSimpleName() + "!");
         }
 
         // 1. find in local cache
@@ -138,8 +138,7 @@ public class ExtensionDirector implements ExtensionAccessor {
         return parent;
     }
 
-    public void removeAllCachedLoader() {
-    }
+    public void removeAllCachedLoader() {}
 
     public void destroy() {
         if (destroyed.compareAndSet(false, true)) {

@@ -16,12 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
-import io.netty.handler.codec.http.DefaultFullHttpRequest;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpVersion;
 import org.apache.dubbo.rpc.protocol.rest.request.NettyRequestFacade;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,21 +24,27 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 
+import io.netty.handler.codec.http.DefaultFullHttpRequest;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpVersion;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 public class NettyRequestFacadeTest {
 
     @Test
     void testMethod() {
 
         String uri = "/a/b?c=c&d=d";
-        DefaultFullHttpRequest defaultFullHttpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri);
+        DefaultFullHttpRequest defaultFullHttpRequest =
+                new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri);
 
         defaultFullHttpRequest.headers().add("h1", "a");
         defaultFullHttpRequest.headers().add("h1", "b");
         defaultFullHttpRequest.headers().add("h2", "c");
         NettyRequestFacade nettyRequestFacade = new NettyRequestFacade(defaultFullHttpRequest, null);
 
-
-        Assertions.assertArrayEquals(new String[]{"c"}, nettyRequestFacade.getParameterValues("c"));
+        Assertions.assertArrayEquals(new String[] {"c"}, nettyRequestFacade.getParameterValues("c"));
         Enumeration<String> parameterNames = nettyRequestFacade.getParameterNames();
 
         List<String> names = new ArrayList<>();
@@ -64,9 +65,7 @@ public class NettyRequestFacadeTest {
 
         Assertions.assertArrayEquals(Arrays.asList("h1", "h2").toArray(), heads.toArray());
 
-
         Assertions.assertEquals(uri, nettyRequestFacade.getRequestURI());
-
 
         Assertions.assertEquals("c", nettyRequestFacade.getHeader("h2"));
 
@@ -76,10 +75,9 @@ public class NettyRequestFacadeTest {
 
         Assertions.assertEquals(null, nettyRequestFacade.getParameterValues("e"));
 
-        Assertions.assertArrayEquals(new String[]{"d"}, nettyRequestFacade.getParameterValues("d"));
+        Assertions.assertArrayEquals(new String[] {"d"}, nettyRequestFacade.getParameterValues("d"));
 
         Enumeration<String> h1s = nettyRequestFacade.getHeaders("h1");
-
 
         heads = new ArrayList<>();
 
@@ -88,15 +86,13 @@ public class NettyRequestFacadeTest {
             heads.add(h1s.nextElement());
         }
 
-        Assertions.assertArrayEquals(new String[]{"a","b"}, heads.toArray());
+        Assertions.assertArrayEquals(new String[] {"a", "b"}, heads.toArray());
 
         Map<String, String[]> parameterMap = nettyRequestFacade.getParameterMap();
 
+        Assertions.assertArrayEquals(new String[] {"c"}, parameterMap.get("c"));
+        Assertions.assertArrayEquals(new String[] {"d"}, parameterMap.get("d"));
 
-        Assertions.assertArrayEquals(new String[]{"c"},parameterMap.get("c"));
-        Assertions.assertArrayEquals(new String[]{"d"},parameterMap.get("d"));
-
-        Assertions.assertEquals("GET",nettyRequestFacade.getMethod());
-
+        Assertions.assertEquals("GET", nettyRequestFacade.getMethod());
     }
 }

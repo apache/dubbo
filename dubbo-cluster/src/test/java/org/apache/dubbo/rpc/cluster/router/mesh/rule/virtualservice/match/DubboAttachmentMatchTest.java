@@ -14,24 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
-
 
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.router.mesh.util.TracingContextProvider;
 
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 
 class DubboAttachmentMatchTest {
 
@@ -44,7 +41,6 @@ class DubboAttachmentMatchTest {
         StringMatch nameMatch = new StringMatch();
         nameMatch.setExact("qinliujie");
         dubbocontextMatchMap.put("name", nameMatch);
-
 
         StringMatch machineGroupMatch = new StringMatch();
         machineGroupMatch.setExact("test_host");
@@ -62,7 +58,6 @@ class DubboAttachmentMatchTest {
 
         assertTrue(dubboAttachmentMatch.isMatch(rpcInvocation, Collections.emptySet()));
 
-
         Map<String, String> invokeDubboContextMap2 = new HashMap<>();
         invokeDubboContextMap2.put("name", "jack");
         invokeDubboContextMap2.put("machineGroup", "test_host");
@@ -72,7 +67,6 @@ class DubboAttachmentMatchTest {
         rpcInvocation2.setAttachments(invokeDubboContextMap2);
 
         assertFalse(dubboAttachmentMatch.isMatch(rpcInvocation2, Collections.emptySet()));
-
 
         Map<String, String> invokeDubboContextMap3 = new HashMap<>();
         invokeDubboContextMap3.put("name", "qinliujie");
@@ -84,7 +78,6 @@ class DubboAttachmentMatchTest {
 
         assertFalse(dubboAttachmentMatch.isMatch(rpcInvocation3, Collections.emptySet()));
     }
-
 
     @Test
     void tracingContextMatch() {
@@ -108,7 +101,8 @@ class DubboAttachmentMatchTest {
         invokeEagleEyeContextMap.put("other", "other");
 
         TracingContextProvider tracingContextProvider = (invocation, key) -> invokeEagleEyeContextMap.get(key);
-        assertTrue(dubboAttachmentMatch.isMatch(Mockito.mock(Invocation.class), Collections.singleton(tracingContextProvider)));
+        assertTrue(dubboAttachmentMatch.isMatch(
+                Mockito.mock(Invocation.class), Collections.singleton(tracingContextProvider)));
 
         Map<String, String> invokeTracingContextMap2 = new HashMap<>();
         invokeTracingContextMap2.put("name", "jack");
@@ -116,8 +110,8 @@ class DubboAttachmentMatchTest {
         invokeTracingContextMap2.put("other", "other");
 
         TracingContextProvider tracingContextProvider2 = (invocation, key) -> invokeTracingContextMap2.get(key);
-        assertFalse(dubboAttachmentMatch.isMatch(Mockito.mock(Invocation.class), Collections.singleton(tracingContextProvider2)));
-
+        assertFalse(dubboAttachmentMatch.isMatch(
+                Mockito.mock(Invocation.class), Collections.singleton(tracingContextProvider2)));
 
         Map<String, String> invokeEagleEyeContextMap3 = new HashMap<>();
         invokeEagleEyeContextMap3.put("name", "qinliujie");
@@ -125,9 +119,9 @@ class DubboAttachmentMatchTest {
         invokeEagleEyeContextMap3.put("other", "other");
 
         TracingContextProvider tracingContextProvider3 = (invocation, key) -> invokeEagleEyeContextMap3.get(key);
-        assertFalse(dubboAttachmentMatch.isMatch(Mockito.mock(Invocation.class), Collections.singleton(tracingContextProvider3)));
+        assertFalse(dubboAttachmentMatch.isMatch(
+                Mockito.mock(Invocation.class), Collections.singleton(tracingContextProvider3)));
     }
-
 
     @Test
     void contextMatch() {
@@ -158,7 +152,6 @@ class DubboAttachmentMatchTest {
         rpcInvocation.setAttachments(invokeDubboContextMap);
         assertTrue(dubboAttachmentMatch.isMatch(rpcInvocation, Collections.singleton(tracingContextProvider)));
 
-
         Map<String, String> invokeTracingContextMap1 = new HashMap<>();
         invokeTracingContextMap1.put("name", "jack");
         invokeTracingContextMap1.put("machineGroup", "test_host");
@@ -169,7 +162,6 @@ class DubboAttachmentMatchTest {
         rpcInvocation1.setAttachments(invokeDubboContextMap);
         assertFalse(dubboAttachmentMatch.isMatch(rpcInvocation1, Collections.singleton(tracingContextProvider1)));
 
-
         Map<String, String> invokeDubboContextMap1 = new HashMap<>();
         invokeDubboContextMap1.put("dpath", "PRE-2");
 
@@ -178,12 +170,10 @@ class DubboAttachmentMatchTest {
         rpcInvocation2.setAttachments(invokeDubboContextMap1);
         assertFalse(dubboAttachmentMatch.isMatch(rpcInvocation2, Collections.singleton(tracingContextProvider2)));
 
-
         TracingContextProvider tracingContextProvider3 = (invocation, key) -> invokeTracingContextMap1.get(key);
         RpcInvocation rpcInvocation3 = new RpcInvocation();
         rpcInvocation3.setAttachments(invokeDubboContextMap1);
         assertFalse(dubboAttachmentMatch.isMatch(rpcInvocation3, Collections.singleton(tracingContextProvider3)));
-
 
         Map<String, String> invokeTracingContextMap2 = new HashMap<>();
         invokeTracingContextMap2.put("machineGroup", "test_host");
@@ -200,11 +190,9 @@ class DubboAttachmentMatchTest {
         rpcInvocation5.setAttachments(invokeDubboContextMap2);
         assertFalse(dubboAttachmentMatch.isMatch(rpcInvocation5, Collections.singleton(tracingContextProvider5)));
 
-
         TracingContextProvider tracingContextProvider6 = (invocation, key) -> invokeTracingContextMap2.get(key);
         RpcInvocation rpcInvocation6 = new RpcInvocation();
         rpcInvocation5.setAttachments(invokeDubboContextMap2);
         assertFalse(dubboAttachmentMatch.isMatch(rpcInvocation6, Collections.singleton(tracingContextProvider6)));
-
     }
 }

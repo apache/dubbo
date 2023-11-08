@@ -31,5 +31,4 @@ public class DirectDispatcher implements Dispatcher {
     public ChannelHandler dispatch(ChannelHandler handler, URL url) {
         return new DirectChannelHandler(handler, url);
     }
-
 }

@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.support;
 public class IGreeterException extends Exception {
     private String message;
 
-    public IGreeterException(String message){
+    public IGreeterException(String message) {
         super(message);
         this.message = message;
     }

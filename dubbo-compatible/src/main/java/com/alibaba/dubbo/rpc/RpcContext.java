@@ -14,16 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.rpc;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.FutureContext;
-
-import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.DelegateURL;
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.rpc.protocol.dubbo.FutureAdapter;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -37,6 +31,12 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
+
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.DelegateURL;
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.rpc.protocol.dubbo.FutureAdapter;
 
 @Deprecated
 public class RpcContext {
@@ -48,6 +48,7 @@ public class RpcContext {
     public static RpcContext getServerContext() {
         return new RpcContext(org.apache.dubbo.rpc.RpcContext.getServerContext());
     }
+
     public static RpcContext getClientResponseContext() {
         return new RpcContext(org.apache.dubbo.rpc.RpcContext.getClientResponseContext());
     }
@@ -55,6 +56,7 @@ public class RpcContext {
     public static RpcContext getServerResponseContext() {
         return new RpcContext(org.apache.dubbo.rpc.RpcContext.getServerResponseContext());
     }
+
     public static void removeClientResponseContext() {
         org.apache.dubbo.rpc.RpcContext.removeClientResponseContext();
     }
@@ -66,6 +68,7 @@ public class RpcContext {
     public static void removeServerContext() {
         org.apache.dubbo.rpc.RpcContext.removeServerContext();
     }
+
     public static void removeContext() {
         org.apache.dubbo.rpc.RpcContext.removeContext();
     }
@@ -83,7 +86,6 @@ public class RpcContext {
     public <T> T getRequest(Class<T> clazz) {
         return newRpcContext.getRequest(clazz);
     }
-
 
     public void setRequest(Object request) {
         newRpcContext.setRequest(request);
@@ -320,6 +322,23 @@ public class RpcContext {
         return isConsumerSide();
     }
 
+    @Deprecated
+    public Invoker<?> getInvoker() {
+        org.apache.dubbo.rpc.Invoker<?> invoker = newRpcContext.getInvoker();
+        if (invoker == null) {
+            return null;
+        }
+        return new Invoker.CompatibleInvoker<>(invoker);
+    }
+
+    @Deprecated
+    public List<Invoker<?>> getInvokers() {
+        List<org.apache.dubbo.rpc.Invoker<?>> invokers = newRpcContext.getInvokers();
+        if (CollectionUtils.isEmpty(invokers)) {
+            return Collections.emptyList();
+        }
+        return invokers.stream().map(Invoker.CompatibleInvoker::new).collect(Collectors.toList());
+    }
     /**
      * Async invocation. Timeout will be handled even if <code>Future.get()</code> is not called.
      *
@@ -332,7 +351,7 @@ public class RpcContext {
             try {
                 setAttachment(Constants.ASYNC_KEY, Boolean.TRUE.toString());
                 final T o = callable.call();
-                //local invoke will return directly
+                // local invoke will return directly
                 if (o != null) {
                     FutureTask<T> f = new FutureTask<T>(new Callable<T>() {
                         @Override
@@ -374,8 +393,7 @@ public class RpcContext {
 
                 @Override
                 public T get(long timeout, TimeUnit unit)
-                        throws InterruptedException, ExecutionException,
-                        TimeoutException {
+                        throws InterruptedException, ExecutionException, TimeoutException {
                     return get();
                 }
             };

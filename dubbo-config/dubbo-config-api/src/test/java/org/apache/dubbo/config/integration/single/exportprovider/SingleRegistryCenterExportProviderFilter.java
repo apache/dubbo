@@ -25,7 +25,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 
 @Activate(group = CommonConstants.PROVIDER, order = 10000)
-public class SingleRegistryCenterExportProviderFilter implements Filter,Filter.Listener {
+public class SingleRegistryCenterExportProviderFilter implements Filter, Filter.Listener {
 
     /**
      * The filter is called or not

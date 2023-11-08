@@ -178,7 +178,8 @@ public class UrlUtils {
         }
         String[] addresses = REGISTRY_SPLIT_PATTERN.split(address);
         if (addresses == null || addresses.length == 0) {
-            throw new IllegalArgumentException("Addresses is not allowed to be empty, please re-enter."); //here won't be empty
+            throw new IllegalArgumentException(
+                    "Addresses is not allowed to be empty, please re-enter."); // here won't be empty
         }
         List<URL> registries = new ArrayList<URL>();
         for (String addr : addresses) {
@@ -199,8 +200,8 @@ public class UrlUtils {
                     Map<String, String> params = StringUtils.parseQueryString(serviceQuery);
                     String group = params.get(GROUP_KEY);
                     String version = params.get(VERSION_KEY);
-                    //params.remove("group");
-                    //params.remove("version");
+                    // params.remove("group");
+                    // params.remove("version");
                     String name = serviceName;
                     if (StringUtils.isNotEmpty(group)) {
                         name = group + "/" + name;
@@ -228,8 +229,8 @@ public class UrlUtils {
                 Map<String, String> params = StringUtils.parseQueryString(serviceQuery);
                 String group = params.get(GROUP_KEY);
                 String version = params.get(VERSION_KEY);
-                //params.remove("group");
-                //params.remove("version");
+                // params.remove("group");
+                // params.remove("version");
                 String name = serviceName;
                 if (StringUtils.isNotEmpty(group)) {
                     name = group + "/" + name;
@@ -343,7 +344,7 @@ public class UrlUtils {
         return notify;
     }
 
-    //compatible for dubbo-2.0.0
+    // compatible for dubbo-2.0.0
     public static List<String> revertForbid(List<String> forbid, Set<URL> subscribed) {
         if (CollectionUtils.isNotEmpty(forbid)) {
             List<String> newForbid = new ArrayList<>();
@@ -378,9 +379,9 @@ public class UrlUtils {
             service = service.substring(0, i);
         }
         return URL.valueOf(EMPTY_PROTOCOL + "://0.0.0.0/" + service + URL_PARAM_STARTING_SYMBOL
-            + CATEGORY_KEY + "=" + category
-            + (group == null ? "" : "&" + GROUP_KEY + "=" + group)
-            + (version == null ? "" : "&" + VERSION_KEY + "=" + version));
+                + CATEGORY_KEY + "=" + category
+                + (group == null ? "" : "&" + GROUP_KEY + "=" + group)
+                + (version == null ? "" : "&" + VERSION_KEY + "=" + version));
     }
 
     public static boolean isMatchCategory(String category, String categories) {
@@ -399,27 +400,28 @@ public class UrlUtils {
         String consumerInterface = consumerUrl.getServiceInterface();
         String providerInterface = providerUrl.getServiceInterface();
 
-        // FIXME accept providerUrl with '*' as interface name, after carefully thought about all possible scenarios I think it's ok to add this condition.
+        // FIXME accept providerUrl with '*' as interface name, after carefully thought about all possible scenarios I
+        // think it's ok to add this condition.
 
         // Return false if the consumer interface is not equals the provider interface,
         // except one of the interface configurations is equals '*' (i.e. any value).
         if (!(ANY_VALUE.equals(consumerInterface)
-            || ANY_VALUE.equals(providerInterface)
-            || StringUtils.isEquals(consumerInterface, providerInterface))) {
+                || ANY_VALUE.equals(providerInterface)
+                || StringUtils.isEquals(consumerInterface, providerInterface))) {
             return false;
         }
 
         // If the category of provider URL does not match the category of consumer URL.
         // Usually, the provider URL's category is empty, and the default category ('providers') is present.
         // Hence, the category of the provider URL is 'providers'.
-        // Through observing of debugging process, I found that the category of the consumer URL is 'providers,configurators,routers'.
+        // Through observing of debugging process, I found that the category of the consumer URL is
+        // 'providers,configurators,routers'.
         if (!isMatchCategory(providerUrl.getCategory(DEFAULT_CATEGORY), consumerUrl.getCategory(DEFAULT_CATEGORY))) {
             return false;
         }
 
         // If the provider is not enabled, return false.
-        if (!providerUrl.getParameter(ENABLED_KEY, true)
-            && !ANY_VALUE.equals(consumerUrl.getParameter(ENABLED_KEY))) {
+        if (!providerUrl.getParameter(ENABLED_KEY, true) && !ANY_VALUE.equals(consumerUrl.getParameter(ENABLED_KEY))) {
             return false;
         }
 
@@ -434,9 +436,14 @@ public class UrlUtils {
         String providerClassifier = providerUrl.getParameter(CLASSIFIER_KEY, ANY_VALUE);
 
         // If Group, Version, Classifier all matches, return true.
-        boolean groupMatches = ANY_VALUE.equals(consumerGroup) || StringUtils.isEquals(consumerGroup, providerGroup) || StringUtils.isContains(consumerGroup, providerGroup);
-        boolean versionMatches = ANY_VALUE.equals(consumerVersion) || StringUtils.isEquals(consumerVersion, providerVersion);
-        boolean classifierMatches = consumerClassifier == null || ANY_VALUE.equals(consumerClassifier) || StringUtils.isEquals(consumerClassifier, providerClassifier);
+        boolean groupMatches = ANY_VALUE.equals(consumerGroup)
+                || StringUtils.isEquals(consumerGroup, providerGroup)
+                || StringUtils.isContains(consumerGroup, providerGroup);
+        boolean versionMatches =
+                ANY_VALUE.equals(consumerVersion) || StringUtils.isEquals(consumerVersion, providerVersion);
+        boolean classifierMatches = consumerClassifier == null
+                || ANY_VALUE.equals(consumerClassifier)
+                || StringUtils.isEquals(consumerClassifier, providerClassifier);
 
         return groupMatches && versionMatches && classifierMatches;
     }
@@ -481,12 +488,9 @@ public class UrlUtils {
     }
 
     public static boolean isServiceKeyMatch(URL pattern, URL value) {
-        return pattern.getParameter(INTERFACE_KEY).equals(
-            value.getParameter(INTERFACE_KEY))
-            && isItemMatch(pattern.getGroup(),
-            value.getGroup())
-            && isItemMatch(pattern.getVersion(),
-            value.getVersion());
+        return pattern.getParameter(INTERFACE_KEY).equals(value.getParameter(INTERFACE_KEY))
+                && isItemMatch(pattern.getGroup(), value.getGroup())
+                && isItemMatch(pattern.getVersion(), value.getVersion());
     }
 
     public static List<URL> classifyUrls(List<URL> urls, Predicate<URL> predicate) {
@@ -494,25 +498,24 @@ public class UrlUtils {
     }
 
     public static boolean isConfigurator(URL url) {
-        return OVERRIDE_PROTOCOL.equals(url.getProtocol()) ||
-            CONFIGURATORS_CATEGORY.equals(url.getCategory(DEFAULT_CATEGORY));
+        return OVERRIDE_PROTOCOL.equals(url.getProtocol())
+                || CONFIGURATORS_CATEGORY.equals(url.getCategory(DEFAULT_CATEGORY));
     }
 
     public static boolean isRoute(URL url) {
-        return ROUTE_PROTOCOL.equals(url.getProtocol()) ||
-            ROUTERS_CATEGORY.equals(url.getCategory(DEFAULT_CATEGORY));
+        return ROUTE_PROTOCOL.equals(url.getProtocol()) || ROUTERS_CATEGORY.equals(url.getCategory(DEFAULT_CATEGORY));
     }
 
     public static boolean isProvider(URL url) {
-        return !OVERRIDE_PROTOCOL.equals(url.getProtocol()) &&
-            !ROUTE_PROTOCOL.equals(url.getProtocol()) &&
-            PROVIDERS_CATEGORY.equals(url.getCategory(PROVIDERS_CATEGORY));
+        return !OVERRIDE_PROTOCOL.equals(url.getProtocol())
+                && !ROUTE_PROTOCOL.equals(url.getProtocol())
+                && PROVIDERS_CATEGORY.equals(url.getCategory(PROVIDERS_CATEGORY));
     }
 
     public static boolean isRegistry(URL url) {
         return REGISTRY_PROTOCOL.equals(url.getProtocol())
-            || SERVICE_REGISTRY_PROTOCOL.equalsIgnoreCase(url.getProtocol())
-            || (url.getProtocol() != null && url.getProtocol().endsWith("-registry-protocol"));
+                || SERVICE_REGISTRY_PROTOCOL.equalsIgnoreCase(url.getProtocol())
+                || (url.getProtocol() != null && url.getProtocol().endsWith("-registry-protocol"));
     }
 
     /**
@@ -683,5 +686,4 @@ public class UrlUtils {
     public static boolean isConsumer(URL url) {
         return url.getProtocol().equalsIgnoreCase(CONSUMER) || url.getPort() == 0;
     }
-
 }

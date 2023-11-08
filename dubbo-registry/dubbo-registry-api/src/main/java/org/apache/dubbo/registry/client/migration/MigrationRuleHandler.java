@@ -23,12 +23,13 @@ import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
 import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.registry.client.migration.model.MigrationStep;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_NO_PARAMETERS_URL;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_NO_PARAMETERS_URL;
 
 public class MigrationRuleHandler<T> {
     public static final String DUBBO_SERVICEDISCOVERY_MIGRATION = "dubbo.application.migration.step";
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MigrationRuleHandler.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(MigrationRuleHandler.class);
 
     private final MigrationClusterInvoker<T> migrationInvoker;
     private volatile MigrationStep currentStep;
@@ -54,7 +55,8 @@ public class MigrationRuleHandler<T> {
             step = rule.getStep(consumerURL);
             threshold = rule.getThreshold(consumerURL);
         } catch (Exception e) {
-            logger.error(REGISTRY_NO_PARAMETERS_URL, "", "", "Failed to get step and threshold info from rule: " + rule, e);
+            logger.error(
+                    REGISTRY_NO_PARAMETERS_URL, "", "", "Failed to get step and threshold info from rule: " + rule, e);
         }
 
         if (refreshInvoker(step, threshold, rule)) {
@@ -85,12 +87,17 @@ public class MigrationRuleHandler<T> {
 
             if (success) {
                 setCurrentStepAndThreshold(step, threshold);
-                logger.info("Succeed Migrated to " + step + " mode. Service Name: " + consumerURL.getDisplayServiceKey());
+                logger.info(
+                        "Succeed Migrated to " + step + " mode. Service Name: " + consumerURL.getDisplayServiceKey());
                 report(step, originStep, "true");
             } else {
                 // migrate failed, do not save new step and rule
-                logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", "Migrate to " + step + " mode failed. Probably not satisfy the threshold you set "
-                    + threshold + ". Please try re-publish configuration if you still after check.");
+                logger.warn(
+                        INTERNAL_ERROR,
+                        "unknown error in registry module",
+                        "",
+                        "Migrate to " + step + " mode failed. Probably not satisfy the threshold you set " + threshold
+                                + ". Please try re-publish configuration if you still after check.");
                 report(step, originStep, "false");
             }
 
@@ -102,12 +109,16 @@ public class MigrationRuleHandler<T> {
 
     private void report(MigrationStep step, MigrationStep originStep, String success) {
         FrameworkStatusReportService reportService =
-            consumerURL.getOrDefaultApplicationModel().getBeanFactory().getBean(FrameworkStatusReportService.class);
+                consumerURL.getOrDefaultApplicationModel().getBeanFactory().getBean(FrameworkStatusReportService.class);
 
         if (reportService.hasReporter()) {
-            reportService.reportMigrationStepStatus(
-                reportService.createMigrationStepReport(consumerURL.getServiceInterface(), consumerURL.getVersion(),
-                    consumerURL.getGroup(), String.valueOf(originStep), String.valueOf(step), success));
+            reportService.reportMigrationStepStatus(reportService.createMigrationStepReport(
+                    consumerURL.getServiceInterface(),
+                    consumerURL.getVersion(),
+                    consumerURL.getGroup(),
+                    String.valueOf(originStep),
+                    String.valueOf(step),
+                    success));
         }
     }
 

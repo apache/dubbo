@@ -27,5 +27,4 @@ import org.apache.dubbo.common.extension.SPI;
 public interface DynamicConfigurationFactory {
 
     DynamicConfiguration getDynamicConfiguration(URL url);
-
 }

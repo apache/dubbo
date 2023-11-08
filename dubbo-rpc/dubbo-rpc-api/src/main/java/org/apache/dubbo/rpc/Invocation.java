@@ -16,15 +16,16 @@
  */
 package org.apache.dubbo.rpc;
 
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
-
 import org.apache.dubbo.common.Experimental;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.model.ServiceModel;
+
+import java.beans.Transient;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  * Invocation. (API, Prototype, NonThreadSafe)
@@ -47,7 +48,6 @@ public interface Invocation {
      */
     String getMethodName();
 
-
     /**
      * get the interface name
      *
@@ -69,9 +69,7 @@ public interface Invocation {
      * @return parameter's signature
      */
     default String[] getCompatibleParamSignatures() {
-        return Stream.of(getParameterTypes())
-            .map(Class::getName)
-            .toArray(String[]::new);
+        return Stream.of(getParameterTypes()).map(Class::getName).toArray(String[]::new);
     }
 
     /**
@@ -148,6 +146,7 @@ public interface Invocation {
      * @return invoker.
      * @transient
      */
+    @Transient
     Invoker<?> getInvoker();
 
     void setServiceModel(ServiceModel serviceModel);
@@ -155,7 +154,8 @@ public interface Invocation {
     ServiceModel getServiceModel();
 
     default ModuleModel getModuleModel() {
-        return ScopeModelUtil.getModuleModel(getServiceModel() == null ? null : getServiceModel().getModuleModel());
+        return ScopeModelUtil.getModuleModel(
+                getServiceModel() == null ? null : getServiceModel().getModuleModel());
     }
 
     Object put(Object key, Object value);

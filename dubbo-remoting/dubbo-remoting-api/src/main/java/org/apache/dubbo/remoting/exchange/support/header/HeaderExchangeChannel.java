@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.Channel;
@@ -30,6 +31,7 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 
 import java.net.InetSocketAddress;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
@@ -42,11 +44,14 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FA
  */
 final class HeaderExchangeChannel implements ExchangeChannel {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(HeaderExchangeChannel.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(HeaderExchangeChannel.class);
 
     private static final String CHANNEL_KEY = HeaderExchangeChannel.class.getName() + ".CHANNEL";
 
     private final Channel channel;
+
+    private final int shutdownTimeout;
 
     private volatile boolean closed = false;
 
@@ -55,6 +60,10 @@ final class HeaderExchangeChannel implements ExchangeChannel {
             throw new IllegalArgumentException("channel == null");
         }
         this.channel = channel;
+        this.shutdownTimeout = Optional.ofNullable(channel.getUrl())
+                .map(URL::getOrDefaultApplicationModel)
+                .map(ConfigurationUtils::getServerShutdownTimeout)
+                .orElse(DEFAULT_TIMEOUT);
     }
 
     static HeaderExchangeChannel getOrAddChannel(Channel ch) {
@@ -91,11 +100,12 @@ final class HeaderExchangeChannel implements ExchangeChannel {
     @Override
     public void send(Object message, boolean sent) throws RemotingException {
         if (closed) {
-            throw new RemotingException(this.getLocalAddress(), null, "Failed to send message " + message + ", cause: The channel " + this + " is closed!");
+            throw new RemotingException(
+                    this.getLocalAddress(),
+                    null,
+                    "Failed to send message " + message + ", cause: The channel " + this + " is closed!");
         }
-        if (message instanceof Request
-            || message instanceof Response
-            || message instanceof String) {
+        if (message instanceof Request || message instanceof Response || message instanceof String) {
             channel.send(message, sent);
         } else {
             Request request = new Request();
@@ -122,9 +132,13 @@ final class HeaderExchangeChannel implements ExchangeChannel {
     }
 
     @Override
-    public CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor) throws RemotingException {
+    public CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor)
+            throws RemotingException {
         if (closed) {
-            throw new RemotingException(this.getLocalAddress(), null, "Failed to send request " + request + ", cause: The channel " + this + " is closed!");
+            throw new RemotingException(
+                    this.getLocalAddress(),
+                    null,
+                    "Failed to send request " + request + ", cause: The channel " + this + " is closed!");
         }
         Request req;
         if (request instanceof Request) {
@@ -159,7 +173,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         closed = true;
         try {
             // graceful close
-            DefaultFuture.closeChannel(channel);
+            DefaultFuture.closeChannel(channel, ConfigurationUtils.reCalShutdownTime(shutdownTimeout));
         } catch (Exception e) {
             logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }
@@ -179,8 +193,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         }
         if (timeout > 0) {
             long start = System.currentTimeMillis();
-            while (DefaultFuture.hasFuture(channel)
-                && System.currentTimeMillis() - start < timeout) {
+            while (DefaultFuture.hasFuture(channel) && System.currentTimeMillis() - start < timeout) {
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
@@ -273,5 +286,4 @@ final class HeaderExchangeChannel implements ExchangeChannel {
     public String toString() {
         return channel.toString();
     }
-
 }

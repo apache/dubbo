@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.demo.rest.api;
 
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
+
 import java.util.List;
 
 @Path("/demoService")
@@ -41,7 +41,4 @@ public interface HttpRequestAndResponseRPCContextService {
     @Path("/httpResponseHeader")
     @Consumes({javax.ws.rs.core.MediaType.TEXT_PLAIN})
     List<String> httpResponseHeader(@HeaderParam("response") String hello);
-
-
 }
-

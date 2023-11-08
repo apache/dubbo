@@ -102,9 +102,7 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
      */
     protected Integer forks;
 
-    public AbstractMethodConfig() {
-        super();
-    }
+    public AbstractMethodConfig() {}
 
     public AbstractMethodConfig(ModuleModel moduleModel) {
         super(moduleModel);
@@ -124,11 +122,9 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
 
     @Override
     protected void checkScopeModel(ScopeModel scopeModel) {
-        if (scopeModel == null) {
-            throw new IllegalArgumentException("scopeModel cannot be null");
-        }
         if (!(scopeModel instanceof ModuleModel)) {
-            throw new IllegalArgumentException("Invalid scope model, expect to be a ModuleModel but got: " + scopeModel);
+            throw new IllegalArgumentException(
+                    "Invalid scope model, expect to be a ModuleModel but got: " + scopeModel);
         }
     }
 
@@ -249,5 +245,4 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
     public void setParameters(Map<String, String> parameters) {
         this.parameters = parameters;
     }
-
 }

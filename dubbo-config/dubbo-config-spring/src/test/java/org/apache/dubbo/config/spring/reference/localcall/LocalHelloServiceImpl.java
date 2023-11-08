@@ -23,8 +23,7 @@ public class LocalHelloServiceImpl implements HelloService {
 
     @Override
     public String sayHello(String name) {
-        return "Hello " + name + ", response from provider: " + RpcContext.getContext().getLocalAddress();
-
+        return "Hello " + name + ", response from provider: "
+                + RpcContext.getContext().getLocalAddress();
     }
-
 }

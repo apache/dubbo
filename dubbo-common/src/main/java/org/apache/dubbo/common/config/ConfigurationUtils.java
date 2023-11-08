@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.config;
 
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
@@ -44,7 +43,6 @@ import java.util.Set;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SECONDS_KEY;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 
 /**
  * Utilities for manipulating configurations from different sources
@@ -60,6 +58,8 @@ public final class ConfigurationUtils {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ConfigurationUtils.class);
     private static final List<String> securityKey;
+
+    private static volatile long expectedShutdownTime = Long.MAX_VALUE;
 
     static {
         List<String> keys = new LinkedList<>();
@@ -77,7 +77,9 @@ public final class ConfigurationUtils {
      * @return
      */
     public static Configuration getSystemConfiguration(ScopeModel scopeModel) {
-        return getScopeModelOrDefaultApplicationModel(scopeModel).getModelEnvironment().getSystemConfiguration();
+        return getScopeModelOrDefaultApplicationModel(scopeModel)
+                .modelEnvironment()
+                .getSystemConfiguration();
     }
 
     /**
@@ -86,7 +88,9 @@ public final class ConfigurationUtils {
      * @return
      */
     public static Configuration getEnvConfiguration(ScopeModel scopeModel) {
-        return getScopeModelOrDefaultApplicationModel(scopeModel).getModelEnvironment().getEnvironmentConfiguration();
+        return getScopeModelOrDefaultApplicationModel(scopeModel)
+                .modelEnvironment()
+                .getEnvironmentConfiguration();
     }
 
     /**
@@ -96,13 +100,14 @@ public final class ConfigurationUtils {
      *
      * @return
      */
-
     public static Configuration getGlobalConfiguration(ScopeModel scopeModel) {
-        return getScopeModelOrDefaultApplicationModel(scopeModel).getModelEnvironment().getConfiguration();
+        return getScopeModelOrDefaultApplicationModel(scopeModel)
+                .modelEnvironment()
+                .getConfiguration();
     }
 
     public static Configuration getDynamicGlobalConfiguration(ScopeModel scopeModel) {
-        return scopeModel.getModelEnvironment().getDynamicGlobalConfiguration();
+        return scopeModel.modelEnvironment().getDynamicGlobalConfiguration();
     }
 
     // FIXME
@@ -114,6 +119,9 @@ public final class ConfigurationUtils {
      */
     @SuppressWarnings("deprecation")
     public static int getServerShutdownTimeout(ScopeModel scopeModel) {
+        if (expectedShutdownTime < System.currentTimeMillis()) {
+            return 1;
+        }
         int timeout = DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
         Configuration configuration = getGlobalConfiguration(scopeModel);
         String value = StringUtils.trim(configuration.getString(SHUTDOWN_WAIT_KEY));
@@ -134,13 +142,38 @@ public final class ConfigurationUtils {
                 }
             }
         }
+
+        if (expectedShutdownTime - System.currentTimeMillis() < timeout) {
+            return (int) Math.max(1, expectedShutdownTime - System.currentTimeMillis());
+        }
+
         return timeout;
+    }
+
+    public static int reCalShutdownTime(int expected) {
+        // already timeout
+        if (expectedShutdownTime < System.currentTimeMillis()) {
+            return 1;
+        }
+
+        if (expectedShutdownTime - System.currentTimeMillis() < expected) {
+            // the shutdown time rest is less than expected
+            return (int) Math.max(1, expectedShutdownTime - System.currentTimeMillis());
+        }
+
+        // return the expected
+        return expected;
+    }
+
+    public static void setExpectedShutdownTime(long expectedShutdownTime) {
+        ConfigurationUtils.expectedShutdownTime = expectedShutdownTime;
     }
 
     public static String getCachedDynamicProperty(ScopeModel realScopeModel, String key, String defaultValue) {
         ScopeModel scopeModel = getScopeModelOrDefaultApplicationModel(realScopeModel);
         ConfigurationCache configurationCache = scopeModel.getBeanFactory().getBean(ConfigurationCache.class);
-        String value = configurationCache.computeIfAbsent(key, _k -> ConfigurationUtils.getDynamicProperty(scopeModel, _k, ""));
+        String value = configurationCache.computeIfAbsent(
+                key, _k -> ConfigurationUtils.getDynamicProperty(scopeModel, _k, ""));
         return StringUtils.isEmpty(value) ? defaultValue : value;
     }
 
@@ -174,30 +207,28 @@ public final class ConfigurationUtils {
     public static Map<String, String> parseProperties(String content) throws IOException {
         Map<String, String> map = new HashMap<>();
         if (StringUtils.isEmpty(content)) {
-            logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "Config center was specified, but no config item found.");
+            logger.info("Config center was specified, but no config item found.");
         } else {
             Properties properties = new Properties();
             properties.load(new StringReader(content));
-            properties.stringPropertyNames().forEach(
-                k -> {
-                    boolean deny = false;
-                    for (String key : securityKey) {
-                        if (k.contains(key)) {
-                            deny = true;
-                            break;
-                        }
+            properties.stringPropertyNames().forEach(k -> {
+                boolean deny = false;
+                for (String key : securityKey) {
+                    if (k.contains(key)) {
+                        deny = true;
+                        break;
                     }
-                    if (!deny) {
-                        map.put(k, properties.getProperty(k));
-                    }
-                });
+                }
+                if (!deny) {
+                    map.put(k, properties.getProperty(k));
+                }
+            });
         }
         return map;
     }
 
     public static boolean isEmptyValue(Object value) {
-        return value == null ||
-            value instanceof String && StringUtils.isBlank((String) value);
+        return value == null || value instanceof String && StringUtils.isBlank((String) value);
     }
 
     /**
@@ -220,7 +251,8 @@ public final class ConfigurationUtils {
      * @param <V>
      * @return
      */
-    public static <V extends Object> Map<String, V> getSubProperties(Collection<Map<String, V>> configMaps, String prefix) {
+    public static <V extends Object> Map<String, V> getSubProperties(
+            Collection<Map<String, V>> configMaps, String prefix) {
         Map<String, V> map = new LinkedHashMap<>();
         for (Map<String, V> configMap : configMaps) {
             getSubProperties(configMap, prefix, map);
@@ -232,7 +264,8 @@ public final class ConfigurationUtils {
         return getSubProperties(configMap, prefix, null);
     }
 
-    private static <V extends Object> Map<String, V> getSubProperties(Map<String, V> configMap, String prefix, Map<String, V> resultMap) {
+    private static <V extends Object> Map<String, V> getSubProperties(
+            Map<String, V> configMap, String prefix, Map<String, V> resultMap) {
         if (!prefix.endsWith(".")) {
             prefix += ".";
         }
@@ -250,8 +283,8 @@ public final class ConfigurationUtils {
                 String key = entry.getKey();
                 V val = entry.getValue();
                 if (StringUtils.startsWithIgnoreCase(key, prefix)
-                    && key.length() > prefix.length()
-                    && !ConfigurationUtils.isEmptyValue(val)) {
+                        && key.length() > prefix.length()
+                        && !ConfigurationUtils.isEmptyValue(val)) {
 
                     String k = key.substring(prefix.length());
                     // convert camelCase/snake_case to kebab-case
@@ -290,8 +323,8 @@ public final class ConfigurationUtils {
         for (Map.Entry<String, V> entry : copy.entrySet()) {
             String key = entry.getKey();
             if (StringUtils.startsWithIgnoreCase(key, prefix)
-                && key.length() > prefix.length()
-                && !ConfigurationUtils.isEmptyValue(entry.getValue())) {
+                    && key.length() > prefix.length()
+                    && !ConfigurationUtils.isEmptyValue(entry.getValue())) {
                 return true;
             }
         }
@@ -330,8 +363,8 @@ public final class ConfigurationUtils {
                 String key = entry.getKey();
                 V val = entry.getValue();
                 if (StringUtils.startsWithIgnoreCase(key, prefix)
-                    && key.length() > prefix.length()
-                    && !ConfigurationUtils.isEmptyValue(val)) {
+                        && key.length() > prefix.length()
+                        && !ConfigurationUtils.isEmptyValue(val)) {
 
                     String k = key.substring(prefix.length());
                     int endIndex = k.indexOf(".");
@@ -353,8 +386,10 @@ public final class ConfigurationUtils {
      * @return non-null
      * @see 2.7.4
      */
-    public static DynamicConfigurationFactory getDynamicConfigurationFactory(ExtensionAccessor extensionAccessor, String name) {
-        ExtensionLoader<DynamicConfigurationFactory> loader = extensionAccessor.getExtensionLoader(DynamicConfigurationFactory.class);
+    public static DynamicConfigurationFactory getDynamicConfigurationFactory(
+            ExtensionAccessor extensionAccessor, String name) {
+        ExtensionLoader<DynamicConfigurationFactory> loader =
+                extensionAccessor.getExtensionLoader(DynamicConfigurationFactory.class);
         return loader.getOrDefaultExtension(name);
     }
 
@@ -365,7 +400,7 @@ public final class ConfigurationUtils {
      */
     @Deprecated
     public static Configuration getSystemConfiguration() {
-        return ApplicationModel.defaultModel().getModelEnvironment().getSystemConfiguration();
+        return ApplicationModel.defaultModel().modelEnvironment().getSystemConfiguration();
     }
 
     /**
@@ -375,7 +410,7 @@ public final class ConfigurationUtils {
      */
     @Deprecated
     public static Configuration getEnvConfiguration() {
-        return ApplicationModel.defaultModel().getModelEnvironment().getEnvironmentConfiguration();
+        return ApplicationModel.defaultModel().modelEnvironment().getEnvironmentConfiguration();
     }
 
     /**
@@ -385,7 +420,7 @@ public final class ConfigurationUtils {
      */
     @Deprecated
     public static Configuration getGlobalConfiguration() {
-        return ApplicationModel.defaultModel().getModelEnvironment().getConfiguration();
+        return ApplicationModel.defaultModel().modelEnvironment().getConfiguration();
     }
 
     /**
@@ -395,7 +430,10 @@ public final class ConfigurationUtils {
      */
     @Deprecated
     public static Configuration getDynamicGlobalConfiguration() {
-        return ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().getDynamicGlobalConfiguration();
+        return ApplicationModel.defaultModel()
+                .getDefaultModule()
+                .modelEnvironment()
+                .getDynamicGlobalConfiguration();
     }
 
     /**
@@ -457,5 +495,4 @@ public final class ConfigurationUtils {
     public static int get(String property, int defaultValue) {
         return get(ApplicationModel.defaultModel(), property, defaultValue);
     }
-
 }

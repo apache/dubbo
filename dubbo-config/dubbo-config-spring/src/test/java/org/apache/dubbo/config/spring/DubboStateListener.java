@@ -24,12 +24,12 @@ import org.springframework.context.ApplicationListener;
 public class DubboStateListener implements ApplicationListener<DubboApplicationStateEvent> {
 
     private DeployState state;
-    
+
     @Override
     public void onApplicationEvent(DubboApplicationStateEvent event) {
         state = event.getState();
     }
-    
+
     public DeployState getState() {
         return state;
     }

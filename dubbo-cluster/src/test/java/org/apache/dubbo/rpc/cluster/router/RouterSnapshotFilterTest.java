@@ -37,7 +37,8 @@ class RouterSnapshotFilterTest {
     @Test
     void test() {
         FrameworkModel frameworkModel = new FrameworkModel();
-        RouterSnapshotSwitcher routerSnapshotSwitcher = frameworkModel.getBeanFactory().getBean(RouterSnapshotSwitcher.class);
+        RouterSnapshotSwitcher routerSnapshotSwitcher =
+                frameworkModel.getBeanFactory().getBean(RouterSnapshotSwitcher.class);
         RouterSnapshotFilter routerSnapshotFilter = new RouterSnapshotFilter(frameworkModel);
 
         Invoker invoker = Mockito.mock(Invoker.class);

@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -24,6 +25,8 @@ import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
+import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.DefaultServiceInstance.Endpoint;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
@@ -33,6 +36,7 @@ import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +48,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol.DEFAULT_REGISTER_PROVIDER_KEYS;
 import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
@@ -58,7 +63,8 @@ import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
  * @since 2.7.5
  */
 public class ServiceInstanceMetadataUtils {
-    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(ServiceInstanceMetadataUtils.class);
+    private static final ErrorTypeAwareLogger LOGGER =
+            LoggerFactory.getErrorTypeAwareLogger(ServiceInstanceMetadataUtils.class);
 
     /**
      * The prefix of {@link MetadataService} : "dubbo.metadata-service."
@@ -121,9 +127,9 @@ public class ServiceInstanceMetadataUtils {
      */
     public static String getExportedServicesRevision(ServiceInstance serviceInstance) {
         return Optional.ofNullable(serviceInstance.getServiceMetadata())
-            .map(MetadataInfo::getRevision)
-            .filter(StringUtils::isNotEmpty)
-            .orElse(serviceInstance.getMetadata(EXPORTED_SERVICES_REVISION_PROPERTY_NAME));
+                .map(MetadataInfo::getRevision)
+                .filter(StringUtils::isNotEmpty)
+                .orElse(serviceInstance.getMetadata(EXPORTED_SERVICES_REVISION_PROPERTY_NAME));
     }
 
     /**
@@ -201,7 +207,25 @@ public class ServiceInstanceMetadataUtils {
         LOGGER.info("Start registering instance address to registry.");
         RegistryManager registryManager = applicationModel.getBeanFactory().getBean(RegistryManager.class);
         // register service instance
-        registryManager.getServiceDiscoveries().forEach(ServiceDiscovery::register);
+        List<ServiceDiscovery> serviceDiscoveries = registryManager.getServiceDiscoveries();
+        for (ServiceDiscovery serviceDiscovery : serviceDiscoveries) {
+            MetricsEventBus.post(
+                    RegistryEvent.toRegisterEvent(
+                            applicationModel, Collections.singletonList(getServiceDiscoveryName(serviceDiscovery))),
+                    () -> {
+                        // register service instance
+                        serviceDiscoveries.forEach(ServiceDiscovery::register);
+                        return null;
+                    });
+        }
+    }
+
+    private static String getServiceDiscoveryName(ServiceDiscovery serviceDiscovery) {
+        return serviceDiscovery
+                .getUrl()
+                .getParameter(
+                        RegistryConstants.REGISTRY_CLUSTER_KEY,
+                        serviceDiscovery.getUrl().getParameter(REGISTRY_KEY));
     }
 
     public static void refreshMetadataAndInstance(ApplicationModel applicationModel) {
@@ -223,7 +247,7 @@ public class ServiceInstanceMetadataUtils {
 
     public static void customizeInstance(ServiceInstance instance, ApplicationModel applicationModel) {
         ExtensionLoader<ServiceInstanceCustomizer> loader =
-            instance.getOrDefaultApplicationModel().getExtensionLoader(ServiceInstanceCustomizer.class);
+                instance.getOrDefaultApplicationModel().getExtensionLoader(ServiceInstanceCustomizer.class);
         // FIXME, sort customizer before apply
         loader.getSupportedExtensionInstances().forEach(customizer -> {
             // customize
@@ -249,5 +273,4 @@ public class ServiceInstanceMetadataUtils {
             }
         }
     }
-
 }

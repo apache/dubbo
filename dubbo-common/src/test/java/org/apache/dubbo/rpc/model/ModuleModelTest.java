@@ -61,7 +61,7 @@ class ModuleModelTest {
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
 
-        ModuleEnvironment modelEnvironment = moduleModel.getModelEnvironment();
+        ModuleEnvironment modelEnvironment = moduleModel.modelEnvironment();
         Assertions.assertNotNull(modelEnvironment);
 
         frameworkModel.destroy();
@@ -86,6 +86,5 @@ class ModuleModelTest {
         // trigger tryDestroy
         Assertions.assertTrue(applicationModel.isDestroyed());
         Assertions.assertTrue(frameworkModel.isDestroyed());
-
     }
 }

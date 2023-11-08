@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.exchange.Request;
+import org.apache.dubbo.remoting.exchange.Response;
+import org.apache.dubbo.rpc.Invocation;
 
 import java.io.InputStream;
 
@@ -38,4 +39,10 @@ public interface ByteAccessor {
      *  The parameters are the same as {@link DecodeableRpcInvocation}
      */
     DecodeableRpcInvocation getRpcInvocation(Channel channel, Request req, InputStream is, byte proto);
+
+    /**
+     *  Get an enhanced DecodeableRpcResult subclass to allow custom decode.
+     *  The parameters are the same as {@link DecodeableRpcResult}
+     */
+    DecodeableRpcResult getRpcResult(Channel channel, Response res, InputStream is, Invocation invocation, byte proto);
 }

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.rpc.TriRpcStatus;
@@ -37,8 +36,9 @@ public interface ServerCall {
          * Callback when a request message is received.
          *
          * @param message message received
+         * @param actualContentLength actual content length from body
          */
-        void onMessage(Object message);
+        void onMessage(Object message, int actualContentLength);
 
         /**
          * @param status when the call is canceled.
@@ -72,5 +72,4 @@ public interface ServerCall {
      * @param responseAttrs response attachments
      */
     void close(TriRpcStatus status, Map<String, Object> responseAttrs);
-
 }

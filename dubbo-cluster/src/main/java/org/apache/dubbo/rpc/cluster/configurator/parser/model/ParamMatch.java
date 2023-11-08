@@ -40,19 +40,16 @@ public class ParamMatch {
     }
 
     public boolean isMatch(URL url) {
-        if (key == null) {
+        if (key == null || value == null) {
             return false;
         }
 
         String input = url.getParameter(key);
-        return input != null && value.isMatch(input);
+        return value.isMatch(input);
     }
 
     @Override
     public String toString() {
-        return "ParamMatch{" +
-            "key='" + key + '\'' +
-            ", value='" + value + '\'' +
-            '}';
+        return "ParamMatch{" + "key='" + key + '\'' + ", value='" + value + '\'' + '}';
     }
 }

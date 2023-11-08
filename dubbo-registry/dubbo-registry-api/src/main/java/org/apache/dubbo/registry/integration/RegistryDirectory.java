@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.integration;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -33,6 +34,7 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.AddressListener;
+import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -62,9 +64,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_REGISTER_MODE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REFER_INVOKER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNSUPPORTED;
@@ -80,6 +82,8 @@ import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_HASHMA
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER_MODE_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.CONFIGURATORS_SUFFIX;
@@ -87,7 +91,6 @@ import static org.apache.dubbo.registry.Constants.ENABLE_26X_CONFIGURATION_LISTE
 import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
 import static org.apache.dubbo.rpc.model.ScopeModelUtil.getModuleModel;
-
 
 /**
  * RegistryDirectory
@@ -108,39 +111,65 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
      * The initial value is null and the midway may be assigned to null, please use the local variable reference
      */
     protected volatile Set<URL> cachedInvokerUrls;
+
     private final ModuleModel moduleModel;
 
     public RegistryDirectory(Class<T> serviceType, URL url) {
         super(serviceType, url);
         moduleModel = getModuleModel(url.getScopeModel());
         consumerConfigurationListener = getConsumerConfigurationListener(moduleModel);
-
     }
 
     @Override
     public void subscribe(URL url) {
-        ApplicationModel applicationModel = url.getApplicationModel();
-        MetricsEventBus.post(RegistryEvent.toSubscribeEvent(applicationModel),() ->
-            {
-                super.subscribe(url);
-                return null;
+
+        // Fail-fast detection protocol spi
+        String queryProtocols = this.queryMap.get(PROTOCOL_KEY);
+        if (StringUtils.isNotBlank(queryProtocols)) {
+            String[] acceptProtocols = queryProtocols.split(",");
+            for (String acceptProtocol : acceptProtocols) {
+                if (!moduleModel
+                        .getApplicationModel()
+                        .getExtensionLoader(Protocol.class)
+                        .hasExtension(acceptProtocol)) {
+                    throw new IllegalStateException("No such extension org.apache.dubbo.rpc.Protocol by name "
+                            + acceptProtocol + ",  please check whether related SPI module is missing");
+                }
             }
-        );
-        if (moduleModel.getModelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+        }
+
+        ApplicationModel applicationModel = url.getApplicationModel();
+        String registryClusterName = registry.getUrl()
+                .getParameter(
+                        RegistryConstants.REGISTRY_CLUSTER_KEY,
+                        registry.getUrl().getParameter(PROTOCOL_KEY));
+        MetricsEventBus.post(RegistryEvent.toSubscribeEvent(applicationModel, registryClusterName), () -> {
+            super.subscribe(url);
+            return null;
+        });
+        if (moduleModel
+                .modelEnvironment()
+                .getConfiguration()
+                .convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
             consumerConfigurationListener.addNotifyListener(this);
             referenceConfigurationListener = new ReferenceConfigurationListener(moduleModel, this, url);
         }
     }
 
     private ConsumerConfigurationListener getConsumerConfigurationListener(ModuleModel moduleModel) {
-        return moduleModel.getBeanFactory().getOrRegisterBean(ConsumerConfigurationListener.class,
-            type -> new ConsumerConfigurationListener(moduleModel));
+        return moduleModel
+                .getBeanFactory()
+                .getOrRegisterBean(
+                        ConsumerConfigurationListener.class, type -> new ConsumerConfigurationListener(moduleModel));
     }
 
     @Override
     public void unSubscribe(URL url) {
         super.unSubscribe(url);
-        if (moduleModel.getModelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+        if (moduleModel
+                .modelEnvironment()
+                .getConfiguration()
+                .convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
             consumerConfigurationListener.removeNotifyListener(this);
             if (referenceConfigurationListener != null) {
                 referenceConfigurationListener.stop();
@@ -151,7 +180,10 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     @Override
     public void destroy() {
         super.destroy();
-        if (moduleModel.getModelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+        if (moduleModel
+                .modelEnvironment()
+                .getConfiguration()
+                .convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
             consumerConfigurationListener.removeNotifyListener(this);
             if (referenceConfigurationListener != null) {
                 referenceConfigurationListener.stop();
@@ -166,12 +198,15 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         }
 
         Map<String, List<URL>> categoryUrls = urls.stream()
-            .filter(Objects::nonNull)
-            .filter(this::isValidCategory)
-            .filter(this::isNotCompatibleFor26x)
-            .collect(Collectors.groupingBy(this::judgeCategory));
+                .filter(Objects::nonNull)
+                .filter(this::isValidCategory)
+                .filter(this::isNotCompatibleFor26x)
+                .collect(Collectors.groupingBy(this::judgeCategory));
 
-        if (moduleModel.getModelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_26X_CONFIGURATION_LISTEN, true)) {
+        if (moduleModel
+                .modelEnvironment()
+                .getConfiguration()
+                .convert(Boolean.class, ENABLE_26X_CONFIGURATION_LISTEN, true)) {
             List<URL> configuratorURLs = categoryUrls.getOrDefault(CONFIGURATORS_CATEGORY, Collections.emptyList());
             this.configurators = Configurator.toConfigurators(configuratorURLs).orElse(this.configurators);
 
@@ -183,8 +218,10 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         List<URL> providerURLs = categoryUrls.getOrDefault(PROVIDERS_CATEGORY, Collections.emptyList());
 
         // 3.x added for extend URL address
-        ExtensionLoader<AddressListener> addressListenerExtensionLoader = getUrl().getOrDefaultModuleModel().getExtensionLoader(AddressListener.class);
-        List<AddressListener> supportedListeners = addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);
+        ExtensionLoader<AddressListener> addressListenerExtensionLoader =
+                getUrl().getOrDefaultModuleModel().getExtensionLoader(AddressListener.class);
+        List<AddressListener> supportedListeners =
+                addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);
         if (supportedListeners != null && !supportedListeners.isEmpty()) {
             for (AddressListener addressListener : supportedListeners) {
                 providerURLs = addressListener.notify(providerURLs, getConsumerUrl(), this);
@@ -233,11 +270,11 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         Assert.notNull(invokerUrls, "invokerUrls should not be null");
 
         if (invokerUrls.size() == 1
-            && invokerUrls.get(0) != null
-            && EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
-            refreshRouter(BitList.emptyList(), () ->
-                this.forbidden = true // Forbid to access
-            );
+                && invokerUrls.get(0) != null
+                && EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
+            refreshRouter(
+                    BitList.emptyList(), () -> this.forbidden = true // Forbid to access
+                    );
             destroyAllInvokers(); // Close all invokers
         } else {
             this.forbidden = false; // Allow to access
@@ -250,30 +287,38 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             if (invokerUrls.isEmpty()) {
                 if (CollectionUtils.isNotEmpty(localCachedInvokerUrls)) {
                     // 1-4 Empty address.
-                    logger.warn(REGISTRY_EMPTY_ADDRESS, "configuration ", "",
-                        "Service" + serviceKey + " received empty address list with no EMPTY protocol set, trigger empty protection.");
+                    logger.warn(
+                            REGISTRY_EMPTY_ADDRESS,
+                            "configuration ",
+                            "",
+                            "Service" + serviceKey
+                                    + " received empty address list with no EMPTY protocol set, trigger empty protection.");
 
                     invokerUrls.addAll(localCachedInvokerUrls);
                 }
             } else {
                 localCachedInvokerUrls = new HashSet<>();
-                localCachedInvokerUrls.addAll(invokerUrls);//Cached invoker urls, convenient for comparison
+                localCachedInvokerUrls.addAll(invokerUrls); // Cached invoker urls, convenient for comparison
                 this.cachedInvokerUrls = localCachedInvokerUrls;
             }
             if (invokerUrls.isEmpty()) {
                 return;
             }
 
-            // use local reference to avoid NPE as this.urlInvokerMap will be set null concurrently at destroyAllInvokers().
+            // use local reference to avoid NPE as this.urlInvokerMap will be set null concurrently at
+            // destroyAllInvokers().
             Map<URL, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap;
             // can't use local reference as oldUrlInvokerMap's mappings might be removed directly at toInvokers().
             Map<URL, Invoker<T>> oldUrlInvokerMap = null;
             if (localUrlInvokerMap != null) {
-                // the initial capacity should be set greater than the maximum number of entries divided by the load factor to avoid resizing.
-                oldUrlInvokerMap = new LinkedHashMap<>(Math.round(1 + localUrlInvokerMap.size() / DEFAULT_HASHMAP_LOAD_FACTOR));
+                // the initial capacity should be set greater than the maximum number of entries divided by the load
+                // factor to avoid resizing.
+                oldUrlInvokerMap =
+                        new LinkedHashMap<>(Math.round(1 + localUrlInvokerMap.size() / DEFAULT_HASHMAP_LOAD_FACTOR));
                 localUrlInvokerMap.forEach(oldUrlInvokerMap::put);
             }
-            Map<URL, Invoker<T>> newUrlInvokerMap = toInvokers(oldUrlInvokerMap, invokerUrls);// Translate url list to Invoker map
+            Map<URL, Invoker<T>> newUrlInvokerMap =
+                    toInvokers(oldUrlInvokerMap, invokerUrls); // Translate url list to Invoker map
 
             /*
              * If the calculation is wrong, it is not processed.
@@ -288,17 +333,19 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                 // 3-1 - Failed to convert the URL address into Invokers.
 
                 logger.error(
-                    PROXY_FAILED_CONVERT_URL, "inconsistency between the client protocol and the protocol of the server",
-                    "", "urls to invokers error",
-                    new IllegalStateException(
-                        "urls to invokers error. invokerUrls.size :" +
-                            invokerUrls.size() + ", invoker.size :0. urls :" + invokerUrls.toString()));
+                        PROXY_FAILED_CONVERT_URL,
+                        "inconsistency between the client protocol and the protocol of the server",
+                        "",
+                        "urls to invokers error",
+                        new IllegalStateException("urls to invokers error. invokerUrls.size :" + invokerUrls.size()
+                                + ", invoker.size :0. urls :" + invokerUrls.toString()));
 
                 return;
             }
 
             List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
-            BitList<Invoker<T>> finalInvokers = multiGroup ? new BitList<>(toMergeInvokerList(newInvokers)) : new BitList<>(newInvokers);
+            BitList<Invoker<T>> finalInvokers =
+                    multiGroup ? new BitList<>(toMergeInvokerList(newInvokers)) : new BitList<>(newInvokers);
             // pre-route and build cache
             refreshRouter(finalInvokers.clone(), () -> this.setInvokers(finalInvokers));
             this.urlInvokerMap = newUrlInvokerMap;
@@ -313,13 +360,13 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             this.invokersChanged();
         }
 
-        logger.info("Received invokers changed event from registry. " +
-            "Registry type: interface. " +
-            "Service Key: " + getConsumerUrl().getServiceKey() + ". " +
-            "Urls Size : " + invokerUrls.size() + ". " +
-            "Invokers Size : " + getInvokers().size() + ". " +
-            "Available Size: " + getValidInvokers().size() + ". " +
-            "Available Invokers : " + joinValidInvokerAddresses());
+        logger.info("Received invokers changed event from registry. " + "Registry type: interface. "
+                + "Service Key: "
+                + getConsumerUrl().getServiceKey() + ". " + "Urls Size : "
+                + invokerUrls.size() + ". " + "Invokers Size : "
+                + getInvokers().size() + ". " + "Available Size: "
+                + getValidInvokers().size() + ". " + "Available Invokers : "
+                + joinValidInvokerAddresses());
     }
 
     private List<Invoker<T>> toMergeInvokerList(List<Invoker<T>> invokers) {
@@ -386,7 +433,8 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
      * @return invokers
      */
     private Map<URL, Invoker<T>> toInvokers(Map<URL, Invoker<T>> oldUrlInvokerMap, List<URL> urls) {
-        Map<URL, Invoker<T>> newUrlInvokerMap = new ConcurrentHashMap<>(urls == null ? 1 : (int) (urls.size() / 0.75f + 1));
+        Map<URL, Invoker<T>> newUrlInvokerMap =
+                new ConcurrentHashMap<>(urls == null ? 1 : (int) (urls.size() / 0.75f + 1));
         if (urls == null || urls.isEmpty()) {
             return newUrlInvokerMap;
         }
@@ -418,13 +466,23 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                     // Thrown by AbstractProtocol.optimizeSerialization()
                     if (t instanceof RpcException && t.getMessage().contains("serialization optimizer")) {
                         // 4-2 - serialization optimizer class initialization failed.
-                        logger.error(PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER, "typo in optimizer class", "",
-                            "Failed to refer invoker for interface:" + serviceType + ",url:(" + url + ")" + t.getMessage(), t);
+                        logger.error(
+                                PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER,
+                                "typo in optimizer class",
+                                "",
+                                "Failed to refer invoker for interface:" + serviceType + ",url:(" + url + ")"
+                                        + t.getMessage(),
+                                t);
 
                     } else {
                         // 4-3 - Failed to refer invoker by other reason.
-                        logger.error(PROTOCOL_FAILED_REFER_INVOKER, "", "",
-                            "Failed to refer invoker for interface:" + serviceType + ",url:(" + url + ")" + t.getMessage(), t);
+                        logger.error(
+                                PROTOCOL_FAILED_REFER_INVOKER,
+                                "",
+                                "",
+                                "Failed to refer invoker for interface:" + serviceType + ",url:(" + url + ")"
+                                        + t.getMessage(),
+                                t);
                     }
                 }
                 if (invoker != null) { // Put new invoker in cache
@@ -459,15 +517,23 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             return false;
         }
 
-        if (!getUrl().getOrDefaultFrameworkModel().getExtensionLoader(Protocol.class).hasExtension(providerUrl.getProtocol())) {
+        if (!getUrl().getOrDefaultFrameworkModel()
+                .getExtensionLoader(Protocol.class)
+                .hasExtension(providerUrl.getProtocol())) {
 
             // 4-1 - Unsupported protocol
 
-            logger.error(PROTOCOL_UNSUPPORTED, "protocol extension does not installed", "", "Unsupported protocol.",
-                new IllegalStateException("Unsupported protocol " + providerUrl.getProtocol() +
-                    " in notified url: " + providerUrl + " from registry " + getUrl().getAddress() +
-                    " to consumer " + NetUtils.getLocalHost() + ", supported protocol: " +
-                    getUrl().getOrDefaultFrameworkModel().getExtensionLoader(Protocol.class).getSupportedExtensions()));
+            logger.error(
+                    PROTOCOL_UNSUPPORTED,
+                    "protocol extension does not installed",
+                    "",
+                    "Unsupported protocol.",
+                    new IllegalStateException("Unsupported protocol " + providerUrl.getProtocol() + " in notified url: "
+                            + providerUrl + " from registry " + getUrl().getAddress() + " to consumer "
+                            + NetUtils.getLocalHost() + ", supported protocol: "
+                            + getUrl().getOrDefaultFrameworkModel()
+                                    .getExtensionLoader(Protocol.class)
+                                    .getSupportedExtensions()));
 
             return false;
         }
@@ -485,19 +551,26 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         if (providerUrl instanceof ServiceAddressURL) {
             providerUrl = overrideWithConfigurator(providerUrl);
         } else {
-            providerUrl = moduleModel.getApplicationModel().getBeanFactory().getBean(ClusterUtils.class).mergeUrl(providerUrl, queryMap); // Merge the consumer side parameters
+            providerUrl = moduleModel
+                    .getApplicationModel()
+                    .getBeanFactory()
+                    .getBean(ClusterUtils.class)
+                    .mergeUrl(providerUrl, queryMap); // Merge the consumer side parameters
             providerUrl = overrideWithConfigurator(providerUrl);
-            providerUrl = providerUrl.addParameter(Constants.CHECK_KEY, String.valueOf(false)); // Do not check whether the connection is successful or not, always create Invoker!
+            providerUrl = providerUrl.addParameter(
+                    Constants.CHECK_KEY,
+                    String.valueOf(
+                            false)); // Do not check whether the connection is successful or not, always create Invoker!
         }
 
         // FIXME, kept for mock
         if (providerUrl.hasParameter(MOCK_KEY) || providerUrl.getAnyMethodParameter(MOCK_KEY) != null) {
-            providerUrl = providerUrl.removeParameter(TAG_KEY);
+            providerUrl = providerUrl.removeParameter(MOCK_KEY);
         }
 
-        if ((providerUrl.getPath() == null || providerUrl.getPath()
-            .length() == 0) && DUBBO_PROTOCOL.equals(providerUrl.getProtocol())) { // Compatible version 1.0
-            //fix by tony.chenl DUBBO-44
+        if ((providerUrl.getPath() == null || providerUrl.getPath().length() == 0)
+                && DUBBO_PROTOCOL.equals(providerUrl.getProtocol())) { // Compatible version 1.0
+            // fix by tony.chenl DUBBO-44
             String path = directoryUrl.getServiceInterface();
             if (path != null) {
                 int i = path.indexOf('/');
@@ -538,18 +611,19 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                     String appName = interfaceAddressURL.getApplication();
                     String side = interfaceAddressURL.getSide();
                     overriddenURL = URLBuilder.from(interfaceAddressURL)
-                        .clearParameters()
-                        .addParameter(APPLICATION_KEY, appName)
-                        .addParameter(SIDE_KEY, side).build();
+                            .clearParameters()
+                            .addParameter(APPLICATION_KEY, appName)
+                            .addParameter(SIDE_KEY, side)
+                            .build();
                 }
                 for (Configurator configurator : configurators) {
                     overriddenURL = configurator.configure(overriddenURL);
                 }
                 url = new DubboServiceAddressURL(
-                    interfaceAddressURL.getUrlAddress(),
-                    interfaceAddressURL.getUrlParam(),
-                    interfaceAddressURL.getConsumerURL(),
-                    (ServiceConfigURL) overriddenURL);
+                        interfaceAddressURL.getUrlAddress(),
+                        interfaceAddressURL.getUrlParam(),
+                        interfaceAddressURL.getConsumerURL(),
+                        (ServiceConfigURL) overriddenURL);
             } else {
                 for (Configurator configurator : configurators) {
                     url = configurator.configure(url);
@@ -571,8 +645,12 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                     invoker.destroy();
                 } catch (Throwable t) {
                     // 1-15 - Failed to destroy service
-                    logger.warn(REGISTRY_FAILED_DESTROY_SERVICE, "", "",
-                        "Failed to destroy service " + serviceKey + " to provider " + invoker.getUrl(), t);
+                    logger.warn(
+                            REGISTRY_FAILED_DESTROY_SERVICE,
+                            "",
+                            "",
+                            "Failed to destroy service " + serviceKey + " to provider " + invoker.getUrl(),
+                            t);
                 }
             }
             localUrlInvokerMap.clear();
@@ -602,12 +680,18 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                         logger.debug("destroy invoker[" + invoker.getUrl() + "] success. ");
                     }
                 } catch (Exception e) {
-                    logger.warn(REGISTRY_FAILED_DESTROY_SERVICE, "", "", "destroy invoker[" + invoker.getUrl() + "] failed. " + e.getMessage(), e);
+                    logger.warn(
+                            REGISTRY_FAILED_DESTROY_SERVICE,
+                            "",
+                            "",
+                            "destroy invoker[" + invoker.getUrl() + "] failed. " + e.getMessage(),
+                            e);
                 }
             }
         }
 
-        logger.info("New url total size, " + newUrlInvokerMap.size() + ", destroyed total size " + oldUrlInvokerMap.size());
+        logger.info(
+                "New url total size, " + newUrlInvokerMap.size() + ", destroyed total size " + oldUrlInvokerMap.size());
     }
 
     /**
@@ -619,19 +703,35 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
 
     private boolean isValidCategory(URL url) {
         String category = url.getCategory(DEFAULT_CATEGORY);
-        if ((ROUTERS_CATEGORY.equals(category) || ROUTE_PROTOCOL.equals(url.getProtocol())) ||
-            PROVIDERS_CATEGORY.equals(category) ||
-            CONFIGURATORS_CATEGORY.equals(category) || DYNAMIC_CONFIGURATORS_CATEGORY.equals(category) ||
-            APP_DYNAMIC_CONFIGURATORS_CATEGORY.equals(category)) {
+        if ((ROUTERS_CATEGORY.equals(category) || ROUTE_PROTOCOL.equals(url.getProtocol()))
+                || PROVIDERS_CATEGORY.equals(category)
+                || CONFIGURATORS_CATEGORY.equals(category)
+                || DYNAMIC_CONFIGURATORS_CATEGORY.equals(category)
+                || APP_DYNAMIC_CONFIGURATORS_CATEGORY.equals(category)) {
             return true;
         }
 
         // 1-16 - Unsupported category in NotifyListener
-        logger.warn(REGISTRY_UNSUPPORTED_CATEGORY, "", "",
-            "Unsupported category " + category + " in notified url: " + url + " from registry " +
-                getUrl().getAddress() + " to consumer " + NetUtils.getLocalHost());
+        logger.warn(
+                REGISTRY_UNSUPPORTED_CATEGORY,
+                "",
+                "",
+                "Unsupported category " + category + " in notified url: " + url + " from registry "
+                        + getUrl().getAddress() + " to consumer " + NetUtils.getLocalHost());
 
         return false;
+    }
+
+    @Override
+    protected Map<String, String> getDirectoryMeta() {
+        String registryKey = Optional.ofNullable(getRegistry())
+                .map(Registry::getUrl)
+                .map(url -> url.getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY, url.getProtocol()))
+                .orElse("unknown");
+        Map<String, String> metas = new HashMap<>();
+        metas.put(REGISTRY_KEY, registryKey);
+        metas.put(REGISTER_MODE_KEY, INTERFACE_REGISTER_MODE);
+        return metas;
     }
 
     private boolean isNotCompatibleFor26x(URL url) {
@@ -682,4 +782,8 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         }
     }
 
+    @Override
+    public String toString() {
+        return "RegistryDirectory(" + "registry: " + getUrl().getAddress() + ")-" + super.toString();
+    }
 }

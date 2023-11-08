@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.cluster.router.condition.matcher.pattern.ValuePattern;
 import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.HashSet;
 import java.util.List;
@@ -37,7 +38,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAIL
  * provides the common match logics.
  */
 public abstract class AbstractConditionMatcher implements ConditionMatcher {
-    public static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractConditionMatcher.class);
+    public static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(AbstractConditionMatcher.class);
     public static final String DOES_NOT_FOUND_VALUE = "dubbo_internal_not_found_argument_condition_value";
     final Set<String> matches = new HashSet<>();
     final Set<String> mismatches = new HashSet<>();
@@ -51,11 +53,12 @@ public abstract class AbstractConditionMatcher implements ConditionMatcher {
         this.valueMatchers = model.getExtensionLoader(ValuePattern.class).getActivateExtensions();
     }
 
-    public static String getSampleValueFromUrl(String conditionKey, Map<String, String> sample, URL param, Invocation invocation) {
+    public static String getSampleValueFromUrl(
+            String conditionKey, Map<String, String> sample, URL param, Invocation invocation) {
         String sampleValue;
-        //get real invoked method name from invocation
+        // get real invoked method name from invocation
         if (invocation != null && (METHOD_KEY.equals(conditionKey) || METHODS_KEY.equals(conditionKey))) {
-            sampleValue = invocation.getMethodName();
+            sampleValue = RpcUtils.getMethodName(invocation);
         } else {
             sampleValue = sample.get(conditionKey);
         }
@@ -66,7 +69,8 @@ public abstract class AbstractConditionMatcher implements ConditionMatcher {
     public boolean isMatch(Map<String, String> sample, URL param, Invocation invocation, boolean isWhenCondition) {
         String value = getValue(sample, param, invocation);
         if (value == null) {
-            // if key does not present in whichever of url, invocation or attachment based on the matcher type, then return false.
+            // if key does not present in whichever of url, invocation or attachment based on the matcher type, then
+            // return false.
             return false;
         }
 
@@ -89,7 +93,7 @@ public abstract class AbstractConditionMatcher implements ConditionMatcher {
         }
 
         if (!matches.isEmpty() && !mismatches.isEmpty()) {
-            //when both mismatches and matches contain the same value, then using mismatches first
+            // when both mismatches and matches contain the same value, then using mismatches first
             for (String mismatch : mismatches) {
                 if (doPatternMatch(mismatch, value, param, invocation, isWhenCondition)) {
                     return false;
@@ -116,16 +120,23 @@ public abstract class AbstractConditionMatcher implements ConditionMatcher {
     }
 
     // range, equal or other methods
-    protected boolean doPatternMatch(String pattern, String value, URL url, Invocation invocation, boolean isWhenCondition) {
+    protected boolean doPatternMatch(
+            String pattern, String value, URL url, Invocation invocation, boolean isWhenCondition) {
         for (ValuePattern valueMatcher : valueMatchers) {
             if (valueMatcher.shouldMatch(pattern)) {
                 return valueMatcher.match(pattern, value, url, invocation, isWhenCondition);
             }
         }
         // this should never happen.
-        logger.error(CLUSTER_FAILED_EXEC_CONDITION_ROUTER, "Executing condition rule value match expression error.", "pattern is " + pattern + ", value is " + value + ", condition type " + (isWhenCondition ? "when" : "then"), "There should at least has one ValueMatcher instance that applies to all patterns, will force to use wildcard matcher now.");
+        logger.error(
+                CLUSTER_FAILED_EXEC_CONDITION_ROUTER,
+                "Executing condition rule value match expression error.",
+                "pattern is " + pattern + ", value is " + value + ", condition type "
+                        + (isWhenCondition ? "when" : "then"),
+                "There should at least has one ValueMatcher instance that applies to all patterns, will force to use wildcard matcher now.");
 
-        ValuePattern paramValueMatcher = model.getExtensionLoader(ValuePattern.class).getExtension("wildcard");
+        ValuePattern paramValueMatcher =
+                model.getExtensionLoader(ValuePattern.class).getExtension("wildcard");
         return paramValueMatcher.match(pattern, value, url, invocation, isWhenCondition);
     }
 
@@ -134,5 +145,4 @@ public abstract class AbstractConditionMatcher implements ConditionMatcher {
      * This makes condition rule possible to check values in any place of a request.
      */
     protected abstract String getValue(Map<String, String> sample, URL url, Invocation invocation);
-
 }

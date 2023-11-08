@@ -54,7 +54,7 @@ public class ModuleEnvironment extends Environment implements ModuleExt {
     public ModuleEnvironment(ModuleModel moduleModel) {
         super(moduleModel);
         this.moduleModel = moduleModel;
-        this.applicationDelegate = moduleModel.getApplicationModel().getModelEnvironment();
+        this.applicationDelegate = moduleModel.getApplicationModel().modelEnvironment();
     }
 
     @Override
@@ -99,7 +99,11 @@ public class ModuleEnvironment extends Environment implements ModuleExt {
         if (dynamicGlobalConfiguration == null) {
             if (dynamicConfiguration == null) {
                 if (logger.isWarnEnabled()) {
-                    logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "dynamicConfiguration is null , return globalConfiguration.");
+                    logger.warn(
+                            COMMON_UNEXPECTED_EXCEPTION,
+                            "",
+                            "",
+                            "dynamicConfiguration is null , return globalConfiguration.");
                 }
                 return getConfiguration();
             }

@@ -109,7 +109,12 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
             try {
                 listener.onStarting(scopeModel);
             } catch (Throwable e) {
-                logger.error(COMMON_MONITOR_EXCEPTION, "", "", getIdentifier() + " an exception occurred when handle starting event", e);
+                logger.error(
+                        COMMON_MONITOR_EXCEPTION,
+                        "",
+                        "",
+                        getIdentifier() + " an exception occurred when handle starting event",
+                        e);
             }
         }
     }
@@ -120,7 +125,12 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
             try {
                 listener.onStarted(scopeModel);
             } catch (Throwable e) {
-                logger.error(COMMON_MONITOR_EXCEPTION, "", "", getIdentifier() + " an exception occurred when handle started event", e);
+                logger.error(
+                        COMMON_MONITOR_EXCEPTION,
+                        "",
+                        "",
+                        getIdentifier() + " an exception occurred when handle started event",
+                        e);
             }
         }
     }
@@ -131,7 +141,12 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
             try {
                 listener.onStopping(scopeModel);
             } catch (Throwable e) {
-                logger.error(COMMON_MONITOR_EXCEPTION, "", "", getIdentifier() + " an exception occurred when handle stopping event", e);
+                logger.error(
+                        COMMON_MONITOR_EXCEPTION,
+                        "",
+                        "",
+                        getIdentifier() + " an exception occurred when handle stopping event",
+                        e);
             }
         }
     }
@@ -142,7 +157,12 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
             try {
                 listener.onStopped(scopeModel);
             } catch (Throwable e) {
-                logger.error(COMMON_MONITOR_EXCEPTION, "", "", getIdentifier() + " an exception occurred when handle stopped event", e);
+                logger.error(
+                        COMMON_MONITOR_EXCEPTION,
+                        "",
+                        "",
+                        getIdentifier() + " an exception occurred when handle stopped event",
+                        e);
             }
         }
     }
@@ -154,7 +174,12 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
             try {
                 listener.onFailure(scopeModel, error);
             } catch (Throwable e) {
-                logger.error(COMMON_MONITOR_EXCEPTION, "", "", getIdentifier() + " an exception occurred when handle failed event", e);
+                logger.error(
+                        COMMON_MONITOR_EXCEPTION,
+                        "",
+                        "",
+                        getIdentifier() + " an exception occurred when handle failed event",
+                        e);
             }
         }
     }

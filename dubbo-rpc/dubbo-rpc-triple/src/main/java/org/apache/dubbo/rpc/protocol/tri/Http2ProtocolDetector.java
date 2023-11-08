@@ -27,7 +27,7 @@ import static java.lang.Math.min;
 
 public class Http2ProtocolDetector implements ProtocolDetector {
     private final ChannelBuffer clientPrefaceString = new ByteBufferBackedChannelBuffer(
-        Http2CodecUtil.connectionPrefaceBuf().nioBuffer());
+            Http2CodecUtil.connectionPrefaceBuf().nioBuffer());
 
     @Override
     public Result detect(ChannelBuffer in) {

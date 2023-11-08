@@ -58,6 +58,7 @@ import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_W
 import static org.apache.dubbo.common.constants.QosConstants.ANONYMOUS_ACCESS_ALLOW_COMMANDS;
 import static org.apache.dubbo.common.constants.QosConstants.ANONYMOUS_ACCESS_PERMISSION_LEVEL;
 import static org.apache.dubbo.common.constants.QosConstants.ANONYMOUS_ACCESS_PERMISSION_LEVEL_COMPATIBLE;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_CHECK;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
@@ -124,6 +125,7 @@ public class ApplicationConfig extends AbstractConfig {
      * Registry centers
      */
     private List<RegistryConfig> registries;
+
     private String registryIds;
 
     /**
@@ -145,6 +147,11 @@ public class ApplicationConfig extends AbstractConfig {
      * Whether to enable qos or not
      */
     private Boolean qosEnable;
+
+    /**
+     * Whether qos should start success or not, will check qosEnable first
+     */
+    private Boolean qosCheck;
 
     /**
      * The qos host to listen
@@ -249,8 +256,7 @@ public class ApplicationConfig extends AbstractConfig {
      */
     private String executorManagementMode;
 
-    public ApplicationConfig() {
-    }
+    public ApplicationConfig() {}
 
     public ApplicationConfig(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -275,7 +281,7 @@ public class ApplicationConfig extends AbstractConfig {
             try {
                 hostname = InetAddress.getLocalHost().getHostName();
             } catch (UnknownHostException e) {
-                LOGGER.warn(COMMON_UNEXPECTED_EXCEPTION,"","","Failed to get the hostname of current instance.", e);
+                LOGGER.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "Failed to get the hostname of current instance.", e);
                 hostname = "UNKNOWN";
             }
         }
@@ -334,16 +340,18 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setEnvironment(String environment) {
-        if (environment != null && !(DEVELOPMENT_ENVIRONMENT.equals(environment)
-            || TEST_ENVIRONMENT.equals(environment)
-            || PRODUCTION_ENVIRONMENT.equals(environment))) {
+        if (environment != null
+                && !(DEVELOPMENT_ENVIRONMENT.equals(environment)
+                        || TEST_ENVIRONMENT.equals(environment)
+                        || PRODUCTION_ENVIRONMENT.equals(environment))) {
 
-            throw new IllegalStateException(String.format("Unsupported environment: %s, only support %s/%s/%s, default is %s.",
-                environment,
-                DEVELOPMENT_ENVIRONMENT,
-                TEST_ENVIRONMENT,
-                PRODUCTION_ENVIRONMENT,
-                PRODUCTION_ENVIRONMENT));
+            throw new IllegalStateException(String.format(
+                    "Unsupported environment: %s, only support %s/%s/%s, default is %s.",
+                    environment,
+                    DEVELOPMENT_ENVIRONMENT,
+                    TEST_ENVIRONMENT,
+                    PRODUCTION_ENVIRONMENT,
+                    PRODUCTION_ENVIRONMENT));
         }
         this.environment = environment;
     }
@@ -431,6 +439,15 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setQosEnable(Boolean qosEnable) {
         this.qosEnable = qosEnable;
+    }
+
+    @Parameter(key = QOS_CHECK)
+    public Boolean getQosCheck() {
+        return qosCheck;
+    }
+
+    public void setQosCheck(Boolean qosCheck) {
+        this.qosCheck = qosCheck;
     }
 
     @Parameter(key = QOS_HOST)
@@ -661,7 +678,6 @@ public class ApplicationConfig extends AbstractConfig {
         this.metadataServiceProtocol = metadataServiceProtocol;
     }
 
-
     @Parameter(key = LIVENESS_PROBE_KEY)
     public String getLivenessProbe() {
         return livenessProbe;
@@ -688,7 +704,6 @@ public class ApplicationConfig extends AbstractConfig {
     public void setStartupProbe(String startupProbe) {
         this.startupProbe = startupProbe;
     }
-
 
     public String getSerializeCheckStatus() {
         return serializeCheckStatus;

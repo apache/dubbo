@@ -18,6 +18,8 @@ package org.apache.dubbo.spring.boot.actuate.health;
 
 import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfig;
 
+import java.util.Map;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,8 +31,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.Map;
-
 /**
  * {@link DubboHealthIndicator} Test
  *
@@ -38,24 +38,20 @@ import java.util.Map;
  * @since 2.7.0
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource(properties = {
-        "dubbo.application.id = my-application-1",
-        "dubbo.application.name = dubbo-demo-application-1",
-        "dubbo.protocol.id = dubbo-protocol",
-        "dubbo.protocol.name = dubbo",
-        "dubbo.protocol.port = 12345",
-        "dubbo.protocol.status = registry",
-        "dubbo.provider.id = dubbo-provider",
-        "dubbo.provider.status = server",
-        "management.health.dubbo.status.defaults = memory",
-        "management.health.dubbo.status.extras = load,threadpool"
-})
-@SpringBootTest(
-        classes = {
-                DubboHealthIndicator.class,
-                DubboHealthIndicatorTest.class
-        }
-)
+@TestPropertySource(
+        properties = {
+            "dubbo.application.id = my-application-1",
+            "dubbo.application.name = dubbo-demo-application-1",
+            "dubbo.protocol.id = dubbo-protocol",
+            "dubbo.protocol.name = dubbo",
+            "dubbo.protocol.port = 12345",
+            "dubbo.protocol.status = registry",
+            "dubbo.provider.id = dubbo-provider",
+            "dubbo.provider.status = server",
+            "management.health.dubbo.status.defaults = memory",
+            "management.health.dubbo.status.extras = load,threadpool"
+        })
+@SpringBootTest(classes = {DubboHealthIndicator.class, DubboHealthIndicatorTest.class})
 @EnableConfigurationProperties(DubboHealthIndicatorProperties.class)
 @EnableDubboConfig
 public class DubboHealthIndicatorTest {
@@ -75,7 +71,6 @@ public class DubboHealthIndicatorTest {
         Assert.assertEquals("management.health.dubbo.status.defaults", statusCheckerNamesMap.get("memory"));
         Assert.assertEquals("management.health.dubbo.status.extras", statusCheckerNamesMap.get("load"));
         Assert.assertEquals("management.health.dubbo.status.extras", statusCheckerNamesMap.get("threadpool"));
-
     }
 
     @Test
@@ -84,6 +79,5 @@ public class DubboHealthIndicatorTest {
         Health health = dubboHealthIndicator.health();
 
         Assert.assertEquals(Status.UNKNOWN, health.getStatus());
-
     }
 }

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.merger;
 
 import org.apache.dubbo.common.utils.ArrayUtils;
@@ -30,7 +29,8 @@ public class DoubleArrayMerger implements Merger<double[]> {
         if (ArrayUtils.isEmpty(items)) {
             return new double[0];
         }
-        return Arrays.stream(items).filter(Objects::nonNull)
+        return Arrays.stream(items)
+                .filter(Objects::nonNull)
                 .flatMapToDouble(Arrays::stream)
                 .toArray();
     }

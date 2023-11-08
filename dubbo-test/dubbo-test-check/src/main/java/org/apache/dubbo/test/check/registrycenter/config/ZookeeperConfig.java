@@ -71,7 +71,7 @@ public class ZookeeperConfig implements Config {
     /**
      * The default admin server ports of zookeeper.
      */
-    private static final int[] DEFAULT_ADMIN_SERVER_PORTS = new int[]{18081, 18082};
+    private static final int[] DEFAULT_ADMIN_SERVER_PORTS = new int[] {18081, 18082};
 
     /**
      * The default version of zookeeper.
@@ -91,7 +91,8 @@ public class ZookeeperConfig implements Config {
         // with the key of {@link #ZOOKEEPER_PORT_1_KEY} first, and then {@link #ZOOKEEPER_PORT_KEY},
         // finally use {@link #DEFAULT_CLIENT_PORT_1} as default port
 
-        // The priority of the other is that get it from system properties config with the key of {@link #ZOOKEEPER_PORT_2_KEY} first,
+        // The priority of the other is that get it from system properties config with the key of {@link
+        // #ZOOKEEPER_PORT_2_KEY} first,
         // and then use {@link #DEFAULT_CLIENT_PORT_2} as default port
 
         int port1 = DEFAULT_CLIENT_PORT_1;
@@ -115,7 +116,8 @@ public class ZookeeperConfig implements Config {
         }
 
         if (port1 == port2) {
-            throw new IllegalArgumentException(String.format("The client ports %d and %d of zookeeper cannot be same!", port1, port2));
+            throw new IllegalArgumentException(
+                    String.format("The client ports %d and %d of zookeeper cannot be same!", port1, port2));
         }
 
         CLIENT_PORTS[0] = port1;
@@ -123,8 +125,10 @@ public class ZookeeperConfig implements Config {
 
         // set system properties config
         System.setProperty(ZOOKEEPER_CONNECTION_ADDRESS_KEY, String.format(CONNECTION_ADDRESS_FORMAT, CLIENT_PORTS[0]));
-        System.setProperty(ZOOKEEPER_CONNECTION_ADDRESS_1_KEY, String.format(CONNECTION_ADDRESS_FORMAT, CLIENT_PORTS[0]));
-        System.setProperty(ZOOKEEPER_CONNECTION_ADDRESS_2_KEY, String.format(CONNECTION_ADDRESS_FORMAT, CLIENT_PORTS[1]));
+        System.setProperty(
+                ZOOKEEPER_CONNECTION_ADDRESS_1_KEY, String.format(CONNECTION_ADDRESS_FORMAT, CLIENT_PORTS[0]));
+        System.setProperty(
+                ZOOKEEPER_CONNECTION_ADDRESS_2_KEY, String.format(CONNECTION_ADDRESS_FORMAT, CLIENT_PORTS[1]));
     }
 
     @Override

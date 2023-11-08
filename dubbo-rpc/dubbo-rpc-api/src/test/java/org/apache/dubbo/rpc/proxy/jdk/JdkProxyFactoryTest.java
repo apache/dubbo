@@ -23,5 +23,4 @@ class JdkProxyFactoryTest extends AbstractProxyTest {
     static {
         factory = new JdkProxyFactory();
     }
-
 }

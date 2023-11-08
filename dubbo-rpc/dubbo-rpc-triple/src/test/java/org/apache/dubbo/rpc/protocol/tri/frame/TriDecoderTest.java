@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.frame;
 
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
@@ -50,5 +49,4 @@ class TriDecoderTest {
         Assertions.assertEquals(2, listener.lastData.length);
         decoder.close();
     }
-
 }

@@ -14,12 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.register;
 
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tag;
-import io.micrometer.core.instrument.Timer;
 import org.apache.dubbo.config.nested.HistogramConfig;
 import org.apache.dubbo.metrics.sample.HistogramMetricSample;
 
@@ -27,6 +23,10 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Timer;
 
 public class HistogramMetricRegister implements MetricRegister<HistogramMetricSample, Timer> {
 
@@ -49,7 +49,9 @@ public class HistogramMetricRegister implements MetricRegister<HistogramMetricSa
             tags.add(Tag.of(k, v));
         });
 
-        Timer.Builder builder = Timer.builder(sample.getName()).description(sample.getDescription()).tags(tags);
+        Timer.Builder builder = Timer.builder(sample.getName())
+                .description(sample.getDescription())
+                .tags(tags);
 
         if (Boolean.TRUE.equals(config.getEnabledPercentiles())) {
             builder.publishPercentileHistogram(true);
@@ -60,8 +62,8 @@ public class HistogramMetricRegister implements MetricRegister<HistogramMetricSa
         }
 
         if (config.getBucketsMs() != null) {
-            builder.serviceLevelObjectives(Arrays.stream(config.getBucketsMs())
-                .map(Duration::ofMillis).toArray(Duration[]::new));
+            builder.serviceLevelObjectives(
+                    Arrays.stream(config.getBucketsMs()).map(Duration::ofMillis).toArray(Duration[]::new));
         }
 
         if (config.getMinExpectedMs() != null) {

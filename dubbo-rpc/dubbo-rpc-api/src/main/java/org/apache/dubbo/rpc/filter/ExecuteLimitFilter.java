@@ -26,11 +26,11 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcStatus;
 import org.apache.dubbo.rpc.service.GenericService;
+import org.apache.dubbo.rpc.support.RpcUtils;
+
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
-
 import static org.apache.dubbo.rpc.Constants.EXECUTES_KEY;
-
 
 /**
  * The maximum parallel execution request count per method per service for the provider.If the max configured
@@ -45,13 +45,14 @@ public class ExecuteLimitFilter implements Filter, Filter.Listener {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         URL url = invoker.getUrl();
-        String methodName = invocation.getMethodName();
+        String methodName = RpcUtils.getMethodName(invocation);
         int max = url.getMethodParameter(methodName, EXECUTES_KEY, 0);
         if (!RpcStatus.beginCount(url, methodName, max)) {
-            throw new RpcException(RpcException.LIMIT_EXCEEDED_EXCEPTION,
-                    "Failed to invoke method " + invocation.getMethodName() + " in provider " +
-                            url + ", cause: The service using threads greater than <dubbo:service executes=\"" + max +
-                            "\" /> limited.");
+            throw new RpcException(
+                    RpcException.LIMIT_EXCEEDED_EXCEPTION,
+                    "Failed to invoke method " + RpcUtils.getMethodName(invocation) + " in provider " + url
+                            + ", cause: The service using threads greater than <dubbo:service executes=\"" + max
+                            + "\" /> limited.");
         }
 
         invocation.put(EXECUTE_LIMIT_FILTER_START_TIME, System.currentTimeMillis());
@@ -83,10 +84,11 @@ public class ExecuteLimitFilter implements Filter, Filter.Listener {
     }
 
     private String getRealMethodName(Invoker<?> invoker, Invocation invocation) {
-        if ((invocation.getMethodName().equals($INVOKE) || invocation.getMethodName().equals($INVOKE_ASYNC))
-            && invocation.getArguments() != null
-            && invocation.getArguments().length == 3
-            && !GenericService.class.isAssignableFrom(invoker.getInterface())) {
+        if ((invocation.getMethodName().equals($INVOKE)
+                        || invocation.getMethodName().equals($INVOKE_ASYNC))
+                && invocation.getArguments() != null
+                && invocation.getArguments().length == 3
+                && !GenericService.class.isAssignableFrom(invoker.getInterface())) {
             return ((String) invocation.getArguments()[0]).trim();
         }
         return invocation.getMethodName();

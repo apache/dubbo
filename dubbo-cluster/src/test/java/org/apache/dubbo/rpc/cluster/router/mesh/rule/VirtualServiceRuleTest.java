@@ -14,29 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.rule;
 
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.DubboRoute;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.DubboRouteDetail;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.VirtualServiceRule;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.yaml.snakeyaml.Yaml;
-
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-
 
 class VirtualServiceRuleTest {
 
     @Test
     void parserTest() {
         Yaml yaml = new Yaml();
-        VirtualServiceRule virtualServiceRule = yaml.loadAs(this.getClass().getClassLoader().getResourceAsStream("VirtualServiceTest.yaml"), VirtualServiceRule.class);
+        VirtualServiceRule virtualServiceRule = yaml.loadAs(
+                this.getClass().getClassLoader().getResourceAsStream("VirtualServiceTest.yaml"),
+                VirtualServiceRule.class);
 
         System.out.println(virtualServiceRule);
         assertNotNull(virtualServiceRule);
@@ -64,19 +64,31 @@ class VirtualServiceRuleTest {
         DubboRouteDetail thirdDubboRouteDetail = routedetail.get(2);
 
         assertEquals("xxx-project", firstDubboRouteDetail.getName());
-        assertEquals("xxx", firstDubboRouteDetail.getMatch().get(0).getSourceLabels().get("trafficLabel"));
-        assertEquals("demo", firstDubboRouteDetail.getRoute().get(0).getDestination().getHost());
-        assertEquals("isolation", firstDubboRouteDetail.getRoute().get(0).getDestination().getSubset());
+        assertEquals(
+                "xxx", firstDubboRouteDetail.getMatch().get(0).getSourceLabels().get("trafficLabel"));
+        assertEquals(
+                "demo", firstDubboRouteDetail.getRoute().get(0).getDestination().getHost());
+        assertEquals(
+                "isolation",
+                firstDubboRouteDetail.getRoute().get(0).getDestination().getSubset());
 
         assertEquals("testing-trunk", secondDubboRouteDetail.getName());
-        assertEquals("testing-trunk", secondDubboRouteDetail.getMatch().get(0).getSourceLabels().get("trafficLabel"));
-        assertEquals("demo", secondDubboRouteDetail.getRoute().get(0).getDestination().getHost());
-        assertEquals("testing-trunk", secondDubboRouteDetail.getRoute().get(0).getDestination().getSubset());
+        assertEquals(
+                "testing-trunk",
+                secondDubboRouteDetail.getMatch().get(0).getSourceLabels().get("trafficLabel"));
+        assertEquals(
+                "demo",
+                secondDubboRouteDetail.getRoute().get(0).getDestination().getHost());
+        assertEquals(
+                "testing-trunk",
+                secondDubboRouteDetail.getRoute().get(0).getDestination().getSubset());
 
         assertEquals("testing", thirdDubboRouteDetail.getName());
         assertNull(thirdDubboRouteDetail.getMatch());
-        assertEquals("demo", thirdDubboRouteDetail.getRoute().get(0).getDestination().getHost());
-        assertEquals("testing", thirdDubboRouteDetail.getRoute().get(0).getDestination().getSubset());
+        assertEquals(
+                "demo", thirdDubboRouteDetail.getRoute().get(0).getDestination().getHost());
+        assertEquals(
+                "testing",
+                thirdDubboRouteDetail.getRoute().get(0).getDestination().getSubset());
     }
-
 }

@@ -45,7 +45,8 @@ public class ObservationReceiverFilter implements Filter, BaseFilter.Listener, S
         applicationModel.getApplicationConfigManager().getTracing().ifPresent(cfg -> {
             if (Boolean.TRUE.equals(cfg.getEnabled())) {
                 observationRegistry = applicationModel.getBeanFactory().getBean(ObservationRegistry.class);
-                serverObservationConvention = applicationModel.getBeanFactory().getBean(DubboServerObservationConvention.class);
+                serverObservationConvention =
+                        applicationModel.getBeanFactory().getBean(DubboServerObservationConvention.class);
             }
         });
     }
@@ -59,7 +60,8 @@ public class ObservationReceiverFilter implements Filter, BaseFilter.Listener, S
         final Observation observation = DubboObservationDocumentation.SERVER.observation(
                 this.serverObservationConvention,
                 DefaultDubboServerObservationConvention.getInstance(),
-                () -> receiverContext, observationRegistry);
+                () -> receiverContext,
+                observationRegistry);
         invocation.put(Observation.class, observation.start());
         return observation.scoped(() -> invoker.invoke(invocation));
     }

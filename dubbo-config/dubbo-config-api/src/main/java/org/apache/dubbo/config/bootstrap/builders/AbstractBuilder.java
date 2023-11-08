@@ -50,7 +50,8 @@ public abstract class AbstractBuilder<C extends AbstractConfig, B extends Abstra
         return parameters;
     }
 
-    protected static Map<String, String> appendParameters(Map<String, String> parameters, Map<String, String> appendParameters) {
+    protected static Map<String, String> appendParameters(
+            Map<String, String> parameters, Map<String, String> appendParameters) {
         if (parameters == null) {
             parameters = new HashMap<>();
         }

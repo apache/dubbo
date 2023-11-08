@@ -16,8 +16,10 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.mvc;
 
-
 import org.apache.dubbo.rpc.protocol.rest.User;
+
+import java.util.List;
+
 import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,8 +27,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import java.util.List;
 
 @RequestMapping("/demoService")
 public interface SpringRestDemoService {
@@ -41,10 +41,16 @@ public interface SpringRestDemoService {
 
     boolean isCalled();
 
-    @RequestMapping(value = "/testFormBody", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @RequestMapping(
+            value = "/testFormBody",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     String testFormBody(@RequestBody User user);
 
-    @RequestMapping(value = "/testFormMapBody", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @RequestMapping(
+            value = "/testFormMapBody",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     List<String> testFormMapBody(@RequestBody LinkedMultiValueMap map);
 
     @RequestMapping(value = "/testHeader", method = RequestMethod.POST, consumes = MediaType.TEXT_PLAIN_VALUE)
@@ -61,7 +67,6 @@ public interface SpringRestDemoService {
 
     @RequestMapping(method = RequestMethod.GET, value = "/primitiveByte")
     long primitiveByte(@RequestParam("a") byte a, @RequestParam("b") Long b);
-
 
     @RequestMapping(method = RequestMethod.POST, value = "/primitiveShort")
     long primitiveShort(@RequestParam("a") short a, @RequestParam("b") Long b, @RequestBody int c);

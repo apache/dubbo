@@ -520,6 +520,11 @@
                 <xsd:documentation><![CDATA[ Whether to enable qos or not. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="qos-check" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Whether qos should start success or not, will check qosEnable first. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="qos-host" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The qos host to listen. ]]></xsd:documentation>
@@ -622,6 +627,11 @@
         <xsd:attribute name="export-thread-num" type="xsd:boolean">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Thread num for asynchronous export pool size. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="check-reference-timeout" type="xsd:long">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The timeout to check references. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
@@ -1102,6 +1112,11 @@
         <xsd:attribute name="enable-rpc" type="xsd:boolean" default="true">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Enable record rpc metrics. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="rpc-level" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Is the metric for rpc requests at the METHOD level or SERVICE level ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>

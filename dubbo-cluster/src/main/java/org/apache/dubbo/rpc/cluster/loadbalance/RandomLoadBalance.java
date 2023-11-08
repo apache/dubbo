@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -77,7 +78,8 @@ public class RandomLoadBalance extends AbstractLoadBalance {
             }
         }
         if (totalWeight > 0 && !sameWeight) {
-            // If (not every invoker has the same weight & at least one invoker's weight>0), select randomly based on totalWeight.
+            // If (not every invoker has the same weight & at least one invoker's weight>0), select randomly based on
+            // totalWeight.
             int offset = ThreadLocalRandom.current().nextInt(totalWeight);
             // Return an invoker based on the random value.
             if (length <= 4) {
@@ -91,7 +93,7 @@ public class RandomLoadBalance extends AbstractLoadBalance {
                 if (i < 0) {
                     i = -i - 1;
                 } else {
-                    while (weights[i+1] == offset) {
+                    while (weights[i + 1] == offset) {
                         i++;
                     }
                     i++;
@@ -115,7 +117,7 @@ public class RandomLoadBalance extends AbstractLoadBalance {
             String weight = invokerUrl.getParameter(WEIGHT_KEY);
             return StringUtils.isNotEmpty(weight);
         } else {
-            String weight = invokerUrl.getMethodParameter(invocation.getMethodName(), WEIGHT_KEY);
+            String weight = invokerUrl.getMethodParameter(RpcUtils.getMethodName(invocation), WEIGHT_KEY);
             if (StringUtils.isNotEmpty(weight)) {
                 return true;
             } else {

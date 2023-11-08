@@ -48,19 +48,16 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @TestPropertySource(
         properties = {
-                "dubbo.application.name = dubbo-demo-application",
-                "dubbo.module.name = dubbo-demo-module",
-                "dubbo.registry.address = zookeeper://192.168.99.100:32770",
-                "dubbo.protocol.name=dubbo",
-                "dubbo.protocol.port=20880",
-                "dubbo.monitor.address=zookeeper://127.0.0.1:32770",
-                "dubbo.provider.host=127.0.0.1",
-                "dubbo.consumer.client=netty"
-        }
-)
-@SpringBootTest(
-        classes = {DubboAutoConfigurationOnSingleConfigTest.class}
-)
+            "dubbo.application.name = dubbo-demo-application",
+            "dubbo.module.name = dubbo-demo-module",
+            "dubbo.registry.address = zookeeper://192.168.99.100:32770",
+            "dubbo.protocol.name=dubbo",
+            "dubbo.protocol.port=20880",
+            "dubbo.monitor.address=zookeeper://127.0.0.1:32770",
+            "dubbo.provider.host=127.0.0.1",
+            "dubbo.consumer.client=netty"
+        })
+@SpringBootTest(classes = {DubboAutoConfigurationOnSingleConfigTest.class})
 @EnableAutoConfiguration
 public class DubboAutoConfigurationOnSingleConfigTest {
 
@@ -105,28 +102,24 @@ public class DubboAutoConfigurationOnSingleConfigTest {
     public void testApplicationConfig() {
 
         Assert.assertEquals("dubbo-demo-application", applicationConfig.getName());
-
     }
 
     @Test
     public void testModuleConfig() {
 
         Assert.assertEquals("dubbo-demo-module", moduleConfig.getName());
-
     }
 
     @Test
     public void testRegistryConfig() {
 
         Assert.assertEquals("zookeeper://192.168.99.100:32770", registryConfig.getAddress());
-
     }
 
     @Test
     public void testMonitorConfig() {
 
         Assert.assertEquals("zookeeper://127.0.0.1:32770", monitorConfig.getAddress());
-
     }
 
     @Test
@@ -134,20 +127,17 @@ public class DubboAutoConfigurationOnSingleConfigTest {
 
         Assert.assertEquals("dubbo", protocolConfig.getName());
         Assert.assertEquals(Integer.valueOf(20880), protocolConfig.getPort());
-
     }
 
     @Test
     public void testProviderConfig() {
 
         Assert.assertEquals("127.0.0.1", providerConfig.getHost());
-
     }
 
     @Test
     public void testConsumerConfig() {
 
         Assert.assertEquals("netty", consumerConfig.getClient());
-
     }
 }

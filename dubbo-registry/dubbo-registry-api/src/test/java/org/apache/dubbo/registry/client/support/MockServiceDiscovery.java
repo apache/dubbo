@@ -16,15 +16,15 @@
  */
 package org.apache.dubbo.registry.client.support;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.metadata.store.MetaCacheManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 public class MockServiceDiscovery extends AbstractServiceDiscovery {
     public MockServiceDiscovery(ApplicationModel applicationModel, URL registryURL) {
@@ -36,19 +36,13 @@ public class MockServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     @Override
-    public void doRegister(ServiceInstance serviceInstance) throws RuntimeException {
-
-    }
+    public void doRegister(ServiceInstance serviceInstance) throws RuntimeException {}
 
     @Override
-    public void doUnregister(ServiceInstance serviceInstance) {
-
-    }
+    public void doUnregister(ServiceInstance serviceInstance) {}
 
     @Override
-    public void doDestroy() throws Exception {
-
-    }
+    public void doDestroy() throws Exception {}
 
     @Override
     public Set<String> getServices() {

@@ -68,10 +68,8 @@ public class ExpiringCache implements Cache {
      * @param key Unique identifier for cache lookup
      * @return Return stored object against key
      */
-
     @Override
     public Object get(Object key) {
         return store.get(key);
     }
-
 }

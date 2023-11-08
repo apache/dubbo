@@ -24,16 +24,16 @@ import org.apache.dubbo.registry.status.RegistryStatusChecker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -127,8 +127,7 @@ class ZookeeperRegistryTest {
             zookeeperRegistry.lookup(null);
             fail();
         } catch (IllegalArgumentException expected) {
-            assertThat(expected.getMessage(),
-                containsString("lookup url == null"));
+            assertThat(expected.getMessage(), containsString("lookup url == null"));
         }
     }
 
@@ -141,9 +140,9 @@ class ZookeeperRegistryTest {
     @Disabled
     @Test
     /*
-      This UT is unstable, consider remove it later.
-      @see https://github.com/apache/dubbo/issues/1787
-     */
+     This UT is unstable, consider remove it later.
+     @see https://github.com/apache/dubbo/issues/1787
+    */
     public void testStatusChecker() {
         RegistryStatusChecker registryStatusChecker = new RegistryStatusChecker(ApplicationModel.defaultModel());
         Status status = registryStatusChecker.check();
@@ -175,7 +174,6 @@ class ZookeeperRegistryTest {
         assertThat(zookeeperRegistry.isAvailable(), is(false));
     }
 
-
     @Test
     void testDoRegisterWithException() {
         Assertions.assertThrows(RpcException.class, () -> {
@@ -194,7 +192,6 @@ class ZookeeperRegistryTest {
 
     @Test
     void testDoSubscribeWithException() {
-        Assertions.assertThrows(RpcException.class,
-            () -> zookeeperRegistry.doSubscribe(anyUrl, listener));
+        Assertions.assertThrows(RpcException.class, () -> zookeeperRegistry.doSubscribe(anyUrl, listener));
     }
 }

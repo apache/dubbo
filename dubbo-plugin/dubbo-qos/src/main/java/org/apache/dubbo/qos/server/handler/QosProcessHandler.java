@@ -20,6 +20,9 @@ import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.qos.api.QosConfiguration;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -34,9 +37,6 @@ import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.CharsetUtil;
 import io.netty.util.concurrent.ScheduledFuture;
-
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public class QosProcessHandler extends ByteToMessageDecoder {
 
@@ -55,13 +55,17 @@ public class QosProcessHandler extends ByteToMessageDecoder {
 
     @Override
     public void channelActive(final ChannelHandlerContext ctx) throws Exception {
-        welcomeFuture = ctx.executor().schedule(() -> {
-            final String welcome = qosConfiguration.getWelcome();
-            if (welcome != null) {
-                ctx.write(Unpooled.wrappedBuffer(welcome.getBytes()));
-                ctx.writeAndFlush(Unpooled.wrappedBuffer(PROMPT.getBytes()));
-            }
-        }, 500, TimeUnit.MILLISECONDS);
+        welcomeFuture = ctx.executor()
+                .schedule(
+                        () -> {
+                            final String welcome = qosConfiguration.getWelcome();
+                            if (welcome != null) {
+                                ctx.write(Unpooled.wrappedBuffer(welcome.getBytes()));
+                                ctx.writeAndFlush(Unpooled.wrappedBuffer(PROMPT.getBytes()));
+                            }
+                        },
+                        500,
+                        TimeUnit.MILLISECONDS);
     }
 
     @Override

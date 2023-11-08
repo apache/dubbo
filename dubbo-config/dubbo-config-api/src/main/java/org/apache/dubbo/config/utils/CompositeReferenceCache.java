@@ -34,7 +34,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_API_W
  */
 public class CompositeReferenceCache implements ReferenceCache {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(CompositeReferenceCache.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(CompositeReferenceCache.class);
 
     private final ApplicationModel applicationModel;
 
@@ -46,15 +47,20 @@ public class CompositeReferenceCache implements ReferenceCache {
     public <T> T get(ReferenceConfigBase<T> referenceConfig, boolean check) {
 
         Class<?> type = referenceConfig.getInterfaceClass();
-        String key = BaseServiceMetadata.buildServiceKey(type.getName(), referenceConfig.getGroup(), referenceConfig.getVersion());
+        String key = BaseServiceMetadata.buildServiceKey(
+                type.getName(), referenceConfig.getGroup(), referenceConfig.getVersion());
 
         boolean singleton = referenceConfig.getSingleton() == null || referenceConfig.getSingleton();
         T proxy = null;
         if (singleton) {
             proxy = get(key, (Class<T>) type);
         } else {
-            logger.warn(CONFIG_API_WRONG_USE, "the api method is being used incorrectly", "", "Using non-singleton ReferenceConfig and ReferenceCache at the same time may cause memory leak. " +
-                "Call ReferenceConfig#get() directly for non-singleton ReferenceConfig instead of using ReferenceCache#get(ReferenceConfig)");
+            logger.warn(
+                    CONFIG_API_WRONG_USE,
+                    "the api method is being used incorrectly",
+                    "",
+                    "Using non-singleton ReferenceConfig and ReferenceCache at the same time may cause memory leak. "
+                            + "Call ReferenceConfig#get() directly for non-singleton ReferenceConfig instead of using ReferenceCache#get(ReferenceConfig)");
         }
         if (proxy == null) {
             proxy = referenceConfig.get(check);

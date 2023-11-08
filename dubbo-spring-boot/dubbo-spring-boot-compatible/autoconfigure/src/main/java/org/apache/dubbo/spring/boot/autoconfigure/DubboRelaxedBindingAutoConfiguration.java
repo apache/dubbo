@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.spring.boot.autoconfigure;
 
+import java.util.Set;
+
 import com.alibaba.spring.context.config.ConfigurationBeanBinder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -26,8 +28,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.PropertyResolver;
-
-import java.util.Set;
 
 import static java.util.Collections.emptySet;
 import static org.apache.dubbo.spring.boot.util.DubboUtils.BASE_PACKAGES_BEAN_NAME;
@@ -69,5 +69,4 @@ public class DubboRelaxedBindingAutoConfiguration {
     public ConfigurationBeanBinder relaxedDubboConfigBinder() {
         return new RelaxedDubboConfigBinder();
     }
-
 }

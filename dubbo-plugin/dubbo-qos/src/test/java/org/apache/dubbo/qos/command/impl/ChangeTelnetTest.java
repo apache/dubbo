@@ -66,7 +66,8 @@ class ChangeTelnetTest {
         mockChannel = mock(Channel.class);
         mockInvoker = mock(Invoker.class);
 
-        given(mockChannel.attr(ChangeTelnet.SERVICE_KEY)).willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
+        given(mockChannel.attr(ChangeTelnet.SERVICE_KEY))
+                .willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
         mockChannel.attr(ChangeTelnet.SERVICE_KEY).set("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService");
         given(mockCommandContext.getRemote()).willReturn(mockChannel);
         given(mockInvoker.getInterface()).willReturn(DemoService.class);
@@ -81,23 +82,31 @@ class ChangeTelnetTest {
 
     @Test
     void testChangeSimpleName() {
-        ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME).export(mockInvoker);
-        String result = change.execute(mockCommandContext, new String[]{"DemoService"});
+        ExtensionLoader.getExtensionLoader(Protocol.class)
+                .getExtension(DubboProtocol.NAME)
+                .export(mockInvoker);
+        String result = change.execute(mockCommandContext, new String[] {"DemoService"});
         assertEquals("Used the DemoService as default.\r\nYou can cancel default service by command: cd /", result);
     }
 
     @Test
     void testChangeName() {
-        ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME).export(mockInvoker);
-        String result = change.execute(mockCommandContext, new String[]{"org.apache.dubbo.qos.legacy.service.DemoService"});
-        assertEquals("Used the org.apache.dubbo.qos.legacy.service.DemoService as default.\r\nYou can cancel default service by command: cd /",
-            result);
+        ExtensionLoader.getExtensionLoader(Protocol.class)
+                .getExtension(DubboProtocol.NAME)
+                .export(mockInvoker);
+        String result =
+                change.execute(mockCommandContext, new String[] {"org.apache.dubbo.qos.legacy.service.DemoService"});
+        assertEquals(
+                "Used the org.apache.dubbo.qos.legacy.service.DemoService as default.\r\nYou can cancel default service by command: cd /",
+                result);
     }
 
     @Test
     void testChangePath() {
-        ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME).export(mockInvoker);
-        String result = change.execute(mockCommandContext, new String[]{"demo"});
+        ExtensionLoader.getExtensionLoader(Protocol.class)
+                .getExtension(DubboProtocol.NAME)
+                .export(mockInvoker);
+        String result = change.execute(mockCommandContext, new String[] {"demo"});
         assertEquals("Used the demo as default.\r\nYou can cancel default service by command: cd /", result);
     }
 
@@ -109,19 +118,19 @@ class ChangeTelnetTest {
 
     @Test
     void testChangeServiceNotExport() {
-        String result = change.execute(mockCommandContext, new String[]{"demo"});
+        String result = change.execute(mockCommandContext, new String[] {"demo"});
         assertEquals("No such service demo", result);
     }
 
     @Test
     void testChangeCancel() {
-        String result = change.execute(mockCommandContext, new String[]{".."});
+        String result = change.execute(mockCommandContext, new String[] {".."});
         assertEquals("Cancelled default service org.apache.dubbo.rpc.protocol.dubbo.support.DemoService.", result);
     }
 
     @Test
     void testChangeCancel2() {
-        String result = change.execute(mockCommandContext, new String[]{"/"});
+        String result = change.execute(mockCommandContext, new String[] {"/"});
         assertEquals("Cancelled default service org.apache.dubbo.rpc.protocol.dubbo.support.DemoService.", result);
     }
 }

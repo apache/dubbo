@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.protocol.rest.exception;
 /**
  *  only support spring mvc & jaxrs annotation
  */
-public class CodeStyleNotSupportException extends RestException{
+public class CodeStyleNotSupportException extends RestException {
 
     public CodeStyleNotSupportException(String message) {
         super(message);

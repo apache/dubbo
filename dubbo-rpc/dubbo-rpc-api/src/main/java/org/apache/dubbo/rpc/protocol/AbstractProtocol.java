@@ -42,7 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
@@ -63,7 +62,7 @@ public abstract class AbstractProtocol implements Protocol, ScopeModelAware {
     /**
      * <host:port, ProtocolServer>
      */
-    protected final ConcurrentMap<String, ProtocolServer> serverMap = new ConcurrentHashMap<>();
+    protected final Map<String, ProtocolServer> serverMap = new ConcurrentHashMap<>();
 
     // TODO SoftReference
     protected final Set<Invoker<?>> invokers = new ConcurrentHashSet<>();
@@ -71,7 +70,6 @@ public abstract class AbstractProtocol implements Protocol, ScopeModelAware {
     protected FrameworkModel frameworkModel;
 
     private final Set<String> optimizers = new ConcurrentHashSet<>();
-
 
     @Override
     public void setFrameworkModel(FrameworkModel frameworkModel) {
@@ -94,7 +92,8 @@ public abstract class AbstractProtocol implements Protocol, ScopeModelAware {
 
     protected void loadServerProperties(ProtocolServer server) {
         // read and hold config before destroy
-        int serverShutdownTimeout = ConfigurationUtils.getServerShutdownTimeout(server.getUrl().getScopeModel());
+        int serverShutdownTimeout =
+                ConfigurationUtils.getServerShutdownTimeout(server.getUrl().getScopeModel());
         server.getAttributes().put(SHUTDOWN_WAIT_KEY, serverShutdownTimeout);
     }
 
@@ -149,7 +148,6 @@ public abstract class AbstractProtocol implements Protocol, ScopeModelAware {
         return Collections.unmodifiableCollection(exporterMap.values());
     }
 
-
     protected void optimizeSerialization(URL url) throws RpcException {
         String className = url.getParameter(OPTIMIZER_KEY, "");
         if (StringUtils.isEmpty(className) || optimizers.contains(className)) {
@@ -161,7 +159,8 @@ public abstract class AbstractProtocol implements Protocol, ScopeModelAware {
         try {
             Class clazz = Thread.currentThread().getContextClassLoader().loadClass(className);
             if (!SerializationOptimizer.class.isAssignableFrom(clazz)) {
-                throw new RpcException("The serialization optimizer " + className + " isn't an instance of " + SerializationOptimizer.class.getName());
+                throw new RpcException("The serialization optimizer " + className + " isn't an instance of "
+                        + SerializationOptimizer.class.getName());
             }
 
             SerializationOptimizer optimizer = (SerializationOptimizer) clazz.newInstance();
@@ -181,7 +180,6 @@ public abstract class AbstractProtocol implements Protocol, ScopeModelAware {
 
         } catch (InstantiationException | IllegalAccessException e) {
             throw new RpcException("Cannot instantiate the serialization optimizer class: " + className, e);
-
         }
     }
 
@@ -190,7 +188,7 @@ public abstract class AbstractProtocol implements Protocol, ScopeModelAware {
         if (url.getParameter(ANYHOST_KEY, false)) {
             bindIp = ANYHOST_VALUE;
         }
-        return NetUtils.getIpByHost(bindIp) + ":" + url.getParameter(org.apache.dubbo.remoting.Constants.BIND_PORT_KEY, url.getPort());
+        return NetUtils.getIpByHost(bindIp) + ":"
+                + url.getParameter(org.apache.dubbo.remoting.Constants.BIND_PORT_KEY, url.getPort());
     }
-
 }
