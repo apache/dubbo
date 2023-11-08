@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -77,7 +78,7 @@ public class RedisMetadataReport extends AbstractMetadataReport {
     private int timeout;
     private String password;
     private final String root;
-    protected volatile MappingDataListener mappingDataListener;
+    private final ConcurrentHashMap<String, MappingDataListener > mappingDataListenerMap=new ConcurrentHashMap<>();
 
     public RedisMetadataReport(URL url) {
         super(url);
@@ -338,6 +339,7 @@ public class RedisMetadataReport extends AbstractMetadataReport {
 
     @Override
     public void removeServiceAppMappingListener(String serviceKey, MappingListener listener) {
+        MappingDataListener mappingDataListener=mappingDataListenerMap.get(buildPubSubKey());
         if (null != mappingDataListener) {
             NotifySub notifySub=mappingDataListener.getNotifySub();
             notifySub.removeListener(serviceKey,listener);
@@ -349,20 +351,13 @@ public class RedisMetadataReport extends AbstractMetadataReport {
 
     @Override
     public Set<String> getServiceAppMapping(String serviceKey, MappingListener listener, URL url) {
-        if(null==mappingDataListener){
-            synchronized (this){
-                if(null==mappingDataListener) {
-                    MappingDataListener dataListener = new MappingDataListener(buildPubSubKey());
-                    dataListener.getNotifySub().addListener(serviceKey, listener);
-                    dataListener.start();
-                    mappingDataListener=dataListener;
-                }else{
-                    mappingDataListener.getNotifySub().addListener(serviceKey,listener);
-                }
-            }
-        }else{
-            mappingDataListener.getNotifySub().addListener(serviceKey,listener);
-        }
+        MappingDataListener mappingDataListener = ConcurrentHashMapUtils.computeIfAbsent(mappingDataListenerMap,
+            buildPubSubKey(), k->{
+                MappingDataListener dataListener = new MappingDataListener(buildPubSubKey());
+                dataListener.start();
+                return dataListener;
+            });
+        mappingDataListener.getNotifySub().addListener(serviceKey,listener);
         return this.getServiceAppMapping(serviceKey, url);
     }
 
@@ -391,12 +386,12 @@ public class RedisMetadataReport extends AbstractMetadataReport {
 
     //for test
     public MappingDataListener getMappingDataListener() {
-        return mappingDataListener;
+     return mappingDataListenerMap.get(buildPubSubKey());
     }
 
     class NotifySub extends JedisPubSub {
 
-        private Map<String,Set<MappingListener>> listeners = new ConcurrentHashMap<>();
+        private final Map<String,Set<MappingListener>> listeners = new ConcurrentHashMap<>();
 
         public void addListener(String key,MappingListener listener) {
             Set<MappingListener> listenerSet=listeners.computeIfAbsent(key,k-> new ConcurrentHashSet<>());
@@ -444,7 +439,7 @@ public class RedisMetadataReport extends AbstractMetadataReport {
 
         private String path;
 
-        private final NotifySub notifySub = new NotifySub();;
+        private final NotifySub notifySub = new NotifySub();
         // for test
         protected volatile boolean running = true;
 
