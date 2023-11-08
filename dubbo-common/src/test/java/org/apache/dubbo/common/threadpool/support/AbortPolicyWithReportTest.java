@@ -19,6 +19,7 @@ package org.apache.dubbo.common.threadpool.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadpool.event.ThreadPoolExhaustedEvent;
 import org.apache.dubbo.common.threadpool.event.ThreadPoolExhaustedListener;
+import org.apache.dubbo.common.utils.JVMUtil;
 
 import java.io.FileOutputStream;
 import java.util.UUID;
@@ -45,8 +46,9 @@ class AbortPolicyWithReportTest {
 
         AbortPolicyWithReport abortPolicyWithReport = new AbortPolicyWithReport("Test", url) {
             @Override
-            protected void jstack(FileOutputStream jStackStream) {
+            protected void jstack(FileOutputStream jStackStream) throws Exception {
                 fileOutputStream.set(jStackStream);
+                JVMUtil.jstack(jStackStream);
             }
         };
         ExecutorService executorService = Executors.newFixedThreadPool(1);
