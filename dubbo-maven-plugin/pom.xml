@@ -29,7 +29,7 @@
 
   <properties>
     <dubbo.version>${revision}</dubbo.version>
-    <protobuf-java.version>3.24.4</protobuf-java.version>
+    <protobuf-java.version>3.25.0</protobuf-java.version>
   </properties>
 
   <dependencies>
@@ -71,6 +71,7 @@
       <version>2.11.0</version>
     </dependency>
 
+    <!-- Takes no effect for this dependency. To notify github dependencies bot to update ${protobuf-java.version} property.  -->
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
