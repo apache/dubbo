@@ -492,7 +492,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     .filter(this::isUsedRegistryAsMetadataCenter)
                     .map(registryConfig -> registryAsMetadataCenter(registryConfig, metadataConfigToOverride))
                     .forEach(metadataReportConfig ->
-                        overrideMetadataReportConfig(metadataConfigToOverride, metadataReportConfig));
+                            overrideMetadataReportConfig(metadataConfigToOverride, metadataReportConfig));
         }
     }
 
