@@ -31,9 +31,12 @@ import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -45,10 +48,6 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.embedded.RedisServer;
-
-import java.util.Collections;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
@@ -269,73 +268,75 @@ class RedisMetadataReportTest {
 
     @Test
     void testRegisterServiceAppMapping() throws InterruptedException {
-        String serviceKey1= "org.apache.dubbo.metadata.store.redis.RedisMetadata4TstService";
-        String serviceKey2= "org.apache.dubbo.metadata.store.redis.RedisMetadata4TstService2";
+        String serviceKey1 = "org.apache.dubbo.metadata.store.redis.RedisMetadata4TstService";
+        String serviceKey2 = "org.apache.dubbo.metadata.store.redis.RedisMetadata4TstService2";
 
         String appNames1 = "test1";
         String appNames2 = "test1,test2";
         CountDownLatch latch = new CountDownLatch(2);
         CountDownLatch latch2 = new CountDownLatch(2);
 
-        MappingListener mappingListener=new MappingListener() {
+        MappingListener mappingListener = new MappingListener() {
             @Override
             public void onEvent(MappingChangedEvent event) {
                 Set<String> apps = event.getApps();
-                if(apps.size()==1){
+                if (apps.size() == 1) {
                     Assertions.assertTrue(apps.contains("test1"));
-                }else{
+                } else {
                     Assertions.assertTrue(apps.contains("test1"));
                     Assertions.assertTrue(apps.contains("test2"));
                 }
-                if(serviceKey1.equals(event.getServiceKey())){
+                if (serviceKey1.equals(event.getServiceKey())) {
                     latch.countDown();
-                }else if(serviceKey2.equals(event.getServiceKey())){
+                } else if (serviceKey2.equals(event.getServiceKey())) {
                     latch2.countDown();
                 }
             }
 
             @Override
-            public void stop() {
-
-            }
+            public void stop() {}
         };
 
-        Set<String> serviceAppMapping = redisMetadataReport.getServiceAppMapping( serviceKey1, mappingListener, registryUrl);
+        Set<String> serviceAppMapping =
+                redisMetadataReport.getServiceAppMapping(serviceKey1, mappingListener, registryUrl);
 
         Assertions.assertTrue(serviceAppMapping.isEmpty());
 
         ConfigItem configItem = redisMetadataReport.getConfigItem(serviceKey1, DEFAULT_MAPPING_GROUP);
 
-        redisMetadataReport.registerServiceAppMapping(serviceKey1, DEFAULT_MAPPING_GROUP, appNames1, configItem.getTicket());
-         configItem = redisMetadataReport.getConfigItem(serviceKey1, DEFAULT_MAPPING_GROUP);
+        redisMetadataReport.registerServiceAppMapping(
+                serviceKey1, DEFAULT_MAPPING_GROUP, appNames1, configItem.getTicket());
+        configItem = redisMetadataReport.getConfigItem(serviceKey1, DEFAULT_MAPPING_GROUP);
 
-        redisMetadataReport.registerServiceAppMapping(serviceKey1, DEFAULT_MAPPING_GROUP, appNames2, configItem.getTicket());
+        redisMetadataReport.registerServiceAppMapping(
+                serviceKey1, DEFAULT_MAPPING_GROUP, appNames2, configItem.getTicket());
 
         latch.await();
 
-        serviceAppMapping = redisMetadataReport.getServiceAppMapping( serviceKey2, mappingListener, registryUrl);
+        serviceAppMapping = redisMetadataReport.getServiceAppMapping(serviceKey2, mappingListener, registryUrl);
 
         Assertions.assertTrue(serviceAppMapping.isEmpty());
 
         configItem = redisMetadataReport.getConfigItem(serviceKey2, DEFAULT_MAPPING_GROUP);
 
-        redisMetadataReport.registerServiceAppMapping(serviceKey2, DEFAULT_MAPPING_GROUP, appNames1, configItem.getTicket());
+        redisMetadataReport.registerServiceAppMapping(
+                serviceKey2, DEFAULT_MAPPING_GROUP, appNames1, configItem.getTicket());
         configItem = redisMetadataReport.getConfigItem(serviceKey2, DEFAULT_MAPPING_GROUP);
-        redisMetadataReport.registerServiceAppMapping(serviceKey2, DEFAULT_MAPPING_GROUP, appNames2, configItem.getTicket());
+        redisMetadataReport.registerServiceAppMapping(
+                serviceKey2, DEFAULT_MAPPING_GROUP, appNames2, configItem.getTicket());
 
         latch2.await();
-        RedisMetadataReport.MappingDataListener mappingDataListener=redisMetadataReport.getMappingDataListener();
+        RedisMetadataReport.MappingDataListener mappingDataListener = redisMetadataReport.getMappingDataListener();
         Assertions.assertTrue(mappingDataListener.running);
         Assertions.assertTrue(!mappingDataListener.getNotifySub().isEmpty());
 
-        redisMetadataReport.removeServiceAppMappingListener(serviceKey1,mappingListener);
+        redisMetadataReport.removeServiceAppMappingListener(serviceKey1, mappingListener);
         Assertions.assertTrue(mappingDataListener.running);
         Assertions.assertTrue(!mappingDataListener.getNotifySub().isEmpty());
-        redisMetadataReport.removeServiceAppMappingListener(serviceKey2,mappingListener);
+        redisMetadataReport.removeServiceAppMappingListener(serviceKey2, mappingListener);
         Assertions.assertTrue(!mappingDataListener.running);
         Assertions.assertTrue(mappingDataListener.getNotifySub().isEmpty());
     }
-
 
     @Test
     void testAppMetadata() {
@@ -345,7 +346,8 @@ class RedisMetadataReportTest {
 
         MetadataInfo metadataInfo = new MetadataInfo(appName);
         metadataInfo.addService(url);
-        SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(appName, metadataInfo.calAndGetRevision());
+        SubscriberMetadataIdentifier identifier =
+                new SubscriberMetadataIdentifier(appName, metadataInfo.calAndGetRevision());
         MetadataInfo appMetadata = redisMetadataReport.getAppMetadata(identifier, Collections.emptyMap());
         Assertions.assertNull(appMetadata);
 
@@ -357,5 +359,4 @@ class RedisMetadataReportTest {
         appMetadata = redisMetadataReport.getAppMetadata(identifier, Collections.emptyMap());
         Assertions.assertNull(appMetadata);
     }
-
 }
