@@ -184,14 +184,14 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
             // if no async export/refer services, just set started
             if (asyncExportingFutures.isEmpty() && asyncReferringFutures.isEmpty()) {
-                // publish module started event
-                onModuleStarted();
-
                 // register services to registry
                 registerServices();
 
                 // check reference config
                 checkReferences();
+
+                // publish module started event
+                onModuleStarted();
 
                 // complete module start future after application state changed
                 completeStartFuture(true);
@@ -200,17 +200,18 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                     try {
                         // wait for export finish
                         waitExportFinish();
+
                         // wait for refer finish
                         waitReferFinish();
-
-                        // publish module started event
-                        onModuleStarted();
 
                         // register services to registry
                         registerServices();
 
                         // check reference config
                         checkReferences();
+
+                        // publish module started event
+                        onModuleStarted();
                     } catch (Throwable e) {
                         logger.warn(
                                 CONFIG_FAILED_WAIT_EXPORT_REFER,
@@ -240,7 +241,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     }
 
     private boolean hasExportedServices() {
-        return configManager.getServices().size() > 0;
+        return !configManager.getServices().isEmpty();
     }
 
     @Override

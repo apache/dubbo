@@ -354,7 +354,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         configManager.loadConfigsOfTypeFromProps(RegistryConfig.class);
 
         List<RegistryConfig> defaultRegistries = configManager.getDefaultRegistries();
-        if (defaultRegistries.size() > 0) {
+        if (!defaultRegistries.isEmpty()) {
             defaultRegistries.stream()
                     .filter(this::isUsedRegistryAsConfigCenter)
                     .map(this::registryAsConfigCenter)
@@ -491,9 +491,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             defaultRegistries.stream()
                     .filter(this::isUsedRegistryAsMetadataCenter)
                     .map(registryConfig -> registryAsMetadataCenter(registryConfig, metadataConfigToOverride))
-                    .forEach(metadataReportConfig -> {
-                        overrideMetadataReportConfig(metadataConfigToOverride, metadataReportConfig);
-                    });
+                    .forEach(metadataReportConfig ->
+                        overrideMetadataReportConfig(metadataConfigToOverride, metadataReportConfig));
         }
     }
 
@@ -1292,11 +1291,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             if (!isStarting()) {
                 return;
             }
-            setStarted();
             startMetricsCollector();
-            if (logger.isInfoEnabled()) {
-                logger.info(getIdentifier() + " is ready.");
-            }
             // refresh metadata
             try {
                 if (registered) {
@@ -1304,6 +1299,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 }
             } catch (Exception e) {
                 logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
+            }
+            setStarted();
+            if (logger.isInfoEnabled()) {
+                logger.info(getIdentifier() + " is ready.");
             }
         } finally {
             // complete future
