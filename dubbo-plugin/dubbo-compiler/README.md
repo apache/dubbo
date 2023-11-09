@@ -39,18 +39,18 @@ message HelloReply {
     now dubbo support his own protoc plugin base on dubbo-maven-plugin
 
 ```xml
-  <plugin>
+<plugin>
     <groupId>org.apache.dubbo</groupId>
     <artifactId>dubbo-maven-plugin</artifactId>
-    <version>3.3.0</version>
-    <configuration>
-        <dubboVersion>3.3.0</dubboVersion>
-        <dubboGenerateType>dubbo3</dubboGenerateType>
-        <protocExecutable>protoc</protocExecutable>
-        <protocArtifact>com.google.protobuf:protoc:${protoc.version}:exe:${os.detected.classifier}</protocArtifact>
-    </configuration>
+    <version>${dubbo.version}</version>
+    <executions>
+        <execution>
+            <goals>
+                <goal>compile</goal>
+            </goals>
+        </execution>
+    </executions>
 </plugin>
-
 ```
 
 #### 3.generate file
