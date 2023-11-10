@@ -19,6 +19,7 @@ package org.apache.dubbo.common.cache;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,7 +35,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static org.apache.dubbo.common.constants.CommonConstants.SYSTEM_USER_HOME;
+import static org.apache.dubbo.common.constants.CommonConstants.SystemProperty.USER_HOME;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CACHE_PATH_INACCESSIBLE;
 
 /**
@@ -51,7 +52,7 @@ public final class FileCacheStoreFactory {
     }
 
     private static final ErrorTypeAwareLogger logger =
-            LoggerFactory.getErrorTypeAwareLogger(FileCacheStoreFactory.class);
+        LoggerFactory.getErrorTypeAwareLogger(FileCacheStoreFactory.class);
     private static final ConcurrentMap<String, FileCacheStore> cacheMap = new ConcurrentHashMap<>();
 
     private static final String SUFFIX = ".dubbo.cache";
@@ -82,7 +83,7 @@ public final class FileCacheStoreFactory {
     public static FileCacheStore getInstance(String basePath, String cacheName, boolean enableFileCache) {
         if (basePath == null) {
             // default case: ~/.dubbo
-            basePath = System.getProperty(SYSTEM_USER_HOME) + File.separator + ".dubbo";
+            basePath = SystemPropertyConfigUtils.getSystemProperty(USER_HOME) + File.separator + ".dubbo";
         }
         if (basePath.endsWith(File.separator)) {
             basePath = basePath.substring(0, basePath.length() - 1);
@@ -99,11 +100,11 @@ public final class FileCacheStoreFactory {
                 // 0-3 - cache path inaccessible
 
                 logger.error(
-                        COMMON_CACHE_PATH_INACCESSIBLE,
-                        "inaccessible of cache path",
-                        "",
-                        "Cache store path can't be created: ",
-                        e);
+                    COMMON_CACHE_PATH_INACCESSIBLE,
+                    "inaccessible of cache path",
+                    "",
+                    "Cache store path can't be created: ",
+                    e);
 
                 throw new RuntimeException("Cache store path can't be created: " + candidate, e);
             }
@@ -167,11 +168,11 @@ public final class FileCacheStoreFactory {
         } catch (Throwable t) {
 
             logger.warn(
-                    COMMON_CACHE_PATH_INACCESSIBLE,
-                    "inaccessible of cache path",
-                    "",
-                    "Failed to create file store cache. Local file cache will be disabled. Cache file name: " + name,
-                    t);
+                COMMON_CACHE_PATH_INACCESSIBLE,
+                "inaccessible of cache path",
+                "",
+                "Failed to create file store cache. Local file cache will be disabled. Cache file name: " + name,
+                t);
 
             return FileCacheStore.Empty.getInstance(name);
         }
@@ -196,7 +197,7 @@ public final class FileCacheStoreFactory {
 
         if (dirLock == null) {
             throw new PathNotExclusiveException(
-                    fileName + " is not exclusive. Maybe multiple Dubbo instances are using the same folder.");
+                fileName + " is not exclusive. Maybe multiple Dubbo instances are using the same folder.");
         }
 
         lockFile.deleteOnExit();

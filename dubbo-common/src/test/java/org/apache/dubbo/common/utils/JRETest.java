@@ -22,14 +22,14 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import static org.apache.dubbo.common.constants.CommonConstants.SYSTEM_JAVA_VERSION;
+import static org.apache.dubbo.common.constants.CommonConstants.SystemProperty.SYSTEM_JAVA_VERSION;
 
 class JRETest {
 
     @Test
     @Disabled
     void blankSystemVersion() {
-        System.setProperty(SYSTEM_JAVA_VERSION, "");
+        SystemPropertyConfigUtils.setSystemProperty(SYSTEM_JAVA_VERSION, "");
         JRE jre = JRE.currentVersion();
         Assertions.assertEquals(JRE.JAVA_8, jre);
     }
@@ -39,7 +39,7 @@ class JRETest {
         // SourceVersion is an enum, which member name is RELEASE_XX.
 
         Assertions.assertEquals(
-                SourceVersion.latest().name().split("_")[1],
-                JRE.currentVersion().name().split("_")[1]);
+            SourceVersion.latest().name().split("_")[1],
+            JRE.currentVersion().name().split("_")[1]);
     }
 }

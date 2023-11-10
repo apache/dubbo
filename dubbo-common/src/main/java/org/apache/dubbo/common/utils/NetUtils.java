@@ -48,8 +48,6 @@ import java.util.regex.PatternSyntaxException;
 import static java.util.Collections.emptyList;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_IP_TO_BIND;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_NETWORK_IGNORED_INTERFACE;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PREFERRED_NETWORK_INTERFACE;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.utils.CollectionUtils.first;
@@ -138,6 +136,7 @@ public final class NetUtils {
 
     /**
      * Check the port whether is in use in os
+     *
      * @param port port to check
      * @return true if it's occupied
      */
@@ -153,9 +152,9 @@ public final class NetUtils {
     /**
      * Tells whether the port to test is an invalid port.
      *
-     * @implNote Numeric comparison only.
      * @param port port to test
      * @return true if invalid
+     * @implNote Numeric comparison only.
      */
     public static boolean isInvalidPort(int port) {
         return port < MIN_PORT || port > MAX_PORT;
@@ -164,9 +163,9 @@ public final class NetUtils {
     /**
      * Tells whether the address to test is an invalid address.
      *
-     * @implNote Pattern matching only.
      * @param address address to test
      * @return true if invalid
+     * @implNote Pattern matching only.
      */
     public static boolean isValidAddress(String address) {
         return ADDRESS_PATTERN.matcher(address).matches();
@@ -182,10 +181,10 @@ public final class NetUtils {
 
     public static boolean isInvalidLocalHost(String host) {
         return host == null
-                || host.length() == 0
-                || host.equalsIgnoreCase(LOCALHOST_KEY)
-                || host.equals(ANYHOST_VALUE)
-                || host.startsWith("127.");
+            || host.length() == 0
+            || host.equalsIgnoreCase(LOCALHOST_KEY)
+            || host.equals(ANYHOST_VALUE)
+            || host.startsWith("127.");
     }
 
     public static boolean isValidLocalHost(String host) {
@@ -203,9 +202,9 @@ public final class NetUtils {
 
         String name = address.getHostAddress();
         return (name != null
-                && IP_PATTERN.matcher(name).matches()
-                && !ANYHOST_VALUE.equals(name)
-                && !LOCALHOST_VALUE.equals(name));
+            && IP_PATTERN.matcher(name).matches()
+            && !ANYHOST_VALUE.equals(name)
+            && !LOCALHOST_VALUE.equals(name));
     }
 
     /**
@@ -411,11 +410,11 @@ public final class NetUtils {
                 InetAddress address = addresses.nextElement();
                 if (address instanceof Inet6Address) {
                     if (!address.isLoopbackAddress() // filter ::1
-                            && !address.isAnyLocalAddress() // filter ::/128
-                            && !address.isLinkLocalAddress() // filter fe80::/10
-                            && !address.isSiteLocalAddress() // filter fec0::/10
-                            && !isUniqueLocalAddress(address) // filter fd00::/8
-                            && address.getHostAddress().contains(":")) { // filter IPv6
+                        && !address.isAnyLocalAddress() // filter ::/128
+                        && !address.isLinkLocalAddress() // filter fe80::/10
+                        && !address.isSiteLocalAddress() // filter fec0::/10
+                        && !isUniqueLocalAddress(address) // filter fd00::/8
+                        && address.getHostAddress().contains(":")) { // filter IPv6
                         return (Inet6Address) address;
                     }
                 }
@@ -447,15 +446,15 @@ public final class NetUtils {
      */
     private static boolean ignoreNetworkInterface(NetworkInterface networkInterface) throws SocketException {
         if (networkInterface == null
-                || networkInterface.isLoopback()
-                || networkInterface.isVirtual()
-                || !networkInterface.isUp()) {
+            || networkInterface.isLoopback()
+            || networkInterface.isVirtual()
+            || !networkInterface.isUp()) {
             return true;
         }
-        String ignoredInterfaces = System.getProperty(DUBBO_NETWORK_IGNORED_INTERFACE);
+        String ignoredInterfaces = SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO_NETWORK_IGNORED_INTERFACE);
         String networkInterfaceDisplayName;
         if (StringUtils.isNotEmpty(ignoredInterfaces)
-                && StringUtils.isNotEmpty(networkInterfaceDisplayName = networkInterface.getDisplayName())) {
+            && StringUtils.isNotEmpty(networkInterfaceDisplayName = networkInterface.getDisplayName())) {
             for (String ignoredInterface : ignoredInterfaces.split(",")) {
                 String trimIgnoredInterface = ignoredInterface.trim();
                 boolean matched = false;
@@ -465,8 +464,8 @@ public final class NetUtils {
                     // if trimIgnoredInterface is an invalid regular expression, a PatternSyntaxException will be thrown
                     // out
                     logger.warn(
-                            "exception occurred: " + networkInterfaceDisplayName + " matches " + trimIgnoredInterface,
-                            e);
+                        "exception occurred: " + networkInterfaceDisplayName + " matches " + trimIgnoredInterface,
+                        e);
                 } finally {
                     if (matched) {
                         return true;
@@ -505,11 +504,11 @@ public final class NetUtils {
      *
      * @param networkInterface {@link NetworkInterface}
      * @return if the name of the specified {@link NetworkInterface} matches
-     * the property value from {@link CommonConstants#DUBBO_PREFERRED_NETWORK_INTERFACE}, return <code>true</code>,
+     * the property value from {@link CommonConstants.DubboProperty#DUBBO_PREFERRED_NETWORK_INTERFACE}, return <code>true</code>,
      * or <code>false</code>
      */
     public static boolean isPreferredNetworkInterface(NetworkInterface networkInterface) {
-        String preferredNetworkInterface = System.getProperty(DUBBO_PREFERRED_NETWORK_INTERFACE);
+        String preferredNetworkInterface = SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO_PREFERRED_NETWORK_INTERFACE);
         return Objects.equals(networkInterface.getDisplayName(), preferredNetworkInterface);
     }
 
@@ -593,8 +592,8 @@ public final class NetUtils {
             HOST_NAME = InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
             HOST_NAME = Optional.ofNullable(getLocalAddress())
-                    .map(k -> k.getHostName())
-                    .orElse(null);
+                .map(k -> k.getHostName())
+                .orElse(null);
         }
         return HOST_NAME;
     }
@@ -642,7 +641,7 @@ public final class NetUtils {
 
     @SuppressWarnings("deprecation")
     public static void joinMulticastGroup(MulticastSocket multicastSocket, InetAddress multicastAddress)
-            throws IOException {
+        throws IOException {
         setInterface(multicastSocket, multicastAddress instanceof Inet6Address);
 
         // For the deprecation notice: the equivalent only appears in JDK 9+.
@@ -737,7 +736,7 @@ public final class NetUtils {
     public static boolean matchIpRange(String pattern, String host, int port) throws UnknownHostException {
         if (pattern == null || host == null) {
             throw new IllegalArgumentException(
-                    "Illegal Argument pattern or hostName. Pattern:" + pattern + ", Host:" + host);
+                "Illegal Argument pattern or hostName. Pattern:" + pattern + ", Host:" + host);
         }
         pattern = pattern.trim();
         if ("*.*.*.*".equals(pattern) || "*".equals(pattern)) {
@@ -788,10 +787,10 @@ public final class NetUtils {
                     return false;
                 }
             } else if ("0".equals(ipAddress[i])
-                    && ("0".equals(mask[i])
-                            || "00".equals(mask[i])
-                            || "000".equals(mask[i])
-                            || "0000".equals(mask[i]))) {
+                && ("0".equals(mask[i])
+                || "00".equals(mask[i])
+                || "000".equals(mask[i])
+                || "0000".equals(mask[i]))) {
                 continue;
             } else if (!mask[i].equals(ipAddress[i])) {
                 return false;
@@ -826,16 +825,16 @@ public final class NetUtils {
         if (!isIpv4) {
             if (mask.length != 8 && ipPatternContainExpression(pattern)) {
                 throw new IllegalArgumentException(
-                        "If you config ip expression that contains '*' or '-', please fill qualified ip pattern like 234e:0:4567:0:0:0:3d:*. ");
+                    "If you config ip expression that contains '*' or '-', please fill qualified ip pattern like 234e:0:4567:0:0:0:3d:*. ");
             }
             if (mask.length != 8 && !pattern.contains("::")) {
                 throw new IllegalArgumentException(
-                        "The host is ipv6, but the pattern is not ipv6 pattern : " + pattern);
+                    "The host is ipv6, but the pattern is not ipv6 pattern : " + pattern);
             }
         } else {
             if (mask.length != 4) {
                 throw new IllegalArgumentException(
-                        "The host is ipv4, but the pattern is not ipv4 pattern : " + pattern);
+                    "The host is ipv4, but the pattern is not ipv4 pattern : " + pattern);
             }
         }
     }

@@ -89,8 +89,6 @@ public interface Constants {
 
     String MULTICAST = "multicast";
 
-    String DUBBO_IP_TO_REGISTRY = "DUBBO_IP_TO_REGISTRY";
-
     String DUBBO_PORT_TO_REGISTRY = "DUBBO_PORT_TO_REGISTRY";
 
     String DUBBO_PORT_TO_BIND = "DUBBO_PORT_TO_BIND";
@@ -134,7 +132,7 @@ public interface Constants {
 
     String MULTI_SERIALIZATION_KEY = "serialize.multiple";
 
-    String[] DOT_COMPATIBLE_KEYS = new String[] {
+    String[] DOT_COMPATIBLE_KEYS = new String[]{
         QOS_ENABLE_COMPATIBLE,
         QOS_HOST_COMPATIBLE,
         QOS_PORT_COMPATIBLE,

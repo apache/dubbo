@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
+
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
@@ -32,8 +34,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.OS_LINUX_PREFIX;
-import static org.apache.dubbo.common.constants.CommonConstants.OS_NAME_KEY;
-import static org.apache.dubbo.remoting.Constants.NETTY_EPOLL_ENABLE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SystemProperty.SYSTEM_OS_NAME;
+import static org.apache.dubbo.common.constants.CommonConstants.ThirdPartyProperty.NETTY_EPOLL_ENABLE_KEY;
 
 /**
  * {@link NettyEventLoopFactory}
@@ -42,12 +44,12 @@ class NettyEventLoopFactoryTest {
 
     @BeforeEach
     public void setUp() {
-        System.setProperty(NETTY_EPOLL_ENABLE_KEY, "true");
+        SystemPropertyConfigUtils.setSystemProperty(NETTY_EPOLL_ENABLE_KEY, "true");
     }
 
     @AfterEach
     public void reset() {
-        System.clearProperty(NETTY_EPOLL_ENABLE_KEY);
+        SystemPropertyConfigUtils.clearSystemProperty(NETTY_EPOLL_ENABLE_KEY);
     }
 
     @Test
@@ -60,7 +62,7 @@ class NettyEventLoopFactoryTest {
             Assertions.assertEquals(socketChannelClass, EpollSocketChannel.class);
 
             Class<? extends ServerSocketChannel> serverSocketChannelClass =
-                    NettyEventLoopFactory.serverSocketChannelClass();
+                NettyEventLoopFactory.serverSocketChannelClass();
             Assertions.assertEquals(serverSocketChannelClass, EpollServerSocketChannel.class);
 
         } else {
@@ -71,13 +73,13 @@ class NettyEventLoopFactoryTest {
             Assertions.assertEquals(socketChannelClass, NioSocketChannel.class);
 
             Class<? extends ServerSocketChannel> serverSocketChannelClass =
-                    NettyEventLoopFactory.serverSocketChannelClass();
+                NettyEventLoopFactory.serverSocketChannelClass();
             Assertions.assertEquals(serverSocketChannelClass, NioServerSocketChannel.class);
         }
     }
 
     private boolean isEpoll() {
-        String osName = System.getProperty(OS_NAME_KEY);
+        String osName = SystemPropertyConfigUtils.getSystemProperty(SYSTEM_OS_NAME);
         return osName.toLowerCase().contains(OS_LINUX_PREFIX) && Epoll.isAvailable();
     }
 }

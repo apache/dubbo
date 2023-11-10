@@ -16,7 +16,31 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.constants.CommonConstants;
+
+import java.lang.reflect.Field;
+import java.util.HashSet;
+import java.util.Set;
+
 public class SystemPropertyConfigUtils {
+
+    private static Set<String> systemProperties = new HashSet<>();
+
+    static {
+        Class<?>[] classes = new Class[]{CommonConstants.SystemProperty.class, CommonConstants.ThirdPartyProperty.class, CommonConstants.DubboProperty.class};
+        for (Class<?> clazz : classes) {
+            Field[] fields = clazz.getDeclaredFields();
+            for (Field field : fields) {
+                try {
+                    assert systemProperties != null;
+                    systemProperties.add((String) field.get(null));
+                } catch (IllegalAccessException e) {
+                    throw new IllegalStateException(String.format("%s does not have field of %s", clazz.getName(), field.getName()));
+                }
+            }
+        }
+    }
+
     /**
      * Return property of VM.
      *
@@ -24,7 +48,12 @@ public class SystemPropertyConfigUtils {
      * @return
      */
     public static String getSystemProperty(String key) {
-        return System.getProperty(key);
+        if (containsKey(key)) {
+            return System.getProperty(key);
+        } else {
+            throw new IllegalStateException(String.format("System property [%s] does not define in org.apache.dubbo.common.constants.CommonConstants", key));
+        }
+
     }
 
     /**
@@ -35,6 +64,51 @@ public class SystemPropertyConfigUtils {
      * @return
      */
     public static String getSystemProperty(String key, String defaultValue) {
-        return System.getProperty(key, defaultValue);
+        if (containsKey(key)) {
+            return System.getProperty(key, defaultValue);
+        } else {
+            throw new IllegalStateException(String.format("System property [%s] does not define in org.apache.dubbo.common.constants.CommonConstants", key));
+        }
     }
+
+    /**
+     * Return property of VM. If not exist, the default value is returned.
+     *
+     * @param key
+     * @param value
+     * @return
+     */
+    public static String setSystemProperty(String key, String value) {
+        if (containsKey(key)) {
+            return System.setProperty(key, value);
+        } else {
+            throw new IllegalStateException(String.format("System property [%s] does not define in org.apache.dubbo.common.constants.CommonConstants", key));
+        }
+    }
+
+    /**
+     * Return property of VM. If not exist, the default value is returned.
+     *
+     * @param key
+     * @return
+     */
+    public static String clearSystemProperty(String key) {
+        if (containsKey(key)) {
+            return System.clearProperty(key);
+        } else {
+            throw new IllegalStateException(String.format("System property [%s] does not define in org.apache.dubbo.common.constants.CommonConstants", key));
+        }
+
+    }
+
+    /**
+     * Check whether the key is valid.
+     *
+     * @param key
+     * @return
+     */
+    private static boolean containsKey(String key) {
+        return systemProperties.contains(key);
+    }
+
 }

@@ -18,16 +18,17 @@ package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_MAPPING_CACHE_ENTRYSIZE;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_MAPPING_CACHE_FILENAME;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_MAPPING_CACHE_FILEPATH;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_MAPPING_CACHE_MAXFILESIZE;
+import static org.apache.dubbo.common.constants.CommonConstants.DubboProperty.DUBBO_MAPPING_CACHE_ENTRYSIZE;
+import static org.apache.dubbo.common.constants.CommonConstants.DubboProperty.DUBBO_MAPPING_CACHE_FILENAME;
+import static org.apache.dubbo.common.constants.CommonConstants.DubboProperty.DUBBO_MAPPING_CACHE_FILEPATH;
+import static org.apache.dubbo.common.constants.CommonConstants.DubboProperty.DUBBO_MAPPING_CACHE_MAXFILESIZE;
 
 /**
  * TODO, Using randomly accessible file-based cache can be another choice if memory consumption turns to be an issue.
@@ -41,8 +42,8 @@ public class MappingCacheManager extends AbstractCacheManager<Set<String>> {
     }
 
     public MappingCacheManager(boolean enableFileCache, String name, ScheduledExecutorService executorService) {
-        String filePath = System.getProperty(DUBBO_MAPPING_CACHE_FILEPATH);
-        String fileName = System.getProperty(DUBBO_MAPPING_CACHE_FILENAME);
+        String filePath = SystemPropertyConfigUtils.getSystemProperty(DUBBO_MAPPING_CACHE_FILEPATH);
+        String fileName = SystemPropertyConfigUtils.getSystemProperty(DUBBO_MAPPING_CACHE_FILENAME);
         if (StringUtils.isEmpty(fileName)) {
             fileName = DEFAULT_FILE_NAME;
         }
@@ -51,11 +52,11 @@ public class MappingCacheManager extends AbstractCacheManager<Set<String>> {
             fileName = fileName + "." + name;
         }
 
-        String rawEntrySize = System.getProperty(DUBBO_MAPPING_CACHE_ENTRYSIZE);
+        String rawEntrySize = SystemPropertyConfigUtils.getSystemProperty(DUBBO_MAPPING_CACHE_ENTRYSIZE);
         int entrySize = StringUtils.parseInteger(rawEntrySize);
         entrySize = (entrySize == 0 ? DEFAULT_ENTRY_SIZE : entrySize);
 
-        String rawMaxFileSize = System.getProperty(DUBBO_MAPPING_CACHE_MAXFILESIZE);
+        String rawMaxFileSize = SystemPropertyConfigUtils.getSystemProperty(DUBBO_MAPPING_CACHE_MAXFILESIZE);
         long maxFileSize = StringUtils.parseLong(rawMaxFileSize);
 
         init(enableFileCache, filePath, fileName, entrySize, maxFileSize, 50, executorService);

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.spring.boot.util;
 
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationPostProcessor;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfig;
@@ -26,7 +27,7 @@ import java.util.Set;
 import org.springframework.boot.context.ContextIdApplicationContextInitializer;
 import org.springframework.core.env.PropertyResolver;
 
-import static org.apache.dubbo.common.constants.CommonConstants.SYSTEM_LINE_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.SystemProperty.SYSTEM_LINE_SEPARATOR;
 
 /**
  * The utilities class for Dubbo
@@ -38,7 +39,7 @@ public abstract class DubboUtils {
     /**
      * line separator
      */
-    public static final String LINE_SEPARATOR = System.getProperty(SYSTEM_LINE_SEPARATOR);
+    public static final String LINE_SEPARATOR = SystemPropertyConfigUtils.getSystemProperty(SYSTEM_LINE_SEPARATOR);
 
     /**
      * The separator of property name
@@ -54,13 +55,13 @@ public abstract class DubboUtils {
      * The prefix of property name for Dubbo scan
      */
     public static final String DUBBO_SCAN_PREFIX =
-            DUBBO_PREFIX + PROPERTY_NAME_SEPARATOR + "scan" + PROPERTY_NAME_SEPARATOR;
+        DUBBO_PREFIX + PROPERTY_NAME_SEPARATOR + "scan" + PROPERTY_NAME_SEPARATOR;
 
     /**
      * The prefix of property name for Dubbo Config
      */
     public static final String DUBBO_CONFIG_PREFIX =
-            DUBBO_PREFIX + PROPERTY_NAME_SEPARATOR + "config" + PROPERTY_NAME_SEPARATOR;
+        DUBBO_PREFIX + PROPERTY_NAME_SEPARATOR + "config" + PROPERTY_NAME_SEPARATOR;
 
     /**
      * The property name of base packages to scan
@@ -103,7 +104,7 @@ public abstract class DubboUtils {
      * The github URL of Dubbo Spring Boot
      */
     public static final String DUBBO_SPRING_BOOT_GITHUB_URL =
-            "https://github.com/apache/dubbo/tree/3.0/dubbo-spring-boot";
+        "https://github.com/apache/dubbo/tree/3.0/dubbo-spring-boot";
 
     /**
      * The git URL of Dubbo Spring Boot

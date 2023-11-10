@@ -19,11 +19,12 @@ package org.apache.dubbo.container.spring;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.container.Container;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_SPRING_CONFIG;
+import static org.apache.dubbo.common.constants.CommonConstants.DubboProperty.DUBBO_SPRING_CONFIG;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_STOP_DUBBO_ERROR;
 
 /**
@@ -43,7 +44,7 @@ public class SpringContainer implements Container {
 
     @Override
     public void start() {
-        String configPath = System.getProperty(DUBBO_SPRING_CONFIG);
+        String configPath = SystemPropertyConfigUtils.getSystemProperty(DUBBO_SPRING_CONFIG);
         if (StringUtils.isEmpty(configPath)) {
             configPath = DEFAULT_SPRING_CONFIG;
         }

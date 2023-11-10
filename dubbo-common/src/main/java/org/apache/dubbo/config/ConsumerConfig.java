@@ -17,13 +17,14 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import static org.apache.dubbo.common.constants.CommonConstants.MESH_ENABLE;
 import static org.apache.dubbo.common.constants.CommonConstants.REFER_BACKGROUND_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFER_THREAD_NUM_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.SYSTEM_TCP_RESPONSE_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.SystemProperty.SYSTEM_TCP_RESPONSE_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.URL_MERGE_PROCESSOR_KEY;
 
 /**
@@ -87,7 +88,8 @@ public class ConsumerConfig extends AbstractReferenceConfig {
      */
     private Boolean meshEnable;
 
-    public ConsumerConfig() {}
+    public ConsumerConfig() {
+    }
 
     public ConsumerConfig(ModuleModel moduleModel) {
         super(moduleModel);
@@ -96,9 +98,9 @@ public class ConsumerConfig extends AbstractReferenceConfig {
     @Override
     public void setTimeout(Integer timeout) {
         super.setTimeout(timeout);
-        String rmiTimeout = System.getProperty(SYSTEM_TCP_RESPONSE_TIMEOUT);
+        String rmiTimeout = SystemPropertyConfigUtils.getSystemProperty(SYSTEM_TCP_RESPONSE_TIMEOUT);
         if (timeout != null && timeout > 0 && (StringUtils.isEmpty(rmiTimeout))) {
-            System.setProperty(SYSTEM_TCP_RESPONSE_TIMEOUT, String.valueOf(timeout));
+            SystemPropertyConfigUtils.setSystemProperty(SYSTEM_TCP_RESPONSE_TIMEOUT, String.valueOf(timeout));
         }
     }
 

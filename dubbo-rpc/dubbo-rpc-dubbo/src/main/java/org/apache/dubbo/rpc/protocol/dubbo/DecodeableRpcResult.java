@@ -40,9 +40,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
 
+import static org.apache.dubbo.common.constants.CommonConstants.SystemProperty.SERIALIZATION_SECURITY_CHECK_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DECODE;
 import static org.apache.dubbo.rpc.Constants.SERIALIZATION_ID_KEY;
-import static org.apache.dubbo.rpc.Constants.SERIALIZATION_SECURITY_CHECK_KEY;
 
 public class DecodeableRpcResult extends AppResponse implements Codec, Decodeable {
 
@@ -89,7 +89,7 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
         // switch TCCL
         if (invocation != null && invocation.getServiceModel() != null) {
             Thread.currentThread()
-                    .setContextClassLoader(invocation.getServiceModel().getClassLoader());
+                .setContextClassLoader(invocation.getServiceModel().getClassLoader());
         }
         ObjectInput in = CodecSupport.getSerialization(serializationType).deserialize(channel.getUrl(), input);
 
@@ -131,7 +131,7 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
                     Configuration systemConfiguration = null;
                     try {
                         systemConfiguration = ConfigurationUtils.getSystemConfiguration(
-                                channel.getUrl().getScopeModel());
+                            channel.getUrl().getScopeModel());
                     } catch (Exception e) {
                         // Because the Environment may be destroyed during the offline process, the configuration cannot
                         // be obtained.
@@ -139,12 +139,12 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
                     }
 
                     if (systemConfiguration == null
-                            || systemConfiguration.getBoolean(SERIALIZATION_SECURITY_CHECK_KEY, true)) {
+                        || systemConfiguration.getBoolean(SERIALIZATION_SECURITY_CHECK_KEY, true)) {
                         Object serializationTypeObj = invocation.get(SERIALIZATION_ID_KEY);
                         if (serializationTypeObj != null) {
                             if ((byte) serializationTypeObj != serializationType) {
                                 throw new IOException("Unexpected serialization id:" + serializationType
-                                        + " received from network, please check if the peer send the right id.");
+                                    + " received from network, please check if the peer send the right id.");
                             }
                         }
                     }

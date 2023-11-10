@@ -20,6 +20,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ArrayUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -30,8 +31,8 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_CONTAINER_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_SHUTDOWN_HOOK_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DubboProperty.DUBBO_CONTAINER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DubboProperty.DUBBO_SHUTDOWN_HOOK_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_THREAD_INTERRUPTED_EXCEPTION;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_START_DUBBO_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_STOP_DUBBO_ERROR;
@@ -54,7 +55,7 @@ public class Main {
     public static void main(String[] args) {
         try {
             if (ArrayUtils.isEmpty(args)) {
-                String config = System.getProperty(DUBBO_CONTAINER_KEY, LOADER.getDefaultExtensionName());
+                String config = SystemPropertyConfigUtils.getSystemProperty(DUBBO_CONTAINER_KEY, LOADER.getDefaultExtensionName());
                 args = COMMA_SPLIT_PATTERN.split(config);
             }
 
@@ -64,7 +65,7 @@ public class Main {
             }
             logger.info("Use container type(" + Arrays.toString(args) + ") to run dubbo serivce.");
 
-            if ("true".equals(System.getProperty(DUBBO_SHUTDOWN_HOOK_KEY))) {
+            if ("true".equals(SystemPropertyConfigUtils.getSystemProperty(DUBBO_SHUTDOWN_HOOK_KEY))) {
                 Runtime.getRuntime().addShutdownHook(new Thread("dubbo-container-shutdown-hook") {
                     @Override
                     public void run() {
@@ -91,7 +92,7 @@ public class Main {
                 logger.info("Dubbo " + container.getClass().getSimpleName() + " started!");
             }
             System.out.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]").format(new Date())
-                    + " Dubbo service server started!");
+                + " Dubbo service server started!");
         } catch (RuntimeException e) {
             logger.error(CONFIG_START_DUBBO_ERROR, "", "", e.getMessage(), e);
             System.exit(1);
@@ -101,11 +102,11 @@ public class Main {
             STOP.await();
         } catch (InterruptedException e) {
             logger.warn(
-                    COMMON_THREAD_INTERRUPTED_EXCEPTION,
-                    "",
-                    "",
-                    "Dubbo service server stopped, interrupted by other thread!",
-                    e);
+                COMMON_THREAD_INTERRUPTED_EXCEPTION,
+                "",
+                "",
+                "Dubbo service server stopped, interrupted by other thread!",
+                e);
         } finally {
             LOCK.unlock();
         }

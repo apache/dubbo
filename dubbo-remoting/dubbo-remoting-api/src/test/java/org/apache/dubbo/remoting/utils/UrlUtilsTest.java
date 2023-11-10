@@ -17,7 +17,8 @@
 package org.apache.dubbo.remoting.utils;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -41,10 +42,10 @@ class UrlUtilsTest {
 
     @Test
     void testConfiguredHeartbeat() {
-        System.setProperty(Constants.DUBBO_HEARTBEAT_CONFIG_KEY, "200");
+        SystemPropertyConfigUtils.setSystemProperty(CommonConstants.DubboProperty.DUBBO_HEARTBEAT_CONFIG_KEY, "200");
         URL url = URL.valueOf("dubbo://127.0.0.1:12345");
         Assertions.assertEquals(200, UrlUtils.getHeartbeat(url));
-        System.clearProperty(Constants.DUBBO_HEARTBEAT_CONFIG_KEY);
+        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_HEARTBEAT_CONFIG_KEY);
     }
 
     @Test
@@ -65,9 +66,9 @@ class UrlUtilsTest {
 
     @Test
     void testConfiguredClose() {
-        System.setProperty(Constants.DUBBO_CLOSE_TIMEOUT_CONFIG_KEY, "180000");
+        SystemPropertyConfigUtils.setSystemProperty(CommonConstants.DubboProperty.DUBBO_CLOSE_TIMEOUT_CONFIG_KEY, "180000");
         URL url = URL.valueOf("dubbo://127.0.0.1:12345");
         Assertions.assertEquals(180000, UrlUtils.getCloseTimeout(url));
-        System.clearProperty(Constants.DUBBO_HEARTBEAT_CONFIG_KEY);
+        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_CLOSE_TIMEOUT_CONFIG_KEY);
     }
 }

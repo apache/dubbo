@@ -22,6 +22,7 @@ import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.utils.SerializeCheckStatus;
 import org.apache.dubbo.common.utils.SerializeSecurityManager;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.ByteArrayInputStream;
@@ -38,14 +39,14 @@ import com.example.test.TestPojo;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_HESSIAN_ALLOW_NON_SERIALIZABLE;
+import static org.apache.dubbo.common.constants.CommonConstants.DubboProperty.DUBBO_HESSIAN_ALLOW_NON_SERIALIZABLE;
 
 class Hessian2SerializationTest {
     @Test
     void testReadString() throws IOException {
         FrameworkModel frameworkModel = new FrameworkModel();
         Serialization serialization =
-                frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
+            frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
         URL url = URL.valueOf("").setScopeModel(frameworkModel);
 
         // write string, read string
@@ -133,7 +134,7 @@ class Hessian2SerializationTest {
     void testReadEvent() throws IOException, ClassNotFoundException {
         FrameworkModel frameworkModel = new FrameworkModel();
         Serialization serialization =
-                frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
+            frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
         URL url = URL.valueOf("").setScopeModel(frameworkModel);
 
         // write string, read event
@@ -208,7 +209,7 @@ class Hessian2SerializationTest {
     void testReadByte() throws IOException {
         FrameworkModel frameworkModel = new FrameworkModel();
         Serialization serialization =
-                frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
+            frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
         URL url = URL.valueOf("").setScopeModel(frameworkModel);
 
         // write byte, read byte
@@ -283,7 +284,7 @@ class Hessian2SerializationTest {
     void testReadObject() throws IOException, ClassNotFoundException {
         FrameworkModel frameworkModel = new FrameworkModel();
         Serialization serialization =
-                frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
+            frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
         URL url = URL.valueOf("").setScopeModel(frameworkModel);
 
         // write pojo, read pojo
@@ -291,7 +292,7 @@ class Hessian2SerializationTest {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             ObjectOutput objectOutput = serialization.serialize(url, outputStream);
             TrustedPojo trustedPojo =
-                    new TrustedPojo(ThreadLocalRandom.current().nextDouble());
+                new TrustedPojo(ThreadLocalRandom.current().nextDouble());
             objectOutput.writeObject(trustedPojo);
             objectOutput.flushBuffer();
 
@@ -306,7 +307,7 @@ class Hessian2SerializationTest {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             ObjectOutput objectOutput = serialization.serialize(url, outputStream);
             TrustedPojo trustedPojo =
-                    new TrustedPojo(ThreadLocalRandom.current().nextDouble());
+                new TrustedPojo(ThreadLocalRandom.current().nextDouble());
             LinkedList<TrustedPojo> pojos = new LinkedList<>();
             pojos.add(trustedPojo);
 
@@ -324,7 +325,7 @@ class Hessian2SerializationTest {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             ObjectOutput objectOutput = serialization.serialize(url, outputStream);
             TrustedPojo trustedPojo =
-                    new TrustedPojo(ThreadLocalRandom.current().nextDouble());
+                new TrustedPojo(ThreadLocalRandom.current().nextDouble());
             objectOutput.writeObject(trustedPojo);
             objectOutput.flushBuffer();
 
@@ -339,7 +340,7 @@ class Hessian2SerializationTest {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             ObjectOutput objectOutput = serialization.serialize(url, outputStream);
             TrustedPojo trustedPojo =
-                    new TrustedPojo(ThreadLocalRandom.current().nextDouble());
+                new TrustedPojo(ThreadLocalRandom.current().nextDouble());
             LinkedList<TrustedPojo> pojos = new LinkedList<>();
             pojos.add(trustedPojo);
 
@@ -357,7 +358,7 @@ class Hessian2SerializationTest {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             ObjectOutput objectOutput = serialization.serialize(url, outputStream);
             TrustedPojo trustedPojo =
-                    new TrustedPojo(ThreadLocalRandom.current().nextDouble());
+                new TrustedPojo(ThreadLocalRandom.current().nextDouble());
             LinkedList<TrustedPojo> pojos = new LinkedList<>();
             pojos.add(trustedPojo);
 
@@ -377,7 +378,7 @@ class Hessian2SerializationTest {
     void testReadObjectNotMatched() throws IOException, ClassNotFoundException {
         FrameworkModel frameworkModel = new FrameworkModel();
         Serialization serialization =
-                frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
+            frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
         URL url = URL.valueOf("").setScopeModel(frameworkModel);
 
         // write pojo, read list failed
@@ -385,7 +386,7 @@ class Hessian2SerializationTest {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             ObjectOutput objectOutput = serialization.serialize(url, outputStream);
             TrustedPojo trustedPojo =
-                    new TrustedPojo(ThreadLocalRandom.current().nextDouble());
+                new TrustedPojo(ThreadLocalRandom.current().nextDouble());
             objectOutput.writeObject(trustedPojo);
             objectOutput.flushBuffer();
 
@@ -400,7 +401,7 @@ class Hessian2SerializationTest {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             ObjectOutput objectOutput = serialization.serialize(url, outputStream);
             TrustedPojo trustedPojo =
-                    new TrustedPojo(ThreadLocalRandom.current().nextDouble());
+                new TrustedPojo(ThreadLocalRandom.current().nextDouble());
             objectOutput.writeObject(trustedPojo);
             objectOutput.flushBuffer();
 
@@ -415,7 +416,7 @@ class Hessian2SerializationTest {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             ObjectOutput objectOutput = serialization.serialize(url, outputStream);
             TrustedPojo trustedPojo =
-                    new TrustedPojo(ThreadLocalRandom.current().nextDouble());
+                new TrustedPojo(ThreadLocalRandom.current().nextDouble());
             objectOutput.writeObject(trustedPojo);
             objectOutput.flushBuffer();
 
@@ -430,7 +431,7 @@ class Hessian2SerializationTest {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             ObjectOutput objectOutput = serialization.serialize(url, outputStream);
             TrustedPojo trustedPojo =
-                    new TrustedPojo(ThreadLocalRandom.current().nextDouble());
+                new TrustedPojo(ThreadLocalRandom.current().nextDouble());
             objectOutput.writeObject(trustedPojo);
             objectOutput.flushBuffer();
 
@@ -445,7 +446,7 @@ class Hessian2SerializationTest {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             ObjectOutput objectOutput = serialization.serialize(url, outputStream);
             TrustedPojo trustedPojo =
-                    new TrustedPojo(ThreadLocalRandom.current().nextDouble());
+                new TrustedPojo(ThreadLocalRandom.current().nextDouble());
             objectOutput.writeObject(trustedPojo);
             objectOutput.flushBuffer();
 
@@ -460,7 +461,7 @@ class Hessian2SerializationTest {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             ObjectOutput objectOutput = serialization.serialize(url, outputStream);
             TrustedPojo trustedPojo =
-                    new TrustedPojo(ThreadLocalRandom.current().nextDouble());
+                new TrustedPojo(ThreadLocalRandom.current().nextDouble());
             objectOutput.writeObject(trustedPojo);
             objectOutput.flushBuffer();
 
@@ -475,7 +476,7 @@ class Hessian2SerializationTest {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             ObjectOutput objectOutput = serialization.serialize(url, outputStream);
             TrustedPojo trustedPojo =
-                    new TrustedPojo(ThreadLocalRandom.current().nextDouble());
+                new TrustedPojo(ThreadLocalRandom.current().nextDouble());
             LinkedList<TrustedPojo> pojos = new LinkedList<>();
             pojos.add(trustedPojo);
 
@@ -493,7 +494,7 @@ class Hessian2SerializationTest {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             ObjectOutput objectOutput = serialization.serialize(url, outputStream);
             TrustedPojo trustedPojo =
-                    new TrustedPojo(ThreadLocalRandom.current().nextDouble());
+                new TrustedPojo(ThreadLocalRandom.current().nextDouble());
             LinkedList<TrustedPojo> pojos = new LinkedList<>();
             pojos.add(trustedPojo);
 
@@ -513,7 +514,7 @@ class Hessian2SerializationTest {
     void testLimit1() throws IOException, ClassNotFoundException {
         FrameworkModel frameworkModel = new FrameworkModel();
         Serialization serialization =
-                frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
+            frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
         URL url = URL.valueOf("").setScopeModel(frameworkModel);
 
         // write trusted, read trusted
@@ -536,11 +537,11 @@ class Hessian2SerializationTest {
     void testLimit2() throws IOException, ClassNotFoundException {
         FrameworkModel frameworkModel = new FrameworkModel();
         Serialization serialization =
-                frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
+            frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
         frameworkModel
-                .getBeanFactory()
-                .getBean(SerializeSecurityManager.class)
-                .setCheckStatus(SerializeCheckStatus.STRICT);
+            .getBeanFactory()
+            .getBean(SerializeSecurityManager.class)
+            .setCheckStatus(SerializeCheckStatus.STRICT);
         URL url = URL.valueOf("").setScopeModel(frameworkModel);
 
         // write untrusted failed
@@ -557,12 +558,12 @@ class Hessian2SerializationTest {
     void testLimit3() throws IOException, ClassNotFoundException {
         FrameworkModel frameworkModel = new FrameworkModel();
         Serialization serialization =
-                frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
+            frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
         URL url = URL.valueOf("").setScopeModel(frameworkModel);
 
         // write un-serializable failed
         TrustedNotSerializable trustedPojo =
-                new TrustedNotSerializable(ThreadLocalRandom.current().nextDouble());
+            new TrustedNotSerializable(ThreadLocalRandom.current().nextDouble());
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ObjectOutput objectOutput = serialization.serialize(url, outputStream);
@@ -579,15 +580,15 @@ class Hessian2SerializationTest {
         {
             FrameworkModel frameworkModel = new FrameworkModel();
             Serialization serialization =
-                    frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
+                frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
             URL url = URL.valueOf("").setScopeModel(frameworkModel);
 
             TestPojo trustedPojo = new TestPojo("12345");
 
             frameworkModel
-                    .getBeanFactory()
-                    .getBean(SerializeSecurityManager.class)
-                    .addToAllowed(trustedPojo.getClass().getName());
+                .getBeanFactory()
+                .getBean(SerializeSecurityManager.class)
+                .addToAllowed(trustedPojo.getClass().getName());
             ObjectOutput objectOutput = serialization.serialize(url, outputStream);
             objectOutput.writeObject(trustedPojo);
             objectOutput.flushBuffer();
@@ -598,14 +599,14 @@ class Hessian2SerializationTest {
         {
             FrameworkModel frameworkModel = new FrameworkModel();
             Serialization serialization =
-                    frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
+                frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
             URL url = URL.valueOf("").setScopeModel(frameworkModel);
 
             byte[] bytes = outputStream.toByteArray();
             frameworkModel
-                    .getBeanFactory()
-                    .getBean(SerializeSecurityManager.class)
-                    .setCheckStatus(SerializeCheckStatus.STRICT);
+                .getBeanFactory()
+                .getBean(SerializeSecurityManager.class)
+                .setCheckStatus(SerializeCheckStatus.STRICT);
             ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
             ObjectInput objectInput = serialization.deserialize(url, inputStream);
             Assertions.assertInstanceOf(Map.class, objectInput.readObject());
@@ -619,31 +620,31 @@ class Hessian2SerializationTest {
         // write force un-serializable, read failed
 
         {
-            System.setProperty(DUBBO_HESSIAN_ALLOW_NON_SERIALIZABLE, "true");
+            SystemPropertyConfigUtils.setSystemProperty(DUBBO_HESSIAN_ALLOW_NON_SERIALIZABLE, "true");
             FrameworkModel frameworkModel = new FrameworkModel();
             Serialization serialization =
-                    frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
+                frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
             URL url = URL.valueOf("").setScopeModel(frameworkModel);
 
             TrustedNotSerializable trustedPojo =
-                    new TrustedNotSerializable(ThreadLocalRandom.current().nextDouble());
+                new TrustedNotSerializable(ThreadLocalRandom.current().nextDouble());
 
             frameworkModel
-                    .getBeanFactory()
-                    .getBean(SerializeSecurityManager.class)
-                    .setCheckSerializable(false);
+                .getBeanFactory()
+                .getBean(SerializeSecurityManager.class)
+                .setCheckSerializable(false);
             ObjectOutput objectOutput = serialization.serialize(url, outputStream);
             objectOutput.writeObject(trustedPojo);
             objectOutput.flushBuffer();
 
             frameworkModel.destroy();
-            System.clearProperty(DUBBO_HESSIAN_ALLOW_NON_SERIALIZABLE);
+            SystemPropertyConfigUtils.clearSystemProperty(DUBBO_HESSIAN_ALLOW_NON_SERIALIZABLE);
         }
 
         {
             FrameworkModel frameworkModel = new FrameworkModel();
             Serialization serialization =
-                    frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
+                frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
             URL url = URL.valueOf("").setScopeModel(frameworkModel);
 
             byte[] bytes = outputStream.toByteArray();

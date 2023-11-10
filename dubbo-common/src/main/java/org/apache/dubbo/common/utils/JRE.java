@@ -19,7 +19,7 @@ package org.apache.dubbo.common.utils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
-import static org.apache.dubbo.common.constants.CommonConstants.SYSTEM_JAVA_VERSION;
+import static org.apache.dubbo.common.constants.CommonConstants.SystemProperty.SYSTEM_JAVA_VERSION;
 
 /**
  * JRE version
@@ -83,7 +83,7 @@ public enum JRE {
 
     private static JRE getJre() {
         // get java version from system property
-        String version = System.getProperty(SYSTEM_JAVA_VERSION);
+        String version = SystemPropertyConfigUtils.getSystemProperty(SYSTEM_JAVA_VERSION);
         boolean isBlank = StringUtils.isBlank(version);
         if (isBlank) {
             logger.debug("java.version is blank");
@@ -130,8 +130,8 @@ public enum JRE {
             }
         } catch (Exception e) {
             logger.debug(
-                    "Can't determine current JRE version (maybe java.version is null), assuming that JRE version is 8.",
-                    e);
+                "Can't determine current JRE version (maybe java.version is null), assuming that JRE version is 8.",
+                e);
         }
         // default java 8
         return JAVA_8;

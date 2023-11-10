@@ -40,9 +40,6 @@ import com.service.deep1.deep2.deep3.DemoService3;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST;
-
 class SerializeSecurityConfiguratorTest {
 
     @Test
@@ -54,7 +51,7 @@ class SerializeSecurityConfiguratorTest {
 
         SerializeSecurityConfigurator serializeSecurityConfigurator = new SerializeSecurityConfigurator(moduleModel);
         serializeSecurityConfigurator.onAddClassLoader(
-                moduleModel, Thread.currentThread().getContextClassLoader());
+            moduleModel, Thread.currentThread().getContextClassLoader());
 
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("java.util.HashMap"));
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.example.DemoInterface"));
@@ -79,7 +76,7 @@ class SerializeSecurityConfiguratorTest {
 
         SerializeSecurityConfigurator serializeSecurityConfigurator = new SerializeSecurityConfigurator(moduleModel);
         serializeSecurityConfigurator.onAddClassLoader(
-                moduleModel, Thread.currentThread().getContextClassLoader());
+            moduleModel, Thread.currentThread().getContextClassLoader());
 
         Assertions.assertEquals(SerializeCheckStatus.DISABLE, ssm.getCheckStatus());
 
@@ -99,7 +96,7 @@ class SerializeSecurityConfiguratorTest {
 
         SerializeSecurityConfigurator serializeSecurityConfigurator = new SerializeSecurityConfigurator(moduleModel);
         serializeSecurityConfigurator.onAddClassLoader(
-                moduleModel, Thread.currentThread().getContextClassLoader());
+            moduleModel, Thread.currentThread().getContextClassLoader());
 
         Assertions.assertEquals(SerializeCheckStatus.WARN, ssm.getCheckStatus());
 
@@ -119,7 +116,7 @@ class SerializeSecurityConfiguratorTest {
 
         SerializeSecurityConfigurator serializeSecurityConfigurator = new SerializeSecurityConfigurator(moduleModel);
         serializeSecurityConfigurator.onAddClassLoader(
-                moduleModel, Thread.currentThread().getContextClassLoader());
+            moduleModel, Thread.currentThread().getContextClassLoader());
 
         Assertions.assertEquals(SerializeCheckStatus.STRICT, ssm.getCheckStatus());
 
@@ -131,17 +128,17 @@ class SerializeSecurityConfiguratorTest {
         FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
-        System.setProperty(CommonConstants.DUBBO_CLASS_DESERIALIZE_OPEN_CHECK, "false");
+        SystemPropertyConfigUtils.setSystemProperty(CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_OPEN_CHECK, "false");
 
         SerializeSecurityManager ssm = frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class);
 
         SerializeSecurityConfigurator serializeSecurityConfigurator = new SerializeSecurityConfigurator(moduleModel);
         serializeSecurityConfigurator.onAddClassLoader(
-                moduleModel, Thread.currentThread().getContextClassLoader());
+            moduleModel, Thread.currentThread().getContextClassLoader());
 
         Assertions.assertEquals(SerializeCheckStatus.DISABLE, ssm.getCheckStatus());
 
-        System.clearProperty(CommonConstants.DUBBO_CLASS_DESERIALIZE_OPEN_CHECK);
+        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_OPEN_CHECK);
         frameworkModel.destroy();
     }
 
@@ -150,17 +147,17 @@ class SerializeSecurityConfiguratorTest {
         FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
-        System.setProperty(CommonConstants.DUBBO_CLASS_DESERIALIZE_BLOCK_ALL, "true");
+        SystemPropertyConfigUtils.setSystemProperty(CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCK_ALL, "true");
 
         SerializeSecurityManager ssm = frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class);
 
         SerializeSecurityConfigurator serializeSecurityConfigurator = new SerializeSecurityConfigurator(moduleModel);
         serializeSecurityConfigurator.onAddClassLoader(
-                moduleModel, Thread.currentThread().getContextClassLoader());
+            moduleModel, Thread.currentThread().getContextClassLoader());
 
         Assertions.assertEquals(SerializeCheckStatus.STRICT, ssm.getCheckStatus());
 
-        System.clearProperty(CommonConstants.DUBBO_CLASS_DESERIALIZE_BLOCK_ALL);
+        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCK_ALL);
         frameworkModel.destroy();
     }
 
@@ -169,18 +166,18 @@ class SerializeSecurityConfiguratorTest {
         FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
-        System.setProperty(DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST, "test.package1, test.package2, ,");
+        SystemPropertyConfigUtils.setSystemProperty(CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST, "test.package1, test.package2, ,");
 
         SerializeSecurityManager ssm = frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class);
 
         SerializeSecurityConfigurator serializeSecurityConfigurator = new SerializeSecurityConfigurator(moduleModel);
         serializeSecurityConfigurator.onAddClassLoader(
-                moduleModel, Thread.currentThread().getContextClassLoader());
+            moduleModel, Thread.currentThread().getContextClassLoader());
 
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("test.package1"));
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("test.package2"));
 
-        System.clearProperty(CommonConstants.DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST);
+        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST);
         frameworkModel.destroy();
     }
 
@@ -189,18 +186,18 @@ class SerializeSecurityConfiguratorTest {
         FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
-        System.setProperty(DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST, "test.package1, test.package2, ,");
+        SystemPropertyConfigUtils.setSystemProperty(CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST, "test.package1, test.package2, ,");
 
         SerializeSecurityManager ssm = frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class);
 
         SerializeSecurityConfigurator serializeSecurityConfigurator = new SerializeSecurityConfigurator(moduleModel);
         serializeSecurityConfigurator.onAddClassLoader(
-                moduleModel, Thread.currentThread().getContextClassLoader());
+            moduleModel, Thread.currentThread().getContextClassLoader());
 
         Assertions.assertTrue(ssm.getDisAllowedPrefix().contains("test.package1"));
         Assertions.assertTrue(ssm.getDisAllowedPrefix().contains("test.package2"));
 
-        System.clearProperty(CommonConstants.DUBBO_CLASS_DESERIALIZE_BLOCK_ALL);
+        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCK_ALL);
         frameworkModel.destroy();
     }
 
@@ -209,20 +206,20 @@ class SerializeSecurityConfiguratorTest {
         FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
-        System.setProperty(DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST, "test.package1, test.package2, ,");
-        System.setProperty(DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST, "test.package1, test.package2, ,");
+        SystemPropertyConfigUtils.setSystemProperty(CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST, "test.package1, test.package2, ,");
+        SystemPropertyConfigUtils.setSystemProperty(CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST, "test.package1, test.package2, ,");
 
         SerializeSecurityManager ssm = frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class);
 
         SerializeSecurityConfigurator serializeSecurityConfigurator = new SerializeSecurityConfigurator(moduleModel);
         serializeSecurityConfigurator.onAddClassLoader(
-                moduleModel, Thread.currentThread().getContextClassLoader());
+            moduleModel, Thread.currentThread().getContextClassLoader());
 
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("test.package1"));
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("test.package2"));
 
-        System.clearProperty(CommonConstants.DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST);
-        System.clearProperty(CommonConstants.DUBBO_CLASS_DESERIALIZE_BLOCK_ALL);
+        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST);
+        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCK_ALL);
         frameworkModel.destroy();
     }
 
@@ -239,7 +236,7 @@ class SerializeSecurityConfiguratorTest {
 
         SerializeSecurityConfigurator serializeSecurityConfigurator = new SerializeSecurityConfigurator(moduleModel);
         serializeSecurityConfigurator.onAddClassLoader(
-                moduleModel, Thread.currentThread().getContextClassLoader());
+            moduleModel, Thread.currentThread().getContextClassLoader());
 
         Assertions.assertFalse(ssm.isCheckSerializable());
 
@@ -256,7 +253,7 @@ class SerializeSecurityConfiguratorTest {
 
         SerializeSecurityConfigurator serializeSecurityConfigurator = new SerializeSecurityConfigurator(moduleModel);
         serializeSecurityConfigurator.onAddClassLoader(
-                moduleModel, Thread.currentThread().getContextClassLoader());
+            moduleModel, Thread.currentThread().getContextClassLoader());
 
         Assertions.assertTrue(ssm.isCheckSerializable());
 
@@ -273,7 +270,7 @@ class SerializeSecurityConfiguratorTest {
 
         SerializeSecurityConfigurator serializeSecurityConfigurator = new SerializeSecurityConfigurator(moduleModel);
         serializeSecurityConfigurator.onAddClassLoader(
-                moduleModel, Thread.currentThread().getContextClassLoader());
+            moduleModel, Thread.currentThread().getContextClassLoader());
 
         serializeSecurityConfigurator.registerInterface(DemoService4.class);
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.service.DemoService4"));
@@ -291,7 +288,7 @@ class SerializeSecurityConfiguratorTest {
 
         SerializeSecurityConfigurator serializeSecurityConfigurator = new SerializeSecurityConfigurator(moduleModel);
         serializeSecurityConfigurator.onAddClassLoader(
-                moduleModel, Thread.currentThread().getContextClassLoader());
+            moduleModel, Thread.currentThread().getContextClassLoader());
 
         serializeSecurityConfigurator.registerInterface(UserService.class);
         Assertions.assertTrue(ssm.getAllowedPrefix().contains(UserService.class.getName()));
@@ -312,7 +309,7 @@ class SerializeSecurityConfiguratorTest {
 
         SerializeSecurityConfigurator serializeSecurityConfigurator = new SerializeSecurityConfigurator(moduleModel);
         serializeSecurityConfigurator.onAddClassLoader(
-                moduleModel, Thread.currentThread().getContextClassLoader());
+            moduleModel, Thread.currentThread().getContextClassLoader());
 
         serializeSecurityConfigurator.registerInterface(DemoService1.class);
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.service.DemoService1"));
@@ -346,7 +343,7 @@ class SerializeSecurityConfiguratorTest {
 
         SerializeSecurityConfigurator serializeSecurityConfigurator = new SerializeSecurityConfigurator(moduleModel);
         serializeSecurityConfigurator.onAddClassLoader(
-                moduleModel, Thread.currentThread().getContextClassLoader());
+            moduleModel, Thread.currentThread().getContextClassLoader());
 
         serializeSecurityConfigurator.registerInterface(DemoService2.class);
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.service.DemoService2"));
@@ -383,7 +380,7 @@ class SerializeSecurityConfiguratorTest {
 
         SerializeSecurityConfigurator serializeSecurityConfigurator = new SerializeSecurityConfigurator(moduleModel);
         serializeSecurityConfigurator.onAddClassLoader(
-                moduleModel, Thread.currentThread().getContextClassLoader());
+            moduleModel, Thread.currentThread().getContextClassLoader());
 
         serializeSecurityConfigurator.registerInterface(DemoService1.class);
         Assertions.assertFalse(ssm.getAllowedPrefix().contains("com.service.DemoService1"));
@@ -413,7 +410,7 @@ class SerializeSecurityConfiguratorTest {
 
         SerializeSecurityConfigurator serializeSecurityConfigurator = new SerializeSecurityConfigurator(moduleModel);
         serializeSecurityConfigurator.onAddClassLoader(
-                moduleModel, Thread.currentThread().getContextClassLoader());
+            moduleModel, Thread.currentThread().getContextClassLoader());
 
         serializeSecurityConfigurator.registerInterface(DemoService3.class);
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.service.deep1.deep2."));
@@ -434,7 +431,7 @@ class SerializeSecurityConfiguratorTest {
 
         SerializeSecurityConfigurator serializeSecurityConfigurator = new SerializeSecurityConfigurator(moduleModel);
         serializeSecurityConfigurator.onAddClassLoader(
-                moduleModel, Thread.currentThread().getContextClassLoader());
+            moduleModel, Thread.currentThread().getContextClassLoader());
 
         serializeSecurityConfigurator.registerInterface(DemoService3.class);
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.service.deep1.deep2.deep3.DemoService3"));

@@ -22,6 +22,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.RegexProperties;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.context.ConfigMode;
 import org.apache.dubbo.config.support.Parameter;
@@ -42,7 +43,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
-import static org.apache.dubbo.common.constants.CommonConstants.SYSTEM_USER_HOME;
+import static org.apache.dubbo.common.constants.CommonConstants.SystemProperty.USER_HOME;
 import static org.apache.dubbo.common.constants.CommonConstants.UNLOAD_CLUSTER_RELATED;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 
@@ -135,8 +136,8 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         super.preProcessRefresh();
         if (consumer == null) {
             consumer = getModuleConfigManager()
-                    .getDefaultConsumer()
-                    .orElseThrow(() -> new IllegalStateException("Default consumer is not initialized"));
+                .getDefaultConsumer()
+                .orElseThrow(() -> new IllegalStateException("Default consumer is not initialized"));
         }
         // try set properties from `dubbo.reference` if not set in current config
         refreshWithPrefixes(super.getPrefixes(), ConfigMode.OVERRIDE_IF_ABSENT);
@@ -230,8 +231,8 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     public static Class<?> determineInterfaceClass(String generic, String interfaceName, ClassLoader classLoader) {
         if (ProtocolUtils.isGeneric(generic)) {
             return Dubbo2CompactUtils.isEnabled() && Dubbo2CompactUtils.isGenericServiceClassLoaded()
-                    ? Dubbo2CompactUtils.getGenericServiceClass()
-                    : GenericService.class;
+                ? Dubbo2CompactUtils.getGenericServiceClass()
+                : GenericService.class;
         }
         try {
             if (StringUtils.isNotEmpty(interfaceName)) {
@@ -263,7 +264,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
             if (interfaceClass != null) {
                 try {
                     if (!interfaceClass.equals(
-                            Class.forName(interfaceClass.getName(), false, getInterfaceClassLoader()))) {
+                        Class.forName(interfaceClass.getName(), false, getInterfaceClassLoader()))) {
                         // interfaceClass is not visible from origin classloader, override the classloader from
                         // interfaceClass into referenceConfig
                         setInterfaceClassLoader(interfaceClass.getClassLoader());
@@ -312,10 +313,10 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         String resolve = System.getProperty(interfaceName);
         String resolveFile = null;
         if (StringUtils.isEmpty(resolve)) {
-            resolveFile = System.getProperty(CommonConstants.DUBBO_RESOLVE_FILE);
+            resolveFile = SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO_RESOLVE_FILE);
             if (StringUtils.isEmpty(resolveFile)) {
                 File userResolveFile =
-                        new File(new File(System.getProperty(SYSTEM_USER_HOME)), "dubbo-resolve.properties");
+                    new File(new File(SystemPropertyConfigUtils.getSystemProperty(USER_HOME)), "dubbo-resolve.properties");
                 if (userResolveFile.exists()) {
                     resolveFile = userResolveFile.getAbsolutePath();
                 }
@@ -336,17 +337,17 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
             if (logger.isWarnEnabled()) {
                 if (resolveFile != null) {
                     logger.warn(
-                            COMMON_UNEXPECTED_EXCEPTION,
-                            "",
-                            "",
-                            "Using default dubbo resolve file " + resolveFile + " replace " + interfaceName + ""
-                                    + resolve + " to p2p invoke remote service.");
+                        COMMON_UNEXPECTED_EXCEPTION,
+                        "",
+                        "",
+                        "Using default dubbo resolve file " + resolveFile + " replace " + interfaceName + ""
+                            + resolve + " to p2p invoke remote service.");
                 } else {
                     logger.warn(
-                            COMMON_UNEXPECTED_EXCEPTION,
-                            "",
-                            "",
-                            "Using -D" + interfaceName + "=" + resolve + " to p2p invoke remote service.");
+                        COMMON_UNEXPECTED_EXCEPTION,
+                        "",
+                        "",
+                        "Using -D" + interfaceName + "=" + resolve + " to p2p invoke remote service.");
                 }
             }
         }
@@ -369,8 +370,8 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     @Override
     public String getVersion() {
         return StringUtils.isEmpty(this.version)
-                ? (consumer != null ? consumer.getVersion() : this.version)
-                : this.version;
+            ? (consumer != null ? consumer.getVersion() : this.version)
+            : this.version;
     }
 
     @Override

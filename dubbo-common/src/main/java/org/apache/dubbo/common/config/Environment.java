@@ -25,6 +25,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.context.ConfigConfigurationAdapter;
 import org.apache.dubbo.rpc.model.ScopeModel;
@@ -96,10 +97,10 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
      */
     @Deprecated
     private void loadMigrationRule() {
-        if (Boolean.parseBoolean(System.getProperty(CommonConstants.DUBBO_MIGRATION_FILE_ENABLE, "false"))) {
-            String path = System.getProperty(CommonConstants.DUBBO_MIGRATION_KEY);
+        if (Boolean.parseBoolean(SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO_MIGRATION_FILE_ENABLE, "false"))) {
+            String path = SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO_MIGRATION_KEY);
             if (StringUtils.isEmpty(path)) {
-                path = System.getenv(CommonConstants.DUBBO_MIGRATION_KEY);
+                path = System.getenv(CommonConstants.DubboProperty.DUBBO_MIGRATION_KEY);
                 if (StringUtils.isEmpty(path)) {
                     path = CommonConstants.DEFAULT_DUBBO_MIGRATION_FILE;
                 }
@@ -271,11 +272,11 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
                 defaultDynamicConfiguration.close();
             } catch (Exception e) {
                 logger.warn(
-                        COMMON_UNEXPECTED_EXCEPTION,
-                        "",
-                        "",
-                        "close dynamic configuration failed: " + e.getMessage(),
-                        e);
+                    COMMON_UNEXPECTED_EXCEPTION,
+                    "",
+                    "",
+                    "close dynamic configuration failed: " + e.getMessage(),
+                    e);
             }
             defaultDynamicConfiguration = null;
         }
@@ -335,10 +336,10 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
             if (defaultDynamicConfiguration == null) {
                 if (logger.isWarnEnabled()) {
                     logger.warn(
-                            COMMON_UNEXPECTED_EXCEPTION,
-                            "",
-                            "",
-                            "dynamicConfiguration is null , return globalConfiguration.");
+                        COMMON_UNEXPECTED_EXCEPTION,
+                        "",
+                        "",
+                        "dynamicConfiguration is null , return globalConfiguration.");
                 }
                 return getConfiguration();
             }

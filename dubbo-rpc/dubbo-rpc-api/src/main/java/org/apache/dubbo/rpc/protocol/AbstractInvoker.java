@@ -28,6 +28,7 @@ import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.utils.UrlUtils;
@@ -93,7 +94,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
      * Whether set future to Thread Local when invocation mode is sync
      */
     private static final boolean setFutureWhenSync =
-            Boolean.parseBoolean(System.getProperty(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true"));
+        Boolean.parseBoolean(SystemPropertyConfigUtils.getSystemProperty(CommonConstants.ThirdPartyProperty.SET_FUTURE_IN_SYNC_MODE, "true"));
 
     // -- Constructor
 
@@ -174,12 +175,12 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         // if invoker is destroyed due to address refresh from registry, let's allow the current invoke to proceed
         if (isDestroyed()) {
             logger.warn(
-                    PROTOCOL_FAILED_REQUEST,
-                    "",
-                    "",
-                    "Invoker for service " + this + " on consumer " + NetUtils.getLocalHost() + " is destroyed, "
-                            + ", dubbo version is " + Version.getVersion()
-                            + ", this invoker should not be used any longer");
+                PROTOCOL_FAILED_REQUEST,
+                "",
+                "",
+                "Invoker for service " + this + " on consumer " + NetUtils.getLocalHost() + " is destroyed, "
+                    + ", dubbo version is " + Version.getVersion()
+                    + ", this invoker should not be used any longer");
         }
 
         RpcInvocation invocation = (RpcInvocation) inv;
@@ -236,7 +237,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
 
         // client context attachment
         Map<String, Object> clientContextAttachments =
-                RpcContext.getClientAttachment().getObjectAttachments();
+            RpcContext.getClientAttachment().getObjectAttachments();
         if (CollectionUtils.isNotEmptyMap(clientContextAttachments)) {
             invocation.addObjectAttachmentsIfAbsent(clientContextAttachments);
         }
@@ -293,42 +294,42 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new RpcException(
-                    "Interrupted unexpectedly while waiting for remote result to return! method: "
-                            + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(),
-                    e);
+                "Interrupted unexpectedly while waiting for remote result to return! method: "
+                    + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(),
+                e);
         } catch (ExecutionException e) {
             Throwable rootCause = e.getCause();
             if (rootCause instanceof TimeoutException) {
                 throw new RpcException(
-                        RpcException.TIMEOUT_EXCEPTION,
-                        "Invoke remote method timeout. method: " + invocation.getMethodName() + ", provider: "
-                                + getUrl() + ", cause: " + e.getMessage(),
-                        e);
+                    RpcException.TIMEOUT_EXCEPTION,
+                    "Invoke remote method timeout. method: " + invocation.getMethodName() + ", provider: "
+                        + getUrl() + ", cause: " + e.getMessage(),
+                    e);
             } else if (rootCause instanceof RemotingException) {
                 throw new RpcException(
-                        RpcException.NETWORK_EXCEPTION,
-                        "Failed to invoke remote method: " + invocation.getMethodName() + ", provider: " + getUrl()
-                                + ", cause: " + e.getMessage(),
-                        e);
+                    RpcException.NETWORK_EXCEPTION,
+                    "Failed to invoke remote method: " + invocation.getMethodName() + ", provider: " + getUrl()
+                        + ", cause: " + e.getMessage(),
+                    e);
             } else if (rootCause instanceof SerializationException) {
                 throw new RpcException(
-                        RpcException.SERIALIZATION_EXCEPTION,
-                        "Invoke remote method failed cause by serialization error.  remote method: "
-                                + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(),
-                        e);
+                    RpcException.SERIALIZATION_EXCEPTION,
+                    "Invoke remote method failed cause by serialization error.  remote method: "
+                        + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(),
+                    e);
             } else {
                 throw new RpcException(
-                        RpcException.UNKNOWN_EXCEPTION,
-                        "Fail to invoke remote method: " + invocation.getMethodName() + ", provider: " + getUrl()
-                                + ", cause: " + e.getMessage(),
-                        e);
+                    RpcException.UNKNOWN_EXCEPTION,
+                    "Fail to invoke remote method: " + invocation.getMethodName() + ", provider: " + getUrl()
+                        + ", cause: " + e.getMessage(),
+                    e);
             }
         } catch (java.util.concurrent.TimeoutException e) {
             throw new RpcException(
-                    RpcException.TIMEOUT_EXCEPTION,
-                    "Invoke remote method timeout. method: " + invocation.getMethodName() + ", provider: " + getUrl()
-                            + ", cause: " + e.getMessage(),
-                    e);
+                RpcException.TIMEOUT_EXCEPTION,
+                "Invoke remote method timeout. method: " + invocation.getMethodName() + ", provider: " + getUrl()
+                    + ", cause: " + e.getMessage(),
+                e);
         } catch (Throwable e) {
             throw new RpcException(e.getMessage(), e);
         }
@@ -341,7 +342,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
             return new ThreadlessExecutor();
         }
         return ExecutorRepository.getInstance(url.getOrDefaultApplicationModel())
-                .getExecutor(url);
+            .getExecutor(url);
     }
 
     /**

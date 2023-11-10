@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.constants.CommonConstants;
+
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
@@ -25,7 +27,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_NETWORK_IGNORED_INTERFACE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NetUtilsInterfaceDisplayNameHasMetaCharactersTest {
@@ -79,10 +80,10 @@ class NetUtilsInterfaceDisplayNameHasMetaCharactersTest {
 
             // mock static method getNetworkInterfaces
             mockedStaticNetif
-                    .when(() -> {
-                        NetworkInterface.getNetworkInterfaces();
-                    })
-                    .thenReturn(mockEnumIfs);
+                .when(() -> {
+                    NetworkInterface.getNetworkInterfaces();
+                })
+                .thenReturn(mockEnumIfs);
 
             Mockito.when(mockIgnoredNetif.isUp()).thenReturn(true);
             Mockito.when(mockIgnoredNetif.getDisplayName()).thenReturn(IGNORED_DISPLAY_NAME_HAS_METACHARACTERS);
@@ -105,14 +106,14 @@ class NetUtilsInterfaceDisplayNameHasMetaCharactersTest {
     }
 
     private String getIgnoredInterfaces() {
-        return System.getProperty(DUBBO_NETWORK_IGNORED_INTERFACE);
+        return SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO_NETWORK_IGNORED_INTERFACE);
     }
 
     private void setIgnoredInterfaces(String ignoredInterfaces) {
         if (ignoredInterfaces != null) {
-            System.setProperty(DUBBO_NETWORK_IGNORED_INTERFACE, ignoredInterfaces);
+            SystemPropertyConfigUtils.setSystemProperty(CommonConstants.DubboProperty.DUBBO_NETWORK_IGNORED_INTERFACE, ignoredInterfaces);
         } else {
-            System.setProperty(DUBBO_NETWORK_IGNORED_INTERFACE, "");
+            SystemPropertyConfigUtils.setSystemProperty(CommonConstants.DubboProperty.DUBBO_NETWORK_IGNORED_INTERFACE, "");
         }
     }
 }

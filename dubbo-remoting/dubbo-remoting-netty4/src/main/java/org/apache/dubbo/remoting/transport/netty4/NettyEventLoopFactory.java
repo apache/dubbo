@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.resource.GlobalResourceInitializer;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.remoting.Constants;
 
 import java.util.concurrent.ThreadFactory;
@@ -34,23 +35,23 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
 import static org.apache.dubbo.common.constants.CommonConstants.OS_LINUX_PREFIX;
-import static org.apache.dubbo.common.constants.CommonConstants.OS_NAME_KEY;
-import static org.apache.dubbo.remoting.Constants.NETTY_EPOLL_ENABLE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SystemProperty.SYSTEM_OS_NAME;
+import static org.apache.dubbo.common.constants.CommonConstants.ThirdPartyProperty.NETTY_EPOLL_ENABLE_KEY;
 
 public class NettyEventLoopFactory {
     /**
      * netty client bootstrap
      */
     public static final GlobalResourceInitializer<EventLoopGroup> NIO_EVENT_LOOP_GROUP =
-            new GlobalResourceInitializer<>(
-                    () -> eventLoopGroup(Constants.DEFAULT_IO_THREADS, "NettyClientWorker"),
-                    eventLoopGroup -> eventLoopGroup.shutdownGracefully());
+        new GlobalResourceInitializer<>(
+            () -> eventLoopGroup(Constants.DEFAULT_IO_THREADS, "NettyClientWorker"),
+            eventLoopGroup -> eventLoopGroup.shutdownGracefully());
 
     public static EventLoopGroup eventLoopGroup(int threads, String threadFactoryName) {
         ThreadFactory threadFactory = new DefaultThreadFactory(threadFactoryName, true);
         return shouldEpoll()
-                ? new EpollEventLoopGroup(threads, threadFactory)
-                : new NioEventLoopGroup(threads, threadFactory);
+            ? new EpollEventLoopGroup(threads, threadFactory)
+            : new NioEventLoopGroup(threads, threadFactory);
     }
 
     public static Class<? extends SocketChannel> socketChannelClass() {
@@ -62,8 +63,8 @@ public class NettyEventLoopFactory {
     }
 
     private static boolean shouldEpoll() {
-        if (Boolean.parseBoolean(System.getProperty(NETTY_EPOLL_ENABLE_KEY, "false"))) {
-            String osName = System.getProperty(OS_NAME_KEY);
+        if (Boolean.parseBoolean(SystemPropertyConfigUtils.getSystemProperty(NETTY_EPOLL_ENABLE_KEY, "false"))) {
+            String osName = SystemPropertyConfigUtils.getSystemProperty(SYSTEM_OS_NAME);
             return osName.toLowerCase().contains(OS_LINUX_PREFIX) && Epoll.isAvailable();
         }
 

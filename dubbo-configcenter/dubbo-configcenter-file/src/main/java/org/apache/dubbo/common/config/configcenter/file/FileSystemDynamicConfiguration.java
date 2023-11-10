@@ -22,6 +22,7 @@ import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.TreePathDynamicConfiguration;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.function.ThrowableConsumer;
 import org.apache.dubbo.common.function.ThrowableFunction;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
@@ -29,6 +30,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
@@ -84,7 +86,7 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
     public static final String CONFIG_CENTER_ENCODING_PARAM_NAME = PARAM_NAME_PREFIX + "encoding";
 
     public static final String DEFAULT_CONFIG_CENTER_DIR_PATH =
-            System.getProperty("user.home") + File.separator + ".dubbo" + File.separator + "config-center";
+        SystemPropertyConfigUtils.getSystemProperty(CommonConstants.SystemProperty.USER_HOME) + File.separator + ".dubbo" + File.separator + "config-center";
 
     public static final int DEFAULT_THREAD_POOL_SIZE = 1;
 
@@ -103,21 +105,21 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
      * Logger
      */
     private static final ErrorTypeAwareLogger logger =
-            LoggerFactory.getErrorTypeAwareLogger(FileSystemDynamicConfiguration.class);
+        LoggerFactory.getErrorTypeAwareLogger(FileSystemDynamicConfiguration.class);
 
     /**
      * The unmodifiable map for {@link ConfigChangeType} whose key is the {@link WatchEvent.Kind#name() name} of
      * {@link WatchEvent.Kind WatchEvent's Kind}
      */
     private static final Map<String, ConfigChangeType> CONFIG_CHANGE_TYPES_MAP =
-            unmodifiableMap(new HashMap<String, ConfigChangeType>() {
-                // Initializes the elements that is mapping ConfigChangeType
-                {
-                    put(ENTRY_CREATE.name(), ConfigChangeType.ADDED);
-                    put(ENTRY_DELETE.name(), ConfigChangeType.DELETED);
-                    put(ENTRY_MODIFY.name(), ConfigChangeType.MODIFIED);
-                }
-            });
+        unmodifiableMap(new HashMap<String, ConfigChangeType>() {
+            // Initializes the elements that is mapping ConfigChangeType
+            {
+                put(ENTRY_CREATE.name(), ConfigChangeType.ADDED);
+                put(ENTRY_DELETE.name(), ConfigChangeType.DELETED);
+                put(ENTRY_MODIFY.name(), ConfigChangeType.MODIFIED);
+            }
+        });
 
     private static final Optional<WatchService> watchService;
 
@@ -190,12 +192,12 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
     }
 
     public FileSystemDynamicConfiguration(
-            File rootDirectory, String encoding, String threadPoolPrefixName, int threadPoolSize) {
+        File rootDirectory, String encoding, String threadPoolPrefixName, int threadPoolSize) {
         this(rootDirectory, encoding, threadPoolPrefixName, threadPoolSize, DEFAULT_THREAD_POOL_KEEP_ALIVE_TIME);
     }
 
     public FileSystemDynamicConfiguration(
-            File rootDirectory, String encoding, String threadPoolPrefixName, int threadPoolSize, long keepAliveTime) {
+        File rootDirectory, String encoding, String threadPoolPrefixName, int threadPoolSize, long keepAliveTime) {
         super(rootDirectory.getAbsolutePath(), threadPoolPrefixName, threadPoolSize, keepAliveTime, DEFAULT_GROUP, -1L);
         this.rootDirectory = rootDirectory;
         this.encoding = encoding;
@@ -205,12 +207,12 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
     }
 
     public FileSystemDynamicConfiguration(
-            File rootDirectory,
-            String encoding,
-            String threadPoolPrefixName,
-            int threadPoolSize,
-            long keepAliveTime,
-            ScopeModel scopeModel) {
+        File rootDirectory,
+        String encoding,
+        String threadPoolPrefixName,
+        int threadPoolSize,
+        long keepAliveTime,
+        ScopeModel scopeModel) {
         super(rootDirectory.getAbsolutePath(), threadPoolPrefixName, threadPoolSize, keepAliveTime, DEFAULT_GROUP, -1L);
         this.rootDirectory = rootDirectory;
         this.encoding = encoding;
@@ -222,12 +224,12 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
 
     public FileSystemDynamicConfiguration(URL url) {
         this(
-                initDirectory(url),
-                getEncoding(url),
-                getThreadPoolPrefixName(url),
-                getThreadPoolSize(url),
-                getThreadPoolKeepAliveTime(url),
-                url.getScopeModel());
+            initDirectory(url),
+            getEncoding(url),
+            getThreadPoolPrefixName(url),
+            getThreadPoolSize(url),
+            getThreadPoolKeepAliveTime(url),
+            url.getScopeModel());
     }
 
     private Set<File> initProcessingDirectories() {
@@ -266,7 +268,7 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
             return;
         }
         ShutdownHookCallbacks shutdownHookCallbacks =
-                ScopeModelUtil.getApplicationModel(scopeModel).getBeanFactory().getBean(ShutdownHookCallbacks.class);
+            ScopeModelUtil.getApplicationModel(scopeModel).getBeanFactory().getBean(ShutdownHookCallbacks.class);
         shutdownHookCallbacks.addCallback(() -> {
             watchService.ifPresent(w -> {
                 try {
@@ -290,49 +292,49 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
      */
     private void processWatchEvents(WatchService watchService) {
         getWatchEventsLoopThreadPool()
-                .execute(
-                        () -> { // WatchEvents Loop
-                            while (true) {
-                                WatchKey watchKey = null;
-                                try {
-                                    watchKey = watchService.take();
+            .execute(
+                () -> { // WatchEvents Loop
+                    while (true) {
+                        WatchKey watchKey = null;
+                        try {
+                            watchKey = watchService.take();
 
-                                    if (!watchKey.isValid()) {
-                                        continue;
-                                    }
-
-                                    for (WatchEvent event : watchKey.pollEvents()) {
-                                        WatchEvent.Kind kind = event.kind();
-                                        // configChangeType's key to match WatchEvent's Kind
-                                        ConfigChangeType configChangeType = CONFIG_CHANGE_TYPES_MAP.get(kind.name());
-
-                                        if (configChangeType == null) {
-                                            continue;
-                                        }
-
-                                        Path configDirectoryPath = (Path) watchKey.watchable();
-                                        Path currentPath = (Path) event.context();
-                                        Path configFilePath = configDirectoryPath.resolve(currentPath);
-                                        File configDirectory = configDirectoryPath.toFile();
-
-                                        executeMutually(configDirectory, () -> {
-                                            fireConfigChangeEvent(
-                                                    configDirectory, configFilePath.toFile(), configChangeType);
-                                            signalConfigDirectory(configDirectory);
-                                            return null;
-                                        });
-                                    }
-
-                                } catch (Exception e) {
-                                    return;
-                                } finally {
-                                    if (watchKey != null) {
-                                        // reset
-                                        watchKey.reset();
-                                    }
-                                }
+                            if (!watchKey.isValid()) {
+                                continue;
                             }
-                        });
+
+                            for (WatchEvent event : watchKey.pollEvents()) {
+                                WatchEvent.Kind kind = event.kind();
+                                // configChangeType's key to match WatchEvent's Kind
+                                ConfigChangeType configChangeType = CONFIG_CHANGE_TYPES_MAP.get(kind.name());
+
+                                if (configChangeType == null) {
+                                    continue;
+                                }
+
+                                Path configDirectoryPath = (Path) watchKey.watchable();
+                                Path currentPath = (Path) event.context();
+                                Path configFilePath = configDirectoryPath.resolve(currentPath);
+                                File configDirectory = configDirectoryPath.toFile();
+
+                                executeMutually(configDirectory, () -> {
+                                    fireConfigChangeEvent(
+                                        configDirectory, configFilePath.toFile(), configChangeType);
+                                    signalConfigDirectory(configDirectory);
+                                    return null;
+                                });
+                            }
+
+                        } catch (Exception e) {
+                            return;
+                        } finally {
+                            if (watchKey != null) {
+                                // reset
+                                watchKey.reset();
+                            }
+                        }
+                    }
+                });
     }
 
     private void signalConfigDirectory(File configDirectory) {
@@ -465,7 +467,7 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
                         long timeout = SECONDS.toMillis(delay);
                         if (logger.isDebugEnabled()) {
                             logger.debug(format(
-                                    "The config[path : %s] is about to delay in %d ms.", configFilePath, timeout));
+                                "The config[path : %s] is about to delay in %d ms.", configFilePath, timeout));
                         }
                         configDirectory.wait(timeout);
                     }
@@ -508,18 +510,19 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
 
     public Set<String> getConfigGroups() {
         return Stream.of(getRootDirectory().listFiles())
-                .filter(File::isDirectory)
-                .map(File::getName)
-                .collect(Collectors.toSet());
+            .filter(File::isDirectory)
+            .map(File::getName)
+            .collect(Collectors.toSet());
     }
 
     protected String getConfig(File configFile) {
         return ThrowableFunction.execute(
-                configFile, file -> canRead(configFile) ? readFileToString(configFile, getEncoding()) : null);
+            configFile, file -> canRead(configFile) ? readFileToString(configFile, getEncoding()) : null);
     }
 
     @Override
-    protected void doClose() throws Exception {}
+    protected void doClose() throws Exception {
+    }
 
     public File getRootDirectory() {
         return rootDirectory;
@@ -595,7 +598,7 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
      */
     private static boolean detectPoolingBasedWatchService(Optional<WatchService> watchService) {
         String className =
-                watchService.map(Object::getClass).map(Class::getName).orElse(null);
+            watchService.map(Object::getClass).map(Class::getName).orElse(null);
         return POLLING_WATCH_SERVICE_CLASS_NAME.equals(className);
     }
 
@@ -626,7 +629,7 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
 
         if (!rootDirectory.exists() && !rootDirectory.mkdirs()) {
             throw new IllegalStateException(
-                    format("Dubbo config center rootDirectory[%s] can't be created!", rootDirectory.getAbsolutePath()));
+                format("Dubbo config center rootDirectory[%s] can't be created!", rootDirectory.getAbsolutePath()));
         }
         return rootDirectory;
     }
@@ -637,11 +640,11 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
 
     private static ThreadPoolExecutor newWatchEventsLoopThreadPool() {
         return new ThreadPoolExecutor(
-                THREAD_POOL_SIZE,
-                THREAD_POOL_SIZE,
-                0L,
-                MILLISECONDS,
-                new SynchronousQueue(),
-                new NamedThreadFactory("dubbo-config-center-watch-events-loop", true));
+            THREAD_POOL_SIZE,
+            THREAD_POOL_SIZE,
+            0L,
+            MILLISECONDS,
+            new SynchronousQueue(),
+            new NamedThreadFactory("dubbo-config-center-watch-events-loop", true));
     }
 }

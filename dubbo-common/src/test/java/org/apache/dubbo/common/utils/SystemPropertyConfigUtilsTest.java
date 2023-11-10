@@ -19,18 +19,43 @@ package org.apache.dubbo.common.utils;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
 public class SystemPropertyConfigUtilsTest {
 
     @Test
     public void testGetSystemProperty() {
+        SystemPropertyConfigUtils.setSystemProperty("dubbo.migration.file", "migration.xml");
         String value = SystemPropertyConfigUtils.getSystemProperty("dubbo.migration.file");
-        assertEquals(value, null);
+        assertEquals(value, "migration.xml");
+        SystemPropertyConfigUtils.clearSystemProperty("dubbo.migration.file");
+    }
+
+    @Test
+    public void testGetSystemPropertyNotExist() {
+        assertThrowsExactly(IllegalStateException.class, () -> SystemPropertyConfigUtils.getSystemProperty("dubbo.not.exist"));
     }
 
     @Test
     public void testGetSystemPropertyWithDefaultValue() {
         String value = SystemPropertyConfigUtils.getSystemProperty("dubbo.migration.file", "migration.xml");
         assertEquals(value, "migration.xml");
+    }
+
+    @Test
+    public void testSetSystemProperty() {
+        SystemPropertyConfigUtils.setSystemProperty("dubbo.migration.file", "migration.xml");
+        String expectValue = SystemPropertyConfigUtils.getSystemProperty("dubbo.migration.file");
+        assertEquals(expectValue, "migration.xml");
+        SystemPropertyConfigUtils.clearSystemProperty("dubbo.migration.file");
+    }
+
+    @Test
+    public void testClearSystemProperty() {
+        SystemPropertyConfigUtils.setSystemProperty("dubbo.migration.file", "migration33.xml");
+        SystemPropertyConfigUtils.clearSystemProperty("dubbo.migration.file");
+        String expectValue = SystemPropertyConfigUtils.getSystemProperty("dubbo.migration.file");
+        assertNull(expectValue);
     }
 }

@@ -24,6 +24,7 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CacheableSupplier;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Codec;
 import org.apache.dubbo.remoting.Constants;
@@ -56,16 +57,16 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KE
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PAYLOAD;
+import static org.apache.dubbo.common.constants.CommonConstants.SystemProperty.SERIALIZATION_SECURITY_CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DECODE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_EXCEED_PAYLOAD_LIMIT;
 import static org.apache.dubbo.rpc.Constants.SERIALIZATION_ID_KEY;
-import static org.apache.dubbo.rpc.Constants.SERIALIZATION_SECURITY_CHECK_KEY;
 
 public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Decodeable {
 
     protected static final ErrorTypeAwareLogger log =
-            LoggerFactory.getErrorTypeAwareLogger(DecodeableRpcInvocation.class);
+        LoggerFactory.getErrorTypeAwareLogger(DecodeableRpcInvocation.class);
 
     protected final transient Channel channel;
 
@@ -82,10 +83,10 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
     protected final transient Supplier<CallbackServiceCodec> callbackServiceCodecFactory;
 
     private static final boolean CHECK_SERIALIZATION =
-            Boolean.parseBoolean(System.getProperty(SERIALIZATION_SECURITY_CHECK_KEY, "true"));
+        Boolean.parseBoolean(SystemPropertyConfigUtils.getSystemProperty(SERIALIZATION_SECURITY_CHECK_KEY, "true"));
 
     public DecodeableRpcInvocation(
-            FrameworkModel frameworkModel, Channel channel, Request request, InputStream is, byte id) {
+        FrameworkModel frameworkModel, Channel channel, Request request, InputStream is, byte id) {
         this.frameworkModel = frameworkModel;
         Assert.notNull(channel, "channel == null");
         Assert.notNull(request, "request == null");
@@ -95,7 +96,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         this.inputStream = is;
         this.serializationType = id;
         this.callbackServiceCodecFactory =
-                CacheableSupplier.newSupplier(() -> new CallbackServiceCodec(frameworkModel));
+            CacheableSupplier.newSupplier(() -> new CallbackServiceCodec(frameworkModel));
     }
 
     @Override
@@ -150,10 +151,10 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         try {
             if (CHECK_SERIALIZATION) {
                 PermittedSerializationKeeper keeper =
-                        frameworkModel.getBeanFactory().getBean(PermittedSerializationKeeper.class);
+                    frameworkModel.getBeanFactory().getBean(PermittedSerializationKeeper.class);
                 if (!keeper.checkSerializationPermitted(keyWithoutGroup, serializationType)) {
                     throw new IOException("Unexpected serialization id:" + serializationType
-                            + " received from network, please check if the peer send the right id.");
+                        + " received from network, please check if the peer send the right id.");
                 }
             }
             Object[] args = DubboCodec.EMPTY_OBJECT_ARRAY;
@@ -163,9 +164,9 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                 if (pts == DubboCodec.EMPTY_CLASS_ARRAY) {
                     if (RpcUtils.isGenericCall(desc, getMethodName())) {
                         // Should recreate here for each invocation because the parameterTypes may be changed by user.
-                        pts = new Class<?>[] {String.class, String[].class, Object[].class};
+                        pts = new Class<?>[]{String.class, String[].class, Object[].class};
                     } else if (RpcUtils.isEcho(desc, getMethodName())) {
-                        pts = new Class<?>[] {Object.class};
+                        pts = new Class<?>[]{Object.class};
                     } else {
                         throw new IllegalArgumentException("Service not found:" + path + ", " + getMethodName());
                     }
@@ -199,14 +200,14 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
         setArguments(args);
         String targetServiceName =
-                buildKey(getAttachment(PATH_KEY), getAttachment(GROUP_KEY), getAttachment(VERSION_KEY));
+            buildKey(getAttachment(PATH_KEY), getAttachment(GROUP_KEY), getAttachment(VERSION_KEY));
         setTargetServiceUniqueName(targetServiceName);
     }
 
     protected Class<?>[] drawPts(String path, String version, String desc, Class<?>[] pts) {
         FrameworkServiceRepository repository = frameworkModel.getServiceRepository();
         List<ProviderModel> providerModels =
-                repository.lookupExportedServicesWithoutGroup(keyWithoutGroup(path, version));
+            repository.lookupExportedServicesWithoutGroup(keyWithoutGroup(path, version));
         ServiceDescriptor serviceDescriptor = null;
         if (CollectionUtils.isNotEmpty(providerModels)) {
             for (ProviderModel providerModel : providerModels) {
@@ -238,7 +239,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                 if (CollectionUtils.isNotEmpty(providerModels)) {
                     if (providerModels.size() == 1) {
                         Thread.currentThread()
-                                .setContextClassLoader(providerModels.get(0).getClassLoader());
+                            .setContextClassLoader(providerModels.get(0).getClassLoader());
                     } else {
                         // try all providerModels' classLoader can load pts, use the first one
                         for (ProviderModel providerModel : providerModels) {
@@ -276,10 +277,10 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
     private void checkPayload(String serviceKey) throws IOException {
         ProviderModel providerModel =
-                frameworkModel.getServiceRepository().lookupExportedServiceWithoutGroup(serviceKey);
+            frameworkModel.getServiceRepository().lookupExportedServiceWithoutGroup(serviceKey);
         if (providerModel != null) {
             String payloadStr =
-                    (String) providerModel.getServiceMetadata().getAttachments().get(PAYLOAD);
+                (String) providerModel.getServiceMetadata().getAttachments().get(PAYLOAD);
             if (payloadStr != null) {
                 int payload = Integer.parseInt(payloadStr);
                 if (payload <= 0) {
@@ -287,7 +288,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                 }
                 if (request.getPayload() > payload) {
                     ExceedPayloadLimitException e = new ExceedPayloadLimitException("Data length too large: "
-                            + request.getPayload() + ", max payload: " + payload + ", channel: " + channel);
+                        + request.getPayload() + ", max payload: " + payload + ", channel: " + channel);
                     log.error(TRANSPORT_EXCEED_PAYLOAD_LIMIT, "", "", e.getMessage(), e);
                     throw e;
                 }

@@ -36,7 +36,7 @@ public class JsonUtils {
             synchronized (JsonUtils.class) {
                 if (jsonUtil == null) {
                     String preferJsonFrameworkName =
-                            System.getProperty(CommonConstants.DUBBO_PREFER_JSON_FRAMEWORK_NAME);
+                        SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME);
                     if (StringUtils.isNotEmpty(preferJsonFrameworkName)) {
                         try {
                             JsonUtil instance = null;
@@ -63,7 +63,7 @@ public class JsonUtils {
                     }
                     if (jsonUtil == null) {
                         List<Class<? extends JsonUtil>> jsonClasses = Arrays.asList(
-                                FastJson2Impl.class, FastJsonImpl.class, GsonImpl.class, JacksonImpl.class);
+                            FastJson2Impl.class, FastJsonImpl.class, GsonImpl.class, JacksonImpl.class);
                         for (Class<? extends JsonUtil> jsonClass : jsonClasses) {
                             try {
                                 JsonUtil instance = jsonClass.getConstructor().newInstance();
@@ -78,8 +78,8 @@ public class JsonUtils {
                     }
                     if (jsonUtil == null) {
                         throw new IllegalStateException(
-                                "Dubbo unable to find out any json framework (e.g. fastjson2, fastjson, gson, jackson) from jvm env. "
-                                        + "Please import at least one json framework.");
+                            "Dubbo unable to find out any json framework (e.g. fastjson2, fastjson, gson, jackson) from jvm env. "
+                                + "Please import at least one json framework.");
                     }
                 }
             }

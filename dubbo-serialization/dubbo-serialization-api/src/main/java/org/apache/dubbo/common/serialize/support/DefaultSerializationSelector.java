@@ -16,7 +16,9 @@
  */
 package org.apache.dubbo.common.serialize.support;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_DEFAULT_REMOTING_SERIALIZATION_PROPERTY;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
+
+import static org.apache.dubbo.common.constants.CommonConstants.DubboProperty.DUBBO_DEFAULT_REMOTING_SERIALIZATION_PROPERTY;
 
 public class DefaultSerializationSelector {
 
@@ -25,7 +27,7 @@ public class DefaultSerializationSelector {
     private static final String DEFAULT_REMOTING_SERIALIZATION;
 
     static {
-        String fromProperty = System.getProperty(DUBBO_DEFAULT_REMOTING_SERIALIZATION_PROPERTY);
+        String fromProperty = SystemPropertyConfigUtils.getSystemProperty(DUBBO_DEFAULT_REMOTING_SERIALIZATION_PROPERTY);
         if (fromProperty != null) {
             DEFAULT_REMOTING_SERIALIZATION = fromProperty;
         } else {
