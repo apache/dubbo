@@ -27,6 +27,11 @@
   <packaging>maven-plugin</packaging>
   <description>Dubbo Maven Plugin</description>
 
+  <properties>
+    <dubbo.version>${revision}</dubbo.version>
+    <protobuf-java.version>3.25.0</protobuf-java.version>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.apache.maven</groupId>
@@ -66,6 +71,15 @@
       <version>2.11.0</version>
     </dependency>
 
+    <!-- Takes no effect for this dependency. To notify github dependencies bot to update ${protobuf-java.version} property.  -->
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+      <version>${protobuf-java.version}</version>
+      <scope>test</scope>
+      <optional>true</optional>
+    </dependency>
+
     <dependency>
       <groupId>org.sonatype.plexus</groupId>
       <artifactId>plexus-build-api</artifactId>
@@ -80,6 +94,12 @@
   </dependencies>
 
   <build>
+    <resources>
+      <resource>
+        <filtering>true</filtering>
+        <directory>src/main/resources</directory>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <artifactId>maven-plugin-plugin</artifactId>
@@ -101,6 +121,7 @@
           </execution>
         </executions>
       </plugin>
+
     </plugins>
   </build>
 </project>
