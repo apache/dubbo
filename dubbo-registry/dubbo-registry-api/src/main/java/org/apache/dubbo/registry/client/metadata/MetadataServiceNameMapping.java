@@ -39,6 +39,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_TYPE_MISMATCH;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.registry.Constants.CAS_RETRY_TIMES_KEY;
@@ -47,6 +48,8 @@ import static org.apache.dubbo.registry.Constants.DEFAULT_CAS_RETRY_TIMES;
 import static org.apache.dubbo.registry.Constants.DEFAULT_CAS_RETRY_WAIT_TIME;
 
 public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
+
+    public static final String APPNAME_CATALOG = "appName";
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
@@ -74,9 +77,10 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
 
     /**
      * Simply register to all metadata center
+     * @throws InterruptedException
      */
     @Override
-    public boolean map(URL url) {
+    public boolean map(URL url) throws InterruptedException {
         if (CollectionUtils.isEmpty(
                 applicationModel.getApplicationConfigManager().getMetadataConfigs())) {
             logger.warn(
@@ -93,52 +97,22 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
                 metadataReportInstance.getMetadataReports(true).entrySet()) {
             MetadataReport metadataReport = entry.getValue();
             String appName = applicationModel.getApplicationName();
+            String appNameWithPrefix = getAppNameWithPrefix(appName);
             try {
-                if (metadataReport.registerServiceAppMapping(serviceInterface, appName, url)) {
-                    // MetadataReport support directly register service-app mapping
-                    continue;
+                result = doPublishMapping(metadataReport, url, "Service Interface", serviceInterface, appName);
+                if (result) {
+                    result = doPublishMapping(
+                            metadataReport, url, "Application Name", appNameWithPrefix, serviceInterface);
                 }
-
-                boolean succeeded = false;
-                int currentRetryTimes = 1;
-                String newConfigContent = appName;
-                do {
-                    ConfigItem configItem = metadataReport.getConfigItem(serviceInterface, DEFAULT_MAPPING_GROUP);
-                    String oldConfigContent = configItem.getContent();
-                    if (StringUtils.isNotEmpty(oldConfigContent)) {
-                        String[] oldAppNames = oldConfigContent.split(",");
-                        if (oldAppNames.length > 0) {
-                            for (String oldAppName : oldAppNames) {
-                                if (oldAppName.equals(appName)) {
-                                    succeeded = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if (succeeded) {
-                            break;
-                        }
-                        newConfigContent = oldConfigContent + COMMA_SEPARATOR + appName;
-                    }
-                    succeeded = metadataReport.registerServiceAppMapping(
-                            serviceInterface, DEFAULT_MAPPING_GROUP, newConfigContent, configItem.getTicket());
-                    if (!succeeded) {
-                        int waitTime = ThreadLocalRandom.current().nextInt(casRetryWaitTime);
-                        logger.info("Failed to publish service name mapping to metadata center by cas operation. "
-                                + "Times: "
-                                + currentRetryTimes + ". " + "Next retry delay: "
-                                + waitTime + ". " + "Service Interface: "
-                                + serviceInterface + ". " + "Origin Content: "
-                                + oldConfigContent + ". " + "Ticket: "
-                                + configItem.getTicket() + ". " + "Excepted context: "
-                                + newConfigContent);
-                        Thread.sleep(waitTime);
-                    }
-                } while (!succeeded && currentRetryTimes++ <= casRetryTimes);
-
-                if (!succeeded) {
-                    result = false;
-                }
+            } catch (InterruptedException e) {
+                // Sonarcloud would take it as a bug if the InterruptedException was not re-thrown.
+                logger.warn(
+                        INTERNAL_ERROR,
+                        "interrupted in registry module",
+                        "",
+                        "Failed registering mapping to remote." + metadataReport,
+                        e);
+                throw e;
             } catch (Exception e) {
                 result = false;
                 logger.warn(
@@ -200,5 +174,54 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
             registryCluster = registryCluster.substring(0, i);
         }
         return registryCluster;
+    }
+
+    private boolean doPublishMapping(
+            MetadataReport metadataReport, URL url, String dataIdType, String dataId, String value)
+            throws InterruptedException {
+        if (metadataReport.registerServiceAppMapping(dataId, value, url)) {
+            // MetadataReport support directly register mapping.
+            return true;
+        }
+
+        boolean succeeded = false;
+        int currentRetryTimes = 1;
+        String newConfigContent = value;
+        do {
+            ConfigItem configItem = metadataReport.getConfigItem(dataId, DEFAULT_MAPPING_GROUP);
+            String oldConfigContent = configItem.getContent();
+            if (StringUtils.isNotEmpty(oldConfigContent)) {
+                String[] oldValues = oldConfigContent.split(",");
+                if (oldValues.length > 0) {
+                    for (String oldValue : oldValues) {
+                        if (oldValue.equals(value)) {
+                            // the value is already registered.
+                            return true;
+                        }
+                    }
+                }
+                newConfigContent = oldConfigContent + COMMA_SEPARATOR + value;
+            }
+            succeeded = metadataReport.registerServiceAppMapping(
+                    dataId, DEFAULT_MAPPING_GROUP, newConfigContent, configItem.getTicket());
+            if (!succeeded) {
+                int waitTime = ThreadLocalRandom.current().nextInt(casRetryWaitTime);
+                logger.info("Failed to publish mapping to metadata center by cas operation. "
+                        + "Times: "
+                        + currentRetryTimes + ". " + "Next retry delay: "
+                        + waitTime + ". " + dataIdType + ": "
+                        + dataId + ". " + "Origin Content: "
+                        + oldConfigContent + ". " + "Ticket: "
+                        + configItem.getTicket() + ". " + "Excepted context: "
+                        + newConfigContent);
+                Thread.sleep(waitTime);
+            }
+        } while (!succeeded && currentRetryTimes++ <= casRetryTimes);
+
+        return succeeded;
+    }
+
+    public static String getAppNameWithPrefix(String appName) {
+        return APPNAME_CATALOG + GROUP_CHAR_SEPARATOR + appName;
     }
 }

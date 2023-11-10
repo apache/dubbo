@@ -73,7 +73,7 @@ class MetadataServiceNameMappingTest {
     }
 
     @Test
-    void testMap() {
+    void testMap() throws InterruptedException {
         ApplicationModel mockedApplicationModel = spy(applicationModel);
 
         when(configManager.getMetadataConfigs()).thenReturn(Collections.emptyList());
@@ -96,7 +96,7 @@ class MetadataServiceNameMappingTest {
         result = mapping.map(url);
         assertTrue(result);
 
-        // metadata report using cas and retry, succeeded after retried 10 times
+        // metadata report using cas and retry.
         when(metadataReport.registerServiceAppMapping(any(), any(), any())).thenReturn(false);
         when(metadataReport.getConfigItem(any(), any())).thenReturn(new ConfigItem());
         when(metadataReport.registerServiceAppMapping(any(), any(), any(), any()))
@@ -105,7 +105,12 @@ class MetadataServiceNameMappingTest {
 
                     @Override
                     public Boolean answer(InvocationOnMock invocationOnMock) {
-                        if (++counter == 10) {
+                        ++counter;
+                        if (counter == 10) {
+                            // succeeded after retried 10 times for Service Interface mapping.
+                            return true;
+                        } else if (counter == 20) {
+                            // succeeded after retried 10 times for Application Name mapping.
                             return true;
                         }
                         return false;
@@ -113,7 +118,7 @@ class MetadataServiceNameMappingTest {
                 });
         assertTrue(mapping.map(url));
 
-        // metadata report using cas and retry, failed after 11 times retry
+        // metadata report using cas and retry, failed after 11 times retry for Service Interface mapping.
         when(metadataReport.registerServiceAppMapping(any(), any(), any(), any()))
                 .thenReturn(false);
         Exception exceptionExpected = null;

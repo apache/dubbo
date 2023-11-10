@@ -45,8 +45,9 @@ public interface ServiceNameMapping extends Destroyable {
 
     /**
      * Map the specified Dubbo service interface, group, version and protocol to current Dubbo service name
+     * @throws InterruptedException
      */
-    boolean map(URL url);
+    boolean map(URL url) throws InterruptedException;
 
     boolean hasValidMetadataCenter();
 
