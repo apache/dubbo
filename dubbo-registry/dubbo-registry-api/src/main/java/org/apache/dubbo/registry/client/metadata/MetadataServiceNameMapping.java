@@ -186,21 +186,13 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
 
         boolean succeeded = false;
         int currentRetryTimes = 1;
-        String newConfigContent = value;
         do {
             ConfigItem configItem = metadataReport.getConfigItem(dataId, DEFAULT_MAPPING_GROUP);
             String oldConfigContent = configItem.getContent();
-            if (StringUtils.isNotEmpty(oldConfigContent)) {
-                String[] oldValues = oldConfigContent.split(",");
-                if (oldValues.length > 0) {
-                    for (String oldValue : oldValues) {
-                        if (oldValue.equals(value)) {
-                            // the value is already registered.
-                            return true;
-                        }
-                    }
-                }
-                newConfigContent = oldConfigContent + COMMA_SEPARATOR + value;
+            String newConfigContent = getNewConfigContent(oldConfigContent, value);
+            if (newConfigContent == null) {
+                // the value is already registered.
+                return true;
             }
             succeeded = metadataReport.registerServiceAppMapping(
                     dataId, DEFAULT_MAPPING_GROUP, newConfigContent, configItem.getTicket());
@@ -219,6 +211,22 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
         } while (!succeeded && currentRetryTimes++ <= casRetryTimes);
 
         return succeeded;
+    }
+
+    private static String getNewConfigContent(String oldConfigContent, String value) {
+        if (StringUtils.isEmpty(oldConfigContent)) {
+            return value;
+        }
+        String[] oldValues = oldConfigContent.split(",");
+        if (oldValues.length > 0) {
+            for (String oldValue : oldValues) {
+                if (oldValue.equals(value)) {
+                    // return null to notice the value is already registered.
+                    return null;
+                }
+            }
+        }
+        return oldConfigContent + COMMA_SEPARATOR + value;
     }
 
     public static String getAppNameWithPrefix(String appName) {

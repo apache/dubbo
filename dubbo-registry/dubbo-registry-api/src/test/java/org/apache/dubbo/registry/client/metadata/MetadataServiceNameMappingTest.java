@@ -98,7 +98,9 @@ class MetadataServiceNameMappingTest {
 
         // metadata report using cas and retry.
         when(metadataReport.registerServiceAppMapping(any(), any(), any())).thenReturn(false);
-        when(metadataReport.getConfigItem(any(), any())).thenReturn(new ConfigItem());
+        ConfigItem cfgItem = new ConfigItem();
+        cfgItem.setContent("otherApp");
+        when(metadataReport.getConfigItem(any(), any())).thenReturn(cfgItem);
         when(metadataReport.registerServiceAppMapping(any(), any(), any(), any()))
                 .thenAnswer(new Answer<Boolean>() {
                     private int counter = 0;
