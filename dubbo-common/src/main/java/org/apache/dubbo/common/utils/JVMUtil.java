@@ -39,7 +39,7 @@ public class JVMUtil {
 
     private static String getThreadDumpString(ThreadInfo threadInfo) {
         StringBuilder sb = new StringBuilder("\"" + threadInfo.getThreadName() + "\"" + " Id="
-            + threadInfo.getThreadId() + " " + threadInfo.getThreadState());
+                + threadInfo.getThreadId() + " " + threadInfo.getThreadState());
         if (threadInfo.getLockName() != null) {
             sb.append(" on " + threadInfo.getLockName());
         }
@@ -56,7 +56,8 @@ public class JVMUtil {
         int i = 0;
         // default is 32, means only print up to 32 lines
         int jstackMaxLine = 32;
-        String jstackMaxLineStr = SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO_JSTACK_MAXLINE);
+        String jstackMaxLineStr =
+                SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO_JSTACK_MAXLINE);
         if (StringUtils.isNotEmpty(jstackMaxLineStr)) {
             try {
                 jstackMaxLine = Integer.parseInt(jstackMaxLineStr);

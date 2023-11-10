@@ -55,13 +55,13 @@ public abstract class DubboUtils {
      * The prefix of property name for Dubbo scan
      */
     public static final String DUBBO_SCAN_PREFIX =
-        DUBBO_PREFIX + PROPERTY_NAME_SEPARATOR + "scan" + PROPERTY_NAME_SEPARATOR;
+            DUBBO_PREFIX + PROPERTY_NAME_SEPARATOR + "scan" + PROPERTY_NAME_SEPARATOR;
 
     /**
      * The prefix of property name for Dubbo Config
      */
     public static final String DUBBO_CONFIG_PREFIX =
-        DUBBO_PREFIX + PROPERTY_NAME_SEPARATOR + "config" + PROPERTY_NAME_SEPARATOR;
+            DUBBO_PREFIX + PROPERTY_NAME_SEPARATOR + "config" + PROPERTY_NAME_SEPARATOR;
 
     /**
      * The property name of base packages to scan
@@ -104,7 +104,7 @@ public abstract class DubboUtils {
      * The github URL of Dubbo Spring Boot
      */
     public static final String DUBBO_SPRING_BOOT_GITHUB_URL =
-        "https://github.com/apache/dubbo/tree/3.0/dubbo-spring-boot";
+            "https://github.com/apache/dubbo/tree/3.0/dubbo-spring-boot";
 
     /**
      * The git URL of Dubbo Spring Boot

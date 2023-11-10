@@ -70,15 +70,15 @@ public class AsyncRpcResult implements Result {
     /**
      * Whether set future to Thread Local when invocation mode is sync
      */
-    private static final boolean setFutureWhenSync =
-        Boolean.parseBoolean(SystemPropertyConfigUtils.getSystemProperty(CommonConstants.ThirdPartyProperty.SET_FUTURE_IN_SYNC_MODE, "true"));
+    private static final boolean setFutureWhenSync = Boolean.parseBoolean(SystemPropertyConfigUtils.getSystemProperty(
+            CommonConstants.ThirdPartyProperty.SET_FUTURE_IN_SYNC_MODE, "true"));
 
     public AsyncRpcResult(CompletableFuture<AppResponse> future, Invocation invocation) {
         this.responseFuture = future;
         this.invocation = invocation;
         RpcInvocation rpcInvocation = (RpcInvocation) invocation;
         if ((rpcInvocation.get(PROVIDER_ASYNC_KEY) != null || InvokeMode.SYNC != rpcInvocation.getInvokeMode())
-            && !future.isDone()) {
+                && !future.isDone()) {
             async = true;
             this.storedContext = RpcContext.clearAndStoreContext();
         } else {
@@ -119,10 +119,10 @@ public class AsyncRpcResult implements Result {
         } catch (Exception e) {
             // This should not happen in normal request process;
             logger.error(
-                PROXY_ERROR_ASYNC_RESPONSE,
-                "",
-                "",
-                "Got exception when trying to fetch the underlying result from AsyncRpcResult.");
+                    PROXY_ERROR_ASYNC_RESPONSE,
+                    "",
+                    "",
+                    "Got exception when trying to fetch the underlying result from AsyncRpcResult.");
             throw new RpcException(e);
         }
     }
@@ -145,10 +145,10 @@ public class AsyncRpcResult implements Result {
         } catch (Exception e) {
             // This should not happen in normal request process;
             logger.error(
-                PROXY_ERROR_ASYNC_RESPONSE,
-                "",
-                "",
-                "Got exception when trying to fetch the underlying result from AsyncRpcResult.");
+                    PROXY_ERROR_ASYNC_RESPONSE,
+                    "",
+                    "",
+                    "Got exception when trying to fetch the underlying result from AsyncRpcResult.");
             throw new RpcException(e);
         }
     }
@@ -174,10 +174,10 @@ public class AsyncRpcResult implements Result {
         } catch (Exception e) {
             // This should not happen in normal request process;
             logger.error(
-                PROXY_ERROR_ASYNC_RESPONSE,
-                "",
-                "",
-                "Got exception when trying to fetch the underlying result from AsyncRpcResult.");
+                    PROXY_ERROR_ASYNC_RESPONSE,
+                    "",
+                    "",
+                    "Got exception when trying to fetch the underlying result from AsyncRpcResult.");
             throw new RpcException(e);
         }
 
@@ -220,7 +220,7 @@ public class AsyncRpcResult implements Result {
                         threadlessExecutor.waitAndDrain(deadline);
                     } else {
                         throw new TimeoutException(
-                            "Timeout after " + unit.toMillis(timeout) + "ms waiting for result.");
+                                "Timeout after " + unit.toMillis(timeout) + "ms waiting for result.");
                     }
                 }
             } finally {

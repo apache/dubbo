@@ -55,7 +55,8 @@ public class Main {
     public static void main(String[] args) {
         try {
             if (ArrayUtils.isEmpty(args)) {
-                String config = SystemPropertyConfigUtils.getSystemProperty(DUBBO_CONTAINER_KEY, LOADER.getDefaultExtensionName());
+                String config = SystemPropertyConfigUtils.getSystemProperty(
+                        DUBBO_CONTAINER_KEY, LOADER.getDefaultExtensionName());
                 args = COMMA_SPLIT_PATTERN.split(config);
             }
 
@@ -92,7 +93,7 @@ public class Main {
                 logger.info("Dubbo " + container.getClass().getSimpleName() + " started!");
             }
             System.out.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]").format(new Date())
-                + " Dubbo service server started!");
+                    + " Dubbo service server started!");
         } catch (RuntimeException e) {
             logger.error(CONFIG_START_DUBBO_ERROR, "", "", e.getMessage(), e);
             System.exit(1);
@@ -102,11 +103,11 @@ public class Main {
             STOP.await();
         } catch (InterruptedException e) {
             logger.warn(
-                COMMON_THREAD_INTERRUPTED_EXCEPTION,
-                "",
-                "",
-                "Dubbo service server stopped, interrupted by other thread!",
-                e);
+                    COMMON_THREAD_INTERRUPTED_EXCEPTION,
+                    "",
+                    "",
+                    "Dubbo service server stopped, interrupted by other thread!",
+                    e);
         } finally {
             LOCK.unlock();
         }

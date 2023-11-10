@@ -578,7 +578,6 @@ public interface CommonConstants {
     String EXECUTOR_MANAGEMENT_MODE_DEFAULT = "default";
     String EXECUTOR_MANAGEMENT_MODE_ISOLATION = "isolation";
 
-
     String ENCODE_IN_IO_THREAD_KEY = "encode.in.io";
     boolean DEFAULT_ENCODE_IN_IO_THREAD = false;
 
@@ -646,8 +645,6 @@ public interface CommonConstants {
          * The JVM arguments to set if it can use embedded zookeeper, the default value is {@code true}.
          */
         String ZOOKEEPER_CONFIG_ENABLE_EMBEDDED = "enableEmbeddedZookeeper";
-
-
     }
 
     interface DubboProperty {
@@ -677,6 +674,7 @@ public interface CommonConstants {
          * @since 2.7.6
          */
         String DUBBO_PREFERRED_NETWORK_INTERFACE = "dubbo.network.interface.preferred";
+
         String DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST = "dubbo.security.serialize.allowedClassList";
         String DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST = "dubbo.security.serialize.blockedClassList";
         String DUBBO_CLASS_DESERIALIZE_OPEN_CHECK = "dubbo.security.serialize.openCheckClass";
@@ -722,6 +720,5 @@ public interface CommonConstants {
         String DUBBO_MANUAL_REGISTER_KEY = "dubbo.application.manual-register";
 
         String DUBBO2_COMPACT_ENABLE = "dubbo.compact.enable";
-
     }
 }

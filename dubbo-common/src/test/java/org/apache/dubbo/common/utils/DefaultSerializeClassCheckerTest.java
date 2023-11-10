@@ -43,104 +43,110 @@ class DefaultSerializeClassCheckerTest {
     @Test
     void testCommon() throws ClassNotFoundException {
         FrameworkModel.defaultModel()
-            .getBeanFactory()
-            .getBean(SerializeSecurityManager.class)
-            .setCheckStatus(SerializeCheckStatus.WARN);
+                .getBeanFactory()
+                .getBean(SerializeSecurityManager.class)
+                .setCheckStatus(SerializeCheckStatus.WARN);
         DefaultSerializeClassChecker defaultSerializeClassChecker = DefaultSerializeClassChecker.getInstance();
 
         for (int i = 0; i < 10; i++) {
             defaultSerializeClassChecker.loadClass(
-                Thread.currentThread().getContextClassLoader(), ReentrantReadWriteLock.ReadLock.class.getName());
+                    Thread.currentThread().getContextClassLoader(), ReentrantReadWriteLock.ReadLock.class.getName());
             defaultSerializeClassChecker.loadClass(
-                Thread.currentThread().getContextClassLoader(), LinkedList.class.getName());
+                    Thread.currentThread().getContextClassLoader(), LinkedList.class.getName());
             defaultSerializeClassChecker.loadClass(
-                Thread.currentThread().getContextClassLoader(), Integer.class.getName());
+                    Thread.currentThread().getContextClassLoader(), Integer.class.getName());
             defaultSerializeClassChecker.loadClass(Thread.currentThread().getContextClassLoader(), int.class.getName());
         }
 
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             defaultSerializeClassChecker.loadClass(
-                Thread.currentThread().getContextClassLoader(), Socket.class.getName());
+                    Thread.currentThread().getContextClassLoader(), Socket.class.getName());
         });
         Assertions.assertTrue(FrameworkModel.defaultModel()
-            .getBeanFactory()
-            .getBean(SerializeSecurityManager.class)
-            .getWarnedClasses()
-            .contains(Socket.class.getName()));
+                .getBeanFactory()
+                .getBean(SerializeSecurityManager.class)
+                .getWarnedClasses()
+                .contains(Socket.class.getName()));
     }
 
     @Test
     void testAddAllow() throws ClassNotFoundException {
         SystemPropertyConfigUtils.setSystemProperty(
-            CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST,
-            ReentrantReadWriteLock.WriteLock.class.getName() + ","
-                + ReentrantReadWriteLock.ReadLock.class.getName());
+                CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST,
+                ReentrantReadWriteLock.WriteLock.class.getName() + ","
+                        + ReentrantReadWriteLock.ReadLock.class.getName());
 
         DefaultSerializeClassChecker defaultSerializeClassChecker = DefaultSerializeClassChecker.getInstance();
         for (int i = 0; i < 10; i++) {
             defaultSerializeClassChecker.loadClass(
-                Thread.currentThread().getContextClassLoader(), ReentrantReadWriteLock.WriteLock.class.getName());
+                    Thread.currentThread().getContextClassLoader(), ReentrantReadWriteLock.WriteLock.class.getName());
             defaultSerializeClassChecker.loadClass(
-                Thread.currentThread().getContextClassLoader(), ReentrantReadWriteLock.ReadLock.class.getName());
+                    Thread.currentThread().getContextClassLoader(), ReentrantReadWriteLock.ReadLock.class.getName());
         }
 
-        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST);
+        SystemPropertyConfigUtils.clearSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST);
     }
 
     @Test
     void testAddBlock() {
-        SystemPropertyConfigUtils.setSystemProperty(CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST,
-            Runtime.class.getName() + "," + Thread.class.getName());
+        SystemPropertyConfigUtils.setSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST,
+                Runtime.class.getName() + "," + Thread.class.getName());
 
         DefaultSerializeClassChecker defaultSerializeClassChecker = DefaultSerializeClassChecker.getInstance();
         for (int i = 0; i < 10; i++) {
             Assertions.assertThrows(IllegalArgumentException.class, () -> {
                 defaultSerializeClassChecker.loadClass(
-                    Thread.currentThread().getContextClassLoader(), Runtime.class.getName());
+                        Thread.currentThread().getContextClassLoader(), Runtime.class.getName());
             });
             Assertions.assertTrue(FrameworkModel.defaultModel()
-                .getBeanFactory()
-                .getBean(SerializeSecurityManager.class)
-                .getWarnedClasses()
-                .contains(Runtime.class.getName()));
+                    .getBeanFactory()
+                    .getBean(SerializeSecurityManager.class)
+                    .getWarnedClasses()
+                    .contains(Runtime.class.getName()));
             Assertions.assertThrows(IllegalArgumentException.class, () -> {
                 defaultSerializeClassChecker.loadClass(
-                    Thread.currentThread().getContextClassLoader(), Thread.class.getName());
+                        Thread.currentThread().getContextClassLoader(), Thread.class.getName());
             });
             Assertions.assertTrue(FrameworkModel.defaultModel()
-                .getBeanFactory()
-                .getBean(SerializeSecurityManager.class)
-                .getWarnedClasses()
-                .contains(Thread.class.getName()));
+                    .getBeanFactory()
+                    .getBean(SerializeSecurityManager.class)
+                    .getWarnedClasses()
+                    .contains(Thread.class.getName()));
         }
 
-        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST);
+        SystemPropertyConfigUtils.clearSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST);
     }
 
     @Test
     void testBlockAll() throws ClassNotFoundException {
-        SystemPropertyConfigUtils.setSystemProperty(CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCK_ALL, "true");
         SystemPropertyConfigUtils.setSystemProperty(
-            CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST, ReentrantReadWriteLock.WriteLock.class.getName());
+                CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCK_ALL, "true");
+        SystemPropertyConfigUtils.setSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST,
+                ReentrantReadWriteLock.WriteLock.class.getName());
 
         DefaultSerializeClassChecker defaultSerializeClassChecker = DefaultSerializeClassChecker.getInstance();
         for (int i = 0; i < 10; i++) {
             defaultSerializeClassChecker.loadClass(
-                Thread.currentThread().getContextClassLoader(), ReentrantReadWriteLock.WriteLock.class.getName());
+                    Thread.currentThread().getContextClassLoader(), ReentrantReadWriteLock.WriteLock.class.getName());
             Assertions.assertThrows(IllegalArgumentException.class, () -> {
                 defaultSerializeClassChecker.loadClass(
-                    Thread.currentThread().getContextClassLoader(),
-                    ReentrantReadWriteLock.ReadLock.class.getName());
+                        Thread.currentThread().getContextClassLoader(),
+                        ReentrantReadWriteLock.ReadLock.class.getName());
             });
             Assertions.assertTrue(FrameworkModel.defaultModel()
-                .getBeanFactory()
-                .getBean(SerializeSecurityManager.class)
-                .getWarnedClasses()
-                .contains(ReentrantReadWriteLock.ReadLock.class.getName()));
+                    .getBeanFactory()
+                    .getBean(SerializeSecurityManager.class)
+                    .getWarnedClasses()
+                    .contains(ReentrantReadWriteLock.ReadLock.class.getName()));
         }
 
         SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCK_ALL);
-        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST);
+        SystemPropertyConfigUtils.clearSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST);
     }
 
     @Test
@@ -151,29 +157,29 @@ class DefaultSerializeClassCheckerTest {
 
         DefaultSerializeClassChecker defaultSerializeClassChecker = DefaultSerializeClassChecker.getInstance();
         Assertions.assertEquals(
-            Integer.class,
-            defaultSerializeClassChecker.loadClass(
-                Thread.currentThread().getContextClassLoader(), Integer.class.getName()));
+                Integer.class,
+                defaultSerializeClassChecker.loadClass(
+                        Thread.currentThread().getContextClassLoader(), Integer.class.getName()));
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             defaultSerializeClassChecker.loadClass(
-                Thread.currentThread().getContextClassLoader(), ReentrantReadWriteLock.class.getName());
+                    Thread.currentThread().getContextClassLoader(), ReentrantReadWriteLock.class.getName());
         });
         Assertions.assertTrue(FrameworkModel.defaultModel()
-            .getBeanFactory()
-            .getBean(SerializeSecurityManager.class)
-            .getWarnedClasses()
-            .contains(ReentrantReadWriteLock.class.getName()));
+                .getBeanFactory()
+                .getBean(SerializeSecurityManager.class)
+                .getWarnedClasses()
+                .contains(ReentrantReadWriteLock.class.getName()));
 
         ssm.setCheckStatus(SerializeCheckStatus.WARN);
         Assertions.assertEquals(
-            ReentrantReadWriteLock.class,
-            defaultSerializeClassChecker.loadClass(
-                Thread.currentThread().getContextClassLoader(), ReentrantReadWriteLock.class.getName()));
+                ReentrantReadWriteLock.class,
+                defaultSerializeClassChecker.loadClass(
+                        Thread.currentThread().getContextClassLoader(), ReentrantReadWriteLock.class.getName()));
 
         ssm.setCheckStatus(SerializeCheckStatus.DISABLE);
         Assertions.assertEquals(
-            ReentrantReadWriteLock.class,
-            defaultSerializeClassChecker.loadClass(
-                Thread.currentThread().getContextClassLoader(), ReentrantReadWriteLock.class.getName()));
+                ReentrantReadWriteLock.class,
+                defaultSerializeClassChecker.loadClass(
+                        Thread.currentThread().getContextClassLoader(), ReentrantReadWriteLock.class.getName()));
     }
 }

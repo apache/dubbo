@@ -97,8 +97,10 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
      */
     @Deprecated
     private void loadMigrationRule() {
-        if (Boolean.parseBoolean(SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO_MIGRATION_FILE_ENABLE, "false"))) {
-            String path = SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO_MIGRATION_KEY);
+        if (Boolean.parseBoolean(SystemPropertyConfigUtils.getSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_MIGRATION_FILE_ENABLE, "false"))) {
+            String path =
+                    SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO_MIGRATION_KEY);
             if (StringUtils.isEmpty(path)) {
                 path = System.getenv(CommonConstants.DubboProperty.DUBBO_MIGRATION_KEY);
                 if (StringUtils.isEmpty(path)) {
@@ -272,11 +274,11 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
                 defaultDynamicConfiguration.close();
             } catch (Exception e) {
                 logger.warn(
-                    COMMON_UNEXPECTED_EXCEPTION,
-                    "",
-                    "",
-                    "close dynamic configuration failed: " + e.getMessage(),
-                    e);
+                        COMMON_UNEXPECTED_EXCEPTION,
+                        "",
+                        "",
+                        "close dynamic configuration failed: " + e.getMessage(),
+                        e);
             }
             defaultDynamicConfiguration = null;
         }
@@ -336,10 +338,10 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
             if (defaultDynamicConfiguration == null) {
                 if (logger.isWarnEnabled()) {
                     logger.warn(
-                        COMMON_UNEXPECTED_EXCEPTION,
-                        "",
-                        "",
-                        "dynamicConfiguration is null , return globalConfiguration.");
+                            COMMON_UNEXPECTED_EXCEPTION,
+                            "",
+                            "",
+                            "dynamicConfiguration is null , return globalConfiguration.");
                 }
                 return getConfiguration();
             }

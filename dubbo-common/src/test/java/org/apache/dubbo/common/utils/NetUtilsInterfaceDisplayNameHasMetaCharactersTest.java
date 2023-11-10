@@ -80,10 +80,10 @@ class NetUtilsInterfaceDisplayNameHasMetaCharactersTest {
 
             // mock static method getNetworkInterfaces
             mockedStaticNetif
-                .when(() -> {
-                    NetworkInterface.getNetworkInterfaces();
-                })
-                .thenReturn(mockEnumIfs);
+                    .when(() -> {
+                        NetworkInterface.getNetworkInterfaces();
+                    })
+                    .thenReturn(mockEnumIfs);
 
             Mockito.when(mockIgnoredNetif.isUp()).thenReturn(true);
             Mockito.when(mockIgnoredNetif.getDisplayName()).thenReturn(IGNORED_DISPLAY_NAME_HAS_METACHARACTERS);
@@ -106,14 +106,17 @@ class NetUtilsInterfaceDisplayNameHasMetaCharactersTest {
     }
 
     private String getIgnoredInterfaces() {
-        return SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO_NETWORK_IGNORED_INTERFACE);
+        return SystemPropertyConfigUtils.getSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_NETWORK_IGNORED_INTERFACE);
     }
 
     private void setIgnoredInterfaces(String ignoredInterfaces) {
         if (ignoredInterfaces != null) {
-            SystemPropertyConfigUtils.setSystemProperty(CommonConstants.DubboProperty.DUBBO_NETWORK_IGNORED_INTERFACE, ignoredInterfaces);
+            SystemPropertyConfigUtils.setSystemProperty(
+                    CommonConstants.DubboProperty.DUBBO_NETWORK_IGNORED_INTERFACE, ignoredInterfaces);
         } else {
-            SystemPropertyConfigUtils.setSystemProperty(CommonConstants.DubboProperty.DUBBO_NETWORK_IGNORED_INTERFACE, "");
+            SystemPropertyConfigUtils.setSystemProperty(
+                    CommonConstants.DubboProperty.DUBBO_NETWORK_IGNORED_INTERFACE, "");
         }
     }
 }

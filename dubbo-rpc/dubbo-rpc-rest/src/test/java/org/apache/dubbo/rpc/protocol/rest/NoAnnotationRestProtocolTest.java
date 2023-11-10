@@ -43,11 +43,11 @@ import org.junit.jupiter.api.Test;
 
 class NoAnnotationRestProtocolTest {
     private final Protocol protocol =
-        ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("rest");
+            ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("rest");
     private final ProxyFactory proxy =
-        ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+            ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
     private final ModuleServiceRepository repository =
-        ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
+            ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
 
     @AfterEach
     public void tearDown() {
@@ -70,21 +70,22 @@ class NoAnnotationRestProtocolTest {
                     setJson(null);
                 }
             }.clearJson();
-            SystemPropertyConfigUtils.setSystemProperty(CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME, json);
+            SystemPropertyConfigUtils.setSystemProperty(
+                    CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME, json);
             testRestProtocol();
         }
     }
 
     void testRestProtocol() {
         URL url = URL.valueOf("rest://127.0.0.1:" + NetUtils.getAvailablePort()
-            + "/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.noannotation.NoAnnotationDemoService");
+                + "/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.noannotation.NoAnnotationDemoService");
 
         NoAnnotationDemoServiceImpl server = new NoAnnotationDemoServiceImpl();
 
         url = this.registerProvider(url, server, DemoService.class);
 
         Exporter<NoAnnotationDemoService> exporter =
-            protocol.export(proxy.getInvoker(server, NoAnnotationDemoService.class, url));
+                protocol.export(proxy.getInvoker(server, NoAnnotationDemoService.class, url));
         Invoker<NoAnnotationDemoService> invoker = protocol.refer(NoAnnotationDemoService.class, url);
 
         NoAnnotationDemoService client = proxy.getProxy(invoker);
@@ -98,8 +99,8 @@ class NoAnnotationRestProtocolTest {
         Assertions.assertEquals("invoked", user.getName());
 
         Assertions.assertEquals(
-            User.getInstance(),
-            client.userList(Arrays.asList(User.getInstance())).get(0));
+                User.getInstance(),
+                client.userList(Arrays.asList(User.getInstance())).get(0));
 
         invoker.destroy();
         exporter.unexport();
@@ -114,15 +115,15 @@ class NoAnnotationRestProtocolTest {
 
     void testAnotherUserRestProtocol(String restClient) {
         URL url = URL.valueOf("rest://127.0.0.1:" + NetUtils.getAvailablePort()
-            + "/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.noannotation.NoAnnotationDemoService&"
-            + org.apache.dubbo.remoting.Constants.CLIENT_KEY + "=" + restClient);
+                + "/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.noannotation.NoAnnotationDemoService&"
+                + org.apache.dubbo.remoting.Constants.CLIENT_KEY + "=" + restClient);
 
         NoAnnotationDemoService server = new NoAnnotationDemoServiceImpl();
 
         url = this.registerProvider(url, server, DemoService.class);
 
         Exporter<NoAnnotationDemoService> exporter =
-            protocol.export(proxy.getInvoker(server, NoAnnotationDemoService.class, url));
+                protocol.export(proxy.getInvoker(server, NoAnnotationDemoService.class, url));
         Invoker<NoAnnotationDemoService> invoker = protocol.refer(NoAnnotationDemoService.class, url);
 
         NoAnnotationDemoService client = proxy.getProxy(invoker);

@@ -27,7 +27,8 @@ public class DefaultSerializationSelector {
     private static final String DEFAULT_REMOTING_SERIALIZATION;
 
     static {
-        String fromProperty = SystemPropertyConfigUtils.getSystemProperty(DUBBO_DEFAULT_REMOTING_SERIALIZATION_PROPERTY);
+        String fromProperty =
+                SystemPropertyConfigUtils.getSystemProperty(DUBBO_DEFAULT_REMOTING_SERIALIZATION_PROPERTY);
         if (fromProperty != null) {
             DEFAULT_REMOTING_SERIALIZATION = fromProperty;
         } else {

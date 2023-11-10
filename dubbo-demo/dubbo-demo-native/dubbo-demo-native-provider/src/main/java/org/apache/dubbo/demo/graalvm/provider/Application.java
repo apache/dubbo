@@ -35,7 +35,8 @@ public class Application {
     public static void main(String[] args) throws Exception {
         SystemPropertyConfigUtils.setSystemProperty(CommonConstants.DubboProperty.DUBBO_APPLICATION_LOGGER, "log4j");
         System.setProperty("native", "true");
-        SystemPropertyConfigUtils.setSystemProperty(CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME, "fastjson");
+        SystemPropertyConfigUtils.setSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME, "fastjson");
         startWithBootstrap();
         System.in.read();
     }
@@ -61,12 +62,12 @@ public class Application {
         ProtocolConfig protocolConfig = new ProtocolConfig(CommonConstants.DUBBO, -1);
         protocolConfig.setSerialization("fastjson2");
         bootstrap
-            .application(applicationConfig)
-            .registry(new RegistryConfig(REGISTRY_URL))
-            .protocol(protocolConfig)
-            .service(service)
-            .start()
-            .await();
+                .application(applicationConfig)
+                .registry(new RegistryConfig(REGISTRY_URL))
+                .protocol(protocolConfig)
+                .service(service)
+                .start()
+                .await();
 
         System.out.println("dubbo service started");
     }

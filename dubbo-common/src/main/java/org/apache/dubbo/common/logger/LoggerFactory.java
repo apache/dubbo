@@ -44,12 +44,13 @@ public class LoggerFactory {
 
     private static final ConcurrentMap<String, FailsafeLogger> LOGGERS = new ConcurrentHashMap<>();
     private static final ConcurrentMap<String, FailsafeErrorTypeAwareLogger> ERROR_TYPE_AWARE_LOGGERS =
-        new ConcurrentHashMap<>();
+            new ConcurrentHashMap<>();
     private static volatile LoggerAdapter loggerAdapter;
 
     // search common-used logging frameworks
     static {
-        String logger = SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO_APPLICATION_LOGGER, "");
+        String logger =
+                SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO_APPLICATION_LOGGER, "");
         switch (logger) {
             case Slf4jLoggerAdapter.NAME:
                 setLoggerAdapter(new Slf4jLoggerAdapter());
@@ -68,17 +69,17 @@ public class LoggerFactory {
                 break;
             default:
                 List<Class<? extends LoggerAdapter>> candidates = Arrays.asList(
-                    Log4jLoggerAdapter.class,
-                    Slf4jLoggerAdapter.class,
-                    Log4j2LoggerAdapter.class,
-                    JclLoggerAdapter.class,
-                    JdkLoggerAdapter.class);
+                        Log4jLoggerAdapter.class,
+                        Slf4jLoggerAdapter.class,
+                        Log4j2LoggerAdapter.class,
+                        JclLoggerAdapter.class,
+                        JdkLoggerAdapter.class);
                 boolean found = false;
                 // try to use the first available adapter
                 for (Class<? extends LoggerAdapter> clazz : candidates) {
                     try {
                         LoggerAdapter loggerAdapter =
-                            clazz.getDeclaredConstructor().newInstance();
+                                clazz.getDeclaredConstructor().newInstance();
                         loggerAdapter.getLogger(LoggerFactory.class);
                         if (loggerAdapter.isConfigured()) {
                             setLoggerAdapter(loggerAdapter);
@@ -97,7 +98,7 @@ public class LoggerFactory {
                 for (Class<? extends LoggerAdapter> clazz : candidates) {
                     try {
                         LoggerAdapter loggerAdapter =
-                            clazz.getDeclaredConstructor().newInstance();
+                                clazz.getDeclaredConstructor().newInstance();
                         loggerAdapter.getLogger(LoggerFactory.class);
                         setLoggerAdapter(loggerAdapter);
                         found = true;
@@ -108,24 +109,23 @@ public class LoggerFactory {
                 }
                 if (found) {
                     System.err.println(
-                        "Dubbo: Using default logger: "
-                            + loggerAdapter.getClass().getName() + ". "
-                            + "If you cannot see any log, please configure -Ddubbo.application.logger property to your preferred logging framework.");
+                            "Dubbo: Using default logger: "
+                                    + loggerAdapter.getClass().getName() + ". "
+                                    + "If you cannot see any log, please configure -Ddubbo.application.logger property to your preferred logging framework.");
                 } else {
                     System.err.println(
-                        "Dubbo: Unable to find any available logger adapter to log out. Dubbo logs will be ignored. "
-                            + "Please configure -Ddubbo.application.logger property and add corresponding logging library to classpath.");
+                            "Dubbo: Unable to find any available logger adapter to log out. Dubbo logs will be ignored. "
+                                    + "Please configure -Ddubbo.application.logger property and add corresponding logging library to classpath.");
                 }
         }
     }
 
-    private LoggerFactory() {
-    }
+    private LoggerFactory() {}
 
     public static void setLoggerAdapter(FrameworkModel frameworkModel, String loggerAdapter) {
         if (loggerAdapter != null && loggerAdapter.length() > 0) {
             setLoggerAdapter(
-                frameworkModel.getExtensionLoader(LoggerAdapter.class).getExtension(loggerAdapter));
+                    frameworkModel.getExtensionLoader(LoggerAdapter.class).getExtension(loggerAdapter));
         }
     }
 
@@ -155,7 +155,7 @@ public class LoggerFactory {
      */
     public static Logger getLogger(Class<?> key) {
         return ConcurrentHashMapUtils.computeIfAbsent(
-            LOGGERS, key.getName(), name -> new FailsafeLogger(loggerAdapter.getLogger(name)));
+                LOGGERS, key.getName(), name -> new FailsafeLogger(loggerAdapter.getLogger(name)));
     }
 
     /**
@@ -166,7 +166,7 @@ public class LoggerFactory {
      */
     public static Logger getLogger(String key) {
         return ConcurrentHashMapUtils.computeIfAbsent(
-            LOGGERS, key, k -> new FailsafeLogger(loggerAdapter.getLogger(k)));
+                LOGGERS, key, k -> new FailsafeLogger(loggerAdapter.getLogger(k)));
     }
 
     /**
@@ -177,9 +177,9 @@ public class LoggerFactory {
      */
     public static ErrorTypeAwareLogger getErrorTypeAwareLogger(Class<?> key) {
         return ConcurrentHashMapUtils.computeIfAbsent(
-            ERROR_TYPE_AWARE_LOGGERS,
-            key.getName(),
-            name -> new FailsafeErrorTypeAwareLogger(loggerAdapter.getLogger(name)));
+                ERROR_TYPE_AWARE_LOGGERS,
+                key.getName(),
+                name -> new FailsafeErrorTypeAwareLogger(loggerAdapter.getLogger(name)));
     }
 
     /**
@@ -190,7 +190,7 @@ public class LoggerFactory {
      */
     public static ErrorTypeAwareLogger getErrorTypeAwareLogger(String key) {
         return ConcurrentHashMapUtils.computeIfAbsent(
-            ERROR_TYPE_AWARE_LOGGERS, key, k -> new FailsafeErrorTypeAwareLogger(loggerAdapter.getLogger(k)));
+                ERROR_TYPE_AWARE_LOGGERS, key, k -> new FailsafeErrorTypeAwareLogger(loggerAdapter.getLogger(k)));
     }
 
     /**
@@ -236,7 +236,7 @@ public class LoggerFactory {
         for (Map.Entry<Class<? extends LoggerAdapter>, String> entry : candidates.entrySet()) {
             try {
                 LoggerAdapter loggerAdapter =
-                    entry.getKey().getDeclaredConstructor().newInstance();
+                        entry.getKey().getDeclaredConstructor().newInstance();
                 loggerAdapter.getLogger(LoggerFactory.class);
                 result.add(entry.getValue());
             } catch (Exception ignored) {

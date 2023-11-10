@@ -48,7 +48,7 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
     private final SerializeSecurityManager serializeSecurityManager;
 
     private static final ErrorTypeAwareLogger logger =
-        LoggerFactory.getErrorTypeAwareLogger(SerializeSecurityConfigurator.class);
+            LoggerFactory.getErrorTypeAwareLogger(SerializeSecurityConfigurator.class);
 
     private final ModuleModel moduleModel;
 
@@ -72,15 +72,15 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
 
     public void refreshCheck() {
         Optional<ApplicationConfig> applicationConfig =
-            moduleModel.getApplicationModel().getApplicationConfigManager().getApplication();
+                moduleModel.getApplicationModel().getApplicationConfigManager().getApplication();
         autoTrustSerializeClass = applicationConfig
-            .map(ApplicationConfig::getAutoTrustSerializeClass)
-            .orElse(true);
+                .map(ApplicationConfig::getAutoTrustSerializeClass)
+                .orElse(true);
         trustSerializeClassLevel = applicationConfig
-            .map(ApplicationConfig::getTrustSerializeClassLevel)
-            .orElse(Integer.MAX_VALUE);
+                .map(ApplicationConfig::getTrustSerializeClassLevel)
+                .orElse(Integer.MAX_VALUE);
         serializeSecurityManager.setCheckSerializable(
-            applicationConfig.map(ApplicationConfig::getCheckSerializable).orElse(true));
+                applicationConfig.map(ApplicationConfig::getCheckSerializable).orElse(true));
     }
 
     @Override
@@ -99,10 +99,12 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
     }
 
     private void refreshConfig() {
-        String allowedClassList =
-            SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST, "").trim();
-        String blockedClassList =
-            SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST, "").trim();
+        String allowedClassList = SystemPropertyConfigUtils.getSystemProperty(
+                        CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST, "")
+                .trim();
+        String blockedClassList = SystemPropertyConfigUtils.getSystemProperty(
+                        CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST, "")
+                .trim();
 
         if (StringUtils.isNotEmpty(allowedClassList)) {
             String[] classStrings = allowedClassList.trim().split(",");
@@ -140,11 +142,11 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
                 }
             } catch (IOException e) {
                 logger.error(
-                    COMMON_IO_EXCEPTION,
-                    "",
-                    "",
-                    "Failed to load allow class list! Will ignore allow lis from " + u,
-                    e);
+                        COMMON_IO_EXCEPTION,
+                        "",
+                        "",
+                        "Failed to load allow class list! Will ignore allow lis from " + u,
+                        e);
             }
         }
     }
@@ -164,28 +166,30 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
                 }
             } catch (IOException e) {
                 logger.error(
-                    COMMON_IO_EXCEPTION,
-                    "",
-                    "",
-                    "Failed to load blocked class list! Will ignore blocked lis from " + u,
-                    e);
+                        COMMON_IO_EXCEPTION,
+                        "",
+                        "",
+                        "Failed to load blocked class list! Will ignore blocked lis from " + u,
+                        e);
             }
         }
     }
 
     public void refreshStatus() {
         Optional<ApplicationConfig> application =
-            moduleModel.getApplicationModel().getApplicationConfigManager().getApplication();
+                moduleModel.getApplicationModel().getApplicationConfigManager().getApplication();
         String statusString =
-            application.map(ApplicationConfig::getSerializeCheckStatus).orElse(null);
+                application.map(ApplicationConfig::getSerializeCheckStatus).orElse(null);
         SerializeCheckStatus checkStatus = null;
 
         if (StringUtils.isEmpty(statusString)) {
-            String openCheckClass = SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_OPEN_CHECK, "true");
+            String openCheckClass = SystemPropertyConfigUtils.getSystemProperty(
+                    CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_OPEN_CHECK, "true");
             if (!Boolean.parseBoolean(openCheckClass)) {
                 checkStatus = SerializeCheckStatus.DISABLE;
             }
-            String blockAllClassExceptAllow = SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCK_ALL, "false");
+            String blockAllClassExceptAllow = SystemPropertyConfigUtils.getSystemProperty(
+                    CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCK_ALL, "false");
             if (Boolean.parseBoolean(blockAllClassExceptAllow)) {
                 checkStatus = SerializeCheckStatus.STRICT;
             }
@@ -294,10 +298,10 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
         }
         String className = clazz.getName();
         if (className.startsWith("java.")
-            || className.startsWith("javax.")
-            || className.startsWith("com.sun.")
-            || className.startsWith("sun.")
-            || className.startsWith("jdk.")) {
+                || className.startsWith("javax.")
+                || className.startsWith("com.sun.")
+                || className.startsWith("sun.")
+                || className.startsWith("jdk.")) {
             return;
         }
 
@@ -336,10 +340,10 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
     private void addToAllow(String className) {
         // ignore jdk
         if (className.startsWith("java.")
-            || className.startsWith("javax.")
-            || className.startsWith("com.sun.")
-            || className.startsWith("sun.")
-            || className.startsWith("jdk.")) {
+                || className.startsWith("javax.")
+                || className.startsWith("com.sun.")
+                || className.startsWith("sun.")
+                || className.startsWith("jdk.")) {
             serializeSecurityManager.addToAllowed(className);
             return;
         }
@@ -348,7 +352,7 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
         String[] subs = className.split("\\.");
         if (subs.length > trustSerializeClassLevel) {
             serializeSecurityManager.addToAllowed(
-                Arrays.stream(subs).limit(trustSerializeClassLevel).collect(Collectors.joining(".")) + ".");
+                    Arrays.stream(subs).limit(trustSerializeClassLevel).collect(Collectors.joining(".")) + ".");
         } else {
             serializeSecurityManager.addToAllowed(className);
         }

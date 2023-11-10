@@ -33,9 +33,10 @@ class AbstractInterfaceConfigTest {
 
     @BeforeAll
     public static void setUp(@TempDir Path folder) {
-        File dubboProperties =
-            folder.resolve(CommonConstants.DubboProperty.DUBBO_PROPERTIES_KEY).toFile();
-        SystemPropertyConfigUtils.setSystemProperty(CommonConstants.DubboProperty.DUBBO_PROPERTIES_KEY, dubboProperties.getAbsolutePath());
+        File dubboProperties = folder.resolve(CommonConstants.DubboProperty.DUBBO_PROPERTIES_KEY)
+                .toFile();
+        SystemPropertyConfigUtils.setSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_PROPERTIES_KEY, dubboProperties.getAbsolutePath());
     }
 
     @AfterAll
@@ -257,6 +258,5 @@ class AbstractInterfaceConfigTest {
         }
     }
 
-    public static class InterfaceConfig extends AbstractInterfaceConfig {
-    }
+    public static class InterfaceConfig extends AbstractInterfaceConfig {}
 }

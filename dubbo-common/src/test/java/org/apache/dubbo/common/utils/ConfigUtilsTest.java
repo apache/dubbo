@@ -51,8 +51,7 @@ class ConfigUtilsTest {
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
-    }
+    public void tearDown() throws Exception {}
 
     @Test
     void testIsNotEmpty() throws Exception {
@@ -83,40 +82,40 @@ class ConfigUtilsTest {
     @Test
     void testMergeValues() {
         List<String> merged = ConfigUtils.mergeValues(
-            ApplicationModel.defaultModel().getExtensionDirector(),
-            ThreadPool.class,
-            "aaa,bbb,default.custom",
-            asList("fixed", "default.limited", "cached"));
+                ApplicationModel.defaultModel().getExtensionDirector(),
+                ThreadPool.class,
+                "aaa,bbb,default.custom",
+                asList("fixed", "default.limited", "cached"));
         assertEquals(asList("fixed", "cached", "aaa", "bbb", "default.custom"), merged);
     }
 
     @Test
     void testMergeValuesAddDefault() {
         List<String> merged = ConfigUtils.mergeValues(
-            ApplicationModel.defaultModel().getExtensionDirector(),
-            ThreadPool.class,
-            "aaa,bbb,default,zzz",
-            asList("fixed", "default.limited", "cached"));
+                ApplicationModel.defaultModel().getExtensionDirector(),
+                ThreadPool.class,
+                "aaa,bbb,default,zzz",
+                asList("fixed", "default.limited", "cached"));
         assertEquals(asList("aaa", "bbb", "fixed", "cached", "zzz"), merged);
     }
 
     @Test
     void testMergeValuesDeleteDefault() {
         List<String> merged = ConfigUtils.mergeValues(
-            ApplicationModel.defaultModel().getExtensionDirector(),
-            ThreadPool.class,
-            "-default",
-            asList("fixed", "default.limited", "cached"));
+                ApplicationModel.defaultModel().getExtensionDirector(),
+                ThreadPool.class,
+                "-default",
+                asList("fixed", "default.limited", "cached"));
         assertEquals(Collections.emptyList(), merged);
     }
 
     @Test
     void testMergeValuesDeleteDefault_2() {
         List<String> merged = ConfigUtils.mergeValues(
-            ApplicationModel.defaultModel().getExtensionDirector(),
-            ThreadPool.class,
-            "-default,aaa",
-            asList("fixed", "default.limited", "cached"));
+                ApplicationModel.defaultModel().getExtensionDirector(),
+                ThreadPool.class,
+                "-default,aaa",
+                asList("fixed", "default.limited", "cached"));
         assertEquals(asList("aaa"), merged);
     }
 
@@ -126,10 +125,10 @@ class ConfigUtilsTest {
     @Test
     void testMergeValuesDelete() {
         List<String> merged = ConfigUtils.mergeValues(
-            ApplicationModel.defaultModel().getExtensionDirector(),
-            ThreadPool.class,
-            "-fixed,aaa",
-            asList("fixed", "default.limited", "cached"));
+                ApplicationModel.defaultModel().getExtensionDirector(),
+                ThreadPool.class,
+                "-fixed,aaa",
+                asList("fixed", "default.limited", "cached"));
         assertEquals(asList("cached", "aaa"), merged);
     }
 
@@ -155,7 +154,7 @@ class ConfigUtilsTest {
         compositeConfiguration.addConfiguration(configuration2);
 
         String s = ConfigUtils.replaceProperty(
-            "zookeeper://${zookeeper.address}:${zookeeper.port}", compositeConfiguration);
+                "zookeeper://${zookeeper.address}:${zookeeper.port}", compositeConfiguration);
         assertEquals("zookeeper://127.0.0.1:2181", s);
 
         // should not replace inner class name
@@ -168,7 +167,8 @@ class ConfigUtilsTest {
     void testGetProperties1() throws Exception {
         try {
             SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO_PROPERTIES_KEY);
-            SystemPropertyConfigUtils.setSystemProperty(CommonConstants.DubboProperty.DUBBO_PROPERTIES_KEY, "properties.load");
+            SystemPropertyConfigUtils.setSystemProperty(
+                    CommonConstants.DubboProperty.DUBBO_PROPERTIES_KEY, "properties.load");
             Properties p = ConfigUtils.getProperties(Collections.emptySet());
             assertThat((String) p.get("a"), equalTo("12"));
             assertThat((String) p.get("b"), equalTo("34"));
@@ -248,7 +248,7 @@ class ConfigUtilsTest {
     @Test
     void testLoadPropertiesOneFileNotRootPath() throws Exception {
         Properties p = ConfigUtils.loadProperties(
-            Collections.emptySet(), "META-INF/dubbo/internal/org.apache.dubbo.common.threadpool.ThreadPool", false);
+                Collections.emptySet(), "META-INF/dubbo/internal/org.apache.dubbo.common.threadpool.ThreadPool", false);
 
         Properties expected = new Properties();
         expected.put("fixed", "org.apache.dubbo.common.threadpool.support.fixed.FixedThreadPool");
@@ -264,13 +264,13 @@ class ConfigUtilsTest {
     void testLoadPropertiesMultiFileNotRootPathException() throws Exception {
         try {
             ConfigUtils.loadProperties(
-                Collections.emptySet(), "META-INF/services/org.apache.dubbo.common.status.StatusChecker", false);
+                    Collections.emptySet(), "META-INF/services/org.apache.dubbo.common.status.StatusChecker", false);
             Assertions.fail();
         } catch (IllegalStateException expected) {
             assertThat(
-                expected.getMessage(),
-                containsString(
-                    "only 1 META-INF/services/org.apache.dubbo.common.status.StatusChecker file is expected, but 2 dubbo.properties files found on class path:"));
+                    expected.getMessage(),
+                    containsString(
+                            "only 1 META-INF/services/org.apache.dubbo.common.status.StatusChecker file is expected, but 2 dubbo.properties files found on class path:"));
         }
     }
 
@@ -278,7 +278,7 @@ class ConfigUtilsTest {
     void testLoadPropertiesMultiFileNotRootPath() throws Exception {
 
         Properties p = ConfigUtils.loadProperties(
-            Collections.emptySet(), "META-INF/dubbo/internal/org.apache.dubbo.common.status.StatusChecker", true);
+                Collections.emptySet(), "META-INF/dubbo/internal/org.apache.dubbo.common.status.StatusChecker", true);
 
         Properties expected = new Properties();
         expected.put("memory", "org.apache.dubbo.common.status.support.MemoryStatusChecker");

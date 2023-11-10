@@ -88,8 +88,7 @@ public class ConsumerConfig extends AbstractReferenceConfig {
      */
     private Boolean meshEnable;
 
-    public ConsumerConfig() {
-    }
+    public ConsumerConfig() {}
 
     public ConsumerConfig(ModuleModel moduleModel) {
         super(moduleModel);

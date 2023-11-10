@@ -111,14 +111,14 @@ class ConsumerConfigTest {
         consumerConfig.setCheck(true);
 
         DubboBootstrap.getInstance()
-            .application("demo-app")
-            .consumer(consumerConfig)
-            .initialize();
+                .application("demo-app")
+                .consumer(consumerConfig)
+                .initialize();
 
         Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel()
-            .getDefaultModule()
-            .getConfigManager()
-            .getConsumers();
+                .getDefaultModule()
+                .getConfigManager()
+                .getConsumers();
         Assertions.assertEquals(1, consumers.size());
         Assertions.assertEquals(consumerConfig, consumers.iterator().next());
         Assertions.assertEquals(false, consumerConfig.isCheck());
@@ -142,14 +142,14 @@ class ConsumerConfigTest {
         consumerConfig.setCheck(true);
 
         DubboBootstrap.getInstance()
-            .application("demo-app")
-            .consumer(consumerConfig)
-            .initialize();
+                .application("demo-app")
+                .consumer(consumerConfig)
+                .initialize();
 
         Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel()
-            .getDefaultModule()
-            .getConfigManager()
-            .getConsumers();
+                .getDefaultModule()
+                .getConfigManager()
+                .getConsumers();
         Assertions.assertEquals(1, consumers.size());
         Assertions.assertEquals(consumerConfig, consumers.iterator().next());
         Assertions.assertEquals(false, consumerConfig.isCheck());
@@ -176,14 +176,14 @@ class ConsumerConfigTest {
         consumerConfig.setCheck(true);
 
         DubboBootstrap.getInstance()
-            .application("demo-app")
-            .consumer(consumerConfig)
-            .initialize();
+                .application("demo-app")
+                .consumer(consumerConfig)
+                .initialize();
 
         Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel()
-            .getDefaultModule()
-            .getConfigManager()
-            .getConsumers();
+                .getDefaultModule()
+                .getConfigManager()
+                .getConsumers();
         Assertions.assertEquals(1, consumers.size());
         Assertions.assertEquals(consumerConfig, consumers.iterator().next());
         Assertions.assertEquals(true, consumerConfig.isCheck());
@@ -197,17 +197,17 @@ class ConsumerConfigTest {
     void testOverrideConfigByDubboProps() {
         ApplicationModel.defaultModel().getDefaultModule();
         ApplicationModel.defaultModel()
-            .modelEnvironment()
-            .getPropertiesConfiguration()
-            .setProperty("dubbo.consumers.consumerA.check", "false");
+                .modelEnvironment()
+                .getPropertiesConfiguration()
+                .setProperty("dubbo.consumers.consumerA.check", "false");
         ApplicationModel.defaultModel()
-            .modelEnvironment()
-            .getPropertiesConfiguration()
-            .setProperty("dubbo.consumers.consumerA.group", "demo");
+                .modelEnvironment()
+                .getPropertiesConfiguration()
+                .setProperty("dubbo.consumers.consumerA.group", "demo");
         ApplicationModel.defaultModel()
-            .modelEnvironment()
-            .getPropertiesConfiguration()
-            .setProperty("dubbo.consumers.consumerA.threads", "10");
+                .modelEnvironment()
+                .getPropertiesConfiguration()
+                .setProperty("dubbo.consumers.consumerA.threads", "10");
 
         try {
             ConsumerConfig consumerConfig = new ConsumerConfig();
@@ -215,14 +215,14 @@ class ConsumerConfigTest {
             consumerConfig.setGroup("groupA");
 
             DubboBootstrap.getInstance()
-                .application("demo-app")
-                .consumer(consumerConfig)
-                .initialize();
+                    .application("demo-app")
+                    .consumer(consumerConfig)
+                    .initialize();
 
             Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel()
-                .getDefaultModule()
-                .getConfigManager()
-                .getConsumers();
+                    .getDefaultModule()
+                    .getConfigManager()
+                    .getConsumers();
             Assertions.assertEquals(1, consumers.size());
             Assertions.assertEquals(consumerConfig, consumers.iterator().next());
             Assertions.assertEquals(false, consumerConfig.isCheck());
@@ -230,9 +230,9 @@ class ConsumerConfigTest {
             Assertions.assertEquals(10, consumerConfig.getThreads());
         } finally {
             ApplicationModel.defaultModel()
-                .modelEnvironment()
-                .getPropertiesConfiguration()
-                .refresh();
+                    .modelEnvironment()
+                    .getPropertiesConfiguration()
+                    .refresh();
             DubboBootstrap.getInstance().destroy();
         }
     }
@@ -250,9 +250,9 @@ class ConsumerConfigTest {
         referenceConfig.setInterface(DemoService.class);
 
         DubboBootstrap.getInstance()
-            .application("demo-app")
-            .reference(referenceConfig)
-            .initialize();
+                .application("demo-app")
+                .reference(referenceConfig)
+                .initialize();
 
         Assertions.assertEquals("demo", referenceConfig.getGroup());
         Assertions.assertEquals(1234, referenceConfig.getTimeout());

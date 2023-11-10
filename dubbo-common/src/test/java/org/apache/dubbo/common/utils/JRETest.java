@@ -39,7 +39,7 @@ class JRETest {
         // SourceVersion is an enum, which member name is RELEASE_XX.
 
         Assertions.assertEquals(
-            SourceVersion.latest().name().split("_")[1],
-            JRE.currentVersion().name().split("_")[1]);
+                SourceVersion.latest().name().split("_")[1],
+                JRE.currentVersion().name().split("_")[1]);
     }
 }

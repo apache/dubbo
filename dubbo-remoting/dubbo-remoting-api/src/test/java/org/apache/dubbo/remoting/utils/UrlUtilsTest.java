@@ -66,7 +66,8 @@ class UrlUtilsTest {
 
     @Test
     void testConfiguredClose() {
-        SystemPropertyConfigUtils.setSystemProperty(CommonConstants.DubboProperty.DUBBO_CLOSE_TIMEOUT_CONFIG_KEY, "180000");
+        SystemPropertyConfigUtils.setSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_CLOSE_TIMEOUT_CONFIG_KEY, "180000");
         URL url = URL.valueOf("dubbo://127.0.0.1:12345");
         Assertions.assertEquals(180000, UrlUtils.getCloseTimeout(url));
         SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_CLOSE_TIMEOUT_CONFIG_KEY);

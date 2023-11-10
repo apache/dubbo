@@ -43,15 +43,15 @@ public class NettyEventLoopFactory {
      * netty client bootstrap
      */
     public static final GlobalResourceInitializer<EventLoopGroup> NIO_EVENT_LOOP_GROUP =
-        new GlobalResourceInitializer<>(
-            () -> eventLoopGroup(Constants.DEFAULT_IO_THREADS, "NettyClientWorker"),
-            eventLoopGroup -> eventLoopGroup.shutdownGracefully());
+            new GlobalResourceInitializer<>(
+                    () -> eventLoopGroup(Constants.DEFAULT_IO_THREADS, "NettyClientWorker"),
+                    eventLoopGroup -> eventLoopGroup.shutdownGracefully());
 
     public static EventLoopGroup eventLoopGroup(int threads, String threadFactoryName) {
         ThreadFactory threadFactory = new DefaultThreadFactory(threadFactoryName, true);
         return shouldEpoll()
-            ? new EpollEventLoopGroup(threads, threadFactory)
-            : new NioEventLoopGroup(threads, threadFactory);
+                ? new EpollEventLoopGroup(threads, threadFactory)
+                : new NioEventLoopGroup(threads, threadFactory);
     }
 
     public static Class<? extends SocketChannel> socketChannelClass() {

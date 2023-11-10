@@ -58,7 +58,8 @@ public abstract class AbstractRegistryCenterTestExecutionListener implements Tes
         // dubbo-metadata-report-zookeeper
         PACKAGE_NAME.add("org.apache.dubbo.metadata.store.zookeeper");
 
-        enableEmbeddedZookeeper = Boolean.valueOf(SystemPropertyConfigUtils.getSystemProperty(ZOOKEEPER_CONFIG_ENABLE_EMBEDDED, "true"));
+        enableEmbeddedZookeeper =
+                Boolean.valueOf(SystemPropertyConfigUtils.getSystemProperty(ZOOKEEPER_CONFIG_ENABLE_EMBEDDED, "true"));
     }
 
     /**
@@ -66,11 +67,11 @@ public abstract class AbstractRegistryCenterTestExecutionListener implements Tes
      */
     public boolean needRegistryCenter(TestPlan testPlan) {
         return testPlan.getRoots().stream()
-            .flatMap(testIdentifier -> testPlan.getChildren(testIdentifier).stream())
-            .filter(testIdentifier -> testIdentifier.getSource().isPresent())
-            .filter(testIdentifier -> supportEmbeddedZookeeper(testIdentifier))
-            .count()
-            > 0;
+                        .flatMap(testIdentifier -> testPlan.getChildren(testIdentifier).stream())
+                        .filter(testIdentifier -> testIdentifier.getSource().isPresent())
+                        .filter(testIdentifier -> supportEmbeddedZookeeper(testIdentifier))
+                        .count()
+                > 0;
     }
 
     /**
@@ -90,7 +91,7 @@ public abstract class AbstractRegistryCenterTestExecutionListener implements Tes
         TestSource testSource = testIdentifier.getSource().orElse(null);
         if (testSource instanceof ClassSource) {
             String packageName =
-                ((ClassSource) testSource).getJavaClass().getPackage().getName();
+                    ((ClassSource) testSource).getJavaClass().getPackage().getName();
             for (String pkgName : PACKAGE_NAME) {
                 if (packageName.contains(pkgName)) {
                     return true;

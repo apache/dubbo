@@ -35,7 +35,8 @@ public class Application {
     public static void main(String[] args) {
         SystemPropertyConfigUtils.setSystemProperty(CommonConstants.DubboProperty.DUBBO_APPLICATION_LOGGER, "log4j");
         System.setProperty("native", "true");
-        SystemPropertyConfigUtils.setSystemProperty(CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME, "fastjson");
+        SystemPropertyConfigUtils.setSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME, "fastjson");
         runWithBootstrap();
     }
 
@@ -56,11 +57,11 @@ public class Application {
         ProtocolConfig protocolConfig = new ProtocolConfig(CommonConstants.DUBBO, -1);
         protocolConfig.setSerialization("fastjson2");
         bootstrap
-            .application(applicationConfig)
-            .registry(new RegistryConfig(REGISTRY_URL))
-            .protocol(protocolConfig)
-            .reference(reference)
-            .start();
+                .application(applicationConfig)
+                .registry(new RegistryConfig(REGISTRY_URL))
+                .protocol(protocolConfig)
+                .reference(reference)
+                .start();
 
         DemoService demoService = bootstrap.getCache().get(reference);
         String message = demoService.sayHello("Native");

@@ -49,8 +49,8 @@ public class FutureContext {
     /**
      * Whether clear future once get
      */
-    private static final boolean clearFutureAfterGet =
-        Boolean.parseBoolean(SystemPropertyConfigUtils.getSystemProperty(CommonConstants.ThirdPartyProperty.CLEAR_FUTURE_AFTER_GET, "false"));
+    private static final boolean clearFutureAfterGet = Boolean.parseBoolean(SystemPropertyConfigUtils.getSystemProperty(
+            CommonConstants.ThirdPartyProperty.CLEAR_FUTURE_AFTER_GET, "false"));
 
     /**
      * get future.

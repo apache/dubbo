@@ -94,8 +94,7 @@ public class AccessLogFilter implements Filter {
      * Default constructor initialize demon thread for writing into access log file with names with access log key
      * defined in url <b>accesslog</b>
      */
-    public AccessLogFilter() {
-    }
+    public AccessLogFilter() {}
 
     /**
      * This method logs the access log for service method invocation call.
@@ -123,16 +122,16 @@ public class AccessLogFilter implements Filter {
 
         if (scheduled.compareAndSet(false, true)) {
             future = inv.getModuleModel()
-                .getApplicationModel()
-                .getFrameworkModel()
-                .getBeanFactory()
-                .getBean(FrameworkExecutorRepository.class)
-                .getSharedScheduledExecutor()
-                .scheduleWithFixedDelay(
-                    new AccesslogRefreshTask(isFixedPath),
-                    LOG_OUTPUT_INTERVAL,
-                    LOG_OUTPUT_INTERVAL,
-                    TimeUnit.MILLISECONDS);
+                    .getApplicationModel()
+                    .getFrameworkModel()
+                    .getBeanFactory()
+                    .getBean(FrameworkExecutorRepository.class)
+                    .getSharedScheduledExecutor()
+                    .scheduleWithFixedDelay(
+                            new AccesslogRefreshTask(isFixedPath),
+                            LOG_OUTPUT_INTERVAL,
+                            LOG_OUTPUT_INTERVAL,
+                            TimeUnit.MILLISECONDS);
             logger.info("Access log task started ...");
         }
         Optional<AccessLogData> optionalAccessLogData = Optional.empty();
@@ -140,11 +139,11 @@ public class AccessLogFilter implements Filter {
             optionalAccessLogData = Optional.of(buildAccessLogData(invoker, inv));
         } catch (Throwable t) {
             logger.warn(
-                CONFIG_FILTER_VALIDATION_EXCEPTION,
-                "",
-                "",
-                "Exception in AccessLogFilter of service(" + invoker + " -> " + inv + ")",
-                t);
+                    CONFIG_FILTER_VALIDATION_EXCEPTION,
+                    "",
+                    "",
+                    "Exception in AccessLogFilter of service(" + invoker + " -> " + inv + ")",
+                    t);
         }
         try {
             return invoker.invoke(inv);
@@ -159,16 +158,16 @@ public class AccessLogFilter implements Filter {
 
     private void log(String accessLog, AccessLogData accessLogData, boolean isFixedPath) {
         Queue<AccessLogData> logQueue =
-            ConcurrentHashMapUtils.computeIfAbsent(logEntries, accessLog, k -> new ConcurrentLinkedQueue<>());
+                ConcurrentHashMapUtils.computeIfAbsent(logEntries, accessLog, k -> new ConcurrentLinkedQueue<>());
 
         if (logQueue.size() < LOG_MAX_BUFFER) {
             logQueue.add(accessLogData);
         } else {
             logger.warn(
-                CONFIG_FILTER_VALIDATION_EXCEPTION,
-                "",
-                "",
-                "AccessLog buffer is full. Do a force writing to file to clear buffer.");
+                    CONFIG_FILTER_VALIDATION_EXCEPTION,
+                    "",
+                    "",
+                    "AccessLog buffer is full. Do a force writing to file to clear buffer.");
             // just write current logSet to file.
             writeLogSetToFile(accessLog, logQueue, isFixedPath);
             // after force writing, add accessLogData to current logSet
@@ -183,20 +182,20 @@ public class AccessLogFilter implements Filter {
             } else {
                 if (isFixedPath) {
                     logger.warn(
-                        VULNERABILITY_WARNING,
-                        "Change of accesslog file path not allowed. ",
-                        "",
-                        "Will write to the default location, \" +\n"
-                            + "                        \"please enable this feature by setting 'accesslog.fixed.path=true' and restart the process. \" +\n"
-                            + "                        \"We highly recommend to not enable this feature in production for security concerns, \" +\n"
-                            + "                        \"please be fully aware of the potential risks before doing so!");
+                            VULNERABILITY_WARNING,
+                            "Change of accesslog file path not allowed. ",
+                            "",
+                            "Will write to the default location, \" +\n"
+                                    + "                        \"please enable this feature by setting 'accesslog.fixed.path=true' and restart the process. \" +\n"
+                                    + "                        \"We highly recommend to not enable this feature in production for security concerns, \" +\n"
+                                    + "                        \"please be fully aware of the potential risks before doing so!");
                     processWithServiceLogger(logSet);
                 } else {
                     logger.warn(
-                        VULNERABILITY_WARNING,
-                        "Accesslog file path changed to " + accessLog + ", be aware of possible vulnerabilities!",
-                        "",
-                        "");
+                            VULNERABILITY_WARNING,
+                            "Accesslog file path changed to " + accessLog + ", be aware of possible vulnerabilities!",
+                            "",
+                            "");
                     File file = new File(accessLog);
                     createIfLogDirAbsent(file);
                     if (logger.isDebugEnabled()) {

@@ -44,8 +44,8 @@ import static java.lang.String.format;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR_CHAR;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_ENABLE;
-import static org.apache.dubbo.common.constants.CommonConstants.SystemProperty.SYSTEM_OS_NAME;
 import static org.apache.dubbo.common.constants.CommonConstants.OS_WIN_PREFIX;
+import static org.apache.dubbo.common.constants.CommonConstants.SystemProperty.SYSTEM_OS_NAME;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_POOL_EXHAUSTED_LISTENERS_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_THREAD_POOL_EXHAUSTED;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_CREATE_DUMP;
@@ -57,7 +57,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXP
 public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
 
     protected static final ErrorTypeAwareLogger logger =
-        LoggerFactory.getErrorTypeAwareLogger(AbortPolicyWithReport.class);
+            LoggerFactory.getErrorTypeAwareLogger(AbortPolicyWithReport.class);
 
     private final String threadName;
 
@@ -73,7 +73,8 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
 
     protected static Semaphore guard = new Semaphore(1);
 
-    private static final String USER_HOME = SystemPropertyConfigUtils.getSystemProperty(CommonConstants.SystemProperty.USER_HOME);
+    private static final String USER_HOME =
+            SystemPropertyConfigUtils.getSystemProperty(CommonConstants.SystemProperty.USER_HOME);
 
     private final Set<ThreadPoolExhaustedListener> listeners = new ConcurrentHashSet<>();
 
@@ -82,13 +83,13 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
         this.url = url;
 
         String threadPoolExhaustedListeners = url.getParameter(
-            THREAD_POOL_EXHAUSTED_LISTENERS_KEY, (String) url.getAttribute(THREAD_POOL_EXHAUSTED_LISTENERS_KEY));
+                THREAD_POOL_EXHAUSTED_LISTENERS_KEY, (String) url.getAttribute(THREAD_POOL_EXHAUSTED_LISTENERS_KEY));
 
         Set<String> listenerKeys = StringUtils.splitToSet(threadPoolExhaustedListeners, COMMA_SEPARATOR_CHAR, true);
 
         FrameworkModel frameworkModel = url.getOrDefaultFrameworkModel();
         ExtensionLoader<ThreadPoolExhaustedListener> extensionLoader =
-            frameworkModel.getExtensionLoader(ThreadPoolExhaustedListener.class);
+                frameworkModel.getExtensionLoader(ThreadPoolExhaustedListener.class);
         listenerKeys.forEach(key -> {
             if (extensionLoader.hasExtension(key)) {
                 addThreadPoolExhaustedEventListener(extensionLoader.getExtension(key));
@@ -99,24 +100,24 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
     @Override
     public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
         String msg = String.format(
-            "Thread pool is EXHAUSTED!"
-                + " Thread Name: %s, Pool Size: %d (active: %d, core: %d, max: %d, largest: %d),"
-                + " Task: %d (completed: %d),"
-                + " Executor status:(isShutdown:%s, isTerminated:%s, isTerminating:%s), in %s://%s:%d!",
-            threadName,
-            e.getPoolSize(),
-            e.getActiveCount(),
-            e.getCorePoolSize(),
-            e.getMaximumPoolSize(),
-            e.getLargestPoolSize(),
-            e.getTaskCount(),
-            e.getCompletedTaskCount(),
-            e.isShutdown(),
-            e.isTerminated(),
-            e.isTerminating(),
-            url.getProtocol(),
-            url.getIp(),
-            url.getPort());
+                "Thread pool is EXHAUSTED!"
+                        + " Thread Name: %s, Pool Size: %d (active: %d, core: %d, max: %d, largest: %d),"
+                        + " Task: %d (completed: %d),"
+                        + " Executor status:(isShutdown:%s, isTerminated:%s, isTerminating:%s), in %s://%s:%d!",
+                threadName,
+                e.getPoolSize(),
+                e.getActiveCount(),
+                e.getCorePoolSize(),
+                e.getMaximumPoolSize(),
+                e.getLargestPoolSize(),
+                e.getTaskCount(),
+                e.getCompletedTaskCount(),
+                e.isShutdown(),
+                e.isTerminated(),
+                e.isTerminating(),
+                url.getProtocol(),
+                url.getIp(),
+                url.getPort());
 
         // 0-1 - Thread pool is EXHAUSTED!
         logger.warn(COMMON_THREAD_POOL_EXHAUSTED, "too much client requesting provider", "", msg);
@@ -170,7 +171,8 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
 
                 SimpleDateFormat sdf;
 
-                String os = SystemPropertyConfigUtils.getSystemProperty(SYSTEM_OS_NAME).toLowerCase();
+                String os = SystemPropertyConfigUtils.getSystemProperty(SYSTEM_OS_NAME)
+                        .toLowerCase();
 
                 // window system don't support ":" in file name
                 if (os.contains(OS_WIN_PREFIX)) {
@@ -182,7 +184,7 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
                 String dateStr = sdf.format(new Date());
                 // try-with-resources
                 try (FileOutputStream jStackStream =
-                         new FileOutputStream(new File(dumpPath, "Dubbo_JStack.log" + "." + dateStr))) {
+                        new FileOutputStream(new File(dumpPath, "Dubbo_JStack.log" + "." + dateStr))) {
                     jstack(jStackStream);
                 } catch (Exception t) {
                     logger.error(COMMON_UNEXPECTED_CREATE_DUMP, "", "", "dump jStack error", t);
@@ -212,12 +214,12 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
                 logger.info(format("Dubbo dump directory[%s] created", dumpDirectory.getAbsolutePath()));
             } else {
                 logger.warn(
-                    COMMON_UNEXPECTED_CREATE_DUMP,
-                    "",
-                    "",
-                    format(
-                        "Dubbo dump directory[%s] can't be created, use the 'user.home'[%s]",
-                        dumpDirectory.getAbsolutePath(), USER_HOME));
+                        COMMON_UNEXPECTED_CREATE_DUMP,
+                        "",
+                        "",
+                        format(
+                                "Dubbo dump directory[%s] can't be created, use the 'user.home'[%s]",
+                                dumpDirectory.getAbsolutePath(), USER_HOME));
                 return USER_HOME;
             }
         }

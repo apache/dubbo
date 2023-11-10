@@ -39,7 +39,8 @@ public class Dubbo2CompactUtils {
 
     private static void initEnabled() {
         try {
-            String fromProp = SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO2_COMPACT_ENABLE);
+            String fromProp =
+                    SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO2_COMPACT_ENABLE);
             if (StringUtils.isNotEmpty(fromProp)) {
                 enabled = Boolean.parseBoolean(fromProp);
                 return;

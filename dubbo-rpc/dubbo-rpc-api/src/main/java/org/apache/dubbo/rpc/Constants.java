@@ -93,7 +93,7 @@ public interface Constants {
 
     String CONSUMER_MODEL = "consumerModel";
     String METHOD_MODEL = "methodModel";
-    
+
     String INVOCATION_KEY = "invocation";
     String SERIALIZATION_ID_KEY = "serialization_id";
 

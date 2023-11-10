@@ -34,7 +34,8 @@ public class SystemPropertyConfigUtilsTest {
 
     @Test
     public void testGetSystemPropertyNotExist() {
-        assertThrowsExactly(IllegalStateException.class, () -> SystemPropertyConfigUtils.getSystemProperty("dubbo.not.exist"));
+        assertThrowsExactly(
+                IllegalStateException.class, () -> SystemPropertyConfigUtils.getSystemProperty("dubbo.not.exist"));
     }
 
     @Test

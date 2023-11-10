@@ -62,7 +62,7 @@ class NettyEventLoopFactoryTest {
             Assertions.assertEquals(socketChannelClass, EpollSocketChannel.class);
 
             Class<? extends ServerSocketChannel> serverSocketChannelClass =
-                NettyEventLoopFactory.serverSocketChannelClass();
+                    NettyEventLoopFactory.serverSocketChannelClass();
             Assertions.assertEquals(serverSocketChannelClass, EpollServerSocketChannel.class);
 
         } else {
@@ -73,7 +73,7 @@ class NettyEventLoopFactoryTest {
             Assertions.assertEquals(socketChannelClass, NioSocketChannel.class);
 
             Class<? extends ServerSocketChannel> serverSocketChannelClass =
-                NettyEventLoopFactory.serverSocketChannelClass();
+                    NettyEventLoopFactory.serverSocketChannelClass();
             Assertions.assertEquals(serverSocketChannelClass, NioServerSocketChannel.class);
         }
     }
