@@ -169,7 +169,7 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
         if (registryCluster == null) {
             registryCluster = DEFAULT_KEY;
         }
-        int i = registryCluster.indexOf(",");
+        int i = registryCluster.indexOf(COMMA_SEPARATOR);
         if (i > 0) {
             registryCluster = registryCluster.substring(0, i);
         }
@@ -217,7 +217,7 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
         if (StringUtils.isEmpty(oldConfigContent)) {
             return value;
         }
-        String[] oldValues = oldConfigContent.split(",");
+        String[] oldValues = oldConfigContent.split(COMMA_SEPARATOR);
         if (oldValues.length > 0) {
             for (String oldValue : oldValues) {
                 if (oldValue.equals(value)) {

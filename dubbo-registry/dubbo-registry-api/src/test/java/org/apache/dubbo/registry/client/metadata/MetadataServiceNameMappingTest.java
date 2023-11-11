@@ -120,9 +120,11 @@ class MetadataServiceNameMappingTest {
         assertTrue(mapping.map(url));
 
         // metadata report succeeded directly for Service Interface mapping as it is already registered.
-        ConfigItem cfgItem = new ConfigItem();
-        cfgItem.setContent(appName);
-        when(metadataReport.getConfigItem(any(), any())).thenReturn(cfgItem, new ConfigItem());
+        ConfigItem serviceInterfaceMappingCfg = new ConfigItem();
+        serviceInterfaceMappingCfg.setContent(appName);
+        ConfigItem appNameMappingCfg = new ConfigItem();
+        appNameMappingCfg.setContent("otherInterface");
+        when(metadataReport.getConfigItem(any(), any())).thenReturn(serviceInterfaceMappingCfg, appNameMappingCfg);
         // metadata report using cas and retry, failed after 11 times retry for Application Name mapping.
         when(metadataReport.registerServiceAppMapping(any(), any(), any(), any()))
                 .thenReturn(false);
