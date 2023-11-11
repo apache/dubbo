@@ -146,7 +146,7 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
     }
 
     protected void processOffset(InputStream inputStream, int lengthFieldOffset) throws IOException {
-        //default skip offset
+        // default skip offset
         skipOffset(inputStream, lengthFieldOffset);
     }
 

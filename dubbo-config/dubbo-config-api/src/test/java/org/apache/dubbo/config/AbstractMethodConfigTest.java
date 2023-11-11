@@ -18,11 +18,11 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Test;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -129,7 +129,5 @@ class AbstractMethodConfigTest {
         assertThat(methodConfig.getParameters(), sameInstance(parameters));
     }
 
-    private static class MethodConfig extends AbstractMethodConfig {
-
-    }
+    private static class MethodConfig extends AbstractMethodConfig {}
 }

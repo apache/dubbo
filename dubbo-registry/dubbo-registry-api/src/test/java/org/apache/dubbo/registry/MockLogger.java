@@ -34,79 +34,49 @@ public class MockLogger implements Logger {
     }
 
     @Override
-    public void trace(String msg) {
-
-    }
+    public void trace(String msg) {}
 
     @Override
-    public void trace(String msg, Object... arguments) {
-
-    }
+    public void trace(String msg, Object... arguments) {}
 
     @Override
-    public void trace(Throwable e) {
-
-    }
+    public void trace(Throwable e) {}
 
     @Override
-    public void trace(String msg, Throwable e) {
-
-    }
+    public void trace(String msg, Throwable e) {}
 
     @Override
-    public void debug(String msg) {
-
-    }
+    public void debug(String msg) {}
 
     @Override
-    public void debug(String msg, Object... arguments) {
-
-    }
+    public void debug(String msg, Object... arguments) {}
 
     @Override
-    public void debug(Throwable e) {
-
-    }
+    public void debug(Throwable e) {}
 
     @Override
-    public void debug(String msg, Throwable e) {
-
-    }
+    public void debug(String msg, Throwable e) {}
 
     @Override
-    public void info(String msg) {
-
-    }
+    public void info(String msg) {}
 
     @Override
-    public void info(String msg, Object... arguments) {
-
-    }
+    public void info(String msg, Object... arguments) {}
 
     @Override
-    public void info(Throwable e) {
-
-    }
+    public void info(Throwable e) {}
 
     @Override
-    public void info(String msg, Throwable e) {
-
-    }
+    public void info(String msg, Throwable e) {}
 
     @Override
-    public void warn(String msg) {
-
-    }
+    public void warn(String msg) {}
 
     @Override
-    public void warn(String msg, Object... arguments) {
-
-    }
+    public void warn(String msg, Object... arguments) {}
 
     @Override
-    public void warn(Throwable e) {
-
-    }
+    public void warn(Throwable e) {}
 
     @Override
     public void warn(String msg, Throwable e) {
@@ -114,24 +84,16 @@ public class MockLogger implements Logger {
     }
 
     @Override
-    public void error(String msg) {
-
-    }
+    public void error(String msg) {}
 
     @Override
-    public void error(String msg, Object... arguments) {
-
-    }
+    public void error(String msg, Object... arguments) {}
 
     @Override
-    public void error(Throwable e) {
-
-    }
+    public void error(Throwable e) {}
 
     @Override
-    public void error(String msg, Throwable e) {
-
-    }
+    public void error(String msg, Throwable e) {}
 
     @Override
     public boolean isTraceEnabled() {

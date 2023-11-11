@@ -14,8 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.collector.sample;
+
 import org.apache.dubbo.common.threadpool.event.ThreadPoolExhaustedEvent;
 import org.apache.dubbo.common.threadpool.event.ThreadPoolExhaustedListener;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
@@ -26,18 +26,19 @@ public class MetricThreadPoolExhaustedListener implements ThreadPoolExhaustedLis
 
     private final String threadPoolExecutorName;
 
-    public MetricThreadPoolExhaustedListener(String threadPoolExecutorName,DefaultMetricsCollector collector) {
-        this.threadPoolExecutorName=threadPoolExecutorName;
+    public MetricThreadPoolExhaustedListener(String threadPoolExecutorName, DefaultMetricsCollector collector) {
+        this.threadPoolExecutorName = threadPoolExecutorName;
         this.threadRejectMetricsCountSampler = new ThreadRejectMetricsCountSampler(collector);
     }
 
-    public MetricThreadPoolExhaustedListener(String threadPoolExecutorName,ThreadRejectMetricsCountSampler sampler) {
-        this.threadPoolExecutorName=threadPoolExecutorName;
-        this.threadRejectMetricsCountSampler=sampler;
+    public MetricThreadPoolExhaustedListener(String threadPoolExecutorName, ThreadRejectMetricsCountSampler sampler) {
+        this.threadPoolExecutorName = threadPoolExecutorName;
+        this.threadRejectMetricsCountSampler = sampler;
         this.threadRejectMetricsCountSampler.addMetricName(threadPoolExecutorName);
     }
+
     @Override
     public void onEvent(ThreadPoolExhaustedEvent event) {
-        threadRejectMetricsCountSampler.inc(threadPoolExecutorName,threadPoolExecutorName);
+        threadRejectMetricsCountSampler.inc(threadPoolExecutorName, threadPoolExecutorName);
     }
 }

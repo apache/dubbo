@@ -39,5 +39,4 @@ public interface FlowControlStreamObserver<T> extends StreamObserver<T> {
      * specified.
      */
     void disableAutoFlowControl();
-
 }

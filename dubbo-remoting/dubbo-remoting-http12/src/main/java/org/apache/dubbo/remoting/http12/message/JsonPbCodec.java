@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.remoting.http12.message;
 
-import com.google.protobuf.Message;
-import com.google.protobuf.util.JsonFormat;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.MethodUtils;
@@ -28,6 +26,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+
+import com.google.protobuf.Message;
+import com.google.protobuf.util.JsonFormat;
 
 @Activate
 public class JsonPbCodec implements HttpMessageCodec {
@@ -45,7 +46,9 @@ public class JsonPbCodec implements HttpMessageCodec {
 
     @Override
     public boolean support(String contentType) {
-        return HttpMessageCodec.super.support(contentType) && ClassUtils.isPresent("com.google.protobuf.Message", getClass().getClassLoader());
+        return HttpMessageCodec.super.support(contentType)
+                && ClassUtils.isPresent(
+                        "com.google.protobuf.Message", getClass().getClassLoader());
     }
 
     @Override
@@ -77,7 +80,8 @@ public class JsonPbCodec implements HttpMessageCodec {
                 while ((len = body.read(data)) != -1) {
                     builder.append(new String(data, 0, len));
                 }
-                Message.Builder newBuilder = (Message.Builder) MethodUtils.findMethod(targetType, "newBuilder").invoke(null);
+                Message.Builder newBuilder = (Message.Builder)
+                        MethodUtils.findMethod(targetType, "newBuilder").invoke(null);
                 JsonFormat.parser().ignoringUnknownFields().merge(builder.toString(), newBuilder);
                 return newBuilder.build();
             }
@@ -91,8 +95,8 @@ public class JsonPbCodec implements HttpMessageCodec {
     public Object[] decode(InputStream dataInputStream, Class<?>[] targetTypes) throws DecodeException {
         try {
             if (hasProtobuf(targetTypes)) {
-                //protobuf only support one parameter
-                return new Object[]{decode(dataInputStream, targetTypes[0])};
+                // protobuf only support one parameter
+                return new Object[] {decode(dataInputStream, targetTypes[0])};
             }
         } catch (Throwable e) {
             throw new DecodeException(e);
@@ -107,7 +111,7 @@ public class JsonPbCodec implements HttpMessageCodec {
         return Message.class.isAssignableFrom(targetType);
     }
 
-    private static boolean hasProtobuf(Class<?>[] classes){
+    private static boolean hasProtobuf(Class<?>[] classes) {
         for (Class<?> clazz : classes) {
             if (isProtobuf(clazz)) {
                 return true;

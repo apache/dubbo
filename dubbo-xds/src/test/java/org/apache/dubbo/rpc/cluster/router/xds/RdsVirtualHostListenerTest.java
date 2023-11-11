@@ -19,6 +19,10 @@ package org.apache.dubbo.rpc.cluster.router.xds;
 import org.apache.dubbo.rpc.cluster.router.xds.rule.ClusterWeight;
 import org.apache.dubbo.rpc.cluster.router.xds.rule.XdsRouteRule;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.google.protobuf.BoolValue;
 import com.google.protobuf.UInt32Value;
 import io.envoyproxy.envoy.config.route.v3.HeaderMatcher;
@@ -31,10 +35,6 @@ import io.envoyproxy.envoy.type.matcher.v3.RegexMatcher;
 import io.envoyproxy.envoy.type.v3.Int64Range;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -68,17 +68,23 @@ public class RdsVirtualHostListenerTest {
         manager.subscribeRds(domain, listener);
     }
 
-
     @Test
     public void parsePathPathMatcherTest() {
         String path = "/test/name";
         VirtualHost virtualHost = VirtualHost.newBuilder()
-            .addDomains(domain)
-            .addRoutes(Route.newBuilder().setName("route-test")
-                .setMatch(RouteMatch.newBuilder().setPath(path).setCaseSensitive(BoolValue.newBuilder().setValue(true).build()).build())
-                .setRoute(RouteAction.newBuilder().setCluster("cluster-test").build())
-                .build()
-            ).build();
+                .addDomains(domain)
+                .addRoutes(Route.newBuilder()
+                        .setName("route-test")
+                        .setMatch(RouteMatch.newBuilder()
+                                .setPath(path)
+                                .setCaseSensitive(
+                                        BoolValue.newBuilder().setValue(true).build())
+                                .build())
+                        .setRoute(RouteAction.newBuilder()
+                                .setCluster("cluster-test")
+                                .build())
+                        .build())
+                .build();
         rdsVirtualHostListener.parseVirtualHost(virtualHost);
         List<XdsRouteRule> rules = dataCache.get(domain);
         assertNotNull(rules);
@@ -90,13 +96,15 @@ public class RdsVirtualHostListenerTest {
     public void parsePrefixPathMatcherTest() {
         String prefix = "/test";
         VirtualHost virtualHost = VirtualHost.newBuilder()
-            .addDomains(domain)
-            .addRoutes(Route.newBuilder().setName("route-test")
-                .setMatch(RouteMatch.newBuilder().setPrefix(prefix).build())
-                .setRoute(RouteAction.newBuilder().setCluster("cluster-test").build())
-                .build()
-            )
-            .build();
+                .addDomains(domain)
+                .addRoutes(Route.newBuilder()
+                        .setName("route-test")
+                        .setMatch(RouteMatch.newBuilder().setPrefix(prefix).build())
+                        .setRoute(RouteAction.newBuilder()
+                                .setCluster("cluster-test")
+                                .build())
+                        .build())
+                .build();
         rdsVirtualHostListener.parseVirtualHost(virtualHost);
         List<XdsRouteRule> rules = dataCache.get(domain);
         assertNotNull(rules);
@@ -107,15 +115,19 @@ public class RdsVirtualHostListenerTest {
     public void parseRegexPathMatcherTest() {
         String regex = "/test/.*";
         VirtualHost virtualHost = VirtualHost.newBuilder()
-            .addDomains(domain)
-            .addRoutes(Route.newBuilder().setName("route-test")
-                .setMatch(RouteMatch.newBuilder().setSafeRegex(
-                    RegexMatcher.newBuilder().setRegex(regex).build()
-                ).build())
-                .setRoute(RouteAction.newBuilder().setCluster("cluster-test").build())
-                .build()
-            )
-            .build();
+                .addDomains(domain)
+                .addRoutes(Route.newBuilder()
+                        .setName("route-test")
+                        .setMatch(RouteMatch.newBuilder()
+                                .setSafeRegex(RegexMatcher.newBuilder()
+                                        .setRegex(regex)
+                                        .build())
+                                .build())
+                        .setRoute(RouteAction.newBuilder()
+                                .setCluster("cluster-test")
+                                .build())
+                        .build())
+                .build();
         rdsVirtualHostListener.parseVirtualHost(virtualHost);
         List<XdsRouteRule> rules = dataCache.get(domain);
         assertNotNull(rules);
@@ -125,44 +137,51 @@ public class RdsVirtualHostListenerTest {
     @Test
     public void parseHeadMatcherTest() {
         VirtualHost virtualHost = VirtualHost.newBuilder()
-            .addDomains(domain)
-            .addRoutes(Route.newBuilder().setName("route-test")
-                .setMatch(RouteMatch.newBuilder()
-                    .addHeaders(HeaderMatcher.newBuilder()
-                        .setName("head-exactValue")
-                        .setExactMatch("exactValue")
-                        .setInvertMatch(true)
+                .addDomains(domain)
+                .addRoutes(Route.newBuilder()
+                        .setName("route-test")
+                        .setMatch(RouteMatch.newBuilder()
+                                .addHeaders(HeaderMatcher.newBuilder()
+                                        .setName("head-exactValue")
+                                        .setExactMatch("exactValue")
+                                        .setInvertMatch(true)
+                                        .build())
+                                .addHeaders(HeaderMatcher.newBuilder()
+                                        .setName("head-regex")
+                                        .setSafeRegexMatch(RegexMatcher.newBuilder()
+                                                .setRegex("regex")
+                                                .build())
+                                        .build())
+                                .addHeaders(HeaderMatcher.newBuilder()
+                                        .setName("head-range")
+                                        .setRangeMatch(Int64Range.newBuilder()
+                                                .setStart(1)
+                                                .setEnd(100)
+                                                .build())
+                                        .build())
+                                .addHeaders(HeaderMatcher.newBuilder()
+                                        .setName("head-present")
+                                        .setPresentMatch(true)
+                                        .build())
+                                .addHeaders(HeaderMatcher.newBuilder()
+                                        .setName("head-prefix")
+                                        .setPrefixMatch("prefix")
+                                        .build())
+                                .addHeaders(HeaderMatcher.newBuilder()
+                                        .setName("head-suffix")
+                                        .setSuffixMatch("suffix")
+                                        .build())
+                                .build())
+                        .setRoute(RouteAction.newBuilder()
+                                .setCluster("cluster-test")
+                                .build())
                         .build())
-                    .addHeaders(HeaderMatcher.newBuilder()
-                        .setName("head-regex")
-                        .setSafeRegexMatch(RegexMatcher.newBuilder().setRegex("regex").build())
-                        .build())
-                    .addHeaders(HeaderMatcher.newBuilder()
-                        .setName("head-range")
-                        .setRangeMatch(Int64Range.newBuilder().setStart(1).setEnd(100).build())
-                        .build())
-                    .addHeaders(HeaderMatcher.newBuilder()
-                        .setName("head-present")
-                        .setPresentMatch(true)
-                        .build())
-                    .addHeaders(HeaderMatcher.newBuilder()
-                        .setName("head-prefix")
-                        .setPrefixMatch("prefix")
-                        .build())
-                    .addHeaders(HeaderMatcher.newBuilder()
-                        .setName("head-suffix")
-                        .setSuffixMatch("suffix")
-                        .build())
-                    .build()
-                )
-                .setRoute(RouteAction.newBuilder().setCluster("cluster-test").build())
-                .build()
-            )
-            .build();
+                .build();
         rdsVirtualHostListener.parseVirtualHost(virtualHost);
         List<XdsRouteRule> rules = dataCache.get(domain);
         assertNotNull(rules);
-        List<org.apache.dubbo.rpc.cluster.router.xds.rule.HeaderMatcher> headerMatcherList = rules.get(0).getMatch().getHeaderMatcherList();
+        List<org.apache.dubbo.rpc.cluster.router.xds.rule.HeaderMatcher> headerMatcherList =
+                rules.get(0).getMatch().getHeaderMatcherList();
         for (org.apache.dubbo.rpc.cluster.router.xds.rule.HeaderMatcher matcher : headerMatcherList) {
             if (matcher.getName().equals("head-exactValue")) {
                 assertEquals(matcher.getExactValue(), "exactValue");
@@ -185,13 +204,13 @@ public class RdsVirtualHostListenerTest {
     public void parseRouteClusterTest() {
         String cluster = "cluster-test";
         VirtualHost virtualHost = VirtualHost.newBuilder()
-            .addDomains(domain)
-            .addRoutes(Route.newBuilder().setName("route-test")
-                .setMatch(RouteMatch.newBuilder().setPrefix("/test").build())
-                .setRoute(RouteAction.newBuilder().setCluster(cluster).build())
-                .build()
-            )
-            .build();
+                .addDomains(domain)
+                .addRoutes(Route.newBuilder()
+                        .setName("route-test")
+                        .setMatch(RouteMatch.newBuilder().setPrefix("/test").build())
+                        .setRoute(RouteAction.newBuilder().setCluster(cluster).build())
+                        .build())
+                .build();
         rdsVirtualHostListener.parseVirtualHost(virtualHost);
         List<XdsRouteRule> rules = dataCache.get(domain);
         assertNotNull(rules);
@@ -201,19 +220,28 @@ public class RdsVirtualHostListenerTest {
     @Test
     public void parseRouteWeightClusterTest() {
         VirtualHost virtualHost = VirtualHost.newBuilder()
-            .addDomains(domain)
-            .addRoutes(Route.newBuilder().setName("route-test")
-                .setMatch(RouteMatch.newBuilder().setPrefix("/test").build())
-                .setRoute(RouteAction.newBuilder().setWeightedClusters(
-                    WeightedCluster.newBuilder()
-                        .addClusters(WeightedCluster.ClusterWeight.newBuilder().setName("cluster-test1")
-                            .setWeight(UInt32Value.newBuilder().setValue(40).build()).build())
-                        .addClusters(WeightedCluster.ClusterWeight.newBuilder().setName("cluster-test2")
-                            .setWeight(UInt32Value.newBuilder().setValue(60).build()).build())
-                        .build()
-                ).build())
-                .build())
-            .build();
+                .addDomains(domain)
+                .addRoutes(Route.newBuilder()
+                        .setName("route-test")
+                        .setMatch(RouteMatch.newBuilder().setPrefix("/test").build())
+                        .setRoute(RouteAction.newBuilder()
+                                .setWeightedClusters(WeightedCluster.newBuilder()
+                                        .addClusters(WeightedCluster.ClusterWeight.newBuilder()
+                                                .setName("cluster-test1")
+                                                .setWeight(UInt32Value.newBuilder()
+                                                        .setValue(40)
+                                                        .build())
+                                                .build())
+                                        .addClusters(WeightedCluster.ClusterWeight.newBuilder()
+                                                .setName("cluster-test2")
+                                                .setWeight(UInt32Value.newBuilder()
+                                                        .setValue(60)
+                                                        .build())
+                                                .build())
+                                        .build())
+                                .build())
+                        .build())
+                .build();
         rdsVirtualHostListener.parseVirtualHost(virtualHost);
         List<XdsRouteRule> rules = dataCache.get(domain);
         assertNotNull(rules);
@@ -227,5 +255,4 @@ public class RdsVirtualHostListenerTest {
             }
         }
     }
-
 }

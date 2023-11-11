@@ -82,7 +82,8 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
 
     public AbstractServiceDiscovery(ApplicationModel applicationModel, URL registryURL) {
         this(applicationModel, applicationModel.getApplicationName(), registryURL);
-        MetadataReportInstance metadataReportInstance = applicationModel.getBeanFactory().getBean(MetadataReportInstance.class);
+        MetadataReportInstance metadataReportInstance =
+                applicationModel.getBeanFactory().getBean(MetadataReportInstance.class);
         metadataType = metadataReportInstance.getMetadataType();
         this.metadataReport = metadataReportInstance.getMetadataReport(registryURL.getParameter(REGISTRY_CLUSTER_KEY));
     }
@@ -97,35 +98,50 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         this.registryURL = registryURL;
         this.metadataInfo = new MetadataInfo(serviceName);
         boolean localCacheEnabled = registryURL.getParameter(REGISTRY_LOCAL_FILE_CACHE_ENABLED, true);
-        this.metaCacheManager = new MetaCacheManager(localCacheEnabled, getCacheNameSuffix(),
-                applicationModel.getFrameworkModel().getBeanFactory()
-                        .getBean(FrameworkExecutorRepository.class).getCacheRefreshingScheduledExecutor());
-        int metadataInfoCacheExpireTime = registryURL.getParameter(METADATA_INFO_CACHE_EXPIRE_KEY, DEFAULT_METADATA_INFO_CACHE_EXPIRE);
-        int metadataInfoCacheSize = registryURL.getParameter(METADATA_INFO_CACHE_SIZE_KEY, DEFAULT_METADATA_INFO_CACHE_SIZE);
-        this.refreshCacheFuture = applicationModel.getFrameworkModel().getBeanFactory()
-                .getBean(FrameworkExecutorRepository.class).getSharedScheduledExecutor()
-                .scheduleAtFixedRate(() -> {
-                    try {
-                        while (metadataInfos.size() > metadataInfoCacheSize) {
-                            AtomicReference<String> oldestRevision = new AtomicReference<>();
-                            AtomicReference<MetadataInfoStat> oldestStat = new AtomicReference<>();
-                            metadataInfos.forEach((k, v) -> {
-                                if (System.currentTimeMillis() - v.getUpdateTime() > metadataInfoCacheExpireTime &&
-                                        (oldestStat.get() == null || oldestStat.get().getUpdateTime() > v.getUpdateTime())) {
-                                    oldestRevision.set(k);
-                                    oldestStat.set(v);
+        this.metaCacheManager = new MetaCacheManager(
+                localCacheEnabled,
+                getCacheNameSuffix(),
+                applicationModel
+                        .getFrameworkModel()
+                        .getBeanFactory()
+                        .getBean(FrameworkExecutorRepository.class)
+                        .getCacheRefreshingScheduledExecutor());
+        int metadataInfoCacheExpireTime =
+                registryURL.getParameter(METADATA_INFO_CACHE_EXPIRE_KEY, DEFAULT_METADATA_INFO_CACHE_EXPIRE);
+        int metadataInfoCacheSize =
+                registryURL.getParameter(METADATA_INFO_CACHE_SIZE_KEY, DEFAULT_METADATA_INFO_CACHE_SIZE);
+        this.refreshCacheFuture = applicationModel
+                .getFrameworkModel()
+                .getBeanFactory()
+                .getBean(FrameworkExecutorRepository.class)
+                .getSharedScheduledExecutor()
+                .scheduleAtFixedRate(
+                        () -> {
+                            try {
+                                while (metadataInfos.size() > metadataInfoCacheSize) {
+                                    AtomicReference<String> oldestRevision = new AtomicReference<>();
+                                    AtomicReference<MetadataInfoStat> oldestStat = new AtomicReference<>();
+                                    metadataInfos.forEach((k, v) -> {
+                                        if (System.currentTimeMillis() - v.getUpdateTime() > metadataInfoCacheExpireTime
+                                                && (oldestStat.get() == null
+                                                        || oldestStat.get().getUpdateTime() > v.getUpdateTime())) {
+                                            oldestRevision.set(k);
+                                            oldestStat.set(v);
+                                        }
+                                    });
+                                    if (oldestStat.get() != null) {
+                                        metadataInfos.remove(oldestRevision.get(), oldestStat.get());
+                                    }
                                 }
-                            });
-                            if (oldestStat.get() != null) {
-                                metadataInfos.remove(oldestRevision.get(), oldestStat.get());
+                            } catch (Throwable t) {
+                                logger.error(
+                                        INTERNAL_ERROR, "", "", "Error occurred when clean up metadata info cache.", t);
                             }
-                        }
-                    } catch (Throwable t) {
-                        logger.error(INTERNAL_ERROR, "", "", "Error occurred when clean up metadata info cache.", t);
-                    }
-                }, metadataInfoCacheExpireTime / 2, metadataInfoCacheExpireTime / 2, TimeUnit.MILLISECONDS);
+                        },
+                        metadataInfoCacheExpireTime / 2,
+                        metadataInfoCacheExpireTime / 2,
+                        TimeUnit.MILLISECONDS);
     }
-
 
     @Override
     public synchronized void register() throws RuntimeException {
@@ -165,10 +181,13 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             return;
         }
         ServiceInstance oldServiceInstance = this.serviceInstance;
-        DefaultServiceInstance newServiceInstance = new DefaultServiceInstance((DefaultServiceInstance) oldServiceInstance);
+        DefaultServiceInstance newServiceInstance =
+                new DefaultServiceInstance((DefaultServiceInstance) oldServiceInstance);
         boolean revisionUpdated = calOrUpdateInstanceRevision(newServiceInstance);
         if (revisionUpdated) {
-            logger.info(String.format("Metadata of instance changed, updating instance with revision %s.", newServiceInstance.getServiceMetadata().getRevision()));
+            logger.info(String.format(
+                    "Metadata of instance changed, updating instance with revision %s.",
+                    newServiceInstance.getServiceMetadata().getRevision()));
             doUpdate(oldServiceInstance, newServiceInstance);
             this.serviceInstance = newServiceInstance;
         }
@@ -180,7 +199,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             return;
         }
         // fixme, this metadata info might still being shared by other instances
-//        unReportMetadata(this.metadataInfo);
+        //        unReportMetadata(this.metadataInfo);
         if (!isValidInstance(this.serviceInstance)) {
             return;
         }
@@ -225,16 +244,15 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             int triedTimes = 0;
             while (triedTimes < 3) {
 
-                metadata = MetricsEventBus.post(MetadataEvent.toSubscribeEvent(applicationModel),
-                    () -> MetadataUtils.getRemoteMetadata(revision, instances, metadataReport),
-                    result -> result != MetadataInfo.EMPTY
-                );
+                metadata = MetricsEventBus.post(
+                        MetadataEvent.toSubscribeEvent(applicationModel),
+                        () -> MetadataUtils.getRemoteMetadata(revision, instances, metadataReport),
+                        result -> result != MetadataInfo.EMPTY);
 
-
-                if (metadata != MetadataInfo.EMPTY) {// succeeded
+                if (metadata != MetadataInfo.EMPTY) { // succeeded
                     metadata.init();
                     break;
-                } else {// failed
+                } else { // failed
                     if (triedTimes > 0) {
                         if (logger.isDebugEnabled()) {
                             logger.debug("Retry the " + triedTimes + " times to get metadata for revision=" + revision);
@@ -249,7 +267,11 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             }
 
             if (metadata == MetadataInfo.EMPTY) {
-                logger.error(REGISTRY_FAILED_LOAD_METADATA, "", "", "Failed to get metadata for revision after 3 retries, revision=" + revision);
+                logger.error(
+                        REGISTRY_FAILED_LOAD_METADATA,
+                        "",
+                        "",
+                        "Failed to get metadata for revision after 3 retries, revision=" + revision);
             } else {
                 metaCacheManager.put(revision, metadata);
             }
@@ -297,7 +319,8 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public List<URL> lookup(URL url) {
-        throw new UnsupportedOperationException("Service discovery implementation does not support lookup of url list.");
+        throw new UnsupportedOperationException(
+                "Service discovery implementation does not support lookup of url list.");
     }
 
     /**
@@ -356,14 +379,14 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             return;
         }
         if (metadataReport != null) {
-            SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.getRevision());
-            if ((DEFAULT_METADATA_STORAGE_TYPE.equals(metadataType) && metadataReport.shouldReportMetadata()) || REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
-                MetricsEventBus.post(MetadataEvent.toPushEvent(applicationModel),
-                    () ->
-                    {
-                        metadataReport.publishAppMetadata(identifier, metadataInfo);
-                        return null;
-                    });
+            SubscriberMetadataIdentifier identifier =
+                    new SubscriberMetadataIdentifier(serviceName, metadataInfo.getRevision());
+            if ((DEFAULT_METADATA_STORAGE_TYPE.equals(metadataType) && metadataReport.shouldReportMetadata())
+                    || REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
+                MetricsEventBus.post(MetadataEvent.toPushEvent(applicationModel), () -> {
+                    metadataReport.publishAppMetadata(identifier, metadataInfo);
+                    return null;
+                });
             }
         }
         MetadataInfo clonedMetadataInfo = metadataInfo.clone();
@@ -372,8 +395,10 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
 
     protected void unReportMetadata(MetadataInfo metadataInfo) {
         if (metadataReport != null) {
-            SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.getRevision());
-            if ((DEFAULT_METADATA_STORAGE_TYPE.equals(metadataType) && metadataReport.shouldReportMetadata()) || REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
+            SubscriberMetadataIdentifier identifier =
+                    new SubscriberMetadataIdentifier(serviceName, metadataInfo.getRevision());
+            if ((DEFAULT_METADATA_STORAGE_TYPE.equals(metadataType) && metadataReport.shouldReportMetadata())
+                    || REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
                 metadataReport.unPublishAppMetadata(identifier, metadataInfo);
             }
         }
@@ -386,7 +411,8 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             name = name.substring(0, i);
         }
         StringBuilder stringBuilder = new StringBuilder(128);
-        Optional<ApplicationConfig> application = applicationModel.getApplicationConfigManager().getApplication();
+        Optional<ApplicationConfig> application =
+                applicationModel.getApplicationConfigManager().getApplication();
         if (application.isPresent()) {
             stringBuilder.append(application.get().getName());
             stringBuilder.append(".");

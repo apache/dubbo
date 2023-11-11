@@ -25,10 +25,10 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.filter.DemoService;
 
+import java.util.Arrays;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -49,7 +49,6 @@ class BroadCastClusterInvokerTest {
     private MockInvoker invoker2;
     private MockInvoker invoker3;
     private MockInvoker invoker4;
-
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -72,7 +71,6 @@ class BroadCastClusterInvokerTest {
         clusterInvoker = new BroadcastClusterInvoker(dic);
     }
 
-
     @Test
     void testNormal() {
         given(dic.list(invocation)).willReturn(Arrays.asList(invoker1, invoker2, invoker3, invoker4));
@@ -91,7 +89,8 @@ class BroadCastClusterInvokerTest {
         assertThrows(RpcException.class, () -> {
             clusterInvoker.invoke(invocation);
         });
-        // The default failure percentage is 100, even if a certain invoker#invoke throws an exception, other invokers will still be called
+        // The default failure percentage is 100, even if a certain invoker#invoke throws an exception, other invokers
+        // will still be called
         assertTrue(invoker1.isInvoked());
         assertTrue(invoker2.isInvoked());
         assertTrue(invoker3.isInvoked());
@@ -136,9 +135,7 @@ class MockInvoker implements Invoker<DemoService> {
     }
 
     @Override
-    public void destroy() {
-
-    }
+    public void destroy() {}
 
     @Override
     public Class<DemoService> getInterface() {

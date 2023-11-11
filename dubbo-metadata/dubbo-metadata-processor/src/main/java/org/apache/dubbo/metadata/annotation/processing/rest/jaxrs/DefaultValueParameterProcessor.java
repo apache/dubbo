@@ -24,11 +24,11 @@ import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+
 import java.util.List;
 import java.util.Map;
 
 import static org.apache.dubbo.metadata.rest.RestMetadataConstants.JAX_RS.DEFAULT_VALUE_ANNOTATION_CLASS_NAME;
-
 
 /**
  * The {@link AnnotatedMethodParameterProcessor} implementation for JAX-RS's @DefaultValue
@@ -44,14 +44,20 @@ public class DefaultValueParameterProcessor extends AbstractAnnotatedMethodParam
     }
 
     @Override
-    protected void process(String annotationValue, String defaultValue, AnnotationMirror annotation, VariableElement parameter, int parameterIndex, ExecutableElement method, RestMethodMetadata restMethodMetadata) {
+    protected void process(
+            String annotationValue,
+            String defaultValue,
+            AnnotationMirror annotation,
+            VariableElement parameter,
+            int parameterIndex,
+            ExecutableElement method,
+            RestMethodMetadata restMethodMetadata) {
         RequestMetadata requestMetadata = restMethodMetadata.getRequest();
 
         // process the request parameters
         setDefaultValue(requestMetadata.getParams(), defaultValue, annotationValue);
         // process the request headers
         setDefaultValue(requestMetadata.getHeaders(), defaultValue, annotationValue);
-
     }
 
     private void setDefaultValue(Map<String, List<String>> source, String placeholderValue, String defaultValue) {

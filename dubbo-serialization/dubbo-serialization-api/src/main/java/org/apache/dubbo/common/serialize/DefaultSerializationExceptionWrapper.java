@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.serialize;
 
 import org.apache.dubbo.common.URL;
@@ -81,7 +80,6 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
                 return target.readByte();
             } catch (Exception e) {
                 throw handleToIOException(e);
-
             }
         }
 
@@ -91,7 +89,6 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
                 return target.readShort();
             } catch (Exception e) {
                 throw handleToIOException(e);
-
             }
         }
 
@@ -101,7 +98,6 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
                 return target.readInt();
             } catch (Exception e) {
                 throw handleToIOException(e);
-
             }
         }
 
@@ -111,7 +107,6 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
                 return target.readLong();
             } catch (Exception e) {
                 throw handleToIOException(e);
-
             }
         }
 
@@ -359,5 +354,4 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
         }
         return (IOException) e;
     }
-
 }

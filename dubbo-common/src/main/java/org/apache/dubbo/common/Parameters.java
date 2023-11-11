@@ -47,7 +47,8 @@ public class Parameters {
     }
 
     public Parameters(Map<String, String> parameters) {
-        this.parameters = Collections.unmodifiableMap(parameters != null ? new HashMap<>(parameters) : new HashMap<>(0));
+        this.parameters =
+                Collections.unmodifiableMap(parameters != null ? new HashMap<>(parameters) : new HashMap<>(0));
     }
 
     private static Map<String, String> toMap(String... pairs) {
@@ -276,5 +277,4 @@ public class Parameters {
     public String toString() {
         return StringUtils.toQueryString(getParameters());
     }
-
 }

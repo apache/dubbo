@@ -17,5 +17,7 @@
 package org.apache.dubbo.rpc.protocol.injvm;
 
 public enum Type {
-    High, Normal, Lower
+    High,
+    Normal,
+    Lower
 }

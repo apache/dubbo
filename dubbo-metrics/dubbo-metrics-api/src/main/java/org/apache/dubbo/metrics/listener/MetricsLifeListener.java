@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.listener;
 
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
@@ -24,9 +23,7 @@ import org.apache.dubbo.metrics.event.TimeCounterEvent;
  */
 public interface MetricsLifeListener<E extends TimeCounterEvent> extends MetricsListener<E> {
 
-    default void onEventFinish(E event) {
-    }
+    default void onEventFinish(E event) {}
 
-    default void onEventError(E event) {
-    }
+    default void onEventError(E event) {}
 }

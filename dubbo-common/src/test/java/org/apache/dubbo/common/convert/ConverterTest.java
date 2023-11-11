@@ -48,11 +48,9 @@ class ConverterTest {
 
     @Test
     void testGetConverter() {
-        getExtensionLoader(Converter.class)
-                .getSupportedExtensionInstances()
-                .forEach(converter -> {
-                    assertSame(converter, converterUtil.getConverter(converter.getSourceType(), converter.getTargetType()));
-                });
+        getExtensionLoader(Converter.class).getSupportedExtensionInstances().forEach(converter -> {
+            assertSame(converter, converterUtil.getConverter(converter.getSourceType(), converter.getTargetType()));
+        });
     }
 
     @Test

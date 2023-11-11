@@ -30,5 +30,4 @@ public class AbsentConfiguratorFactory implements ConfiguratorFactory {
     public Configurator getConfigurator(URL url) {
         return new AbsentConfigurator(url);
     }
-
 }

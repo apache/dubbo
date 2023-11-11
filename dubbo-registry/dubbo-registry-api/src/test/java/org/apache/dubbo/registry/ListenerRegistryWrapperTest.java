@@ -16,17 +16,16 @@
  */
 package org.apache.dubbo.registry;
 
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.registry.integration.DemoService;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
@@ -49,11 +48,8 @@ class ListenerRegistryWrapperTest {
         parameters.put("registry.listeners", "listener-one");
 
         Map<String, Object> attributes = new HashMap<>();
-        ServiceConfigURL serviceConfigURL = new ServiceConfigURL("registry",
-            "127.0.0.1",
-            2181,
-            "org.apache.dubbo.registry.RegistryService",
-            parameters);
+        ServiceConfigURL serviceConfigURL = new ServiceConfigURL(
+                "registry", "127.0.0.1", 2181, "org.apache.dubbo.registry.RegistryService", parameters);
         Map<String, String> refer = new HashMap<>();
         attributes.put(REFER_KEY, refer);
         attributes.put("key1", "value1");
@@ -69,11 +65,7 @@ class ListenerRegistryWrapperTest {
 
         Assertions.assertTrue(registryWrapper instanceof ListenerRegistryWrapper);
 
-        URL subscribeUrl = new ServiceConfigURL("dubbo",
-            "127.0.0.1",
-            20881,
-            DemoService.class.getName(),
-            parameters);
+        URL subscribeUrl = new ServiceConfigURL("dubbo", "127.0.0.1", 20881, DemoService.class.getName(), parameters);
 
         RegistryServiceListener listener = Mockito.mock(RegistryServiceListener.class);
         RegistryServiceListener1.delegate = listener;
@@ -81,5 +73,4 @@ class ListenerRegistryWrapperTest {
         registryWrapper.subscribe(subscribeUrl, notifyListener);
         verify(listener, times(1)).onSubscribe(subscribeUrl, registry);
     }
-
 }

@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
 
 public enum GrpcHeaderNames {
-
     GRPC_STATUS("grpc-status"),
     GRPC_MESSAGE("grpc-message"),
     GRPC_ENCODING("grpc-encoding"),

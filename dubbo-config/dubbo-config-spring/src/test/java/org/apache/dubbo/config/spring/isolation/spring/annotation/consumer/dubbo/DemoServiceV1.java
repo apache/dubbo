@@ -19,6 +19,7 @@ package org.apache.dubbo.config.spring.isolation.spring.annotation.consumer.dubb
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.spring.api.Box;
 import org.apache.dubbo.config.spring.api.DemoService;
+
 import org.springframework.stereotype.Component;
 
 @Component("dubbo-demoServiceV1")

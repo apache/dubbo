@@ -40,7 +40,8 @@ public interface MethodInvoker {
         }
 
         @Override
-        public Object invoke(Object instance, String methodName, Class<?>[] parameterTypes, Object[] arguments) throws Throwable {
+        public Object invoke(Object instance, String methodName, Class<?>[] parameterTypes, Object[] arguments)
+                throws Throwable {
             return method.invoke(instance, arguments);
         }
     }
@@ -57,13 +58,15 @@ public interface MethodInvoker {
         }
 
         @Override
-        public Object invoke(Object instance, String methodName, Class<?>[] parameterTypes, Object[] arguments) throws Throwable {
+        public Object invoke(Object instance, String methodName, Class<?>[] parameterTypes, Object[] arguments)
+                throws Throwable {
             for (MethodMeta meta : methods) {
                 if (Arrays.equals(meta.getParametersType(), parameterTypes)) {
                     return meta.getMethod().invoke(instance, arguments);
                 }
             }
-            throw new NoSuchMethodException(instance.getClass().getName() + "." + methodName + Arrays.toString(parameterTypes));
+            throw new NoSuchMethodException(
+                    instance.getClass().getName() + "." + methodName + Arrays.toString(parameterTypes));
         }
 
         private static class MethodMeta {
@@ -105,10 +108,12 @@ public interface MethodInvoker {
         }
 
         @Override
-        public Object invoke(Object instance, String methodName, Class<?>[] parameterTypes, Object[] arguments) throws Throwable {
+        public Object invoke(Object instance, String methodName, Class<?>[] parameterTypes, Object[] arguments)
+                throws Throwable {
             MethodInvoker invoker = invokers.get(methodName);
             if (invoker == null) {
-                throw new NoSuchMethodException(instance.getClass().getName() + "." + methodName + Arrays.toString(parameterTypes));
+                throw new NoSuchMethodException(
+                        instance.getClass().getName() + "." + methodName + Arrays.toString(parameterTypes));
             }
             return invoker.invoke(instance, methodName, parameterTypes, arguments);
         }

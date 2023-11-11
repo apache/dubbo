@@ -40,7 +40,7 @@ public interface StringToMultiValueConverter extends MultiValueConverter<String>
         String[] segments = split(source, ',');
 
         if (ArrayUtils.isEmpty(segments)) { // If empty array, create an array with only one element
-            segments = new String[]{source};
+            segments = new String[] {source};
         }
 
         int size = segments.length;

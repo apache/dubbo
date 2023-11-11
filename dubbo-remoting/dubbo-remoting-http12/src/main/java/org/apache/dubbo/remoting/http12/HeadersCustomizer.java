@@ -21,6 +21,5 @@ import java.util.function.Consumer;
 @FunctionalInterface
 public interface HeadersCustomizer extends Consumer<HttpHeaders> {
 
-    HeadersCustomizer NO_OP = headers -> {
-    };
+    HeadersCustomizer NO_OP = headers -> {};
 }

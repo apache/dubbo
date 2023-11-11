@@ -57,7 +57,7 @@ public abstract class AbstractCodec implements Codec2, ScopeModelAware {
         boolean overPayload = isOverPayload(payload, size);
         if (overPayload) {
             ExceedPayloadLimitException e = new ExceedPayloadLimitException(
-                "Data length too large: " + size + ", max payload: " + payload + ", channel: " + channel);
+                    "Data length too large: " + size + ", max payload: " + payload + ", channel: " + channel);
             logger.error(TRANSPORT_EXCEED_PAYLOAD_LIMIT, "", "", e.getMessage(), e);
             throw e;
         }
@@ -70,7 +70,7 @@ public abstract class AbstractCodec implements Codec2, ScopeModelAware {
         boolean overPayload = isOverPayload(payload, size);
         if (overPayload) {
             ExceedPayloadLimitException e = new ExceedPayloadLimitException(
-                "Data length too large: " + size + ", max payload: " + payload + ", channel: " + channel);
+                    "Data length too large: " + size + ", max payload: " + payload + ", channel: " + channel);
             logger.error(TRANSPORT_EXCEED_PAYLOAD_LIMIT, "", "", e.getMessage(), e);
             throw e;
         }
@@ -109,11 +109,10 @@ public abstract class AbstractCodec implements Codec2, ScopeModelAware {
             InetSocketAddress address = channel.getRemoteAddress();
             URL url = channel.getUrl();
             boolean isClient = url.getPort() == address.getPort()
-                && NetUtils.filterLocalHost(url.getIp()).equals(
-                NetUtils.filterLocalHost(address.getAddress()
-                    .getHostAddress()));
-            channel.setAttribute(SIDE_KEY, isClient ? CLIENT_SIDE
-                : SERVER_SIDE);
+                    && NetUtils.filterLocalHost(url.getIp())
+                            .equals(NetUtils.filterLocalHost(
+                                    address.getAddress().getHostAddress()));
+            channel.setAttribute(SIDE_KEY, isClient ? CLIENT_SIDE : SERVER_SIDE);
             return isClient;
         }
     }
@@ -121,5 +120,4 @@ public abstract class AbstractCodec implements Codec2, ScopeModelAware {
     protected boolean isServerSide(Channel channel) {
         return !isClientSide(channel);
     }
-
 }

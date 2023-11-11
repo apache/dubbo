@@ -22,7 +22,6 @@ import javax.ws.rs.core.MultivaluedMap;
 
 public class JaxrsRestServiceImpl implements JaxrsRestService {
 
-
     @Override
     public String param(String param) {
         return param;

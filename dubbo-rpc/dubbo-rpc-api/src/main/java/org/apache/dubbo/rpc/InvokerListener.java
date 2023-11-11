@@ -40,5 +40,4 @@ public interface InvokerListener {
      * @see org.apache.dubbo.rpc.Invoker#destroy()
      */
     void destroyed(Invoker<?> invoker);
-
 }

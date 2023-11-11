@@ -17,15 +17,17 @@
 package org.apache.dubbo.rpc.protocol.rest.rest;
 
 import org.apache.dubbo.rpc.RpcContext;
-import org.jboss.resteasy.specimpl.BuiltResponse;
+
 import javax.ws.rs.core.Response;
+
 import java.util.HashMap;
 import java.util.Map;
+
+import org.jboss.resteasy.specimpl.BuiltResponse;
 
 public class RestDemoServiceImpl implements RestDemoService {
     private static Map<String, Object> context;
     private boolean called;
-
 
     @Override
     public String sayHello(String name) {
@@ -37,7 +39,6 @@ public class RestDemoServiceImpl implements RestDemoService {
     public Long testFormBody(Long number) {
         return number;
     }
-
 
     public boolean isCalled() {
         return called;
@@ -56,9 +57,9 @@ public class RestDemoServiceImpl implements RestDemoService {
 
     @Override
     public Response findUserById(Integer id) {
-        Map<String,Object> content = new HashMap<>();
-        content.put("username","jack");
-        content.put("id",id);
+        Map<String, Object> content = new HashMap<>();
+        content.put("username", "jack");
+        content.put("id", id);
 
         return BuiltResponse.ok(content).build();
     }

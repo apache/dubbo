@@ -26,6 +26,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+
 import java.util.Map;
 
 @Path("u")
@@ -60,5 +61,5 @@ public interface AnotherUserRestService {
     @POST
     @Path("headerMap")
     @Produces({MediaType.APPLICATION_JSON})
-    String headerMap(@HeaderParam("headers") Map<String,String> headers);
+    String headerMap(@HeaderParam("headers") Map<String, String> headers);
 }

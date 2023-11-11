@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.stream.StreamObserver;
@@ -27,7 +26,7 @@ public class ObserverToClientCallListenerAdapter implements ClientCall.Listener 
 
     private final StreamObserver<Object> delegate;
     private ClientCall call;
-    private Consumer<ClientCall> onStartConsumer = clientCall -> { };
+    private Consumer<ClientCall> onStartConsumer = clientCall -> {};
 
     public ObserverToClientCallListenerAdapter(StreamObserver<Object> delegate) {
         this.delegate = delegate;

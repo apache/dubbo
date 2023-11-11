@@ -26,7 +26,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-
 public class ZookeeperReflectionTypeDescriberRegistrar implements ReflectionTypeDescriberRegistrar {
 
     @Override
@@ -42,6 +41,7 @@ public class ZookeeperReflectionTypeDescriberRegistrar implements ReflectionType
         memberCategories.add(MemberCategory.INVOKE_DECLARED_METHODS);
         memberCategories.add(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
         memberCategories.add(MemberCategory.DECLARED_FIELDS);
-        return new TypeDescriber(cl.getName(), null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
+        return new TypeDescriber(
+                cl.getName(), null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
     }
 }

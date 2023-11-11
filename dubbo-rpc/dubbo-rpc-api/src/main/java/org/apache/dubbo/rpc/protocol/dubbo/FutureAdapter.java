@@ -55,10 +55,10 @@ public class FutureAdapter<V> extends CompletableFuture<V> {
     // TODO figure out the meaning of cancel in DefaultFuture.
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
-//        Invocation invocation = invocationSoftReference.get();
-//        if (invocation != null) {
-//            invocation.getInvoker().invoke(cancel);
-//        }
+        //        Invocation invocation = invocationSoftReference.get();
+        //        if (invocation != null) {
+        //            invocation.getInvoker().invoke(cancel);
+        //        }
         return appResponseFuture.cancel(mayInterruptIfRunning);
     }
 
@@ -95,5 +95,4 @@ public class FutureAdapter<V> extends CompletableFuture<V> {
             throw new RpcException(e);
         }
     }
-
 }

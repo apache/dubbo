@@ -40,13 +40,15 @@ public class BodyParameterProcessor extends AbstractAnnotatedMethodParameterProc
     }
 
     @Override
-    public void process(Annotation annotation, Parameter parameter, int parameterIndex, Method method, Class<?> serviceType, Class<?> serviceInterfaceClass, RestMethodMetadata restMethodMetadata) {
-        ArgInfo argInfo = ArgInfo.
-            build(parameterIndex, parameter).
-            setParamAnnotationType(getAnnotationClass());
+    public void process(
+            Annotation annotation,
+            Parameter parameter,
+            int parameterIndex,
+            Method method,
+            Class<?> serviceType,
+            Class<?> serviceInterfaceClass,
+            RestMethodMetadata restMethodMetadata) {
+        ArgInfo argInfo = ArgInfo.build(parameterIndex, parameter).setParamAnnotationType(getAnnotationClass());
         restMethodMetadata.addArgInfo(argInfo);
-
     }
-
-
 }

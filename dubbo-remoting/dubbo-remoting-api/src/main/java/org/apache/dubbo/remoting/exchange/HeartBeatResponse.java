@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.remoting.exchange;
 
-public class HeartBeatResponse extends Response{
+public class HeartBeatResponse extends Response {
     private byte proto;
 
     public HeartBeatResponse(long id, String version) {

@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   Licensed to the Apache Software Foundation (ASF) under one or more
   contributor license agreements.  See the NOTICE file distributed with
@@ -15,22 +16,22 @@
   limitations under the License.
   -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-parent</artifactId>
-        <version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
-    <artifactId>dubbo-container</artifactId>
-    <packaging>pom</packaging>
-    <name>${project.artifactId}</name>
-    <description>The container module of dubbo project</description>
-    <properties>
-        <skip_maven_deploy>false</skip_maven_deploy>
-    </properties>
-    <modules>
-        <module>dubbo-container-api</module>
-        <module>dubbo-container-spring</module>
-    </modules>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.dubbo</groupId>
+    <artifactId>dubbo-parent</artifactId>
+    <version>${revision}</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <artifactId>dubbo-container</artifactId>
+  <packaging>pom</packaging>
+  <name>${project.artifactId}</name>
+  <description>The container module of dubbo project</description>
+  <modules>
+    <module>dubbo-container-api</module>
+    <module>dubbo-container-spring</module>
+  </modules>
+  <properties>
+    <skip_maven_deploy>false</skip_maven_deploy>
+  </properties>
 </project>

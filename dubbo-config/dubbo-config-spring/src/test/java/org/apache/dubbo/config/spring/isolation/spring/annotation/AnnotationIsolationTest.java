@@ -24,14 +24,15 @@ import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.isolation.spring.BaseTest;
 import org.apache.dubbo.config.spring.isolation.spring.support.DemoServiceExecutor;
 import org.apache.dubbo.config.spring.isolation.spring.support.HelloServiceExecutor;
+
+import java.util.Map;
+import java.util.concurrent.Executor;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.Map;
-import java.util.concurrent.Executor;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_ISOLATION;
 
@@ -40,11 +41,13 @@ public class AnnotationIsolationTest extends BaseTest {
     @Test
     public void test() throws Exception {
         // start provider app
-        AnnotationConfigApplicationContext providerContext = new AnnotationConfigApplicationContext(ProviderConfiguration.class);
+        AnnotationConfigApplicationContext providerContext =
+                new AnnotationConfigApplicationContext(ProviderConfiguration.class);
         providerContext.start();
 
         // start consumer app
-        AnnotationConfigApplicationContext consumerContext = new AnnotationConfigApplicationContext(ConsumerConfiguration.class);
+        AnnotationConfigApplicationContext consumerContext =
+                new AnnotationConfigApplicationContext(ConsumerConfiguration.class);
         consumerContext.start();
 
         // getAndSet serviceConfig
@@ -56,14 +59,16 @@ public class AnnotationIsolationTest extends BaseTest {
         // close context
         providerContext.close();
         consumerContext.close();
-
     }
 
     private void setServiceConfig(AnnotationConfigApplicationContext providerContext) {
         Map<String, ServiceConfig> serviceConfigMap = providerContext.getBeansOfType(ServiceConfig.class);
-        serviceConfig1 = serviceConfigMap.get("ServiceBean:org.apache.dubbo.config.spring.api.DemoService:1.0.0:Group1");
-        serviceConfig2 = serviceConfigMap.get("ServiceBean:org.apache.dubbo.config.spring.api.HelloService:2.0.0:Group2");
-        serviceConfig3 = serviceConfigMap.get("ServiceBean:org.apache.dubbo.config.spring.api.HelloService:3.0.0:Group3");
+        serviceConfig1 =
+                serviceConfigMap.get("ServiceBean:org.apache.dubbo.config.spring.api.DemoService:1.0.0:Group1");
+        serviceConfig2 =
+                serviceConfigMap.get("ServiceBean:org.apache.dubbo.config.spring.api.HelloService:2.0.0:Group2");
+        serviceConfig3 =
+                serviceConfigMap.get("ServiceBean:org.apache.dubbo.config.spring.api.HelloService:3.0.0:Group3");
     }
 
     // note scanBasePackages, refer three service with dubbo and tri protocol

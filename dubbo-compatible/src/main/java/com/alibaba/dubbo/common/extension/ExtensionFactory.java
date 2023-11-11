@@ -21,5 +21,4 @@ import org.apache.dubbo.common.extension.SPI;
 
 @Deprecated
 @SPI(scope = ExtensionScope.FRAMEWORK)
-public interface ExtensionFactory extends org.apache.dubbo.common.extension.ExtensionFactory {
-}
+public interface ExtensionFactory extends org.apache.dubbo.common.extension.ExtensionFactory {}

@@ -86,6 +86,5 @@ class ModuleModelTest {
         // trigger tryDestroy
         Assertions.assertTrue(applicationModel.isDestroyed());
         Assertions.assertTrue(frameworkModel.isDestroyed());
-
     }
 }

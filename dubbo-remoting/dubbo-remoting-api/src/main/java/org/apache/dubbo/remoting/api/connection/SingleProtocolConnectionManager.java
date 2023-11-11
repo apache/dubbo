@@ -44,7 +44,9 @@ public class SingleProtocolConnectionManager implements ConnectionManager {
         return connections.compute(url.getAddress(), (address, conn) -> {
             if (conn == null) {
                 String transport = url.getParameter(Constants.TRANSPORTER_KEY, "netty4");
-                ConnectionManager manager = frameworkModel.getExtensionLoader(ConnectionManager.class).getExtension(transport);
+                ConnectionManager manager = frameworkModel
+                        .getExtensionLoader(ConnectionManager.class)
+                        .getExtension(transport);
                 final AbstractConnectionClient connectionClient = manager.connect(url, handler);
                 connectionClient.addCloseListener(() -> connections.remove(address, connectionClient));
                 return connectionClient;

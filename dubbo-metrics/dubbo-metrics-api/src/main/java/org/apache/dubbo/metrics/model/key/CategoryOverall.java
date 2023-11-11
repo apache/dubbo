@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.model.key;
-
 
 import org.apache.dubbo.common.lang.Nullable;
 
@@ -33,7 +31,11 @@ public class CategoryOverall {
      * @param placeType When placeType is null, it means that placeType is obtained dynamically
      * @param post      Statistics of the number of events, as long as it occurs, it will take effect, so it cannot be null
      */
-    public CategoryOverall(@Nullable MetricsPlaceValue placeType, MetricsCat post, @Nullable MetricsCat finish, @Nullable MetricsCat error) {
+    public CategoryOverall(
+            @Nullable MetricsPlaceValue placeType,
+            MetricsCat post,
+            @Nullable MetricsCat finish,
+            @Nullable MetricsCat error) {
         this.post = post.setPlaceType(placeType);
         if (finish != null) {
             this.finish = finish.setPlaceType(placeType);

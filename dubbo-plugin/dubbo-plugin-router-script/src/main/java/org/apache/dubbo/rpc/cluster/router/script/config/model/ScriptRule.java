@@ -18,11 +18,11 @@ package org.apache.dubbo.rpc.cluster.router.script.config.model;
 
 import org.apache.dubbo.rpc.cluster.router.AbstractRouterRule;
 
+import java.util.Map;
+
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
-
-import java.util.Map;
 
 public class ScriptRule extends AbstractRouterRule {
     private static final String TYPE_KEY = "type";

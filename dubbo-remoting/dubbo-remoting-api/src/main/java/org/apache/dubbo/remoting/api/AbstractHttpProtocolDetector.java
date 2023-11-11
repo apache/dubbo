@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.api;
 
-
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 
 import java.util.ArrayList;
@@ -32,7 +31,6 @@ import static org.apache.dubbo.remoting.api.AbstractHttpProtocolDetector.HttpMet
 import static org.apache.dubbo.remoting.api.AbstractHttpProtocolDetector.HttpMethod.PUT;
 import static org.apache.dubbo.remoting.api.AbstractHttpProtocolDetector.HttpMethod.TRACE;
 
-
 /**
  * http protocol detector
  */
@@ -41,8 +39,6 @@ public abstract class AbstractHttpProtocolDetector implements ProtocolDetector {
     protected int empty = ' ';
     protected static String SIMPLE_HTTP = "XXX HTTP/1";
 
-
-
     protected static final List<HttpMethod> QOS_HTTP_METHOD = Arrays.asList(GET, POST);
 
     /**
@@ -50,7 +46,8 @@ public abstract class AbstractHttpProtocolDetector implements ProtocolDetector {
      * first GET ,POST,DELETE,PUT
      * second HEAD,PATCH,OPTIONS,TRACE
      */
-    protected static final List<HttpMethod> HTTP_METHODS = Arrays.asList(GET, POST, DELETE, PUT, HEAD, PATCH, OPTIONS, TRACE);
+    protected static final List<HttpMethod> HTTP_METHODS =
+            Arrays.asList(GET, POST, DELETE, PUT, HEAD, PATCH, OPTIONS, TRACE);
 
     protected static char[][] getHttpMethodsPrefix(int length, List<HttpMethod> httpMethods) {
         if (0 >= length || length > 3) {
@@ -63,9 +60,7 @@ public abstract class AbstractHttpProtocolDetector implements ProtocolDetector {
         }
 
         return prefix.toArray(new char[0][]);
-
     }
-
 
     protected static char[][] getHttpMethodsPrefix() {
         return getHttpMethodsPrefix(3, HTTP_METHODS);
@@ -115,7 +110,6 @@ public abstract class AbstractHttpProtocolDetector implements ProtocolDetector {
         return split[index];
     }
 
-
     /**
      * between first and second empty char
      *
@@ -148,7 +142,6 @@ public abstract class AbstractHttpProtocolDetector implements ProtocolDetector {
         }
 
         return stringBuilder.toString();
-
     }
 
     public enum HttpMethod {
@@ -161,7 +154,6 @@ public abstract class AbstractHttpProtocolDetector implements ProtocolDetector {
         DELETE("DELETE"),
         OPTIONS("OPTIONS"),
         TRACE("TRACE");
-
 
         HttpMethod(String value) {
             this.value = value;

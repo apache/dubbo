@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.beans;
 
-
 import org.apache.dubbo.common.beans.model.FooBeanWithApplicationModel;
 import org.apache.dubbo.common.beans.model.FooBeanWithFrameworkModel;
 import org.apache.dubbo.common.beans.model.FooBeanWithModuleModel;
@@ -44,10 +43,12 @@ class InstantiationStrategyTest {
     void testCreateBeanWithScopeModelArgument() throws ReflectiveOperationException {
         InstantiationStrategy instantiationStrategy = new InstantiationStrategy(scopeModelAccessor);
 
-        FooBeanWithFrameworkModel beanWithFrameworkModel = instantiationStrategy.instantiate(FooBeanWithFrameworkModel.class);
+        FooBeanWithFrameworkModel beanWithFrameworkModel =
+                instantiationStrategy.instantiate(FooBeanWithFrameworkModel.class);
         Assertions.assertSame(scopeModelAccessor.getFrameworkModel(), beanWithFrameworkModel.getFrameworkModel());
 
-        FooBeanWithApplicationModel beanWithApplicationModel = instantiationStrategy.instantiate(FooBeanWithApplicationModel.class);
+        FooBeanWithApplicationModel beanWithApplicationModel =
+                instantiationStrategy.instantiate(FooBeanWithApplicationModel.class);
         Assertions.assertSame(scopeModelAccessor.getApplicationModel(), beanWithApplicationModel.getApplicationModel());
 
         FooBeanWithModuleModel beanWithModuleModel = instantiationStrategy.instantiate(FooBeanWithModuleModel.class);
@@ -61,10 +62,9 @@ class InstantiationStrategyTest {
             instantiationStrategy.instantiate(FooBeanWithoutUniqueConstructors.class);
             Assertions.fail("Expect throwing exception");
         } catch (Exception e) {
-            Assertions.assertTrue(e.getMessage().contains("Expect only one but found 2 matched constructors"), StringUtils.toString(e));
+            Assertions.assertTrue(
+                    e.getMessage().contains("Expect only one but found 2 matched constructors"),
+                    StringUtils.toString(e));
         }
-
     }
-
-
 }

@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.exception;
 
-public class MediaTypeUnSupportException extends RestException{
+public class MediaTypeUnSupportException extends RestException {
     public MediaTypeUnSupportException(String message) {
         super(message);
     }

@@ -31,5 +31,4 @@ public class UnserializableBoxDemoServiceImpl implements DemoService {
     public Box getBox() {
         return new UnserializableBox();
     }
-
 }

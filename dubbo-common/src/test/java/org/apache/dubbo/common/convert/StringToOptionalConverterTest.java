@@ -16,10 +16,10 @@
  */
 package org.apache.dubbo.common.convert;
 
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.Optional;
 
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,7 +36,8 @@ class StringToOptionalConverterTest {
 
     @BeforeEach
     public void init() {
-        converter = (StringToOptionalConverter) getExtensionLoader(Converter.class).getExtension("string-to-optional");
+        converter =
+                (StringToOptionalConverter) getExtensionLoader(Converter.class).getExtension("string-to-optional");
     }
 
     @Test

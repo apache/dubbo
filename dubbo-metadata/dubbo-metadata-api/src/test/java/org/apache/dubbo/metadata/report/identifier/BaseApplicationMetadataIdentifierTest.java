@@ -38,7 +38,7 @@ class BaseApplicationMetadataIdentifierTest {
 
     @Test
     void getIdentifierKey() {
-        String identifierKey = baseApplicationMetadataIdentifier.getIdentifierKey( "reversion");
+        String identifierKey = baseApplicationMetadataIdentifier.getIdentifierKey("reversion");
         Assertions.assertEquals(identifierKey, "app:reversion");
     }
 }

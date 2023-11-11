@@ -47,13 +47,15 @@ class OpenTelemetryProviderTest {
         ExporterConfig exporterConfig = new ExporterConfig();
         exporterConfig.setZipkinConfig(new ExporterConfig.ZipkinConfig(""));
         tracingConfig.setTracingExporter(exporterConfig);
-        TracerProvider tracerProvider1 = TracerProviderFactory.getProvider(ApplicationModel.defaultModel(), tracingConfig);
+        TracerProvider tracerProvider1 =
+                TracerProviderFactory.getProvider(ApplicationModel.defaultModel(), tracingConfig);
         Assert.notNull(tracerProvider1, "TracerProvider should not be null.");
         Tracer tracer1 = tracerProvider1.getTracer();
         assertEquals(OtelTracer.class, tracer1.getClass());
 
         tracingConfig.setBaggage(new BaggageConfig(false));
-        TracerProvider tracerProvider2 = TracerProviderFactory.getProvider(ApplicationModel.defaultModel(), tracingConfig);
+        TracerProvider tracerProvider2 =
+                TracerProviderFactory.getProvider(ApplicationModel.defaultModel(), tracingConfig);
         Assert.notNull(tracerProvider2, "TracerProvider should not be null.");
         Tracer tracer2 = tracerProvider2.getTracer();
         assertEquals(OtelTracer.class, tracer2.getClass());
@@ -68,18 +70,18 @@ class OpenTelemetryProviderTest {
         when(baggageConfig.getEnabled()).thenReturn(Boolean.FALSE);
 
         when(propagationConfig.getType()).thenReturn(PropagationType.B3.getValue());
-        TextMapPropagator b3PropagatorWithoutBaggage = OpenTelemetryProvider.PropagatorFactory.getPropagator(propagationConfig, baggageConfig, otelCurrentTraceContext);
+        TextMapPropagator b3PropagatorWithoutBaggage = OpenTelemetryProvider.PropagatorFactory.getPropagator(
+                propagationConfig, baggageConfig, otelCurrentTraceContext);
         assertEquals(B3Propagator.class, b3PropagatorWithoutBaggage.getClass());
 
         when(propagationConfig.getType()).thenReturn(PropagationType.W3C.getValue());
-        TextMapPropagator w3cPropagatorWithoutBaggage = OpenTelemetryProvider.PropagatorFactory.getPropagator(propagationConfig, baggageConfig, otelCurrentTraceContext);
+        TextMapPropagator w3cPropagatorWithoutBaggage = OpenTelemetryProvider.PropagatorFactory.getPropagator(
+                propagationConfig, baggageConfig, otelCurrentTraceContext);
         assertEquals(W3CTraceContextPropagator.class, w3cPropagatorWithoutBaggage.getClass());
 
-
         when(baggageConfig.getEnabled()).thenReturn(Boolean.TRUE);
-        TextMapPropagator propagatorWithBaggage = OpenTelemetryProvider.PropagatorFactory.getPropagator(propagationConfig, baggageConfig, otelCurrentTraceContext);
+        TextMapPropagator propagatorWithBaggage = OpenTelemetryProvider.PropagatorFactory.getPropagator(
+                propagationConfig, baggageConfig, otelCurrentTraceContext);
         Assert.notNull(propagatorWithBaggage, "PropagatorWithBaggage should not be null");
     }
-
-
 }

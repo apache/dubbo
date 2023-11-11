@@ -21,7 +21,8 @@ import org.apache.dubbo.remoting.http12.HttpChannelHolder;
 
 import java.util.concurrent.CompletableFuture;
 
-public abstract class HttpChannelQueueCommand extends CompletableFuture<Void> implements QueueCommand, HttpChannelHolder {
+public abstract class HttpChannelQueueCommand extends CompletableFuture<Void>
+        implements QueueCommand, HttpChannelHolder {
 
     private HttpChannelHolder httpChannelHolder;
 
@@ -32,5 +33,4 @@ public abstract class HttpChannelQueueCommand extends CompletableFuture<Void> im
     public HttpChannel getHttpChannel() {
         return httpChannelHolder.getHttpChannel();
     }
-
 }

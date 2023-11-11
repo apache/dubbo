@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.reference.registryNA.provider;
 
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.rpc.RpcException;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -29,7 +30,8 @@ public class DubboXmlProviderTest {
 
     @Test
     void testProvider() {
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("classpath:/org/apache/dubbo/config/spring/reference/registryNA/provider/dubbo-provider.xml");
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
+                "classpath:/org/apache/dubbo/config/spring/reference/registryNA/provider/dubbo-provider.xml");
         context.start();
         Object bean = context.getBean("helloService");
         Assertions.assertNotNull(bean);
@@ -37,15 +39,20 @@ public class DubboXmlProviderTest {
 
     @Test
     void testProvider2() {
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("classpath:/org/apache/dubbo/config/spring/reference/registryNA/provider/dubbo-provider.xml");
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
+                "classpath:/org/apache/dubbo/config/spring/reference/registryNA/provider/dubbo-provider.xml");
         context.start();
         Assertions.assertNotNull(context.getBean("helloService"));
-        ClassPathXmlApplicationContext context2 = new ClassPathXmlApplicationContext("classpath:/org/apache/dubbo/config/spring/reference/registryNA/consumer/dubbo-consumer.xml");
+        ClassPathXmlApplicationContext context2 = new ClassPathXmlApplicationContext(
+                "classpath:/org/apache/dubbo/config/spring/reference/registryNA/consumer/dubbo-consumer.xml");
         context2.start();
         HelloService helloService = context2.getBean("helloService", HelloService.class);
         Assertions.assertNotNull(helloService);
         RpcException exception = Assertions.assertThrows(RpcException.class, () -> helloService.sayHello("dubbo"));
-        Assertions.assertTrue(exception.getMessage().contains("Failed to invoke the method sayHello in the service org.apache.dubbo.config.spring.api.HelloService. No provider available for the service org.apache.dubbo.config.spring.api.HelloService"));
+        Assertions.assertTrue(
+                exception
+                        .getMessage()
+                        .contains(
+                                "Failed to invoke the method sayHello in the service org.apache.dubbo.config.spring.api.HelloService. No provider available for the service org.apache.dubbo.config.spring.api.HelloService"));
     }
-
 }

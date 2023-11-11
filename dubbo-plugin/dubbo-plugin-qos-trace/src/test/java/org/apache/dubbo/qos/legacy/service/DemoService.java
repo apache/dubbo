@@ -19,7 +19,6 @@ package org.apache.dubbo.qos.legacy.service;
 /**
  * <code>TestService</code>
  */
-
 public interface DemoService {
     void sayHello(String name);
 }

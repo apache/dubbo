@@ -16,13 +16,15 @@
  */
 package org.apache.dubbo.config.spring.reference;
 
-
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.DubboConfigBeanInitializer;
 import org.apache.dubbo.config.spring.context.annotation.provider.ProviderConfiguration;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
+
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -40,22 +42,16 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * Tests for {@link org.apache.dubbo.config.spring.context.DubboConfigBeanInitializer}
  */
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(
-    classes = {
-        DubboConfigBeanInitializerTest.class,
-        DubboConfigBeanInitializerTest.AppConfiguration.class,
-    })
-@TestPropertySource(properties = {
-    "dubbo.protocol.port=-1",
-    "dubbo.registry.address=${zookeeper.connection.address}"
-})
+        classes = {
+            DubboConfigBeanInitializerTest.class,
+            DubboConfigBeanInitializerTest.AppConfiguration.class,
+        })
+@TestPropertySource(properties = {"dubbo.protocol.port=-1", "dubbo.registry.address=${zookeeper.connection.address}"})
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class DubboConfigBeanInitializerTest {
@@ -69,7 +65,6 @@ class DubboConfigBeanInitializerTest {
     public static void afterAll() {
         DubboBootstrap.reset();
     }
-
 
     @Autowired
     private FooService fooService;
@@ -97,17 +92,19 @@ class DubboConfigBeanInitializerTest {
     // Import BusinessConfig first, make sure FooService bean is register early,
     // expect dubbo config beans are initialized before FooService bean
     @Import({BusinessConfig.class, ConsumerConfig.class, ProviderConfiguration.class})
-    static class AppConfiguration {
-
-    }
+    static class AppConfiguration {}
 
     @Configuration
     static class BusinessConfig {
         @Bean
         public FooService fooService(ApplicationContext applicationContext) {
             // Dubbo config beans should be initialized at DubboConfigInitializer, before init FooService bean
-            Assertions.assertTrue(DubboBeanUtils.getModuleModel(applicationContext).getDeployer().isInitialized());
-            Assertions.assertTrue(DubboBeanUtils.getApplicationModel(applicationContext).getDeployer().isInitialized());
+            Assertions.assertTrue(DubboBeanUtils.getModuleModel(applicationContext)
+                    .getDeployer()
+                    .isInitialized());
+            Assertions.assertTrue(DubboBeanUtils.getApplicationModel(applicationContext)
+                    .getDeployer()
+                    .isInitialized());
             Assertions.assertTrue(DubboBootstrap.getInstance().isInitialized());
             return new FooService();
         }

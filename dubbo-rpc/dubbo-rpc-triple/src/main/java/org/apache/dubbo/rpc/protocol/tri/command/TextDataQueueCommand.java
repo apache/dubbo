@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.command;
+
+import org.apache.dubbo.rpc.protocol.tri.stream.TripleStreamChannelFuture;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
-import org.apache.dubbo.rpc.protocol.tri.stream.TripleStreamChannelFuture;
 
 public class TextDataQueueCommand extends StreamQueueCommand {
 
@@ -36,7 +36,8 @@ public class TextDataQueueCommand extends StreamQueueCommand {
         this.endStream = endStream;
     }
 
-    public static TextDataQueueCommand createCommand(TripleStreamChannelFuture streamChannelFuture, String data, boolean endStream) {
+    public static TextDataQueueCommand createCommand(
+            TripleStreamChannelFuture streamChannelFuture, String data, boolean endStream) {
         return new TextDataQueueCommand(streamChannelFuture, data, endStream);
     }
 

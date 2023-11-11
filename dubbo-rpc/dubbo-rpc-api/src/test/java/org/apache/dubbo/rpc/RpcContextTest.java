@@ -18,15 +18,15 @@ package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.URL;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class RpcContextTest {
 
@@ -38,7 +38,7 @@ class RpcContextTest {
 
         RpcContext.removeClientAttachment();
         // if null, will return the initialize value.
-        //Assertions.assertNull(RpcContext.getContext());
+        // Assertions.assertNull(RpcContext.getContext());
         Assertions.assertNotNull(RpcContext.getClientAttachment());
         Assertions.assertNotEquals(rpcContext, RpcContext.getClientAttachment());
 
@@ -47,7 +47,6 @@ class RpcContextTest {
 
         RpcContext.removeServerContext();
         Assertions.assertNotEquals(serverRpcContext, RpcContext.getServerContext());
-
     }
 
     @Test
@@ -74,8 +73,8 @@ class RpcContextTest {
 
         RpcContext context = RpcContext.getServiceContext();
 
-        //TODO fix npe
-        //context.isProviderSide();
+        // TODO fix npe
+        // context.isProviderSide();
 
         context.setUrl(URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1"));
         Assertions.assertFalse(context.isConsumerSide());
@@ -154,7 +153,8 @@ class RpcContextTest {
         Assertions.assertTrue(rpcContext.isAsyncStarted());
 
         asyncContext.write(new Object());
-        Assertions.assertTrue(((AsyncContextImpl) asyncContext).getInternalFuture().isDone());
+        Assertions.assertTrue(
+                ((AsyncContextImpl) asyncContext).getInternalFuture().isDone());
 
         rpcContext.stopAsync();
         Assertions.assertTrue(rpcContext.isAsyncStarted());
@@ -204,6 +204,7 @@ class RpcContextTest {
         rpcContext.setObjectAttachments(map);
         Assertions.assertEquals(map, rpcContext.getObjectAttachments());
     }
+
     @Test
     public void say() {
         final String key = "user-attachment";
@@ -215,15 +216,13 @@ class RpcContextTest {
     }
 
     @Test
-    void testRestore() {
-
-    }
+    void testRestore() {}
 
     @Test
     public void testRpcServerContextAttachment() {
         RpcContextAttachment attachment = RpcContext.getServerContext();
-        attachment.setAttachment("key_1","value_1");
-        attachment.setAttachment("key_2","value_2");
+        attachment.setAttachment("key_1", "value_1");
+        attachment.setAttachment("key_2", "value_2");
         Assertions.assertEquals("value_1", attachment.getAttachment("key_1"));
         Assertions.assertEquals(null, attachment.getAttachment("aaa"));
         attachment.removeAttachment("key_1");
@@ -263,23 +262,22 @@ class RpcContextTest {
         Assertions.assertEquals("value_7", objectMap1.get("key_7"));
         Assertions.assertEquals("value_8", objectMap1.get("key_8"));
         attachment.clearAttachments();
-
     }
 
     @Test
     public void testRpcServerContextClearAttachment() {
         RpcServerContextAttachment attachment = new RpcServerContextAttachment();
-        attachment.setAttachment("key_1","value_1");
-        attachment.setAttachment("key_2","value_2");
-        attachment.setAttachment("key_3","value_3");
+        attachment.setAttachment("key_1", "value_1");
+        attachment.setAttachment("key_2", "value_2");
+        attachment.setAttachment("key_3", "value_3");
         attachment.clearAttachments();
         Assertions.assertEquals(null, attachment.getAttachment("key_1"));
         Assertions.assertEquals(null, attachment.getAttachment("key_2"));
         Assertions.assertEquals(null, attachment.getAttachment("key_3"));
 
-        attachment.setObjectAttachment("key_1","value_1");
-        attachment.setObjectAttachment("key_2","value_2");
-        attachment.setObjectAttachment("key_3","value_3");
+        attachment.setObjectAttachment("key_1", "value_1");
+        attachment.setObjectAttachment("key_2", "value_2");
+        attachment.setObjectAttachment("key_3", "value_3");
         attachment.clearAttachments();
         Assertions.assertEquals(null, attachment.getAttachment("key_1"));
         Assertions.assertEquals(null, attachment.getAttachment("key_2"));
@@ -299,8 +297,9 @@ class RpcContextTest {
 
     @Test
     public void testObjectAttachmentMap() {
-        RpcServerContextAttachment attachment  = new RpcServerContextAttachment();
-        RpcServerContextAttachment.ObjectAttachmentMap objectAttachmentMap = new RpcServerContextAttachment.ObjectAttachmentMap(attachment);
+        RpcServerContextAttachment attachment = new RpcServerContextAttachment();
+        RpcServerContextAttachment.ObjectAttachmentMap objectAttachmentMap =
+                new RpcServerContextAttachment.ObjectAttachmentMap(attachment);
         objectAttachmentMap.put("key_1", "value_1");
         Set<String> keySet = objectAttachmentMap.keySet();
         Assertions.assertEquals(true, keySet.contains("key_1"));
@@ -317,8 +316,8 @@ class RpcContextTest {
         objectAttachmentMap.remove("key_1");
         Assertions.assertEquals(null, objectAttachmentMap.get("key_1"));
         Map<String, String> map = new HashMap<>();
-        map.put("key_3","value_3");
-        map.put("key_4","value_4");
+        map.put("key_3", "value_3");
+        map.put("key_4", "value_4");
         objectAttachmentMap.putAll(map);
         Assertions.assertEquals("value_3", objectAttachmentMap.get("key_3"));
         Assertions.assertEquals("value_4", objectAttachmentMap.get("key_4"));
@@ -328,8 +327,9 @@ class RpcContextTest {
 
     @Test
     public void testClearAttachmentMap() {
-        RpcServerContextAttachment attachment  = new RpcServerContextAttachment();
-        RpcServerContextAttachment.ObjectAttachmentMap objectAttachmentMap = new RpcServerContextAttachment.ObjectAttachmentMap(attachment);
+        RpcServerContextAttachment attachment = new RpcServerContextAttachment();
+        RpcServerContextAttachment.ObjectAttachmentMap objectAttachmentMap =
+                new RpcServerContextAttachment.ObjectAttachmentMap(attachment);
         objectAttachmentMap.put("key_1", "value_1");
         objectAttachmentMap.put("key_2", "value_2");
         objectAttachmentMap.put("key_3", "value_3");

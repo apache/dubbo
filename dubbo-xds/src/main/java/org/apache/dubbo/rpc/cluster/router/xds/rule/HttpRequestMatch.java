@@ -36,6 +36,4 @@ public class HttpRequestMatch {
     public List<HeaderMatcher> getHeaderMatcherList() {
         return headerMatcherList;
     }
-
-
 }

@@ -20,6 +20,8 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfig;
 
+import java.util.Map;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -27,9 +29,6 @@ import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.PropertySource;
-
-import java.util.Map;
-
 
 /**
  * {@link DubboConfigBeanDefinitionConflictApplicationListener} Test
@@ -41,16 +40,15 @@ public class DubboConfigBeanDefinitionConflictApplicationListenerTest {
     @Before
     public void init() {
         DubboBootstrap.reset();
-        //context.addApplicationListener(new DubboConfigBeanDefinitionConflictApplicationListener());
+        // context.addApplicationListener(new DubboConfigBeanDefinitionConflictApplicationListener());
     }
 
     @After
     public void destroy() {
         DubboBootstrap.reset();
-
     }
 
-    //@Test
+    // @Test
     public void testNormalCase() {
 
         System.setProperty("dubbo.application.name", "test-dubbo-application");
@@ -71,7 +69,8 @@ public class DubboConfigBeanDefinitionConflictApplicationListenerTest {
     @Test
     public void testDuplicatedConfigsCase() {
 
-        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(PropertySourceConfig.class, DubboConfig.class, XmlConfig.class);
+        AnnotationConfigApplicationContext context =
+                new AnnotationConfigApplicationContext(PropertySourceConfig.class, DubboConfig.class, XmlConfig.class);
 
         try {
             context.start();
@@ -89,16 +88,11 @@ public class DubboConfigBeanDefinitionConflictApplicationListenerTest {
     }
 
     @EnableDubboConfig
-    static class DubboConfig {
-
-    }
+    static class DubboConfig {}
 
     @PropertySource("classpath:/META-INF/dubbo.properties")
-    static class PropertySourceConfig {
-
-    }
+    static class PropertySourceConfig {}
 
     @ImportResource("classpath:/META-INF/spring/dubbo-context.xml")
-    static class XmlConfig {
-    }
+    static class XmlConfig {}
 }

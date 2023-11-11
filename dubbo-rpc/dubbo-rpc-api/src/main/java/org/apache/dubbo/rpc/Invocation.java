@@ -48,7 +48,6 @@ public interface Invocation {
      */
     String getMethodName();
 
-
     /**
      * get the interface name
      *
@@ -70,9 +69,7 @@ public interface Invocation {
      * @return parameter's signature
      */
     default String[] getCompatibleParamSignatures() {
-        return Stream.of(getParameterTypes())
-            .map(Class::getName)
-            .toArray(String[]::new);
+        return Stream.of(getParameterTypes()).map(Class::getName).toArray(String[]::new);
     }
 
     /**
@@ -157,7 +154,8 @@ public interface Invocation {
     ServiceModel getServiceModel();
 
     default ModuleModel getModuleModel() {
-        return ScopeModelUtil.getModuleModel(getServiceModel() == null ? null : getServiceModel().getModuleModel());
+        return ScopeModelUtil.getModuleModel(
+                getServiceModel() == null ? null : getServiceModel().getModuleModel());
     }
 
     Object put(Object key, Object value);

@@ -29,21 +29,22 @@ import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
  */
 public class ProtocolUtils {
 
-
     public static <T> T refer(Class<T> type, String url) {
         return refer(type, URL.valueOf(url));
     }
 
     public static <T> T refer(Class<T> type, URL url) {
         FrameworkModel frameworkModel = url.getOrDefaultFrameworkModel();
-        ProxyFactory proxy = frameworkModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        ProxyFactory proxy =
+                frameworkModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = frameworkModel.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         return proxy.getProxy(protocol.refer(type, url));
     }
 
     public static Invoker<?> referInvoker(Class<?> type, URL url) {
         FrameworkModel frameworkModel = url.getOrDefaultFrameworkModel();
-        ProxyFactory proxy = frameworkModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        ProxyFactory proxy =
+                frameworkModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = frameworkModel.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         return (Invoker<?>) protocol.refer(type, url);
     }
@@ -54,7 +55,8 @@ public class ProtocolUtils {
 
     public static <T> Exporter<T> export(T instance, Class<T> type, URL url) {
         FrameworkModel frameworkModel = url.getOrDefaultFrameworkModel();
-        ProxyFactory proxy = frameworkModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        ProxyFactory proxy =
+                frameworkModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = frameworkModel.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         return protocol.export(proxy.getInvoker(instance, type, url));
     }

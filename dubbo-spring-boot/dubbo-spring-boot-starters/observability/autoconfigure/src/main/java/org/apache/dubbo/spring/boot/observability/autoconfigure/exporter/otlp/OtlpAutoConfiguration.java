@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.spring.boot.observability.autoconfigure.exporter.otlp;
 
 import org.apache.dubbo.config.nested.ExporterConfig.OtlpConfig;
 import org.apache.dubbo.spring.boot.autoconfigure.DubboConfigurationProperties;
 import org.apache.dubbo.spring.boot.observability.autoconfigure.annotation.ConditionalOnDubboTracingEnable;
+
+import java.util.Map;
 
 import io.micrometer.tracing.otel.bridge.OtelTracer;
 import io.opentelemetry.api.OpenTelemetry;
@@ -32,8 +33,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-
-import java.util.Map;
 
 import static org.apache.dubbo.spring.boot.observability.autoconfigure.ObservabilityUtils.DUBBO_TRACING_OTLP_CONFIG_PREFIX;
 
@@ -48,7 +47,8 @@ public class OtlpAutoConfiguration {
 
     @Bean
     @ConditionalOnProperty(prefix = DUBBO_TRACING_OTLP_CONFIG_PREFIX, name = "endpoint")
-    @ConditionalOnMissingBean(value = OtlpGrpcSpanExporter.class,
+    @ConditionalOnMissingBean(
+            value = OtlpGrpcSpanExporter.class,
             type = "io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter")
     OtlpGrpcSpanExporter otlpGrpcSpanExporter(DubboConfigurationProperties properties) {
         OtlpConfig cfg = properties.getTracing().getTracingExporter().getOtlpConfig();

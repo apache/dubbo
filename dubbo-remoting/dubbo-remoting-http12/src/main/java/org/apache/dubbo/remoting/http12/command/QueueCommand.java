@@ -16,6 +16,4 @@
  */
 package org.apache.dubbo.remoting.http12.command;
 
-public interface QueueCommand extends Runnable {
-
-}
+public interface QueueCommand extends Runnable {}

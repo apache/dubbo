@@ -30,8 +30,14 @@ import javax.lang.model.element.VariableElement;
  */
 public abstract class ParamAnnotationParameterProcessor extends AbstractAnnotatedMethodParameterProcessor {
 
-    protected void process(String name, String defaultValue, AnnotationMirror annotation, VariableElement parameter, int parameterIndex,
-                           ExecutableElement method, RestMethodMetadata restMethodMetadata) {
+    protected void process(
+            String name,
+            String defaultValue,
+            AnnotationMirror annotation,
+            VariableElement parameter,
+            int parameterIndex,
+            ExecutableElement method,
+            RestMethodMetadata restMethodMetadata) {
         RequestMetadata requestMetadata = restMethodMetadata.getRequest();
         requestMetadata.addParam(name, defaultValue);
     }

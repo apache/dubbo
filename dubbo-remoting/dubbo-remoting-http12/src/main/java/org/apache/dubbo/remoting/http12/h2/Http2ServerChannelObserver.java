@@ -26,7 +26,10 @@ import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
 import org.apache.dubbo.rpc.CancellationContext;
 
-public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserver implements HttpChannelObserver<Object>, FlowControlStreamObserver<Object>, Http2CancelableStreamObserver<Object> {
+public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserver
+        implements HttpChannelObserver<Object>,
+                FlowControlStreamObserver<Object>,
+                Http2CancelableStreamObserver<Object> {
 
     private CancellationContext cancellationContext;
 

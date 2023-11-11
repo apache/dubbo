@@ -18,6 +18,4 @@ package org.apache.dubbo.remoting.http12.h2;
 
 import org.apache.dubbo.remoting.http12.HttpInputMessage;
 
-public interface Http2InputMessage extends HttpInputMessage, Http2StreamFrame {
-
-}
+public interface Http2InputMessage extends HttpInputMessage, Http2StreamFrame {}

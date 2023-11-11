@@ -38,5 +38,4 @@ public class TelnetIdleEventHandler extends ChannelDuplexHandler {
             super.userEventTriggered(ctx, evt);
         }
     }
-
 }

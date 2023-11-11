@@ -21,10 +21,10 @@ import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.telnet.support.TelnetHandlerAdapter;
 
+import java.lang.reflect.Field;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import java.lang.reflect.Field;
 
 class ExchangeHandlerDispatcherTest {
 

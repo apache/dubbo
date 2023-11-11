@@ -26,11 +26,10 @@ import org.apache.dubbo.rpc.cluster.support.wrapper.AbstractCluster;
  */
 public class ForkingCluster extends AbstractCluster {
 
-    public final static String NAME = "forking";
+    public static final String NAME = "forking";
 
     @Override
     public <T> AbstractClusterInvoker<T> doJoin(Directory<T> directory) throws RpcException {
         return new ForkingClusterInvoker<>(directory);
     }
-
 }

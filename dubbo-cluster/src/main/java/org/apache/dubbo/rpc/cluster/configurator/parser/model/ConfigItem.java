@@ -68,32 +68,33 @@ public class ConfigItem {
 
         Object addresses = map.get(ADDRESSES_KEY);
         if (addresses != null && List.class.isAssignableFrom(addresses.getClass())) {
-            configItem.setAddresses(((List<Object>) addresses).stream()
-                    .map(String::valueOf).collect(Collectors.toList()));
+            configItem.setAddresses(
+                    ((List<Object>) addresses).stream().map(String::valueOf).collect(Collectors.toList()));
         }
 
         Object providerAddresses = map.get(PROVIDER_ADDRESSES_KEY);
         if (providerAddresses != null && List.class.isAssignableFrom(providerAddresses.getClass())) {
-            configItem.setProviderAddresses(((List<Object>) providerAddresses).stream()
-                    .map(String::valueOf).collect(Collectors.toList()));
+            configItem.setProviderAddresses(((List<Object>) providerAddresses)
+                    .stream().map(String::valueOf).collect(Collectors.toList()));
         }
 
         Object services = map.get(SERVICES_KEY);
         if (services != null && List.class.isAssignableFrom(services.getClass())) {
-            configItem.setServices(((List<Object>) services).stream()
-                    .map(String::valueOf).collect(Collectors.toList()));
+            configItem.setServices(
+                    ((List<Object>) services).stream().map(String::valueOf).collect(Collectors.toList()));
         }
 
         Object applications = map.get(APPLICATIONS_KEY);
         if (applications != null && List.class.isAssignableFrom(applications.getClass())) {
-            configItem.setApplications(((List<Object>) applications).stream()
-                .map(String::valueOf).collect(Collectors.toList()));
+            configItem.setApplications(
+                    ((List<Object>) applications).stream().map(String::valueOf).collect(Collectors.toList()));
         }
 
         Object parameters = map.get(PARAMETERS_KEY);
         if (parameters != null && Map.class.isAssignableFrom(parameters.getClass())) {
-            configItem.setParameters(((Map<String, Object>) parameters).entrySet()
-                .stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().toString())));
+            configItem.setParameters(((Map<String, Object>) parameters)
+                    .entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue()
+                            .toString())));
         }
 
         try {
@@ -102,7 +103,12 @@ public class ConfigItem {
                 configItem.setMatch(PojoUtils.mapToPojo((Map<String, Object>) match, ConditionMatch.class));
             }
         } catch (Throwable t) {
-            logger.error(CLUSTER_FAILED_RECEIVE_RULE, " Failed to parse dynamic configuration rule", String.valueOf(map.get(MATCH_KEY)), "Error occurred when parsing rule component.", t);
+            logger.error(
+                    CLUSTER_FAILED_RECEIVE_RULE,
+                    " Failed to parse dynamic configuration rule",
+                    String.valueOf(map.get(MATCH_KEY)),
+                    "Error occurred when parsing rule component.",
+                    t);
         }
 
         configItem.setSide((String) map.get(SIDE_KEY));

@@ -34,7 +34,6 @@ public class ParamParseIntercept implements HttpConnectionPreBuildIntercept {
     @Override
     public void intercept(HttpConnectionCreateContext connectionCreateContext) {
 
-
         RequestTemplate requestTemplate = connectionCreateContext.getRequestTemplate();
         Object[] arguments = connectionCreateContext.getInvocation().getArguments();
 
@@ -43,10 +42,10 @@ public class ParamParseIntercept implements HttpConnectionPreBuildIntercept {
             requestTemplate.body(arguments, Object[].class);
         } else {
             ConsumerParseContext consumerParseContext = new ConsumerParseContext(requestTemplate);
-            consumerParseContext.setArgInfos(connectionCreateContext.getRestMethodMetadata().getArgInfos());
+            consumerParseContext.setArgInfos(
+                    connectionCreateContext.getRestMethodMetadata().getArgInfos());
             consumerParseContext.setArgs(Arrays.asList(arguments));
             ParamParserManager.consumerParamParse(consumerParseContext);
-
         }
     }
 }

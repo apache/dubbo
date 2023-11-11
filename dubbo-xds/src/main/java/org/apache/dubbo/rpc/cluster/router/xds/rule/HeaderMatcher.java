@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.cluster.router.xds.rule;
 
 public class HeaderMatcher {
 
-
     public String name;
 
     public String exactValue;
@@ -119,5 +118,4 @@ public class HeaderMatcher {
         }
         return false;
     }
-
 }

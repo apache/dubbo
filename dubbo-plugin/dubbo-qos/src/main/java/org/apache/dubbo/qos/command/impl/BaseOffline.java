@@ -69,20 +69,24 @@ public class BaseOffline implements BaseCommand {
     public boolean offline(String servicePattern) {
         boolean hasService = false;
 
-        ExecutorService executorService = Executors.newFixedThreadPool(Math.min(Runtime.getRuntime().availableProcessors(), 4), new NamedThreadFactory("Dubbo-Offline"));
+        ExecutorService executorService = Executors.newFixedThreadPool(
+                Math.min(Runtime.getRuntime().availableProcessors(), 4), new NamedThreadFactory("Dubbo-Offline"));
         try {
             List<CompletableFuture<Void>> futures = new LinkedList<>();
             Collection<ProviderModel> providerModelList = serviceRepository.allProviderModels();
             for (ProviderModel providerModel : providerModelList) {
                 ServiceMetadata metadata = providerModel.getServiceMetadata();
-                if (metadata.getServiceKey().matches(servicePattern) || metadata.getDisplayServiceKey().matches(servicePattern)) {
+                if (metadata.getServiceKey().matches(servicePattern)
+                        || metadata.getDisplayServiceKey().matches(servicePattern)) {
                     hasService = true;
                     List<ProviderModel.RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
                     for (ProviderModel.RegisterStatedURL statedURL : statedUrls) {
                         if (statedURL.isRegistered()) {
-                            futures.add(CompletableFuture.runAsync(() -> {
-                                doUnexport(statedURL);
-                            }, executorService));
+                            futures.add(CompletableFuture.runAsync(
+                                    () -> {
+                                        doUnexport(statedURL);
+                                    },
+                                    executorService));
                         }
                     }
                 }
@@ -100,8 +104,11 @@ public class BaseOffline implements BaseCommand {
     }
 
     protected void doUnexport(ProviderModel.RegisterStatedURL statedURL) {
-        RegistryFactory registryFactory =
-            statedURL.getRegistryUrl().getOrDefaultApplicationModel().getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
+        RegistryFactory registryFactory = statedURL
+                .getRegistryUrl()
+                .getOrDefaultApplicationModel()
+                .getExtensionLoader(RegistryFactory.class)
+                .getAdaptiveExtension();
         Registry registry = registryFactory.getRegistry(statedURL.getRegistryUrl());
         registry.unregister(statedURL.getProviderUrl());
         statedURL.setRegistered(false);

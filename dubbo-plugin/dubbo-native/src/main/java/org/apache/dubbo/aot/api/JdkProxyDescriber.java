@@ -28,7 +28,6 @@ public class JdkProxyDescriber implements ConditionalDescriber {
 
     private final String reachableType;
 
-
     public JdkProxyDescriber(List<String> proxiedInterfaces, String reachableType) {
         this.proxiedInterfaces = proxiedInterfaces;
         this.reachableType = reachableType;
@@ -52,7 +51,8 @@ public class JdkProxyDescriber implements ConditionalDescriber {
             return false;
         }
         JdkProxyDescriber that = (JdkProxyDescriber) o;
-        return Objects.equals(proxiedInterfaces, that.proxiedInterfaces) && Objects.equals(reachableType, that.reachableType);
+        return Objects.equals(proxiedInterfaces, that.proxiedInterfaces)
+                && Objects.equals(reachableType, that.reachableType);
     }
 
     @Override

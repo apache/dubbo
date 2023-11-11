@@ -26,8 +26,7 @@ public class MockInvoker<T> implements Invoker<T> {
     private boolean available = false;
     private URL url;
 
-    public MockInvoker() {
-    }
+    public MockInvoker() {}
 
     public MockInvoker(URL url) {
         super();
@@ -64,6 +63,5 @@ public class MockInvoker<T> implements Invoker<T> {
     }
 
     @Override
-    public void destroy() {
-    }
+    public void destroy() {}
 }

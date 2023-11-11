@@ -24,13 +24,14 @@ import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 
 public class NoAnnotationBodyParseUtil {
 
-
     public static Object[] doParse(ProviderParseContext parseContext) {
         RequestFacade request = parseContext.getRequestFacade();
         try {
             Class<?> objectArraysType = Object[].class;
-            MediaType mediaType = MediaTypeUtil.convertMediaType(objectArraysType, MediaType.APPLICATION_JSON_VALUE.value);
-            Object[] params = (Object[]) HttpMessageCodecManager.httpMessageDecode(request.getInputStream(), objectArraysType, objectArraysType, mediaType);
+            MediaType mediaType =
+                    MediaTypeUtil.convertMediaType(objectArraysType, MediaType.APPLICATION_JSON_VALUE.value);
+            Object[] params = (Object[]) HttpMessageCodecManager.httpMessageDecode(
+                    request.getInputStream(), objectArraysType, objectArraysType, mediaType);
             return params;
         } catch (Throwable e) {
             throw new ParamParseException("dubbo rest protocol provider body param parser  error: " + e.getMessage());

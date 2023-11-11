@@ -51,7 +51,8 @@ import java.util.Objects;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_PARSE;
 
-public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTransportListener implements Http2TransportListener {
+public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTransportListener
+        implements Http2TransportListener {
 
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(AbstractServerCall.class);
 
@@ -73,12 +74,13 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
     }
 
     private static String httpStatusToGrpcStatus(Throwable throwable) {
-        //http status code map to grpc status code
+        // http status code map to grpc status code
         return String.valueOf(TriRpcStatus.INTERNAL.code.code);
     }
 
     @Override
-    protected RpcInvocation buildRpcInvocation(Invoker<?> invoker, ServiceDescriptor serviceDescriptor, MethodDescriptor methodDescriptor) {
+    protected RpcInvocation buildRpcInvocation(
+            Invoker<?> invoker, ServiceDescriptor serviceDescriptor, MethodDescriptor methodDescriptor) {
         RpcInvocation rpcInvocation = super.buildRpcInvocation(invoker, serviceDescriptor, methodDescriptor);
         HttpHeaders headers = getHttpMetadata().headers();
         String timeoutString = headers.getFirst(GrpcHeaderNames.GRPC_TIMEOUT.getName());
@@ -88,8 +90,15 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
                 rpcInvocation.put("timeout", timeout);
             }
         } catch (Throwable t) {
-            LOGGER.warn(PROTOCOL_FAILED_PARSE, "", "", String.format("Failed to parse request timeout set from:%s, service=%s "
-                + "method=%s", timeoutString, serviceDescriptor.getInterfaceName(), getMethodDescriptor().getMethodName()));
+            LOGGER.warn(
+                    PROTOCOL_FAILED_PARSE,
+                    "",
+                    "",
+                    String.format(
+                            "Failed to parse request timeout set from:%s, service=%s " + "method=%s",
+                            timeoutString,
+                            serviceDescriptor.getInterfaceName(),
+                            getMethodDescriptor().getMethodName()));
         }
         return rpcInvocation;
     }
@@ -119,10 +128,10 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
         String messageEncoding = metadata.headers().getFirst(GrpcHeaderNames.GRPC_ENCODING.getName());
         if (null != messageEncoding) {
             if (!Identity.MESSAGE_ENCODING.equals(messageEncoding)) {
-                DeCompressor compressor = DeCompressor.getCompressor(getFrameworkModel(),
-                    messageEncoding);
+                DeCompressor compressor = DeCompressor.getCompressor(getFrameworkModel(), messageEncoding);
                 if (null == compressor) {
-                    throw new UnimplementedException(GrpcHeaderNames.GRPC_ENCODING.getName() + " '" + messageEncoding + "'");
+                    throw new UnimplementedException(
+                            GrpcHeaderNames.GRPC_ENCODING.getName() + " '" + messageEncoding + "'");
                 }
                 getStreamingDecoder().setDeCompressor(compressor);
             }
@@ -153,9 +162,7 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
     private class DetermineMethodDescriptorListener implements StreamingDecoder.FragmentListener {
 
         @Override
-        public void onFragmentMessage(InputStream rawMessage) {
-
-        }
+        public void onFragmentMessage(InputStream rawMessage) {}
 
         @Override
         public void onClose() {
@@ -165,7 +172,8 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
         @Override
         public void onFragmentMessage(InputStream dataHeader, InputStream rawMessage) {
             try {
-                ByteArrayOutputStream merge = new ByteArrayOutputStream(dataHeader.available() + rawMessage.available());
+                ByteArrayOutputStream merge =
+                        new ByteArrayOutputStream(dataHeader.available() + rawMessage.available());
                 transferToOutputStream(merge, dataHeader);
                 ByteArrayOutputStream bos = new ByteArrayOutputStream(rawMessage.available());
                 transferToOutputStream(bos, rawMessage);
@@ -178,11 +186,12 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
                     String originalMethodName = parts[2];
                     methodDescriptor = findReflectionMethodDescriptor(getServiceDescriptor(), originalMethodName);
                     if (methodDescriptor == null) {
-                        List<MethodDescriptor> methodDescriptors = getServiceDescriptor().getMethods(originalMethodName);
+                        List<MethodDescriptor> methodDescriptors =
+                                getServiceDescriptor().getMethods(originalMethodName);
                         final TripleCustomerProtocolWapper.TripleRequestWrapper request;
                         request = TripleCustomerProtocolWapper.TripleRequestWrapper.parseFrom(data);
                         final String[] paramTypes = request.getArgTypes()
-                            .toArray(new String[request.getArgs().size()]);
+                                .toArray(new String[request.getArgs().size()]);
                         // wrapper mode the method can overload so maybe list
                         for (MethodDescriptor descriptor : methodDescriptors) {
                             // params type is array
@@ -198,10 +207,12 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
                     setMethodDescriptor(methodDescriptor);
                     setMethodMetadata(MethodMetadata.fromMethodDescriptor(methodDescriptor));
                     setRpcInvocation(buildRpcInvocation(getInvoker(), getServiceDescriptor(), methodDescriptor));
-                    //replace decoder
-                    HttpMessageListener httpMessageListener = GrpcHttp2ServerTransportListener.super.newHttpMessageListener();
+                    // replace decoder
+                    HttpMessageListener httpMessageListener =
+                            GrpcHttp2ServerTransportListener.super.newHttpMessageListener();
                     GrpcCompositeCodec grpcCompositeCodec = (GrpcCompositeCodec) getHttpMessageCodec();
-                    grpcCompositeCodec.setEncodeTypes(new Class[]{getMethodMetadata().getActualResponseType()});
+                    grpcCompositeCodec.setEncodeTypes(
+                            new Class[] {getMethodMetadata().getActualResponseType()});
                     grpcCompositeCodec.setDecodeTypes(getMethodMetadata().getActualRequestTypes());
                     setHttpMessageListener(httpMessageListener);
                 }

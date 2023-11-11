@@ -26,11 +26,10 @@ import org.apache.dubbo.rpc.cluster.support.wrapper.AbstractCluster;
  */
 public class FailfastCluster extends AbstractCluster {
 
-    public final static String NAME = "failfast";
+    public static final String NAME = "failfast";
 
     @Override
     public <T> AbstractClusterInvoker<T> doJoin(Directory<T> directory) throws RpcException {
         return new FailfastClusterInvoker<>(directory);
     }
-
 }

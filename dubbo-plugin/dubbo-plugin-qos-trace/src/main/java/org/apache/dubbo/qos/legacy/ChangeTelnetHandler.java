@@ -55,12 +55,13 @@ public class ChangeTelnetHandler implements TelnetHandler {
             }
             if (found) {
                 channel.setAttribute(SERVICE_KEY, message);
-                buf.append("Used the ").append(message).append(" as default.\r\nYou can cancel default service by command: cd /");
+                buf.append("Used the ")
+                        .append(message)
+                        .append(" as default.\r\nYou can cancel default service by command: cd /");
             } else {
                 buf.append("No such service ").append(message);
             }
         }
         return buf.toString();
     }
-
 }

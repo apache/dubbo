@@ -36,8 +36,7 @@ class Slf4jLoggerTest {
         logger.debug("debug");
         logger.trace("info");
 
-        verify(locationAwareLogger, times(5)).log(isNull(), anyString(),
-            anyInt(), anyString(), isNull(), isNull());
+        verify(locationAwareLogger, times(5)).log(isNull(), anyString(), anyInt(), anyString(), isNull(), isNull());
 
         logger.error("error:{}", "arg1");
         logger.warn("warn:{}", "arg1");
@@ -45,8 +44,8 @@ class Slf4jLoggerTest {
         logger.debug("debug:{}", "arg1");
         logger.trace("info:{}", "arg1");
 
-        verify(locationAwareLogger, times(5)).log(isNull(), anyString(),
-            anyInt(), anyString(), eq(new String[]{"arg1"}), isNull());
+        verify(locationAwareLogger, times(5))
+                .log(isNull(), anyString(), anyInt(), anyString(), eq(new String[] {"arg1"}), isNull());
 
         logger.error(new Exception("error"));
         logger.warn(new Exception("warn"));
@@ -60,16 +59,16 @@ class Slf4jLoggerTest {
         logger.debug("debug", new Exception("debug"));
         logger.trace("trace", new Exception("trace"));
 
-        verify(locationAwareLogger, times(10)).log(isNull(), anyString(),
-            anyInt(), anyString(), isNull(), any(Throwable.class));
+        verify(locationAwareLogger, times(10))
+                .log(isNull(), anyString(), anyInt(), anyString(), isNull(), any(Throwable.class));
 
-        logger.error("error:{}","arg1", new Exception("error"));
+        logger.error("error:{}", "arg1", new Exception("error"));
         logger.warn("warn:{}", "arg1", new Exception("warn"));
         logger.info("info:{}", "arg1", new Exception("info"));
         logger.debug("debug:{}", "arg1", new Exception("debug"));
         logger.trace("trace:{}", "arg1", new Exception("trace"));
 
-        verify(locationAwareLogger, times(5)).log(isNull(), anyString(),
-            anyInt(), anyString(), eq(new String[]{"arg1"}), any(Throwable.class));
+        verify(locationAwareLogger, times(5))
+                .log(isNull(), anyString(), anyInt(), anyString(), eq(new String[] {"arg1"}), any(Throwable.class));
     }
 }

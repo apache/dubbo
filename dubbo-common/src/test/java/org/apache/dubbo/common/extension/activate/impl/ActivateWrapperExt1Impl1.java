@@ -14,13 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.extension.activate.impl;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.activate.ActivateWrapperExt1;
 
-@Activate(order = 1, group = {"order"})
+@Activate(
+        order = 1,
+        group = {"order"})
 public class ActivateWrapperExt1Impl1 implements ActivateWrapperExt1 {
     public String echo(String msg) {
         return msg;

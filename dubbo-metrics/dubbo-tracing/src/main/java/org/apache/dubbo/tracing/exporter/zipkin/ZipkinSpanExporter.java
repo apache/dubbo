@@ -28,7 +28,8 @@ import zipkin2.codec.SpanBytesEncoder;
  */
 public class ZipkinSpanExporter {
 
-    public static io.opentelemetry.sdk.trace.export.SpanExporter getSpanExporter(ApplicationModel applicationModel, ExporterConfig.ZipkinConfig zipkinConfig) {
+    public static io.opentelemetry.sdk.trace.export.SpanExporter getSpanExporter(
+            ApplicationModel applicationModel, ExporterConfig.ZipkinConfig zipkinConfig) {
         return io.opentelemetry.exporter.zipkin.ZipkinSpanExporter.builder()
                 .setEncoder(getSpanBytesEncoder(applicationModel))
                 .setEndpoint(zipkinConfig.getEndpoint())

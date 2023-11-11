@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.stub;
 
 import org.apache.dubbo.common.URL;
@@ -26,15 +25,14 @@ public class StubInvoker<T> extends AbstractProxyInvoker<T> {
 
     private final Map<String, StubMethodHandler<?, ?>> handlers;
 
-    public StubInvoker(T proxy, URL url, Class<T> type,
-        Map<String, StubMethodHandler<?, ?>> handlers) {
+    public StubInvoker(T proxy, URL url, Class<T> type, Map<String, StubMethodHandler<?, ?>> handlers) {
         super(proxy, type, url);
         this.handlers = handlers;
     }
 
     @Override
-    protected Object doInvoke(T proxy, String methodName, Class<?>[] parameterTypes,
-        Object[] arguments) throws Throwable {
+    protected Object doInvoke(T proxy, String methodName, Class<?>[] parameterTypes, Object[] arguments)
+            throws Throwable {
         return handlers.get(methodName).invoke(arguments);
     }
 }

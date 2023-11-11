@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.aggregate;
 
 import java.util.List;
@@ -61,7 +60,7 @@ public class TimeWindowAggregator {
         if (count > 0) {
             double avg = total / count;
             aggregatedEntry.setAvg(Math.round(avg * 100.0) / 100.0);
-        }else {
+        } else {
             aggregatedEntry.setAvg(0);
         }
 
@@ -147,5 +146,4 @@ public class TimeWindowAggregator {
             return count.sum();
         }
     }
-
 }

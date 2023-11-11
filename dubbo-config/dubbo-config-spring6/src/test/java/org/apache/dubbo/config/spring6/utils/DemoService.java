@@ -16,9 +16,7 @@
  */
 package org.apache.dubbo.config.spring6.utils;
 
-
 public interface DemoService {
 
     HelloResponse sayHello(HelloRequest request);
-
 }

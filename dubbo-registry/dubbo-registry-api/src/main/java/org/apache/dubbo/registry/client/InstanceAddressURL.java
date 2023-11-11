@@ -50,7 +50,7 @@ public class InstanceAddressURL extends URL {
     private final MetadataInfo metadataInfo;
 
     // cached numbers
-    private volatile transient Set<String> providerFirstParams;
+    private transient volatile Set<String> providerFirstParams;
     // one instance address url serves only one protocol.
     private final transient String protocol;
 
@@ -58,20 +58,13 @@ public class InstanceAddressURL extends URL {
         this(null, null, null);
     }
 
-    public InstanceAddressURL(
-        ServiceInstance instance,
-        MetadataInfo metadataInfo
-    ) {
+    public InstanceAddressURL(ServiceInstance instance, MetadataInfo metadataInfo) {
         this.instance = instance;
         this.metadataInfo = metadataInfo;
         this.protocol = DUBBO;
     }
 
-    public InstanceAddressURL(
-        ServiceInstance instance,
-        MetadataInfo metadataInfo,
-        String protocol
-    ) {
+    public InstanceAddressURL(ServiceInstance instance, MetadataInfo metadataInfo, String protocol) {
         this.instance = instance;
         this.metadataInfo = metadataInfo;
         this.protocol = protocol;
@@ -126,22 +119,26 @@ public class InstanceAddressURL extends URL {
 
     @Override
     public URL setProtocol(String protocol) {
-        return new ServiceConfigURL(protocol, getUsername(), getPassword(), getHost(), getPort(), getPath(), getParameters(), attributes);
+        return new ServiceConfigURL(
+                protocol, getUsername(), getPassword(), getHost(), getPort(), getPath(), getParameters(), attributes);
     }
 
     @Override
     public URL setHost(String host) {
-        return new ServiceConfigURL(getProtocol(), getUsername(), getPassword(), host, getPort(), getPath(), getParameters(), attributes);
+        return new ServiceConfigURL(
+                getProtocol(), getUsername(), getPassword(), host, getPort(), getPath(), getParameters(), attributes);
     }
 
     @Override
     public URL setPort(int port) {
-        return new ServiceConfigURL(getProtocol(), getUsername(), getPassword(), getHost(), port, getPath(), getParameters(), attributes);
+        return new ServiceConfigURL(
+                getProtocol(), getUsername(), getPassword(), getHost(), port, getPath(), getParameters(), attributes);
     }
 
     @Override
     public URL setPath(String path) {
-        return new ServiceConfigURL(getProtocol(), getUsername(), getPassword(), getHost(), getPort(), path, getParameters(), attributes);
+        return new ServiceConfigURL(
+                getProtocol(), getUsername(), getPassword(), getHost(), getPort(), path, getParameters(), attributes);
     }
 
     @Override
@@ -429,7 +426,8 @@ public class InstanceAddressURL extends URL {
     @Override
     public Map<String, String> getOriginalServiceParameters(String protocolServiceKey) {
         Map<String, String> instanceParams = getInstance().getAllParams();
-        Map<String, String> metadataParams = (metadataInfo == null ? new HashMap<>() : metadataInfo.getParameters(protocolServiceKey));
+        Map<String, String> metadataParams =
+                (metadataInfo == null ? new HashMap<>() : metadataInfo.getParameters(protocolServiceKey));
         int i = instanceParams == null ? 0 : instanceParams.size();
         int j = metadataParams == null ? 0 : metadataParams.size();
         Map<String, String> params = new HashMap<>((int) ((i + j) / 0.75) + 1);
@@ -443,7 +441,6 @@ public class InstanceAddressURL extends URL {
         return params;
     }
 
-
     /**
      * Avoid calling this method in RPC call.
      *
@@ -452,7 +449,8 @@ public class InstanceAddressURL extends URL {
     @Override
     public Map<String, String> getServiceParameters(String protocolServiceKey) {
         Map<String, String> instanceParams = getInstance().getAllParams();
-        Map<String, String> metadataParams = (metadataInfo == null ? new HashMap<>() : metadataInfo.getParameters(protocolServiceKey));
+        Map<String, String> metadataParams =
+                (metadataInfo == null ? new HashMap<>() : metadataInfo.getParameters(protocolServiceKey));
         int i = instanceParams == null ? 0 : instanceParams.size();
         int j = metadataParams == null ? 0 : metadataParams.size();
         Map<String, String> params = new HashMap<>((int) ((i + j) / 0.75) + 1);
@@ -626,8 +624,8 @@ public class InstanceAddressURL extends URL {
     @Override
     public ScopeModel getScopeModel() {
         return Optional.ofNullable(RpcContext.getServiceContext().getConsumerUrl())
-            .map(URL::getScopeModel)
-            .orElse(super.getScopeModel());
+                .map(URL::getScopeModel)
+                .orElse(super.getScopeModel());
     }
 
     @Override

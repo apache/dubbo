@@ -16,11 +16,12 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.h12;
 
-import io.netty.handler.codec.http2.Http2CodecUtil;
 import org.apache.dubbo.remoting.api.ProtocolDetector;
 import org.apache.dubbo.remoting.buffer.ByteBufferBackedChannelBuffer;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 import org.apache.dubbo.remoting.buffer.ChannelBuffers;
+
+import io.netty.handler.codec.http2.Http2CodecUtil;
 
 import static java.lang.Math.min;
 
@@ -29,11 +30,11 @@ public class TripleProtocolDetector implements ProtocolDetector {
     public static final String HTTP_VERSION = "HTTP_VERSION";
 
     private final ChannelBuffer clientPrefaceString = new ByteBufferBackedChannelBuffer(
-        Http2CodecUtil.connectionPrefaceBuf().nioBuffer());
+            Http2CodecUtil.connectionPrefaceBuf().nioBuffer());
 
     @Override
     public Result detect(ChannelBuffer in) {
-        //http1
+        // http1
         if (in.readableBytes() < 2) {
             return Result.needMoreData();
         }
@@ -46,7 +47,7 @@ public class TripleProtocolDetector implements ProtocolDetector {
         }
         in.resetReaderIndex();
 
-        //http2
+        // http2
         int prefaceLen = clientPrefaceString.readableBytes();
         int bytesRead = min(in.readableBytes(), prefaceLen);
         if (bytesRead == 0 || !ChannelBuffers.prefixEquals(in, clientPrefaceString, bytesRead)) {

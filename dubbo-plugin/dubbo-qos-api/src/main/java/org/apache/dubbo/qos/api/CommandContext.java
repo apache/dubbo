@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.qos.api;
 
-import io.netty.channel.Channel;
-
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
+
+import io.netty.channel.Channel;
 
 public class CommandContext {
 
@@ -99,20 +99,25 @@ public class CommandContext {
         return qosConfiguration;
     }
 
-    public boolean isAllowAnonymousAccess(){
+    public boolean isAllowAnonymousAccess() {
         return this.qosConfiguration.isAllowAnonymousAccess();
     }
 
     @Override
     public String toString() {
-        return "CommandContext{" +
-            "commandName='" + commandName + '\'' +
-            ", args=" + Arrays.toString(args) +
-            ", remote=" + Optional.ofNullable(remote).map(Channel::remoteAddress).map(Objects::toString).orElse("unknown") +
-            ", local=" + Optional.ofNullable(remote).map(Channel::localAddress).map(Objects::toString).orElse("unknown") +
-            ", isHttp=" + isHttp +
-            ", httpCode=" + httpCode +
-            ", qosConfiguration=" + qosConfiguration +
-            '}';
+        return "CommandContext{" + "commandName='"
+                + commandName + '\'' + ", args="
+                + Arrays.toString(args) + ", remote="
+                + Optional.ofNullable(remote)
+                        .map(Channel::remoteAddress)
+                        .map(Objects::toString)
+                        .orElse("unknown") + ", local="
+                + Optional.ofNullable(remote)
+                        .map(Channel::localAddress)
+                        .map(Objects::toString)
+                        .orElse("unknown") + ", isHttp="
+                + isHttp + ", httpCode="
+                + httpCode + ", qosConfiguration="
+                + qosConfiguration + '}';
     }
 }

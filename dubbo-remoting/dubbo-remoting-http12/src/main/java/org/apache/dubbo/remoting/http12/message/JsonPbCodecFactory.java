@@ -26,7 +26,10 @@ public class JsonPbCodecFactory implements HttpMessageCodecFactory {
 
     @Override
     public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel) {
-        HttpMessageCodec codec = frameworkModel.getExtensionLoader(HttpMessageCodecFactory.class).getExtension(JsonCodecFactory.NAME).createCodec(url, frameworkModel);
+        HttpMessageCodec codec = frameworkModel
+                .getExtensionLoader(HttpMessageCodecFactory.class)
+                .getExtension(JsonCodecFactory.NAME)
+                .createCodec(url, frameworkModel);
         JsonPbCodec jsonPbCodec = new JsonPbCodec();
         jsonPbCodec.setJsonCodec(codec);
         return jsonPbCodec;
@@ -39,6 +42,8 @@ public class JsonPbCodecFactory implements HttpMessageCodecFactory {
 
     @Override
     public boolean support(String contentType) {
-        return HttpMessageCodecFactory.super.support(contentType) && ClassUtils.isPresent("com.google.protobuf.Message", getClass().getClassLoader());
+        return HttpMessageCodecFactory.super.support(contentType)
+                && ClassUtils.isPresent(
+                        "com.google.protobuf.Message", getClass().getClassLoader());
     }
 }

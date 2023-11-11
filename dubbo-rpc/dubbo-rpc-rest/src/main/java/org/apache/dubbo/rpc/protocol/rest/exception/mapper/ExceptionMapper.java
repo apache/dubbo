@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.rest.exception.mapper;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -33,7 +32,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ExceptionMapper {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
-
     private final Map<Class<?>, ExceptionHandler> exceptionHandlerMap = new ConcurrentHashMap<>();
 
     private final Map allExceptionHandlers = new ConcurrentHashMap<>();
@@ -45,7 +43,6 @@ public class ExceptionMapper {
 
         return ExceptionHandlerResult.build().setEntity(result).setStatus(exceptionHandler.status());
     }
-
 
     public Object getExceptionHandler(Class causeClass) {
 
@@ -72,9 +69,7 @@ public class ExceptionMapper {
         return allExceptionHandlers.containsKey(throwable.getClass());
     }
 
-
     public void registerMapper(Class<?> exceptionHandler) {
-
 
         try {
             List<Method> methods = getExceptionHandlerMethods(exceptionHandler);
@@ -107,19 +102,22 @@ public class ExceptionMapper {
             List<Constructor<?>> constructors = ReflectUtils.getConstructList(exceptionHandler);
 
             if (constructors.isEmpty()) {
-                throw new RuntimeException("dubbo rest exception mapper register mapper need exception handler exist no  construct declare, current class is: " + exceptionHandler);
+                throw new RuntimeException(
+                        "dubbo rest exception mapper register mapper need exception handler exist no  construct declare, current class is: "
+                                + exceptionHandler);
             }
 
-            // if exceptionHandler is inner class , no arg construct don`t appear , so  newInstance don`t use noArgConstruct
-            Object handler = constructors.get(0).newInstance(new Object[constructors.get(0).getParameterCount()]);
+            // if exceptionHandler is inner class , no arg construct don`t appear , so  newInstance don`t use
+            // noArgConstruct
+            Object handler = constructors
+                    .get(0)
+                    .newInstance(new Object[constructors.get(0).getParameterCount()]);
 
             putExtensionToMap(exceptions, handler);
 
         } catch (Exception e) {
             throw new RuntimeException("dubbo rest protocol exception mapper register error ", e);
         }
-
-
     }
 
     protected void putExtensionToMap(Set<Class<?>> exceptions, Object handler) {
@@ -151,11 +149,14 @@ public class ExceptionMapper {
         try {
             registerMapper(ReflectUtils.findClass(exceptionMapper));
         } catch (Exception e) {
-            logger.warn("", e.getMessage(), "", "dubbo rest protocol exception mapper register error ,and current exception mapper is  :" + exceptionMapper);
+            logger.warn(
+                    "",
+                    e.getMessage(),
+                    "",
+                    "dubbo rest protocol exception mapper register error ,and current exception mapper is  :"
+                            + exceptionMapper);
         }
-
     }
-
 
     public void unRegisterMapper(Class<?> exception) {
         exceptionHandlerMap.remove(exception);
@@ -163,7 +164,9 @@ public class ExceptionMapper {
 
     public static boolean isSupport(Class<?> exceptionHandler) {
         try {
-            return ExceptionHandler.class.isAssignableFrom(exceptionHandler) || ReflectUtils.findClassTryException("javax.ws.rs.ext.ExceptionMapper").isAssignableFrom(exceptionHandler);
+            return ExceptionHandler.class.isAssignableFrom(exceptionHandler)
+                    || ReflectUtils.findClassTryException("javax.ws.rs.ext.ExceptionMapper")
+                            .isAssignableFrom(exceptionHandler);
         } catch (Exception e) {
             return false;
         }

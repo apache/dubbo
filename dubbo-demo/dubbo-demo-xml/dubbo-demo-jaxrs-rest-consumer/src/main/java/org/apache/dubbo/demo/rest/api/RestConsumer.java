@@ -17,11 +17,12 @@
 package org.apache.dubbo.demo.rest.api;
 
 import org.apache.dubbo.demo.rest.api.annotation.DubboServiceAnnotationServiceConsumer;
+
+import java.util.Arrays;
+
 import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import po.User;
-
-import java.util.Arrays;
 
 public class RestConsumer {
 
@@ -30,7 +31,8 @@ public class RestConsumer {
     }
 
     public static void consumerService() {
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"spring/rest-consumer.xml"});
+        ClassPathXmlApplicationContext context =
+                new ClassPathXmlApplicationContext(new String[] {"spring/rest-consumer.xml"});
         context.start();
         System.out.println("rest consumer start");
         testExceptionMapperService(context);
@@ -69,35 +71,37 @@ public class RestConsumer {
         assertEquals(User.getInstance(), jaxRsRestDemoService.testJavaBeanBody(User.getInstance()));
     }
 
-
     private static void testExceptionMapperService(ClassPathXmlApplicationContext context) {
         String returnStr = "exception";
         String paramStr = "exception";
-        ExceptionMapperService exceptionMapperService = context.getBean("exceptionMapperService", ExceptionMapperService.class);
+        ExceptionMapperService exceptionMapperService =
+                context.getBean("exceptionMapperService", ExceptionMapperService.class);
         assertEquals(returnStr, exceptionMapperService.exception(paramStr));
     }
 
     private static void httpRPCContextTest(ClassPathXmlApplicationContext context) {
 
-        HttpRequestAndResponseRPCContextService requestAndResponseRPCContextService = context.getBean("httpRequestAndResponseRPCContextService", HttpRequestAndResponseRPCContextService.class);
+        HttpRequestAndResponseRPCContextService requestAndResponseRPCContextService = context.getBean(
+                "httpRequestAndResponseRPCContextService", HttpRequestAndResponseRPCContextService.class);
         String returnStr = "hello";
         String paramStr = "hello";
         assertEquals(returnStr, requestAndResponseRPCContextService.httpRequestHeader(paramStr));
         assertEquals(returnStr, requestAndResponseRPCContextService.httpRequestParam(paramStr));
-        assertEquals(returnStr, requestAndResponseRPCContextService.httpResponseHeader(paramStr).get(0));
+        assertEquals(
+                returnStr,
+                requestAndResponseRPCContextService.httpResponseHeader(paramStr).get(0));
     }
-
 
     private static void testHttpMethodService(ClassPathXmlApplicationContext context) {
         HttpMethodService httpMethodService = context.getBean("httpMethodService", HttpMethodService.class);
         String returnStr = "hello";
         String paramStr = "hello";
-//        assertEquals(null, httpMethodService.sayHelloHead(paramStr));
+        //        assertEquals(null, httpMethodService.sayHelloHead(paramStr));
         assertEquals(returnStr, httpMethodService.sayHelloGet(paramStr));
         assertEquals(returnStr, httpMethodService.sayHelloDelete(paramStr));
         assertEquals(returnStr, httpMethodService.sayHelloPut(paramStr));
         assertEquals(returnStr, httpMethodService.sayHelloOptions(paramStr));
-//        Assert.assertEquals(returnStr, httpMethodService.sayHelloPatch(paramStr));
+        //        Assert.assertEquals(returnStr, httpMethodService.sayHelloPatch(paramStr));
         assertEquals(returnStr, httpMethodService.sayHelloPost(paramStr));
     }
 
@@ -110,5 +114,4 @@ public class RestConsumer {
             throw new RuntimeException();
         }
     }
-
 }

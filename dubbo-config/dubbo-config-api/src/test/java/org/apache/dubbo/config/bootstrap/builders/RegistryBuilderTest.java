@@ -18,11 +18,11 @@ package org.apache.dubbo.config.bootstrap.builders;
 
 import org.apache.dubbo.config.RegistryConfig;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class RegistryBuilderTest {
 
@@ -216,11 +216,30 @@ class RegistryBuilderTest {
     @Test
     void build() {
         RegistryBuilder builder = new RegistryBuilder();
-        builder.address("address").username("username").password("password").port(8080).protocol("protocol")
-                .transporter("transporter").server("server").client("client").cluster("cluster").group("group")
-                .version("version").timeout(1000).session(2000).file("file").wait(Integer.valueOf(10)).isCheck(true)
-                .isDynamic(false).register(true).subscribe(false).isDefault(true).simplified(false).extraKeys("A")
-                .parameter("default.num", "one").id("id");
+        builder.address("address")
+                .username("username")
+                .password("password")
+                .port(8080)
+                .protocol("protocol")
+                .transporter("transporter")
+                .server("server")
+                .client("client")
+                .cluster("cluster")
+                .group("group")
+                .version("version")
+                .timeout(1000)
+                .session(2000)
+                .file("file")
+                .wait(Integer.valueOf(10))
+                .isCheck(true)
+                .isDynamic(false)
+                .register(true)
+                .subscribe(false)
+                .isDefault(true)
+                .simplified(false)
+                .extraKeys("A")
+                .parameter("default.num", "one")
+                .id("id");
 
         RegistryConfig config = builder.build();
         RegistryConfig config2 = builder.build();

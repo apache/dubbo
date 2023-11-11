@@ -61,7 +61,8 @@ public class BaseOnline implements BaseCommand {
         Collection<ProviderModel> providerModelList = serviceRepository.allProviderModels();
         for (ProviderModel providerModel : providerModelList) {
             ServiceMetadata metadata = providerModel.getServiceMetadata();
-            if (metadata.getServiceKey().matches(servicePattern) || metadata.getDisplayServiceKey().matches(servicePattern)) {
+            if (metadata.getServiceKey().matches(servicePattern)
+                    || metadata.getDisplayServiceKey().matches(servicePattern)) {
                 hasService = true;
                 List<ProviderModel.RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
                 for (ProviderModel.RegisterStatedURL statedURL : statedUrls) {
@@ -80,8 +81,11 @@ public class BaseOnline implements BaseCommand {
     }
 
     protected void doExport(ProviderModel.RegisterStatedURL statedURL) {
-        RegistryFactory registryFactory =
-            statedURL.getRegistryUrl().getOrDefaultApplicationModel().getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
+        RegistryFactory registryFactory = statedURL
+                .getRegistryUrl()
+                .getOrDefaultApplicationModel()
+                .getExtensionLoader(RegistryFactory.class)
+                .getAdaptiveExtension();
         Registry registry = registryFactory.getRegistry(statedURL.getRegistryUrl());
         registry.register(statedURL.getProviderUrl());
         statedURL.setRegistered(true);

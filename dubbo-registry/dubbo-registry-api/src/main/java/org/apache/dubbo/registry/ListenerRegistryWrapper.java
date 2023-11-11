@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.registry;
 
 import org.apache.dubbo.common.URL;
@@ -29,11 +28,11 @@ import java.util.function.Consumer;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 
 public class ListenerRegistryWrapper implements Registry {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ListenerRegistryWrapper.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(ListenerRegistryWrapper.class);
 
     private final Registry registry;
     private final List<RegistryServiceListener> listeners;
-
 
     public ListenerRegistryWrapper(Registry registry, List<RegistryServiceListener> listeners) {
         this.registry = registry;
@@ -92,14 +91,12 @@ public class ListenerRegistryWrapper implements Registry {
         }
     }
 
-
     @Override
     public void unsubscribe(URL url, NotifyListener listener) {
         try {
             registry.unsubscribe(url, listener);
         } finally {
             listenerEvent(serviceListener -> serviceListener.onUnsubscribe(url, registry));
-
         }
     }
 

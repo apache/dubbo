@@ -29,8 +29,7 @@ public class InmemoryConfiguration implements Configuration {
     // stores the configuration key-value pairs
     private Map<String, String> store = new LinkedHashMap<>();
 
-    public InmemoryConfiguration() {
-    }
+    public InmemoryConfiguration() {}
 
     public InmemoryConfiguration(String name) {
         this.name = name;
@@ -73,5 +72,4 @@ public class InmemoryConfiguration implements Configuration {
     public Map<String, String> getProperties() {
         return store;
     }
-
 }

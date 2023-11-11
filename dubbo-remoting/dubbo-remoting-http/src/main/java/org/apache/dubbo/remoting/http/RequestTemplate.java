@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.http;
 
-
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invocation;
 
@@ -27,7 +26,6 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
 
 public class RequestTemplate implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -48,7 +46,6 @@ public class RequestTemplate implements Serializable {
     private final Invocation invocation;
     private String contextPath = "";
     private Class<?> bodyType;
-
 
     public RequestTemplate(Invocation invocation, String httpMethod, String address) {
         this(invocation, httpMethod, address, "");
@@ -101,9 +98,7 @@ public class RequestTemplate implements Serializable {
         }
 
         return queryBuilder.toString().replace("?&", "?");
-
     }
-
 
     public RequestTemplate path(String path) {
         this.path = path;
@@ -132,7 +127,7 @@ public class RequestTemplate implements Serializable {
         return getUnSerializedBody() == null;
     }
 
-    public RequestTemplate body(Object body,Class bodyType) {
+    public RequestTemplate body(Object body, Class bodyType) {
         this.body = body;
         setBodyType(bodyType);
         return this;
@@ -204,7 +199,6 @@ public class RequestTemplate implements Serializable {
         header.addAll(values);
     }
 
-
     public void addParam(String key, String value) {
         addValueByKey(key, value, this.queries);
     }
@@ -231,7 +225,6 @@ public class RequestTemplate implements Serializable {
         params.addAll(values);
     }
 
-
     public void addValueByKey(String key, String value, Map<String, Collection<String>> maps) {
 
         if (value == null) {
@@ -245,11 +238,8 @@ public class RequestTemplate implements Serializable {
         }
         values = maps.get(key);
 
-
         values.add(value);
-
     }
-
 
     public Integer getContentLength() {
 
@@ -260,16 +250,14 @@ public class RequestTemplate implements Serializable {
         HashSet<String> strings = (HashSet<String>) getAllHeaders().get(CONTENT_LENGTH);
 
         return Integer.parseInt(new ArrayList<>(strings).get(0));
-
     }
-
 
     public String getAddress() {
         return address;
     }
 
     public void setAddress(String address) {
-        addHeader("Host", address);// must header
+        addHeader("Host", address); // must header
         this.address = address;
     }
 
@@ -280,7 +268,6 @@ public class RequestTemplate implements Serializable {
     public void setProtocol(String protocol) {
         this.protocol = protocol;
     }
-
 
     public Invocation getInvocation() {
         return invocation;
@@ -296,7 +283,6 @@ public class RequestTemplate implements Serializable {
         } else {
             return "/" + contextPath;
         }
-
     }
 
     public void setContextPath(String contextPath) {

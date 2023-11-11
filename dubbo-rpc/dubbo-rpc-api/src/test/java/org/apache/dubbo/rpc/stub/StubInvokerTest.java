@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.stub;
 
 import org.apache.dubbo.common.URL;
@@ -24,12 +23,12 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.support.DemoService;
 import org.apache.dubbo.rpc.support.DemoServiceImpl;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.Collections;
 import java.util.Map;
 import java.util.function.BiConsumer;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class StubInvokerTest {
 
@@ -39,10 +38,10 @@ class StubInvokerTest {
         o.onNext("hello," + a);
         o.onCompleted();
     };
-    private final Map<String, StubMethodHandler<?, ?>> methodMap = Collections.singletonMap(
-        methodName, new UnaryStubMethodHandler<>(func));
-    private final StubInvoker<DemoService> invoker = new StubInvoker<>(new DemoServiceImpl(), url,
-        DemoService.class, methodMap);
+    private final Map<String, StubMethodHandler<?, ?>> methodMap =
+            Collections.singletonMap(methodName, new UnaryStubMethodHandler<>(func));
+    private final StubInvoker<DemoService> invoker =
+            new StubInvoker<>(new DemoServiceImpl(), url, DemoService.class, methodMap);
 
     @Test
     void getUrl() {
@@ -68,7 +67,7 @@ class StubInvokerTest {
     void invoke() {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName(methodName);
-        invocation.setArguments(new Object[]{"test"});
+        invocation.setArguments(new Object[] {"test"});
         Result result = invoker.invoke(invocation);
         Object value = result.getValue();
         Assertions.assertEquals("hello,test", value);

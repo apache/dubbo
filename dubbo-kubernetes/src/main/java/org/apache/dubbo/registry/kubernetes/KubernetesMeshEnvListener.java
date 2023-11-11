@@ -21,6 +21,9 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.cluster.router.mesh.route.MeshAppRuleListener;
 import org.apache.dubbo.rpc.cluster.router.mesh.route.MeshEnvListener;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.Watch;
@@ -30,13 +33,11 @@ import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_LISTEN_KUBERNETES;
 
 public class KubernetesMeshEnvListener implements MeshEnvListener {
-    public static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(KubernetesMeshEnvListener.class);
+    public static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(KubernetesMeshEnvListener.class);
     private static volatile boolean usingApiServer = false;
     private static volatile KubernetesClient kubernetesClient;
     private static volatile String namespace;
@@ -82,15 +83,15 @@ public class KubernetesMeshEnvListener implements MeshEnvListener {
 
         try {
             Watch watch = kubernetesClient
-                    .genericKubernetesResources(
-                            MeshConstant.getVsDefinition())
+                    .genericKubernetesResources(MeshConstant.getVsDefinition())
                     .inNamespace(namespace)
                     .withName(appName)
                     .watch(new Watcher<GenericKubernetesResource>() {
                         @Override
                         public void eventReceived(Action action, GenericKubernetesResource resource) {
                             if (logger.isInfoEnabled()) {
-                                logger.info("Received VS Rule notification. AppName: " + appName + " Action:" + action + " Resource:" + resource);
+                                logger.info("Received VS Rule notification. AppName: " + appName + " Action:" + action
+                                        + " Resource:" + resource);
                             }
 
                             if (action == Action.ADDED || action == Action.MODIFIED) {
@@ -112,8 +113,7 @@ public class KubernetesMeshEnvListener implements MeshEnvListener {
             vsAppWatch.put(appName, watch);
             try {
                 GenericKubernetesResource vsRule = kubernetesClient
-                        .genericKubernetesResources(
-                                MeshConstant.getVsDefinition())
+                        .genericKubernetesResources(MeshConstant.getVsDefinition())
                         .inNamespace(namespace)
                         .withName(appName)
                         .get();
@@ -140,15 +140,15 @@ public class KubernetesMeshEnvListener implements MeshEnvListener {
 
         try {
             Watch watch = kubernetesClient
-                    .genericKubernetesResources(
-                            MeshConstant.getDrDefinition())
+                    .genericKubernetesResources(MeshConstant.getDrDefinition())
                     .inNamespace(namespace)
                     .withName(appName)
                     .watch(new Watcher<GenericKubernetesResource>() {
                         @Override
                         public void eventReceived(Action action, GenericKubernetesResource resource) {
                             if (logger.isInfoEnabled()) {
-                                logger.info("Received VS Rule notification. AppName: " + appName + " Action:" + action + " Resource:" + resource);
+                                logger.info("Received VS Rule notification. AppName: " + appName + " Action:" + action
+                                        + " Resource:" + resource);
                             }
 
                             if (action == Action.ADDED || action == Action.MODIFIED) {
@@ -171,8 +171,7 @@ public class KubernetesMeshEnvListener implements MeshEnvListener {
             drAppWatch.put(appName, watch);
             try {
                 GenericKubernetesResource drRule = kubernetesClient
-                        .genericKubernetesResources(
-                                MeshConstant.getDrDefinition())
+                        .genericKubernetesResources(MeshConstant.getDrDefinition())
                         .inNamespace(namespace)
                         .withName(appName)
                         .get();

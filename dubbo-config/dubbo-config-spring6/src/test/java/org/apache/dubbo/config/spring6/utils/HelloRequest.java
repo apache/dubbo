@@ -21,7 +21,6 @@ import java.io.Serializable;
 public class HelloRequest extends HelloRequestSuper implements Serializable {
     private Person person;
 
-
     public HelloRequest(Person person) {
         this.person = person;
     }

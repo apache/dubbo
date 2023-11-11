@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.registry.event;
 
 import org.apache.dubbo.metrics.event.MetricsEvent;
@@ -25,7 +24,6 @@ import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.registry.collector.NettyMetricsCollector;
 
 import java.util.Collections;
-
 import java.util.Map;
 
 import static org.apache.dubbo.metrics.MetricsConstants.NETTY_METRICS_MAP;
@@ -42,11 +40,10 @@ public final class NettySubDispatcher extends SimpleMetricsEventMulticaster {
             @Override
             public void onEventFinish(TimeCounterEvent event) {
                 Map<String, Long> lastNumMap = Collections.unmodifiableMap(event.getAttachmentValue(NETTY_METRICS_MAP));
-                lastNumMap.forEach(
-                    (k, v) -> {
-                        MetricsKey metricsKey = MetricsKey.getMetricsByName(k);
-                        collector.setAppNum(metricsKey, v);
-                    });
+                lastNumMap.forEach((k, v) -> {
+                    MetricsKey metricsKey = MetricsKey.getMetricsByName(k);
+                    collector.setAppNum(metricsKey, v);
+                });
             }
         });
     }

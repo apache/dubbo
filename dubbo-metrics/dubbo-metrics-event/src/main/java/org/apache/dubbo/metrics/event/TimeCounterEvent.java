@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.event;
 
 import org.apache.dubbo.metrics.model.TimePair;
@@ -33,7 +32,11 @@ public abstract class TimeCounterEvent extends MetricsEvent {
         this.timePair = TimePair.start();
     }
 
-    public TimeCounterEvent(ApplicationModel source, String appName,MetricsEventMulticaster metricsDispatcher, TypeWrapper typeWrapper) {
+    public TimeCounterEvent(
+            ApplicationModel source,
+            String appName,
+            MetricsEventMulticaster metricsDispatcher,
+            TypeWrapper typeWrapper) {
         super(source, appName, metricsDispatcher, typeWrapper);
         this.timePair = TimePair.start();
     }
@@ -41,5 +44,4 @@ public abstract class TimeCounterEvent extends MetricsEvent {
     public TimePair getTimePair() {
         return timePair;
     }
-
 }

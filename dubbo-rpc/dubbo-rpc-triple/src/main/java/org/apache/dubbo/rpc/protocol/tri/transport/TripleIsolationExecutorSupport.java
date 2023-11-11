@@ -25,9 +25,9 @@ import org.apache.dubbo.remoting.http12.h2.Http2Header;
 import org.apache.dubbo.rpc.executor.AbstractIsolationExecutorSupport;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 
-
 public class TripleIsolationExecutorSupport extends AbstractIsolationExecutorSupport {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(TripleIsolationExecutorSupport.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(TripleIsolationExecutorSupport.class);
 
     public TripleIsolationExecutorSupport(URL url) {
         super(url);
@@ -44,12 +44,12 @@ public class TripleIsolationExecutorSupport extends AbstractIsolationExecutorSup
         String path = http2Metadata.path();
         String[] parts = path.split("/"); // path like /{interfaceName}/{methodName}
         String interfaceName = parts[1];
-        String version = headers.containsKey(TripleHeaderEnum.SERVICE_VERSION.getHeader()) ?
-            headers.getFirst(TripleHeaderEnum.SERVICE_VERSION.getHeader()) : null;
-        String group = headers.containsKey(TripleHeaderEnum.SERVICE_GROUP.getHeader()) ?
-            headers.getFirst(TripleHeaderEnum.SERVICE_GROUP.getHeader()) : null;
+        String version = headers.containsKey(TripleHeaderEnum.SERVICE_VERSION.getHeader())
+                ? headers.getFirst(TripleHeaderEnum.SERVICE_VERSION.getHeader())
+                : null;
+        String group = headers.containsKey(TripleHeaderEnum.SERVICE_GROUP.getHeader())
+                ? headers.getFirst(TripleHeaderEnum.SERVICE_GROUP.getHeader())
+                : null;
         return new ServiceKey(interfaceName, version, group);
     }
-
-
 }

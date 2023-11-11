@@ -24,13 +24,13 @@ import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.support.MockScopeModelDestroyListener;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * {@link ApplicationModel}
@@ -146,7 +146,6 @@ class ApplicationModelTest {
         } catch (Exception e) {
             Assertions.assertEquals("ApplicationModel is destroyed", e.getMessage(), StringUtils.toString(e));
         }
-
     }
 
     @Test
@@ -172,5 +171,4 @@ class ApplicationModelTest {
         threads.forEach(Thread::start);
         endLatch.await();
     }
-
 }

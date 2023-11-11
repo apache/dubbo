@@ -23,10 +23,10 @@ import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.io.IOException;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
 
 class SSLConfigCertProviderTest {
     @Test
@@ -61,24 +61,32 @@ class SSLConfigCertProviderTest {
         ProviderCert providerCert = sslConfigCertProvider.getProviderConnectionConfig(url);
         Assertions.assertNull(providerCert);
 
-        sslConfig.setServerKeyCertChainPath(this.getClass().getClassLoader().getResource("certs/cert.pem").getFile());
-        sslConfig.setServerPrivateKeyPath(this.getClass().getClassLoader().getResource("certs/key.pem").getFile());
+        sslConfig.setServerKeyCertChainPath(
+                this.getClass().getClassLoader().getResource("certs/cert.pem").getFile());
+        sslConfig.setServerPrivateKeyPath(
+                this.getClass().getClassLoader().getResource("certs/key.pem").getFile());
         providerCert = sslConfigCertProvider.getProviderConnectionConfig(url);
         Assertions.assertNotNull(providerCert);
-        Assertions.assertArrayEquals(IOUtils.toByteArray(this.getClass().getClassLoader().getResourceAsStream("certs/cert.pem")),
+        Assertions.assertArrayEquals(
+                IOUtils.toByteArray(this.getClass().getClassLoader().getResourceAsStream("certs/cert.pem")),
                 providerCert.getKeyCertChain());
-        Assertions.assertArrayEquals(IOUtils.toByteArray(this.getClass().getClassLoader().getResourceAsStream("certs/key.pem")),
+        Assertions.assertArrayEquals(
+                IOUtils.toByteArray(this.getClass().getClassLoader().getResourceAsStream("certs/key.pem")),
                 providerCert.getPrivateKey());
         Assertions.assertNull(providerCert.getTrustCert());
 
-        sslConfig.setServerTrustCertCollectionPath(this.getClass().getClassLoader().getResource("certs/ca.pem").getFile());
+        sslConfig.setServerTrustCertCollectionPath(
+                this.getClass().getClassLoader().getResource("certs/ca.pem").getFile());
         providerCert = sslConfigCertProvider.getProviderConnectionConfig(url);
         Assertions.assertNotNull(providerCert);
-        Assertions.assertArrayEquals(IOUtils.toByteArray(this.getClass().getClassLoader().getResourceAsStream("certs/cert.pem")),
+        Assertions.assertArrayEquals(
+                IOUtils.toByteArray(this.getClass().getClassLoader().getResourceAsStream("certs/cert.pem")),
                 providerCert.getKeyCertChain());
-        Assertions.assertArrayEquals(IOUtils.toByteArray(this.getClass().getClassLoader().getResourceAsStream("certs/key.pem")),
+        Assertions.assertArrayEquals(
+                IOUtils.toByteArray(this.getClass().getClassLoader().getResourceAsStream("certs/key.pem")),
                 providerCert.getPrivateKey());
-        Assertions.assertArrayEquals(IOUtils.toByteArray(this.getClass().getClassLoader().getResourceAsStream("certs/ca.pem")),
+        Assertions.assertArrayEquals(
+                IOUtils.toByteArray(this.getClass().getClassLoader().getResourceAsStream("certs/ca.pem")),
                 providerCert.getTrustCert());
 
         frameworkModel.destroy();
@@ -100,23 +108,31 @@ class SSLConfigCertProviderTest {
         Cert cert = sslConfigCertProvider.getConsumerConnectionConfig(url);
         Assertions.assertNull(cert);
 
-        sslConfig.setClientKeyCertChainPath(this.getClass().getClassLoader().getResource("certs/cert.pem").getFile());
-        sslConfig.setClientPrivateKeyPath(this.getClass().getClassLoader().getResource("certs/key.pem").getFile());
+        sslConfig.setClientKeyCertChainPath(
+                this.getClass().getClassLoader().getResource("certs/cert.pem").getFile());
+        sslConfig.setClientPrivateKeyPath(
+                this.getClass().getClassLoader().getResource("certs/key.pem").getFile());
         cert = sslConfigCertProvider.getConsumerConnectionConfig(url);
         Assertions.assertNotNull(cert);
-        Assertions.assertArrayEquals(IOUtils.toByteArray(this.getClass().getClassLoader().getResourceAsStream("certs/cert.pem")),
+        Assertions.assertArrayEquals(
+                IOUtils.toByteArray(this.getClass().getClassLoader().getResourceAsStream("certs/cert.pem")),
                 cert.getKeyCertChain());
-        Assertions.assertArrayEquals(IOUtils.toByteArray(this.getClass().getClassLoader().getResourceAsStream("certs/key.pem")),
+        Assertions.assertArrayEquals(
+                IOUtils.toByteArray(this.getClass().getClassLoader().getResourceAsStream("certs/key.pem")),
                 cert.getPrivateKey());
 
-        sslConfig.setClientTrustCertCollectionPath(this.getClass().getClassLoader().getResource("certs/ca.pem").getFile());
+        sslConfig.setClientTrustCertCollectionPath(
+                this.getClass().getClassLoader().getResource("certs/ca.pem").getFile());
         cert = sslConfigCertProvider.getConsumerConnectionConfig(url);
         Assertions.assertNotNull(cert);
-        Assertions.assertArrayEquals(IOUtils.toByteArray(this.getClass().getClassLoader().getResourceAsStream("certs/cert.pem")),
+        Assertions.assertArrayEquals(
+                IOUtils.toByteArray(this.getClass().getClassLoader().getResourceAsStream("certs/cert.pem")),
                 cert.getKeyCertChain());
-        Assertions.assertArrayEquals(IOUtils.toByteArray(this.getClass().getClassLoader().getResourceAsStream("certs/key.pem")),
+        Assertions.assertArrayEquals(
+                IOUtils.toByteArray(this.getClass().getClassLoader().getResourceAsStream("certs/key.pem")),
                 cert.getPrivateKey());
-        Assertions.assertArrayEquals(IOUtils.toByteArray(this.getClass().getClassLoader().getResourceAsStream("certs/ca.pem")),
+        Assertions.assertArrayEquals(
+                IOUtils.toByteArray(this.getClass().getClassLoader().getResourceAsStream("certs/ca.pem")),
                 cert.getTrustCert());
 
         frameworkModel.destroy();

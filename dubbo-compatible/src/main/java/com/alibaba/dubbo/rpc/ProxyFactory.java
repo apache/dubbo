@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.rpc;
 
 import org.apache.dubbo.common.URL;
@@ -28,7 +27,8 @@ public interface ProxyFactory extends org.apache.dubbo.rpc.ProxyFactory {
 
     <T> T getProxy(com.alibaba.dubbo.rpc.Invoker<T> invoker, boolean generic) throws com.alibaba.dubbo.rpc.RpcException;
 
-    <T> com.alibaba.dubbo.rpc.Invoker<T> getInvoker(T proxy, Class<T> type, com.alibaba.dubbo.common.URL url) throws com.alibaba.dubbo.rpc.RpcException;
+    <T> com.alibaba.dubbo.rpc.Invoker<T> getInvoker(T proxy, Class<T> type, com.alibaba.dubbo.common.URL url)
+            throws com.alibaba.dubbo.rpc.RpcException;
 
     @Override
     default <T> T getProxy(Invoker<T> invoker) throws RpcException {

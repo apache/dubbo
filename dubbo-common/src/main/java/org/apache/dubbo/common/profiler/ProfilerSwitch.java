@@ -23,11 +23,11 @@ import java.util.concurrent.atomic.AtomicReference;
  * TODO
  */
 public class ProfilerSwitch {
-    private final static AtomicBoolean enableDetailProfiler = new AtomicBoolean(false);
+    private static final AtomicBoolean enableDetailProfiler = new AtomicBoolean(false);
 
-    private final static AtomicBoolean enableSimpleProfiler = new AtomicBoolean(true);
+    private static final AtomicBoolean enableSimpleProfiler = new AtomicBoolean(true);
 
-    private final static AtomicReference<Double> warnPercent = new AtomicReference<>(0.75);
+    private static final AtomicReference<Double> warnPercent = new AtomicReference<>(0.75);
 
     public static void enableSimpleProfiler() {
         enableSimpleProfiler.set(true);

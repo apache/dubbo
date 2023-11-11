@@ -50,7 +50,8 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
-    private static final List<String> IGNORED_SERVICE_INTERFACES = Collections.singletonList(MetadataService.class.getName());
+    private static final List<String> IGNORED_SERVICE_INTERFACES =
+            Collections.singletonList(MetadataService.class.getName());
 
     private final int casRetryTimes;
     private final int casRetryWaitTime;
@@ -59,13 +60,16 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
     public MetadataServiceNameMapping(ApplicationModel applicationModel) {
         super(applicationModel);
         metadataReportInstance = applicationModel.getBeanFactory().getBean(MetadataReportInstance.class);
-        casRetryTimes = ConfigurationUtils.getGlobalConfiguration(applicationModel).getInt(CAS_RETRY_TIMES_KEY, DEFAULT_CAS_RETRY_TIMES);
-        casRetryWaitTime = ConfigurationUtils.getGlobalConfiguration(applicationModel).getInt(CAS_RETRY_WAIT_TIME_KEY, DEFAULT_CAS_RETRY_WAIT_TIME);
+        casRetryTimes = ConfigurationUtils.getGlobalConfiguration(applicationModel)
+                .getInt(CAS_RETRY_TIMES_KEY, DEFAULT_CAS_RETRY_TIMES);
+        casRetryWaitTime = ConfigurationUtils.getGlobalConfiguration(applicationModel)
+                .getInt(CAS_RETRY_WAIT_TIME_KEY, DEFAULT_CAS_RETRY_WAIT_TIME);
     }
 
     @Override
     public boolean hasValidMetadataCenter() {
-        return !CollectionUtils.isEmpty(applicationModel.getApplicationConfigManager().getMetadataConfigs());
+        return !CollectionUtils.isEmpty(
+                applicationModel.getApplicationConfigManager().getMetadataConfigs());
     }
 
     /**
@@ -73,8 +77,10 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
      */
     @Override
     public boolean map(URL url) {
-        if (CollectionUtils.isEmpty(applicationModel.getApplicationConfigManager().getMetadataConfigs())) {
-            logger.warn(COMMON_PROPERTY_TYPE_MISMATCH, "", "", "No valid metadata config center found for mapping report.");
+        if (CollectionUtils.isEmpty(
+                applicationModel.getApplicationConfigManager().getMetadataConfigs())) {
+            logger.warn(
+                    COMMON_PROPERTY_TYPE_MISMATCH, "", "", "No valid metadata config center found for mapping report.");
             return false;
         }
         String serviceInterface = url.getServiceInterface();
@@ -83,7 +89,8 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
         }
 
         boolean result = true;
-        for (Map.Entry<String, MetadataReport> entry : metadataReportInstance.getMetadataReports(true).entrySet()) {
+        for (Map.Entry<String, MetadataReport> entry :
+                metadataReportInstance.getMetadataReports(true).entrySet()) {
             MetadataReport metadataReport = entry.getValue();
             String appName = applicationModel.getApplicationName();
             try {
@@ -113,16 +120,18 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
                         }
                         newConfigContent = oldConfigContent + COMMA_SEPARATOR + appName;
                     }
-                    succeeded = metadataReport.registerServiceAppMapping(serviceInterface, DEFAULT_MAPPING_GROUP, newConfigContent, configItem.getTicket());
+                    succeeded = metadataReport.registerServiceAppMapping(
+                            serviceInterface, DEFAULT_MAPPING_GROUP, newConfigContent, configItem.getTicket());
                     if (!succeeded) {
                         int waitTime = ThreadLocalRandom.current().nextInt(casRetryWaitTime);
-                        logger.info("Failed to publish service name mapping to metadata center by cas operation. " +
-                            "Times: " + currentRetryTimes + ". " +
-                            "Next retry delay: " + waitTime + ". " +
-                            "Service Interface: " + serviceInterface + ". " +
-                            "Origin Content: " + oldConfigContent + ". " +
-                            "Ticket: " + configItem.getTicket() + ". " +
-                            "Excepted context: " + newConfigContent);
+                        logger.info("Failed to publish service name mapping to metadata center by cas operation. "
+                                + "Times: "
+                                + currentRetryTimes + ". " + "Next retry delay: "
+                                + waitTime + ". " + "Service Interface: "
+                                + serviceInterface + ". " + "Origin Content: "
+                                + oldConfigContent + ". " + "Ticket: "
+                                + configItem.getTicket() + ". " + "Excepted context: "
+                                + newConfigContent);
                         Thread.sleep(waitTime);
                     }
                 } while (!succeeded && currentRetryTimes++ <= casRetryTimes);
@@ -132,7 +141,12 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
                 }
             } catch (Exception e) {
                 result = false;
-                logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", "Failed registering mapping to remote." + metadataReport, e);
+                logger.warn(
+                        INTERNAL_ERROR,
+                        "unknown error in registry module",
+                        "",
+                        "Failed registering mapping to remote." + metadataReport,
+                        e);
             }
         }
 
@@ -153,7 +167,8 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
     @Override
     public Set<String> getAndListen(URL url, MappingListener mappingListener) {
         String serviceInterface = url.getServiceInterface();
-        // randomly pick one metadata report is ok for it's guaranteed all metadata report will have the same mapping data.
+        // randomly pick one metadata report is ok for it's guaranteed all metadata report will have the same mapping
+        // data.
         String registryCluster = getRegistryCluster(url);
         MetadataReport metadataReport = metadataReportInstance.getMetadataReport(registryCluster);
         if (metadataReport == null) {
@@ -165,7 +180,8 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
     @Override
     protected void removeListener(URL url, MappingListener mappingListener) {
         String serviceInterface = url.getServiceInterface();
-        // randomly pick one metadata report is ok for it's guaranteed each metadata report will have the same mapping content.
+        // randomly pick one metadata report is ok for it's guaranteed each metadata report will have the same mapping
+        // content.
         String registryCluster = getRegistryCluster(url);
         MetadataReport metadataReport = metadataReportInstance.getMetadataReport(registryCluster);
         if (metadataReport == null) {

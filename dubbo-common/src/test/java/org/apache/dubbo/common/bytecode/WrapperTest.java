@@ -41,10 +41,10 @@ class WrapperTest {
         w.setPropertyValue(obj, "name", "changed");
         assertEquals(w.getPropertyValue(obj, "name"), "changed");
 
-        w.invokeMethod(obj, "hello", new Class<?>[]{String.class}, new Object[]{"qianlei"});
+        w.invokeMethod(obj, "hello", new Class<?>[] {String.class}, new Object[] {"qianlei"});
 
-        w.setPropertyValues(obj, new String[]{"name", "float"}, new Object[]{"mrh", 1.0f});
-        Object[] propertyValues = w.getPropertyValues(obj, new String[]{"name", "float"});
+        w.setPropertyValues(obj, new String[] {"name", "float"}, new Object[] {"mrh", 1.0f});
+        Object[] propertyValues = w.getPropertyValues(obj, new String[] {"name", "float"});
         Assertions.assertEquals(propertyValues.length, 2);
         Assertions.assertEquals(propertyValues[0], "mrh");
         Assertions.assertEquals(propertyValues[1], 1.0f);
@@ -56,14 +56,14 @@ class WrapperTest {
         Wrapper w = Wrapper.getWrapper(I1.class);
         Object obj = new Impl1();
         try {
-            w.invokeMethod(obj, "hello", new Class<?>[]{String.class, String.class},
-                    new Object[]{"qianlei", "badboy"});
+            w.invokeMethod(
+                    obj, "hello", new Class<?>[] {String.class, String.class}, new Object[] {"qianlei", "badboy"});
             fail();
         } catch (NoSuchMethodException expected) {
         }
     }
 
-    //bug: DUBBO-425
+    // bug: DUBBO-425
     @Test
     void test_makeEmptyClass() throws Exception {
         Wrapper.getWrapper(EmptyServiceImpl.class);
@@ -112,7 +112,7 @@ class WrapperTest {
             Wrapper.getWrapper(Byte.TYPE);
         });
     }
-    
+
     @Test
     void testInvokeWrapperObject() throws Exception {
         Wrapper w = Wrapper.getWrapper(Object.class);
@@ -120,9 +120,12 @@ class WrapperTest {
         Assertions.assertEquals(instance.getClass(), w.invokeMethod(instance, "getClass", null, null));
         Assertions.assertEquals(instance.hashCode(), (int) w.invokeMethod(instance, "hashCode", null, null));
         Assertions.assertEquals(instance.toString(), w.invokeMethod(instance, "toString", null, null));
-        Assertions.assertTrue((boolean) w.invokeMethod(instance, "equals", new Class[]{instance.getClass()}, new Object[]{instance}));
-        Assertions.assertThrows(IllegalArgumentException.class,
-            () -> w.invokeMethod(instance, "equals", new Class[]{instance.getClass()}, new Object[]{instance, instance}));
+        Assertions.assertTrue((boolean)
+                w.invokeMethod(instance, "equals", new Class[] {instance.getClass()}, new Object[] {instance}));
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> w.invokeMethod(
+                        instance, "equals", new Class[] {instance.getClass()}, new Object[] {instance, instance}));
     }
 
     @Test
@@ -140,40 +143,49 @@ class WrapperTest {
 
         Impl2 impl = new Impl2();
 
-        w.invokeMethod(impl, "setFloat", new Class[]{float.class}, new Object[]{1F});
+        w.invokeMethod(impl, "setFloat", new Class[] {float.class}, new Object[] {1F});
         assertEquals(1F, impl.getFloat1());
         assertNull(impl.getFloat2());
 
-        w.invokeMethod(impl, "setFloat", new Class[]{Float.class}, new Object[]{2f});
+        w.invokeMethod(impl, "setFloat", new Class[] {Float.class}, new Object[] {2f});
         assertEquals(1F, impl.getFloat1());
         assertEquals(2F, impl.getFloat2());
 
-        w.invokeMethod(impl, "setFloat", new Class[]{Float.class}, new Object[]{null});
+        w.invokeMethod(impl, "setFloat", new Class[] {Float.class}, new Object[] {null});
         assertEquals(1F, impl.getFloat1());
         assertNull(impl.getFloat2());
     }
 
     @Test
     void test_getDeclaredMethodNames_ContainExtendsParentMethods() throws Exception {
-        assertArrayEquals(new String[]{"hello",}, Wrapper.getWrapper(Parent1.class).getMethodNames());
-        assertArrayEquals(new String[]{"hello",}, ClassUtils.getMethodNames(Parent1.class));
+        assertArrayEquals(
+                new String[] {
+                    "hello",
+                },
+                Wrapper.getWrapper(Parent1.class).getMethodNames());
+        assertArrayEquals(
+                new String[] {
+                    "hello",
+                },
+                ClassUtils.getMethodNames(Parent1.class));
 
-        assertArrayEquals(new String[]{}, Wrapper.getWrapper(Son.class).getDeclaredMethodNames());
-        assertArrayEquals(new String[]{}, ClassUtils.getDeclaredMethodNames(Son.class));
+        assertArrayEquals(new String[] {}, Wrapper.getWrapper(Son.class).getDeclaredMethodNames());
+        assertArrayEquals(new String[] {}, ClassUtils.getDeclaredMethodNames(Son.class));
     }
 
     @Test
     void test_getMethodNames_ContainExtendsParentMethods() throws Exception {
-        assertArrayEquals(new String[]{"hello", "world"}, Wrapper.getWrapper(Son.class).getMethodNames());
-        assertArrayEquals(new String[]{"hello", "world"}, ClassUtils.getMethodNames(Son.class));
+        assertArrayEquals(
+                new String[] {"hello", "world"}, Wrapper.getWrapper(Son.class).getMethodNames());
+        assertArrayEquals(new String[] {"hello", "world"}, ClassUtils.getMethodNames(Son.class));
     }
 
     @Test
-    void testWrapImplClass(){
+    void testWrapImplClass() {
         Wrapper w = Wrapper.getWrapper(Impl0.class);
 
         String[] propertyNames = w.getPropertyNames();
-        Assertions.assertArrayEquals(propertyNames, new String[]{"a", "b", "c"});
+        Assertions.assertArrayEquals(propertyNames, new String[] {"a", "b", "c"});
         // fields that do not contain the static|final|transient modifier
         Assertions.assertFalse(w.hasProperty("f"));
         Assertions.assertFalse(w.hasProperty("l"));
@@ -207,21 +219,17 @@ class WrapperTest {
         void setFloat(Float f);
     }
 
-    public interface EmptyService {
-    }
+    public interface EmptyService {}
 
     public interface Parent1 {
         void hello();
     }
 
-
     public interface Parent2 {
         void world();
     }
 
-    public interface Son extends Parent1, Parent2 {
-
-    }
+    public interface Son extends Parent1, Parent2 {}
 
     public static class Impl0 {
         public float a, b, c;
@@ -229,13 +237,9 @@ class WrapperTest {
         public static long l = 1;
         public final char ch = 'c';
 
-        private void privateMethod() {
+        private void privateMethod() {}
 
-        }
-
-        public void publicMethod() {
-
-        }
+        public void publicMethod() {}
     }
 
     public static class Impl1 implements I1 {
@@ -291,6 +295,5 @@ class WrapperTest {
         }
     }
 
-    public static class EmptyServiceImpl implements EmptyService {
-    }
+    public static class EmptyServiceImpl implements EmptyService {}
 }

@@ -39,7 +39,7 @@ public abstract class AbstractRegistryCenterServiceListener implements ServiceLi
      */
     @Override
     public void exported(ServiceConfig sc) {
-        //All exported services will be added
+        // All exported services will be added
         if (sc.getInterfaceClass() == getInterface()) {
             exportedServices.add(sc);
         }
@@ -50,7 +50,7 @@ public abstract class AbstractRegistryCenterServiceListener implements ServiceLi
      */
     @Override
     public void unexported(ServiceConfig sc) {
-        //remove the exported services.
+        // remove the exported services.
         exportedServices.remove(sc);
     }
 

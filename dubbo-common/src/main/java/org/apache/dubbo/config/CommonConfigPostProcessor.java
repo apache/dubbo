@@ -22,15 +22,10 @@ import org.apache.dubbo.common.extension.SPI;
 /**
  * it  will be call when reference or service config refresh
  */
-
 @SPI(scope = ExtensionScope.MODULE)
 public interface CommonConfigPostProcessor {
 
-    default void postProcessReferConfig(ReferenceConfigBase referenceConfig) {
+    default void postProcessReferConfig(ReferenceConfigBase referenceConfig) {}
 
-    }
-
-    default void postProcessServiceConfig(ServiceConfigBase serviceConfig) {
-
-    }
+    default void postProcessServiceConfig(ServiceConfigBase serviceConfig) {}
 }

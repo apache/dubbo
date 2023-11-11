@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.monitor;
 
 import org.apache.dubbo.common.URL;
@@ -39,6 +38,8 @@ public interface Monitor extends org.apache.dubbo.monitor.Monitor {
 
     @Override
     default List<URL> lookup(URL query) {
-        return this.lookup(new com.alibaba.dubbo.common.DelegateURL(query)).stream().map(url -> url.getOriginalURL()).collect(Collectors.toList());
+        return this.lookup(new com.alibaba.dubbo.common.DelegateURL(query)).stream()
+                .map(url -> url.getOriginalURL())
+                .collect(Collectors.toList());
     }
 }

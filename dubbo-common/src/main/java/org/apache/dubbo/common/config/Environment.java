@@ -182,7 +182,8 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
      */
     public Configuration getPrefixedConfiguration(AbstractConfig config, String prefix) {
 
-        // The sequence would be: SystemConfiguration -> EnvironmentConfiguration -> AppExternalConfiguration -> ExternalConfiguration  -> AppConfiguration -> AbstractConfig -> PropertiesConfiguration
+        // The sequence would be: SystemConfiguration -> EnvironmentConfiguration -> AppExternalConfiguration ->
+        // ExternalConfiguration  -> AppConfiguration -> AbstractConfig -> PropertiesConfiguration
         Configuration instanceConfiguration = new ConfigConfigurationAdapter(config, prefix);
         CompositeConfiguration compositeConfiguration = new CompositeConfiguration();
         compositeConfiguration.addConfiguration(systemConfiguration);
@@ -224,7 +225,8 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
      * @return
      */
     public List<Map<String, String>> getConfigurationMaps(AbstractConfig config, String prefix) {
-        // The sequence would be: SystemConfiguration -> EnvironmentConfiguration -> AppExternalConfiguration -> ExternalConfiguration  -> AppConfiguration -> AbstractConfig -> PropertiesConfiguration
+        // The sequence would be: SystemConfiguration -> EnvironmentConfiguration -> AppExternalConfiguration ->
+        // ExternalConfiguration  -> AppConfiguration -> AbstractConfig -> PropertiesConfiguration
 
         List<Map<String, String>> maps = new ArrayList<>();
         maps.add(systemConfiguration.getProperties());
@@ -268,7 +270,12 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
             try {
                 defaultDynamicConfiguration.close();
             } catch (Exception e) {
-                logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "close dynamic configuration failed: " + e.getMessage(), e);
+                logger.warn(
+                        COMMON_UNEXPECTED_EXCEPTION,
+                        "",
+                        "",
+                        "close dynamic configuration failed: " + e.getMessage(),
+                        e);
             }
             defaultDynamicConfiguration = null;
         }
@@ -327,7 +334,11 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
         if (defaultDynamicGlobalConfiguration == null) {
             if (defaultDynamicConfiguration == null) {
                 if (logger.isWarnEnabled()) {
-                    logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "dynamicConfiguration is null , return globalConfiguration.");
+                    logger.warn(
+                            COMMON_UNEXPECTED_EXCEPTION,
+                            "",
+                            "",
+                            "dynamicConfiguration is null , return globalConfiguration.");
                 }
                 return getConfiguration();
             }

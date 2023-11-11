@@ -58,9 +58,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NO_ME
 import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 import static org.apache.dubbo.config.Constants.DEFAULT_NATIVE_PROXY;
 
-
 /**
- * AbstractDefaultConfig
+ * Abstract configuration for the interface.
  *
  * @export
  */
@@ -69,139 +68,152 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     private static final long serialVersionUID = -1559314110797223229L;
 
     /**
-     * The interface name of the exported service
+     * Interface name of the exported service.
      */
     protected String interfaceName;
 
     /**
-     * The classLoader of interface belong to
+     * ClassLoader associated with the interface.
      */
     protected transient ClassLoader interfaceClassLoader;
 
     /**
-     * The remote service version the customer/provider side will reference
+     * Version of the remote service referenced by the consumer/provider.
      */
     protected String version;
 
     /**
-     * The remote service group the customer/provider side will reference
+     * Group of the remote service referenced by the consumer/provider.
      */
     protected String group;
 
-    protected ServiceMetadata serviceMetadata;
     /**
-     * Local impl class name for the service interface
+     * Service metadata configuration.
+     */
+    protected ServiceMetadata serviceMetadata;
+
+    /**
+     * Local implementation class name for the service interface.
      */
     protected String local;
 
     /**
-     * Local stub class name for the service interface
+     * Local stub class name for the service interface.
      */
     protected String stub;
 
     /**
-     * Service monitor
+     * Service monitoring configuration.
      */
     protected MonitorConfig monitor;
 
     /**
-     * Strategies for generating dynamic agents，there are two strategies can be chosen: jdk and javassist
+     * Strategy for generating dynamic agents (options: "jdk" or "javassist").
      */
     protected String proxy;
 
     /**
-     * Cluster type
+     * Cluster type for service.
      */
     protected String cluster;
 
     /**
-     * The {@code Filter} when the provider side exposed a service or the customer side references a remote service used,
-     * if there are more than one, you can use commas to separate them
+     * Filters for service exposure or reference (multiple filters can be separated by commas).
      */
     protected String filter;
 
     /**
-     * The Listener when the provider side exposes a service or the customer side references a remote service used
-     * if there are more than one, you can use commas to separate them
+     * Listeners for service exposure or reference (multiple listeners can be separated by commas).
      */
     protected String listener;
 
     /**
-     * The owner of the service providers
+     * Owner of the service providers.
      */
     protected String owner;
 
     /**
-     * Connection limits, 0 means shared connection, otherwise it defines the connections delegated to the current service
+     * Connection limits: 0 for shared connection, otherwise specifying connections for the service.
      */
     protected Integer connections;
 
     /**
-     * The layer of service providers
+     * Layer of service providers.
      */
     protected String layer;
 
     /**
-     * The application info
+     * Application configuration for the service.
      */
     protected ApplicationConfig application;
 
     /**
-     * The module info
+     * Module configuration for the service.
      */
     protected ModuleConfig module;
 
     /**
-     * The registry list the service will register to
-     * Also see {@link #registryIds}, only one of them will work.
+     * Registries where the service will be registered (use this or registryIds, not both).
      */
     protected List<RegistryConfig> registries;
 
     /**
-     * The method configuration
+     * Method-specific configuration.
      */
     private List<MethodConfig> methods;
 
     /**
-     * The id list of registries the service will register to
-     * Also see {@link #registries}, only one of them will work.
+     * Registry IDs for service registration (use this or registries, not both).
      */
     protected String registryIds;
 
-    // connection events
+    /**
+     * Event handler for connection establishment.
+     */
     protected String onconnect;
 
     /**
-     * Disconnection events
+     * Event handler for disconnection.
      */
     protected String ondisconnect;
 
     /**
-     * The metadata report configuration
+     * Metadata report configuration.
      */
     protected MetadataReportConfig metadataReportConfig;
 
+    /**
+     * Configuration center settings.
+     */
     protected ConfigCenterConfig configCenter;
 
-    // callback limits
+    /**
+     * Callback limits for the service.
+     */
     private Integer callbacks;
-    // the scope for referring/exporting a service, if it's local, it means searching in current JVM only.
+
+    /**
+     * Service scope ("local" implies searching in the current JVM only).
+     */
     private String scope;
 
+    /**
+     * Custom tag for the service configuration.
+     */
     protected String tag;
 
+    /**
+     * Enable service authentication.
+     */
     private Boolean auth;
 
-    /*Indicates to create separate instances or not for services/references that have the same serviceKey.
-     * By default, all services/references that have the same serviceKey will share the same instance and process.
-     *
-     * This key currently can only work when using ReferenceConfig and SimpleReferenceCache together.
-     * Call ReferenceConfig.get() directly will not check this attribute.
+    /**
+     * Use separate instances for services with the same serviceKey (applies when using ReferenceConfig and SimpleReferenceCache together).
+     * Directly calling ReferenceConfig.get() will not check this attribute.
      */
     private Boolean singleton;
 
-    public AbstractInterfaceConfig() {
-    }
+    public AbstractInterfaceConfig() {}
 
     public AbstractInterfaceConfig(ModuleModel moduleModel) {
         super(moduleModel);
@@ -210,7 +222,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     /**
      * The url of the reference service
      */
-    protected transient final List<URL> urls = new ArrayList<URL>();
+    protected final transient List<URL> urls = new ArrayList<URL>();
 
     @Transient
     public List<URL> getExportedUrls() {
@@ -256,8 +268,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
         for (RegistryConfig registryConfig : registries) {
             if (!registryConfig.isValid()) {
-                throw new IllegalStateException("No registry config found or it's not a valid config! " +
-                        "The registry config is: " + registryConfig);
+                throw new IllegalStateException("No registry config found or it's not a valid config! "
+                        + "The registry config is: " + registryConfig);
             }
         }
     }
@@ -296,7 +308,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      */
     protected String[] methods(Class<?> interfaceClass) {
         if (NativeDetector.inNativeImage()) {
-            return Arrays.stream(interfaceClass.getMethods()).map(Method::getName).toArray(String[]::new);
+            return Arrays.stream(interfaceClass.getMethods())
+                    .map(Method::getName)
+                    .toArray(String[]::new);
         } else {
             return ClassUtils.getMethodNames(interfaceClass);
         }
@@ -344,8 +358,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                     // dubbo.service.{interfaceName}.{methodName}.{arg-index}.xxx=xxx
                     java.lang.reflect.Parameter[] arguments = method.getParameters();
                     for (int i = 0; i < arguments.length; i++) {
-                        if (getArgumentByIndex(methodConfig, i) == null &&
-                                hasArgumentConfigProps(configProperties, methodConfig.getName(), i)) {
+                        if (getArgumentByIndex(methodConfig, i) == null
+                                && hasArgumentConfigProps(configProperties, methodConfig.getName(), i)) {
 
                             ArgumentConfig argumentConfig = new ArgumentConfig();
                             argumentConfig.setIndex(i);
@@ -359,22 +373,24 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             List<MethodConfig> methodConfigs = this.getMethods();
             if (methodConfigs != null && methodConfigs.size() > 0) {
                 // whether ignore invalid method config
-                Object ignoreInvalidMethodConfigVal = getEnvironment().getConfiguration()
+                Object ignoreInvalidMethodConfigVal = getEnvironment()
+                        .getConfiguration()
                         .getProperty(ConfigKeys.DUBBO_CONFIG_IGNORE_INVALID_METHOD_CONFIG, "false");
                 boolean ignoreInvalidMethodConfig = Boolean.parseBoolean(ignoreInvalidMethodConfigVal.toString());
 
                 Class<?> finalInterfaceClass = interfaceClass;
-                List<MethodConfig> validMethodConfigs = methodConfigs.stream().filter(methodConfig -> {
-                    methodConfig.setParentPrefix(preferredPrefix);
-                    methodConfig.setScopeModel(getScopeModel());
-                    methodConfig.refresh();
-                    // verify method config
-                    return verifyMethodConfig(methodConfig, finalInterfaceClass, ignoreInvalidMethodConfig);
-                }).collect(Collectors.toList());
+                List<MethodConfig> validMethodConfigs = methodConfigs.stream()
+                        .filter(methodConfig -> {
+                            methodConfig.setParentPrefix(preferredPrefix);
+                            methodConfig.setScopeModel(getScopeModel());
+                            methodConfig.refresh();
+                            // verify method config
+                            return verifyMethodConfig(methodConfig, finalInterfaceClass, ignoreInvalidMethodConfig);
+                        })
+                        .collect(Collectors.toList());
                 this.setMethods(validMethodConfigs);
             }
         }
-
     }
 
     /**
@@ -387,12 +403,12 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         return false;
     }
 
-    protected boolean verifyMethodConfig(MethodConfig methodConfig, Class<?> interfaceClass, boolean ignoreInvalidMethodConfig) {
+    protected boolean verifyMethodConfig(
+            MethodConfig methodConfig, Class<?> interfaceClass, boolean ignoreInvalidMethodConfig) {
         String methodName = methodConfig.getName();
         if (StringUtils.isEmpty(methodName)) {
-            String msg = "<dubbo:method> name attribute is required! Please check: " +
-                    "<dubbo:service interface=\"" + interfaceName + "\" ... >" +
-                    "<dubbo:method name=\"\" ... /></<dubbo:reference>";
+            String msg = "<dubbo:method> name attribute is required! Please check: " + "<dubbo:service interface=\""
+                    + interfaceName + "\" ... >" + "<dubbo:method name=\"\" ... /></<dubbo:reference>";
             if (ignoreInvalidMethodConfig) {
                 logger.warn(CONFIG_NO_METHOD_FOUND, "", "", msg);
                 return false;
@@ -401,10 +417,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             }
         }
 
-        boolean hasMethod = Arrays.stream(interfaceClass.getMethods()).anyMatch(method -> method.getName().equals(methodName));
+        boolean hasMethod = Arrays.stream(interfaceClass.getMethods())
+                .anyMatch(method -> method.getName().equals(methodName));
         if (!hasMethod) {
-            String msg = "Found invalid method config, the interface " + interfaceClass.getName() + " not found method \""
-                    + methodName + "\" : [" + methodConfig + "]";
+            String msg = "Found invalid method config, the interface " + interfaceClass.getName()
+                    + " not found method \"" + methodName + "\" : [" + methodConfig + "]";
             if (ignoreInvalidMethodConfig) {
                 logger.warn(CONFIG_NO_METHOD_FOUND, "", "", msg);
                 return false;
@@ -465,24 +482,25 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     private void verifyStubAndLocal(String className, String label, Class<?> interfaceClass) {
         if (ConfigUtils.isNotEmpty(className)) {
-            Class<?> localClass = ConfigUtils.isDefault(className) ?
-                    ReflectUtils.forName(interfaceClass.getName() + label) : ReflectUtils.forName(className);
+            Class<?> localClass = ConfigUtils.isDefault(className)
+                    ? ReflectUtils.forName(interfaceClass.getName() + label)
+                    : ReflectUtils.forName(className);
             verify(interfaceClass, localClass);
         }
     }
 
     private void verify(Class<?> interfaceClass, Class<?> localClass) {
         if (!interfaceClass.isAssignableFrom(localClass)) {
-            throw new IllegalStateException("The local implementation class " + localClass.getName() +
-                    " not implement interface " + interfaceClass.getName());
+            throw new IllegalStateException("The local implementation class " + localClass.getName()
+                    + " not implement interface " + interfaceClass.getName());
         }
 
         try {
-            //Check if the localClass a constructor with parameter whose type is interfaceClass
+            // Check if the localClass a constructor with parameter whose type is interfaceClass
             ReflectUtils.findConstructor(localClass, interfaceClass);
         } catch (NoSuchMethodException e) {
-            throw new IllegalStateException("No such constructor \"public " + localClass.getSimpleName() +
-                    "(" + interfaceClass.getName() + ")\" in local implementation class " + localClass.getName());
+            throw new IllegalStateException("No such constructor \"public " + localClass.getSimpleName() + "("
+                    + interfaceClass.getName() + ")\" in local implementation class " + localClass.getName());
         }
     }
 
@@ -509,7 +527,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             });
             setRegistries(tmpRegistries);
         }
-
     }
 
     protected boolean notHasSelfRegistryProperty() {
@@ -733,7 +750,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         this.registryIds = registryIds;
     }
 
-
     public List<MethodConfig> getMethods() {
         return methods;
     }
@@ -850,7 +866,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (metadataReportConfig != null) {
             return metadataReportConfig;
         }
-        Collection<MetadataReportConfig> metadataReportConfigs = getConfigManager().getMetadataConfigs();
+        Collection<MetadataReportConfig> metadataReportConfigs =
+                getConfigManager().getMetadataConfigs();
         if (CollectionUtils.isNotEmpty(metadataReportConfigs)) {
             return metadataReportConfigs.iterator().next();
         }
@@ -905,11 +922,15 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public String getGroup(AbstractInterfaceConfig interfaceConfig) {
-        return StringUtils.isEmpty(getGroup()) ? (interfaceConfig != null ? interfaceConfig.getGroup() : getGroup()) : getGroup();
+        return StringUtils.isEmpty(getGroup())
+                ? (interfaceConfig != null ? interfaceConfig.getGroup() : getGroup())
+                : getGroup();
     }
 
     public String getVersion(AbstractInterfaceConfig interfaceConfig) {
-        return StringUtils.isEmpty(getVersion()) ? (interfaceConfig != null ? interfaceConfig.getVersion() : getVersion()) : getVersion();
+        return StringUtils.isEmpty(getVersion())
+                ? (interfaceConfig != null ? interfaceConfig.getVersion() : getVersion())
+                : getVersion();
     }
 
     public String getVersion() {
@@ -944,5 +965,4 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     public void setInterfaceClassLoader(ClassLoader interfaceClassLoader) {
         this.interfaceClassLoader = interfaceClassLoader;
     }
-
 }

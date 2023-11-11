@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.rest.rest;
 
 import javax.xml.bind.annotation.XmlRootElement;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -28,8 +29,7 @@ public class RegistrationResult implements Serializable {
 
     private Long id;
 
-    public RegistrationResult() {
-    }
+    public RegistrationResult() {}
 
     public RegistrationResult(Long id) {
         this.id = id;

@@ -63,24 +63,23 @@ class OnlineTest {
     @Test
     void testExecute() {
         Online online = new Online(frameworkModel);
-        String result = online.execute(mock(CommandContext.class), new String[]{DemoService.class.getName()});
+        String result = online.execute(mock(CommandContext.class), new String[] {DemoService.class.getName()});
         Assertions.assertEquals(result, "OK");
         Assertions.assertTrue(registerStatedURL.isRegistered());
 
         OnlineInterface onlineInterface = new OnlineInterface(frameworkModel);
         registerStatedURL.setRegistered(false);
-        result = onlineInterface.execute(mock(CommandContext.class), new String[]{DemoService.class.getName()});
+        result = onlineInterface.execute(mock(CommandContext.class), new String[] {DemoService.class.getName()});
         Assertions.assertEquals(result, "OK");
         Assertions.assertTrue(registerStatedURL.isRegistered());
 
         registerStatedURL.setRegistered(false);
         registerStatedURL.setRegistryUrl(URL.valueOf("test://127.0.0.1:2181/" + RegistryService.class.getName())
-            .addParameter(REGISTRY_TYPE_KEY, SERVICE_REGISTRY_TYPE));
+                .addParameter(REGISTRY_TYPE_KEY, SERVICE_REGISTRY_TYPE));
         OnlineApp onlineApp = new OnlineApp(frameworkModel);
-        result = onlineApp.execute(mock(CommandContext.class), new String[]{DemoService.class.getName()});
+        result = onlineApp.execute(mock(CommandContext.class), new String[] {DemoService.class.getName()});
         Assertions.assertEquals(result, "OK");
         Assertions.assertTrue(registerStatedURL.isRegistered());
-
     }
 
     private void registerProvider() {
@@ -88,16 +87,16 @@ class OnlineTest {
         ServiceMetadata serviceMetadata = new ServiceMetadata();
         serviceMetadata.setServiceKey(DemoService.class.getName());
         ProviderModel providerModel = new ProviderModel(
-            DemoService.class.getName(),
-            new DemoServiceImpl(),
-            serviceDescriptor,
-            serviceMetadata, ClassUtils.getClassLoader(DemoService.class));
+                DemoService.class.getName(),
+                new DemoServiceImpl(),
+                serviceDescriptor,
+                serviceMetadata,
+                ClassUtils.getClassLoader(DemoService.class));
         registerStatedURL = new ProviderModel.RegisterStatedURL(
-            URL.valueOf("dubbo://127.0.0.1:20880/" + DemoService.class.getName()),
-            URL.valueOf("test://127.0.0.1:2181/" + RegistryService.class.getName()),
-            false);
-        providerModel.addStatedUrl(registerStatedURL
-        );
+                URL.valueOf("dubbo://127.0.0.1:20880/" + DemoService.class.getName()),
+                URL.valueOf("test://127.0.0.1:2181/" + RegistryService.class.getName()),
+                false);
+        providerModel.addStatedUrl(registerStatedURL);
         repository.registerProvider(providerModel);
     }
 }

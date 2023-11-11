@@ -25,8 +25,7 @@ public class StreamingHttpMessageListener implements HttpMessageListener {
 
     private StreamingDecoder streamingDecoder;
 
-    public StreamingHttpMessageListener() {
-    }
+    public StreamingHttpMessageListener() {}
 
     public StreamingHttpMessageListener(StreamingDecoder streamingDecoder) {
         this.streamingDecoder = streamingDecoder;

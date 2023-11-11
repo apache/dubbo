@@ -16,8 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.rest;
 
-
-public class HttpMethodServiceImpl implements HttpMethodService{
+public class HttpMethodServiceImpl implements HttpMethodService {
 
     @Override
     public String sayHelloPost(String name) {

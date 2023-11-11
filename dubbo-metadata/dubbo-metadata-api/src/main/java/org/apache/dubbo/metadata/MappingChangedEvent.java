@@ -38,7 +38,6 @@ public class MappingChangedEvent {
 
     @Override
     public String toString() {
-        return "{serviceKey: " + serviceKey + ", apps: " +
-                apps.toString() + "}";
+        return "{serviceKey: " + serviceKey + ", apps: " + apps.toString() + "}";
     }
 }

@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol;
 
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -38,34 +37,39 @@ class ProtocolListenerWrapperTest {
     @Test
     void testLoadingListenerForLocalReference() {
         // verify that no listener is loaded by default
-        URL urlWithoutListener = URL.valueOf("injvm://127.0.0.1/DemoService")
-            .addParameter(INTERFACE_KEY, DemoService.class.getName());
-        AbstractInvoker<DemoService> invokerWithoutListener = new AbstractInvoker<DemoService>(DemoService.class, urlWithoutListener) {
-            @Override
-            protected Result doInvoke(Invocation invocation) throws Throwable {
-                return null;
-            }
-        };
+        URL urlWithoutListener =
+                URL.valueOf("injvm://127.0.0.1/DemoService").addParameter(INTERFACE_KEY, DemoService.class.getName());
+        AbstractInvoker<DemoService> invokerWithoutListener =
+                new AbstractInvoker<DemoService>(DemoService.class, urlWithoutListener) {
+                    @Override
+                    protected Result doInvoke(Invocation invocation) throws Throwable {
+                        return null;
+                    }
+                };
 
         Protocol protocolWithoutListener = mock(Protocol.class);
-        when(protocolWithoutListener.refer(DemoService.class, urlWithoutListener)).thenReturn(invokerWithoutListener);
+        when(protocolWithoutListener.refer(DemoService.class, urlWithoutListener))
+                .thenReturn(invokerWithoutListener);
 
-        ProtocolListenerWrapper protocolListenerWrapperWithoutListener = new ProtocolListenerWrapper(protocolWithoutListener);
+        ProtocolListenerWrapper protocolListenerWrapperWithoutListener =
+                new ProtocolListenerWrapper(protocolWithoutListener);
 
         Invoker<?> invoker = protocolListenerWrapperWithoutListener.refer(DemoService.class, urlWithoutListener);
         Assertions.assertTrue(invoker instanceof ListenerInvokerWrapper);
-        Assertions.assertEquals(0, ((ListenerInvokerWrapper<?>) invoker).getListeners().size());
+        Assertions.assertEquals(
+                0, ((ListenerInvokerWrapper<?>) invoker).getListeners().size());
 
         // verify that if the invoker.listener is configured, then load the specified listener
         URL urlWithListener = URL.valueOf("injvm://127.0.0.1/DemoService")
-            .addParameter(INTERFACE_KEY, DemoService.class.getName())
-            .addParameter(INVOKER_LISTENER_KEY, "count");
-        AbstractInvoker<DemoService> invokerWithListener = new AbstractInvoker<DemoService>(DemoService.class, urlWithListener) {
-            @Override
-            protected Result doInvoke(Invocation invocation) throws Throwable {
-                return null;
-            }
-        };
+                .addParameter(INTERFACE_KEY, DemoService.class.getName())
+                .addParameter(INVOKER_LISTENER_KEY, "count");
+        AbstractInvoker<DemoService> invokerWithListener =
+                new AbstractInvoker<DemoService>(DemoService.class, urlWithListener) {
+                    @Override
+                    protected Result doInvoke(Invocation invocation) throws Throwable {
+                        return null;
+                    }
+                };
 
         Protocol protocol = mock(Protocol.class);
         when(protocol.refer(DemoService.class, urlWithListener)).thenReturn(invokerWithListener);
@@ -81,33 +85,38 @@ class ProtocolListenerWrapperTest {
     void testLoadingListenerForRemoteReference() {
         // verify that no listener is loaded by default
         URL urlWithoutListener = URL.valueOf("dubbo://127.0.0.1:20880/DemoService")
-            .addParameter(INTERFACE_KEY, DemoService.class.getName());
-        AbstractInvoker<DemoService> invokerWithoutListener = new AbstractInvoker<DemoService>(DemoService.class, urlWithoutListener) {
-            @Override
-            protected Result doInvoke(Invocation invocation) throws Throwable {
-                return null;
-            }
-        };
+                .addParameter(INTERFACE_KEY, DemoService.class.getName());
+        AbstractInvoker<DemoService> invokerWithoutListener =
+                new AbstractInvoker<DemoService>(DemoService.class, urlWithoutListener) {
+                    @Override
+                    protected Result doInvoke(Invocation invocation) throws Throwable {
+                        return null;
+                    }
+                };
 
         Protocol protocolWithoutListener = mock(Protocol.class);
-        when(protocolWithoutListener.refer(DemoService.class, urlWithoutListener)).thenReturn(invokerWithoutListener);
+        when(protocolWithoutListener.refer(DemoService.class, urlWithoutListener))
+                .thenReturn(invokerWithoutListener);
 
-        ProtocolListenerWrapper protocolListenerWrapperWithoutListener = new ProtocolListenerWrapper(protocolWithoutListener);
+        ProtocolListenerWrapper protocolListenerWrapperWithoutListener =
+                new ProtocolListenerWrapper(protocolWithoutListener);
 
         Invoker<?> invoker = protocolListenerWrapperWithoutListener.refer(DemoService.class, urlWithoutListener);
         Assertions.assertTrue(invoker instanceof ListenerInvokerWrapper);
-        Assertions.assertEquals(0, ((ListenerInvokerWrapper<?>) invoker).getListeners().size());
+        Assertions.assertEquals(
+                0, ((ListenerInvokerWrapper<?>) invoker).getListeners().size());
 
         // verify that if the invoker.listener is configured, then load the specified listener
         URL urlWithListener = URL.valueOf("dubbo://127.0.0.1:20880/DemoService")
-            .addParameter(INTERFACE_KEY, DemoService.class.getName())
-            .addParameter(INVOKER_LISTENER_KEY, "count");
-        AbstractInvoker<DemoService> invokerWithListener = new AbstractInvoker<DemoService>(DemoService.class, urlWithListener) {
-            @Override
-            protected Result doInvoke(Invocation invocation) throws Throwable {
-                return null;
-            }
-        };
+                .addParameter(INTERFACE_KEY, DemoService.class.getName())
+                .addParameter(INVOKER_LISTENER_KEY, "count");
+        AbstractInvoker<DemoService> invokerWithListener =
+                new AbstractInvoker<DemoService>(DemoService.class, urlWithListener) {
+                    @Override
+                    protected Result doInvoke(Invocation invocation) throws Throwable {
+                        return null;
+                    }
+                };
 
         Protocol protocol = mock(Protocol.class);
         when(protocol.refer(DemoService.class, urlWithListener)).thenReturn(invokerWithListener);
@@ -118,6 +127,4 @@ class ProtocolListenerWrapperTest {
         Assertions.assertTrue(invoker instanceof ListenerInvokerWrapper);
         Assertions.assertEquals(1, CountInvokerListener.getCounter());
     }
-
-
 }

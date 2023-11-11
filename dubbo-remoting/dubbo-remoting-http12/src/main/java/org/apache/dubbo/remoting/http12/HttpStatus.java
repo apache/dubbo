@@ -17,7 +17,6 @@
 package org.apache.dubbo.remoting.http12;
 
 public enum HttpStatus {
-
     OK(200),
     REQUEST_TIMEOUT(408),
     UNSUPPORTED_MEDIA_TYPE(415),

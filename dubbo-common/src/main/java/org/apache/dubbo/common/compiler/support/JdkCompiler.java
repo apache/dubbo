@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.compiler.support;
 
-
 import javax.tools.DiagnosticCollector;
 import javax.tools.FileObject;
 import javax.tools.ForwardingJavaFileManager;
@@ -28,6 +27,7 @@ import javax.tools.SimpleJavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -66,9 +66,7 @@ public class JdkCompiler extends AbstractCompiler {
     private static final String DEFAULT_JAVA_VERSION = "1.8";
 
     private static List<String> buildDefaultOptions(String javaVersion) {
-        return Arrays.asList(
-                "-source", javaVersion, "-target", javaVersion
-        );
+        return Arrays.asList("-source", javaVersion, "-target", javaVersion);
     }
 
     private static List<String> buildDefaultOptions() {
@@ -115,13 +113,19 @@ public class JdkCompiler extends AbstractCompiler {
         String packageName = i < 0 ? "" : name.substring(0, i);
         String className = i < 0 ? name : name.substring(i + 1);
         JavaFileObjectImpl javaFileObject = new JavaFileObjectImpl(className, sourceCode);
-        javaFileManager.putFileForInput(StandardLocation.SOURCE_PATH, packageName,
-                className + ClassUtils.JAVA_EXTENSION, javaFileObject);
-        Boolean result = compiler.getTask(null, javaFileManager, diagnosticCollector, options,
-                null, Collections.singletonList(javaFileObject)).call();
+        javaFileManager.putFileForInput(
+                StandardLocation.SOURCE_PATH, packageName, className + ClassUtils.JAVA_EXTENSION, javaFileObject);
+        Boolean result = compiler.getTask(
+                        null,
+                        javaFileManager,
+                        diagnosticCollector,
+                        options,
+                        null,
+                        Collections.singletonList(javaFileObject))
+                .call();
         if (result == null || !result) {
-            throw new IllegalStateException("Compilation failed. class: " + name + ", diagnostics: "
-                + diagnosticCollector.getDiagnostics());
+            throw new IllegalStateException(
+                    "Compilation failed. class: " + name + ", diagnostics: " + diagnosticCollector.getDiagnostics());
         }
         return classLoader.loadClass(name);
     }
@@ -181,7 +185,8 @@ public class JdkCompiler extends AbstractCompiler {
         }
 
         @Override
-        public FileObject getFileForInput(Location location, String packageName, String relativeName) throws IOException {
+        public FileObject getFileForInput(Location location, String packageName, String relativeName)
+                throws IOException {
             FileObject o = fileObjects.get(uri(location, packageName, relativeName));
             if (o != null) {
                 return o;
@@ -189,7 +194,8 @@ public class JdkCompiler extends AbstractCompiler {
             return super.getFileForInput(location, packageName, relativeName);
         }
 
-        public void putFileForInput(StandardLocation location, String packageName, String relativeName, JavaFileObject file) {
+        public void putFileForInput(
+                StandardLocation location, String packageName, String relativeName, JavaFileObject file) {
             fileObjects.put(uri(location, packageName, relativeName), file);
         }
 
@@ -198,8 +204,8 @@ public class JdkCompiler extends AbstractCompiler {
         }
 
         @Override
-        public JavaFileObject getJavaFileForOutput(Location location, String qualifiedName, Kind kind, FileObject outputFile)
-                throws IOException {
+        public JavaFileObject getJavaFileForOutput(
+                Location location, String qualifiedName, Kind kind, FileObject outputFile) throws IOException {
             JavaFileObject file = new JavaFileObjectImpl(qualifiedName, kind);
             classLoader.add(qualifiedName, file);
             return file;
@@ -271,7 +277,8 @@ public class JdkCompiler extends AbstractCompiler {
                 return defineClass(qualifiedClassName, bytes, 0, bytes.length);
             }
             try {
-                return org.apache.dubbo.common.utils.ClassUtils.forNameWithCallerClassLoader(qualifiedClassName, getClass());
+                return org.apache.dubbo.common.utils.ClassUtils.forNameWithCallerClassLoader(
+                        qualifiedClassName, getClass());
             } catch (ClassNotFoundException nf) {
                 return super.findClass(qualifiedClassName);
             }
@@ -282,14 +289,16 @@ public class JdkCompiler extends AbstractCompiler {
         }
 
         @Override
-        protected synchronized Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
+        protected synchronized Class<?> loadClass(final String name, final boolean resolve)
+                throws ClassNotFoundException {
             return super.loadClass(name, resolve);
         }
 
         @Override
         public InputStream getResourceAsStream(final String name) {
             if (name.endsWith(ClassUtils.CLASS_EXTENSION)) {
-                String qualifiedClassName = name.substring(0, name.length() - ClassUtils.CLASS_EXTENSION.length()).replace('/', '.');
+                String qualifiedClassName = name.substring(0, name.length() - ClassUtils.CLASS_EXTENSION.length())
+                        .replace('/', '.');
                 JavaFileObjectImpl file = (JavaFileObjectImpl) classes.get(qualifiedClassName);
                 if (file != null) {
                     return new ByteArrayInputStream(file.getByteCode());
@@ -298,6 +307,4 @@ public class JdkCompiler extends AbstractCompiler {
             return super.getResourceAsStream(name);
         }
     }
-
-
 }

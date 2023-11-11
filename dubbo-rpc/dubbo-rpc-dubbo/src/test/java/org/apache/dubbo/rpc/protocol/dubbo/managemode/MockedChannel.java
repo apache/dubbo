@@ -36,7 +36,6 @@ public class MockedChannel implements Channel {
         super();
     }
 
-
     @Override
     public URL getUrl() {
         return url;
@@ -55,8 +54,7 @@ public class MockedChannel implements Channel {
     }
 
     @Override
-    public void send(Object message) throws RemotingException {
-    }
+    public void send(Object message) throws RemotingException {}
 
     @Override
     public void send(Object message, boolean sent) throws RemotingException {

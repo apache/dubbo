@@ -21,5 +21,4 @@ public interface RequestMetadata extends HttpMetadata {
     String method();
 
     String path();
-
 }

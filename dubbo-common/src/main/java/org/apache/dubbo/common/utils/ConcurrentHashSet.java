@@ -126,5 +126,4 @@ public class ConcurrentHashSet<E> extends AbstractSet<E> implements Set<E>, java
     public void clear() {
         map.clear();
     }
-
 }

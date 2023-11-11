@@ -33,7 +33,8 @@ public class QosConfiguration {
 
     private Predicate<String> acceptForeignIpWhitelistPredicate;
 
-    // this permission level for anonymous access, it will ignore the acceptForeignIp and acceptForeignIpWhitelist configurations
+    // this permission level for anonymous access, it will ignore the acceptForeignIp and acceptForeignIpWhitelist
+    // configurations
     // Access permission depends on the config anonymousAccessPermissionLevel and the cmd required permission level
     // the default value is Cmd.PermissionLevel.PUBLIC, can only access PUBLIC level cmd
     private PermissionLevel anonymousAccessPermissionLevel = PermissionLevel.PUBLIC;
@@ -41,8 +42,7 @@ public class QosConfiguration {
     // the allow commands for anonymous access, the delimiter is colon(,)
     private String anonymousAllowCommands;
 
-    private QosConfiguration() {
-    }
+    private QosConfiguration() {}
 
     public QosConfiguration(Builder builder) {
         this.welcome = builder.getWelcome();
@@ -56,18 +56,19 @@ public class QosConfiguration {
     private void buildPredicate() {
         if (StringUtils.isNotEmpty(acceptForeignIpWhitelist)) {
             this.acceptForeignIpWhitelistPredicate = Arrays.stream(acceptForeignIpWhitelist.split(","))
-                .map(String::trim)
-                .filter(StringUtils::isNotEmpty)
-                .map(foreignIpPattern -> (Predicate<String>) foreignIp -> {
-                    try {
-                        // hard code port to -1
-                        return NetUtils.matchIpExpression(foreignIpPattern, foreignIp, -1);
-                    } catch (UnknownHostException ignore) {
-                        // ignore illegal CIDR specification
-                    }
-                    return false;
-                })
-                .reduce(Predicate::or).orElse(s -> false);
+                    .map(String::trim)
+                    .filter(StringUtils::isNotEmpty)
+                    .map(foreignIpPattern -> (Predicate<String>) foreignIp -> {
+                        try {
+                            // hard code port to -1
+                            return NetUtils.matchIpExpression(foreignIpPattern, foreignIp, -1);
+                        } catch (UnknownHostException ignore) {
+                            // ignore illegal CIDR specification
+                        }
+                        return false;
+                    })
+                    .reduce(Predicate::or)
+                    .orElse(s -> false);
         } else {
             this.acceptForeignIpWhitelistPredicate = foreignIp -> false;
         }
@@ -105,7 +106,6 @@ public class QosConfiguration {
         return new Builder();
     }
 
-
     public static class Builder {
         private String welcome;
         private boolean acceptForeignIp;
@@ -113,8 +113,7 @@ public class QosConfiguration {
         private PermissionLevel anonymousAccessPermissionLevel = PermissionLevel.PUBLIC;
         private String anonymousAllowCommands;
 
-        private Builder() {
-        }
+        private Builder() {}
 
         public Builder welcome(String welcome) {
             this.welcome = welcome;

@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.router.xds.rule;
 
-
 public class PathMatcher {
 
     private String path;
@@ -61,13 +60,11 @@ public class PathMatcher {
 
     public boolean isMatch(String input) {
         if (getPath() != null) {
-            return isCaseSensitive()
-                ? getPath().equals(input)
-                : getPath().equalsIgnoreCase(input);
+            return isCaseSensitive() ? getPath().equals(input) : getPath().equalsIgnoreCase(input);
         } else if (getPrefix() != null) {
             return isCaseSensitive()
-                ? input.startsWith(getPrefix())
-                : input.toLowerCase().startsWith(getPrefix());
+                    ? input.startsWith(getPrefix())
+                    : input.toLowerCase().startsWith(getPrefix());
         }
         return input.matches(getRegex());
     }

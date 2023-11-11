@@ -35,9 +35,6 @@ public class FullServiceDefinition extends ServiceDefinition {
 
     @Override
     public String toString() {
-        return "FullServiceDefinition{" +
-                "parameters=" + parameters +
-                "} " + super.toString();
+        return "FullServiceDefinition{" + "parameters=" + parameters + "} " + super.toString();
     }
-
 }

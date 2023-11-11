@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.tracing.filter;
 
 import org.apache.dubbo.config.ApplicationConfig;
@@ -80,7 +79,6 @@ abstract class AbstractObservationFilterTest extends SampleTestRunner {
     private void initParam() {
         invocation.setTargetServiceUniqueName(GROUP + "/" + INTERFACE_NAME + ":" + VERSION);
         invocation.setMethodName(METHOD_NAME);
-        invocation.setParameterTypes(new Class[]{String.class});
+        invocation.setParameterTypes(new Class[] {String.class});
     }
-
 }

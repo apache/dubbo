@@ -32,8 +32,7 @@ public class DubboProtocPlugin {
     private List<String> jvmArgs = new ArrayList<>();
     private File protocPlugin = null;
 
-    public DubboProtocPlugin() {
-    }
+    public DubboProtocPlugin() {}
 
     public String getId() {
         return id;
@@ -125,16 +124,15 @@ public class DubboProtocPlugin {
 
     @Override
     public String toString() {
-        return "DubboProtocPlugin{" +
-            "id='" + id + '\'' +
-            ", mainClass='" + mainClass + '\'' +
-            ", dubboVersion='" + dubboVersion + '\'' +
-            ", javaHome='" + javaHome + '\'' +
-            ", pluginDirectory=" + pluginDirectory +
-            ", resolvedJars=" + resolvedJars +
-            ", args=" + args +
-            ", jvmArgs=" + jvmArgs +
-            ", protocPlugin=" + protocPlugin +
-            '}';
+        return "DubboProtocPlugin{" + "id='"
+                + id + '\'' + ", mainClass='"
+                + mainClass + '\'' + ", dubboVersion='"
+                + dubboVersion + '\'' + ", javaHome='"
+                + javaHome + '\'' + ", pluginDirectory="
+                + pluginDirectory + ", resolvedJars="
+                + resolvedJars + ", args="
+                + args + ", jvmArgs="
+                + jvmArgs + ", protocPlugin="
+                + protocPlugin + '}';
     }
 }

@@ -25,10 +25,8 @@ import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
  */
 public class RedisMetadataReportFactory extends AbstractMetadataReportFactory {
 
-
     @Override
     public MetadataReport createMetadataReport(URL url) {
         return new RedisMetadataReport(url);
     }
-
 }

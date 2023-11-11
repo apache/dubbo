@@ -31,10 +31,10 @@ public class ServiceMetadataIdentifier extends BaseServiceMetadataIdentifier imp
     private String revision;
     private String protocol;
 
-    public ServiceMetadataIdentifier() {
-    }
+    public ServiceMetadataIdentifier() {}
 
-    public ServiceMetadataIdentifier(String serviceInterface, String version, String group, String side, String revision, String protocol) {
+    public ServiceMetadataIdentifier(
+            String serviceInterface, String version, String group, String side, String revision, String protocol) {
         this.serviceInterface = serviceInterface;
         this.version = version;
         this.group = group;
@@ -42,7 +42,6 @@ public class ServiceMetadataIdentifier extends BaseServiceMetadataIdentifier imp
         this.revision = revision;
         this.protocol = protocol;
     }
-
 
     public ServiceMetadataIdentifier(URL url) {
         this.serviceInterface = url.getServiceInterface();
@@ -70,13 +69,13 @@ public class ServiceMetadataIdentifier extends BaseServiceMetadataIdentifier imp
 
     @Override
     public String toString() {
-        return "ServiceMetadataIdentifier{" +
-                "revision='" + revision + '\'' +
-                ", protocol='" + protocol + '\'' +
-                ", serviceInterface='" + serviceInterface + '\'' +
-                ", version='" + version + '\'' +
-                ", group='" + group + '\'' +
-                ", side='" + side + '\'' +
-                "} " + super.toString();
+        return "ServiceMetadataIdentifier{" + "revision='"
+                + revision + '\'' + ", protocol='"
+                + protocol + '\'' + ", serviceInterface='"
+                + serviceInterface + '\'' + ", version='"
+                + version + '\'' + ", group='"
+                + group + '\'' + ", side='"
+                + side + '\'' + "} "
+                + super.toString();
     }
 }

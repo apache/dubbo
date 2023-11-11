@@ -31,14 +31,13 @@ import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZ
 
 public class ProtocolUtils {
 
-    private static final ConcurrentMap<String, GroupServiceKeyCache> groupServiceKeyCacheMap = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, GroupServiceKeyCache> groupServiceKeyCacheMap =
+            new ConcurrentHashMap<>();
 
-    private ProtocolUtils() {
-    }
+    private ProtocolUtils() {}
 
     public static String serviceKey(URL url) {
-        return serviceKey(url.getPort(), url.getPath(), url.getVersion(),
-                url.getGroup());
+        return serviceKey(url.getPort(), url.getPath(), url.getVersion(), url.getGroup());
     }
 
     public static String serviceKey(int port, String serviceName, String serviceVersion, String serviceGroup) {
@@ -53,33 +52,29 @@ public class ProtocolUtils {
 
     public static boolean isGeneric(String generic) {
         return StringUtils.isNotEmpty(generic)
-                && (GENERIC_SERIALIZATION_DEFAULT.equalsIgnoreCase(generic)  /* Normal generalization cal */
-                || GENERIC_SERIALIZATION_NATIVE_JAVA.equalsIgnoreCase(generic) /* Streaming generalization call supporting jdk serialization */
-                || GENERIC_SERIALIZATION_BEAN.equalsIgnoreCase(generic)
-                || GENERIC_SERIALIZATION_PROTOBUF.equalsIgnoreCase(generic)
-                || GENERIC_SERIALIZATION_GSON.equalsIgnoreCase(generic)
-                || GENERIC_RAW_RETURN.equalsIgnoreCase(generic));
-
+                && (GENERIC_SERIALIZATION_DEFAULT.equalsIgnoreCase(generic) /* Normal generalization cal */
+                        || GENERIC_SERIALIZATION_NATIVE_JAVA.equalsIgnoreCase(
+                                generic) /* Streaming generalization call supporting jdk serialization */
+                        || GENERIC_SERIALIZATION_BEAN.equalsIgnoreCase(generic)
+                        || GENERIC_SERIALIZATION_PROTOBUF.equalsIgnoreCase(generic)
+                        || GENERIC_SERIALIZATION_GSON.equalsIgnoreCase(generic)
+                        || GENERIC_RAW_RETURN.equalsIgnoreCase(generic));
     }
 
     public static boolean isValidGenericValue(String generic) {
         return isGeneric(generic) || Boolean.FALSE.toString().equalsIgnoreCase(generic);
-
     }
 
     public static boolean isDefaultGenericSerialization(String generic) {
-        return isGeneric(generic)
-                && GENERIC_SERIALIZATION_DEFAULT.equalsIgnoreCase(generic);
+        return isGeneric(generic) && GENERIC_SERIALIZATION_DEFAULT.equalsIgnoreCase(generic);
     }
 
     public static boolean isJavaGenericSerialization(String generic) {
-        return isGeneric(generic)
-                && GENERIC_SERIALIZATION_NATIVE_JAVA.equalsIgnoreCase(generic);
+        return isGeneric(generic) && GENERIC_SERIALIZATION_NATIVE_JAVA.equalsIgnoreCase(generic);
     }
 
     public static boolean isGsonGenericSerialization(String generic) {
-        return isGeneric(generic)
-                && GENERIC_SERIALIZATION_GSON.equalsIgnoreCase(generic);
+        return isGeneric(generic) && GENERIC_SERIALIZATION_GSON.equalsIgnoreCase(generic);
     }
 
     public static boolean isBeanGenericSerialization(String generic) {

@@ -18,36 +18,38 @@ package org.apache.dubbo.spring.boot.interceptor;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.rpc.RpcContext;
-import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.web.servlet.HandlerInterceptor;
+
 public class DubboTagCookieInterceptor implements HandlerInterceptor {
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+            throws Exception {
         String tag = getSingleCookieValue(request.getCookies(), CommonConstants.TAG_KEY);
-        RpcContext.getClientAttachment().setAttachment(CommonConstants.TAG_KEY,tag);
+        RpcContext.getClientAttachment().setAttachment(CommonConstants.TAG_KEY, tag);
         return true;
     }
 
     @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)
+            throws Exception {
         RpcContext.getClientAttachment().removeAttachment(CommonConstants.TAG_KEY);
     }
 
-    private static String getSingleCookieValue(Cookie[] cookies, String name){
+    private static String getSingleCookieValue(Cookie[] cookies, String name) {
         if (cookies == null || cookies.length == 0) {
             return null;
         }
-        for (Cookie cookie: cookies) {
+        for (Cookie cookie : cookies) {
             if (name.equals(cookie.getName())) {
                 return cookie.getValue();
             }
         }
         return null;
     }
-
 }

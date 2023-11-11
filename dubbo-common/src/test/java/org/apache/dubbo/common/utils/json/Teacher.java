@@ -45,9 +45,6 @@ public class Teacher implements Serializable {
 
     @Override
     public String toString() {
-        return "Teacher{" +
-                "name='" + name + '\'' +
-                ", age=" + age +
-                '}';
+        return "Teacher{" + "name='" + name + '\'' + ", age=" + age + '}';
     }
 }

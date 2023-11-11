@@ -27,14 +27,13 @@ public class MockConfigService implements ConfigService {
     }
 
     @Override
-    public String getConfigAndSignListener(String dataId, String group, long timeoutMs, Listener listener) throws NacosException {
+    public String getConfigAndSignListener(String dataId, String group, long timeoutMs, Listener listener)
+            throws NacosException {
         return null;
     }
 
     @Override
-    public void addListener(String dataId, String group, Listener listener) throws NacosException {
-
-    }
+    public void addListener(String dataId, String group, Listener listener) throws NacosException {}
 
     @Override
     public boolean publishConfig(String dataId, String group, String content) throws NacosException {
@@ -52,7 +51,8 @@ public class MockConfigService implements ConfigService {
     }
 
     @Override
-    public boolean publishConfigCas(String dataId, String group, String content, String casMd5, String type) throws NacosException {
+    public boolean publishConfigCas(String dataId, String group, String content, String casMd5, String type)
+            throws NacosException {
         return false;
     }
 
@@ -62,9 +62,7 @@ public class MockConfigService implements ConfigService {
     }
 
     @Override
-    public void removeListener(String dataId, String group, Listener listener) {
-
-    }
+    public void removeListener(String dataId, String group, Listener listener) {}
 
     @Override
     public String getServerStatus() {
@@ -72,7 +70,5 @@ public class MockConfigService implements ConfigService {
     }
 
     @Override
-    public void shutDown() throws NacosException {
-
-    }
+    public void shutDown() throws NacosException {}
 }

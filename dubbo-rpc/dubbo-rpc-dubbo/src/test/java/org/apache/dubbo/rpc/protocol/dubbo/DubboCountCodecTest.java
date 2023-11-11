@@ -30,12 +30,12 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.dubbo.decode.MockChannel;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.rpc.Constants.INPUT_KEY;
 import static org.apache.dubbo.rpc.Constants.OUTPUT_KEY;
@@ -53,7 +53,8 @@ class DubboCountCodecTest {
         for (int i = 0; i < 10; i++) {
             Request request = new Request(i);
             futures.add(DefaultFuture.newFuture(channel, request, 1000, null));
-            RpcInvocation rpcInvocation = new RpcInvocation(null, "echo", DemoService.class.getName(), "", new Class<?>[]{String.class}, new String[]{"yug"});
+            RpcInvocation rpcInvocation = new RpcInvocation(
+                    null, "echo", DemoService.class.getName(), "", new Class<?>[] {String.class}, new String[] {"yug"});
             request.setData(rpcInvocation);
             dubboCountCodec.encode(channel, buffer, request);
         }
@@ -87,5 +88,4 @@ class DubboCountCodecTest {
 
         futures.forEach(DefaultFuture::cancel);
     }
-
 }

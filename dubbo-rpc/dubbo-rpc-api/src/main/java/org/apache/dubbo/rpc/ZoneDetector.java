@@ -28,5 +28,4 @@ public interface ZoneDetector {
     String getZoneOfCurrentRequest(Invocation invocation);
 
     String isZoneForcingEnabled(Invocation invocation, String zone);
-
 }

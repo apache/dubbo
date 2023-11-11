@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.threadpool.support.eager;
 
 import org.apache.dubbo.common.URL;
@@ -44,7 +43,8 @@ public class EagerThreadPool implements ThreadPool {
 
     @Override
     public Executor getExecutor(URL url) {
-        String name = url.getParameter(THREAD_NAME_KEY, (String) url.getAttribute(THREAD_NAME_KEY, DEFAULT_THREAD_NAME));
+        String name =
+                url.getParameter(THREAD_NAME_KEY, (String) url.getAttribute(THREAD_NAME_KEY, DEFAULT_THREAD_NAME));
         int cores = url.getParameter(CORE_THREADS_KEY, DEFAULT_CORE_THREADS);
         int threads = url.getParameter(THREADS_KEY, Integer.MAX_VALUE);
         int queues = url.getParameter(QUEUES_KEY, DEFAULT_QUEUES);
@@ -52,7 +52,8 @@ public class EagerThreadPool implements ThreadPool {
 
         // init queue and executor
         TaskQueue<Runnable> taskQueue = new TaskQueue<>(queues <= 0 ? 1 : queues);
-        EagerThreadPoolExecutor executor = new EagerThreadPoolExecutor(cores,
+        EagerThreadPoolExecutor executor = new EagerThreadPoolExecutor(
+                cores,
                 threads,
                 alive,
                 TimeUnit.MILLISECONDS,

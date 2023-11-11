@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.IOUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -26,9 +24,14 @@ import java.beans.Transient;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * Configuration for ssl.
+ *
+ * @export
+ */
 public class SslConfig extends AbstractConfig {
 
-    private static final Logger logger = LoggerFactory.getLogger(SslConfig.class);
+    private static final long serialVersionUID = 4072725016922915851L;
 
     public static final String SERVER_KEY_CERT_CHAIN_PATH = "server-key-cert-chain-path";
 
@@ -46,31 +49,97 @@ public class SslConfig extends AbstractConfig {
 
     public static final String CLIENT_TRUST_CERT_COLLECTION_PATH = "client-trust-cert-collection-path";
 
+    /**
+     * Path to the server's key certificate chain file.
+     */
     private String serverKeyCertChainPath;
+
+    /**
+     * Path to the server's private key file.
+     */
     private String serverPrivateKeyPath;
+
+    /**
+     * Password for the server's private key (if applicable).
+     */
     private String serverKeyPassword;
+
+    /**
+     * Path to the server's trust certificate collection file.
+     */
     private String serverTrustCertCollectionPath;
 
+    /**
+     * Path to the client's key certificate chain file.
+     */
     private String clientKeyCertChainPath;
+
+    /**
+     * Path to the client's private key file.
+     */
     private String clientPrivateKeyPath;
+
+    /**
+     * Password for the client's private key (if applicable).
+     */
     private String clientKeyPassword;
+
+    /**
+     * Path to the client's trust certificate collection file.
+     */
     private String clientTrustCertCollectionPath;
 
+    /**
+     * Input stream for the server's key certificate chain (if provided).
+     */
     private InputStream serverKeyCertChainPathStream;
+
+    /**
+     * Input stream for the server's private key (if provided).
+     */
     private InputStream serverPrivateKeyPathStream;
+
+    /**
+     * Input stream for the server's trust certificate collection (if provided).
+     */
     private InputStream serverTrustCertCollectionPathStream;
 
+    /**
+     * Input stream for the client's key certificate chain (if provided).
+     */
     private InputStream clientKeyCertChainPathStream;
+
+    /**
+     * Input stream for the client's private key (if provided).
+     */
     private InputStream clientPrivateKeyPathStream;
+
+    /**
+     * Input stream for the client's trust certificate collection (if provided).
+     */
     private InputStream clientTrustCertCollectionPathStream;
 
+    /**
+     * Address for Certificate Authority (CA).
+     */
     private String caAddress;
+
+    /**
+     * Environment type for SSL configuration.
+     */
     private String envType;
+
+    /**
+     * Path to the CA certificate file.
+     */
     private String caCertPath;
+
+    /**
+     * Path to the OIDC (OpenID Connect) token file.
+     */
     private String oidcTokenPath;
 
-    public SslConfig() {
-    }
+    public SslConfig() {}
 
     public SslConfig(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -183,7 +252,8 @@ public class SslConfig extends AbstractConfig {
     @Transient
     public InputStream getServerKeyCertChainPathStream() throws IOException {
         if (serverKeyCertChainPath != null) {
-            serverKeyCertChainPathStream = IOUtils.getURL(serverKeyCertChainPath).openStream();
+            serverKeyCertChainPathStream =
+                    IOUtils.getURL(serverKeyCertChainPath).openStream();
         }
         return serverKeyCertChainPathStream;
     }
@@ -207,7 +277,8 @@ public class SslConfig extends AbstractConfig {
     @Transient
     public InputStream getServerTrustCertCollectionPathStream() throws IOException {
         if (serverTrustCertCollectionPath != null) {
-            serverTrustCertCollectionPathStream = IOUtils.getURL(serverTrustCertCollectionPath).openStream();
+            serverTrustCertCollectionPathStream =
+                    IOUtils.getURL(serverTrustCertCollectionPath).openStream();
         }
         return serverTrustCertCollectionPathStream;
     }
@@ -219,7 +290,8 @@ public class SslConfig extends AbstractConfig {
     @Transient
     public InputStream getClientKeyCertChainPathStream() throws IOException {
         if (clientKeyCertChainPath != null) {
-            clientKeyCertChainPathStream = IOUtils.getURL(clientKeyCertChainPath).openStream();
+            clientKeyCertChainPathStream =
+                    IOUtils.getURL(clientKeyCertChainPath).openStream();
         }
         return clientKeyCertChainPathStream;
     }
@@ -243,7 +315,8 @@ public class SslConfig extends AbstractConfig {
     @Transient
     public InputStream getClientTrustCertCollectionPathStream() throws IOException {
         if (clientTrustCertCollectionPath != null) {
-            clientTrustCertCollectionPathStream = IOUtils.getURL(clientTrustCertCollectionPath).openStream();
+            clientTrustCertCollectionPathStream =
+                    IOUtils.getURL(clientTrustCertCollectionPath).openStream();
         }
         return clientTrustCertCollectionPathStream;
     }

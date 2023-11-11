@@ -18,15 +18,17 @@ package org.apache.dubbo.spring.boot.interceptor;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.rpc.RpcContext;
-import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.web.servlet.HandlerInterceptor;
+
 public class DubboTagHeaderOrParameterInterceptor implements HandlerInterceptor {
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+            throws Exception {
         String tag = request.getHeader(CommonConstants.DUBBO_TAG_HEADER);
         if (tag == null) {
             tag = request.getParameter(CommonConstants.TAG_KEY);
@@ -38,8 +40,8 @@ public class DubboTagHeaderOrParameterInterceptor implements HandlerInterceptor 
     }
 
     @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)
+            throws Exception {
         RpcContext.getClientAttachment().removeAttachment(CommonConstants.TAG_KEY);
     }
-
 }

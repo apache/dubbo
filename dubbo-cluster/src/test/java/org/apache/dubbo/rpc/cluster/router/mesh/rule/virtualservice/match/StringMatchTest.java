@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
-
 
 import org.junit.jupiter.api.Test;
 
@@ -35,7 +33,6 @@ class StringMatchTest {
         assertFalse(stringMatch.isMatch(null));
     }
 
-
     @Test
     void prefixMatch() {
         StringMatch stringMatch = new StringMatch();
@@ -45,7 +42,6 @@ class StringMatchTest {
         assertFalse(stringMatch.isMatch("com.alibaba.hsf"));
         assertFalse(stringMatch.isMatch(null));
     }
-
 
     @Test
     void regxMatch() {
@@ -57,7 +53,6 @@ class StringMatchTest {
         assertFalse(stringMatch.isMatch("com.alibaba.hsf"));
         assertFalse(stringMatch.isMatch("com.taobao"));
     }
-
 
     @Test
     void emptyMatch() {

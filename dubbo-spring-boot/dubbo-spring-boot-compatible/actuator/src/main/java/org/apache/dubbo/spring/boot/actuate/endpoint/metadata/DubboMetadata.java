@@ -19,10 +19,10 @@ package org.apache.dubbo.spring.boot.actuate.endpoint.metadata;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.spring.boot.util.DubboUtils;
 
-import org.springframework.stereotype.Component;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import org.springframework.stereotype.Component;
 
 import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_GITHUB_URL;
 import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_MAILING_LIST;

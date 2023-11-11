@@ -17,6 +17,7 @@ package org.apache.dubbo.maven.plugin.protoc;
 
 import org.apache.dubbo.maven.plugin.protoc.command.DefaultProtocCommandBuilder;
 import org.apache.dubbo.maven.plugin.protoc.enums.DubboGenerateTypeEnum;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -31,8 +32,10 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
 import org.apache.maven.repository.RepositorySystem;
@@ -46,25 +49,33 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.Properties;
 import java.util.Set;
-import java.util.Arrays;
 
 import static java.lang.String.format;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singleton;
 import static org.codehaus.plexus.util.FileUtils.getFiles;
 
-@Mojo(name = "dubbo-protoc-compiler")
+@Mojo(
+    name = "compile",
+    defaultPhase = LifecyclePhase.GENERATE_SOURCES,
+    requiresDependencyResolution = ResolutionScope.COMPILE,
+    threadSafe = true
+)
 public class DubboProtocCompilerMojo extends AbstractMojo {
     @Parameter(property = "protoSourceDir", defaultValue = "${basedir}/src/main/proto")
     private File protoSourceDir;
     @Parameter(property = "outputDir", defaultValue = "${project.build.directory}/generated-sources/protobuf/java")
     private File outputDir;
-    @Parameter(required = true, property = "dubboVersion", defaultValue = "${dubbo.version}")
+    @Parameter(required = false, property = "dubboVersion")
     private String dubboVersion;
     @Parameter(required = true, readonly = true, defaultValue = "${project.remoteArtifactRepositories}")
     private List<ArtifactRepository> remoteRepositories;
@@ -72,9 +83,11 @@ public class DubboProtocCompilerMojo extends AbstractMojo {
     private String protocExecutable;
     @Parameter(required = false, property = "protocArtifact")
     private String protocArtifact;
+    @Parameter(required = false, property = "protocVersion")
+    private String protocVersion;
     @Parameter(required = false, defaultValue = "${project.build.directory}/protoc-plugins")
     private File protocPluginDirectory;
-    @Parameter(required = true, property = "dubboGenerateType", defaultValue = "dubbo3")
+    @Parameter(required = true, property = "dubboGenerateType", defaultValue = "tri")
     private String dubboGenerateType;
     @Parameter(defaultValue = "${project}", readonly = true)
     protected MavenProject project;
@@ -98,6 +111,31 @@ public class DubboProtocCompilerMojo extends AbstractMojo {
     private final DubboProtocPluginWrapperFactory dubboProtocPluginWrapperFactory = new DubboProtocPluginWrapperFactory();
 
     public void execute() throws MojoExecutionException, MojoFailureException {
+        Properties versionMatrix = new Properties();
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        InputStream stream = loader.getResourceAsStream("version-matrix.properties");
+        try {
+            versionMatrix.load(stream);
+        } catch (IOException e) {
+            getLog().warn("Unable to load default version matrix", e);
+        }
+
+        if (dubboVersion == null) {
+            dubboVersion = versionMatrix.getProperty("dubbo.version");
+        }
+        if (protocVersion == null) {
+            protocVersion = versionMatrix.getProperty("protoc.version");
+        }
+        if (protocArtifact == null) {
+            final String osName = System.getProperty("os.name");
+            final String osArch = System.getProperty("os.arch");
+
+            final String detectedName = normalizeOs(osName);
+            final String detectedArch = normalizeArch(osArch);
+
+            protocArtifact = "com.google.protobuf:protoc:" + protocVersion + ":exe:" + detectedName + '-' + detectedArch;
+        }
+
         if (protocExecutable == null && protocArtifact != null) {
             final Artifact artifact = createProtocArtifact(protocArtifact);
             final File file = resolveBinaryArtifact(artifact);
@@ -131,6 +169,39 @@ public class DubboProtocCompilerMojo extends AbstractMojo {
         } catch (CommandLineException e) {
             throw new MojoExecutionException(e);
         }
+    }
+
+    private static String normalizeOs(String value) {
+        value = normalize(value);
+        if (value.startsWith("linux")) {
+            return "linux";
+        }
+        if (value.startsWith("mac") || value.startsWith("osx")) {
+            return "osx";
+        }
+        if (value.startsWith("windows")) {
+            return "windows";
+        }
+
+        return "unknown";
+    }
+
+    private static String normalize(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.toLowerCase(Locale.US).replaceAll("[^a-z0-9]+", "");
+    }
+
+    private static String normalizeArch(String value) {
+        value = normalize(value);
+        if (value.matches("^(x8664|amd64|ia32e|em64t|x64)$")) {
+            return "x86_64";
+        }
+        if ("aarch64".equals(value)) {
+            return "aarch_64";
+        }
+        return "unknown";
     }
 
     public void linkProtoFilesToMaven() {

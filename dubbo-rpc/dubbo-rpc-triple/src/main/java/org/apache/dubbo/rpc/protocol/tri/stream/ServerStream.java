@@ -14,14 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.rpc.TriRpcStatus;
 
-import io.netty.util.concurrent.Future;
-
 import java.util.Map;
+
+import io.netty.util.concurrent.Future;
 
 /**
  * ServerStream is used to send response to client and receive requests from client. {@link
@@ -51,7 +50,8 @@ public interface ServerStream extends Stream {
      * @param attachments response attachments
      * @return a future that indicates the completion of send trailers
      */
-    Future<?> complete(TriRpcStatus status, Map<String, Object> attachments, boolean isNeedReturnException, int exceptionCode);
+    Future<?> complete(
+            TriRpcStatus status, Map<String, Object> attachments, boolean isNeedReturnException, int exceptionCode);
 
     /**
      * Send message to client
@@ -61,5 +61,4 @@ public interface ServerStream extends Stream {
      * @return a future that indicates the completion of send message
      */
     Future<?> sendMessage(byte[] message, int compressFlag);
-
 }

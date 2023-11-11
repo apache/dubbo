@@ -23,7 +23,6 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 /**
  * rest http protocol detector
  */
-
 public class RestHttp1Detector extends AbstractHttpProtocolDetector {
     private static final char[][] HTTP_METHODS_PREFIX = getHttpMethodsPrefix();
 

@@ -19,7 +19,9 @@ package org.apache.dubbo.common.extension.wrapper.impl;
 import org.apache.dubbo.common.extension.Wrapper;
 import org.apache.dubbo.common.extension.wrapper.Demo;
 
-@Wrapper(matches = {"demo"}, mismatches = "demo2")
+@Wrapper(
+        matches = {"demo"},
+        mismatches = "demo2")
 public class DemoWrapper implements Demo {
     private Demo demo;
 

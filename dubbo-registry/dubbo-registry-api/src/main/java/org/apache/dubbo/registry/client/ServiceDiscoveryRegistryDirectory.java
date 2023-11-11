@@ -87,13 +87,15 @@ import static org.apache.dubbo.registry.Constants.CONFIGURATORS_SUFFIX;
 import static org.apache.dubbo.rpc.model.ScopeModelUtil.getModuleModel;
 
 public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ServiceDiscoveryRegistryDirectory.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(ServiceDiscoveryRegistryDirectory.class);
 
     /**
      * instance address to invoker mapping.
      * The initial value is null and the midway may be assigned to null, please use the local variable reference
      */
     private volatile Map<ProtocolServiceKeyWithAddress, Invoker<T>> urlInvokerMap;
+
     private volatile ReferenceConfigurationListener referenceConfigurationListener;
     private volatile boolean enableConfigurationListen = true;
     private volatile List<URL> originalUrls = null;
@@ -107,12 +109,15 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         super(serviceType, url);
         moduleModel = getModuleModel(url.getScopeModel());
 
-        Set<ProviderFirstParams> providerFirstParams = url.getOrDefaultApplicationModel().getExtensionLoader(ProviderFirstParams.class).getSupportedExtensionInstances();
+        Set<ProviderFirstParams> providerFirstParams = url.getOrDefaultApplicationModel()
+                .getExtensionLoader(ProviderFirstParams.class)
+                .getSupportedExtensionInstances();
         if (CollectionUtils.isEmpty(providerFirstParams)) {
             this.providerFirstParams = null;
         } else {
             if (providerFirstParams.size() == 1) {
-                this.providerFirstParams = Collections.unmodifiableSet(providerFirstParams.iterator().next().params());
+                this.providerFirstParams = Collections.unmodifiableSet(
+                        providerFirstParams.iterator().next().params());
             } else {
                 Set<String> params = new HashSet<>();
                 for (ProviderFirstParams paramsFilter : providerFirstParams) {
@@ -126,13 +131,19 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         }
 
         String protocol = consumerUrl.getParameter(PROTOCOL_KEY, consumerUrl.getProtocol());
-        consumerProtocolServiceKey = new ProtocolServiceKey(consumerUrl.getServiceInterface(), consumerUrl.getVersion(), consumerUrl.getGroup(),
-            !CommonConstants.CONSUMER.equals(protocol) ? protocol : null);
+        consumerProtocolServiceKey = new ProtocolServiceKey(
+                consumerUrl.getServiceInterface(),
+                consumerUrl.getVersion(),
+                consumerUrl.getGroup(),
+                !CommonConstants.CONSUMER.equals(protocol) ? protocol : null);
     }
 
     @Override
     public void subscribe(URL url) {
-        if (moduleModel.modelEnvironment().getConfiguration().convert(Boolean.class, Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+        if (moduleModel
+                .modelEnvironment()
+                .getConfiguration()
+                .convert(Boolean.class, Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
             enableConfigurationListen = true;
             getConsumerConfigurationListener(moduleModel).addNotifyListener(this);
             referenceConfigurationListener = new ReferenceConfigurationListener(this.moduleModel, this, url);
@@ -143,15 +154,20 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     }
 
     private ConsumerConfigurationListener getConsumerConfigurationListener(ModuleModel moduleModel) {
-        return moduleModel.getBeanFactory().getOrRegisterBean(ConsumerConfigurationListener.class,
-            type -> new ConsumerConfigurationListener(moduleModel));
+        return moduleModel
+                .getBeanFactory()
+                .getOrRegisterBean(
+                        ConsumerConfigurationListener.class, type -> new ConsumerConfigurationListener(moduleModel));
     }
 
     @Override
     public void unSubscribe(URL url) {
         super.unSubscribe(url);
         this.originalUrls = null;
-        if (moduleModel.modelEnvironment().getConfiguration().convert(Boolean.class, Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+        if (moduleModel
+                .modelEnvironment()
+                .getConfiguration()
+                .convert(Boolean.class, Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
             getConsumerConfigurationListener(moduleModel).removeNotifyListener(this);
             referenceConfigurationListener.stop();
         }
@@ -160,7 +176,10 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     @Override
     public void destroy() {
         super.destroy();
-        if (moduleModel.modelEnvironment().getConfiguration().convert(Boolean.class, Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+        if (moduleModel
+                .modelEnvironment()
+                .getConfiguration()
+                .convert(Boolean.class, Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
             getConsumerConfigurationListener(moduleModel).removeNotifyListener(this);
             referenceConfigurationListener.stop();
         }
@@ -168,7 +187,8 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
 
     @Override
     public void buildRouterChain(URL url) {
-        this.setRouterChain(RouterChain.buildChain(getInterface(), url.addParameter(REGISTRY_TYPE_KEY, SERVICE_REGISTRY_TYPE)));
+        this.setRouterChain(
+                RouterChain.buildChain(getInterface(), url.addParameter(REGISTRY_TYPE_KEY, SERVICE_REGISTRY_TYPE)));
     }
 
     @Override
@@ -180,8 +200,10 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         RpcServiceContext.getServiceContext().setConsumerUrl(getConsumerUrl());
 
         //  3.x added for extend URL address
-        ExtensionLoader<AddressListener> addressListenerExtensionLoader = getUrl().getOrDefaultModuleModel().getExtensionLoader(AddressListener.class);
-        List<AddressListener> supportedListeners = addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);
+        ExtensionLoader<AddressListener> addressListenerExtensionLoader =
+                getUrl().getOrDefaultModuleModel().getExtensionLoader(AddressListener.class);
+        List<AddressListener> supportedListeners =
+                addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);
         if (supportedListeners != null && !supportedListeners.isEmpty()) {
             for (AddressListener addressListener : supportedListeners) {
                 instanceUrls = addressListener.notify(instanceUrls, getConsumerUrl(), this);
@@ -199,10 +221,10 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         refreshInvoker(instanceUrls);
     }
 
-
     protected URL overrideDirectoryWithConfigurator(URL url) {
         // override url with configurator from "app-name.configurators"
-        url = overrideWithConfigurators(getConsumerConfigurationListener(moduleModel).getConfigurators(), url);
+        url = overrideWithConfigurators(
+                getConsumerConfigurationListener(moduleModel).getConfigurators(), url);
 
         // override url with configurator from configurators from "service-name.configurators"
         if (referenceConfigurationListener != null) {
@@ -221,18 +243,19 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                     String appName = interfaceAddressURL.getApplication();
                     String side = interfaceAddressURL.getSide();
                     overriddenURL = URLBuilder.from(interfaceAddressURL)
-                        .clearParameters()
-                        .addParameter(APPLICATION_KEY, appName)
-                        .addParameter(SIDE_KEY, side).build();
+                            .clearParameters()
+                            .addParameter(APPLICATION_KEY, appName)
+                            .addParameter(SIDE_KEY, side)
+                            .build();
                 }
                 for (Configurator configurator : configurators) {
                     overriddenURL = configurator.configure(overriddenURL);
                 }
                 url = new DubboServiceAddressURL(
-                    interfaceAddressURL.getUrlAddress(),
-                    interfaceAddressURL.getUrlParam(),
-                    interfaceAddressURL.getConsumerURL(),
-                    (ServiceConfigURL) overriddenURL);
+                        interfaceAddressURL.getUrlAddress(),
+                        interfaceAddressURL.getUrlParam(),
+                        interfaceAddressURL.getConsumerURL(),
+                        (ServiceConfigURL) overriddenURL);
             } else {
                 for (Configurator configurator : configurators) {
                     url = configurator.configure(url);
@@ -244,7 +267,8 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
 
     protected InstanceAddressURL overrideWithConfigurator(InstanceAddressURL providerUrl) {
         // override url with configurator from "app-name.configurators"
-        providerUrl = overrideWithConfigurators(getConsumerConfigurationListener(moduleModel).getConfigurators(), providerUrl);
+        providerUrl = overrideWithConfigurators(
+                getConsumerConfigurationListener(moduleModel).getConfigurators(), providerUrl);
 
         // override url with configurator from configurators from "service-name.configurators"
         if (referenceConfigurationListener != null) {
@@ -260,10 +284,12 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             OverrideInstanceAddressURL overrideInstanceAddressURL = new OverrideInstanceAddressURL(url);
             if (overrideQueryMap != null) {
                 // override app-level configs
-                overrideInstanceAddressURL = (OverrideInstanceAddressURL) overrideInstanceAddressURL.addParameters(overrideQueryMap);
+                overrideInstanceAddressURL =
+                        (OverrideInstanceAddressURL) overrideInstanceAddressURL.addParameters(overrideQueryMap);
             }
             for (Configurator configurator : configurators) {
-                overrideInstanceAddressURL = (OverrideInstanceAddressURL) configurator.configure(overrideInstanceAddressURL);
+                overrideInstanceAddressURL =
+                        (OverrideInstanceAddressURL) configurator.configure(overrideInstanceAddressURL);
             }
             return overrideInstanceAddressURL;
         }
@@ -282,8 +308,10 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
      */
     @Override
     public boolean isNotificationReceived() {
-        return serviceListener == null || serviceListener.isDestroyed()
-            || serviceListener.getAllInstances().size() == serviceListener.getServiceNames().size();
+        return serviceListener == null
+                || serviceListener.isDestroyed()
+                || serviceListener.getAllInstances().size()
+                        == serviceListener.getServiceNames().size();
     }
 
     private void refreshInvoker(List<URL> invokerUrls) {
@@ -291,36 +319,58 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         this.originalUrls = invokerUrls;
 
         if (invokerUrls.size() == 1 && EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
-            logger.warn(PROTOCOL_UNSUPPORTED, "", "", String.format("Received url with EMPTY protocol from registry %s, will clear all available addresses.", this));
-            refreshRouter(BitList.emptyList(), () ->
-                this.forbidden = true // Forbid to access
-            );
+            logger.warn(
+                    PROTOCOL_UNSUPPORTED,
+                    "",
+                    "",
+                    String.format(
+                            "Received url with EMPTY protocol from registry %s, will clear all available addresses.",
+                            this));
+            refreshRouter(
+                    BitList.emptyList(), () -> this.forbidden = true // Forbid to access
+                    );
             destroyAllInvokers(); // Close all invokers
         } else {
             this.forbidden = false; // Allow accessing
             if (CollectionUtils.isEmpty(invokerUrls)) {
-                logger.warn(PROTOCOL_UNSUPPORTED, "", "", String.format("Received empty url list from registry %s, will ignore for protection purpose.", this));
+                logger.warn(
+                        PROTOCOL_UNSUPPORTED,
+                        "",
+                        "",
+                        String.format(
+                                "Received empty url list from registry %s, will ignore for protection purpose.", this));
                 return;
             }
 
-            // use local reference to avoid NPE as this.urlInvokerMap will be set null concurrently at destroyAllInvokers().
+            // use local reference to avoid NPE as this.urlInvokerMap will be set null concurrently at
+            // destroyAllInvokers().
             Map<ProtocolServiceKeyWithAddress, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap;
             // can't use local reference as oldUrlInvokerMap's mappings might be removed directly at toInvokers().
             Map<ProtocolServiceKeyWithAddress, Invoker<T>> oldUrlInvokerMap = null;
             if (localUrlInvokerMap != null) {
-                // the initial capacity should be set greater than the maximum number of entries divided by the load factor to avoid resizing.
-                oldUrlInvokerMap = new LinkedHashMap<>(Math.round(1 + localUrlInvokerMap.size() / DEFAULT_HASHMAP_LOAD_FACTOR));
+                // the initial capacity should be set greater than the maximum number of entries divided by the load
+                // factor to avoid resizing.
+                oldUrlInvokerMap =
+                        new LinkedHashMap<>(Math.round(1 + localUrlInvokerMap.size() / DEFAULT_HASHMAP_LOAD_FACTOR));
                 localUrlInvokerMap.forEach(oldUrlInvokerMap::put);
             }
-            Map<ProtocolServiceKeyWithAddress, Invoker<T>> newUrlInvokerMap = toInvokers(oldUrlInvokerMap, invokerUrls);// Translate url list to Invoker map
+            Map<ProtocolServiceKeyWithAddress, Invoker<T>> newUrlInvokerMap =
+                    toInvokers(oldUrlInvokerMap, invokerUrls); // Translate url list to Invoker map
             logger.info(String.format("Refreshed invoker size %s from registry %s", newUrlInvokerMap.size(), this));
 
             if (CollectionUtils.isEmptyMap(newUrlInvokerMap)) {
-                logger.error(PROTOCOL_UNSUPPORTED, "", "", "Unsupported protocol.", new IllegalStateException(String.format("Cannot create invokers from url address list (total %s)", invokerUrls.size())));
+                logger.error(
+                        PROTOCOL_UNSUPPORTED,
+                        "",
+                        "",
+                        "Unsupported protocol.",
+                        new IllegalStateException(String.format(
+                                "Cannot create invokers from url address list (total %s)", invokerUrls.size())));
                 return;
             }
             List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
-            BitList<Invoker<T>> finalInvokers = multiGroup ? new BitList<>(toMergeInvokerList(newInvokers)) : new BitList<>(newInvokers);
+            BitList<Invoker<T>> finalInvokers =
+                    multiGroup ? new BitList<>(toMergeInvokerList(newInvokers)) : new BitList<>(newInvokers);
             // pre-route and build cache
             refreshRouter(finalInvokers.clone(), () -> this.setInvokers(finalInvokers));
             this.urlInvokerMap = newUrlInvokerMap;
@@ -337,13 +387,13 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         // notify invokers refreshed
         this.invokersChanged();
 
-        logger.info("Received invokers changed event from registry. " +
-            "Registry type: instance. " +
-            "Service Key: " + getConsumerUrl().getServiceKey() + ". " +
-            "Urls Size : " + invokerUrls.size() + ". " +
-            "Invokers Size : " + getInvokers().size() + ". " +
-            "Available Size: " + getValidInvokers().size() + ". " +
-            "Available Invokers : " + joinValidInvokerAddresses());
+        logger.info("Received invokers changed event from registry. " + "Registry type: instance. "
+                + "Service Key: "
+                + getConsumerUrl().getServiceKey() + ". " + "Urls Size : "
+                + invokerUrls.size() + ". " + "Invokers Size : "
+                + getInvokers().size() + ". " + "Available Size: "
+                + getValidInvokers().size() + ". " + "Available Invokers : "
+                + joinValidInvokerAddresses());
     }
 
     /**
@@ -354,8 +404,10 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
      * @param urls
      * @return invokers
      */
-    private Map<ProtocolServiceKeyWithAddress, Invoker<T>> toInvokers(Map<ProtocolServiceKeyWithAddress, Invoker<T>> oldUrlInvokerMap, List<URL> urls) {
-        Map<ProtocolServiceKeyWithAddress, Invoker<T>> newUrlInvokerMap = new ConcurrentHashMap<>(urls == null ? 1 : (int) (urls.size() / 0.75f + 1));
+    private Map<ProtocolServiceKeyWithAddress, Invoker<T>> toInvokers(
+            Map<ProtocolServiceKeyWithAddress, Invoker<T>> oldUrlInvokerMap, List<URL> urls) {
+        Map<ProtocolServiceKeyWithAddress, Invoker<T>> newUrlInvokerMap =
+                new ConcurrentHashMap<>(urls == null ? 1 : (int) (urls.size() / 0.75f + 1));
         if (urls == null || urls.isEmpty()) {
             return newUrlInvokerMap;
         }
@@ -365,15 +417,24 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             if (EMPTY_PROTOCOL.equals(instanceAddressURL.getProtocol())) {
                 continue;
             }
-            if (!getUrl().getOrDefaultFrameworkModel().getExtensionLoader(Protocol.class).hasExtension(instanceAddressURL.getProtocol())) {
+            if (!getUrl().getOrDefaultFrameworkModel()
+                    .getExtensionLoader(Protocol.class)
+                    .hasExtension(instanceAddressURL.getProtocol())) {
 
                 // 4-1 - Unsupported protocol
 
-                logger.error(PROTOCOL_UNSUPPORTED, "protocol extension does not installed", "", "Unsupported protocol.",
-                    new IllegalStateException("Unsupported protocol " + instanceAddressURL.getProtocol() +
-                        " in notified url: " + instanceAddressURL + " from registry " + getUrl().getAddress() +
-                        " to consumer " + NetUtils.getLocalHost() + ", supported protocol: " +
-                        getUrl().getOrDefaultFrameworkModel().getExtensionLoader(Protocol.class).getSupportedExtensions()));
+                logger.error(
+                        PROTOCOL_UNSUPPORTED,
+                        "protocol extension does not installed",
+                        "",
+                        "Unsupported protocol.",
+                        new IllegalStateException("Unsupported protocol " + instanceAddressURL.getProtocol()
+                                + " in notified url: "
+                                + instanceAddressURL + " from registry " + getUrl().getAddress() + " to consumer "
+                                + NetUtils.getLocalHost() + ", supported protocol: "
+                                + getUrl().getOrDefaultFrameworkModel()
+                                        .getExtensionLoader(Protocol.class)
+                                        .getSupportedExtensions()));
 
                 continue;
             }
@@ -387,29 +448,38 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
 
             // filter all the service available (version wildcard, group wildcard, protocol wildcard)
             int port = instanceAddressURL.getPort();
-            List<ProtocolServiceKey> matchedProtocolServiceKeys = instanceAddressURL.getMetadataInfo()
-                .getMatchedServiceInfos(consumerProtocolServiceKey)
-                .stream()
-                .filter(serviceInfo -> serviceInfo.getPort() <= 0 || serviceInfo.getPort() == port)
-                // special filter for extra protocols.
-                .filter(serviceInfo -> {
-                    if (StringUtils.isNotEmpty(consumerProtocolServiceKey.getProtocol())) {// if consumer side protocol is specified, use all the protocols we got in hand now directly
-                        return true;
-                    } else {// if consumer side protocol is not specified, remove all extra protocols
-                        return StringUtils.isEmpty(serviceInfo.getParameter(IS_EXTRA));
-                    }
-                })
-                .map(MetadataInfo.ServiceInfo::getProtocolServiceKey)
-                .collect(Collectors.toList());
+            List<ProtocolServiceKey> matchedProtocolServiceKeys =
+                    instanceAddressURL.getMetadataInfo().getMatchedServiceInfos(consumerProtocolServiceKey).stream()
+                            .filter(serviceInfo -> serviceInfo.getPort() <= 0 || serviceInfo.getPort() == port)
+                            // special filter for extra protocols.
+                            .filter(serviceInfo -> {
+                                if (StringUtils.isNotEmpty(
+                                        consumerProtocolServiceKey
+                                                .getProtocol())) { // if consumer side protocol is specified, use all
+                                    // the protocols we got in hand now directly
+                                    return true;
+                                } else { // if consumer side protocol is not specified, remove all extra protocols
+                                    return StringUtils.isEmpty(serviceInfo.getParameter(IS_EXTRA));
+                                }
+                            })
+                            .map(MetadataInfo.ServiceInfo::getProtocolServiceKey)
+                            .collect(Collectors.toList());
 
             // see org.apache.dubbo.common.ProtocolServiceKey.isSameWith
             // check if needed to override the consumer url
-            boolean shouldWrap = matchedProtocolServiceKeys.size() != 1 || !consumerProtocolServiceKey.isSameWith(matchedProtocolServiceKeys.get(0));
+            boolean shouldWrap = matchedProtocolServiceKeys.size() != 1
+                    || !consumerProtocolServiceKey.isSameWith(matchedProtocolServiceKeys.get(0));
 
             for (ProtocolServiceKey matchedProtocolServiceKey : matchedProtocolServiceKeys) {
-                ProtocolServiceKeyWithAddress protocolServiceKeyWithAddress = new ProtocolServiceKeyWithAddress(matchedProtocolServiceKey, instanceAddressURL.getAddress());
-                Invoker<T> invoker = oldUrlInvokerMap == null ? null : oldUrlInvokerMap.get(protocolServiceKeyWithAddress);
-                if (invoker == null || urlChanged(invoker, instanceAddressURL, matchedProtocolServiceKey)) { // Not in the cache, refer again
+                ProtocolServiceKeyWithAddress protocolServiceKeyWithAddress =
+                        new ProtocolServiceKeyWithAddress(matchedProtocolServiceKey, instanceAddressURL.getAddress());
+                Invoker<T> invoker =
+                        oldUrlInvokerMap == null ? null : oldUrlInvokerMap.get(protocolServiceKeyWithAddress);
+                if (invoker == null
+                        || urlChanged(
+                                invoker,
+                                instanceAddressURL,
+                                matchedProtocolServiceKey)) { // Not in the cache, refer again
                     try {
                         boolean enabled;
                         if (instanceAddressURL.hasParameter(DISABLED_KEY)) {
@@ -419,18 +489,28 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                         }
                         if (enabled) {
                             if (shouldWrap) {
-                                URL newConsumerUrl = ConcurrentHashMapUtils.computeIfAbsent(customizedConsumerUrlMap, matchedProtocolServiceKey,
-                                    k -> consumerUrl.setProtocol(k.getProtocol())
-                                        .addParameter(CommonConstants.GROUP_KEY, k.getGroup())
-                                        .addParameter(CommonConstants.VERSION_KEY, k.getVersion()));
+                                URL newConsumerUrl = ConcurrentHashMapUtils.computeIfAbsent(
+                                        customizedConsumerUrlMap, matchedProtocolServiceKey, k -> consumerUrl
+                                                .setProtocol(k.getProtocol())
+                                                .addParameter(CommonConstants.GROUP_KEY, k.getGroup())
+                                                .addParameter(CommonConstants.VERSION_KEY, k.getVersion()));
                                 RpcContext.getServiceContext().setConsumerUrl(newConsumerUrl);
-                                invoker = new InstanceWrappedInvoker<>(protocol.refer(serviceType, instanceAddressURL), newConsumerUrl, matchedProtocolServiceKey);
+                                invoker = new InstanceWrappedInvoker<>(
+                                        protocol.refer(serviceType, instanceAddressURL),
+                                        newConsumerUrl,
+                                        matchedProtocolServiceKey);
                             } else {
                                 invoker = protocol.refer(serviceType, instanceAddressURL);
                             }
                         }
                     } catch (Throwable t) {
-                        logger.error(PROTOCOL_FAILED_REFER_INVOKER, "", "", "Failed to refer invoker for interface:" + serviceType + ",url:(" + instanceAddressURL + ")" + t.getMessage(), t);
+                        logger.error(
+                                PROTOCOL_FAILED_REFER_INVOKER,
+                                "",
+                                "",
+                                "Failed to refer invoker for interface:" + serviceType + ",url:(" + instanceAddressURL
+                                        + ")" + t.getMessage(),
+                                t);
                     }
                     if (invoker != null) { // Put new invoker in cache
                         newUrlInvokerMap.put(protocolServiceKeyWithAddress, invoker);
@@ -456,13 +536,16 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                 // sub-class changed
                 return true;
             } else {
-                if (!((OverrideInstanceAddressURL) oldURL).getOverrideParams().equals(((OverrideInstanceAddressURL) newURL).getOverrideParams())) {
+                if (!((OverrideInstanceAddressURL) oldURL)
+                        .getOverrideParams()
+                        .equals(((OverrideInstanceAddressURL) newURL).getOverrideParams())) {
                     return true;
                 }
             }
         }
 
-        MetadataInfo.ServiceInfo oldServiceInfo = oldURL.getMetadataInfo().getValidServiceInfo(protocolServiceKey.toString());
+        MetadataInfo.ServiceInfo oldServiceInfo =
+                oldURL.getMetadataInfo().getValidServiceInfo(protocolServiceKey.toString());
         if (null == oldServiceInfo) {
             return false;
         }
@@ -504,7 +587,12 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                 try {
                     invoker.destroy();
                 } catch (Throwable t) {
-                    logger.warn(PROTOCOL_FAILED_DESTROY_INVOKER, "", "", "Failed to destroy service " + serviceKey + " to provider " + invoker.getUrl(), t);
+                    logger.warn(
+                            PROTOCOL_FAILED_DESTROY_INVOKER,
+                            "",
+                            "",
+                            "Failed to destroy service " + serviceKey + " to provider " + invoker.getUrl(),
+                            t);
                 }
             }
             localUrlInvokerMap.clear();
@@ -517,9 +605,11 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     @Override
     protected Map<String, String> getDirectoryMeta() {
         String registryKey = Optional.ofNullable(getRegistry())
-            .map(Registry::getUrl)
-            .map(url -> url.getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY, url.getParameter(RegistryConstants.REGISTRY_KEY, url.getProtocol())))
-            .orElse("unknown");
+                .map(Registry::getUrl)
+                .map(url -> url.getParameter(
+                        RegistryConstants.REGISTRY_CLUSTER_KEY,
+                        url.getParameter(RegistryConstants.REGISTRY_KEY, url.getProtocol())))
+                .orElse("unknown");
         Map<String, String> metas = new HashMap<>();
         metas.put(REGISTRY_KEY, registryKey);
         metas.put(REGISTER_MODE_KEY, INSTANCE_REGISTER_MODE);
@@ -533,7 +623,9 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
      * @param oldUrlInvokerMap
      * @param newUrlInvokerMap
      */
-    private void destroyUnusedInvokers(Map<ProtocolServiceKeyWithAddress, Invoker<T>> oldUrlInvokerMap, Map<ProtocolServiceKeyWithAddress, Invoker<T>> newUrlInvokerMap) {
+    private void destroyUnusedInvokers(
+            Map<ProtocolServiceKeyWithAddress, Invoker<T>> oldUrlInvokerMap,
+            Map<ProtocolServiceKeyWithAddress, Invoker<T>> newUrlInvokerMap) {
         if (newUrlInvokerMap == null || newUrlInvokerMap.size() == 0) {
             destroyAllInvokers();
             return;
@@ -552,7 +644,12 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                         logger.debug("destroy invoker[" + invoker.getUrl() + "] success. ");
                     }
                 } catch (Exception e) {
-                    logger.warn(PROTOCOL_FAILED_DESTROY_INVOKER, "", "", "destroy invoker[" + invoker.getUrl() + "]failed." + e.getMessage(), e);
+                    logger.warn(
+                            PROTOCOL_FAILED_DESTROY_INVOKER,
+                            "",
+                            "",
+                            "destroy invoker[" + invoker.getUrl() + "]failed." + e.getMessage(),
+                            e);
                 }
             }
         }
@@ -563,7 +660,8 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         private final ServiceDiscoveryRegistryDirectory<?> directory;
         private final URL url;
 
-        ReferenceConfigurationListener(ModuleModel moduleModel, ServiceDiscoveryRegistryDirectory<?> directory, URL url) {
+        ReferenceConfigurationListener(
+                ModuleModel moduleModel, ServiceDiscoveryRegistryDirectory<?> directory, URL url) {
             super(moduleModel);
             this.directory = directory;
             this.url = url;
@@ -624,7 +722,11 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         private final String address;
 
         public ProtocolServiceKeyWithAddress(ProtocolServiceKey protocolServiceKey, String address) {
-            super(protocolServiceKey.getInterfaceName(), protocolServiceKey.getVersion(), protocolServiceKey.getGroup(), protocolServiceKey.getProtocol());
+            super(
+                    protocolServiceKey.getInterfaceName(),
+                    protocolServiceKey.getVersion(),
+                    protocolServiceKey.getGroup(),
+                    protocolServiceKey.getProtocol());
             this.address = address;
         }
 
@@ -658,7 +760,8 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         private final URL newConsumerUrl;
         private final ProtocolServiceKey protocolServiceKey;
 
-        public InstanceWrappedInvoker(Invoker<T> originInvoker, URL newConsumerUrl, ProtocolServiceKey protocolServiceKey) {
+        public InstanceWrappedInvoker(
+                Invoker<T> originInvoker, URL newConsumerUrl, ProtocolServiceKey protocolServiceKey) {
             this.originInvoker = originInvoker;
             this.newConsumerUrl = newConsumerUrl;
             this.protocolServiceKey = protocolServiceKey;
@@ -674,11 +777,18 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             // override consumer url with real protocol service key
             RpcContext.getServiceContext().setConsumerUrl(newConsumerUrl);
             // recreate invocation due to the protocol service key changed
-            RpcInvocation copiedInvocation = new RpcInvocation(invocation.getTargetServiceUniqueName(),
-                invocation.getServiceModel(), invocation.getMethodName(), invocation.getServiceName(), protocolServiceKey.toString(),
-                invocation.getParameterTypes(), invocation.getArguments(), invocation.getObjectAttachments(),
-                invocation.getInvoker(), invocation.getAttributes(),
-                invocation instanceof RpcInvocation ? ((RpcInvocation) invocation).getInvokeMode() : null);
+            RpcInvocation copiedInvocation = new RpcInvocation(
+                    invocation.getTargetServiceUniqueName(),
+                    invocation.getServiceModel(),
+                    invocation.getMethodName(),
+                    invocation.getServiceName(),
+                    protocolServiceKey.toString(),
+                    invocation.getParameterTypes(),
+                    invocation.getArguments(),
+                    invocation.getObjectAttachments(),
+                    invocation.getInvoker(),
+                    invocation.getAttributes(),
+                    invocation instanceof RpcInvocation ? ((RpcInvocation) invocation).getInvokeMode() : null);
             copiedInvocation.setObjectAttachment(CommonConstants.GROUP_KEY, protocolServiceKey.getGroup());
             copiedInvocation.setObjectAttachment(CommonConstants.VERSION_KEY, protocolServiceKey.getVersion());
             return originInvoker.invoke(copiedInvocation);
@@ -705,10 +815,12 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
 
     @Override
     public String toString() {
-        return "ServiceDiscoveryRegistryDirectory(" +
-            "registry: " + getUrl().getAddress() +
-            ", subscribed key: " + (serviceListener == null || CollectionUtils.isEmpty(serviceListener.getServiceNames())
-            ? getConsumerUrl().getServiceKey() : serviceListener.getServiceNames().toString()) +
-            ")-" + super.toString();
+        return "ServiceDiscoveryRegistryDirectory(" + "registry: "
+                + getUrl().getAddress() + ", subscribed key: "
+                + (serviceListener == null || CollectionUtils.isEmpty(serviceListener.getServiceNames())
+                        ? getConsumerUrl().getServiceKey()
+                        : serviceListener.getServiceNames().toString())
+                + ")-"
+                + super.toString();
     }
 }

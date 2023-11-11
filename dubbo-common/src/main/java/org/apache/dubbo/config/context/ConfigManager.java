@@ -57,15 +57,22 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
     public static final String BEAN_NAME = "dubboConfigManager";
     public static final String DUBBO_CONFIG_MODE = ConfigKeys.DUBBO_CONFIG_MODE;
 
-
     public ConfigManager(ApplicationModel applicationModel) {
-        super(applicationModel, Arrays.asList(ApplicationConfig.class, MonitorConfig.class,
-                MetricsConfig.class, SslConfig.class, ProtocolConfig.class, RegistryConfig.class, ConfigCenterConfig.class,
-                MetadataReportConfig.class, TracingConfig.class));
+        super(
+                applicationModel,
+                Arrays.asList(
+                        ApplicationConfig.class,
+                        MonitorConfig.class,
+                        MetricsConfig.class,
+                        SslConfig.class,
+                        ProtocolConfig.class,
+                        RegistryConfig.class,
+                        ConfigCenterConfig.class,
+                        MetadataReportConfig.class,
+                        TracingConfig.class));
     }
 
-
-// ApplicationConfig correlative methods
+    // ApplicationConfig correlative methods
 
     /**
      * Set application config
@@ -135,7 +142,8 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
     }
 
     public Optional<Collection<ConfigCenterConfig>> getDefaultConfigCenter() {
-        Collection<ConfigCenterConfig> defaults = getDefaultConfigs(getConfigsMap(getTagName(ConfigCenterConfig.class)));
+        Collection<ConfigCenterConfig> defaults =
+                getDefaultConfigs(getConfigsMap(getTagName(ConfigCenterConfig.class)));
         if (CollectionUtils.isEmpty(defaults)) {
             defaults = getConfigCenters();
         }
@@ -165,7 +173,8 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
     }
 
     public Collection<MetadataReportConfig> getDefaultMetadataConfigs() {
-        Collection<MetadataReportConfig> defaults = getDefaultConfigs(getConfigsMap(getTagName(MetadataReportConfig.class)));
+        Collection<MetadataReportConfig> defaults =
+                getDefaultConfigs(getConfigsMap(getTagName(MetadataReportConfig.class)));
         if (CollectionUtils.isEmpty(defaults)) {
             return getMetadataConfigs();
         }
@@ -201,7 +210,6 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         return getConfigs(getTagName(ProtocolConfig.class));
     }
 
-
     // RegistryConfig correlative methods
 
     public void addRegistry(RegistryConfig registryConfig) {
@@ -225,7 +233,6 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
     public Collection<RegistryConfig> getRegistries() {
         return getConfigs(getTagName(RegistryConfig.class));
     }
-
 
     @Override
     public void refreshAll() {
@@ -254,7 +261,7 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         // load dubbo.metrics.xxx
         loadConfigsOfTypeFromProps(MetricsConfig.class);
 
-        //load dubbo.tracing.xxx
+        // load dubbo.tracing.xxx
         loadConfigsOfTypeFromProps(TracingConfig.class);
 
         // load multiple config types:
@@ -268,7 +275,7 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         loadConfigsOfTypeFromProps(MetadataReportConfig.class);
 
         // config centers has bean loaded before starting config center
-        //loadConfigsOfTypeFromProps(ConfigCenterConfig.class);
+        // loadConfigsOfTypeFromProps(ConfigCenterConfig.class);
 
         refreshAll();
 
@@ -304,8 +311,8 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
             }
             ProtocolConfig prevProtocol = protocolPortMap.get(port);
             if (prevProtocol != null) {
-                throw new IllegalStateException("Duplicated port used by protocol configs, port: " + port +
-                        ", configs: " + Arrays.asList(prevProtocol, protocol));
+                throw new IllegalStateException("Duplicated port used by protocol configs, port: " + port
+                        + ", configs: " + Arrays.asList(prevProtocol, protocol));
             }
             protocolPortMap.put(port, protocol);
         }

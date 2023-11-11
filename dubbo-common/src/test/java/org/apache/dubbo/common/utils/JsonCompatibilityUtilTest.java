@@ -18,11 +18,11 @@ package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.common.utils.json.Service;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -107,7 +107,6 @@ public class JsonCompatibilityUtilTest {
         assertTrue(res);
     }
 
-
     @Test
     public void testByte() throws NoSuchMethodException {
         boolean res = JsonCompatibilityUtil.checkMethodCompatibility(service.getDeclaredMethod("testByte"));
@@ -119,7 +118,6 @@ public class JsonCompatibilityUtilTest {
         boolean res = JsonCompatibilityUtil.checkMethodCompatibility(service.getDeclaredMethod("testByteArr"));
         assertTrue(res);
     }
-
 
     @Test
     public void testBByte() throws NoSuchMethodException {
@@ -139,7 +137,6 @@ public class JsonCompatibilityUtilTest {
         assertTrue(res);
     }
 
-
     @Test
     public void testFloat() throws NoSuchMethodException {
         boolean res = JsonCompatibilityUtil.checkMethodCompatibility(service.getDeclaredMethod("testFloat"));
@@ -158,13 +155,11 @@ public class JsonCompatibilityUtilTest {
         assertTrue(res);
     }
 
-
     @Test
     public void testFloatArray() throws NoSuchMethodException {
         boolean res = JsonCompatibilityUtil.checkMethodCompatibility(service.getDeclaredMethod("testFloatArray"));
         assertTrue(res);
     }
-
 
     @Test
     public void testFloatList() throws NoSuchMethodException {

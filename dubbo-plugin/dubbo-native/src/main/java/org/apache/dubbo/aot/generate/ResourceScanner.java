@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.aot.generate;
 
-
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -36,11 +35,17 @@ public class ResourceScanner extends JarScanner {
     public static final ResourceScanner INSTANCE = new ResourceScanner();
 
     public Set<String> distinctSpiResource() {
-        return getResourcePath().stream().distinct().filter(this::matchedSpiResource).collect(Collectors.toSet());
+        return getResourcePath().stream()
+                .distinct()
+                .filter(this::matchedSpiResource)
+                .collect(Collectors.toSet());
     }
 
     public Set<String> distinctSecurityResource() {
-        return getResourcePath().stream().distinct().filter(this::matchedSecurityResource).collect(Collectors.toSet());
+        return getResourcePath().stream()
+                .distinct()
+                .filter(this::matchedSecurityResource)
+                .collect(Collectors.toSet());
     }
 
     private boolean matchedSecurityResource(String path) {
@@ -49,9 +54,7 @@ public class ResourceScanner extends JarScanner {
 
     private boolean matchedSpiResource(String path) {
         return path.startsWith(DUBBO_INTERNAL_RESOURCE_DIRECTORY)
-            || path.startsWith(DUBBO_RESOURCE_DIRECTORY)
-            || path.startsWith(SERVICES_RESOURCE_DIRECTORY);
+                || path.startsWith(DUBBO_RESOURCE_DIRECTORY)
+                || path.startsWith(SERVICES_RESOURCE_DIRECTORY);
     }
-
-
 }
