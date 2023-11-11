@@ -78,7 +78,8 @@ class MetadataServiceNameMappingTest {
 
         when(configManager.getMetadataConfigs()).thenReturn(Collections.emptyList());
         Mockito.when(mockedApplicationModel.getApplicationConfigManager()).thenReturn(configManager);
-        Mockito.when(mockedApplicationModel.getCurrentConfig()).thenReturn(new ApplicationConfig("test"));
+        String appName = "test";
+        Mockito.when(mockedApplicationModel.getCurrentConfig()).thenReturn(new ApplicationConfig(appName));
 
         // metadata report config not found
         mapping.setApplicationModel(mockedApplicationModel);
@@ -120,10 +121,12 @@ class MetadataServiceNameMappingTest {
                 });
         assertTrue(mapping.map(url));
 
-        // metadata report using cas and retry, failed after 11 times retry for Service Interface mapping.
+        // metadata report succeeded directly for Service Interface mapping as it is already registered.
+        cfgItem.setContent(appName);
+        when(metadataReport.getConfigItem(any(), any())).thenReturn(cfgItem);
+        // metadata report using cas and retry, failed after 11 times retry for Application Name mapping.
         when(metadataReport.registerServiceAppMapping(any(), any(), any(), any()))
                 .thenReturn(false);
-        Exception exceptionExpected = null;
         assertFalse(mapping.map(url));
     }
 
