@@ -40,6 +40,7 @@ public class DubboBootstrapStatedEvent extends ApplicationEvent {
         super(bootstrap);
     }
 
+
     /**
      * Get {@link org.apache.dubbo.config.bootstrap.DubboBootstrap} instance
      *

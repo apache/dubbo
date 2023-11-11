@@ -212,12 +212,14 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             onInitialize();
 
             // register shutdown hook
+            // 注册关闭钩子，这个逻辑基本每个中间件应用都必须要要做的事情了，
+            // 正常关闭 应用回收资源，一般没这个逻辑情况下容易出现一些异常，让我们开发人员很疑惑，而这个逻辑 往往并不好处理的干净。
             registerShutdownHook();
-
+            // 启动配置中心
             startConfigCenter();
-
+            //加载配置，一般配置信息当前机器的来源:环境变量，JVM参数
             loadApplicationConfigs();
-
+            // 初始化模块发布器
             initModuleDeployers();
 
 
@@ -226,6 +228,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             initMetricsService();
 
             // @since 2.7.8
+            // 启动元数据中心
             startMetadataCenter();
 
             initialized = true;
@@ -634,6 +637,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     @Override
     public Future start() {
         synchronized (startLock) {
+            // 如果应用不是启动中的状态直接停止
             if (isStopping() || isStopped() || isFailed()) {
                 throw new IllegalStateException(getIdentifier() + " is stopping or stopped, can not start again");
             }
@@ -721,6 +725,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private void startModules() {
         // ensure init and start internal module first
+        // 确认核心模块已经启动,dubbo内核的部分模块
         prepareInternalModule();
 
         // filter and start pending modules, ignore new module during starting, throw exception of module start

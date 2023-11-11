@@ -1,3 +1,7 @@
+## 疑问记录
+1. 如果用远程配置中心,以zookeeper为例,配置方式如下:
+![img.png](img.png)
+```java
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -67,3 +71,5 @@ public class Application {
     }
 
 }
+
+```

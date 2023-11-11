@@ -999,8 +999,13 @@ public class ExtensionLoader<T> {
         cacheDefaultExtensionName();
 
         Map<String, Class<?>> extensionClasses = new HashMap<>();
+        // LoadingStrategy下的多个实现类
+        // DubboExternalLoadingStrategy -> META-INF/dubbo/external/ 优先级最高
+        // DubboLoadingStrategy -> META-INF/dubbo/
+        // ServicesLoadingStrategy -> META-INF/services/  优先级最低
 
         for (LoadingStrategy strategy : strategies) {
+            // 根据指定目录加载
             loadDirectory(extensionClasses, strategy, type.getName());
 
             // compatible with old ExtensionFactory
@@ -1399,12 +1404,20 @@ public class ExtensionLoader<T> {
         return name.toLowerCase();
     }
 
+    /**
+     * 扩展对象创建的所有过程
+     * @return
+     */
     @SuppressWarnings("unchecked")
     private T createAdaptiveExtension() {
         try {
+            // 获取扩展类型实现类,创建扩展对象
             T instance = (T) getAdaptiveExtensionClass().newInstance();
+            // 注入扩展对象之前的回调方法
             instance = postProcessBeforeInitialization(instance, null);
+            // 注入扩展对象
             injectExtension(instance);
+            // 注入扩展对象之后的回调方法
             instance = postProcessAfterInitialization(instance, null);
             initExtension(instance);
             return instance;
@@ -1415,6 +1428,7 @@ public class ExtensionLoader<T> {
     }
 
     private Class<?> getAdaptiveExtensionClass() {
+        // 获取扩展类型,将扩展类型存入成员变量cacheClasses中进行缓存
         getExtensionClasses();
         if (cachedAdaptiveClass != null) {
             return cachedAdaptiveClass;

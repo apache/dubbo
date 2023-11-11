@@ -21,6 +21,7 @@ import org.apache.dubbo.rpc.model.ScopeModel;
 public interface DeployListener<E extends ScopeModel> {
     /**
      * Useful to inject some configuration like MetricsConfig, RegistryConfig, etc.
+     * 用于注入一些配置，如 MetricsConfig、RegistryConfig 等。
      */
     void onInitialize(E scopeModel);
 

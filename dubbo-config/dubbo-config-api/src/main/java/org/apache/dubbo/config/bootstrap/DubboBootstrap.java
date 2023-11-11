@@ -160,11 +160,15 @@ public final class DubboBootstrap {
     }
 
     private DubboBootstrap(ApplicationModel applicationModel) {
+        // 存储应用程序启动模型
         this.applicationModel = applicationModel;
+        // 获取配置管理器 configManager
         configManager = applicationModel.getApplicationConfigManager();
+        // 获取环境信息Environment: 环境信息的扩展类型为ApplicationExt,扩展名为environment
         environment = applicationModel.modelEnvironment();
-
+        //初始化线程池
         executorRepository = ExecutorRepository.getInstance(applicationModel);
+        // 初始化应用实例并启动应用
         applicationDeployer = applicationModel.getDeployer();
         // listen deploy events
         applicationDeployer.addDeployListener(new DeployListenerAdapter<ApplicationModel>() {
@@ -224,6 +228,7 @@ public final class DubboBootstrap {
      * @return
      */
     public DubboBootstrap start(boolean wait) {
+        // 这个发布器是在ApplicationModel对象创建之后初始化的时候初始化的具体类型为DefaultApplicationDeployer
         Future future = applicationDeployer.start();
         if (wait) {
             try {
