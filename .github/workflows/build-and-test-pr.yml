@@ -26,7 +26,7 @@ jobs:
         uses: apache/skywalking-eyes@e1a02359b239bd28de3f6d35fdc870250fa513d5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: "Set up JDK 17"
+      - name: "Set up JDK 21"
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
