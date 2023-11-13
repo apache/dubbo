@@ -47,7 +47,7 @@
     <profile>
       <id>dubbo-all</id>
       <activation>
-        <activeByDefault>true</activeByDefault>
+        <jdk>[8,)</jdk>
       </activation>
       <modules>
         <module>dubbo-all</module>
