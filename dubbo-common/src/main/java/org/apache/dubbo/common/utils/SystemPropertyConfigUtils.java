@@ -27,7 +27,7 @@ public class SystemPropertyConfigUtils {
     private static Set<String> systemProperties = new HashSet<>();
 
     static {
-        Class<?>[] classes = new Class[]{
+        Class<?>[] classes = new Class[] {
             CommonConstants.SystemProperty.class,
             CommonConstants.ThirdPartyProperty.class,
             CommonConstants.DubboProperty.class
@@ -40,7 +40,7 @@ public class SystemPropertyConfigUtils {
                     systemProperties.add((String) field.get(null));
                 } catch (IllegalAccessException e) {
                     throw new IllegalStateException(
-                        String.format("%s does not have field of %s", clazz.getName(), field.getName()));
+                            String.format("%s does not have field of %s", clazz.getName(), field.getName()));
                 }
             }
         }
@@ -57,7 +57,7 @@ public class SystemPropertyConfigUtils {
             return System.getProperty(key);
         } else {
             throw new IllegalStateException(String.format(
-                "System property [%s] does not define in org.apache.dubbo.common.constants.CommonConstants", key));
+                    "System property [%s] does not define in org.apache.dubbo.common.constants.CommonConstants", key));
         }
     }
 
@@ -73,7 +73,7 @@ public class SystemPropertyConfigUtils {
             return System.getProperty(key, defaultValue);
         } else {
             throw new IllegalStateException(String.format(
-                "System property [%s] does not define in org.apache.dubbo.common.constants.CommonConstants", key));
+                    "System property [%s] does not define in org.apache.dubbo.common.constants.CommonConstants", key));
         }
     }
 
@@ -89,7 +89,7 @@ public class SystemPropertyConfigUtils {
             return System.setProperty(key, value);
         } else {
             throw new IllegalStateException(String.format(
-                "System property [%s] does not define in org.apache.dubbo.common.constants.CommonConstants", key));
+                    "System property [%s] does not define in org.apache.dubbo.common.constants.CommonConstants", key));
         }
     }
 
@@ -104,7 +104,7 @@ public class SystemPropertyConfigUtils {
             return System.clearProperty(key);
         } else {
             throw new IllegalStateException(String.format(
-                "System property [%s] does not define in org.apache.dubbo.common.constants.CommonConstants", key));
+                    "System property [%s] does not define in org.apache.dubbo.common.constants.CommonConstants", key));
         }
     }
 

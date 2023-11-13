@@ -15,6 +15,8 @@
  */
 package org.apache.dubbo.maven.plugin.protoc;
 
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.maven.plugin.protoc.command.DefaultProtocCommandBuilder;
 import org.apache.dubbo.maven.plugin.protoc.enums.DubboGenerateTypeEnum;
 
@@ -127,8 +129,8 @@ public class DubboProtocCompilerMojo extends AbstractMojo {
             protocVersion = versionMatrix.getProperty("protoc.version");
         }
         if (protocArtifact == null) {
-            final String osName = System.getProperty("os.name");
-            final String osArch = System.getProperty("os.arch");
+            final String osName = SystemPropertyConfigUtils.getSystemProperty(CommonConstants.SystemProperty.SYSTEM_OS_NAME);
+            final String osArch = SystemPropertyConfigUtils.getSystemProperty(CommonConstants.SystemProperty.OS_ARCH);
 
             final String detectedName = normalizeOs(osName);
             final String detectedArch = normalizeArch(osArch);
@@ -270,7 +272,7 @@ public class DubboProtocCompilerMojo extends AbstractMojo {
         dubboProtocPlugin.setMainClass(dubboGenerateTypeEnum.getMainClass());
         dubboProtocPlugin.setDubboVersion(dubboVersion);
         dubboProtocPlugin.setPluginDirectory(protocPluginDirectory);
-        dubboProtocPlugin.setJavaHome(System.getProperty("java.home"));
+        dubboProtocPlugin.setJavaHome(SystemPropertyConfigUtils.getSystemProperty(CommonConstants.SystemProperty.JAVA_HOME));
         DubboProtocPluginWrapper protocPluginWrapper = dubboProtocPluginWrapperFactory.findByOs();
         dubboProtocPlugin.setResolvedJars(resolvePluginDependencies());
         File protocPlugin = protocPluginWrapper.createProtocPlugin(dubboProtocPlugin, getLog());
@@ -345,7 +347,7 @@ public class DubboProtocCompilerMojo extends AbstractMojo {
         }
         final String type = parts.length >= 4 ? parts[3] : "exe";
         final String classifier = parts.length == 5 ? parts[4] : null;
-        //parts: [com.google.protobuf, protoc, 3.6.0, exe, osx-x86_64]
+        // parts: [com.google.protobuf, protoc, 3.6.0, exe, osx-x86_64]
         getLog().info("parts: " + Arrays.toString(parts));
         return createDependencyArtifact(parts[0], parts[1], parts[2], type, classifier);
     }

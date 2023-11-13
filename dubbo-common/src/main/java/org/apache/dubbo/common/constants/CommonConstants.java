@@ -603,6 +603,9 @@ public interface CommonConstants {
 
     String IS_EXTRA = "isExtra";
 
+    /**
+     * System-related VM properties
+     */
     interface SystemProperty {
 
         String USER_HOME = "user.home";
@@ -619,9 +622,30 @@ public interface CommonConstants {
 
         String SYSTEM_OS_NAME = "os.name";
 
+        String SYSTEM_OS_VERSION = "os.version";
+
+        String JAVA_RUNTIME_NAME = "java.runtime.name";
+
+        String JAVA_RUNTIME_VERSION = "java.runtime.version";
+
+        String JAVA_VM_NAME = "java.vm.name";
+
+        String JAVA_VM_VERSION = "java.vm.version";
+
+        String JAVA_VM_INFO = "java.vm.info";
+
+        String JAVA_HOME = "java.home";
+
+        String OS_ARCH = "os.arch";
+
+        String SYSTEM_FILE_ENCODING = "file.encoding";
+
         String SYSTEM_TCP_RESPONSE_TIMEOUT = "sun.rmi.transport.tcp.responseTimeout";
     }
 
+    /**
+     * Third-party-related VM properties
+     */
     interface ThirdPartyProperty {
         String NETTY_EPOLL_ENABLE_KEY = "netty.epoll.enable";
 
@@ -647,6 +671,9 @@ public interface CommonConstants {
         String ZOOKEEPER_CONFIG_ENABLE_EMBEDDED = "enableEmbeddedZookeeper";
     }
 
+    /**
+     * Dubbo custom VM properties
+     */
     interface DubboProperty {
         String DUBBO_MIGRATION_FILE_ENABLE = "dubbo.migration-file.enable";
         String DUBBO_MIGRATION_KEY = "dubbo.migration.file";
