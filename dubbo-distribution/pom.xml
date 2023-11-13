@@ -47,7 +47,7 @@
     <profile>
       <id>dubbo-all</id>
       <activation>
-        <jdk>[8,)</jdk>
+        <jdk>[1.7,)</jdk>
       </activation>
       <modules>
         <module>dubbo-all</module>
