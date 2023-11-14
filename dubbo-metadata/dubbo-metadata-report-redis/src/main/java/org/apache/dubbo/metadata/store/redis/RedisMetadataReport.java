@@ -27,6 +27,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MappingChangedEvent;
 import org.apache.dubbo.metadata.MappingListener;
 import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.metadata.report.identifier.BaseMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
@@ -229,6 +230,17 @@ public class RedisMetadataReport extends AbstractMetadataReport {
         }
     }
 
+    /**
+     * Store class and application names using Redis hashes
+     * key: default 'dubbo:mapping'
+     * field: class (serviceInterface)
+     * value: application_names
+     * @param serviceInterface field(class)
+     * @param defaultMappingGroup  {@link ServiceNameMapping#DEFAULT_MAPPING_GROUP}
+     * @param newConfigContent new application_names
+     * @param ticket previous application_names
+     * @return
+     */
     @Override
     public boolean registerServiceAppMapping(
             String serviceInterface, String defaultMappingGroup, String newConfigContent, Object ticket) {
@@ -253,6 +265,10 @@ public class RedisMetadataReport extends AbstractMetadataReport {
         }
     }
 
+    /**
+     * use 'watch' to implement cas.
+     * Find information about slot distribution by key.
+     */
     private boolean storeMappingInCluster(String key, String field, String value, String ticket) {
         try (JedisCluster jedisCluster =
                 new JedisCluster(jedisClusterNodes, timeout, timeout, 2, password, new GenericObjectPoolConfig<>())) {
@@ -278,6 +294,10 @@ public class RedisMetadataReport extends AbstractMetadataReport {
         return false;
     }
 
+    /**
+     * use 'watch' to implement cas.
+     * Find information about slot distribution by key.
+     */
     private boolean storeMappingStandalone(String key, String field, String value, String ticket) {
         try (Jedis jedis = pool.getResource()) {
             jedis.watch(key);
@@ -298,14 +318,27 @@ public class RedisMetadataReport extends AbstractMetadataReport {
         return false;
     }
 
+    /**
+     * build mapping key
+     * @param defaultMappingGroup {@link ServiceNameMapping#DEFAULT_MAPPING_GROUP}
+     * @return
+     */
     private String buildMappingKey(String defaultMappingGroup) {
         return this.root + GROUP_CHAR_SEPARATOR + defaultMappingGroup;
     }
 
+    /**
+     * build pub/sub key
+     */
     private String buildPubSubKey() {
         return buildMappingKey(DEFAULT_MAPPING_GROUP) + GROUP_CHAR_SEPARATOR + QUEUES_KEY;
     }
 
+    /**
+     * get content and use content to complete cas
+     * @param serviceKey class
+     * @param group {@link ServiceNameMapping#DEFAULT_MAPPING_GROUP}
+     */
     @Override
     public ConfigItem getConfigItem(String serviceKey, String group) {
         String key = buildMappingKey(group);
@@ -314,6 +347,9 @@ public class RedisMetadataReport extends AbstractMetadataReport {
         return new ConfigItem(content, content);
     }
 
+    /**
+     * get current application_names
+     */
     private String getMappingData(String key, String field) {
         if (pool != null) {
             return getMappingDataStandalone(key, field);
@@ -343,6 +379,9 @@ public class RedisMetadataReport extends AbstractMetadataReport {
         }
     }
 
+    /**
+     * remove listener. If have no listener,thread will dead
+     */
     @Override
     public void removeServiceAppMappingListener(String serviceKey, MappingListener listener) {
         MappingDataListener mappingDataListener = mappingDataListenerMap.get(buildPubSubKey());
@@ -355,6 +394,10 @@ public class RedisMetadataReport extends AbstractMetadataReport {
         }
     }
 
+    /**
+     * Start a thread and subscribe to {@link this#buildPubSubKey()}.
+     * Notify {@link MappingListener} if there is a change in the 'application_names' message.
+     */
     @Override
     public Set<String> getServiceAppMapping(String serviceKey, MappingListener listener, URL url) {
         MappingDataListener mappingDataListener =
@@ -394,6 +437,9 @@ public class RedisMetadataReport extends AbstractMetadataReport {
         return mappingDataListenerMap.get(buildPubSubKey());
     }
 
+    /**
+     * Listen for changes in the 'application_names' message and notify the listener.
+     */
     class NotifySub extends JedisPubSub {
 
         private final Map<String, Set<MappingListener>> listeners = new ConcurrentHashMap<>();
@@ -440,6 +486,9 @@ public class RedisMetadataReport extends AbstractMetadataReport {
         }
     }
 
+    /**
+     * Subscribe application names change message.
+     */
     class MappingDataListener extends Thread {
 
         private String path;
