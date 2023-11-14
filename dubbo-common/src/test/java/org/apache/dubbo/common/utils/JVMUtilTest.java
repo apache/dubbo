@@ -37,12 +37,12 @@ class JVMUtilTest {
     protected static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(JVMUtilTest.class);
 
     @Test
-    void testPrintStackTrace() {
+    void testPrintStackTraceWithSpecifiedDepth() {
         test(10);
     }
 
     @Test
-    void testPrintStackTraceWithSpecifiedDepth() {
+    void testPrintStackTraceWithUnlimitedDepth() {
         test(-1);
     }
 
