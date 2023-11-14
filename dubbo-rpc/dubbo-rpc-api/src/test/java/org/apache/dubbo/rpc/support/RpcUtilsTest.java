@@ -409,14 +409,14 @@ class RpcUtilsTest {
         Invoker invoker = createMockInvoker();
 
         RpcInvocation inv = new RpcInvocation(
-            "$invokeAsync",
-            serviceName,
-            "",
-            new Class<?>[] {String.class, String[].class, Object[].class},
-            new Object[] {"method", new String[]{"java.lang.String", "java.lang.Boolean", "java.lang.Integer"}, args},
-            null,
-            invoker,
-            null);
+                "$invokeAsync",
+                serviceName,
+                "",
+                new Class<?>[] {String.class, String[].class, Object[].class},
+                new Object[] {"method", new String[]{"java.lang.String", "java.lang.Boolean", "java.lang.Integer"}, args},
+                null,
+                invoker,
+                null);
 
         Class<?>[] parameterTypes = RpcUtils.getParameterTypes(inv);
         for (int i = 0; i < args.length; i++) {
@@ -468,14 +468,14 @@ class RpcUtilsTest {
         Invoker invoker = createMockInvoker();
 
         RpcInvocation inv = new RpcInvocation(
-            "$invokeAsync",
-            serviceName,
-            "",
-            new Class<?>[] {String.class, String[].class},
-            new Object[] {method, new String[] {"java.lang.String", "void", "java.lang.Object"}},
-            null,
-            invoker,
-            null);
+                "$invokeAsync",
+                serviceName,
+                "",
+                new Class<?>[] {String.class, String[].class},
+                new Object[] {method, new String[] {"java.lang.String", "void", "java.lang.Object"}},
+                null,
+                invoker,
+                null);
         String actual = RpcUtils.getMethodName(inv);
         Assertions.assertNotNull(actual);
         Assertions.assertEquals(method, actual);
@@ -515,14 +515,14 @@ class RpcUtilsTest {
         Invoker invoker = createMockInvoker();
 
         RpcInvocation inv = new RpcInvocation(
-            "$invokeAsync",
-            serviceName,
-            "",
-            new Class<?>[] {String.class, String[].class, Object[].class},
-            new Object[] {"method", new String[] {}, args},
-            null,
-            invoker,
-            null);
+                "$invokeAsync",
+                serviceName,
+                "",
+                new Class<?>[] {String.class, String[].class, Object[].class},
+                new Object[] {"method", new String[] {}, args},
+                null,
+                invoker,
+                null);
 
         Object[] arguments = RpcUtils.getArguments(inv);
         for (int i = 0; i < args.length; i++) {
