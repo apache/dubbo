@@ -414,7 +414,7 @@ class RpcUtilsTest {
                 "",
                 new Class<?>[] {String.class, String[].class, Object[].class},
                 new Object[] {
-                    "method", new String[]{"java.lang.String", "java.lang.Boolean", "java.lang.Integer"}, args
+                    "method", new String[] {"java.lang.String", "java.lang.Boolean", "java.lang.Integer"}, args
                 },
                 null,
                 invoker,
