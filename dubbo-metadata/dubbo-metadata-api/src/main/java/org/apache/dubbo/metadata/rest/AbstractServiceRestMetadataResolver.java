@@ -217,13 +217,13 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
     /**
      * for extract override method
      *
-     * @param serviceMethodsMap
-     * @param declaredServiceMethods
-     * @param serviceMethods
+     * @param serviceMethodsMap map for serviceMethod to impl or proxy method
+     * @param declaredServiceMethods interface or controllerClass declare methods
+     * @param serviceMethods impl or proxy methods
      */
     private void extractOverrideMethod(Map<Method, Method> serviceMethodsMap,
-                                       List<Method> declaredServiceMethods, // interface or controllerClass
-                                       List<Method> serviceMethods) {// impl or proxy
+                                       List<Method> declaredServiceMethods,
+                                       List<Method> serviceMethods) {
         // prevent from repeat method (impl proxy) & leaving out method(interface proxy)
         HashSet<String> methodComparators = new HashSet<>();
 
@@ -237,15 +237,11 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
 
                 String methodDesc = getMethodDesc(serviceMethod);
 
-                if (methodComparators.contains(methodDesc)) {
+                if (!methodComparators.add(methodDesc)) {
                     continue;
                 }
 
-                methodComparators.add(methodDesc);
                 serviceMethodsMap.put(serviceMethod, declaredServiceMethod);
-                // override method count > 1
-//                    // once method match ,break for decrease loop  times
-//                    break;
             }
         }
     }
