@@ -60,7 +60,7 @@ class JVMUtilTest {
         String property = System.getProperty(DUBBO_JSTACK_MAXLINE);
         System.setProperty(DUBBO_JSTACK_MAXLINE, depth.toString());
         try (FileOutputStream jStackStream =
-                 new FileOutputStream(new File("/tmp", "Dubbo_JStack.log" + "." + dateStr))) {
+                new FileOutputStream(new File("/tmp", "Dubbo_JStack.log" + "." + dateStr))) {
             jstack(jStackStream);
         } catch (Exception e) {
             logger.error(COMMON_UNEXPECTED_CREATE_DUMP, "", "", "dump jStack error", e);

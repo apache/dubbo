@@ -40,16 +40,16 @@ public class JVMUtil {
     private static void getThreadDumpString(final OutputStream stream, ThreadInfo threadInfo) throws Exception {
         // print basic info
         stream.write(String.format(
-                "\"%s\" Id=%d %s",
-                threadInfo.getThreadName(), threadInfo.getThreadId(), threadInfo.getThreadState())
-            .getBytes());
+                        "\"%s\" Id=%d %s",
+                        threadInfo.getThreadName(), threadInfo.getThreadId(), threadInfo.getThreadState())
+                .getBytes());
         if (threadInfo.getLockName() != null) {
             stream.write(String.format(" on %s", threadInfo.getLockName()).getBytes());
         }
         if (threadInfo.getLockOwnerName() != null) {
             stream.write(
-                String.format(" owned by \"%s\" Id=%d", threadInfo.getLockOwnerName(), threadInfo.getLockOwnerId())
-                    .getBytes());
+                    String.format(" owned by \"%s\" Id=%d", threadInfo.getLockOwnerName(), threadInfo.getLockOwnerId())
+                            .getBytes());
         }
         if (threadInfo.isSuspended()) {
             stream.write(" (suspended)".getBytes());
@@ -85,10 +85,10 @@ public class JVMUtil {
                 Thread.State ts = threadInfo.getThreadState();
                 if (BLOCKED.equals(ts)) {
                     stream.write(String.format("\t-  blocked on %s\n", threadInfo.getLockInfo())
-                        .getBytes());
+                            .getBytes());
                 } else if (WAITING.equals(ts) || TIMED_WAITING.equals(ts)) {
                     stream.write(String.format("\t-  waiting on %s\n", threadInfo.getLockInfo())
-                        .getBytes());
+                            .getBytes());
                 }
             }
 
@@ -107,7 +107,7 @@ public class JVMUtil {
         LockInfo[] locks = threadInfo.getLockedSynchronizers();
         if (locks.length > 0) {
             stream.write(String.format("\n\tNumber of locked synchronizers = %d\n", locks.length)
-                .getBytes());
+                    .getBytes());
             for (LockInfo li : locks) {
                 stream.write(String.format("\t- %s\n", li).getBytes());
             }
