@@ -81,7 +81,7 @@ public class RandomLoadBalance extends AbstractLoadBalance {
             /**
              * If (not every invoker has the same weight & at least one invoker's weight>0),
              * select randomly based on totalWeight.
-             * The aim of the following code is to return the invoker i with weights[i] > offset.
+             * The aim of the following code is to return the invoker i where weights[i] > offset.
              */
             int offset = ThreadLocalRandom.current().nextInt(totalWeight);
             // Return an invoker based on the random value.
