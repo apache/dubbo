@@ -490,6 +490,12 @@ public class ConfigValidationUtils {
                     + "Please add <dubbo:application name=\"...\" /> to your spring config.");
         }
 
+        String name = config.getName();
+        if (!checkName(NAME, name)) {
+            throw new IllegalStateException(
+                    String.format("please correct dubbo application name: %s at your spring config.", name));
+        }
+
         // backward compatibility
         ScopeModel scopeModel = ScopeModelUtil.getOrDefaultApplicationModel(config.getScopeModel());
         PropertiesConfiguration configuration = scopeModel.modelEnvironment().getPropertiesConfiguration();
@@ -503,7 +509,6 @@ public class ConfigValidationUtils {
             }
         }
 
-        checkName(NAME, config.getName());
         checkMultiName(OWNER, config.getOwner());
         checkName(ORGANIZATION, config.getOrganization());
         checkName(ARCHITECTURE, config.getArchitecture());
@@ -723,8 +728,8 @@ public class ConfigValidationUtils {
         checkProperty(property, value, MAX_PATH_LENGTH, null);
     }
 
-    public static void checkName(String property, String value) {
-        checkProperty(property, value, MAX_LENGTH, PATTERN_NAME);
+    public static boolean checkName(String property, String value) {
+        return checkProperty(property, value, MAX_LENGTH, PATTERN_NAME);
     }
 
     public static void checkHost(String property, String value) {
@@ -780,9 +785,9 @@ public class ConfigValidationUtils {
         }
     }
 
-    public static void checkProperty(String property, String value, int maxlength, Pattern pattern) {
+    public static boolean checkProperty(String property, String value, int maxlength, Pattern pattern) {
         if (StringUtils.isEmpty(value)) {
-            return;
+            return false;
         }
         if (value.length() > maxlength) {
             logger.error(
@@ -791,6 +796,7 @@ public class ConfigValidationUtils {
                     "",
                     "Parameter value format error. Invalid " + property + "=\"" + value + "\" is longer than "
                             + maxlength);
+            return false;
         }
         if (pattern != null) {
             Matcher matcher = pattern.matcher(value);
@@ -802,7 +808,9 @@ public class ConfigValidationUtils {
                         "Parameter value format error. Invalid " + property
                                 + "=\"" + value + "\" contains illegal "
                                 + "character, only digit, letter, '-', '_' or '.' is legal.");
+                return false;
             }
         }
+        return true;
     }
 }

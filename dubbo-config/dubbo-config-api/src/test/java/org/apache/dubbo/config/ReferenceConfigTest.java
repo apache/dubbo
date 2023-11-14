@@ -873,7 +873,7 @@ class ReferenceConfigTest {
         referenceConfig.setGeneric("true");
 
         DubboBootstrap.getInstance()
-                .application("demo app")
+                .application("demo-app")
                 .reference(referenceConfig)
                 .initialize();
 
