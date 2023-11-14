@@ -99,8 +99,9 @@ public abstract class AbstractGenerator {
                 serviceContext.packageName = extractPackageName(fileProto);
                 if (!Strings.isNullOrEmpty(fileProto.getOptions().getJavaOuterClassname())) {
                     serviceContext.outerClassName = fileProto.getOptions().getJavaOuterClassname();
-                }else{
-                    serviceContext.outerClassName = ProtoTypeMap.getJavaOuterClassname(fileProto,fileProto.getOptions());
+                } else {
+                    serviceContext.outerClassName =
+                            ProtoTypeMap.getJavaOuterClassname(fileProto, fileProto.getOptions());
                 }
                 serviceContext.commonPackageName = extractCommonPackageName(fileProto);
                 serviceContext.multipleFiles = fileProto.getOptions().getJavaMultipleFiles();
