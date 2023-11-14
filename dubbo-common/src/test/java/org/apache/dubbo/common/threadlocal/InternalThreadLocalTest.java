@@ -102,6 +102,7 @@ class InternalThreadLocalTest {
         final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
         internalThreadLocal.set(testVal);
         Assertions.assertEquals(testVal, internalThreadLocal.get(), "set is not equals get");
+        InternalThreadLocal.removeAll();
     }
 
     @Test
