@@ -62,7 +62,7 @@ public final class ProtoTypeMap {
         return (String)this.types.get(protoTypeName);
     }
 
-    private static String getJavaOuterClassname(DescriptorProtos.FileDescriptorProto fileDescriptor, DescriptorProtos.FileOptions fileOptions) {
+    public static String getJavaOuterClassname(DescriptorProtos.FileDescriptorProto fileDescriptor, DescriptorProtos.FileOptions fileOptions) {
         if (fileOptions.hasJavaOuterClassname()) {
             return fileOptions.getJavaOuterClassname();
         } else {
