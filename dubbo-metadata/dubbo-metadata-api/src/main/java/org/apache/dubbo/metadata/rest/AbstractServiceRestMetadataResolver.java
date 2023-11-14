@@ -209,35 +209,50 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         sort(declaredServiceMethods, MethodComparator.INSTANCE);
         sort(serviceMethods, MethodComparator.INSTANCE);
 
-        // prevent from repeat method (impl proxy) & leaving out method(interface proxy)
-        HashSet<String> methodComparators = new HashSet<>();
-
-        // TODO Map key: method desc &  value: Set<Method>
-        for (Method declaredServiceMethod : declaredServiceMethods) {
-            for (Method serviceMethod : serviceMethods) {
-
-                if (overrides(serviceMethod, declaredServiceMethod)) {
-
-                    String methodDesc = getMethodDesc(serviceMethod);
-
-                    if (methodComparators.contains(methodDesc)) {
-                        continue;
-                    }
-
-                    methodComparators.add(methodDesc);
-                    serviceMethodsMap.put(serviceMethod, declaredServiceMethod);
-                    // override method count > 1
-                    //                    // once method match ,break for decrease loop  times
-                    //                    break;
-                }
-            }
-        }
+        extractOverrideMethod(serviceMethodsMap, declaredServiceMethods, serviceMethods);
         // make them to be read-only
         return unmodifiableMap(serviceMethodsMap);
     }
 
     /**
-     *  For simple method desc
+     * for extract override method
+     *
+     * @param serviceMethodsMap
+     * @param declaredServiceMethods
+     * @param serviceMethods
+     */
+    private void extractOverrideMethod(Map<Method, Method> serviceMethodsMap,
+                                       List<Method> declaredServiceMethods, // interface or controllerClass
+                                       List<Method> serviceMethods) {// impl or proxy
+        // prevent from repeat method (impl proxy) & leaving out method(interface proxy)
+        HashSet<String> methodComparators = new HashSet<>();
+
+        // TODO Map key: method desc &  value: Set<Method> for accelerate loop speed
+        for (Method declaredServiceMethod : declaredServiceMethods) {
+            for (Method serviceMethod : serviceMethods) {
+
+                if (!overrides(serviceMethod, declaredServiceMethod)) {
+                    continue;
+                }
+
+                String methodDesc = getMethodDesc(serviceMethod);
+
+                if (methodComparators.contains(methodDesc)) {
+                    continue;
+                }
+
+                methodComparators.add(methodDesc);
+                serviceMethodsMap.put(serviceMethod, declaredServiceMethod);
+                // override method count > 1
+//                    // once method match ,break for decrease loop  times
+//                    break;
+            }
+        }
+    }
+
+    /**
+     * For simple method desc
+     *
      * @param serviceMethod
      * @return
      */
