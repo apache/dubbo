@@ -33,75 +33,85 @@ public class JVMUtil {
     public static void jstack(OutputStream stream) throws Exception {
         ThreadMXBean threadMxBean = ManagementFactory.getThreadMXBean();
         for (ThreadInfo threadInfo : threadMxBean.dumpAllThreads(true, true)) {
-            stream.write(getThreadDumpString(threadInfo).getBytes());
+            getThreadDumpString(stream, threadInfo);
         }
     }
 
-    private static String getThreadDumpString(ThreadInfo threadInfo) {
-        StringBuilder sb = new StringBuilder("\"" + threadInfo.getThreadName() + "\"" + " Id="
-                + threadInfo.getThreadId() + " " + threadInfo.getThreadState());
+    private static void getThreadDumpString(final OutputStream stream, ThreadInfo threadInfo) throws Exception {
+        // print basic info
+        stream.write(String.format(
+                "\"%s\" Id=%d %s",
+                threadInfo.getThreadName(), threadInfo.getThreadId(), threadInfo.getThreadState())
+            .getBytes());
         if (threadInfo.getLockName() != null) {
-            sb.append(" on " + threadInfo.getLockName());
+            stream.write(String.format(" on %s", threadInfo.getLockName()).getBytes());
         }
         if (threadInfo.getLockOwnerName() != null) {
-            sb.append(" owned by \"" + threadInfo.getLockOwnerName() + "\" Id=" + threadInfo.getLockOwnerId());
+            stream.write(
+                String.format(" owned by \"%s\" Id=%d", threadInfo.getLockOwnerName(), threadInfo.getLockOwnerId())
+                    .getBytes());
         }
         if (threadInfo.isSuspended()) {
-            sb.append(" (suspended)");
+            stream.write(" (suspended)".getBytes());
         }
         if (threadInfo.isInNative()) {
-            sb.append(" (in native)");
+            stream.write(" (in native)".getBytes());
         }
-        sb.append('\n');
-        int i = 0;
+        stream.write("\n".getBytes());
+
+        // calculate stack print depth
+        StackTraceElement[] stackTrace = threadInfo.getStackTrace();
         // default is 32, means only print up to 32 lines
-        int jstackMaxLine = 32;
+        int printStackDepth = Math.min(32, stackTrace.length);
         String jstackMaxLineStr = System.getProperty(CommonConstants.DUBBO_JSTACK_MAXLINE);
         if (StringUtils.isNotEmpty(jstackMaxLineStr)) {
             try {
-                jstackMaxLine = Integer.parseInt(jstackMaxLineStr);
+                int specifiedDepth = Integer.parseInt(jstackMaxLineStr);
+                if (specifiedDepth < 0) {
+                    // if set to a negative number, print all lines instead
+                    specifiedDepth = stackTrace.length;
+                }
+                printStackDepth = Math.min(stackTrace.length, specifiedDepth);
             } catch (Exception ignore) {
             }
         }
-        StackTraceElement[] stackTrace = threadInfo.getStackTrace();
+
+        // print stack trace info and monitor info
         MonitorInfo[] lockedMonitors = threadInfo.getLockedMonitors();
-        for (; i < stackTrace.length && i < jstackMaxLine; i++) {
+        for (int i = 0; i < printStackDepth; i++) {
             StackTraceElement ste = stackTrace[i];
-            sb.append("\tat ").append(ste.toString());
-            sb.append('\n');
+            stream.write(String.format("\tat %s\n", ste).getBytes());
             if (i == 0 && threadInfo.getLockInfo() != null) {
                 Thread.State ts = threadInfo.getThreadState();
                 if (BLOCKED.equals(ts)) {
-                    sb.append("\t-  blocked on ").append(threadInfo.getLockInfo());
-                    sb.append('\n');
+                    stream.write(String.format("\t-  blocked on %s\n", threadInfo.getLockInfo())
+                        .getBytes());
                 } else if (WAITING.equals(ts) || TIMED_WAITING.equals(ts)) {
-                    sb.append("\t-  waiting on ").append(threadInfo.getLockInfo());
-                    sb.append('\n');
+                    stream.write(String.format("\t-  waiting on %s\n", threadInfo.getLockInfo())
+                        .getBytes());
                 }
             }
 
             for (MonitorInfo mi : lockedMonitors) {
                 if (mi.getLockedStackDepth() == i) {
-                    sb.append("\t-  locked ").append(mi);
-                    sb.append('\n');
+                    stream.write(String.format("\t-  locked %s\n", mi).getBytes());
                 }
             }
         }
-        if (i < stackTrace.length) {
-            sb.append("\t...");
-            sb.append('\n');
+        if (printStackDepth < stackTrace.length) {
+            // current stack is deeper than the number of lines printed
+            stream.write("\t...\n".getBytes());
         }
 
+        // print lock info
         LockInfo[] locks = threadInfo.getLockedSynchronizers();
         if (locks.length > 0) {
-            sb.append("\n\tNumber of locked synchronizers = " + locks.length);
-            sb.append('\n');
+            stream.write(String.format("\n\tNumber of locked synchronizers = %d\n", locks.length)
+                .getBytes());
             for (LockInfo li : locks) {
-                sb.append("\t- " + li);
-                sb.append('\n');
+                stream.write(String.format("\t- %s\n", li).getBytes());
             }
         }
-        sb.append('\n');
-        return sb.toString();
+        stream.write("\n".getBytes());
     }
 }
