@@ -403,7 +403,7 @@ class RpcUtilsTest {
 
     @Test
     void testGet_$invokeAsync_ParameterTypes() {
-        Object[] args = new Object[] {"hello", "dubbo", 520};
+        Object[] args = new Object[] {"hello", true, 520};
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
         Invoker invoker = createMockInvoker();
@@ -413,7 +413,7 @@ class RpcUtilsTest {
             serviceName,
             "",
             new Class<?>[] {String.class, String[].class, Object[].class},
-            new Object[] {"method", new String[]{"java.lang.String", "java.lang.String", "java.lang.Integer"}, args},
+            new Object[] {"method", new String[]{"java.lang.String", "java.lang.Boolean", "java.lang.Integer"}, args},
             null,
             invoker,
             null);
