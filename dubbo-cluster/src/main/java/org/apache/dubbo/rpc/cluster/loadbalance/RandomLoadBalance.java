@@ -78,8 +78,11 @@ public class RandomLoadBalance extends AbstractLoadBalance {
             }
         }
         if (totalWeight > 0 && !sameWeight) {
-            // If (not every invoker has the same weight & at least one invoker's weight>0), select randomly based on
-            // totalWeight.
+            /**
+             * If (not every invoker has the same weight & at least one invoker's weight>0),
+             * select randomly based on totalWeight.
+             * The aim of the following code is to return the invoker i with weights[i] > offset.
+             */
             int offset = ThreadLocalRandom.current().nextInt(totalWeight);
             // Return an invoker based on the random value.
             if (length <= 4) {
@@ -89,14 +92,16 @@ public class RandomLoadBalance extends AbstractLoadBalance {
                     }
                 }
             } else {
+                /**
+                 * Arrays.binarySearch returns a positive index i where weights[i] == offset,
+                 * or a negative index i where weights[-i - 1] > offset.
+                 */
                 int i = Arrays.binarySearch(weights, offset);
                 if (i < 0) {
                     i = -i - 1;
                 } else {
-                    while (weights[i + 1] == offset) {
-                        i++;
-                    }
-                    i++;
+                    // keep moving i to the next index until weight[i] > offset.
+                    while (weights[++i] == offset) {}
                 }
                 return invokers.get(i);
             }
