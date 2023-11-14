@@ -413,7 +413,9 @@ class RpcUtilsTest {
                 serviceName,
                 "",
                 new Class<?>[] {String.class, String[].class, Object[].class},
-                new Object[] {"method", new String[]{"java.lang.String", "java.lang.Boolean", "java.lang.Integer"}, args},
+                new Object[] {
+                    "method", new String[]{"java.lang.String", "java.lang.Boolean", "java.lang.Integer"}, args
+                },
                 null,
                 invoker,
                 null);
@@ -528,7 +530,7 @@ class RpcUtilsTest {
         for (int i = 0; i < args.length; i++) {
             Assertions.assertNotNull(arguments[i]);
             Assertions.assertEquals(
-                args[i].getClass().getName(), arguments[i].getClass().getName());
+                    args[i].getClass().getName(), arguments[i].getClass().getName());
             Assertions.assertEquals(args[i], arguments[i]);
         }
     }
