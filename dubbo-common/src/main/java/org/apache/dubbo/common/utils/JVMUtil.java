@@ -100,7 +100,7 @@ public class JVMUtil {
         }
         if (printStackDepth < stackTrace.length) {
             // current stack is deeper than the number of lines printed
-            stream.write("\"\\t...\"\n".getBytes());
+            stream.write("\t...\n".getBytes());
         }
 
         // print lock info
