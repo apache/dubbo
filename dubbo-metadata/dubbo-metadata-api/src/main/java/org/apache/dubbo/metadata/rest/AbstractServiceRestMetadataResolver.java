@@ -210,6 +210,7 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         sort(serviceMethods, MethodComparator.INSTANCE);
 
         extractOverrideMethod(serviceMethodsMap, declaredServiceMethods, serviceMethods);
+
         // make them to be read-only
         return unmodifiableMap(serviceMethodsMap);
     }
