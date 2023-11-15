@@ -209,7 +209,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: coverage-result
-          path: "**/target/site/**/jacoco.xml"
+          path: "**/target/site/**"
 
   integration-test-prepare:
     runs-on: ubuntu-latest
@@ -363,7 +363,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: jacoco-report
-          path: "*/target/site/*"
+          path: "**/target/site/**"
 
   error-code-inspecting:
     runs-on: ubuntu-latest
