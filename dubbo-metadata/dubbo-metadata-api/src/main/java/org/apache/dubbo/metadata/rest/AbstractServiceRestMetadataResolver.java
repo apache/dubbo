@@ -209,13 +209,6 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         sort(declaredServiceMethods, MethodComparator.INSTANCE);
         sort(serviceMethods, MethodComparator.INSTANCE);
 
-        return extractOverrideMethod(serviceMethodsMap, declaredServiceMethods, serviceMethods);
-    }
-
-
-    private Map<Method, Method> extractOverrideMethod(Map<Method, Method> serviceMethodsMap,
-                                                      List<Method> declaredServiceMethods,
-                                                      List<Method> serviceMethods) {
         // prevent from repeat method (impl proxy) & leaving out method(interface proxy)
         HashSet<String> methodComparators = new HashSet<>();
 
