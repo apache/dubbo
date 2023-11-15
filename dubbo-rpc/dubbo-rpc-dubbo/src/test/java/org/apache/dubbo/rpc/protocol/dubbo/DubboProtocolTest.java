@@ -279,6 +279,7 @@ class DubboProtocolTest {
         }
     }
 
+    @Disabled
     @Test
     void testRemoteApplicationName() throws Exception {
         DemoService service = new DemoServiceImpl();

@@ -31,9 +31,11 @@
     <module>dubbo-remoting-api</module>
     <module>dubbo-remoting-http</module>
     <module>dubbo-remoting-netty</module>
+    <module>dubbo-remoting-zookeeper-api</module>
     <module>dubbo-remoting-zookeeper</module>
     <module>dubbo-remoting-zookeeper-curator5</module>
     <module>dubbo-remoting-netty4</module>
+    <module>dubbo-remoting-http12</module>
   </modules>
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>

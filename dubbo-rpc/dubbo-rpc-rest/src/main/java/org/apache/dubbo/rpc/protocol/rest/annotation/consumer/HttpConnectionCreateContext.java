@@ -71,4 +71,8 @@ public class HttpConnectionCreateContext {
     public void setServiceRestMetadata(ServiceRestMetadata serviceRestMetadata) {
         this.serviceRestMetadata = serviceRestMetadata;
     }
+
+    public boolean isNoAnnotationMode() {
+        return restMethodMetadata.currentCodeStyleIsNoAnnotationMode();
+    }
 }

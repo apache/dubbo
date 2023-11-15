@@ -22,7 +22,7 @@ import java.util.List;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-public class GsonImpl extends AbstractJSONImpl {
+public class GsonImpl extends AbstractJsonUtilImpl {
     // weak reference of com.google.gson.Gson, prevent throw exception when init
     private volatile Object gsonCache = null;
 

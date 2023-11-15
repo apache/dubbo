@@ -20,6 +20,8 @@ import org.apache.dubbo.common.logger.Level;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.support.FailsafeLogger;
 
+import org.slf4j.helpers.FormattingTuple;
+import org.slf4j.helpers.MessageFormatter;
 import org.slf4j.spi.LocationAwareLogger;
 
 public class Slf4jLogger implements Logger {
@@ -46,6 +48,17 @@ public class Slf4jLogger implements Logger {
             return;
         }
         logger.trace(msg);
+    }
+
+    @Override
+    public void trace(String msg, Object... arguments) {
+        if (locationAwareLogger != null) {
+            FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
+            locationAwareLogger.log(
+                    null, FQCN, LocationAwareLogger.TRACE_INT, msg, ft.getArgArray(), ft.getThrowable());
+            return;
+        }
+        logger.trace(msg, arguments);
     }
 
     @Override
@@ -76,6 +89,17 @@ public class Slf4jLogger implements Logger {
     }
 
     @Override
+    public void debug(String msg, Object... arguments) {
+        if (locationAwareLogger != null) {
+            FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
+            locationAwareLogger.log(
+                    null, FQCN, LocationAwareLogger.DEBUG_INT, msg, ft.getArgArray(), ft.getThrowable());
+            return;
+        }
+        logger.debug(msg, arguments);
+    }
+
+    @Override
     public void debug(Throwable e) {
         if (locationAwareLogger != null) {
             locationAwareLogger.log(null, FQCN, LocationAwareLogger.DEBUG_INT, e.getMessage(), null, e);
@@ -100,6 +124,16 @@ public class Slf4jLogger implements Logger {
             return;
         }
         logger.info(msg);
+    }
+
+    @Override
+    public void info(String msg, Object... arguments) {
+        if (locationAwareLogger != null) {
+            FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
+            locationAwareLogger.log(null, FQCN, LocationAwareLogger.INFO_INT, msg, ft.getArgArray(), ft.getThrowable());
+            return;
+        }
+        logger.info(msg, arguments);
     }
 
     @Override
@@ -130,6 +164,16 @@ public class Slf4jLogger implements Logger {
     }
 
     @Override
+    public void warn(String msg, Object... arguments) {
+        if (locationAwareLogger != null) {
+            FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
+            locationAwareLogger.log(null, FQCN, LocationAwareLogger.WARN_INT, msg, ft.getArgArray(), ft.getThrowable());
+            return;
+        }
+        logger.warn(msg, arguments);
+    }
+
+    @Override
     public void warn(Throwable e) {
         if (locationAwareLogger != null) {
             locationAwareLogger.log(null, FQCN, LocationAwareLogger.WARN_INT, e.getMessage(), null, e);
@@ -154,6 +198,17 @@ public class Slf4jLogger implements Logger {
             return;
         }
         logger.error(msg);
+    }
+
+    @Override
+    public void error(String msg, Object... arguments) {
+        if (locationAwareLogger != null) {
+            FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
+            locationAwareLogger.log(
+                    null, FQCN, LocationAwareLogger.ERROR_INT, msg, ft.getArgArray(), ft.getThrowable());
+            return;
+        }
+        logger.error(msg, arguments);
     }
 
     @Override

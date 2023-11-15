@@ -29,6 +29,7 @@
   <description>The monitor module of dubbo project</description>
   <modules>
     <module>dubbo-monitor-api</module>
+    <module>dubbo-monitor-common</module>
     <module>dubbo-monitor-default</module>
   </modules>
   <properties>

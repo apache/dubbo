@@ -38,6 +38,11 @@
     </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-remoting-http12</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-remoting-netty4</artifactId>
       <version>${project.parent.version}</version>
       <scope>test</scope>
@@ -68,6 +73,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-compress</artifactId>
     </dependency>
@@ -84,6 +94,18 @@
       <groupId>io.projectreactor</groupId>
       <artifactId>reactor-core</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-native</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-compiler</artifactId>
+      <version>${project.parent.version}</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
   <build>
@@ -106,7 +128,7 @@
         <artifactId>protobuf-maven-plugin</artifactId>
         <version>${maven_protobuf_plugin_version}</version>
         <configuration>
-          <protocArtifact>com.google.protobuf:protoc:${protobuf-java_version}:exe:${os.detected.classifier}</protocArtifact>
+          <protocArtifact>com.google.protobuf:protoc:${protobuf-protoc_version}:exe:${os.detected.classifier}</protocArtifact>
           <protocPlugins>
             <protocPlugin>
               <id>dubbo</id>
@@ -124,6 +146,15 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+
+      <!-- Override the maven-javadoc-plugin configuration that depends on the pass -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
       </plugin>
     </plugins>
   </build>

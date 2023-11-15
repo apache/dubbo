@@ -38,7 +38,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
-import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
@@ -47,6 +46,7 @@ import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.utils.CompositeReferenceCache;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
@@ -59,6 +59,7 @@ import org.apache.dubbo.metrics.report.DefaultMetricsReporterFactory;
 import org.apache.dubbo.metrics.report.MetricsReporter;
 import org.apache.dubbo.metrics.report.MetricsReporterFactory;
 import org.apache.dubbo.metrics.service.MetricsServiceExporter;
+import org.apache.dubbo.metrics.utils.MetricsSupportUtil;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
@@ -69,6 +70,8 @@ import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
+import org.apache.dubbo.tracing.DubboObservationRegistry;
+import org.apache.dubbo.tracing.utils.ObservationSupportUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -183,13 +186,13 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     /**
-     * Close registration of instance for pure Consumer process by setting registerConsumer to 'false'
-     * by default is true.
+     * Enable registration of instance for pure Consumer process by setting registerConsumer to 'true'
+     * by default is false.
      */
     private boolean isRegisterConsumerInstance() {
-        Boolean registerConsumer = getApplication().getRegisterConsumer();
+        Boolean registerConsumer = getApplicationOrElseThrow().getRegisterConsumer();
         if (registerConsumer == null) {
-            return true;
+            return false;
         }
         return Boolean.TRUE.equals(registerConsumer);
     }
@@ -226,6 +229,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             initMetricsReporter();
 
             initMetricsService();
+
+            // @since 3.2.3
+            initObservationRegistry();
 
             // @since 2.7.8
             startMetadataCenter();
@@ -306,7 +312,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
         useRegistryAsMetadataCenterIfNecessary();
 
-        ApplicationConfig applicationConfig = getApplication();
+        ApplicationConfig applicationConfig = getApplicationOrElseThrow();
 
         String metadataType = applicationConfig.getMetadataType();
         // FIXME, multiple metadata config support.
@@ -375,7 +381,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void initMetricsReporter() {
-        if (!isSupportMetrics()) {
+        if (!MetricsSupportUtil.isSupportMetrics()) {
             return;
         }
         DefaultMetricsCollector collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
@@ -383,7 +389,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         // If no specific metrics type is configured and there is no Prometheus dependency in the dependencies.
         MetricsConfig metricsConfig = configOptional.orElse(new MetricsConfig(applicationModel));
         if (StringUtils.isBlank(metricsConfig.getProtocol())) {
-            metricsConfig.setProtocol(isSupportPrometheus() ? PROTOCOL_PROMETHEUS : PROTOCOL_DEFAULT);
+            metricsConfig.setProtocol(
+                    MetricsSupportUtil.isSupportPrometheus() ? PROTOCOL_PROMETHEUS : PROTOCOL_DEFAULT);
         }
         collector.setCollectEnabled(true);
         collector.collectApplication();
@@ -417,19 +424,31 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
     }
 
-    public boolean isSupportMetrics() {
-        return isClassPresent("io.micrometer.core.instrument.MeterRegistry");
-    }
+    /**
+     * init ObservationRegistry(Micrometer)
+     */
+    private void initObservationRegistry() {
+        if (!ObservationSupportUtil.isSupportObservation()) {
+            if (logger.isDebugEnabled()) {
+                logger.debug(
+                        "Not found micrometer-observation or plz check the version of micrometer-observation version if already introduced, need > 1.10.0");
+            }
+            return;
+        }
+        if (!ObservationSupportUtil.isSupportTracing()) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Not found micrometer-tracing dependency, skip init ObservationRegistry.");
+            }
+            return;
+        }
+        Optional<TracingConfig> configOptional = configManager.getTracing();
+        if (!configOptional.isPresent() || !configOptional.get().getEnabled()) {
+            return;
+        }
 
-    public static boolean isSupportPrometheus() {
-        return isClassPresent("io.micrometer.prometheus.PrometheusConfig")
-                && isClassPresent("io.prometheus.client.exporter.BasicAuthHttpConnectionFactory")
-                && isClassPresent("io.prometheus.client.exporter.HttpConnectionFactory")
-                && isClassPresent("io.prometheus.client.exporter.PushGateway");
-    }
-
-    private static boolean isClassPresent(String className) {
-        return ClassUtils.isPresent(className, DefaultApplicationDeployer.class.getClassLoader());
+        DubboObservationRegistry dubboObservationRegistry =
+                new DubboObservationRegistry(applicationModel, configOptional.get());
+        dubboObservationRegistry.initObservationRegistry();
     }
 
     private boolean isUsedRegistryAsConfigCenter(RegistryConfig registryConfig) {
@@ -751,7 +770,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     @Override
-    public void prepareApplicationInstance() {
+    public void prepareApplicationInstance(ModuleModel moduleModel) {
         if (hasPreparedApplicationInstance.get()) {
             return;
         }
@@ -759,13 +778,17 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         // export MetricsService
         exportMetricsService();
 
-        if (isRegisterConsumerInstance()) {
-            exportMetadataService();
+        if (isRegisterConsumerInstance() || moduleModel.getDeployer().hasRegistryInteraction()) {
             if (hasPreparedApplicationInstance.compareAndSet(false, true)) {
                 // register the local ServiceInstance if required
                 registerServiceInstance();
             }
         }
+    }
+
+    @Override
+    public synchronized void exportMetadataService() {
+        doExportMetadataService();
     }
 
     public void prepareInternalModule() {
@@ -880,18 +903,22 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                             "Got global remote configuration from config center with key-%s and group-%s: \n %s",
                             configCenter.getConfigFile(), configCenter.getGroup(), configContent));
                 }
-                String appGroup = getApplication().getName();
+                String appGroup = "";
                 String appConfigContent = null;
                 String appConfigFile = null;
-                if (isNotEmpty(appGroup)) {
-                    appConfigFile = isNotEmpty(configCenter.getAppConfigFile())
-                            ? configCenter.getAppConfigFile()
-                            : configCenter.getConfigFile();
-                    appConfigContent = dynamicConfiguration.getProperties(appConfigFile, appGroup);
-                    if (StringUtils.isNotEmpty(appConfigContent)) {
-                        logger.info(String.format(
-                                "Got application specific remote configuration from config center with key %s and group %s: \n %s",
-                                appConfigFile, appGroup, appConfigContent));
+                Optional<ApplicationConfig> applicationOptional = getApplication();
+                if (applicationOptional.isPresent()) {
+                    appGroup = applicationOptional.get().getName();
+                    if (isNotEmpty(appGroup)) {
+                        appConfigFile = isNotEmpty(configCenter.getAppConfigFile())
+                                ? configCenter.getAppConfigFile()
+                                : configCenter.getConfigFile();
+                        appConfigContent = dynamicConfiguration.getProperties(appConfigFile, appGroup);
+                        if (StringUtils.isNotEmpty(appConfigContent)) {
+                            logger.info(String.format(
+                                    "Got application specific remote configuration from config center with key %s and group %s: \n %s",
+                                    appConfigFile, appGroup, appConfigContent));
+                        }
                     }
                 }
                 try {
@@ -954,7 +981,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private void registerServiceInstance() {
         try {
             registered = true;
+
             ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
+
         } catch (Exception e) {
             logger.error(
                     CONFIG_REGISTER_INSTANCE_ERROR,
@@ -1145,7 +1174,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     public void checkState(ModuleModel moduleModel, DeployState moduleState) {
         synchronized (stateLock) {
             if (!moduleModel.isInternal() && moduleState == DeployState.STARTED) {
-                prepareApplicationInstance();
+                prepareApplicationInstance(moduleModel);
             }
             DeployState newState = calculateState();
             switch (newState) {
@@ -1252,8 +1281,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
     }
 
-    private void exportMetadataService() {
-        if (!isStarting()) {
+    private void doExportMetadataService() {
+        if (!isStarting() && !isStarted()) {
             return;
         }
         for (DeployListener<ApplicationModel> listener : listeners) {
@@ -1393,7 +1422,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
     }
 
-    private ApplicationConfig getApplication() {
+    private ApplicationConfig getApplicationOrElseThrow() {
         return configManager.getApplicationOrElseThrow();
+    }
+
+    private Optional<ApplicationConfig> getApplication() {
+        return configManager.getApplication();
     }
 }

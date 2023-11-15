@@ -29,7 +29,9 @@
   <packaging>jar</packaging>
   <description>Apache Dubbo Zookeeper Spring Boot Starter</description>
 
-  <properties />
+  <properties>
+    <zookeeper_version>3.8.3</zookeeper_version>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -39,6 +41,7 @@
     <dependency>
       <groupId>org.apache.zookeeper</groupId>
       <artifactId>zookeeper</artifactId>
+      <version>${zookeeper_version}</version>
     </dependency>
   </dependencies>
 

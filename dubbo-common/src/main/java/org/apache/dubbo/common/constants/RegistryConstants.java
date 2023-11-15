@@ -141,4 +141,5 @@ public interface RegistryConstants {
     String ENABLE_EMPTY_PROTECTION_KEY = "enable-empty-protection";
     boolean DEFAULT_ENABLE_EMPTY_PROTECTION = false;
     String REGISTER_CONSUMER_URL_KEY = "register-consumer-url";
+    String REGISTRY_PROTOCOL_TYPE = "registry-protocol-type";
 }

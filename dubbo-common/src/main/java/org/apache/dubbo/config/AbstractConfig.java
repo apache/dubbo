@@ -68,7 +68,6 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILE
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_REFLECTIVE_OPERATION_FAILED;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 import static org.apache.dubbo.common.utils.ClassUtils.isSimpleType;
-import static org.apache.dubbo.common.utils.ReflectUtils.findMethodByMethodSignature;
 import static org.apache.dubbo.config.Constants.PARAMETERS;
 
 /**
@@ -76,10 +75,12 @@ import static org.apache.dubbo.config.Constants.PARAMETERS;
  *
  * @export
  */
+@SuppressWarnings({"unchecked", "rawtypes"})
 public abstract class AbstractConfig implements Serializable {
 
-    protected static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractConfig.class);
     private static final long serialVersionUID = 4267533505537413570L;
+
+    protected static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractConfig.class);
 
     /**
      * tag name cache, speed up get tag name frequently
@@ -97,19 +98,22 @@ public abstract class AbstractConfig implements Serializable {
     private static final String[] SUFFIXES = new String[] {"Config", "Bean", "ConfigBase"};
 
     /**
-     * The config id
+     * Identifier for this configuration.
      */
     private String id;
 
+    /**
+     * Indicates whether the configuration has been refreshed (true if refreshed).
+     */
     protected final AtomicBoolean refreshed = new AtomicBoolean(false);
 
     /**
-     * Indicate that if current config needs to being refreshed, default is true
+     * Specifies if this configuration should be refreshed (true for refreshing).
      */
     protected transient volatile boolean needRefresh = true;
 
     /**
-     * Is default config or not
+     * Indicates if this is the default configuration (true for default).
      */
     protected Boolean isDefault;
 
@@ -158,16 +162,12 @@ public abstract class AbstractConfig implements Serializable {
         appendParameters(parameters, config, null);
     }
 
-    @SuppressWarnings("unchecked")
     public static void appendParameters(Map<String, String> parameters, Object config, String prefix) {
         appendParameters0(parameters, config, prefix, true);
     }
 
     /**
      * Put attributes of specify 'config' into 'parameters' argument
-     *
-     * @param parameters
-     * @param config
      */
     public static void appendAttributes(Map<String, String> parameters, Object config) {
         appendParameters0(parameters, config, null, false);
@@ -294,7 +294,8 @@ public abstract class AbstractConfig implements Serializable {
 
     private static void invokeSetParameters(Class c, Object o, Map map) {
         try {
-            Method method = findMethodByMethodSignature(c, "setParameters", new String[] {Map.class.getName()});
+            Method method =
+                    ReflectUtils.findMethodByMethodSignature(c, "setParameters", new String[] {Map.class.getName()});
             if (method != null && isParametersSetter(method)) {
                 method.invoke(o, map);
             }
@@ -306,7 +307,7 @@ public abstract class AbstractConfig implements Serializable {
     private static Map<String, String> invokeGetParameters(Class c, Object o) {
         try {
 
-            Method method = findMethodByMethodSignature(c, "getParameters", null);
+            Method method = ReflectUtils.findMethodByMethodSignature(c, "getParameters", null);
             if (method != null && isParametersGetter(method)) {
                 return (Map<String, String>) method.invoke(o);
             }

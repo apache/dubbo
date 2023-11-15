@@ -42,10 +42,6 @@ public class JsonCodec implements HttpMessageCodec<byte[], OutputStream> {
         unSupportClasses.add(String.class);
     }
 
-    public static void addUnSupportClass(Class<?> unSupportClass) {
-        unSupportClasses.add(unSupportClass);
-    }
-
     @Override
     public Object decode(byte[] body, Class<?> targetType, Type actualType) throws Exception {
         return DataParseUtils.jsonConvert(actualType, body);
@@ -69,5 +65,9 @@ public class JsonCodec implements HttpMessageCodec<byte[], OutputStream> {
     @Override
     public void encode(OutputStream outputStream, Object unSerializedBody, URL url) throws Exception {
         outputStream.write(JsonUtils.toJson(unSerializedBody).getBytes(StandardCharsets.UTF_8));
+    }
+
+    public static final void addUnSupportClass(Class<?> unSupportClass) {
+        unSupportClasses.add(unSupportClass);
     }
 }

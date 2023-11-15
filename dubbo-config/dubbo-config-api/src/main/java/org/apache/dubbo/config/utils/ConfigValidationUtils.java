@@ -66,7 +66,6 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
-import org.apache.dubbo.rpc.support.MockInvoker;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -101,7 +100,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SE
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CLASS_NOT_FOUND;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_PARAMETER_FORMAT_ERROR;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTER_MODE_ALL;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTER_MODE_INSTANCE;
@@ -110,6 +108,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.DUBBO_REGISTER
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER_MODE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL_TYPE;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
@@ -124,6 +123,7 @@ import static org.apache.dubbo.config.Constants.LAYER_KEY;
 import static org.apache.dubbo.config.Constants.NAME;
 import static org.apache.dubbo.config.Constants.ORGANIZATION;
 import static org.apache.dubbo.config.Constants.OWNER;
+import static org.apache.dubbo.config.Constants.REGISTER_KEY;
 import static org.apache.dubbo.config.Constants.STATUS_KEY;
 import static org.apache.dubbo.monitor.Constants.LOGSTAT_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
@@ -225,7 +225,10 @@ public class ConfigValidationUtils {
                                 .setScopeModel(interfaceConfig.getScopeModel())
                                 .build();
                         // provider delay register state will be checked in RegistryProtocol#export
-                        if (provider || url.getParameter(SUBSCRIBE_KEY, true)) {
+                        if (provider && url.getParameter(REGISTER_KEY, true)) {
+                            registryList.add(url);
+                        }
+                        if (!provider && url.getParameter(SUBSCRIBE_KEY, true)) {
                             registryList.add(url);
                         }
                     }
@@ -362,47 +365,6 @@ public class ConfigValidationUtils {
         return null;
     }
 
-    /**
-     * Legitimacy check and setup of local simulated operations. The operations can be a string with Simple operation or
-     * a classname whose {@link Class} implements a particular function
-     *
-     * @param interfaceClass for provider side, it is the {@link Class} of the service that will be exported; for consumer
-     *                       side, it is the {@link Class} of the remote service interface that will be referenced
-     */
-    public static void checkMock(Class<?> interfaceClass, AbstractInterfaceConfig config) {
-        String mock = config.getMock();
-        if (ConfigUtils.isEmpty(mock)) {
-            return;
-        }
-
-        String normalizedMock = MockInvoker.normalizeMock(mock);
-        if (normalizedMock.startsWith(RETURN_PREFIX)) {
-            normalizedMock = normalizedMock.substring(RETURN_PREFIX.length()).trim();
-            try {
-                // Check whether the mock value is legal, if it is illegal, throw exception
-                MockInvoker.parseMockValue(normalizedMock);
-            } catch (Exception e) {
-                throw new IllegalStateException(
-                        "Illegal mock return in <dubbo:service/reference ... " + "mock=\"" + mock + "\" />");
-            }
-        } else if (normalizedMock.startsWith(THROW_PREFIX)) {
-            normalizedMock = normalizedMock.substring(THROW_PREFIX.length()).trim();
-            if (ConfigUtils.isNotEmpty(normalizedMock)) {
-                try {
-                    // Check whether the mock value is legal
-                    MockInvoker.getThrowable(normalizedMock);
-                } catch (Exception e) {
-                    throw new IllegalStateException(
-                            "Illegal mock throw in <dubbo:service/reference ... " + "mock=\"" + mock + "\" />");
-                }
-            }
-        } else {
-            // Check whether the mock class is a implementation of the interfaceClass, and if it has a default
-            // constructor
-            MockInvoker.getMockObject(config.getScopeModel().getExtensionDirector(), normalizedMock, interfaceClass);
-        }
-    }
-
     public static void validateAbstractInterfaceConfig(AbstractInterfaceConfig config) {
         checkName(LOCAL_KEY, config.getLocal());
         checkName("stub", config.getStub());
@@ -517,12 +479,8 @@ public class ConfigValidationUtils {
             try {
                 ClassUtils.forName("org.apache.dubbo.qos.protocol.QosProtocolWrapper");
             } catch (ClassNotFoundException e) {
-                logger.warn(
-                        COMMON_CLASS_NOT_FOUND,
-                        "",
-                        "",
-                        "No QosProtocolWrapper class was found. Please check the dependency of dubbo-qos whether was imported correctly.",
-                        e);
+                logger.info(
+                        "QosProtocolWrapper not found, qos will not be enabled, please check if 'dubbo-qos' dependency was imported correctly.");
             }
         }
     }
@@ -666,7 +624,7 @@ public class ConfigValidationUtils {
     }
 
     private static String getRegistryProtocolType(URL url) {
-        String registryProtocol = url.getParameter("registry-protocol-type");
+        String registryProtocol = url.getParameter(REGISTRY_PROTOCOL_TYPE);
         return isNotEmpty(registryProtocol) ? registryProtocol : REGISTRY_PROTOCOL;
     }
 

@@ -20,7 +20,6 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.reactive.ServerTripleReactorPublisher;
 import org.apache.dubbo.reactive.ServerTripleReactorSubscriber;
 import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
-import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -67,7 +66,7 @@ public final class ReactorServerCalls {
         try {
             Flux<R> response = func.apply(Mono.just(request));
             ServerTripleReactorSubscriber<R> subscriber = response.subscribeWith(new ServerTripleReactorSubscriber<>());
-            subscriber.subscribe((ServerCallToObserverAdapter<R>) responseObserver);
+            subscriber.subscribe((CallStreamObserver<R>) responseObserver);
         } catch (Throwable throwable) {
             responseObserver.onError(throwable);
         }

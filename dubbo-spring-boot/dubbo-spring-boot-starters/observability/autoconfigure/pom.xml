@@ -19,12 +19,12 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.dubbo</groupId>
-    <artifactId>dubbo-spring-boot-observability-starters</artifactId>
+    <artifactId>dubbo-observability-spring-boot-starters</artifactId>
     <version>${revision}</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>dubbo-spring-boot-observability-autoconfigure</artifactId>
+  <artifactId>dubbo-observability-spring-boot-autoconfigure</artifactId>
 
   <dependencies>
     <!-- micrometer -->
@@ -132,6 +132,12 @@
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-qos</artifactId>
+      <version>${project.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-config-spring</artifactId>
       <version>${project.version}</version>
       <optional>true</optional>
     </dependency>

@@ -1,0 +1,1 @@
+feign-provider=org.apache.dubbo.rpc.protocol.rest.config.FeignClientAnnotationConfigPostProcessor

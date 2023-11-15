@@ -23,11 +23,20 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Configuration for the exporter.
+ */
 public class ExporterConfig implements Serializable {
 
+    /**
+     * Configuration for the Zipkin.
+     */
     @Nested
     private ZipkinConfig zipkinConfig;
 
+    /**
+     * Configuration for the OTLP.
+     */
     @Nested
     private OtlpConfig otlpConfig;
 
@@ -55,14 +64,26 @@ public class ExporterConfig implements Serializable {
         private String endpoint;
 
         /**
-         * Connection timeout for requests to Zipkin.
+         * Connection timeout for requests to Zipkin. (seconds)
          */
         private Duration connectTimeout = Duration.ofSeconds(1);
 
         /**
-         * Read timeout for requests to Zipkin.
+         * Read timeout for requests to Zipkin. (seconds)
          */
         private Duration readTimeout = Duration.ofSeconds(10);
+
+        public ZipkinConfig() {}
+
+        public ZipkinConfig(String endpoint) {
+            this.endpoint = endpoint;
+        }
+
+        public ZipkinConfig(String endpoint, Duration connectTimeout, Duration readTimeout) {
+            this.endpoint = endpoint;
+            this.connectTimeout = connectTimeout;
+            this.readTimeout = readTimeout;
+        }
 
         public String getEndpoint() {
             return endpoint;
@@ -97,7 +118,7 @@ public class ExporterConfig implements Serializable {
         private String endpoint;
 
         /**
-         * The maximum time to wait for the collector to process an exported batch of spans.
+         * The maximum time to wait for the collector to process an exported batch of spans. (seconds)
          */
         private Duration timeout = Duration.ofSeconds(10);
 
@@ -108,6 +129,23 @@ public class ExporterConfig implements Serializable {
         private String compressionMethod = "none";
 
         private Map<String, String> headers = new HashMap<>();
+
+        public OtlpConfig() {}
+
+        public OtlpConfig(String endpoint) {
+            this.endpoint = endpoint;
+        }
+
+        public OtlpConfig(String endpoint, Duration timeout) {
+            this.endpoint = endpoint;
+            this.timeout = timeout;
+        }
+
+        public OtlpConfig(String endpoint, Duration timeout, String compressionMethod) {
+            this.endpoint = endpoint;
+            this.timeout = timeout;
+            this.compressionMethod = compressionMethod;
+        }
 
         public String getEndpoint() {
             return endpoint;

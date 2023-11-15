@@ -61,9 +61,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.EXT_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_REGISTER_MODE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
@@ -445,6 +447,12 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             }
 
             URL url = mergeUrl(providerUrl);
+            // get the effective protocol that this consumer should consume based on consumer side protocol
+            // configuration and available protocols in address pool.
+            String effectiveProtocol = getEffectiveProtocol(queryProtocols, url);
+            if (!effectiveProtocol.equals(url.getProtocol())) {
+                url = url.setProtocol(effectiveProtocol);
+            }
 
             // Cache key is url that does not merge with consumer side parameters,
             // regardless of how the consumer combines parameters,
@@ -493,6 +501,36 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             }
         }
         return newUrlInvokerMap;
+    }
+
+    /**
+     * Get the protocol to consume by matching the consumer acceptable protocols and the available provider protocols.
+     * <p>
+     * Only one protocol will be used if consumer set to accept multiple protocols, for example, dubbo.consumer.protocol='tri,rest'.
+     *
+     * @param queryProtocols consumer side protocols.
+     * @param url            provider url that have extra protocols specified.
+     * @return the protocol to consume.
+     */
+    private String getEffectiveProtocol(String queryProtocols, URL url) {
+        String protocol = url.getProtocol();
+        if (StringUtils.isNotEmpty(queryProtocols)) {
+            String[] acceptProtocols = queryProtocols.split(COMMA_SEPARATOR);
+            String acceptedProtocol = acceptProtocols[0];
+            if (!acceptedProtocol.equals(url.getProtocol())) {
+                String extProtocols = url.getParameter(EXT_PROTOCOL);
+                if (StringUtils.isNotEmpty(extProtocols)) {
+                    String[] extProtocolsArr = extProtocols.split(COMMA_SEPARATOR);
+                    for (String p : extProtocolsArr) {
+                        if (p.equalsIgnoreCase(acceptedProtocol)) {
+                            protocol = acceptedProtocol;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return protocol;
     }
 
     private boolean checkProtocolValid(String queryProtocols, URL providerUrl) {

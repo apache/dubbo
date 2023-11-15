@@ -26,7 +26,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.EXPORT_BACKGROUN
 import static org.apache.dubbo.common.constants.CommonConstants.EXPORT_THREAD_NUM_KEY;
 
 /**
- * The service provider default configuration
+ * Configuration for the service provider.
  *
  * @export
  * @see org.apache.dubbo.config.ProtocolConfig
@@ -36,137 +36,137 @@ public class ProviderConfig extends AbstractServiceConfig {
 
     private static final long serialVersionUID = 6913423882496634749L;
 
-    // ======== protocol default values, it'll take effect when protocol's attributes are not set ========
+    /* ======== Default values for protocols, which take effect when protocol attributes are not set ======== */
 
     /**
-     * Service ip addresses (used when there are multiple network cards available)
+     * The IP addresses of the service (used when there are multiple network cards available).
      */
     private String host;
 
     /**
-     * Service port
+     * The port of the service.
      */
     private Integer port;
 
     /**
-     * Context path
+     * The context path of the service.
      */
     private String contextpath;
 
     /**
-     * Thread pool
+     * The thread pool configuration.
      */
     private String threadpool;
 
     /**
-     * Thread pool name
+     * The name of the thread pool.
      */
     private String threadname;
 
     /**
-     * Thread pool size (fixed size)
+     * The size of the thread pool (fixed size).
      */
     private Integer threads;
 
     /**
-     * IO thread pool size (fixed size)
+     * The size of the I/O thread pool (fixed size).
      */
     private Integer iothreads;
 
     /**
-     * Thread pool keepAliveTime, default unit TimeUnit.MILLISECONDS
+     * The keep-alive time of the thread pool, default unit: TimeUnit.MILLISECONDS.
      */
     private Integer alive;
 
     /**
-     * Thread pool queue length
+     * The length of the thread pool queue.
      */
     private Integer queues;
 
     /**
-     * Max acceptable connections
+     * The maximum number of acceptable connections.
      */
     private Integer accepts;
 
     /**
-     * Protocol codec
+     * The codec used by the protocol.
      */
     private String codec;
 
     /**
-     * The serialization charset
+     * The charset used for serialization.
      */
     private String charset;
 
     /**
-     * Payload max length
+     * The maximum payload length.
      */
     private Integer payload;
 
     /**
-     * The network io buffer size
+     * The size of the network I/O buffer.
      */
     private Integer buffer;
 
     /**
-     * Transporter
+     * The transporter used by the protocol.
      */
     private String transporter;
 
     /**
-     * How information gets exchanged
+     * The method of information exchange.
      */
     private String exchanger;
 
     /**
-     * Thread dispatching mode
+     * The mode of thread dispatching.
      */
     private String dispatcher;
 
     /**
-     * Networker
+     * The networker used by the protocol.
      */
     private String networker;
 
     /**
-     * The server-side implementation model of the protocol
+     * The server-side implementation model of the protocol.
      */
     private String server;
 
     /**
-     * The client-side implementation model of the protocol
+     * The client-side implementation model of the protocol.
      */
     private String client;
 
     /**
-     * Supported telnet commands, separated with comma.
+     * Supported telnet commands, separated by commas.
      */
     private String telnet;
 
     /**
-     * Command line prompt
+     * The command line prompt.
      */
     private String prompt;
 
     /**
-     * Status check
+     * The status check configuration.
      */
     private String status;
 
     /**
-     * Wait time when stop
+     * The wait time when stopping the service.
      */
     private Integer wait;
 
     /**
-     * Thread num for asynchronous export pool size
+     * The number of threads for the asynchronous export pool.
      */
     private Integer exportThreadNum;
 
     /**
-     * Whether export should run in background or not.
+     * Whether the export should run in the background or not.
      *
-     * @deprecated replace with {@link ModuleConfig#setBackground(Boolean)}
+     * @deprecated Replace with {@link ModuleConfig#setBackground(Boolean)}
      * @see ModuleConfig#setBackground(Boolean)
      */
     private Boolean exportBackground;

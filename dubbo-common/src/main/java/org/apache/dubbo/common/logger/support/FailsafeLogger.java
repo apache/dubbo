@@ -85,6 +85,17 @@ public class FailsafeLogger implements Logger {
     }
 
     @Override
+    public void trace(String msg, Object... arguments) {
+        if (disabled) {
+            return;
+        }
+        try {
+            logger.trace(appendContextMessage(msg), arguments);
+        } catch (Throwable t) {
+        }
+    }
+
+    @Override
     public void debug(String msg, Throwable e) {
         if (disabled) {
             return;
@@ -118,6 +129,17 @@ public class FailsafeLogger implements Logger {
     }
 
     @Override
+    public void debug(String msg, Object... arguments) {
+        if (disabled) {
+            return;
+        }
+        try {
+            logger.debug(appendContextMessage(msg), arguments);
+        } catch (Throwable t) {
+        }
+    }
+
+    @Override
     public void info(String msg, Throwable e) {
         if (disabled) {
             return;
@@ -135,6 +157,17 @@ public class FailsafeLogger implements Logger {
         }
         try {
             logger.info(appendContextMessage(msg));
+        } catch (Throwable t) {
+        }
+    }
+
+    @Override
+    public void info(String msg, Object... arguments) {
+        if (disabled) {
+            return;
+        }
+        try {
+            logger.info(appendContextMessage(msg), arguments);
         } catch (Throwable t) {
         }
     }
@@ -162,6 +195,17 @@ public class FailsafeLogger implements Logger {
     }
 
     @Override
+    public void warn(String msg, Object... arguments) {
+        if (disabled) {
+            return;
+        }
+        try {
+            logger.warn(appendContextMessage(msg), arguments);
+        } catch (Throwable t) {
+        }
+    }
+
+    @Override
     public void error(String msg, Throwable e) {
         if (disabled) {
             return;
@@ -179,6 +223,17 @@ public class FailsafeLogger implements Logger {
         }
         try {
             logger.error(appendContextMessage(msg));
+        } catch (Throwable t) {
+        }
+    }
+
+    @Override
+    public void error(String msg, Object... arguments) {
+        if (disabled) {
+            return;
+        }
+        try {
+            logger.error(appendContextMessage(msg), arguments);
         } catch (Throwable t) {
         }
     }

@@ -21,7 +21,7 @@ import java.util.List;
 
 import com.alibaba.fastjson2.JSONWriter;
 
-public class FastJson2Impl extends AbstractJSONImpl {
+public class FastJson2Impl extends AbstractJsonUtilImpl {
     @Override
     public <T> T toJavaObject(String json, Type type) {
         return com.alibaba.fastjson2.JSON.parseObject(json, type);

@@ -20,10 +20,10 @@ import org.apache.dubbo.common.ServiceKey;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.remoting.http12.HttpHeaders;
+import org.apache.dubbo.remoting.http12.h2.Http2Header;
 import org.apache.dubbo.rpc.executor.AbstractIsolationExecutorSupport;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
-
-import io.netty.handler.codec.http2.Http2Headers;
 
 public class TripleIsolationExecutorSupport extends AbstractIsolationExecutorSupport {
     private static final ErrorTypeAwareLogger logger =
@@ -35,19 +35,20 @@ public class TripleIsolationExecutorSupport extends AbstractIsolationExecutorSup
 
     @Override
     protected ServiceKey getServiceKey(Object data) {
-        if (!(data instanceof Http2Headers)) {
+        if (!(data instanceof Http2Header)) {
             return null;
         }
 
-        Http2Headers headers = (Http2Headers) data;
-        String path = headers.path().toString();
+        Http2Header http2Metadata = (Http2Header) data;
+        HttpHeaders headers = http2Metadata.headers();
+        String path = http2Metadata.path();
         String[] parts = path.split("/"); // path like /{interfaceName}/{methodName}
         String interfaceName = parts[1];
-        String version = headers.contains(TripleHeaderEnum.SERVICE_VERSION.getHeader())
-                ? headers.get(TripleHeaderEnum.SERVICE_VERSION.getHeader()).toString()
+        String version = headers.containsKey(TripleHeaderEnum.SERVICE_VERSION.getHeader())
+                ? headers.getFirst(TripleHeaderEnum.SERVICE_VERSION.getHeader())
                 : null;
-        String group = headers.contains(TripleHeaderEnum.SERVICE_GROUP.getHeader())
-                ? headers.get(TripleHeaderEnum.SERVICE_GROUP.getHeader()).toString()
+        String group = headers.containsKey(TripleHeaderEnum.SERVICE_GROUP.getHeader())
+                ? headers.getFirst(TripleHeaderEnum.SERVICE_GROUP.getHeader())
                 : null;
         return new ServiceKey(interfaceName, version, group);
     }

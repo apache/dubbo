@@ -21,6 +21,8 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.io.OutputStream;
+
 /**
  * compress payload for grpc request， and decompress response payload Configure it in files,
  * pictures or other configurations that exist in the system properties Configure {@link
@@ -49,4 +51,6 @@ public interface Compressor extends MessageEncoding {
      * @return compressed payload byte array
      */
     byte[] compress(byte[] payloadByteArr);
+
+    OutputStream decorate(OutputStream outputStream);
 }

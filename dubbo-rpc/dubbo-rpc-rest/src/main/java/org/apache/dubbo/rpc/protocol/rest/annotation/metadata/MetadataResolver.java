@@ -38,8 +38,7 @@ public class MetadataResolver {
         ExtensionLoader<ServiceRestMetadataResolver> extensionLoader =
                 url.getOrDefaultApplicationModel().getExtensionLoader(ServiceRestMetadataResolver.class);
 
-        for (ServiceRestMetadataResolver serviceRestMetadataResolver :
-                extensionLoader.getSupportedExtensionInstances()) {
+        for (ServiceRestMetadataResolver serviceRestMetadataResolver : extensionLoader.getActivateExtensions()) {
             if (serviceRestMetadataResolver.supports(targetClass, true)) {
                 ServiceRestMetadata serviceRestMetadata =
                         new ServiceRestMetadata(url.getServiceInterface(), url.getVersion(), url.getGroup(), true);
@@ -59,8 +58,7 @@ public class MetadataResolver {
         ExtensionLoader<ServiceRestMetadataResolver> extensionLoader =
                 url.getOrDefaultApplicationModel().getExtensionLoader(ServiceRestMetadataResolver.class);
 
-        for (ServiceRestMetadataResolver serviceRestMetadataResolver :
-                extensionLoader.getSupportedExtensionInstances()) {
+        for (ServiceRestMetadataResolver serviceRestMetadataResolver : extensionLoader.getActivateExtensions()) {
             boolean supports = serviceRestMetadataResolver.supports(serviceImpl);
             if (supports) {
                 ServiceRestMetadata serviceRestMetadata =

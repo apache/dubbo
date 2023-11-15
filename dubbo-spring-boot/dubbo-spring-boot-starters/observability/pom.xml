@@ -24,15 +24,15 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>dubbo-spring-boot-observability-starters</artifactId>
+  <artifactId>dubbo-observability-spring-boot-starters</artifactId>
   <packaging>pom</packaging>
 
   <modules>
     <module>autoconfigure</module>
-    <module>dubbo-spring-boot-tracing-otel-zipkin-starter</module>
-    <module>dubbo-spring-boot-tracing-brave-zipkin-starter</module>
-    <module>dubbo-spring-boot-observability-starter</module>
-    <module>dubbo-spring-boot-tracing-otel-otlp-starter</module>
+    <module>dubbo-tracing-otel-zipkin-spring-boot-starter</module>
+    <module>dubbo-tracing-brave-zipkin-spring-boot-starter</module>
+    <module>dubbo-observability-spring-boot-starter</module>
+    <module>dubbo-tracing-otel-otlp-spring-boot-starter</module>
   </modules>
 
   <properties>

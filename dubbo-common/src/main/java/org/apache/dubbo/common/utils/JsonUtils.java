@@ -17,7 +17,7 @@
 package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.json.JSON;
+import org.apache.dubbo.common.json.JsonUtil;
 import org.apache.dubbo.common.json.impl.FastJson2Impl;
 import org.apache.dubbo.common.json.impl.FastJsonImpl;
 import org.apache.dubbo.common.json.impl.GsonImpl;
@@ -29,17 +29,16 @@ import java.util.List;
 import java.util.Map;
 
 public class JsonUtils {
+    private static volatile JsonUtil jsonUtil;
 
-    private static volatile JSON json;
-
-    protected static JSON getJson() {
-        if (json == null) {
+    protected static JsonUtil getJson() {
+        if (jsonUtil == null) {
             synchronized (JsonUtils.class) {
-                if (json == null) {
+                if (jsonUtil == null) {
                     String preferJsonFrameworkName = System.getProperty(CommonConstants.PREFER_JSON_FRAMEWORK_NAME);
                     if (StringUtils.isNotEmpty(preferJsonFrameworkName)) {
                         try {
-                            JSON instance = null;
+                            JsonUtil instance = null;
                             switch (preferJsonFrameworkName) {
                                 case "fastjson2":
                                     instance = new FastJson2Impl();
@@ -55,20 +54,20 @@ public class JsonUtils {
                                     break;
                             }
                             if (instance != null && instance.isSupport()) {
-                                json = instance;
+                                jsonUtil = instance;
                             }
                         } catch (Throwable ignore) {
 
                         }
                     }
-                    if (json == null) {
-                        List<Class<? extends JSON>> jsonClasses = Arrays.asList(
+                    if (jsonUtil == null) {
+                        List<Class<? extends JsonUtil>> jsonClasses = Arrays.asList(
                                 FastJson2Impl.class, FastJsonImpl.class, GsonImpl.class, JacksonImpl.class);
-                        for (Class<? extends JSON> jsonClass : jsonClasses) {
+                        for (Class<? extends JsonUtil> jsonClass : jsonClasses) {
                             try {
-                                JSON instance = jsonClass.getConstructor().newInstance();
+                                JsonUtil instance = jsonClass.getConstructor().newInstance();
                                 if (instance.isSupport()) {
-                                    json = instance;
+                                    jsonUtil = instance;
                                     break;
                                 }
                             } catch (Throwable ignore) {
@@ -76,7 +75,7 @@ public class JsonUtils {
                             }
                         }
                     }
-                    if (json == null) {
+                    if (jsonUtil == null) {
                         throw new IllegalStateException(
                                 "Dubbo unable to find out any json framework (e.g. fastjson2, fastjson, gson, jackson) from jvm env. "
                                         + "Please import at least one json framework.");
@@ -84,15 +83,15 @@ public class JsonUtils {
                 }
             }
         }
-        return json;
+        return jsonUtil;
     }
 
     /**
      * @deprecated for uts only
      */
     @Deprecated
-    protected static void setJson(JSON json) {
-        JsonUtils.json = json;
+    protected static void setJson(JsonUtil json) {
+        JsonUtils.jsonUtil = json;
     }
 
     public static <T> T toJavaObject(String json, Type type) {

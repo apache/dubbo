@@ -119,11 +119,12 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
             enableSsl(ctx, providerConnectionConfig);
         } else {
             for (final WireProtocol protocol : protocols) {
+
                 in.markReaderIndex();
                 ChannelBuffer buf = new NettyBackedChannelBuffer(in);
                 final ProtocolDetector.Result result = protocol.detector().detect(buf);
                 in.resetReaderIndex();
-                switch (result) {
+                switch (result.flag()) {
                     case UNRECOGNIZED:
                         continue;
                     case RECOGNIZED:
@@ -134,6 +135,7 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
                         URL localURL = this.urlMapper.getOrDefault(protocolName, url);
                         channel.setUrl(localURL);
                         NettyConfigOperator operator = new NettyConfigOperator(channel, localHandler);
+                        operator.setDetectResult(result);
                         protocol.configServerProtocolHandler(url, operator);
                         ctx.pipeline().remove(this);
                     case NEED_MORE_DATA:

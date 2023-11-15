@@ -44,6 +44,7 @@ public class ResteasyResponseTest {
             + "/rest?interface=org.apache.dubbo.rpc.protocol.rest.rest.RestDemoService");
     private final ModuleServiceRepository repository =
             ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
+    private static final String SERVER = "netty4";
 
     @AfterEach
     public void tearDown() {
@@ -56,7 +57,7 @@ public class ResteasyResponseTest {
         RestDemoService server = new RestDemoServiceImpl();
         URL url = this.registerProvider(exportUrl, server, RestDemoService.class);
 
-        URL nettyUrl = url.addParameter(SERVER_KEY, "netty").addParameter("timeout", 3000000);
+        URL nettyUrl = url.addParameter(SERVER_KEY, SERVER).addParameter("timeout", 3000000);
 
         protocol.export(proxy.getInvoker(new RestDemoServiceImpl(), RestDemoService.class, nettyUrl));
 

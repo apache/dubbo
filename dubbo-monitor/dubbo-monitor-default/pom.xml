@@ -33,7 +33,7 @@
   <dependencies>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-monitor-api</artifactId>
+      <artifactId>dubbo-monitor-common</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
     <dependency>
@@ -75,6 +75,11 @@
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

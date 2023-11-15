@@ -32,13 +32,13 @@
   </modules>
 
   <properties>
-    <maven.compiler.source>8</maven.compiler.source>
-    <maven.compiler.target>8</maven.compiler.target>
     <skip_maven_deploy>true</skip_maven_deploy>
     <spring-boot.version>2.7.17</spring-boot.version>
+    <slf4j-log4j12_version>1.7.33</slf4j-log4j12_version>
     <spring-boot-maven-plugin.version>2.7.17</spring-boot-maven-plugin.version>
     <micrometer-core.version>1.11.5</micrometer-core.version>
   </properties>
+
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -49,12 +49,30 @@
         <scope>import</scope>
       </dependency>
       <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-logging</artifactId>
+        <version>${spring-boot.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-to-slf4j</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-log4j12</artifactId>
+        <version>${slf4j-log4j12_version}</version>
+      </dependency>
+      <dependency>
         <groupId>io.micrometer</groupId>
         <artifactId>micrometer-core</artifactId>
         <version>${micrometer-core.version}</version>
       </dependency>
     </dependencies>
-
   </dependencyManagement>
-
 </project>

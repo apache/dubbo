@@ -45,6 +45,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FILTE
  *
  * @see Filter
  */
+@Deprecated
 public class CompatibleFilter implements Filter, Filter.Listener {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(CompatibleFilter.class);

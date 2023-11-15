@@ -29,3 +29,6 @@ insert_final_newline = true
 [*.{java,xml}]
 indent_style = space
 indent_size = 4
+
+[pom.xml]
+indent_size = 2

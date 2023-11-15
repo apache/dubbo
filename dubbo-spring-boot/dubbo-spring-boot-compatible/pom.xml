@@ -58,7 +58,7 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <useSystemClassLoader>true</useSystemClassLoader>
-              <forkMode>once</forkMode>
+              <forkCount>1</forkCount>
               <argLine>${argline} ${jacocoArgLine}
                                 --add-opens java.base/java.lang=ALL-UNNAMED
                                 --add-opens java.base/java.math=ALL-UNNAMED

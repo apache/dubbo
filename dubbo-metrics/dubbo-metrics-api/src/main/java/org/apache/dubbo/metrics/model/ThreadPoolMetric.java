@@ -83,6 +83,7 @@ public class ThreadPoolMetric implements Metric {
         return Objects.hash(applicationName, threadPoolName);
     }
 
+    @Override
     public Map<String, String> getTags() {
         Map<String, String> tags = new HashMap<>();
         tags.put(TAG_IP, getLocalHost());

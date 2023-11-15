@@ -140,7 +140,7 @@ public class NacosRegistry extends FailbackRegistry {
     public NacosRegistry(URL url, NacosNamingServiceWrapper namingService) {
         super(url);
         this.namingService = namingService;
-        this.supportLegacyServiceName = url.getParameter("nacos.subscribe.legacy-name", true);
+        this.supportLegacyServiceName = url.getParameter("nacos.subscribe.legacy-name", false);
     }
 
     @Override

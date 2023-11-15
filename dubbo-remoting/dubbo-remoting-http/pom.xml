@@ -59,6 +59,11 @@
       <version>4.5.14</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <scope>test</scope>
+    </dependency>
 
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>

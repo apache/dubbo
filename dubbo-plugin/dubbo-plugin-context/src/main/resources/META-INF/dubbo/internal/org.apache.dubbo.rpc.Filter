@@ -1,0 +1,2 @@
+context=org.apache.dubbo.rpc.filter.ContextFilter
+callback-consumer-context=org.apache.dubbo.rpc.cluster.filter.support.CallbackConsumerContextFilter

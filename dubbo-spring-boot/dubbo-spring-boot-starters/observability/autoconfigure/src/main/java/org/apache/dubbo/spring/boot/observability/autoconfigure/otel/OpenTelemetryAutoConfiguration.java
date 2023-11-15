@@ -17,8 +17,7 @@
 package org.apache.dubbo.spring.boot.observability.autoconfigure.otel;
 
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.spring.boot.autoconfigure.DubboConfigurationProperties;
 import org.apache.dubbo.spring.boot.observability.autoconfigure.DubboMicrometerTracingAutoConfiguration;
 import org.apache.dubbo.spring.boot.observability.autoconfigure.ObservabilityUtils;
@@ -37,9 +36,12 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_PREFIX;
+
 /**
  * provider OpenTelemetry when you are using Boot <3.0 or you are not using spring-boot-starter-actuator
  */
+@ConditionalOnProperty(prefix = DUBBO_PREFIX, name = "enabled", matchIfMissing = true)
 @AutoConfiguration(
         before = DubboMicrometerTracingAutoConfiguration.class,
         afterName = "org.springframework.boot.actuate.autoconfigure.tracing.OpenTelemetryAutoConfiguration")
@@ -57,15 +59,12 @@ public class OpenTelemetryAutoConfiguration {
     /**
      * Default value for application name if {@code spring.application.name} is not set.
      */
-    private static final String DEFAULT_APPLICATION_NAME = "application";
+    private static final String DEFAULT_APPLICATION_NAME = "dubbo-application";
 
     private final DubboConfigurationProperties dubboConfigProperties;
 
-    private final ModuleModel moduleModel;
-
-    OpenTelemetryAutoConfiguration(DubboConfigurationProperties dubboConfigProperties, ModuleModel moduleModel) {
+    OpenTelemetryAutoConfiguration(DubboConfigurationProperties dubboConfigProperties) {
         this.dubboConfigProperties = dubboConfigProperties;
-        this.moduleModel = moduleModel;
     }
 
     @Bean
@@ -84,12 +83,10 @@ public class OpenTelemetryAutoConfiguration {
     io.opentelemetry.sdk.trace.SdkTracerProvider otelSdkTracerProvider(
             ObjectProvider<io.opentelemetry.sdk.trace.SpanProcessor> spanProcessors,
             io.opentelemetry.sdk.trace.samplers.Sampler sampler) {
-        String applicationName = moduleModel
-                .getApplicationModel()
-                .getApplicationConfigManager()
-                .getApplication()
-                .map(ApplicationConfig::getName)
-                .orElse(DEFAULT_APPLICATION_NAME);
+        String applicationName = dubboConfigProperties.getApplication().getName();
+        if (StringUtils.isEmpty(applicationName)) {
+            applicationName = DEFAULT_APPLICATION_NAME;
+        }
         io.opentelemetry.sdk.trace.SdkTracerProviderBuilder builder =
                 io.opentelemetry.sdk.trace.SdkTracerProvider.builder()
                         .setSampler(sampler)

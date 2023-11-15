@@ -95,7 +95,7 @@
     <javassist_version>3.29.2-GA</javassist_version>
     <bytebuddy.version>1.14.9</bytebuddy.version>
     <netty_version>3.2.10.Final</netty_version>
-    <netty4_version>4.1.100.Final</netty4_version>
+    <netty4_version>4.1.101.Final</netty4_version>
     <mina_version>2.2.1</mina_version>
     <grizzly_version>2.4.4</grizzly_version>
     <httpclient_version>4.5.14</httpclient_version>
@@ -133,7 +133,8 @@
     <protostuff_version>1.8.0</protostuff_version>
     <envoy_api_version>0.1.35</envoy_api_version>
     <micrometer.version>1.11.5</micrometer.version>
-
+    <opentelemetry.version>1.26.0</opentelemetry.version>
+    <zipkin-reporter.version>2.16.4</zipkin-reporter.version>
     <micrometer-tracing.version>1.1.6</micrometer-tracing.version>
     <t_digest.version>3.3</t_digest.version>
     <prometheus_client.version>0.16.0</prometheus_client.version>
@@ -148,17 +149,23 @@
     <tomcat_embed_version>8.5.87</tomcat_embed_version>
     <jetcd_version>0.7.6</jetcd_version>
     <nacos_version>2.2.4</nacos_version>
+    <sentinel.version>1.8.6</sentinel.version>
+    <seata.version>1.6.1</seata.version>
     <grpc.version>1.59.0</grpc.version>
     <grpc_contrib_verdion>0.8.1</grpc_contrib_verdion>
     <jprotoc_version>1.2.2</jprotoc_version>
+    <mustache_version>0.9.10</mustache_version>
     <!-- Log libs -->
     <slf4j_version>1.7.36</slf4j_version>
+    <!-- Do not upgrade the log4j12 version, or else reload4j and log4j will coexist -->
+    <slf4j-log4j12_version>1.7.33</slf4j-log4j12_version>
     <jcl_version>1.2</jcl_version>
     <log4j_version>1.2.17</log4j_version>
     <logback_version>1.2.11</logback_version>
     <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
     <log4j2_version>2.20.0</log4j2_version>
     <commons_io_version>2.11.0</commons_io_version>
+    <commons-codec_version>1.16.0</commons-codec_version>
 
     <embedded_redis_version>0.13.0</embedded_redis_version>
 
@@ -170,6 +177,13 @@
 
     <!-- Alibaba -->
     <alibaba_spring_context_support_version>1.0.11</alibaba_spring_context_support_version>
+
+    <!-- Test libs -->
+    <junit_jupiter_version>5.9.3</junit_jupiter_version>
+    <awaitility_version>4.2.0</awaitility_version>
+    <hamcrest_version>2.2</hamcrest_version>
+    <cglib_version>2.2.2</cglib_version>
+    <mockito_version>4.11.0</mockito_version>
 
     <jaxb_version>2.2.7</jaxb_version>
     <activation_version>1.2.0</activation_version>
@@ -192,7 +206,8 @@
     <spotless.action>check</spotless.action>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
-    <revision>3.2.8-SNAPSHOT</revision>
+    <revision>3.3.0-beta.2-SNAPSHOT</revision>
+    <open_feign_version>3.1.5</open_feign_version>
   </properties>
 
   <dependencyManagement>
@@ -230,6 +245,20 @@
         <groupId>io.micrometer</groupId>
         <artifactId>micrometer-tracing-bom</artifactId>
         <version>${micrometer-tracing.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.opentelemetry</groupId>
+        <artifactId>opentelemetry-bom</artifactId>
+        <version>${opentelemetry.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.zipkin.reporter2</groupId>
+        <artifactId>zipkin-reporter-bom</artifactId>
+        <version>${zipkin-reporter.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -289,8 +318,28 @@
         <version>${zookeeper_version}</version>
         <exclusions>
           <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.yetus</groupId>
+            <artifactId>audience-annotations</artifactId>
+          </exclusion>
+          <exclusion>
             <groupId>io.netty</groupId>
-            <artifactId>netty</artifactId>
+            <artifactId>*</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
@@ -600,6 +649,11 @@
         <version>${slf4j_version}</version>
       </dependency>
       <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-log4j12</artifactId>
+        <version>${slf4j-log4j12_version}</version>
+      </dependency>
+      <dependency>
         <groupId>commons-logging</groupId>
         <artifactId>commons-logging</artifactId>
         <version>${jcl_version}</version>
@@ -608,6 +662,11 @@
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>${commons_io_version}</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>${commons-codec_version}</version>
       </dependency>
       <dependency>
         <groupId>log4j</groupId>
@@ -735,7 +794,61 @@
         <scope>test</scope>
       </dependency>
 
-      <!-- Test lib -->
+      <!-- Test libs -->
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-engine</artifactId>
+        <version>${junit_jupiter_version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>${junit_jupiter_version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-params</artifactId>
+        <version>${junit_jupiter_version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.vintage</groupId>
+        <artifactId>junit-vintage-engine</artifactId>
+        <version>${junit_jupiter_version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.awaitility</groupId>
+        <artifactId>awaitility</artifactId>
+        <version>${awaitility_version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.hamcrest</groupId>
+        <artifactId>hamcrest</artifactId>
+        <version>${hamcrest_version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>${mockito_version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-inline</artifactId>
+        <version>${mockito_version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>cglib</groupId>
+        <artifactId>cglib-nodep</artifactId>
+        <version>${cglib_version}</version>
+        <scope>test</scope>
+      </dependency>
       <dependency>
         <groupId>com.github.codemonstur</groupId>
         <artifactId>embedded-redis</artifactId>
@@ -748,6 +861,7 @@
         <version>${spring_version}</version>
         <scope>test</scope>
       </dependency>
+
       <dependency>
         <groupId>com.google.code.gson</groupId>
         <artifactId>gson</artifactId>
@@ -800,6 +914,34 @@
         <artifactId>nacos-client</artifactId>
         <version>${nacos_version}</version>
       </dependency>
+      <!-- sentinel related dependencies -->
+      <dependency>
+        <groupId>com.alibaba.csp</groupId>
+        <artifactId>sentinel-apache-dubbo3-adapter</artifactId>
+        <version>${sentinel.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.alibaba.csp</groupId>
+        <artifactId>sentinel-transport-simple-http</artifactId>
+        <version>${sentinel.version}</version>
+      </dependency>
+      <!-- seata related dependencies -->
+      <dependency>
+        <groupId>io.seata</groupId>
+        <artifactId>seata-spring-boot-starter</artifactId>
+        <version>${seata.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>io.seata</groupId>
+            <artifactId>seata-core</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>io.seata</groupId>
+        <artifactId>seata-core</artifactId>
+        <version>${seata.version}</version>
+      </dependency>
       <!-- grpc related dependencies -->
       <dependency>
         <groupId>io.grpc</groupId>
@@ -845,6 +987,11 @@
         <groupId>com.salesforce.servicelibs</groupId>
         <artifactId>jprotoc</artifactId>
         <version>${jprotoc_version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.github.spullara.mustache.java</groupId>
+        <artifactId>compiler</artifactId>
+        <version>${mustache_version}</version>
       </dependency>
       <dependency>
         <groupId>io.fabric8</groupId>
@@ -901,6 +1048,11 @@
         <artifactId>rxjava</artifactId>
         <version>${rxjava.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-openfeign-core</artifactId>
+        <version>${open_feign_version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -913,6 +1065,12 @@
         <configuration>
           <updatePomFile>true</updatePomFile>
           <flattenMode>bom</flattenMode>
+          <pomElements>
+            <dependencyManagement>expand</dependencyManagement>
+            <properties>remove</properties>
+            <repositories>remove</repositories>
+            <profiles>remove</profiles>
+          </pomElements>
         </configuration>
         <executions>
           <execution>

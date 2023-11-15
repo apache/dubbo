@@ -18,33 +18,48 @@ package org.apache.dubbo.config.nested;
 
 import java.io.Serializable;
 
+/**
+ * Configuration for the metric aggregation.
+ */
 public class AggregationConfig implements Serializable {
 
     /**
-     * Enable local aggregation or not
+     * Enable aggregation or not.
      */
     private Boolean enabled;
 
+    /**
+     * Enable QPS (Queries Per Second) aggregation or not.
+     */
     private Boolean enableQps;
 
+    /**
+     * Enable Response Time Percentile (Pxx) aggregation or not.
+     */
     private Boolean enableRtPxx;
 
+    /**
+     * Enable Response Time aggregation or not.
+     */
     private Boolean enableRt;
 
+    /**
+     * Enable Request aggregation or not.
+     */
     private Boolean enableRequest;
 
     /**
-     * Bucket num for time window quantile
+     * The number of buckets for time window quantile.
      */
     private Integer bucketNum;
 
     /**
-     * Time window seconds for time window quantile
+     * The time window in seconds for time window quantile.
      */
     private Integer timeWindowSeconds;
 
     /**
-     * Time window mill seconds for qps
+     * The time window in milliseconds for QPS (Queries Per Second) aggregation.
      */
     private Integer qpsTimeWindowMillSeconds;
 

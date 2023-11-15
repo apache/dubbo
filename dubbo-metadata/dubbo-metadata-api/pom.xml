@@ -44,27 +44,6 @@
       <version>${project.parent.version}</version>
     </dependency>
 
-    <!-- JAX-RS API -->
-    <dependency>
-      <groupId>javax.ws.rs</groupId>
-      <artifactId>javax.ws.rs-api</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <!-- Spring Web MVC -->
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-web</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <!-- Spring Web MVC -->
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-context</artifactId>
-      <scope>test</scope>
-    </dependency>
-
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-metrics-api</artifactId>
@@ -82,6 +61,12 @@
       <artifactId>dubbo-metrics-metadata</artifactId>
       <version>${project.parent.version}</version>
       <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-native</artifactId>
+      <version>${project.parent.version}</version>
     </dependency>
 
   </dependencies>

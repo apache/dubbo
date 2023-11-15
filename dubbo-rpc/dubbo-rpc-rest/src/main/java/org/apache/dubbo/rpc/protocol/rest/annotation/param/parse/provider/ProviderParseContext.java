@@ -24,6 +24,7 @@ public class ProviderParseContext extends BaseParseContext {
     private RequestFacade requestFacade;
     private Object response;
     private Object request;
+    private Object[] arrayArgs;
 
     public ProviderParseContext(RequestFacade request) {
         this.requestFacade = request;
@@ -59,5 +60,13 @@ public class ProviderParseContext extends BaseParseContext {
         String[] split = getRequestFacade().getRequestURI().split("/");
 
         return split[urlSplitIndex];
+    }
+
+    public Object[] getArrayArgs() {
+        return arrayArgs;
+    }
+
+    public void setArrayArgs(Object[] objects) {
+        this.arrayArgs = objects;
     }
 }

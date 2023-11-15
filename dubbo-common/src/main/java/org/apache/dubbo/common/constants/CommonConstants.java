@@ -127,6 +127,8 @@ public interface CommonConstants {
 
     String THREAD_POOL_EXHAUSTED_LISTENERS_KEY = "thread-pool-exhausted-listeners";
 
+    String JSON_CHECK_LEVEL_KEY = "jsonCheckLevel";
+
     String THREADS_KEY = "threads";
 
     String QUEUES_KEY = "queues";
@@ -285,6 +287,7 @@ public interface CommonConstants {
     String MONITOR_KEY = "monitor";
     String BACKGROUND_KEY = "background";
     String CLUSTER_KEY = "cluster";
+    String MERGEABLE_CLUSTER_NAME = "mergeable";
     String USERNAME_KEY = "username";
     String PASSWORD_KEY = "password";
     String HOST_KEY = "host";
@@ -501,11 +504,6 @@ public interface CommonConstants {
      */
     String URL_MERGE_PROCESSOR_KEY = "url-merge-processor";
 
-    /**
-     * use native image to compile dubbo's identifier
-     */
-    String NATIVE = "native";
-
     String DUBBO_MONITOR_ADDRESS = "dubbo.monitor.address";
 
     String SERVICE_NAME_MAPPING_KEY = "service-name-mapping";
@@ -619,9 +617,7 @@ public interface CommonConstants {
     String EXECUTOR_MANAGEMENT_MODE_ISOLATION = "isolation";
 
     /**
-     *
      * used in JVMUtil.java ,Control stack print lines, default is 32 lines
-     *
      */
     String DUBBO_JSTACK_MAXLINE = "dubbo.jstack-dump.max-line";
 
@@ -643,7 +639,21 @@ public interface CommonConstants {
 
     String DUBBO_PACKABLE_METHOD_FACTORY = "dubbo.application.parameters." + PACKABLE_METHOD_FACTORY_KEY;
 
+    String DUBBO_TAG_HEADER = "dubbo-tag";
+
+    String REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY = "restServiceDeployerAttributeKey";
+
+    String SERVICE_DEPLOYER_ATTRIBUTE_KEY = "serviceDeployer";
+
     String DUBBO_MANUAL_REGISTER_KEY = "dubbo.application.manual-register";
 
     String DUBBO2_COMPACT_ENABLE = "dubbo.compact.enable";
+
+    String POD_NAMESPACE = "POD_NAMESPACE";
+
+    String CLUSTER_DOMAIN = "CLUSTER_DOMAIN";
+
+    String EXT_PROTOCOL = "ext.protocol";
+
+    String IS_EXTRA = "isExtra";
 }

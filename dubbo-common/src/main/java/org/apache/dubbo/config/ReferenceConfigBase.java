@@ -45,7 +45,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.UNLOAD_CLUSTER_R
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 
 /**
- * ReferenceConfig
+ * Base configuration for the service reference.
  *
  * @export
  */
@@ -56,23 +56,23 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     private static final String ORIGIN_CONFIG = "ORIGIN_CONFIG";
 
     /**
-     * The interface class of the reference service
+     * The interface class of the reference service.
      */
     protected Class<?> interfaceClass;
 
     /**
-     * The url for peer-to-peer invocation
+     * The URL for peer-to-peer invocation.
      */
     protected String url;
 
     /**
-     * The consumer config (default)
+     * The default consumer configuration.
      */
     protected ConsumerConfig consumer;
 
     /**
-     * In the mesh mode, uninstall the directory, router and load balance related to the cluster in the currently invoked invoker.
-     * Delegate retry, load balancing, timeout and other traffic management capabilities to Sidecar.
+     * In mesh mode, this flag uninstalls the directory, router, and load balancing configurations related to the cluster in the currently invoked invoker.
+     * It delegates retry, load balancing, timeout, and other traffic management capabilities to Sidecar.
      */
     protected Boolean unloadClusterRelated;
 

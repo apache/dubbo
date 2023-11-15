@@ -16,23 +16,13 @@
  */
 package org.apache.dubbo.config.spring.context;
 
-import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
-import org.apache.dubbo.config.spring.extension.SpringExtensionInjector;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
-import org.apache.dubbo.config.spring.util.EnvironmentUtils;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
-
-import java.util.SortedMap;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.env.ConfigurableEnvironment;
 
 /**
  * Register some infrastructure beans if not exists.
@@ -42,8 +32,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
  * @see org.springframework.context.support.PostProcessorRegistrationDelegate#invokeBeanFactoryPostProcessors(
  *org.springframework.beans.factory.config.ConfigurableListableBeanFactory, java.util.List)
  */
-public class DubboInfraBeanRegisterPostProcessor
-        implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware {
+public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegistryPostProcessor {
 
     /**
      * The bean name of {@link ReferenceAnnotationBeanPostProcessor}
@@ -51,7 +40,6 @@ public class DubboInfraBeanRegisterPostProcessor
     public static final String BEAN_NAME = "dubboInfraBeanRegisterPostProcessor";
 
     private BeanDefinitionRegistry registry;
-    private ApplicationContext applicationContext;
 
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
@@ -75,31 +63,9 @@ public class DubboInfraBeanRegisterPostProcessor
             DubboBeanUtils.registerPlaceholderConfigurerBeanIfNotExists(beanFactory, registry);
         }
 
-        ApplicationModel applicationModel = DubboBeanUtils.getApplicationModel(beanFactory);
-        ModuleModel moduleModel = DubboBeanUtils.getModuleModel(beanFactory);
-
-        // Initialize SpringExtensionInjector
-        SpringExtensionInjector.get(applicationModel).init(applicationContext);
-        SpringExtensionInjector.get(moduleModel).init(applicationContext);
-        DubboBeanUtils.getInitializationContext(beanFactory).setApplicationContext(applicationContext);
-
-        // Initialize dubbo Environment before ConfigManager
-        // Extract dubbo props from Spring env and put them to app config
-        ConfigurableEnvironment environment = (ConfigurableEnvironment) applicationContext.getEnvironment();
-        SortedMap<String, String> dubboProperties = EnvironmentUtils.filterDubboProperties(environment);
-        applicationModel.modelEnvironment().getAppConfigMap().putAll(dubboProperties);
-
-        // register ConfigManager singleton
-        beanFactory.registerSingleton(ConfigManager.BEAN_NAME, applicationModel.getApplicationConfigManager());
-
         // fix https://github.com/apache/dubbo/issues/10278
         if (registry != null) {
             registry.removeBeanDefinition(BEAN_NAME);
         }
-    }
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
     }
 }

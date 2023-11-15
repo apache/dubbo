@@ -39,6 +39,7 @@
       <id>release</id>
       <modules>
         <module>dubbo-all</module>
+        <module>dubbo-all-shaded</module>
         <module>dubbo-apache-release</module>
         <module>dubbo-bom</module>
         <module>dubbo-core-spi</module>
@@ -47,7 +48,7 @@
     <profile>
       <id>dubbo-all</id>
       <activation>
-        <activeByDefault>true</activeByDefault>
+        <jdk>[1.7,)</jdk>
       </activation>
       <modules>
         <module>dubbo-all</module>

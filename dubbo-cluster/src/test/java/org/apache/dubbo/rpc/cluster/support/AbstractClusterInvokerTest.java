@@ -60,7 +60,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_AVAILABLE_CHECK_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
@@ -578,26 +577,6 @@ class AbstractClusterInvokerTest {
         } catch (RpcException e) {
             Assertions.assertEquals(RpcException.TIMEOUT_EXCEPTION, e.getCode());
         }
-    }
-
-    /**
-     * Test mock invoker selector works as expected
-     */
-    @Test
-    void testMockedInvokerSelect() {
-        initlistsize5();
-        invokers.add(mockedInvoker1);
-
-        initDic();
-
-        RpcInvocation mockedInvocation = new RpcInvocation();
-        mockedInvocation.setMethodName("sayHello");
-        mockedInvocation.setAttachment(INVOCATION_NEED_MOCK, "true");
-        List<Invoker<IHelloService>> mockedInvokers = dic.list(mockedInvocation);
-        Assertions.assertEquals(1, mockedInvokers.size());
-
-        List<Invoker<IHelloService>> invokers = dic.list(invocation);
-        Assertions.assertEquals(5, invokers.size());
     }
 
     public static interface IHelloService {}

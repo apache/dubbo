@@ -123,7 +123,6 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
                 THREAD_POOL,
                 threadPoolMetric,
                 ThreadPoolMetric::getQueueSize));
-
         return list;
     }
 
@@ -132,18 +131,27 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
         if (applicationModel == null) {
             return;
         }
-        try {
-            if (this.frameworkExecutorRepository == null) {
-                this.frameworkExecutorRepository =
-                        collector.getApplicationModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
-            }
-        } catch (Exception ex) {
-            logger.warn(
-                    COMMON_METRICS_COLLECTOR_EXCEPTION,
-                    "",
-                    "",
-                    "ThreadPoolMetricsSampler! frameworkExecutorRepository non-init");
-        }
+        addRpcExecutors();
+        addFrameworkExecutors();
+        addExecutorRejectMetrics();
+    }
+
+    private void addExecutorRejectMetrics() {
+        ThreadRejectMetricsCountSampler threadRejectMetricsCountSampler =
+                new ThreadRejectMetricsCountSampler(collector);
+        this.sampleThreadPoolExecutor.entrySet().stream()
+                .filter(entry -> entry.getKey().startsWith(SERVER_THREAD_POOL_NAME))
+                .forEach(entry -> {
+                    if (entry.getValue().getRejectedExecutionHandler() instanceof AbortPolicyWithReport) {
+                        MetricThreadPoolExhaustedListener metricThreadPoolExhaustedListener =
+                                new MetricThreadPoolExhaustedListener(entry.getKey(), threadRejectMetricsCountSampler);
+                        ((AbortPolicyWithReport) entry.getValue().getRejectedExecutionHandler())
+                                .addThreadPoolExhaustedEventListener(metricThreadPoolExhaustedListener);
+                    }
+                });
+    }
+
+    private void addRpcExecutors() {
         if (this.dataStore == null) {
             this.dataStore = collector
                     .getApplicationModel()
@@ -166,24 +174,35 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
                     this.addExecutors(CLIENT_THREAD_POOL_NAME + "-" + entry.getKey(), executor);
                 }
             }
+        }
+    }
 
-            ThreadRejectMetricsCountSampler threadRejectMetricsCountSampler =
-                    new ThreadRejectMetricsCountSampler(collector);
-            this.sampleThreadPoolExecutor.entrySet().stream()
-                    .filter(entry -> entry.getKey().startsWith(SERVER_THREAD_POOL_NAME))
-                    .forEach(entry -> {
-                        if (entry.getValue().getRejectedExecutionHandler() instanceof AbortPolicyWithReport) {
-                            MetricThreadPoolExhaustedListener metricThreadPoolExhaustedListener =
-                                    new MetricThreadPoolExhaustedListener(
-                                            entry.getKey(), threadRejectMetricsCountSampler);
-                            ((AbortPolicyWithReport) entry.getValue().getRejectedExecutionHandler())
-                                    .addThreadPoolExhaustedEventListener(metricThreadPoolExhaustedListener);
-                        }
-                    });
+    private void addFrameworkExecutors() {
+        try {
+            if (this.frameworkExecutorRepository == null) {
+                this.frameworkExecutorRepository =
+                        collector.getApplicationModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
+            }
+        } catch (Exception ex) {
+            logger.warn(
+                    COMMON_METRICS_COLLECTOR_EXCEPTION,
+                    "",
+                    "",
+                    "ThreadPoolMetricsSampler! frameworkExecutorRepository non-init");
         }
-        if (this.frameworkExecutorRepository != null) {
-            this.addExecutors("sharedExecutor", frameworkExecutorRepository.getSharedExecutor());
+        if (this.frameworkExecutorRepository == null) {
+            return;
         }
+        this.addExecutors("poolRouterExecutor", frameworkExecutorRepository.getPoolRouterExecutor());
+        this.addExecutors("metadataRetryExecutor", frameworkExecutorRepository.getMetadataRetryExecutor());
+        this.addExecutors("internalServiceExecutor", frameworkExecutorRepository.getInternalServiceExecutor());
+        this.addExecutors(
+                "connectivityScheduledExecutor", frameworkExecutorRepository.getConnectivityScheduledExecutor());
+        this.addExecutors(
+                "cacheRefreshingScheduledExecutor", frameworkExecutorRepository.getCacheRefreshingScheduledExecutor());
+        this.addExecutors("sharedExecutor", frameworkExecutorRepository.getSharedExecutor());
+        this.addExecutors("sharedScheduledExecutor", frameworkExecutorRepository.getSharedScheduledExecutor());
+        this.addExecutors("mappingRefreshingExecutor", frameworkExecutorRepository.getMappingRefreshingExecutor());
     }
 
     @Override

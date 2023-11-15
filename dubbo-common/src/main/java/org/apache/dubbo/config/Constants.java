@@ -152,4 +152,8 @@ public interface Constants {
     String CLIENT_THREAD_POOL_NAME = "DubboClientHandler";
 
     String REST_PROTOCOL = "rest";
+
+    String DEFAULT_NATIVE_COMPILER = "jdk";
+
+    String DEFAULT_NATIVE_PROXY = "jdk";
 }

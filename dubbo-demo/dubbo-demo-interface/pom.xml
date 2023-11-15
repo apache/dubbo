@@ -27,6 +27,7 @@
   <packaging>jar</packaging>
   <name>${project.artifactId}</name>
   <description>The demo module of dubbo project</description>
+
   <properties>
     <skip_maven_deploy>true</skip_maven_deploy>
   </properties>
@@ -49,6 +50,5 @@
       <groupId>org.springframework</groupId>
       <artifactId>spring-web</artifactId>
     </dependency>
-
   </dependencies>
 </project>

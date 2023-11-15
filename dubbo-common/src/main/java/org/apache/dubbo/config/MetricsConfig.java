@@ -28,89 +28,108 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * MetricsConfig
+ * Configuration for the metrics.
  */
 public class MetricsConfig extends AbstractConfig {
 
     private static final long serialVersionUID = -9089919311611546383L;
 
+    /**
+     * Protocol used for metrics.
+     */
     private String protocol;
 
     /**
-     * Enable jvm metrics when collecting.
+     * Whether to enable JVM metrics collection.
      */
     private Boolean enableJvm;
 
     /**
-     * Enable threadpool metrics when collecting.
+     * Whether to enable thread pool metrics collection.
      */
     private Boolean enableThreadpool;
 
     /**
-     * Enable registry metrics.
+     * Whether to enable registry metrics collection.
      */
     private Boolean enableRegistry;
 
     /**
-     * Enable metadata metrics.
+     * Whether to enable metadata metrics collection.
      */
     private Boolean enableMetadata;
 
     /**
-     * Export metrics service.
+     * Whether to export metrics service.
      */
     private Boolean exportMetricsService;
 
     /**
-     * Enable metrics init.
+     * Whether to enable Netty metrics collection.
+     */
+    private Boolean enableNetty;
+
+    /**
+     * Whether to enable metrics initialization.
      */
     private Boolean enableMetricsInit;
 
     /**
-     * Enable collector sync.
+     * Whether to enable collector synchronization.
      */
     private Boolean enableCollectorSync;
 
     /**
-     * Collector sync period.
+     * Collector synchronization period.
      */
     private Integer collectorSyncPeriod;
 
     /**
-     * @deprecated After metrics config is refactored.
-     * This parameter should no longer use and will be deleted in the future.
+     * Deprecated: This parameter should no longer be used and will be removed in the future.
      */
     @Deprecated
     private String port;
 
     /**
-     * The prometheus metrics config
+     * Configuration for Prometheus metrics collection.
      */
     @Nested
     private PrometheusConfig prometheus;
 
     /**
-     * The metrics aggregation config
+     * Configuration for metrics aggregation.
      */
     @Nested
     private AggregationConfig aggregation;
 
+    /**
+     * Configuration for metrics histogram.
+     */
     @Nested
     private HistogramConfig histogram;
 
+    /**
+     * Protocol used for metrics collection and export.
+     */
     private String exportServiceProtocol;
 
+    /**
+     * Port used for exporting metrics services.
+     */
     private Integer exportServicePort;
 
     /**
-     * Decide whether to use the global registry of the micrometer.
+     * Decide whether to use the global registry of Micrometer.
      */
     private Boolean useGlobalRegistry;
 
+    /**
+     * Whether to enable RPC (Remote Procedure Call) metrics collection.
+     */
     private Boolean enableRpc;
 
     /**
-     * The level of the metrics, the value can be "SERVICE", "METHOD", default is method.
+     * The level of metrics collection, which can be "SERVICE" or "METHOD". The default is "METHOD".
      */
     private String rpcLevel;
 
@@ -273,5 +292,13 @@ public class MetricsConfig extends AbstractConfig {
 
     public void setEnableRpc(Boolean enableRpc) {
         this.enableRpc = enableRpc;
+    }
+
+    public Boolean getEnableNetty() {
+        return enableNetty;
+    }
+
+    public void setEnableNetty(Boolean enableNetty) {
+        this.enableNetty = enableNetty;
     }
 }

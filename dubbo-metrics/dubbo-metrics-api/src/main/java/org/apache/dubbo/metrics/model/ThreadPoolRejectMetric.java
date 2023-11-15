@@ -31,6 +31,7 @@ import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
 
 public class ThreadPoolRejectMetric implements Metric {
+
     private String applicationName;
 
     private String threadPoolName;
@@ -70,6 +71,7 @@ public class ThreadPoolRejectMetric implements Metric {
         return Objects.hash(applicationName, threadPoolName);
     }
 
+    @Override
     public Map<String, String> getTags() {
         Map<String, String> tags = new HashMap<>();
         tags.put(TAG_IP, getLocalHost());

@@ -36,6 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.IS_EXTRA;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_NOTIFY_EVENT;
 import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY_RETRY_PERIOD;
@@ -195,9 +196,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
     @Override
     public void register(URL url) {
-        if (!acceptable(url)) {
-            logger.info("URL " + url + " will not be registered to Registry. Registry " + this.getUrl()
-                    + " does not accept service of this protocol type.");
+        if (!shouldRegister(url)) {
             return;
         }
         super.register(url);
@@ -234,6 +233,19 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             // Record a failed registration request to a failed list, retry regularly
             addFailedRegistered(url);
         }
+    }
+
+    protected boolean shouldRegister(URL providerURL) {
+        // extra protocol url must not be registered for interface based service discovery
+        if (providerURL.getParameter(IS_EXTRA, false)) {
+            return false;
+        }
+        if (!acceptable(providerURL)) {
+            logger.info("URL " + providerURL + " will not be registered to Registry. Registry " + this.getUrl()
+                    + " does not accept service of this protocol type.");
+            return false;
+        }
+        return true;
     }
 
     @Override

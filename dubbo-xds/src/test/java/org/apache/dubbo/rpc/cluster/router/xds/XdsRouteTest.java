@@ -22,7 +22,6 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.xds.util.protocol.message.Endpoint;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.cluster.router.mesh.util.TracingContextProvider;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.router.xds.rule.DestinationSubset;
 
@@ -52,14 +51,14 @@ public class XdsRouteTest {
     private EdsEndpointManager edsEndpointManager;
 
     private RdsRouteRuleManager rdsRouteRuleManager;
-    private Set<TracingContextProvider> tracingContextProviders;
+    //    private Set<TracingContextProvider> tracingContextProviders;
     private URL url;
 
     @BeforeEach
     public void setup() {
         edsEndpointManager = Mockito.spy(EdsEndpointManager.class);
         rdsRouteRuleManager = Mockito.spy(RdsRouteRuleManager.class);
-        tracingContextProviders = new HashSet<>();
+        //        tracingContextProviders = new HashSet<>();
 
         url = URL.valueOf("test://localhost/DemoInterface");
     }

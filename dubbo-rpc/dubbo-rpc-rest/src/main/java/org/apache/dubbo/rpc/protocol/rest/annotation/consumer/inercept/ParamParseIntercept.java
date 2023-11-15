@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept;
 
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.remoting.http.RequestTemplate;
 import org.apache.dubbo.rpc.protocol.rest.annotation.ParamParserManager;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionCreateContext;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreBuildIntercept;
@@ -25,7 +26,7 @@ import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.consumer.Consum
 import java.util.Arrays;
 
 /**
- *  resolve method args  by args info
+ * resolve method args  by args info
  */
 @Activate(value = "paramparse", order = 5)
 public class ParamParseIntercept implements HttpConnectionPreBuildIntercept {
@@ -33,12 +34,18 @@ public class ParamParseIntercept implements HttpConnectionPreBuildIntercept {
     @Override
     public void intercept(HttpConnectionCreateContext connectionCreateContext) {
 
-        ConsumerParseContext consumerParseContext =
-                new ConsumerParseContext(connectionCreateContext.getRequestTemplate());
-        consumerParseContext.setArgInfos(
-                connectionCreateContext.getRestMethodMetadata().getArgInfos());
-        consumerParseContext.setArgs(
-                Arrays.asList(connectionCreateContext.getInvocation().getArguments()));
-        ParamParserManager.consumerParamParse(consumerParseContext);
+        RequestTemplate requestTemplate = connectionCreateContext.getRequestTemplate();
+        Object[] arguments = connectionCreateContext.getInvocation().getArguments();
+
+        // no annotation mode set array body
+        if (connectionCreateContext.isNoAnnotationMode()) {
+            requestTemplate.body(arguments, Object[].class);
+        } else {
+            ConsumerParseContext consumerParseContext = new ConsumerParseContext(requestTemplate);
+            consumerParseContext.setArgInfos(
+                    connectionCreateContext.getRestMethodMetadata().getArgInfos());
+            consumerParseContext.setArgs(Arrays.asList(arguments));
+            ParamParserManager.consumerParamParse(consumerParseContext);
+        }
     }
 }

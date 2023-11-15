@@ -282,7 +282,8 @@ public final class ConfigurationUtils {
             for (Map.Entry<String, V> entry : copy.entrySet()) {
                 String key = entry.getKey();
                 V val = entry.getValue();
-                if (StringUtils.startsWithIgnoreCase(key, prefix)
+                if ((StringUtils.startsWithIgnoreCase(key, prefix)
+                                || StringUtils.startsWithIgnoreCase(key, StringUtils.toOSStyleKey(prefix)))
                         && key.length() > prefix.length()
                         && !ConfigurationUtils.isEmptyValue(val)) {
 
@@ -322,7 +323,8 @@ public final class ConfigurationUtils {
         }
         for (Map.Entry<String, V> entry : copy.entrySet()) {
             String key = entry.getKey();
-            if (StringUtils.startsWithIgnoreCase(key, prefix)
+            if ((StringUtils.startsWithIgnoreCase(key, prefix)
+                            || StringUtils.startsWithIgnoreCase(key, StringUtils.toOSStyleKey(prefix)))
                     && key.length() > prefix.length()
                     && !ConfigurationUtils.isEmptyValue(entry.getValue())) {
                 return true;

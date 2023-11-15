@@ -126,6 +126,42 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-plugin-context</artifactId>
+      <version>${project.parent.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-plugin-generic-invoke</artifactId>
+      <version>${project.parent.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-plugin-classloader-filter</artifactId>
+      <version>${project.parent.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-plugin-access-log</artifactId>
+      <version>${project.parent.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-monitor-common</artifactId>
+      <version>${project.parent.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-plugin-qos-trace</artifactId>
+      <version>${project.parent.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>javax.validation</groupId>
       <artifactId>validation-api</artifactId>
       <scope>test</scope>
@@ -162,15 +198,20 @@
       <scope>test</scope>
       <exclusions>
         <exclusion>
-          <groupId>org.junit.vintage</groupId>
-          <artifactId>junit-vintage-engine</artifactId>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-classic</artifactId>
         </exclusion>
-        <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
         <exclusion>
           <groupId>org.apache.logging.log4j</groupId>
-          <artifactId>log4j-api</artifactId>
+          <artifactId>log4j-to-slf4j</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <scope>test</scope>
     </dependency>
 
     <!-- Zookeeper dependencies for testing -->
@@ -256,7 +297,6 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <forkCount>1</forkCount>
-          <!--<reuseForks>false</reuseForks>-->
         </configuration>
       </plugin>
     </plugins>

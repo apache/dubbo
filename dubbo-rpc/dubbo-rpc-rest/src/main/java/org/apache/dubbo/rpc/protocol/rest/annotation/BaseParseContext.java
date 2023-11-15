@@ -26,6 +26,8 @@ public class BaseParseContext {
 
     protected List<ArgInfo> argInfos;
 
+    boolean isNoAnnotationMode;
+
     public List<Object> getArgs() {
         return args;
     }
@@ -44,5 +46,13 @@ public class BaseParseContext {
 
     public ArgInfo getArgInfoByIndex(int index) {
         return getArgInfos().get(index);
+    }
+
+    public boolean isNoAnnotationMode() {
+        return isNoAnnotationMode;
+    }
+
+    public void setNoAnnotationMode(boolean noAnnotationMode) {
+        isNoAnnotationMode = noAnnotationMode;
     }
 }

@@ -20,6 +20,8 @@ import org.apache.dubbo.rpc.RpcException;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -49,6 +51,15 @@ public class Gzip implements Compressor, DeCompressor {
         }
 
         return byteOutStream.toByteArray();
+    }
+
+    @Override
+    public OutputStream decorate(OutputStream outputStream) {
+        try {
+            return new GZIPOutputStream(outputStream);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Override
