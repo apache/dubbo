@@ -214,9 +214,7 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         return unmodifiableMap(serviceMethodsMap);
     }
 
-    /**
-     * for extracting override method
-     */
+
     private void extractOverrideMethod(Map<Method, Method> serviceMethodsMap,
                                        List<Method> declaredServiceMethods,
                                        List<Method> serviceMethods) {
