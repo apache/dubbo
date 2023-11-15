@@ -3,7 +3,7 @@ name: Automatically lint code
 on: [pull_request]
 
 permissions:
-  contents: write
+  pull-requests: write
 
 jobs:
   lint:
@@ -26,15 +26,17 @@ jobs:
             ${{ runner.os }}-maven-
       - name: "Lint with Maven"
         run: |
-          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast spotless:apply
-      - name: Check for changes
-        run: git status
-      - name: Commit and push files
+          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast spotless:check
+      - name: "Comment if failure"
+        if: failure()
+        env:
+          GITHUB_URL: ${{ github.event.pull_request.comments_url }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "Found changes"
-            git add .
-            git commit -m "Auto lint styles"
-            git push
-          fi
-        
+          export JSON_DATA=$(jq --null-input --arg body "Lint failure. Please " '{ "body": $body }')
+          curl -X POST \
+            $GITHUB_URL \
+            -H "Content-Type: application/json" \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            --data "${JSON_DATA}"
+
