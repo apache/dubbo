@@ -36,6 +36,7 @@ import zipkin2.codec.SpanBytesEncoder;
 import zipkin2.reporter.Sender;
 
 import static org.apache.dubbo.spring.boot.observability.autoconfigure.ObservabilityUtils.DUBBO_TRACING_ZIPKIN_CONFIG_PREFIX;
+import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_PREFIX;
 
 /**
  * {@link EnableAutoConfiguration Auto-configuration} for Zipkin.
@@ -46,6 +47,7 @@ import static org.apache.dubbo.spring.boot.observability.autoconfigure.Observabi
  *
  * @since 3.2.1
  */
+@ConditionalOnProperty(prefix = DUBBO_PREFIX, name = "enabled", matchIfMissing = true)
 @AutoConfiguration(
         after = RestTemplateAutoConfiguration.class,
         afterName = "org.springframework.boot.actuate.autoconfigure.tracing.zipkin")

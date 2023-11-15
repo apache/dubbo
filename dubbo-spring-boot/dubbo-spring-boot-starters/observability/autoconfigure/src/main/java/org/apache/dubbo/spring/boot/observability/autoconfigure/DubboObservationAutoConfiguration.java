@@ -22,8 +22,6 @@ import org.apache.dubbo.qos.protocol.QosProtocolWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.spring.boot.observability.autoconfigure.annotation.ConditionalOnDubboTracingEnable;
 
-import java.util.Arrays;
-
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -36,13 +34,19 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.Arrays;
+
+import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_PREFIX;
 
 /**
  * Register observationRegistry to ApplicationModel.
  * Create observationRegistry when you are using Boot <3.0 or you are not using spring-boot-starter-actuator
  */
+@ConditionalOnProperty(prefix = DUBBO_PREFIX, name = "enabled", matchIfMissing = true)
 @AutoConfiguration(
         after = DubboMicrometerTracingAutoConfiguration.class,
         afterName = "org.springframework.boot.actuate.autoconfigure.observation.ObservationAutoConfiguration")

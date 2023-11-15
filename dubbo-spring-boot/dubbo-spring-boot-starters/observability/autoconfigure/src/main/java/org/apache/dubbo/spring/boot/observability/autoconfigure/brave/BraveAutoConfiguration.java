@@ -23,10 +23,6 @@ import org.apache.dubbo.spring.boot.observability.autoconfigure.DubboMicrometerT
 import org.apache.dubbo.spring.boot.observability.autoconfigure.ObservabilityUtils;
 import org.apache.dubbo.spring.boot.observability.autoconfigure.annotation.ConditionalOnDubboTracingEnable;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -38,9 +34,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_PREFIX;
+
 /**
  * provider Brave when you are using Boot <3.0 or you are not using spring-boot-starter-actuator
  */
+@ConditionalOnProperty(prefix = DUBBO_PREFIX, name = "enabled", matchIfMissing = true)
 @AutoConfiguration(
         before = DubboMicrometerTracingAutoConfiguration.class,
         afterName = "org.springframework.boot.actuate.autoconfigure.tracing.BraveAutoConfiguration")
