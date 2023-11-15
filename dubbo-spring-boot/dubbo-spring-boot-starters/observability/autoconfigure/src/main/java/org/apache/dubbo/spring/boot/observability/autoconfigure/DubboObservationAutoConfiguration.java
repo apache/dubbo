@@ -22,6 +22,8 @@ import org.apache.dubbo.qos.protocol.QosProtocolWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.spring.boot.observability.autoconfigure.annotation.ConditionalOnDubboTracingEnable;
 
+import java.util.Arrays;
+
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -37,8 +39,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClas
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.Arrays;
 
 import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_PREFIX;
 
