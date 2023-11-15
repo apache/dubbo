@@ -102,7 +102,6 @@ class InternalThreadLocalTest {
         final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
         internalThreadLocal.set(testVal);
         Assertions.assertEquals(testVal, internalThreadLocal.get(), "set is not equals get");
-        InternalThreadLocal.removeAll();
     }
 
     @Test
@@ -238,7 +237,7 @@ class InternalThreadLocalTest {
         nextIndexField.setAccessible(true);
         AtomicInteger nextIndex = (AtomicInteger) nextIndexField.get(AtomicInteger.class);
         int arrayListCapacityMaxSize = InternalThreadLocalMap.ARRAY_LIST_CAPACITY_MAX_SIZE;
-        int nextIndex_before = nextIndex.get();
+        int nextIndex_before = nextIndex.incrementAndGet();
         nextIndex.set(0);
         final AtomicReference<Throwable> throwable = new AtomicReference<Throwable>();
         try {
