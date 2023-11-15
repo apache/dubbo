@@ -363,7 +363,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: jacoco-report
-          path: target/site/*
+          path: "*/target/site/*"
 
   error-code-inspecting:
     runs-on: ubuntu-latest
