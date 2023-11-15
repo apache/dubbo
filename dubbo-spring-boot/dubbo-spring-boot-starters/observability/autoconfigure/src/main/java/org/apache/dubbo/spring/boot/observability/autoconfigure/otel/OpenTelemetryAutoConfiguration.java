@@ -37,9 +37,12 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_PREFIX;
+
 /**
  * provider OpenTelemetry when you are using Boot <3.0 or you are not using spring-boot-starter-actuator
  */
+@ConditionalOnProperty(prefix = DUBBO_PREFIX, name = "enabled", matchIfMissing = true)
 @AutoConfiguration(
         before = DubboMicrometerTracingAutoConfiguration.class,
         afterName = "org.springframework.boot.actuate.autoconfigure.tracing.OpenTelemetryAutoConfiguration")
