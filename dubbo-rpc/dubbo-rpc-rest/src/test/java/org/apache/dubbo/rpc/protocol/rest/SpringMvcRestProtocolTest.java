@@ -379,7 +379,6 @@ public class SpringMvcRestProtocolTest {
 
         URL nettyUrl = this.registerProvider(exportUrl, server, SpringRestDemoService.class);
 
-
         Exporter<SpringRestDemoService> exporter = getExport(nettyUrl, server);
 
         SpringRestDemoService demoService = this.proxy.getProxy(protocol.refer(SpringRestDemoService.class, nettyUrl));
@@ -397,17 +396,15 @@ public class SpringMvcRestProtocolTest {
         exporter.unexport();
     }
 
-
     @Test
     void testProxyDoubleCheck() {
-
 
         ProxyCreatorSupport proxyCreatorSupport = new ProxyCreatorSupport();
         AdvisedSupport advisedSupport = new AdvisedSupport();
         advisedSupport.setTarget(getServerImpl());
         AopProxy aopProxy = proxyCreatorSupport.getAopProxyFactory().createAopProxy(advisedSupport);
         Object proxy = aopProxy.getProxy();
-        SpringRestDemoService server =(SpringRestDemoService)proxy;
+        SpringRestDemoService server = (SpringRestDemoService) proxy;
 
         URL nettyUrl = this.registerProvider(exportUrl, server, SpringRestDemoService.class);
 
