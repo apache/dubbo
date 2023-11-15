@@ -359,6 +359,8 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           verbose: true
+          root_dir: ${{ github.workspace }}/dubbo/
+          directory: ${{ github.workspace }}/
       - name: "Upload jacoco"
         uses: actions/upload-artifact@v3
         with:
