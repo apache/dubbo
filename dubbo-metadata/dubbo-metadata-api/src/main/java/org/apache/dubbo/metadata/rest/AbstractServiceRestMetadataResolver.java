@@ -215,11 +215,7 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
     }
 
     /**
-     * for extract override method
-     *
-     * @param serviceMethodsMap      map for serviceMethod to impl or proxy method
-     * @param declaredServiceMethods interface or controllerClass declare methods
-     * @param serviceMethods         impl or proxy methods
+     * for extracting override method
      */
     private void extractOverrideMethod(Map<Method, Method> serviceMethodsMap,
                                        List<Method> declaredServiceMethods,
