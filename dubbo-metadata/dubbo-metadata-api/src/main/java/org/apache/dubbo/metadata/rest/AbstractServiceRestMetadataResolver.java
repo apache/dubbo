@@ -209,16 +209,13 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         sort(declaredServiceMethods, MethodComparator.INSTANCE);
         sort(serviceMethods, MethodComparator.INSTANCE);
 
-        extractOverrideMethod(serviceMethodsMap, declaredServiceMethods, serviceMethods);
-
-        // make them to be read-only
-        return unmodifiableMap(serviceMethodsMap);
+        return extractOverrideMethod(serviceMethodsMap, declaredServiceMethods, serviceMethods);
     }
 
 
-    private void extractOverrideMethod(Map<Method, Method> serviceMethodsMap,
-                                       List<Method> declaredServiceMethods,
-                                       List<Method> serviceMethods) {
+    private Map<Method, Method> extractOverrideMethod(Map<Method, Method> serviceMethodsMap,
+                                                      List<Method> declaredServiceMethods,
+                                                      List<Method> serviceMethods) {
         // prevent from repeat method (impl proxy) & leaving out method(interface proxy)
         HashSet<String> methodComparators = new HashSet<>();
 
@@ -239,6 +236,9 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
                 serviceMethodsMap.put(serviceMethod, declaredServiceMethod);
             }
         }
+
+        // make them to be read-only
+        return unmodifiableMap(serviceMethodsMap);
     }
 
     /**
