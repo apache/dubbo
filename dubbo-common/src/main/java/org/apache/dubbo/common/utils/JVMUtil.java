@@ -18,26 +18,34 @@ package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.management.LockInfo;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
 
 import static java.lang.Thread.State.BLOCKED;
 import static java.lang.Thread.State.TIMED_WAITING;
 import static java.lang.Thread.State.WAITING;
 
 public class JVMUtil {
-    public static void jstack(OutputStream stream) throws Exception {
-        ThreadMXBean threadMxBean = ManagementFactory.getThreadMXBean();
-        for (ThreadInfo threadInfo : threadMxBean.dumpAllThreads(true, true)) {
+
+    public static ThreadInfo[] dumpAllThreads() {
+        return ManagementFactory.getThreadMXBean().dumpAllThreads(true, true);
+    }
+
+    public static void jstack(OutputStream stream) throws IOException {
+        jstack(stream, dumpAllThreads());
+    }
+
+    public static void jstack(OutputStream stream, ThreadInfo[] allThreads) throws IOException {
+        for (ThreadInfo threadInfo : allThreads) {
             getThreadDumpString(stream, threadInfo);
         }
     }
 
-    private static void getThreadDumpString(final OutputStream stream, ThreadInfo threadInfo) throws Exception {
+    private static void getThreadDumpString(final OutputStream stream, ThreadInfo threadInfo) throws IOException {
         // print basic info
         stream.write(String.format(
                         "\"%s\" Id=%d %s",
