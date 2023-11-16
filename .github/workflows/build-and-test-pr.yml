@@ -214,8 +214,7 @@ jobs:
           path: "**/target/**/*.exec"
       - name: "Pack ut jacoco report"
         run: |
-          shopt -s globstar
-          zip ${{ github.workspace }}/ut-jacoco-report.zip **/target/site/**/*.html -r
+          find ${{ github.workspace }}/ -name "*.html" | xargs -i zip ${{ github.workspace }}/ut-jacoco-report.zip {}
       - name: "Upload ut jacoco report"
         uses: actions/upload-artifact@v3
         with:
