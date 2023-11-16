@@ -20,8 +20,14 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
+import java.lang.reflect.Type;
+
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface ParamDeepCopyUtil {
 
-    <T> T copy(URL url, Object src, Class<T> targetClass);
+    default <T> T copy(URL url, Object src, Class<T> targetClass) {
+        return copy(url, src, targetClass, null);
+    }
+
+    <T> T copy(URL url, Object src, Class<T> targetClass, Type type);
 }
