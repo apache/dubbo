@@ -18,17 +18,17 @@ package org.apache.dubbo.metadata.rest;
 
 import org.apache.dubbo.config.annotation.DubboService;
 
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Spring MVC {@link RestService}
@@ -47,22 +47,24 @@ public class SpringRestService implements RestService {
 
     @Override
     @PostMapping("/params")
-    public String params(@RequestParam(defaultValue = "value-a") int a, @RequestParam(defaultValue = "value-b") String b) {
+    public String params(
+            @RequestParam(defaultValue = "value-a") int a, @RequestParam(defaultValue = "value-b") String b) {
         return null;
     }
 
     @Override
     @GetMapping("/headers")
-    public String headers(@RequestHeader(name = "h", defaultValue = "value-h") String header,
-                          @RequestHeader(name = "h2", defaultValue = "value-h2") String header2,
-                          @RequestParam(value = "v", defaultValue = "1") Integer param) {
+    public String headers(
+            @RequestHeader(name = "h", defaultValue = "value-h") String header,
+            @RequestHeader(name = "h2", defaultValue = "value-h2") String header2,
+            @RequestParam(value = "v", defaultValue = "1") Integer param) {
         return null;
     }
 
     @Override
     @GetMapping("/path-variables/{p1}/{p2}")
-    public String pathVariables(@PathVariable("p1") String path1,
-                                @PathVariable("p2") String path2, @RequestParam("v") String param) {
+    public String pathVariables(
+            @PathVariable("p1") String path1, @PathVariable("p2") String path2, @RequestParam("v") String param) {
         return null;
     }
 
@@ -74,8 +76,7 @@ public class SpringRestService implements RestService {
 
     @Override
     @PostMapping(value = "/request/body/map", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public User requestBodyMap(@RequestBody Map<String, Object> data,
-                               @RequestParam("param") String param) {
+    public User requestBodyMap(@RequestBody Map<String, Object> data, @RequestParam("param") String param) {
         User user = new User();
         user.setId(((Integer) data.get("id")).longValue());
         user.setName((String) data.get("name"));
@@ -95,19 +96,13 @@ public class SpringRestService implements RestService {
 
     @PostMapping(value = "/request/body/user/json", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @Override
-    public void noAnnotationJsonBody(User user) {
-
-    }
+    public void noAnnotationJsonBody(User user) {}
 
     @PostMapping(value = "/request/body/user/form", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     @Override
-    public void noAnnotationFormBody(User user) {
-
-    }
+    public void noAnnotationFormBody(User user) {}
 
     @PostMapping(value = "/request/body/user/param")
     @Override
-    public void noAnnotationParam(String text) {
-
-    }
+    public void noAnnotationParam(String text) {}
 }

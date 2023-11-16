@@ -178,7 +178,6 @@ public class RestMethodMetadata implements Serializable {
         getArgInfos().add(argInfo);
     }
 
-
     public Method getReflectMethod() {
         return reflectMethod;
     }
@@ -204,36 +203,43 @@ public class RestMethodMetadata implements Serializable {
             return false;
         }
         RestMethodMetadata that = (RestMethodMetadata) o;
-        return Objects.equals(getMethod(), that.getMethod()) &&
-            Objects.equals(getRequest(), that.getRequest()) &&
-            Objects.equals(getUrlIndex(), that.getUrlIndex()) &&
-            Objects.equals(getBodyIndex(), that.getBodyIndex()) &&
-            Objects.equals(getHeaderMapIndex(), that.getHeaderMapIndex()) &&
-            Objects.equals(getBodyType(), that.getBodyType()) &&
-            Objects.equals(getFormParams(), that.getFormParams()) &&
-            Objects.equals(getIndexToEncoded(), that.getIndexToEncoded());
+        return Objects.equals(getMethod(), that.getMethod())
+                && Objects.equals(getRequest(), that.getRequest())
+                && Objects.equals(getUrlIndex(), that.getUrlIndex())
+                && Objects.equals(getBodyIndex(), that.getBodyIndex())
+                && Objects.equals(getHeaderMapIndex(), that.getHeaderMapIndex())
+                && Objects.equals(getBodyType(), that.getBodyType())
+                && Objects.equals(getFormParams(), that.getFormParams())
+                && Objects.equals(getIndexToEncoded(), that.getIndexToEncoded());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getMethod(), getRequest(), getUrlIndex(), getBodyIndex(), getHeaderMapIndex(), getBodyType(), getFormParams(), getIndexToEncoded());
+        return Objects.hash(
+                getMethod(),
+                getRequest(),
+                getUrlIndex(),
+                getBodyIndex(),
+                getHeaderMapIndex(),
+                getBodyType(),
+                getFormParams(),
+                getIndexToEncoded());
     }
 
     @Override
     public String toString() {
-        return "RestMethodMetadata{" +
-            "method=" + method +
-            ", request=" + request +
-            ", urlIndex=" + urlIndex +
-            ", bodyIndex=" + bodyIndex +
-            ", headerMapIndex=" + headerMapIndex +
-            ", bodyType='" + bodyType + '\'' +
-            ", indexToName=" + indexToName +
-            ", formParams=" + formParams +
-            ", indexToEncoded=" + indexToEncoded +
-            ", argInfos=" + argInfos +
-            ", reflectMethod=" + reflectMethod +
-            ", codeStyle=" + codeStyle +
-            '}';
+        return "RestMethodMetadata{" + "method="
+                + method + ", request="
+                + request + ", urlIndex="
+                + urlIndex + ", bodyIndex="
+                + bodyIndex + ", headerMapIndex="
+                + headerMapIndex + ", bodyType='"
+                + bodyType + '\'' + ", indexToName="
+                + indexToName + ", formParams="
+                + formParams + ", indexToEncoded="
+                + indexToEncoded + ", argInfos="
+                + argInfos + ", reflectMethod="
+                + reflectMethod + ", codeStyle="
+                + codeStyle + '}';
     }
 }

@@ -20,6 +20,8 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 
+import java.util.Map;
+
 import com.alibaba.spring.context.config.ConfigurationBeanBinder;
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,8 +31,6 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import java.util.Map;
 
 import static com.alibaba.spring.util.PropertySourcesUtils.getSubProperties;
 

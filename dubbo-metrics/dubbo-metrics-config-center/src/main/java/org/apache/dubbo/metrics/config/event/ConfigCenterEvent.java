@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.config.event;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
@@ -37,11 +36,9 @@ import static org.apache.dubbo.metrics.model.key.MetricsKey.CONFIGCENTER_METRIC_
  */
 public class ConfigCenterEvent extends TimeCounterEvent {
 
-
     public static final String NACOS_PROTOCOL = "nacos";
     public static final String APOLLO_PROTOCOL = "apollo";
     public static final String ZK_PROTOCOL = "zookeeper";
-
 
     public ConfigCenterEvent(ApplicationModel applicationModel, TypeWrapper typeWrapper) {
         super(applicationModel, typeWrapper);
@@ -53,17 +50,20 @@ public class ConfigCenterEvent extends TimeCounterEvent {
         }
     }
 
-
-    public static ConfigCenterEvent toChangeEvent(ApplicationModel applicationModel, String key, String group, String protocol, String changeType, int count) {
-        ConfigCenterEvent configCenterEvent = new ConfigCenterEvent(applicationModel, new TypeWrapper(MetricsLevel.CONFIG, CONFIGCENTER_METRIC_TOTAL));
+    public static ConfigCenterEvent toChangeEvent(
+            ApplicationModel applicationModel,
+            String key,
+            String group,
+            String protocol,
+            String changeType,
+            int count) {
+        ConfigCenterEvent configCenterEvent = new ConfigCenterEvent(
+                applicationModel, new TypeWrapper(MetricsLevel.CONFIG, CONFIGCENTER_METRIC_TOTAL));
         configCenterEvent.putAttachment(ATTACHMENT_KEY_CONFIG_FILE, key);
         configCenterEvent.putAttachment(ATTACHMENT_KEY_CONFIG_GROUP, group);
         configCenterEvent.putAttachment(ATTACHMENT_KEY_CONFIG_PROTOCOL, protocol);
         configCenterEvent.putAttachment(ATTACHMENT_KEY_CHANGE_TYPE, changeType);
         configCenterEvent.putAttachment(ATTACHMENT_KEY_SIZE, count);
         return configCenterEvent;
-
     }
-
-
 }

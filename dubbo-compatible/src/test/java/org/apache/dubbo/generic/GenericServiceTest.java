@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.generic;
-
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.compact.Dubbo2CompactUtils;
@@ -36,16 +34,16 @@ import org.apache.dubbo.service.ComplexObject;
 import org.apache.dubbo.service.DemoService;
 import org.apache.dubbo.service.DemoServiceImpl;
 
-import com.alibaba.dubbo.config.ReferenceConfig;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.alibaba.dubbo.config.ReferenceConfig;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class GenericServiceTest {
 
@@ -57,18 +55,20 @@ class GenericServiceTest {
     @Test
     void testGeneric() {
         DemoService server = new DemoServiceImpl();
-        ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        ProxyFactory proxyFactory =
+                ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         URL url = URL.valueOf("dubbo://127.0.0.1:5342/" + DemoService.class.getName() + "?version=1.0.0");
         Exporter<DemoService> exporter = protocol.export(proxyFactory.getInvoker(server, DemoService.class, url));
         Invoker<DemoService> invoker = protocol.refer(DemoService.class, url);
 
         GenericService client = (GenericService) proxyFactory.getProxy(invoker, true);
-        Object result = client.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{"haha"});
+        Object result = client.$invoke("sayHello", new String[] {"java.lang.String"}, new Object[] {"haha"});
         Assertions.assertEquals("hello haha", result);
 
-        org.apache.dubbo.rpc.service.GenericService newClient = (org.apache.dubbo.rpc.service.GenericService) proxyFactory.getProxy(invoker, true);
-        Object res = newClient.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{"hehe"});
+        org.apache.dubbo.rpc.service.GenericService newClient =
+                (org.apache.dubbo.rpc.service.GenericService) proxyFactory.getProxy(invoker, true);
+        Object res = newClient.$invoke("sayHello", new String[] {"java.lang.String"}, new Object[] {"hehe"});
         Assertions.assertEquals("hello hehe", res);
         invoker.destroy();
         exporter.unexport();
@@ -77,20 +77,22 @@ class GenericServiceTest {
     @Test
     void testGeneric2() {
         DemoService server = new DemoServiceImpl();
-        ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        ProxyFactory proxyFactory =
+                ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        URL url = URL.valueOf("dubbo://127.0.0.1:5342/" + DemoService.class.getName() + "?version=1.0.0&generic=true$timeout=3000");
+        URL url = URL.valueOf(
+                "dubbo://127.0.0.1:5342/" + DemoService.class.getName() + "?version=1.0.0&generic=true$timeout=3000");
         Exporter<DemoService> exporter = protocol.export(proxyFactory.getInvoker(server, DemoService.class, url));
         Invoker<GenericService> invoker = protocol.refer(GenericService.class, url);
 
         GenericService client = proxyFactory.getProxy(invoker, true);
-        Object result = client.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{"haha"});
+        Object result = client.$invoke("sayHello", new String[] {"java.lang.String"}, new Object[] {"haha"});
         Assertions.assertEquals("hello haha", result);
 
         Invoker<DemoService> invoker2 = protocol.refer(DemoService.class, url);
 
         GenericService client2 = (GenericService) proxyFactory.getProxy(invoker2, true);
-        Object result2 = client2.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{"haha"});
+        Object result2 = client2.$invoke("sayHello", new String[] {"java.lang.String"}, new Object[] {"haha"});
         Assertions.assertEquals("hello haha", result2);
 
         invoker.destroy();
@@ -99,14 +101,14 @@ class GenericServiceTest {
 
     @Test
     void testGenericCompatible() {
-        DubboBootstrap.getInstance()
-            .application("test-app")
-            .initialize();
+        DubboBootstrap.getInstance().application("test-app").initialize();
 
         DemoService server = new DemoServiceImpl();
-        ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        ProxyFactory proxyFactory =
+                ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        URL url = URL.valueOf("dubbo://127.0.0.1:5342/" + DemoService.class.getName() + "?version=1.0.0&generic=true$timeout=3000");
+        URL url = URL.valueOf(
+                "dubbo://127.0.0.1:5342/" + DemoService.class.getName() + "?version=1.0.0&generic=true$timeout=3000");
         Exporter<DemoService> exporter = protocol.export(proxyFactory.getInvoker(server, DemoService.class, url));
 
         // simulate normal invoke
@@ -118,7 +120,7 @@ class GenericServiceTest {
         GenericService client = (GenericService) proxyFactory.getProxy(invoker, true);
         Assertions.assertInstanceOf(Dubbo2CompactUtils.getGenericServiceClass(), client);
 
-        Object result = client.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{"haha"});
+        Object result = client.$invoke("sayHello", new String[] {"java.lang.String"}, new Object[] {"haha"});
         Assertions.assertEquals("hello haha", result);
 
         invoker.destroy();
@@ -128,11 +130,12 @@ class GenericServiceTest {
     @Test
     void testGenericComplexCompute4FullServiceMetadata() {
         DemoService server = new DemoServiceImpl();
-        ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        ProxyFactory proxyFactory =
+                ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        URL url = URL.valueOf("dubbo://127.0.0.1:5342/" + DemoService.class.getName() + "?version=1.0.0&generic=true$timeout=3000");
+        URL url = URL.valueOf(
+                "dubbo://127.0.0.1:5342/" + DemoService.class.getName() + "?version=1.0.0&generic=true$timeout=3000");
         Exporter<DemoService> exporter = protocol.export(proxyFactory.getInvoker(server, DemoService.class, url));
-
 
         String var1 = "v1";
         int var2 = 234;
@@ -148,15 +151,15 @@ class GenericServiceTest {
 
         Invoker<GenericService> invoker = protocol.refer(GenericService.class, url);
 
-
         GenericService client = proxyFactory.getProxy(invoker, true);
-        Object result = client.$invoke(methodDefinition.getName(), methodDefinition.getParameterTypes(), new Object[]{"haha", mapObject});
+        Object result = client.$invoke(
+                methodDefinition.getName(), methodDefinition.getParameterTypes(), new Object[] {"haha", mapObject});
         Assertions.assertEquals("haha###" + complexObject.toString(), result);
-
 
         Invoker<DemoService> invoker2 = protocol.refer(DemoService.class, url);
         GenericService client2 = (GenericService) proxyFactory.getProxy(invoker2, true);
-        Object result2 = client2.$invoke("complexCompute", methodDefinition.getParameterTypes(), new Object[]{"haha2", mapObject});
+        Object result2 = client2.$invoke(
+                "complexCompute", methodDefinition.getParameterTypes(), new Object[] {"haha2", mapObject});
         Assertions.assertEquals("haha2###" + complexObject.toString(), result2);
 
         invoker.destroy();
@@ -166,11 +169,12 @@ class GenericServiceTest {
     @Test
     void testGenericFindComplexObject4FullServiceMetadata() {
         DemoService server = new DemoServiceImpl();
-        ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        ProxyFactory proxyFactory =
+                ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        URL url = URL.valueOf("dubbo://127.0.0.1:5342/" + DemoService.class.getName() + "?version=1.0.0&generic=true$timeout=3000");
+        URL url = URL.valueOf(
+                "dubbo://127.0.0.1:5342/" + DemoService.class.getName() + "?version=1.0.0&generic=true$timeout=3000");
         Exporter<DemoService> exporter = protocol.export(proxyFactory.getInvoker(server, DemoService.class, url));
-
 
         String var1 = "v1";
         int var2 = 234;
@@ -178,13 +182,22 @@ class GenericServiceTest {
         String[] var3 = {"var31", "var32"};
         List<Integer> var4 = Arrays.asList(2, 4, 8);
         ComplexObject.TestEnum testEnum = ComplexObject.TestEnum.VALUE2;
-        //ComplexObject complexObject = createComplexObject(var1, var2, l, var3, var4, testEnum);
+        // ComplexObject complexObject = createComplexObject(var1, var2, l, var3, var4, testEnum);
 
         Invoker<GenericService> invoker = protocol.refer(GenericService.class, url);
 
         GenericService client = proxyFactory.getProxy(invoker, true);
-        Object result = client.$invoke("findComplexObject", new String[]{"java.lang.String", "int", "long", "java.lang.String[]", "java.util.List", "org.apache.dubbo.service.ComplexObject$TestEnum"},
-            new Object[]{var1, var2, l, var3, var4, testEnum});
+        Object result = client.$invoke(
+                "findComplexObject",
+                new String[] {
+                    "java.lang.String",
+                    "int",
+                    "long",
+                    "java.lang.String[]",
+                    "java.util.List",
+                    "org.apache.dubbo.service.ComplexObject$TestEnum"
+                },
+                new Object[] {var1, var2, l, var3, var4, testEnum});
         Assertions.assertNotNull(result);
         ComplexObject r = map2bean((Map) result);
         Assertions.assertEquals(r, createComplexObject(var1, var2, l, var3, var4, testEnum));
@@ -202,7 +215,14 @@ class GenericServiceTest {
         return null;
     }
 
-    Map<String, Object> createComplexObject(FullServiceDefinition fullServiceDefinition, String var1, int var2, long l, String[] var3, List<Integer> var4, ComplexObject.TestEnum testEnum) {
+    Map<String, Object> createComplexObject(
+            FullServiceDefinition fullServiceDefinition,
+            String var1,
+            int var2,
+            long l,
+            String[] var3,
+            List<Integer> var4,
+            ComplexObject.TestEnum testEnum) {
         List<TypeDefinition> typeDefinitions = fullServiceDefinition.getTypes();
         TypeDefinition topTypeDefinition = null;
         TypeDefinition innerTypeDefinition = null;
@@ -220,21 +240,37 @@ class GenericServiceTest {
             }
         }
         Assertions.assertEquals("long", topTypeDefinition.getProperties().get("v"));
-        Assertions.assertEquals("java.util.Map<java.lang.String,java.lang.String>", topTypeDefinition.getProperties().get("maps"));
-        Assertions.assertEquals("org.apache.dubbo.service.ComplexObject.InnerObject", topTypeDefinition.getProperties().get("innerObject"));
-        Assertions.assertEquals("java.util.List<java.lang.Integer>", topTypeDefinition.getProperties().get("intList"));
-        Assertions.assertEquals("java.lang.String[]", topTypeDefinition.getProperties().get("strArrays"));
-        Assertions.assertEquals("org.apache.dubbo.service.ComplexObject.InnerObject3[]", topTypeDefinition.getProperties().get("innerObject3"));
-        Assertions.assertEquals("org.apache.dubbo.service.ComplexObject.TestEnum", topTypeDefinition.getProperties().get("testEnum"));
-        Assertions.assertEquals("java.util.List<org.apache.dubbo.service.ComplexObject.InnerObject2>", topTypeDefinition.getProperties().get("innerObject2"));
+        Assertions.assertEquals(
+                "java.util.Map<java.lang.String,java.lang.String>",
+                topTypeDefinition.getProperties().get("maps"));
+        Assertions.assertEquals(
+                "org.apache.dubbo.service.ComplexObject.InnerObject",
+                topTypeDefinition.getProperties().get("innerObject"));
+        Assertions.assertEquals(
+                "java.util.List<java.lang.Integer>",
+                topTypeDefinition.getProperties().get("intList"));
+        Assertions.assertEquals(
+                "java.lang.String[]", topTypeDefinition.getProperties().get("strArrays"));
+        Assertions.assertEquals(
+                "org.apache.dubbo.service.ComplexObject.InnerObject3[]",
+                topTypeDefinition.getProperties().get("innerObject3"));
+        Assertions.assertEquals(
+                "org.apache.dubbo.service.ComplexObject.TestEnum",
+                topTypeDefinition.getProperties().get("testEnum"));
+        Assertions.assertEquals(
+                "java.util.List<org.apache.dubbo.service.ComplexObject.InnerObject2>",
+                topTypeDefinition.getProperties().get("innerObject2"));
 
-        Assertions.assertSame("java.lang.String", innerTypeDefinition.getProperties().get("innerA"));
+        Assertions.assertSame(
+                "java.lang.String", innerTypeDefinition.getProperties().get("innerA"));
         Assertions.assertSame("int", innerTypeDefinition.getProperties().get("innerB"));
 
-        Assertions.assertSame("java.lang.String", inner2TypeDefinition.getProperties().get("innerA2"));
+        Assertions.assertSame(
+                "java.lang.String", inner2TypeDefinition.getProperties().get("innerA2"));
         Assertions.assertSame("int", inner2TypeDefinition.getProperties().get("innerB2"));
 
-        Assertions.assertSame("java.lang.String", inner3TypeDefinition.getProperties().get("innerA3"));
+        Assertions.assertSame(
+                "java.lang.String", inner3TypeDefinition.getProperties().get("innerA3"));
 
         Map<String, Object> result = new HashMap<>();
         result.put("v", l);
@@ -268,7 +304,7 @@ class GenericServiceTest {
         innerObject3Tmp2.put("innerA3", var1 + "_32");
         Map innerObject3Tmp3 = new HashMap<>(4);
         innerObject3Tmp3.put("innerA3", var1 + "_32");
-        result.put("innerObject3", new Map[]{innerObject3Tmp1, innerObject3Tmp2, innerObject3Tmp3});
+        result.put("innerObject3", new Map[] {innerObject3Tmp1, innerObject3Tmp2, innerObject3Tmp3});
 
         return result;
     }
@@ -281,8 +317,8 @@ class GenericServiceTest {
         return JsonUtils.toJavaObject(JsonUtils.toJson(map), ComplexObject.class);
     }
 
-    ComplexObject createComplexObject(String var1, int var2, long l, String[] var3, List<Integer> var4, ComplexObject.TestEnum testEnum) {
+    ComplexObject createComplexObject(
+            String var1, int var2, long l, String[] var3, List<Integer> var4, ComplexObject.TestEnum testEnum) {
         return new ComplexObject(var1, var2, l, var3, var4, testEnum);
     }
-
 }

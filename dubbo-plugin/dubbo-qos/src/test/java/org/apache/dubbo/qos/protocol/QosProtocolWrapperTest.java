@@ -109,7 +109,7 @@ class QosProtocolWrapperTest {
 
     @Test
     void testMultiProtocol() throws Exception {
-        //tri protocol start first, acceptForeignIp = true
+        // tri protocol start first, acceptForeignIp = true
         triWrapper.export(triInvoker);
         assertThat(server.isStarted(), is(true));
         assertThat(server.getHost(), is("localhost"));
@@ -117,7 +117,7 @@ class QosProtocolWrapperTest {
         assertThat(server.isAcceptForeignIp(), is(true));
         verify(triProtocol).export(triInvoker);
 
-        //next registry protocol server still acceptForeignIp=true even though wrapper invoker url set false
+        // next registry protocol server still acceptForeignIp=true even though wrapper invoker url set false
         wrapper.export(invoker);
         assertThat(server.isStarted(), is(true));
         assertThat(server.getHost(), is("localhost"));

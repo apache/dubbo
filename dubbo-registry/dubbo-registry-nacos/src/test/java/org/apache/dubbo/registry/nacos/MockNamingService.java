@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.registry.nacos;
 
+import java.util.List;
+
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.listener.EventListener;
@@ -24,78 +26,48 @@ import com.alibaba.nacos.api.naming.pojo.ListView;
 import com.alibaba.nacos.api.naming.pojo.ServiceInfo;
 import com.alibaba.nacos.api.selector.AbstractSelector;
 
-import java.util.List;
-
 public class MockNamingService implements NamingService {
     @Override
-    public void registerInstance(String serviceName, String ip, int port) {
-
-    }
+    public void registerInstance(String serviceName, String ip, int port) {}
 
     @Override
-    public void registerInstance(String serviceName, String groupName, String ip, int port) {
-
-    }
+    public void registerInstance(String serviceName, String groupName, String ip, int port) {}
 
     @Override
-    public void registerInstance(String serviceName, String ip, int port, String clusterName) {
-
-    }
+    public void registerInstance(String serviceName, String ip, int port, String clusterName) {}
 
     @Override
-    public void registerInstance(String serviceName, String groupName, String ip, int port, String clusterName) {
-
-    }
+    public void registerInstance(String serviceName, String groupName, String ip, int port, String clusterName) {}
 
     @Override
-    public void registerInstance(String serviceName, Instance instance) {
-
-    }
+    public void registerInstance(String serviceName, Instance instance) {}
 
     @Override
-    public void registerInstance(String serviceName, String groupName, Instance instance) throws NacosException {
-
-    }
+    public void registerInstance(String serviceName, String groupName, Instance instance) throws NacosException {}
 
     @Override
-    public void batchRegisterInstance(String serviceName, String groupName, List<Instance> instances) {
-
-    }
+    public void batchRegisterInstance(String serviceName, String groupName, List<Instance> instances) {}
 
     @Override
-    public void deregisterInstance(String serviceName, String ip, int port) {
-
-    }
+    public void deregisterInstance(String serviceName, String ip, int port) {}
 
     @Override
-    public void deregisterInstance(String serviceName, String groupName, String ip, int port) {
-
-    }
+    public void deregisterInstance(String serviceName, String groupName, String ip, int port) {}
 
     @Override
-    public void deregisterInstance(String serviceName, String ip, int port, String clusterName) {
-
-    }
+    public void deregisterInstance(String serviceName, String ip, int port, String clusterName) {}
 
     @Override
-    public void deregisterInstance(String serviceName, String groupName, String ip, int port, String clusterName) {
-
-    }
+    public void deregisterInstance(String serviceName, String groupName, String ip, int port, String clusterName) {}
 
     @Override
-    public void deregisterInstance(String serviceName, Instance instance) {
-
-    }
+    public void deregisterInstance(String serviceName, Instance instance) {}
 
     @Override
-    public void deregisterInstance(String serviceName, String groupName, Instance instance) {
-
-    }
+    public void deregisterInstance(String serviceName, String groupName, Instance instance) {}
 
     @Override
-    public void batchDeregisterInstance(String s, String s1, List<Instance> list) throws NacosException {
-
-    }
+    public void batchDeregisterInstance(String s, String s1, List<Instance> list) throws NacosException {}
 
     @Override
     public List<Instance> getAllInstances(String serviceName) {
@@ -133,7 +105,8 @@ public class MockNamingService implements NamingService {
     }
 
     @Override
-    public List<Instance> getAllInstances(String serviceName, String groupName, List<String> clusters, boolean subscribe) {
+    public List<Instance> getAllInstances(
+            String serviceName, String groupName, List<String> clusters, boolean subscribe) {
         return null;
     }
 
@@ -163,17 +136,20 @@ public class MockNamingService implements NamingService {
     }
 
     @Override
-    public List<Instance> selectInstances(String serviceName, String groupName, List<String> clusters, boolean healthy) {
+    public List<Instance> selectInstances(
+            String serviceName, String groupName, List<String> clusters, boolean healthy) {
         return null;
     }
 
     @Override
-    public List<Instance> selectInstances(String serviceName, List<String> clusters, boolean healthy, boolean subscribe) {
+    public List<Instance> selectInstances(
+            String serviceName, List<String> clusters, boolean healthy, boolean subscribe) {
         return null;
     }
 
     @Override
-    public List<Instance> selectInstances(String serviceName, String groupName, List<String> clusters, boolean healthy, boolean subscribe) {
+    public List<Instance> selectInstances(
+            String serviceName, String groupName, List<String> clusters, boolean healthy, boolean subscribe) {
         return null;
     }
 
@@ -213,49 +189,35 @@ public class MockNamingService implements NamingService {
     }
 
     @Override
-    public Instance selectOneHealthyInstance(String serviceName, String groupName, List<String> clusters, boolean subscribe) {
+    public Instance selectOneHealthyInstance(
+            String serviceName, String groupName, List<String> clusters, boolean subscribe) {
         return null;
     }
 
     @Override
-    public void subscribe(String serviceName, EventListener listener) throws NacosException {
-
-    }
+    public void subscribe(String serviceName, EventListener listener) throws NacosException {}
 
     @Override
-    public void subscribe(String serviceName, String groupName, EventListener listener) throws NacosException {
-
-    }
+    public void subscribe(String serviceName, String groupName, EventListener listener) throws NacosException {}
 
     @Override
-    public void subscribe(String serviceName, List<String> clusters, EventListener listener) throws NacosException {
-
-    }
+    public void subscribe(String serviceName, List<String> clusters, EventListener listener) throws NacosException {}
 
     @Override
-    public void subscribe(String serviceName, String groupName, List<String> clusters, EventListener listener) throws NacosException {
-
-    }
-
-    @Override
-    public void unsubscribe(String serviceName, EventListener listener) {
-
-    }
+    public void subscribe(String serviceName, String groupName, List<String> clusters, EventListener listener)
+            throws NacosException {}
 
     @Override
-    public void unsubscribe(String serviceName, String groupName, EventListener listener) {
-
-    }
+    public void unsubscribe(String serviceName, EventListener listener) {}
 
     @Override
-    public void unsubscribe(String serviceName, List<String> clusters, EventListener listener) {
-
-    }
+    public void unsubscribe(String serviceName, String groupName, EventListener listener) {}
 
     @Override
-    public void unsubscribe(String serviceName, String groupName, List<String> clusters, EventListener listener) {
+    public void unsubscribe(String serviceName, List<String> clusters, EventListener listener) {}
 
-    }
+    @Override
+    public void unsubscribe(String serviceName, String groupName, List<String> clusters, EventListener listener) {}
 
     @Override
     public ListView<String> getServicesOfServer(int pageNo, int pageSize) {
@@ -288,7 +250,5 @@ public class MockNamingService implements NamingService {
     }
 
     @Override
-    public void shutDown() {
-
-    }
+    public void shutDown() {}
 }

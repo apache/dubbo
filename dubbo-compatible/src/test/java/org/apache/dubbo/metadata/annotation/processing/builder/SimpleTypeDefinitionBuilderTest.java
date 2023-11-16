@@ -19,11 +19,12 @@ package org.apache.dubbo.metadata.annotation.processing.builder;
 import org.apache.dubbo.metadata.annotation.processing.AbstractAnnotationProcessingTest;
 import org.apache.dubbo.metadata.annotation.processing.model.SimpleTypeModel;
 
-import org.junit.jupiter.api.Test;
-
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+
 import java.util.Set;
+
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.metadata.annotation.processing.builder.PrimitiveTypeDefinitionBuilderTest.buildAndAssertTypeDefinition;
 import static org.apache.dubbo.metadata.annotation.processing.util.FieldUtils.findField;
@@ -67,7 +68,6 @@ class SimpleTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
     private VariableElement dtField;
 
     private VariableElement invalidField;
-
 
     @Override
     protected void addCompiledClasses(Set<Class<?>> classesToBeCompiled) {

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.collector;
 
 import org.apache.dubbo.metrics.data.BaseStatComposite;
@@ -32,11 +31,11 @@ import java.util.List;
 
 import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
 
-public abstract class CombMetricsCollector<E extends TimeCounterEvent> extends AbstractMetricsListener<E> implements ApplicationMetricsCollector<E>, ServiceMetricsCollector<E>, MethodMetricsCollector<E> {
+public abstract class CombMetricsCollector<E extends TimeCounterEvent> extends AbstractMetricsListener<E>
+        implements ApplicationMetricsCollector<E>, ServiceMetricsCollector<E>, MethodMetricsCollector<E> {
 
     protected final BaseStatComposite stats;
     private MetricsEventMulticaster eventMulticaster;
-
 
     public CombMetricsCollector(BaseStatComposite stats) {
         this.stats = stats;
@@ -85,7 +84,6 @@ public abstract class CombMetricsCollector<E extends TimeCounterEvent> extends A
         this.stats.incrementMethodKey(wrapper, methodMetric, size);
     }
 
-
     @Override
     public void init(Invocation invocation, MetricsKeyWrapper wrapper) {
         this.stats.initMethodKey(wrapper, invocation);
@@ -104,7 +102,6 @@ public abstract class CombMetricsCollector<E extends TimeCounterEvent> extends A
         eventMulticaster.publishEvent(event);
     }
 
-
     @Override
     public void onEventFinish(TimeCounterEvent event) {
         eventMulticaster.publishFinishEvent(event);
@@ -119,4 +116,3 @@ public abstract class CombMetricsCollector<E extends TimeCounterEvent> extends A
         return stats;
     }
 }
-

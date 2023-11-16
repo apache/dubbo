@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.demo.rest.api;
 
+import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.MediaType;
 import org.springframework.util.MultiValueMap;
@@ -25,9 +27,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import po.User;
-
-import java.util.List;
-import java.util.Map;
 
 @RequestMapping("/spring/demo/service")
 public interface SpringRestDemoService {
@@ -41,12 +40,17 @@ public interface SpringRestDemoService {
     @RequestMapping(method = RequestMethod.POST, value = "/say")
     String sayHello(@RequestBody String name);
 
-    @RequestMapping(method = RequestMethod.POST, value = "/testFormBody", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @RequestMapping(
+            method = RequestMethod.POST,
+            value = "/testFormBody",
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     Long testFormBody(@RequestBody Long number);
 
-    @RequestMapping(method = RequestMethod.POST, value = "/testJavaBeanBody", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @RequestMapping(
+            method = RequestMethod.POST,
+            value = "/testJavaBeanBody",
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     User testJavaBeanBody(@RequestBody User user);
-
 
     @RequestMapping(method = RequestMethod.GET, value = "/primitive")
     int primitiveInt(@RequestParam("a") int a, @RequestParam("b") int b);
@@ -57,10 +61,8 @@ public interface SpringRestDemoService {
     @RequestMapping(method = RequestMethod.GET, value = "/primitiveByte")
     long primitiveByte(@RequestParam("a") byte a, @RequestParam("b") Long b);
 
-
     @RequestMapping(method = RequestMethod.POST, value = "/primitiveShort")
     long primitiveShort(@RequestParam("a") short a, @RequestParam("b") Long b, @RequestBody int c);
-
 
     @RequestMapping(method = RequestMethod.GET, value = "/testMapParam")
     String testMapParam(@RequestParam Map<String, String> params);
@@ -68,12 +70,12 @@ public interface SpringRestDemoService {
     @RequestMapping(method = RequestMethod.GET, value = "/testMapHeader")
     String testMapHeader(@RequestHeader Map<String, String> headers);
 
-    @RequestMapping(method = RequestMethod.POST, value = "/testMapForm", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @RequestMapping(
+            method = RequestMethod.POST,
+            value = "/testMapForm",
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     List<String> testMapForm(MultiValueMap<String, String> params);
-
 
     @RequestMapping(method = RequestMethod.GET, value = "/headerInt")
     int headerInt(@RequestHeader("header") int header);
-
-
 }

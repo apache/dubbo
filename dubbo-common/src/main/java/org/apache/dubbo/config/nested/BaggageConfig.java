@@ -91,6 +91,5 @@ public class BaggageConfig implements Serializable {
         public void setFields(List<String> fields) {
             this.fields = fields;
         }
-
     }
 }

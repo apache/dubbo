@@ -28,9 +28,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 @Configuration("consumerConfiguration")
-@DubboComponentScan(
-        basePackageClasses = ConsumerConfiguration.class
-)
+@DubboComponentScan(basePackageClasses = ConsumerConfiguration.class)
 @PropertySource("META-INF/default.properties")
 public class ConsumerConfiguration {
 
@@ -80,13 +78,12 @@ public class ConsumerConfiguration {
         this.demoService = demoService;
     }
 
-
     @Bean
     public Child c() {
         return new Child();
     }
 
-    public static abstract class Ancestor {
+    public abstract static class Ancestor {
 
         @Reference(version = "2.5.7", url = remoteURL)
         private DemoService demoServiceFromAncestor;
@@ -100,7 +97,7 @@ public class ConsumerConfiguration {
         }
     }
 
-    public static abstract class Parent extends Ancestor {
+    public abstract static class Parent extends Ancestor {
 
         private DemoService demoServiceFromParent;
 
@@ -112,7 +109,6 @@ public class ConsumerConfiguration {
         public void setDemoServiceFromParent(DemoService demoServiceFromParent) {
             this.demoServiceFromParent = demoServiceFromParent;
         }
-
     }
 
     public static class Child extends Parent {
@@ -122,7 +118,6 @@ public class ConsumerConfiguration {
 
         @Reference(version = "2.5.7", url = remoteURL)
         private DemoService demoServiceFromChild;
-
 
         public DemoService getDemoService() {
             return demoService;
@@ -136,5 +131,4 @@ public class ConsumerConfiguration {
             this.demoServiceFromChild = demoServiceFromChild;
         }
     }
-
 }

@@ -24,13 +24,12 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 
-import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PREFERRED_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_ZONE;
@@ -57,28 +56,29 @@ class ZoneAwareClusterInvokerTest {
 
     @Test
     void testPreferredStrategy() {
-        given(invocation.getParameterTypes()).willReturn(new Class<?>[]{});
-        given(invocation.getArguments()).willReturn(new Object[]{});
+        given(invocation.getParameterTypes()).willReturn(new Class<?>[] {});
+        given(invocation.getArguments()).willReturn(new Object[] {});
         given(invocation.getObjectAttachments()).willReturn(new HashMap<>());
 
         firstInvoker = newUnexpectedInvoker();
         thirdInvoker = newUnexpectedInvoker();
 
-        secondInvoker = (ClusterInvoker) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{ClusterInvoker.class}, (proxy, method, args) -> {
-            if ("getUrl".equals(method.getName())) {
-                return url;
-            }
-            if ("getRegistryUrl".equals(method.getName())) {
-                return registryUrl.addParameter(PREFERRED_KEY, true);
-            }
-            if ("isAvailable".equals(method.getName())) {
-                return true;
-            }
-            if ("invoke".equals(method.getName())) {
-                return new AppResponse(expectedValue);
-            }
-            return null;
-        });
+        secondInvoker = (ClusterInvoker) Proxy.newProxyInstance(
+                getClass().getClassLoader(), new Class<?>[] {ClusterInvoker.class}, (proxy, method, args) -> {
+                    if ("getUrl".equals(method.getName())) {
+                        return url;
+                    }
+                    if ("getRegistryUrl".equals(method.getName())) {
+                        return registryUrl.addParameter(PREFERRED_KEY, true);
+                    }
+                    if ("isAvailable".equals(method.getName())) {
+                        return true;
+                    }
+                    if ("invoke".equals(method.getName())) {
+                        return new AppResponse(expectedValue);
+                    }
+                    return null;
+                });
 
         given(directory.list(invocation)).willReturn(new ArrayList() {
             {
@@ -100,29 +100,30 @@ class ZoneAwareClusterInvokerTest {
     void testRegistryZoneStrategy() {
         String zoneKey = "zone";
 
-        given(invocation.getParameterTypes()).willReturn(new Class<?>[]{});
-        given(invocation.getArguments()).willReturn(new Object[]{});
+        given(invocation.getParameterTypes()).willReturn(new Class<?>[] {});
+        given(invocation.getArguments()).willReturn(new Object[] {});
         given(invocation.getObjectAttachments()).willReturn(new HashMap<>());
         RpcContext.getClientAttachment().setAttachment(REGISTRY_ZONE, zoneKey);
 
         firstInvoker = newUnexpectedInvoker();
         thirdInvoker = newUnexpectedInvoker();
 
-        secondInvoker = (ClusterInvoker) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{ClusterInvoker.class}, (proxy, method, args) -> {
-            if ("getUrl".equals(method.getName())) {
-                return url;
-            }
-            if ("getRegistryUrl".equals(method.getName())) {
-                return registryUrl.addParameter(ZONE_KEY, zoneKey);
-            }
-            if ("isAvailable".equals(method.getName())) {
-                return true;
-            }
-            if ("invoke".equals(method.getName())) {
-                return new AppResponse(expectedValue);
-            }
-            return null;
-        });
+        secondInvoker = (ClusterInvoker) Proxy.newProxyInstance(
+                getClass().getClassLoader(), new Class<?>[] {ClusterInvoker.class}, (proxy, method, args) -> {
+                    if ("getUrl".equals(method.getName())) {
+                        return url;
+                    }
+                    if ("getRegistryUrl".equals(method.getName())) {
+                        return registryUrl.addParameter(ZONE_KEY, zoneKey);
+                    }
+                    if ("isAvailable".equals(method.getName())) {
+                        return true;
+                    }
+                    if ("invoke".equals(method.getName())) {
+                        return new AppResponse(expectedValue);
+                    }
+                    return null;
+                });
 
         given(directory.list(invocation)).willReturn(new ArrayList() {
             {
@@ -144,8 +145,8 @@ class ZoneAwareClusterInvokerTest {
     void testRegistryZoneForceStrategy() {
         String zoneKey = "zone";
 
-        given(invocation.getParameterTypes()).willReturn(new Class<?>[]{});
-        given(invocation.getArguments()).willReturn(new Object[]{});
+        given(invocation.getParameterTypes()).willReturn(new Class<?>[] {});
+        given(invocation.getArguments()).willReturn(new Object[] {});
         given(invocation.getObjectAttachments()).willReturn(new HashMap<>());
         RpcContext.getClientAttachment().setAttachment(REGISTRY_ZONE, zoneKey);
         RpcContext.getClientAttachment().setAttachment(REGISTRY_ZONE_FORCE, "true");
@@ -166,8 +167,7 @@ class ZoneAwareClusterInvokerTest {
         given(directory.getConsumerUrl()).willReturn(url);
 
         zoneAwareClusterInvoker = new ZoneAwareClusterInvoker<>(directory);
-        Assertions.assertThrows(IllegalStateException.class,
-            () -> zoneAwareClusterInvoker.invoke(invocation));
+        Assertions.assertThrows(IllegalStateException.class, () -> zoneAwareClusterInvoker.invoke(invocation));
     }
 
     @Test
@@ -179,25 +179,25 @@ class ZoneAwareClusterInvokerTest {
 
         zoneAwareClusterInvoker = new ZoneAwareClusterInvoker<>(directory);
 
-        Assertions.assertThrows(RpcException.class,
-            () -> zoneAwareClusterInvoker.invoke(invocation));
+        Assertions.assertThrows(RpcException.class, () -> zoneAwareClusterInvoker.invoke(invocation));
     }
 
     private ClusterInvoker newUnexpectedInvoker() {
-        return  (ClusterInvoker) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{ClusterInvoker.class}, (proxy, method, args) -> {
-            if ("getUrl".equals(method.getName())) {
-                return url;
-            }
-            if ("getRegistryUrl".equals(method.getName())) {
-                return registryUrl;
-            }
-            if ("isAvailable".equals(method.getName())) {
-                return true;
-            }
-            if ("invoke".equals(method.getName())) {
-                return new AppResponse(unexpectedValue);
-            }
-            return null;
-        });
+        return (ClusterInvoker) Proxy.newProxyInstance(
+                getClass().getClassLoader(), new Class<?>[] {ClusterInvoker.class}, (proxy, method, args) -> {
+                    if ("getUrl".equals(method.getName())) {
+                        return url;
+                    }
+                    if ("getRegistryUrl".equals(method.getName())) {
+                        return registryUrl;
+                    }
+                    if ("isAvailable".equals(method.getName())) {
+                        return true;
+                    }
+                    if ("invoke".equals(method.getName())) {
+                        return new AppResponse(unexpectedValue);
+                    }
+                    return null;
+                });
     }
 }

@@ -23,6 +23,8 @@ import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.context.annotation.provider.HelloServiceImpl;
 
+import java.util.Map;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -35,33 +37,24 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 
-import java.util.Map;
-
 /**
  * issue: https://github.com/apache/dubbo-spring-boot-project/issues/779
  */
 @SpringBootTest(
-        properties = {
-                "dubbo.application.name=consumer-app",
-                "dubbo.registry.address=N/A",
-                "myapp.group=demo"
-        },
-        classes = {
-                JavaConfigReferenceBeanConditionalTest4.class
-        }
-)
+        properties = {"dubbo.application.name=consumer-app", "dubbo.registry.address=N/A", "myapp.group=demo"},
+        classes = {JavaConfigReferenceBeanConditionalTest4.class})
 @Configuration
-//@ComponentScan
+// @ComponentScan
 @EnableDubbo
 public class JavaConfigReferenceBeanConditionalTest4 {
 
     @BeforeAll
-    public static void beforeAll(){
+    public static void beforeAll() {
         DubboBootstrap.reset();
     }
 
     @AfterAll
-    public static void afterAll(){
+    public static void afterAll() {
         DubboBootstrap.reset();
     }
 
@@ -79,10 +72,11 @@ public class JavaConfigReferenceBeanConditionalTest4 {
         Assertions.assertNull(helloServiceMap.get("helloService"));
         HelloService helloService = helloServiceMap.get("helloServiceImpl");
         Assertions.assertNotNull(helloService);
-        Assertions.assertTrue(helloService instanceof HelloServiceImpl, "Not expected bean type: "+helloService.getClass());
+        Assertions.assertTrue(
+                helloService instanceof HelloServiceImpl, "Not expected bean type: " + helloService.getClass());
     }
 
-    @Order(Integer.MAX_VALUE-2)
+    @Order(Integer.MAX_VALUE - 2)
     @Configuration
     public static class ServiceBeanConfiguration {
 
@@ -93,18 +87,16 @@ public class JavaConfigReferenceBeanConditionalTest4 {
     }
 
     // make sure that the one using condition runs after.
-    @Order(Integer.MAX_VALUE-1)
+    @Order(Integer.MAX_VALUE - 1)
     @Configuration
     public static class AnnotationBeanConfiguration {
 
-        //TEST Conditional, this bean should be ignored
+        // TEST Conditional, this bean should be ignored
         @Bean
         @ConditionalOnMissingBean(HelloService.class)
         @DubboReference(group = "${myapp.group}", init = false)
         public ReferenceBean<HelloService> helloService() {
             return new ReferenceBean();
         }
-
     }
-
 }

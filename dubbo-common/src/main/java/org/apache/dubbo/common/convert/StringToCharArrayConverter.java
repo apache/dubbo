@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.convert;
 
-
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 
 /**
@@ -30,7 +29,6 @@ public class StringToCharArrayConverter implements StringConverter<char[]> {
     public char[] convert(String source) {
         return isNotEmpty(source) ? source.toCharArray() : null;
     }
-
 
     @Override
     public int getPriority() {

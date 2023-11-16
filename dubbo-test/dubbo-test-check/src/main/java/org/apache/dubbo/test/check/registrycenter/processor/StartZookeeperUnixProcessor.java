@@ -43,19 +43,25 @@ public class StartZookeeperUnixProcessor extends ZookeeperUnixProcessor {
     protected Process doProcess(ZookeeperContext context, int clientPort) throws DubboTestException {
         logger.info(String.format("The zookeeper-%d is starting...", clientPort));
         List<String> commands = new ArrayList<>();
-        Path zookeeperBin = Paths.get(context.getSourceFile().getParent().toString(),
+        Path zookeeperBin = Paths.get(
+                context.getSourceFile().getParent().toString(),
                 String.valueOf(clientPort),
                 context.getUnpackedDirectory(),
                 "bin");
         commands.add(Paths.get(zookeeperBin.toString(), "zkServer.sh")
-                .toAbsolutePath().toString());
+                .toAbsolutePath()
+                .toString());
         commands.add("start");
-        commands.add(Paths.get(zookeeperBin.getParent().toString(),
-                "conf",
-                "zoo.cfg").toAbsolutePath().toString());
+        commands.add(Paths.get(zookeeperBin.getParent().toString(), "conf", "zoo.cfg")
+                .toAbsolutePath()
+                .toString());
         try {
-            return new ProcessBuilder().directory(zookeeperBin.getParent().toFile())
-                    .command(commands).inheritIO().redirectOutput(ProcessBuilder.Redirect.PIPE).start();
+            return new ProcessBuilder()
+                    .directory(zookeeperBin.getParent().toFile())
+                    .command(commands)
+                    .inheritIO()
+                    .redirectOutput(ProcessBuilder.Redirect.PIPE)
+                    .start();
         } catch (IOException e) {
             throw new DubboTestException(String.format("Failed to start zookeeper-%d", clientPort), e);
         }

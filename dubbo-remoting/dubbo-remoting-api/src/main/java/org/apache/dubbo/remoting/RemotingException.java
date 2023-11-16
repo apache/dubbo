@@ -38,7 +38,9 @@ public class RemotingException extends Exception {
     private InetSocketAddress remoteAddress;
 
     public RemotingException(Channel channel, String msg) {
-        this(channel == null ? null : channel.getLocalAddress(), channel == null ? null : channel.getRemoteAddress(),
+        this(
+                channel == null ? null : channel.getLocalAddress(),
+                channel == null ? null : channel.getRemoteAddress(),
                 msg);
     }
 
@@ -50,7 +52,9 @@ public class RemotingException extends Exception {
     }
 
     public RemotingException(Channel channel, Throwable cause) {
-        this(channel == null ? null : channel.getLocalAddress(), channel == null ? null : channel.getRemoteAddress(),
+        this(
+                channel == null ? null : channel.getLocalAddress(),
+                channel == null ? null : channel.getRemoteAddress(),
                 cause);
     }
 
@@ -62,12 +66,15 @@ public class RemotingException extends Exception {
     }
 
     public RemotingException(Channel channel, String message, Throwable cause) {
-        this(channel == null ? null : channel.getLocalAddress(), channel == null ? null : channel.getRemoteAddress(),
-                message, cause);
+        this(
+                channel == null ? null : channel.getLocalAddress(),
+                channel == null ? null : channel.getRemoteAddress(),
+                message,
+                cause);
     }
 
-    public RemotingException(InetSocketAddress localAddress, InetSocketAddress remoteAddress, String message,
-                             Throwable cause) {
+    public RemotingException(
+            InetSocketAddress localAddress, InetSocketAddress remoteAddress, String message, Throwable cause) {
         super(message, cause);
 
         this.localAddress = localAddress;

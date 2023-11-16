@@ -39,7 +39,8 @@ public class TestConsumerConfiguration {
 
     private static final String remoteURL = "dubbo://127.0.0.1:12345?version=2.5.7";
 
-    @Reference(id = "demoService",
+    @Reference(
+            id = "demoService",
             version = "2.5.7",
             url = remoteURL,
             application = "dubbo-demo-application",
@@ -70,15 +71,14 @@ public class TestConsumerConfiguration {
         this.demoService = demoService;
     }
 
-
     @Bean
     public Child c() {
         return new Child();
     }
 
-    public static abstract class Ancestor {
+    public abstract static class Ancestor {
 
-        @DubboReference(version = "2.5.7", url = remoteURL,filter = "mymock", application = "dubbo-demo-application")
+        @DubboReference(version = "2.5.7", url = remoteURL, filter = "mymock", application = "dubbo-demo-application")
         private DemoService demoServiceFromAncestor;
 
         public DemoService getDemoServiceFromAncestor() {

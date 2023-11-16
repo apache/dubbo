@@ -14,15 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.reactive;
 
 import org.apache.dubbo.reactive.handler.OneToOneMethodHandler;
 
-import org.junit.jupiter.api.Test;
-
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -34,9 +33,9 @@ public final class OneToOneMethodHandlerTest {
     @Test
     void testInvoke() throws ExecutionException, InterruptedException {
         String request = "request";
-        OneToOneMethodHandler<String, String> handler = new OneToOneMethodHandler<>(requestMono ->
-            requestMono.map(r -> r + "Test"));
-        CompletableFuture<?> future = handler.invoke(new Object[]{request});
+        OneToOneMethodHandler<String, String> handler =
+                new OneToOneMethodHandler<>(requestMono -> requestMono.map(r -> r + "Test"));
+        CompletableFuture<?> future = handler.invoke(new Object[] {request});
         assertEquals("requestTest", future.get());
     }
 }

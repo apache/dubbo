@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.registry.support;
 
 import org.apache.dubbo.common.URL;
@@ -41,7 +40,8 @@ import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
  */
 public abstract class AbstractRegistryFactory implements RegistryFactory, ScopeModelAware {
 
-    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(AbstractRegistryFactory.class);
+    private static final ErrorTypeAwareLogger LOGGER =
+            LoggerFactory.getErrorTypeAwareLogger(AbstractRegistryFactory.class);
 
     private RegistryManager registryManager;
     protected ApplicationModel applicationModel;
@@ -55,8 +55,8 @@ public abstract class AbstractRegistryFactory implements RegistryFactory, ScopeM
     @Override
     public Registry getRegistry(URL url) {
         if (registryManager == null) {
-            throw new IllegalStateException("Unable to fetch RegistryManager from ApplicationModel BeanFactory. " +
-                "Please check if `setApplicationModel` has been override.");
+            throw new IllegalStateException("Unable to fetch RegistryManager from ApplicationModel BeanFactory. "
+                    + "Please check if `setApplicationModel` has been override.");
         }
 
         Registry defaultNopRegistry = registryManager.getDefaultNopRegistryIfDestroyed();
@@ -65,12 +65,12 @@ public abstract class AbstractRegistryFactory implements RegistryFactory, ScopeM
         }
 
         url = URLBuilder.from(url)
-            .setPath(RegistryService.class.getName())
-            .addParameter(INTERFACE_KEY, RegistryService.class.getName())
-            .removeParameter(TIMESTAMP_KEY)
-            .removeAttribute(EXPORT_KEY)
-            .removeAttribute(REFER_KEY)
-            .build();
+                .setPath(RegistryService.class.getName())
+                .addParameter(INTERFACE_KEY, RegistryService.class.getName())
+                .removeParameter(TIMESTAMP_KEY)
+                .removeAttribute(EXPORT_KEY)
+                .removeAttribute(REFER_KEY)
+                .build();
 
         String key = createRegistryCacheKey(url);
         Registry registry = null;
@@ -105,8 +105,7 @@ public abstract class AbstractRegistryFactory implements RegistryFactory, ScopeM
                 throw new RuntimeException("Can not create registry " + url, e);
             } else {
                 // 1-11 Failed to obtain or create registry (service) object.
-                LOGGER.warn(REGISTRY_FAILED_CREATE_INSTANCE, "", "",
-                    "Failed to obtain or create registry ", e);
+                LOGGER.warn(REGISTRY_FAILED_CREATE_INSTANCE, "", "", "Failed to obtain or create registry ", e);
             }
         } finally {
             // Release the lock
@@ -128,6 +127,4 @@ public abstract class AbstractRegistryFactory implements RegistryFactory, ScopeM
     }
 
     protected abstract Registry createRegistry(URL url);
-
-
 }

@@ -77,7 +77,5 @@ public class TestModuleService extends BaseTestService implements FooModuleServi
     }
 
     @Override
-    public void process(URL url) {
-
-    }
+    public void process(URL url) {}
 }

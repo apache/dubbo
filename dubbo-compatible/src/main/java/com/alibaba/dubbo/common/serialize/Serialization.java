@@ -14,15 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.common.serialize;
-
-import com.alibaba.dubbo.common.DelegateURL;
-import com.alibaba.dubbo.common.URL;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import com.alibaba.dubbo.common.DelegateURL;
+import com.alibaba.dubbo.common.URL;
 
 @Deprecated
 public interface Serialization extends org.apache.dubbo.common.serialize.Serialization {
@@ -32,12 +31,14 @@ public interface Serialization extends org.apache.dubbo.common.serialize.Seriali
     ObjectInput deserialize(URL url, InputStream input) throws IOException;
 
     @Override
-    default org.apache.dubbo.common.serialize.ObjectOutput serialize(org.apache.dubbo.common.URL url, OutputStream output) throws IOException {
+    default org.apache.dubbo.common.serialize.ObjectOutput serialize(
+            org.apache.dubbo.common.URL url, OutputStream output) throws IOException {
         return this.serialize(new DelegateURL(url), output);
     }
 
     @Override
-    default org.apache.dubbo.common.serialize.ObjectInput deserialize(org.apache.dubbo.common.URL url, InputStream input) throws IOException {
+    default org.apache.dubbo.common.serialize.ObjectInput deserialize(
+            org.apache.dubbo.common.URL url, InputStream input) throws IOException {
         return this.deserialize(new DelegateURL(url), input);
     }
 }

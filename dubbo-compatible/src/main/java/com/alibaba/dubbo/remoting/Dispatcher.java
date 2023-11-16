@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.remoting;
 
 import org.apache.dubbo.common.URL;
@@ -23,8 +22,8 @@ import org.apache.dubbo.remoting.ChannelHandler;
 @Deprecated
 public interface Dispatcher extends org.apache.dubbo.remoting.Dispatcher {
 
-    com.alibaba.dubbo.remoting.ChannelHandler dispatch(com.alibaba.dubbo.remoting.ChannelHandler handler,
-                                                       com.alibaba.dubbo.common.URL url);
+    com.alibaba.dubbo.remoting.ChannelHandler dispatch(
+            com.alibaba.dubbo.remoting.ChannelHandler handler, com.alibaba.dubbo.common.URL url);
 
     @Override
     default ChannelHandler dispatch(ChannelHandler handler, URL url) {

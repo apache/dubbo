@@ -23,8 +23,7 @@ import java.io.InputStream;
  * Stream utils.
  */
 public class StreamUtils {
-    private StreamUtils() {
-    }
+    private StreamUtils() {}
 
     public static InputStream limitedInputStream(final InputStream is, final int limit) throws IOException {
         return new InputStream() {

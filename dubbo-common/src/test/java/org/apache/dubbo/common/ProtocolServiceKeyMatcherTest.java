@@ -24,84 +24,61 @@ class ProtocolServiceKeyMatcherTest {
     @Test
     void testProtocol() {
         Assertions.assertTrue(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, null, "dubbo"),
-            new ProtocolServiceKey(null, null, null, "dubbo")
-        ));
+                new ProtocolServiceKey(null, null, null, "dubbo"), new ProtocolServiceKey(null, null, null, "dubbo")));
 
         Assertions.assertFalse(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, null, "dubbo"),
-            new ProtocolServiceKey(null, null, null, null)
-        ));
+                new ProtocolServiceKey(null, null, null, "dubbo"), new ProtocolServiceKey(null, null, null, null)));
 
         Assertions.assertFalse(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, null, "dubbo"),
-            new ProtocolServiceKey("DemoService", null, null, "dubbo")
-        ));
+                new ProtocolServiceKey(null, null, null, "dubbo"),
+                new ProtocolServiceKey("DemoService", null, null, "dubbo")));
 
         Assertions.assertTrue(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, null, null),
-            new ProtocolServiceKey(null, null, null, "dubbo")
-        ));
+                new ProtocolServiceKey(null, null, null, null), new ProtocolServiceKey(null, null, null, "dubbo")));
         Assertions.assertTrue(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, null, ""),
-            new ProtocolServiceKey(null, null, null, "dubbo")
-        ));
+                new ProtocolServiceKey(null, null, null, ""), new ProtocolServiceKey(null, null, null, "dubbo")));
         Assertions.assertTrue(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, null, "*"),
-            new ProtocolServiceKey(null, null, null, "dubbo")
-        ));
+                new ProtocolServiceKey(null, null, null, "*"), new ProtocolServiceKey(null, null, null, "dubbo")));
 
         Assertions.assertFalse(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, null, "dubbo1,dubbo2"),
-            new ProtocolServiceKey(null, null, null, "dubbo")
-        ));
+                new ProtocolServiceKey(null, null, null, "dubbo1,dubbo2"),
+                new ProtocolServiceKey(null, null, null, "dubbo")));
         Assertions.assertTrue(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, null, "dubbo1,dubbo2"),
-            new ProtocolServiceKey(null, null, null, "dubbo1")
-        ));
+                new ProtocolServiceKey(null, null, null, "dubbo1,dubbo2"),
+                new ProtocolServiceKey(null, null, null, "dubbo1")));
         Assertions.assertTrue(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, null, "dubbo1,dubbo2"),
-            new ProtocolServiceKey(null, null, null, "dubbo2")
-        ));
+                new ProtocolServiceKey(null, null, null, "dubbo1,dubbo2"),
+                new ProtocolServiceKey(null, null, null, "dubbo2")));
 
         Assertions.assertTrue(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, null, "dubbo1,,dubbo2"),
-            new ProtocolServiceKey(null, null, null, null)
-        ));
+                new ProtocolServiceKey(null, null, null, "dubbo1,,dubbo2"),
+                new ProtocolServiceKey(null, null, null, null)));
         Assertions.assertTrue(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, null, "dubbo1,,dubbo2"),
-            new ProtocolServiceKey(null, null, null, "")
-        ));
+                new ProtocolServiceKey(null, null, null, "dubbo1,,dubbo2"),
+                new ProtocolServiceKey(null, null, null, "")));
 
         Assertions.assertTrue(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, null, ",dubbo1,dubbo2"),
-            new ProtocolServiceKey(null, null, null, null)
-        ));
+                new ProtocolServiceKey(null, null, null, ",dubbo1,dubbo2"),
+                new ProtocolServiceKey(null, null, null, null)));
         Assertions.assertTrue(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, null, ",dubbo1,dubbo2"),
-            new ProtocolServiceKey(null, null, null, "")
-        ));
+                new ProtocolServiceKey(null, null, null, ",dubbo1,dubbo2"),
+                new ProtocolServiceKey(null, null, null, "")));
 
         Assertions.assertTrue(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, null, "dubbo1,dubbo2,"),
-            new ProtocolServiceKey(null, null, null, null)
-        ));
+                new ProtocolServiceKey(null, null, null, "dubbo1,dubbo2,"),
+                new ProtocolServiceKey(null, null, null, null)));
         Assertions.assertTrue(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, null, "dubbo1,dubbo2,"),
-            new ProtocolServiceKey(null, null, null, "")
-        ));
+                new ProtocolServiceKey(null, null, null, "dubbo1,dubbo2,"),
+                new ProtocolServiceKey(null, null, null, "")));
 
         Assertions.assertFalse(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, null, "dubbo1,,dubbo2"),
-            new ProtocolServiceKey(null, null, null, "dubbo")
-        ));
+                new ProtocolServiceKey(null, null, null, "dubbo1,,dubbo2"),
+                new ProtocolServiceKey(null, null, null, "dubbo")));
         Assertions.assertFalse(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, null, ",dubbo1,dubbo2"),
-            new ProtocolServiceKey(null, null, null, "dubbo")
-        ));
+                new ProtocolServiceKey(null, null, null, ",dubbo1,dubbo2"),
+                new ProtocolServiceKey(null, null, null, "dubbo")));
         Assertions.assertFalse(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, null, "dubbo1,dubbo2,"),
-            new ProtocolServiceKey(null, null, null, "dubbo")
-        ));
+                new ProtocolServiceKey(null, null, null, "dubbo1,dubbo2,"),
+                new ProtocolServiceKey(null, null, null, "dubbo")));
     }
 }

@@ -37,17 +37,15 @@ public class RegexProperties extends Properties {
         }
 
         // Sort the keys to solve the problem of matching priority.
-        List<String> sortedKeyList = keySet()
-                .stream()
+        List<String> sortedKeyList = keySet().stream()
                 .map(k -> (String) k)
                 .sorted(Comparator.reverseOrder())
                 .collect(Collectors.toList());
 
-        String keyPattern = sortedKeyList
-                .stream()
+        String keyPattern = sortedKeyList.stream()
                 .filter(k -> {
                     String matchingKey = k;
-                    if(matchingKey.startsWith(CommonConstants.ANY_VALUE)){
+                    if (matchingKey.startsWith(CommonConstants.ANY_VALUE)) {
                         matchingKey = CommonConstants.HIDE_KEY_PREFIX + matchingKey;
                     }
                     return Pattern.matches(matchingKey, key);

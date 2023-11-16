@@ -78,5 +78,4 @@ public class NacosConfigServiceWrapper {
         }
         return data.replace(INNERCLASS_SYMBOL, INNERCLASS_COMPATIBLE_SYMBOL).replace(SLASH_CHAR, HYPHEN_CHAR);
     }
-
 }

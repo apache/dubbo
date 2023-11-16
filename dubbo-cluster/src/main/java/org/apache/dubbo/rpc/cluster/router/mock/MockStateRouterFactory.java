@@ -32,5 +32,4 @@ public class MockStateRouterFactory implements StateRouterFactory {
     public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url) {
         return new MockInvokersSelector<T>(url);
     }
-
 }

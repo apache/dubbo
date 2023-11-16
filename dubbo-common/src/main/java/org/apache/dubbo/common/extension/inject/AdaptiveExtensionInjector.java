@@ -36,8 +36,7 @@ public class AdaptiveExtensionInjector implements ExtensionInjector, Lifecycle {
     private Collection<ExtensionInjector> injectors = Collections.emptyList();
     private ExtensionAccessor extensionAccessor;
 
-    public AdaptiveExtensionInjector() {
-    }
+    public AdaptiveExtensionInjector() {}
 
     @Override
     public void setExtensionAccessor(final ExtensionAccessor extensionAccessor) {
@@ -48,24 +47,22 @@ public class AdaptiveExtensionInjector implements ExtensionInjector, Lifecycle {
     public void initialize() throws IllegalStateException {
         ExtensionLoader<ExtensionInjector> loader = extensionAccessor.getExtensionLoader(ExtensionInjector.class);
         injectors = loader.getSupportedExtensions().stream()
-            .map(loader::getExtension)
-            .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
+                .map(loader::getExtension)
+                .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
     }
 
     @Override
     public <T> T getInstance(final Class<T> type, final String name) {
         return injectors.stream()
-            .map(injector -> injector.getInstance(type, name))
-            .filter(Objects::nonNull)
-            .findFirst()
-            .orElse(null);
+                .map(injector -> injector.getInstance(type, name))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
     }
 
     @Override
-    public void start() throws IllegalStateException {
-    }
+    public void start() throws IllegalStateException {}
 
     @Override
-    public void destroy() throws IllegalStateException {
-    }
+    public void destroy() throws IllegalStateException {}
 }

@@ -47,7 +47,8 @@ class ShutdownHookCallbacksTest {
     @Test
     void testCallback() {
         callbacks.callback();
-        DefaultShutdownHookCallback callback = (DefaultShutdownHookCallback) callbacks.getCallbacks().iterator().next();
+        DefaultShutdownHookCallback callback = (DefaultShutdownHookCallback)
+                callbacks.getCallbacks().iterator().next();
         assertTrue(callback.isExecuted());
     }
 

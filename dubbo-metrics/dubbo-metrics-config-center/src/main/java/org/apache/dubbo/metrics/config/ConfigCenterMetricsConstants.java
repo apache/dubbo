@@ -22,5 +22,4 @@ public interface ConfigCenterMetricsConstants {
     String ATTACHMENT_KEY_CONFIG_GROUP = "configGroup";
     String ATTACHMENT_KEY_CONFIG_PROTOCOL = "configProtocol";
     String ATTACHMENT_KEY_CHANGE_TYPE = "configChangeType";
-
 }

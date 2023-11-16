@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -25,19 +24,20 @@ import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 
-import io.netty.handler.codec.http2.Http2Headers;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
+
+import io.netty.handler.codec.http2.Http2Headers;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_PARSE;
 
 public abstract class AbstractH2TransportListener implements H2TransportListener {
 
-    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(AbstractH2TransportListener.class);
+    private static final ErrorTypeAwareLogger LOGGER =
+            LoggerFactory.getErrorTypeAwareLogger(AbstractH2TransportListener.class);
 
     /**
      * Parse metadata to a KV pairs map.
@@ -53,10 +53,9 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
         for (Map.Entry<CharSequence, CharSequence> header : trailers) {
             String key = header.getKey().toString();
             if (key.endsWith(TripleConstant.HEADER_BIN_SUFFIX)
-                && key.length() > TripleConstant.HEADER_BIN_SUFFIX.length()) {
+                    && key.length() > TripleConstant.HEADER_BIN_SUFFIX.length()) {
                 try {
-                    String realKey = key.substring(0,
-                        key.length() - TripleConstant.HEADER_BIN_SUFFIX.length());
+                    String realKey = key.substring(0, key.length() - TripleConstant.HEADER_BIN_SUFFIX.length());
                     byte[] value = StreamUtils.decodeASCIIByte(header.getValue());
                     attachments.put(realKey, value);
                 } catch (Exception e) {
@@ -85,11 +84,14 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
             // If convertUpperHeaderSupplier does not return String, just fail...
             // Internal invocation, use INTERNAL_ERROR instead.
 
-            LOGGER.error(INTERNAL_ERROR, "wrong internal invocation", "", "Triple convertNoLowerCaseHeader error, obj is not String");
+            LOGGER.error(
+                    INTERNAL_ERROR,
+                    "wrong internal invocation",
+                    "",
+                    "Triple convertNoLowerCaseHeader error, obj is not String");
         }
         return attachments;
     }
-
 
     protected Map<String, String> filterReservedHeaders(Http2Headers trailers) {
         if (trailers == null) {
@@ -104,5 +106,4 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
         }
         return excludeHeaders;
     }
-
 }

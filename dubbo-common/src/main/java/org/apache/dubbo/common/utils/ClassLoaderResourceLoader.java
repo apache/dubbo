@@ -38,7 +38,8 @@ import java.util.concurrent.CountDownLatch;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_IO_EXCEPTION;
 
 public class ClassLoaderResourceLoader {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ClassLoaderResourceLoader.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(ClassLoaderResourceLoader.class);
     private static SoftReference<Map<ClassLoader, Map<String, Set<URL>>>> classLoaderResourcesCache = null;
 
     static {
@@ -46,7 +47,8 @@ public class ClassLoaderResourceLoader {
         GlobalResourcesRepository.registerGlobalDisposable(ClassLoaderResourceLoader::destroy);
     }
 
-    public static Map<ClassLoader, Set<URL>> loadResources(String fileName, Collection<ClassLoader> classLoaders) throws InterruptedException {
+    public static Map<ClassLoader, Set<URL>> loadResources(String fileName, Collection<ClassLoader> classLoaders)
+            throws InterruptedException {
         Map<ClassLoader, Set<URL>> resources = new ConcurrentHashMap<>();
         CountDownLatch countDownLatch = new CountDownLatch(classLoaders.size());
         for (ClassLoader classLoader : classLoaders) {
@@ -83,14 +85,21 @@ public class ClassLoaderResourceLoader {
                     while (urls.hasMoreElements()) {
                         URL url = urls.nextElement();
                         if (isNative) {
-                            //In native mode, the address of each URL is the same instead of different paths, so it is necessary to set the ref to make it different
+                            // In native mode, the address of each URL is the same instead of different paths, so it is
+                            // necessary to set the ref to make it different
                             setRef(url);
                         }
                         set.add(url);
                     }
                 }
             } catch (IOException e) {
-                logger.error(COMMON_IO_EXCEPTION, "", "", "Exception occurred when reading SPI definitions. SPI path: " + fileName + " ClassLoader name: " + currentClassLoader, e);
+                logger.error(
+                        COMMON_IO_EXCEPTION,
+                        "",
+                        "",
+                        "Exception occurred when reading SPI definitions. SPI path: " + fileName + " ClassLoader name: "
+                                + currentClassLoader,
+                        e);
             }
             urlCache.put(fileName, set);
         }
@@ -111,7 +120,6 @@ public class ClassLoaderResourceLoader {
         } catch (Throwable ignore) {
         }
     }
-
 
     // for test
     protected static SoftReference<Map<ClassLoader, Map<String, Set<URL>>>> getClassLoaderResourcesCache() {

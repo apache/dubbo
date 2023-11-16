@@ -14,12 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.configcenter.support.apollo;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.JsonUtils;
+
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 import com.ctrip.framework.apollo.build.ApolloInjector;
 import com.ctrip.framework.apollo.core.dto.ApolloConfig;
@@ -36,17 +42,11 @@ import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_CLOSE_CONNECT_APOLLO;
 
 public class EmbeddedApolloJunit5 implements BeforeAllCallback, AfterAllCallback {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(EmbeddedApolloJunit5.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(EmbeddedApolloJunit5.class);
 
     private static Method CONFIG_SERVICE_LOCATOR_CLEAR;
     private static ConfigServiceLocator CONFIG_SERVICE_LOCATOR;
@@ -92,11 +92,12 @@ public class EmbeddedApolloJunit5 implements BeforeAllCallback, AfterAllCallback
     }
 
     private String mockLongPollBody(String notificationsStr) {
-        List<ApolloConfigNotification> oldNotifications = JsonUtils.toJavaList(notificationsStr, ApolloConfigNotification.class);
+        List<ApolloConfigNotification> oldNotifications =
+                JsonUtils.toJavaList(notificationsStr, ApolloConfigNotification.class);
         List<ApolloConfigNotification> newNotifications = new ArrayList<>();
         for (ApolloConfigNotification notification : oldNotifications) {
-            newNotifications
-                .add(new ApolloConfigNotification(notification.getNamespaceName(), notification.getNotificationId() + 1));
+            newNotifications.add(new ApolloConfigNotification(
+                    notification.getNamespaceName(), notification.getNotificationId() + 1));
         }
         return JsonUtils.toJson(newNotifications);
     }

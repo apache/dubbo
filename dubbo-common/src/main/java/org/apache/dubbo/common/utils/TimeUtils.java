@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.utils;
 
 import java.util.concurrent.TimeUnit;
@@ -30,8 +29,7 @@ public final class TimeUtils {
 
     private static volatile boolean isFallback = false;
 
-    private TimeUtils() {
-    }
+    private TimeUtils() {}
 
     public static long currentTimeMillis() {
         // When an exception occurs in the Ticker mechanism, fall back.

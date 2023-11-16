@@ -35,7 +35,8 @@ import java.util.function.Consumer;
  */
 public class ListenerInvokerWrapper<T> implements Invoker<T> {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ListenerInvokerWrapper.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(ListenerInvokerWrapper.class);
 
     private final Invoker<T> invoker;
 
@@ -49,7 +50,6 @@ public class ListenerInvokerWrapper<T> implements Invoker<T> {
         this.listeners = listeners;
         listenerEvent(listener -> listener.referred(invoker));
     }
-
 
     @Override
     public Class<T> getInterface() {
@@ -101,7 +101,12 @@ public class ListenerInvokerWrapper<T> implements Invoker<T> {
                     try {
                         consumer.accept(listener);
                     } catch (RuntimeException t) {
-                        logger.error(LoggerCodeConstants.INTERNAL_ERROR, "wrapped listener internal error", "", t.getMessage(), t);
+                        logger.error(
+                                LoggerCodeConstants.INTERNAL_ERROR,
+                                "wrapped listener internal error",
+                                "",
+                                t.getMessage(),
+                                t);
                         exception = t;
                     }
                 }

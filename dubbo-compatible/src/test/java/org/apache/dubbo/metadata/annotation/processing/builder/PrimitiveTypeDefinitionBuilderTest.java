@@ -20,14 +20,15 @@ import org.apache.dubbo.metadata.annotation.processing.AbstractAnnotationProcess
 import org.apache.dubbo.metadata.annotation.processing.model.PrimitiveTypeModel;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 
-import org.junit.jupiter.api.Test;
-
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.metadata.annotation.processing.util.FieldUtils.findField;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -70,14 +71,14 @@ class PrimitiveTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTes
 
         TypeElement testType = getType(PrimitiveTypeModel.class);
 
-        zField = findField( testType, "z");
-        bField = findField( testType, "b");
-        cField = findField( testType, "c");
-        sField = findField( testType, "s");
-        iField = findField( testType, "i");
-        lField = findField( testType, "l");
-        fField = findField( testType, "f");
-        dField = findField( testType, "d");
+        zField = findField(testType, "z");
+        bField = findField(testType, "b");
+        cField = findField(testType, "c");
+        sField = findField(testType, "s");
+        iField = findField(testType, "i");
+        lField = findField(testType, "l");
+        fField = findField(testType, "f");
+        dField = findField(testType, "d");
 
         assertEquals("boolean", zField.asType().toString());
         assertEquals("byte", bField.asType().toString());
@@ -114,16 +115,17 @@ class PrimitiveTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTes
         buildAndAssertTypeDefinition(processingEnv, dField, builder);
     }
 
-    static void buildAndAssertTypeDefinition(ProcessingEnvironment processingEnv, VariableElement field, TypeBuilder builder) {
+    static void buildAndAssertTypeDefinition(
+            ProcessingEnvironment processingEnv, VariableElement field, TypeBuilder builder) {
         Map<String, TypeDefinition> typeCache = new HashMap<>();
         TypeDefinition typeDefinition = TypeDefinitionBuilder.build(processingEnv, field, typeCache);
         assertBasicTypeDefinition(typeDefinition, field.asType().toString(), builder);
-//        assertEquals(field.getSimpleName().toString(), typeDefinition.get$ref());
+        //        assertEquals(field.getSimpleName().toString(), typeDefinition.get$ref());
     }
 
     static void assertBasicTypeDefinition(TypeDefinition typeDefinition, String type, TypeBuilder builder) {
         assertEquals(type, typeDefinition.getType());
-//        assertEquals(builder.getClass().getName(), typeDefinition.getTypeBuilderName());
+        //        assertEquals(builder.getClass().getName(), typeDefinition.getTypeBuilderName());
         assertTrue(typeDefinition.getProperties().isEmpty());
         assertTrue(typeDefinition.getItems().isEmpty());
         assertTrue(typeDefinition.getEnums().isEmpty());

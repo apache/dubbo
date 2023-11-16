@@ -14,35 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.configcenter.support.nacos;
 
-import com.alibaba.nacos.api.NacosFactory;
-import com.alibaba.nacos.api.config.ConfigService;
-import com.alibaba.nacos.api.exception.NacosException;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+
+import com.alibaba.nacos.api.NacosFactory;
+import com.alibaba.nacos.api.config.ConfigService;
+import com.alibaba.nacos.api.exception.NacosException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 
 /**
  * Unit test for nacos config center support
  */
-//FIXME: waiting for embedded Nacos suport, then we can open the switch.
+// FIXME: waiting for embedded Nacos suport, then we can open the switch.
 @Disabled("https://github.com/alibaba/nacos/issues/1188")
 class NacosDynamicConfigurationTest {
     private static final String SESSION_TIMEOUT_KEY = "session";
@@ -62,9 +61,16 @@ class NacosDynamicConfigurationTest {
         Thread.sleep(200);
         put("org.apache.dubbo.demo.DemoService:1.0.0.test:xxxx.configurators", "helloworld");
         Thread.sleep(200);
-        Assertions.assertEquals("hello", config.getConfig("org.apache.dubbo.nacos.testService.configurators", DynamicConfiguration.DEFAULT_GROUP));
+        Assertions.assertEquals(
+                "hello",
+                config.getConfig(
+                        "org.apache.dubbo.nacos.testService.configurators", DynamicConfiguration.DEFAULT_GROUP));
         Assertions.assertEquals("aaa=bbb", config.getConfig("dubbo.properties", "test"));
-        Assertions.assertEquals("helloworld", config.getConfig("org.apache.dubbo.demo.DemoService:1.0.0.test:xxxx.configurators", DynamicConfiguration.DEFAULT_GROUP));
+        Assertions.assertEquals(
+                "helloworld",
+                config.getConfig(
+                        "org.apache.dubbo.demo.DemoService:1.0.0.test:xxxx.configurators",
+                        DynamicConfiguration.DEFAULT_GROUP));
     }
 
     @Test
@@ -74,7 +80,6 @@ class NacosDynamicConfigurationTest {
         TestListener listener2 = new TestListener(latch);
         TestListener listener3 = new TestListener(latch);
         TestListener listener4 = new TestListener(latch);
-
 
         config.addListener("AService.configurators", listener1);
         config.addListener("AService.configurators", listener2);
@@ -99,20 +104,19 @@ class NacosDynamicConfigurationTest {
         Assertions.assertEquals("new value1", listener2.getValue());
         Assertions.assertEquals("new value2", listener3.getValue());
         Assertions.assertEquals("new value2", listener4.getValue());
-
     }
-//
-//    @Test
-//    public void testGetConfigKeys() {
-//
-//        put("key1", "a");
-//        put("key2", "b");
-//
-//        SortedSet<String> keys = config.getConfigKeys(DynamicConfiguration.DEFAULT_GROUP);
-//
-//        Assertions.assertFalse(keys.isEmpty());
-//
-//    }
+    //
+    //    @Test
+    //    public void testGetConfigKeys() {
+    //
+    //        put("key1", "a");
+    //        put("key2", "b");
+    //
+    //        SortedSet<String> keys = config.getConfigKeys(DynamicConfiguration.DEFAULT_GROUP);
+    //
+    //        Assertions.assertFalse(keys.isEmpty());
+    //
+    //    }
 
     private void put(String key, String value) {
         put(key, DynamicConfiguration.DEFAULT_GROUP, value);
@@ -130,10 +134,8 @@ class NacosDynamicConfigurationTest {
     public static void setUp() {
         String urlForDubbo = "nacos://" + "127.0.0.1:8848" + "/org.apache.dubbo.nacos.testService";
         // timeout in 15 seconds.
-        URL url = URL.valueOf(urlForDubbo)
-                .addParameter(SESSION_TIMEOUT_KEY, 15000);
+        URL url = URL.valueOf(urlForDubbo).addParameter(SESSION_TIMEOUT_KEY, 15000);
         config = new NacosDynamicConfiguration(url, ApplicationModel.defaultModel());
-
 
         try {
             nacosClient = NacosFactory.createConfigService("127.0.0.1:8848");
@@ -153,9 +155,7 @@ class NacosDynamicConfigurationTest {
     }
 
     @AfterAll
-    public static void tearDown() {
-
-    }
+    public static void tearDown() {}
 
     private class TestListener implements ConfigurationListener {
         private CountDownLatch latch;
@@ -183,5 +183,4 @@ class NacosDynamicConfigurationTest {
             return value;
         }
     }
-
 }

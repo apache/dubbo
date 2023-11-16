@@ -19,6 +19,13 @@ package org.apache.dubbo.config.spring.status;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.config.spring.ServiceBean;
 
+import javax.sql.DataSource;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,12 +33,6 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
-
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -69,7 +70,8 @@ class DataSourceStatusCheckerTest {
     @Test
     void testWithoutDatasource() {
         Map<String, DataSource> map = new HashMap<String, DataSource>();
-        given(applicationContext.getBeansOfType(eq(DataSource.class), anyBoolean(), anyBoolean())).willReturn(map);
+        given(applicationContext.getBeansOfType(eq(DataSource.class), anyBoolean(), anyBoolean()))
+                .willReturn(map);
 
         Status status = dataSourceStatusChecker.check();
 
@@ -85,7 +87,8 @@ class DataSourceStatusCheckerTest {
         given(connection.getMetaData().getTypeInfo().next()).willReturn(true);
 
         map.put("mockDatabase", dataSource);
-        given(applicationContext.getBeansOfType(eq(DataSource.class), anyBoolean(), anyBoolean())).willReturn(map);
+        given(applicationContext.getBeansOfType(eq(DataSource.class), anyBoolean(), anyBoolean()))
+                .willReturn(map);
         Status status = dataSourceStatusChecker.check();
 
         assertThat(status.getLevel(), is(Status.Level.OK));
@@ -100,7 +103,8 @@ class DataSourceStatusCheckerTest {
         given(connection.getMetaData().getTypeInfo().next()).willReturn(false);
 
         map.put("mockDatabase", dataSource);
-        given(applicationContext.getBeansOfType(eq(DataSource.class), anyBoolean(), anyBoolean())).willReturn(map);
+        given(applicationContext.getBeansOfType(eq(DataSource.class), anyBoolean(), anyBoolean()))
+                .willReturn(map);
         Status status = dataSourceStatusChecker.check();
 
         assertThat(status.getLevel(), is(Status.Level.ERROR));

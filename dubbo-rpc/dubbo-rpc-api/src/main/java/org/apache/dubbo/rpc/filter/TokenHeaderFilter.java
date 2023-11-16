@@ -37,9 +37,13 @@ public class TokenHeaderFilter implements HeaderFilter {
             Class<?> serviceType = invoker.getInterface();
             String remoteToken = (String) invocation.getObjectAttachmentWithoutConvert(TOKEN_KEY);
             if (!token.equals(remoteToken)) {
-                throw new RpcException(FORBIDDEN_EXCEPTION, "Forbid invoke remote service " + serviceType + " method " + RpcUtils.getMethodName(invocation) +
-                    "() from consumer " + RpcContext.getServiceContext().getRemoteHost() + " to provider " +
-                    RpcContext.getServiceContext().getLocalHost() + ", consumer incorrect token is " + remoteToken);
+                throw new RpcException(
+                        FORBIDDEN_EXCEPTION,
+                        "Forbid invoke remote service " + serviceType + " method " + RpcUtils.getMethodName(invocation)
+                                + "() from consumer "
+                                + RpcContext.getServiceContext().getRemoteHost() + " to provider "
+                                + RpcContext.getServiceContext().getLocalHost()
+                                + ", consumer incorrect token is " + remoteToken);
             }
         }
         return invocation;

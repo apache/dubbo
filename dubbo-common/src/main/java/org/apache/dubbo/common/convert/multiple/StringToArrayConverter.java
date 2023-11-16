@@ -59,7 +59,6 @@ public class StringToArrayConverter implements StringToMultiValueConverter {
         return array;
     }
 
-
     @Override
     public int getPriority() {
         return MIN_PRIORITY;

@@ -16,14 +16,16 @@
  */
 package org.apache.dubbo.demo.rest.api.impl;
 
-
 import org.apache.dubbo.demo.rest.api.JaxRsRestDemoService;
+
+import javax.ws.rs.core.MultivaluedMap;
+
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.stereotype.Service;
 import po.User;
 
-import javax.ws.rs.core.MultivaluedMap;
-import java.util.List;
-import java.util.Map;
 @Service("jaxRsRestDemoService")
 public class JaxRsRestDemoServiceImpl implements JaxRsRestDemoService {
 
@@ -41,7 +43,6 @@ public class JaxRsRestDemoServiceImpl implements JaxRsRestDemoService {
     public User testJavaBeanBody(User user) {
         return user;
     }
-
 
     @Override
     public int primitiveInt(int a, int b) {
@@ -62,8 +63,6 @@ public class JaxRsRestDemoServiceImpl implements JaxRsRestDemoService {
     public long primitiveShort(short a, Long b, int c) {
         return a + b;
     }
-
-
 
     @Override
     public String testMapParam(Map<String, String> params) {
@@ -90,16 +89,13 @@ public class JaxRsRestDemoServiceImpl implements JaxRsRestDemoService {
         return header;
     }
 
-
     @Override
     public Integer hello(Integer a, Integer b) {
         return a + b;
     }
 
-
     @Override
     public String error() {
         throw new RuntimeException("test error");
     }
-
 }

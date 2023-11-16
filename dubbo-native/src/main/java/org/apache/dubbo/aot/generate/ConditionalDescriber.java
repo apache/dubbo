@@ -22,5 +22,4 @@ package org.apache.dubbo.aot.generate;
 public interface ConditionalDescriber {
 
     String getReachableType();
-
 }

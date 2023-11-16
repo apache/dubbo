@@ -50,7 +50,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_IO_EX
 public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<ModuleModel> {
     private final SerializeSecurityManager serializeSecurityManager;
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SerializeSecurityConfigurator.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(SerializeSecurityConfigurator.class);
 
     private final ModuleModel moduleModel;
 
@@ -73,10 +74,16 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
     }
 
     public void refreshCheck() {
-        Optional<ApplicationConfig> applicationConfig = moduleModel.getApplicationModel().getApplicationConfigManager().getApplication();
-        autoTrustSerializeClass = applicationConfig.map(ApplicationConfig::getAutoTrustSerializeClass).orElse(true);
-        trustSerializeClassLevel = applicationConfig.map(ApplicationConfig::getTrustSerializeClassLevel).orElse(Integer.MAX_VALUE);
-        serializeSecurityManager.setCheckSerializable(applicationConfig.map(ApplicationConfig::getCheckSerializable).orElse(true));
+        Optional<ApplicationConfig> applicationConfig =
+                moduleModel.getApplicationModel().getApplicationConfigManager().getApplication();
+        autoTrustSerializeClass = applicationConfig
+                .map(ApplicationConfig::getAutoTrustSerializeClass)
+                .orElse(true);
+        trustSerializeClassLevel = applicationConfig
+                .map(ApplicationConfig::getTrustSerializeClassLevel)
+                .orElse(Integer.MAX_VALUE);
+        serializeSecurityManager.setCheckSerializable(
+                applicationConfig.map(ApplicationConfig::getCheckSerializable).orElse(true));
     }
 
     @Override
@@ -95,8 +102,10 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
     }
 
     private void refreshConfig() {
-        String allowedClassList = System.getProperty(CLASS_DESERIALIZE_ALLOWED_LIST, "").trim();
-        String blockedClassList = System.getProperty(CLASS_DESERIALIZE_BLOCKED_LIST, "").trim();
+        String allowedClassList =
+                System.getProperty(CLASS_DESERIALIZE_ALLOWED_LIST, "").trim();
+        String blockedClassList =
+                System.getProperty(CLASS_DESERIALIZE_BLOCKED_LIST, "").trim();
 
         if (StringUtils.isNotEmpty(allowedClassList)) {
             String[] classStrings = allowedClassList.trim().split(",");
@@ -133,7 +142,12 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
                     serializeSecurityManager.addToAlwaysAllowed(line);
                 }
             } catch (IOException e) {
-                logger.error(COMMON_IO_EXCEPTION, "", "", "Failed to load allow class list! Will ignore allow lis from " + u, e);
+                logger.error(
+                        COMMON_IO_EXCEPTION,
+                        "",
+                        "",
+                        "Failed to load allow class list! Will ignore allow lis from " + u,
+                        e);
             }
         }
     }
@@ -152,14 +166,21 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
                     serializeSecurityManager.addToDisAllowed(line);
                 }
             } catch (IOException e) {
-                logger.error(COMMON_IO_EXCEPTION, "", "", "Failed to load blocked class list! Will ignore blocked lis from " + u, e);
+                logger.error(
+                        COMMON_IO_EXCEPTION,
+                        "",
+                        "",
+                        "Failed to load blocked class list! Will ignore blocked lis from " + u,
+                        e);
             }
         }
     }
 
     public void refreshStatus() {
-        Optional<ApplicationConfig> application = moduleModel.getApplicationModel().getApplicationConfigManager().getApplication();
-        String statusString = application.map(ApplicationConfig::getSerializeCheckStatus).orElse(null);
+        Optional<ApplicationConfig> application =
+                moduleModel.getApplicationModel().getApplicationConfigManager().getApplication();
+        String statusString =
+                application.map(ApplicationConfig::getSerializeCheckStatus).orElse(null);
         SerializeCheckStatus checkStatus = null;
 
         if (StringUtils.isEmpty(statusString)) {
@@ -275,8 +296,11 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
             return;
         }
         String className = clazz.getName();
-        if (className.startsWith("java.") || className.startsWith("javax.") || className.startsWith("com.sun.") ||
-            className.startsWith("sun.") || className.startsWith("jdk.")) {
+        if (className.startsWith("java.")
+                || className.startsWith("javax.")
+                || className.startsWith("com.sun.")
+                || className.startsWith("sun.")
+                || className.startsWith("jdk.")) {
             return;
         }
 
@@ -314,8 +338,11 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
 
     private void addToAllow(String className) {
         // ignore jdk
-        if (className.startsWith("java.") || className.startsWith("javax.") || className.startsWith("com.sun.") ||
-            className.startsWith("sun.") || className.startsWith("jdk.")) {
+        if (className.startsWith("java.")
+                || className.startsWith("javax.")
+                || className.startsWith("com.sun.")
+                || className.startsWith("sun.")
+                || className.startsWith("jdk.")) {
             serializeSecurityManager.addToAllowed(className);
             return;
         }
@@ -323,9 +350,8 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
         // add group package
         String[] subs = className.split("\\.");
         if (subs.length > trustSerializeClassLevel) {
-            serializeSecurityManager.addToAllowed(Arrays.stream(subs)
-                .limit(trustSerializeClassLevel)
-                .collect(Collectors.joining(".")) + ".");
+            serializeSecurityManager.addToAllowed(
+                    Arrays.stream(subs).limit(trustSerializeClassLevel).collect(Collectors.joining(".")) + ".");
         } else {
             serializeSecurityManager.addToAllowed(className);
         }

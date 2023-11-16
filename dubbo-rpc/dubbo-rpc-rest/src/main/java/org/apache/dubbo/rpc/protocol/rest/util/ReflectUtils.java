@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.util;
 
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -30,13 +29,11 @@ public class ReflectUtils {
     public static Class findClass(String name, ClassLoader classLoader) throws ClassNotFoundException {
 
         return classLoader.loadClass(name);
-
     }
 
     public static Class findClass(String name) throws ClassNotFoundException {
 
         return findClass(Thread.currentThread().getContextClassLoader(), name);
-
     }
 
     public static Class findClassAndTryCatch(String name, ClassLoader classLoader) {
@@ -47,7 +44,6 @@ public class ReflectUtils {
 
         }
         return null;
-
     }
 
     public static Class findClass(ClassLoader classLoader, String... name) throws ClassNotFoundException {
@@ -66,7 +62,6 @@ public class ReflectUtils {
         throw new ClassNotFoundException();
     }
 
-
     public static Class findClassTryException(ClassLoader classLoader, String... name) {
 
         try {
@@ -75,7 +70,6 @@ public class ReflectUtils {
 
         }
         return null;
-
     }
 
     public static List<Method> getMethodByNameList(Class clazz, String name) {
@@ -97,7 +91,6 @@ public class ReflectUtils {
         if (!declare) {
             return new ArrayList<>(methods);
         }
-
 
         try {
             filterMethod(name, methods, clazz.getMethods());
@@ -123,15 +116,12 @@ public class ReflectUtils {
 
         }
         return new ArrayList<Constructor<?>>(methods);
-
-
     }
 
     private static void filterConstructMethod(Set<Constructor<?>> methods, Constructor<?>[] declaredMethods) {
         for (Constructor<?> constructor : declaredMethods) {
             methods.add(constructor);
         }
-
     }
 
     private static void filterMethod(String name, Set<Method> methodList, Method[] methods) {
@@ -158,7 +148,8 @@ public class ReflectUtils {
         return findClassTryException(Thread.currentThread().getContextClassLoader(), name);
     }
 
-    public static Object invoke(Object object, Method method, Object[] params) throws InvocationTargetException, IllegalAccessException {
+    public static Object invoke(Object object, Method method, Object[] params)
+            throws InvocationTargetException, IllegalAccessException {
         return method.invoke(object, params);
     }
 
@@ -171,6 +162,4 @@ public class ReflectUtils {
 
         return null;
     }
-
-
 }

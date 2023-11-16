@@ -14,17 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.rpc.model.MethodDescriptor.RpcType;
 import org.apache.dubbo.rpc.support.DemoService;
 
+import java.lang.reflect.Type;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.lang.reflect.Type;
 
 class ReflectionMethodDescriptorTest {
 
@@ -32,8 +31,7 @@ class ReflectionMethodDescriptorTest {
 
     {
         try {
-            method = new ReflectionMethodDescriptor(
-                DemoService.class.getDeclaredMethod("sayHello", String.class));
+            method = new ReflectionMethodDescriptor(DemoService.class.getDeclaredMethod("sayHello", String.class));
         } catch (NoSuchMethodException e) {
             throw new IllegalStateException(e);
         }
@@ -51,13 +49,12 @@ class ReflectionMethodDescriptorTest {
 
     @Test
     void getCompatibleParamSignatures() {
-        Assertions.assertArrayEquals(new String[]{String.class.getName()},
-            method.getCompatibleParamSignatures());
+        Assertions.assertArrayEquals(new String[] {String.class.getName()}, method.getCompatibleParamSignatures());
     }
 
     @Test
     void getParameterClasses() {
-        Assertions.assertArrayEquals(new Class[]{String.class}, method.getParameterClasses());
+        Assertions.assertArrayEquals(new Class[] {String.class}, method.getParameterClasses());
     }
 
     @Test
@@ -72,8 +69,7 @@ class ReflectionMethodDescriptorTest {
 
     @Test
     void getReturnTypes() {
-        Assertions.assertArrayEquals(new Type[]{String.class, String.class},
-            method.getReturnTypes());
+        Assertions.assertArrayEquals(new Type[] {String.class, String.class}, method.getReturnTypes());
     }
 
     @Test
@@ -96,8 +92,8 @@ class ReflectionMethodDescriptorTest {
     @Test
     void testEquals() {
         try {
-            MethodDescriptor method2 = new ReflectionMethodDescriptor(
-                DemoService.class.getDeclaredMethod("sayHello", String.class));
+            MethodDescriptor method2 =
+                    new ReflectionMethodDescriptor(DemoService.class.getDeclaredMethod("sayHello", String.class));
             method.addAttribute("attr", "attr");
             method2.addAttribute("attr", "attr");
             Assertions.assertEquals(method, method2);
@@ -109,8 +105,8 @@ class ReflectionMethodDescriptorTest {
     @Test
     void testHashCode() {
         try {
-            MethodDescriptor method2 = new ReflectionMethodDescriptor(
-                DemoService.class.getDeclaredMethod("sayHello", String.class));
+            MethodDescriptor method2 =
+                    new ReflectionMethodDescriptor(DemoService.class.getDeclaredMethod("sayHello", String.class));
             method.addAttribute("attr", "attr");
             method2.addAttribute("attr", "attr");
             Assertions.assertEquals(method.hashCode(), method2.hashCode());

@@ -19,5 +19,4 @@ package org.apache.dubbo.config.utils.service;
 /**
  *
  */
-public class XxxServiceImpl implements XxxService {
-}
+public class XxxServiceImpl implements XxxService {}

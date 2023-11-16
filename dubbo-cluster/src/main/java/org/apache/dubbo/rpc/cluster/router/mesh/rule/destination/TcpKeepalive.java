@@ -14,13 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.destination;
-
 
 public class TcpKeepalive {
     private int probes;
     private int time;
     private int interval;
-
 }

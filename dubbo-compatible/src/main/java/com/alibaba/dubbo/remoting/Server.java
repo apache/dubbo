@@ -19,5 +19,4 @@ package com.alibaba.dubbo.remoting;
 import org.apache.dubbo.remoting.RemotingServer;
 
 @Deprecated
-public interface Server extends RemotingServer {
-}
+public interface Server extends RemotingServer {}

@@ -21,11 +21,11 @@ import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 import org.apache.dubbo.metadata.tools.TestServiceImpl;
 
-import org.junit.jupiter.api.Test;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.metadata.annotation.processing.builder.ServiceDefinitionBuilder.build;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -37,15 +37,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 class ServiceDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
 
-
     @Override
     protected void addCompiledClasses(Set<Class<?>> classesToBeCompiled) {
         classesToBeCompiled.add(TestServiceImpl.class);
     }
 
     @Override
-    protected void beforeEach() {
-    }
+    protected void beforeEach() {}
 
     @Test
     void testBuild() {
@@ -61,8 +59,7 @@ class ServiceDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
                 "org.apache.dubbo.metadata.tools.TestService",
                 "java.lang.AutoCloseable",
                 "java.io.Serializable",
-                "java.util.EventListener"
-        );
+                "java.util.EventListener");
         for (String typeName : typeNames) {
             String gotTypeName = getTypeName(typeName, serviceDefinition.getTypes());
             assertEquals(typeName, gotTypeName);

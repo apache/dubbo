@@ -16,5 +16,4 @@
  */
 package com.pojo;
 
-public class DemoException3 extends DemoException2 {
-}
+public class DemoException3 extends DemoException2 {}

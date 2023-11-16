@@ -51,7 +51,7 @@ public abstract class AbstractExporter<T> implements Exporter<T> {
     }
 
     @Override
-    final public void unexport() {
+    public final void unexport() {
         if (unexported) {
             return;
         }
@@ -61,24 +61,18 @@ public abstract class AbstractExporter<T> implements Exporter<T> {
     }
 
     @Override
-    public void register() {
-
-    }
+    public void register() {}
 
     @Override
-    public void unregister() {
-
-    }
+    public void unregister() {}
 
     /**
      * subclasses need to override this method to destroy resources.
      */
-    public void afterUnExport() {
-    }
+    public void afterUnExport() {}
 
     @Override
     public String toString() {
         return getInvoker().toString();
     }
-
 }

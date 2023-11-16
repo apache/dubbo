@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
-
 
 public class DoubleRangeMatch {
     private Double start;
@@ -37,7 +35,6 @@ public class DoubleRangeMatch {
     public void setEnd(Double end) {
         this.end = end;
     }
-
 
     public boolean isMatch(Double input) {
         if (start != null && end != null) {

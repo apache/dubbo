@@ -16,15 +16,12 @@
  */
 package org.apache.dubbo.registry.xds.util.bootstrap;
 
-import io.envoyproxy.envoy.config.core.v3.Node;
-import io.grpc.ChannelCredentials;
-import io.grpc.internal.JsonParser;
-import io.grpc.internal.JsonUtil;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.xds.XdsInitializationException;
 
 import javax.annotation.Nullable;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -33,6 +30,11 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import io.envoyproxy.envoy.config.core.v3.Node;
+import io.grpc.ChannelCredentials;
+import io.grpc.internal.JsonParser;
+import io.grpc.internal.JsonUtil;
 
 public class BootstrapperImpl extends Bootstrapper {
 
@@ -98,11 +100,10 @@ public class BootstrapperImpl extends Bootstrapper {
             Map<String, CertificateProviderInfo> certProviders = new HashMap<>(certProvidersBlob.size());
             for (String name : certProvidersBlob.keySet()) {
                 Map<String, ?> valueMap = JsonUtil.getObject(certProvidersBlob, name);
-                String pluginName =
-                    checkForNull(JsonUtil.getString(valueMap, "plugin_name"), "plugin_name");
+                String pluginName = checkForNull(JsonUtil.getString(valueMap, "plugin_name"), "plugin_name");
                 Map<String, ?> config = checkForNull(JsonUtil.getObject(valueMap, "config"), "config");
                 CertificateProviderInfoImpl certificateProviderInfo =
-                    new CertificateProviderInfoImpl(pluginName, config);
+                        new CertificateProviderInfoImpl(pluginName, config);
                 certProviders.put(name, certificateProviderInfo);
             }
             builder.certProviders(certProviders);
@@ -111,8 +112,7 @@ public class BootstrapperImpl extends Bootstrapper {
         return builder.build();
     }
 
-    private static List<ServerInfo> parseServerInfos(List<?> rawServerConfigs)
-        throws XdsInitializationException {
+    private static List<ServerInfo> parseServerInfos(List<?> rawServerConfigs) throws XdsInitializationException {
         List<ServerInfo> servers = new LinkedList<>();
         List<Map<String, ?>> serverConfigList = JsonUtil.checkObjectList(rawServerConfigs);
         for (Map<String, ?> serverConfig : serverConfigList) {
@@ -123,14 +123,14 @@ public class BootstrapperImpl extends Bootstrapper {
             List<?> rawChannelCredsList = JsonUtil.getList(serverConfig, "channel_creds");
             if (rawChannelCredsList == null || rawChannelCredsList.isEmpty()) {
                 throw new XdsInitializationException(
-                    "Invalid bootstrap: server " + serverUri + " 'channel_creds' required");
+                        "Invalid bootstrap: server " + serverUri + " 'channel_creds' required");
             }
             ChannelCredentials channelCredentials =
-                parseChannelCredentials(JsonUtil.checkObjectList(rawChannelCredsList), serverUri);
-//            if (channelCredentials == null) {
-//                throw new XdsInitializationException(
-//                    "Server " + serverUri + ": no supported channel credentials found");
-//            }
+                    parseChannelCredentials(JsonUtil.checkObjectList(rawChannelCredsList), serverUri);
+            //            if (channelCredentials == null) {
+            //                throw new XdsInitializationException(
+            //                    "Server " + serverUri + ": no supported channel credentials found");
+            //            }
 
             boolean useProtocolV3 = false;
             boolean ignoreResourceDeletion = false;
@@ -139,8 +139,7 @@ public class BootstrapperImpl extends Bootstrapper {
                 useProtocolV3 = serverFeatures.contains(SERVER_FEATURE_XDS_V3);
                 ignoreResourceDeletion = serverFeatures.contains(SERVER_FEATURE_IGNORE_RESOURCE_DELETION);
             }
-            servers.add(
-                new ServerInfoImpl(serverUri, channelCredentials, useProtocolV3, ignoreResourceDeletion));
+            servers.add(new ServerInfoImpl(serverUri, channelCredentials, useProtocolV3, ignoreResourceDeletion));
         }
         return servers;
     }
@@ -167,14 +166,14 @@ public class BootstrapperImpl extends Bootstrapper {
 
     private static <T> T checkForNull(T value, String fieldName) throws XdsInitializationException {
         if (value == null) {
-            throw new XdsInitializationException(
-                "Invalid bootstrap: '" + fieldName + "' does not exist.");
+            throw new XdsInitializationException("Invalid bootstrap: '" + fieldName + "' does not exist.");
         }
         return value;
     }
 
     @Nullable
-    private static ChannelCredentials parseChannelCredentials(List<Map<String, ?>> jsonList, String serverUri) throws XdsInitializationException {
+    private static ChannelCredentials parseChannelCredentials(List<Map<String, ?>> jsonList, String serverUri)
+            throws XdsInitializationException {
         return null;
     }
 }

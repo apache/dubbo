@@ -62,7 +62,10 @@ public class HeaderExchangeServer implements ExchangeServer {
 
     private final AtomicBoolean closed = new AtomicBoolean(false);
 
-    public static GlobalResourceInitializer<HashedWheelTimer> IDLE_CHECK_TIMER = new GlobalResourceInitializer<>(() -> new HashedWheelTimer(new NamedThreadFactory("dubbo-server-idleCheck", true), 1, TimeUnit.SECONDS, TICKS_PER_WHEEL), HashedWheelTimer::stop);
+    public static GlobalResourceInitializer<HashedWheelTimer> IDLE_CHECK_TIMER = new GlobalResourceInitializer<>(
+            () -> new HashedWheelTimer(
+                    new NamedThreadFactory("dubbo-server-idleCheck", true), 1, TimeUnit.SECONDS, TICKS_PER_WHEEL),
+            HashedWheelTimer::stop);
 
     private CloseTimerTask closeTimer;
 
@@ -107,8 +110,7 @@ public class HeaderExchangeServer implements ExchangeServer {
             if (getUrl().getParameter(Constants.CHANNEL_SEND_READONLYEVENT_KEY, true)) {
                 sendChannelReadOnlyEvent();
             }
-            while (HeaderExchangeServer.this.isRunning()
-                && System.currentTimeMillis() - start < (long) timeout) {
+            while (HeaderExchangeServer.this.isRunning() && System.currentTimeMillis() - start < (long) timeout) {
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
@@ -230,8 +232,10 @@ public class HeaderExchangeServer implements ExchangeServer {
     @Override
     public void send(Object message) throws RemotingException {
         if (closed.get()) {
-            throw new RemotingException(this.getLocalAddress(), null, "Failed to send message " + message
-                + ", cause: The server " + getLocalAddress() + " is closed!");
+            throw new RemotingException(
+                    this.getLocalAddress(),
+                    null,
+                    "Failed to send message " + message + ", cause: The server " + getLocalAddress() + " is closed!");
         }
         server.send(message);
     }
@@ -239,8 +243,10 @@ public class HeaderExchangeServer implements ExchangeServer {
     @Override
     public void send(Object message, boolean sent) throws RemotingException {
         if (closed.get()) {
-            throw new RemotingException(this.getLocalAddress(), null, "Failed to send message " + message
-                + ", cause: The server " + getLocalAddress() + " is closed!");
+            throw new RemotingException(
+                    this.getLocalAddress(),
+                    null,
+                    "Failed to send message " + message + ", cause: The server " + getLocalAddress() + " is closed!");
         }
         server.send(message, sent);
     }
@@ -258,7 +264,8 @@ public class HeaderExchangeServer implements ExchangeServer {
 
     private void startIdleCheckTask(URL url) {
         if (!server.canHandleIdle()) {
-            AbstractTimerTask.ChannelProvider cp = () -> unmodifiableCollection(HeaderExchangeServer.this.getChannels());
+            AbstractTimerTask.ChannelProvider cp =
+                    () -> unmodifiableCollection(HeaderExchangeServer.this.getChannels());
             int closeTimeout = getCloseTimeout(url);
             long closeTimeoutTick = calculateLeastDuration(closeTimeout);
             this.closeTimer = new CloseTimerTask(cp, IDLE_CHECK_TIMER.get(), closeTimeoutTick, closeTimeout);

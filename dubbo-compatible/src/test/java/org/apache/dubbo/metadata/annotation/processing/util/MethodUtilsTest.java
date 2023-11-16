@@ -21,13 +21,14 @@ import org.apache.dubbo.metadata.annotation.processing.model.Model;
 import org.apache.dubbo.metadata.tools.TestService;
 import org.apache.dubbo.metadata.tools.TestServiceImpl;
 
-import org.junit.jupiter.api.Test;
-
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
+
 import java.util.List;
 import java.util.Set;
+
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.findMethod;
 import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.getAllDeclaredMethods;
@@ -52,8 +53,7 @@ class MethodUtilsTest extends AbstractAnnotationProcessingTest {
     private TypeElement testType;
 
     @Override
-    protected void addCompiledClasses(Set<Class<?>> classesToBeCompiled) {
-    }
+    protected void addCompiledClasses(Set<Class<?>> classesToBeCompiled) {}
 
     @Override
     protected void beforeEach() {
@@ -102,7 +102,8 @@ class MethodUtilsTest extends AbstractAnnotationProcessingTest {
     @Test
     void testIsPublicNonStaticMethod() {
         List<? extends ExecutableElement> methods = getPublicNonStaticMethods(testType, Object.class);
-        assertEquals(14, methods.stream().map(MethodUtils::isPublicNonStaticMethod).count());
+        assertEquals(
+                14, methods.stream().map(MethodUtils::isPublicNonStaticMethod).count());
     }
 
     @Test
@@ -190,7 +191,7 @@ class MethodUtilsTest extends AbstractAnnotationProcessingTest {
     @Test
     void testMatchParameterTypes() {
         ExecutableElement method = findMethod(testType, "echo", "java.lang.String");
-        assertArrayEquals(new String[]{"java.lang.String"}, getMethodParameterTypes(method));
+        assertArrayEquals(new String[] {"java.lang.String"}, getMethodParameterTypes(method));
         assertTrue(getMethodParameterTypes(null).length == 0);
     }
 }

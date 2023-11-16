@@ -221,5 +221,4 @@ public class Slf4jLogger implements Logger {
     public Level getLevel() {
         return getLevel(logger);
     }
-
 }

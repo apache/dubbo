@@ -28,7 +28,5 @@ public interface GreeterService {
      */
     HelloReply sayHello(HelloRequest request);
 
-
     CompletableFuture<String> sayHelloAsync(String request);
-
 }

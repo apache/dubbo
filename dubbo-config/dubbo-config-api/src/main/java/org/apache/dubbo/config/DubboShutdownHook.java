@@ -63,9 +63,11 @@ public class DubboShutdownHook extends Thread {
         super("DubboShutdownHook");
         this.applicationModel = applicationModel;
         Assert.notNull(this.applicationModel, "ApplicationModel is null");
-        ignoreListenShutdownHook = Boolean.parseBoolean(ConfigurationUtils.getProperty(applicationModel, CommonConstants.IGNORE_LISTEN_SHUTDOWN_HOOK));
+        ignoreListenShutdownHook = Boolean.parseBoolean(
+                ConfigurationUtils.getProperty(applicationModel, CommonConstants.IGNORE_LISTEN_SHUTDOWN_HOOK));
         if (ignoreListenShutdownHook) {
-            logger.info(CommonConstants.IGNORE_LISTEN_SHUTDOWN_HOOK + " configured, will ignore add shutdown hook to jvm.");
+            logger.info(
+                    CommonConstants.IGNORE_LISTEN_SHUTDOWN_HOOK + " configured, will ignore add shutdown hook to jvm.");
         }
     }
 
@@ -86,7 +88,8 @@ public class DubboShutdownHook extends Thread {
         ConfigurationUtils.setExpectedShutdownTime(System.currentTimeMillis() + timeout);
 
         // send readonly for shutdown hook
-        List<GracefulShutdown> gracefulShutdowns = GracefulShutdown.getGracefulShutdowns(applicationModel.getFrameworkModel());
+        List<GracefulShutdown> gracefulShutdowns =
+                GracefulShutdown.getGracefulShutdowns(applicationModel.getFrameworkModel());
         for (GracefulShutdown gracefulShutdown : gracefulShutdowns) {
             gracefulShutdown.readonly();
         }
@@ -103,12 +106,14 @@ public class DubboShutdownHook extends Thread {
             if (timeout > 0) {
                 long start = System.currentTimeMillis();
                 /*
-                  To avoid shutdown conflicts between Dubbo and Spring,
-                  wait for the modules bound to Spring to be handled by Spring until timeout.
-                 */
-                logger.info("Waiting for modules(" + applicationModel.getDesc() + ") managed by Spring to be shutdown.");
-                while (!applicationModel.isDestroyed() && hasModuleBindSpring
-                    && (System.currentTimeMillis() - start) < timeout) {
+                 To avoid shutdown conflicts between Dubbo and Spring,
+                 wait for the modules bound to Spring to be handled by Spring until timeout.
+                */
+                logger.info(
+                        "Waiting for modules(" + applicationModel.getDesc() + ") managed by Spring to be shutdown.");
+                while (!applicationModel.isDestroyed()
+                        && hasModuleBindSpring
+                        && (System.currentTimeMillis() - start) < timeout) {
                     try {
                         TimeUnit.MILLISECONDS.sleep(10);
                         hasModuleBindSpring = false;
@@ -127,8 +132,8 @@ public class DubboShutdownHook extends Thread {
                 }
                 if (!applicationModel.isDestroyed()) {
                     long usage = System.currentTimeMillis() - start;
-                    logger.info("Dubbo wait for application(" + applicationModel.getDesc() + ") managed by Spring to be shutdown failed, " +
-                        "time usage: " + usage + "ms");
+                    logger.info("Dubbo wait for application(" + applicationModel.getDesc()
+                            + ") managed by Spring to be shutdown failed, " + "time usage: " + usage + "ms");
                 }
             }
         }
@@ -165,9 +170,11 @@ public class DubboShutdownHook extends Thread {
             try {
                 Runtime.getRuntime().removeShutdownHook(this);
             } catch (IllegalStateException e) {
-                logger.warn(CONFIG_FAILED_SHUTDOWN_HOOK, "", "", "unregister shutdown hook failed: " + e.getMessage(), e);
+                logger.warn(
+                        CONFIG_FAILED_SHUTDOWN_HOOK, "", "", "unregister shutdown hook failed: " + e.getMessage(), e);
             } catch (Exception e) {
-                logger.warn(CONFIG_FAILED_SHUTDOWN_HOOK, "", "", "unregister shutdown hook failed: " + e.getMessage(), e);
+                logger.warn(
+                        CONFIG_FAILED_SHUTDOWN_HOOK, "", "", "unregister shutdown hook failed: " + e.getMessage(), e);
             }
         }
     }
@@ -175,5 +182,4 @@ public class DubboShutdownHook extends Thread {
     public boolean getRegistered() {
         return registered.get();
     }
-
 }

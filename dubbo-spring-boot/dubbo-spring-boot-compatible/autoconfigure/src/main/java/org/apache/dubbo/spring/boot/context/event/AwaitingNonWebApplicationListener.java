@@ -20,6 +20,13 @@ import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationFailedEvent;
@@ -32,13 +39,6 @@ import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.SmartApplicationListener;
 import org.springframework.util.ClassUtils;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.springframework.util.ObjectUtils.containsElement;
 
@@ -49,7 +49,7 @@ import static org.springframework.util.ObjectUtils.containsElement;
  */
 public class AwaitingNonWebApplicationListener implements SmartApplicationListener {
 
-    private static final String[] WEB_APPLICATION_CONTEXT_CLASSES = new String[]{
+    private static final String[] WEB_APPLICATION_CONTEXT_CLASSES = new String[] {
         "org.springframework.web.context.WebApplicationContext",
         "org.springframework.boot.web.reactive.context.ReactiveWebApplicationContext"
     };
@@ -57,7 +57,7 @@ public class AwaitingNonWebApplicationListener implements SmartApplicationListen
     private static final Logger logger = LoggerFactory.getLogger(AwaitingNonWebApplicationListener.class);
 
     private static final Class<? extends ApplicationEvent>[] SUPPORTED_APPLICATION_EVENTS =
-        of(ApplicationReadyEvent.class, ContextClosedEvent.class);
+            of(ApplicationReadyEvent.class, ContextClosedEvent.class);
 
     private final AtomicBoolean awaited = new AtomicBoolean(false);
 
@@ -135,7 +135,8 @@ public class AwaitingNonWebApplicationListener implements SmartApplicationListen
         if (applicationModel == null) {
             return;
         }
-        ShutdownHookCallbacks shutdownHookCallbacks = applicationModel.getBeanFactory().getBean(ShutdownHookCallbacks.class);
+        ShutdownHookCallbacks shutdownHookCallbacks =
+                applicationModel.getBeanFactory().getBean(ShutdownHookCallbacks.class);
         if (shutdownHookCallbacks != null) {
             shutdownHookCallbacks.addCallback(this::release);
         }

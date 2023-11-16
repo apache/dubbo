@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.metadata;
 
 import org.apache.dubbo.metrics.model.key.MetricsKey;
@@ -39,16 +38,21 @@ public interface MetadataMetricsConstants {
 
     MetricsPlaceValue OP_TYPE_PUSH = MetricsPlaceValue.of("push", MetricsLevel.APP);
     MetricsPlaceValue OP_TYPE_SUBSCRIBE = MetricsPlaceValue.of("subscribe", MetricsLevel.APP);
-    MetricsPlaceValue OP_TYPE_STORE_PROVIDER_INTERFACE = MetricsPlaceValue.of("store.provider.interface", MetricsLevel.SERVICE);
+    MetricsPlaceValue OP_TYPE_STORE_PROVIDER_INTERFACE =
+            MetricsPlaceValue.of("store.provider.interface", MetricsLevel.SERVICE);
 
     // App-level
-    List<MetricsKey> APP_LEVEL_KEYS = Arrays.asList(METADATA_PUSH_METRIC_NUM, METADATA_PUSH_METRIC_NUM_SUCCEED, METADATA_PUSH_METRIC_NUM_FAILED,
-        METADATA_SUBSCRIBE_METRIC_NUM, METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED, METADATA_SUBSCRIBE_METRIC_NUM_FAILED);
+    List<MetricsKey> APP_LEVEL_KEYS = Arrays.asList(
+            METADATA_PUSH_METRIC_NUM,
+            METADATA_PUSH_METRIC_NUM_SUCCEED,
+            METADATA_PUSH_METRIC_NUM_FAILED,
+            METADATA_SUBSCRIBE_METRIC_NUM,
+            METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED,
+            METADATA_SUBSCRIBE_METRIC_NUM_FAILED);
 
     // Service-level
     List<MetricsKeyWrapper> SERVICE_LEVEL_KEYS = Arrays.asList(
-        new MetricsKeyWrapper(STORE_PROVIDER_METADATA, OP_TYPE_STORE_PROVIDER_INTERFACE),
-        new MetricsKeyWrapper(STORE_PROVIDER_METADATA_SUCCEED, OP_TYPE_STORE_PROVIDER_INTERFACE),
-        new MetricsKeyWrapper(STORE_PROVIDER_METADATA_FAILED, OP_TYPE_STORE_PROVIDER_INTERFACE)
-    );
+            new MetricsKeyWrapper(STORE_PROVIDER_METADATA, OP_TYPE_STORE_PROVIDER_INTERFACE),
+            new MetricsKeyWrapper(STORE_PROVIDER_METADATA_SUCCEED, OP_TYPE_STORE_PROVIDER_INTERFACE),
+            new MetricsKeyWrapper(STORE_PROVIDER_METADATA_FAILED, OP_TYPE_STORE_PROVIDER_INTERFACE));
 }

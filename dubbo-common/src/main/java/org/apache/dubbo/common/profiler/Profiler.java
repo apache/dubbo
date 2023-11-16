@@ -67,8 +67,8 @@ public class Profiler {
 
     public static String buildDetail(ProfilerEntry entry) {
         long totalUsageTime = entry.getEndTime() - entry.getStartTime();
-        return "Start time: " + entry.getStartTime() + "\n" +
-            String.join("\n", buildDetail(entry, entry.getStartTime(), totalUsageTime, 0));
+        return "Start time: " + entry.getStartTime() + "\n"
+                + String.join("\n", buildDetail(entry, entry.getStartTime(), totalUsageTime, 0));
     }
 
     public static List<String> buildDetail(ProfilerEntry entry, long startTime, long totalUsageTime, int depth) {
@@ -78,14 +78,19 @@ public class Profiler {
 
         long offset = entry.getStartTime() - startTime;
         List<String> lines = new LinkedList<>();
-        stringBuilder.append("+-[ Offset: ")
-            .append(offset / 1000_000).append('.').append(String.format("%06d", offset % 1000_000))
-            .append("ms; Usage: ")
-            .append(usage / 1000_000).append('.').append(String.format("%06d", usage % 1000_000))
-            .append("ms, ")
-            .append(percent)
-            .append("% ] ")
-            .append(entry.getMessage());
+        stringBuilder
+                .append("+-[ Offset: ")
+                .append(offset / 1000_000)
+                .append('.')
+                .append(String.format("%06d", offset % 1000_000))
+                .append("ms; Usage: ")
+                .append(usage / 1000_000)
+                .append('.')
+                .append(String.format("%06d", usage % 1000_000))
+                .append("ms, ")
+                .append(percent)
+                .append("% ] ")
+                .append(entry.getMessage());
         lines.add(stringBuilder.toString());
         List<ProfilerEntry> entrySub = entry.getSub();
         for (int i = 0, entrySubSize = entrySub.size(); i < entrySubSize; i++) {

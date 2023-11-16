@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.http;
 
-
 import org.apache.dubbo.remoting.http.config.HttpClientConfig;
 
 public abstract class BaseRestClient<CLIENT> implements RestClient {
@@ -31,7 +30,6 @@ public abstract class BaseRestClient<CLIENT> implements RestClient {
     }
 
     protected abstract CLIENT createHttpClient(HttpClientConfig clientConfig);
-
 
     public HttpClientConfig getClientConfig() {
         return clientConfig;

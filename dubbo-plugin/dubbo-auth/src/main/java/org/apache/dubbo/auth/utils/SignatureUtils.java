@@ -18,6 +18,7 @@ package org.apache.dubbo.auth.utils;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutput;
@@ -60,17 +61,17 @@ public class SignatureUtils {
         Mac mac;
         try {
             mac = Mac.getInstance(HMAC_SHA256_ALGORITHM);
-        } catch(NoSuchAlgorithmException e) {
+        } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("Failed to generate HMAC: no such algorithm exception " + HMAC_SHA256_ALGORITHM);
         }
         SecretKeySpec signingKey = new SecretKeySpec(key.getBytes(), HMAC_SHA256_ALGORITHM);
         try {
             mac.init(signingKey);
-        } catch(InvalidKeyException e) {
+        } catch (InvalidKeyException e) {
             throw new RuntimeException("Failed to generate HMAC: invalid key exception");
         }
         byte[] rawHmac;
-        try{
+        try {
             // compute the hmac on input data bytes
             rawHmac = mac.doFinal(data);
         } catch (IllegalStateException e) {
@@ -81,7 +82,8 @@ public class SignatureUtils {
     }
 
     private static byte[] toByteArray(Object[] parameters) throws IOException {
-        try (ByteArrayOutputStream bos = new ByteArrayOutputStream(); ObjectOutput out = new ObjectOutputStream(bos)) {
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                ObjectOutput out = new ObjectOutputStream(bos)) {
             out.writeObject(parameters);
             out.flush();
             return bos.toByteArray();

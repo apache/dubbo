@@ -48,5 +48,4 @@ public @interface Activate {
      * @return className names to all match
      */
     String[] onClass() default {};
-
 }

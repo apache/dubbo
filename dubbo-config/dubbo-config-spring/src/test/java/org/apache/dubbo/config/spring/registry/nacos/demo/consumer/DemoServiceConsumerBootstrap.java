@@ -20,12 +20,13 @@ import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.registry.nacos.demo.service.DemoService;
 
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.PropertySource;
-
 import javax.annotation.PostConstruct;
+
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.PropertySource;
 
 /**
  * {@link DemoService} consumer demo

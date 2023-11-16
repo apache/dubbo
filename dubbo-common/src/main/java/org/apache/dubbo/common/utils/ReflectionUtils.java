@@ -33,8 +33,7 @@ import java.util.stream.Collectors;
  */
 public class ReflectionUtils {
 
-    private ReflectionUtils() {
-    }
+    private ReflectionUtils() {}
 
     /**
      * Retrieves the value of the specified field from the given object.
@@ -65,8 +64,8 @@ public class ReflectionUtils {
     public static Object invoke(Object source, String methodName, Object... params) {
         try {
             Class<?>[] classes = Arrays.stream(params)
-                .map(param -> param != null ? param.getClass() : null)
-                .toArray(Class<?>[]::new);
+                    .map(param -> param != null ? param.getClass() : null)
+                    .toArray(Class<?>[]::new);
 
             for (Method method : source.getClass().getDeclaredMethods()) {
                 if (method.getName().equals(methodName) && matchParameters(method.getParameterTypes(), classes)) {
@@ -151,5 +150,4 @@ public class ReflectionUtils {
         List<Class<?>> eventTypes = ReflectionUtils.getClassGenerics(clazz, interfaceClass);
         return eventTypes.stream().allMatch(eventType -> eventType.isInstance(event));
     }
-
 }

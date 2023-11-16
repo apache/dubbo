@@ -50,5 +50,4 @@ class RequestTest {
         Request copyWithoutData = request.copyWithoutData();
         Assertions.assertNull(copyWithoutData.getData());
     }
-
 }

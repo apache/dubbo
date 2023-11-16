@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.observation;
 
 import org.apache.dubbo.common.URL;
@@ -48,22 +47,32 @@ class ObservationReceiverFilterTest extends AbstractObservationFilterTest {
             senderFilter.onResponse(null, invoker, invocation);
 
             MeterRegistryAssert.then(meterRegistry)
-                .hasMeterWithNameAndTags("rpc.server.duration", KeyValues.of("rpc.method", "mockMethod", "rpc.service", "DemoService", "rpc.system", "apache_dubbo"));
+                    .hasMeterWithNameAndTags(
+                            "rpc.server.duration",
+                            KeyValues.of(
+                                    "rpc.method",
+                                    "mockMethod",
+                                    "rpc.service",
+                                    "DemoService",
+                                    "rpc.system",
+                                    "apache_dubbo"));
             SpansAssert.then(buildingBlocks.getFinishedSpans())
-                .hasASpanWithNameIgnoreCase("DemoService/mockMethod", spanAssert ->
-                    spanAssert
-                        .hasTag("rpc.method", "mockMethod")
-                        .hasTag("rpc.service", "DemoService")
-                        .hasTag("rpc.system", "apache_dubbo"));
+                    .hasASpanWithNameIgnoreCase("DemoService/mockMethod", spanAssert -> spanAssert
+                            .hasTag("rpc.method", "mockMethod")
+                            .hasTag("rpc.service", "DemoService")
+                            .hasTag("rpc.system", "apache_dubbo"));
         };
     }
 
     void setupAttachments(Tracer tracer) {
-        RpcContext.getServerAttachment().setUrl(URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&side=consumer"));
+        RpcContext.getServerAttachment()
+                .setUrl(URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&side=consumer"));
         RpcContext.getServerAttachment().setMethodName("foo");
         RpcContext.getServerAttachment().setRemoteAddress("foo.bar.com", 8080);
-        RpcContext.getServerAttachment().setAttachment("X-B3-TraceId", tracer.currentSpan().context().traceId());
-        RpcContext.getServerAttachment().setAttachment("X-B3-SpanId", tracer.currentSpan().context().spanId());
+        RpcContext.getServerAttachment()
+                .setAttachment("X-B3-TraceId", tracer.currentSpan().context().traceId());
+        RpcContext.getServerAttachment()
+                .setAttachment("X-B3-SpanId", tracer.currentSpan().context().spanId());
         RpcContext.getServerAttachment().setAttachment("X-B3-Sampled", "1");
     }
 
@@ -97,9 +106,7 @@ class ObservationReceiverFilterTest extends AbstractObservationFilterTest {
         }
 
         @Override
-        public void destroy() {
-
-        }
+        public void destroy() {}
 
         @Override
         public Class getInterface() {
@@ -110,11 +117,11 @@ class ObservationReceiverFilterTest extends AbstractObservationFilterTest {
         public Result invoke(Invocation invocation) throws RpcException {
             Span span = this.tracer.currentSpan();
             BDDAssertions.then(span.context().traceId())
-                .as("Should propagate the trace id from the attributes")
-                .isEqualTo(this.expectedTraceId);
+                    .as("Should propagate the trace id from the attributes")
+                    .isEqualTo(this.expectedTraceId);
             BDDAssertions.then(span.context().spanId())
-                .as("A child span must be created")
-                .isNotEqualTo(this.parentSpanId);
+                    .as("A child span must be created")
+                    .isNotEqualTo(this.parentSpanId);
             return new AppResponse("OK");
         }
     }

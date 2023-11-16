@@ -23,5 +23,4 @@ public interface MenuService {
     Menu getMenu();
 
     void addMenu(String menu, List<String> items);
-
 }

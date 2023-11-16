@@ -20,14 +20,14 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.rpc.support.DemoService;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * {@link RpcStatus}
@@ -59,7 +59,6 @@ class RpcStatusTest {
         Assertions.assertTrue(flag);
         flag = RpcStatus.beginCount(url, methodName, max);
         Assertions.assertFalse(flag);
-
     }
 
     @Test
@@ -93,7 +92,6 @@ class RpcStatusTest {
         startLatch.countDown();
         endLatch.await();
         Assertions.assertEquals(successCount.get(), max);
-
     }
 
     @Test

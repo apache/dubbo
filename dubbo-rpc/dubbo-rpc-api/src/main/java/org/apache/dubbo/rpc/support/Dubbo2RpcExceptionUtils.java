@@ -41,7 +41,8 @@ public class Dubbo2RpcExceptionUtils {
         }
     }
 
-    private static Constructor<? extends org.apache.dubbo.rpc.RpcException> loadConstructor(Class<?>... parameterTypes) {
+    private static Constructor<? extends org.apache.dubbo.rpc.RpcException> loadConstructor(
+            Class<?>... parameterTypes) {
         if (RPC_EXCEPTION_CLASS == null) {
             return null;
         }

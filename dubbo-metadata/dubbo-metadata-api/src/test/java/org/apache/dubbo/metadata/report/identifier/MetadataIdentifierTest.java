@@ -35,16 +35,24 @@ class MetadataIdentifierTest {
         String version = "1.0.0.zk.md";
         String group = null;
         String application = "vic.zk.md";
-        MetadataIdentifier providerMetadataIdentifier = new MetadataIdentifier(interfaceName, version, group, PROVIDER_SIDE, application);
-        Assertions.assertEquals(providerMetadataIdentifier.getUniqueKey(KeyTypeEnum.PATH),
-                "metadata" + PATH_SEPARATOR + interfaceName + PATH_SEPARATOR +
-                        (version == null ? "" : (version + PATH_SEPARATOR))
+        MetadataIdentifier providerMetadataIdentifier =
+                new MetadataIdentifier(interfaceName, version, group, PROVIDER_SIDE, application);
+        Assertions.assertEquals(
+                providerMetadataIdentifier.getUniqueKey(KeyTypeEnum.PATH),
+                "metadata" + PATH_SEPARATOR + interfaceName + PATH_SEPARATOR
+                        + (version == null ? "" : (version + PATH_SEPARATOR))
                         + (group == null ? "" : (group + PATH_SEPARATOR)) + PROVIDER_SIDE
                         + PATH_SEPARATOR + application);
-        Assertions.assertEquals(providerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY),
-                interfaceName + MetadataConstants.KEY_SEPARATOR +
-                        (version == null ? "" : version) + MetadataConstants.KEY_SEPARATOR
-                        + (group == null ? "" : group) + MetadataConstants.KEY_SEPARATOR
-                        + PROVIDER_SIDE + MetadataConstants.KEY_SEPARATOR + application);
+        Assertions.assertEquals(
+                providerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY),
+                interfaceName
+                        + MetadataConstants.KEY_SEPARATOR
+                        + (version == null ? "" : version)
+                        + MetadataConstants.KEY_SEPARATOR
+                        + (group == null ? "" : group)
+                        + MetadataConstants.KEY_SEPARATOR
+                        + PROVIDER_SIDE
+                        + MetadataConstants.KEY_SEPARATOR
+                        + application);
     }
 }

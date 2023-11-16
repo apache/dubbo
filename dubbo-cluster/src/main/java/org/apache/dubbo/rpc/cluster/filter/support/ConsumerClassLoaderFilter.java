@@ -35,8 +35,8 @@ public class ConsumerClassLoaderFilter implements ClusterFilter {
         ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             Optional.ofNullable(invocation.getServiceModel())
-                .map(ServiceModel::getClassLoader)
-                .ifPresent(Thread.currentThread()::setContextClassLoader);
+                    .map(ServiceModel::getClassLoader)
+                    .ifPresent(Thread.currentThread()::setContextClassLoader);
             return invoker.invoke(invocation);
         } finally {
             Thread.currentThread().setContextClassLoader(originClassLoader);

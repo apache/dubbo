@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.utils.JsonUtils;
@@ -82,7 +81,8 @@ public class DefaultMetricsReporterCmd implements BaseCommand {
 
     private String specifySingleApplication(String appName, List<ApplicationModel> models, String metricsName) {
         Optional<ApplicationModel> modelOptional = models.stream()
-            .filter(applicationModel -> appName.equals(applicationModel.getApplicationName())).findFirst();
+                .filter(applicationModel -> appName.equals(applicationModel.getApplicationName()))
+                .findFirst();
         if (modelOptional.isPresent()) {
             return getResponseByApplication(modelOptional.get(), metricsName);
         } else {
@@ -107,7 +107,6 @@ public class DefaultMetricsReporterCmd implements BaseCommand {
         }
         return response;
     }
-
 
     private static long getLineNumber(String content) {
         LineNumberReader lnr = new LineNumberReader(new CharArrayReader(content.toCharArray()));

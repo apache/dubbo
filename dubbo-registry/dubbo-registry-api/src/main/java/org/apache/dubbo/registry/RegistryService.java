@@ -90,5 +90,4 @@ public interface RegistryService {
      * @see org.apache.dubbo.registry.NotifyListener#notify(List)
      */
     List<URL> lookup(URL url);
-
 }

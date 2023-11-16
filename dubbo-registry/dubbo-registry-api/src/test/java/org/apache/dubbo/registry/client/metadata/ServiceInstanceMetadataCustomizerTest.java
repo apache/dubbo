@@ -44,7 +44,6 @@ class ServiceInstanceMetadataCustomizerTest {
         ApplicationModel.reset();
     }
 
-
     /**
      * Only 'include' policy spicified in Customized Filter will take effect
      */
@@ -54,15 +53,18 @@ class ServiceInstanceMetadataCustomizerTest {
         ApplicationConfig applicationConfig = new ApplicationConfig("aa");
         doReturn(applicationConfig).when(applicationModel).getCurrentConfig();
 
-        DefaultServiceInstance serviceInstance1 = new DefaultServiceInstance("ServiceInstanceMetadataCustomizerTest", applicationModel);
+        DefaultServiceInstance serviceInstance1 =
+                new DefaultServiceInstance("ServiceInstanceMetadataCustomizerTest", applicationModel);
         MetadataInfo metadataInfo = new MetadataInfo();
-        metadataInfo.addService(URL.valueOf("tri://127.1.1.1:50052/org.apache.dubbo.demo.GreetingService?application=ServiceInstanceMetadataCustomizerTest&env=test&side=provider&group=test"));
+        metadataInfo.addService(
+                URL.valueOf(
+                        "tri://127.1.1.1:50052/org.apache.dubbo.demo.GreetingService?application=ServiceInstanceMetadataCustomizerTest&env=test&side=provider&group=test"));
         serviceInstance1.setServiceMetadata(metadataInfo);
         serviceInstanceMetadataCustomizer.customize(serviceInstance1, applicationModel);
         Assertions.assertEquals(1, serviceInstance1.getMetadata().size());
         Assertions.assertEquals("provider", serviceInstance1.getMetadata(SIDE_KEY));
-        Assertions.assertNull( serviceInstance1.getMetadata("env"));
-        Assertions.assertNull( serviceInstance1.getMetadata("application"));
+        Assertions.assertNull(serviceInstance1.getMetadata("env"));
+        Assertions.assertNull(serviceInstance1.getMetadata("application"));
     }
 
     /**
@@ -74,16 +76,19 @@ class ServiceInstanceMetadataCustomizerTest {
         ApplicationConfig applicationConfig = new ApplicationConfig("aa");
         doReturn(applicationConfig).when(applicationModel).getCurrentConfig();
 
-        DefaultServiceInstance serviceInstance1 = new DefaultServiceInstance("ServiceInstanceMetadataCustomizerTest", applicationModel);
+        DefaultServiceInstance serviceInstance1 =
+                new DefaultServiceInstance("ServiceInstanceMetadataCustomizerTest", applicationModel);
         MetadataInfo metadataInfo = new MetadataInfo();
-        metadataInfo.addService(URL.valueOf("tri://127.1.1.1:50052/org.apache.dubbo.demo.GreetingService?application=ServiceInstanceMetadataCustomizerTest&env=test&side=provider&group=test&params-filter=-customized,-dubbo"));
+        metadataInfo.addService(
+                URL.valueOf(
+                        "tri://127.1.1.1:50052/org.apache.dubbo.demo.GreetingService?application=ServiceInstanceMetadataCustomizerTest&env=test&side=provider&group=test&params-filter=-customized,-dubbo"));
         serviceInstance1.setServiceMetadata(metadataInfo);
         serviceInstanceMetadataCustomizer.customize(serviceInstance1, applicationModel);
         Assertions.assertEquals(2, serviceInstance1.getMetadata().size());
         Assertions.assertEquals("ServiceInstanceMetadataCustomizerTest", serviceInstance1.getMetadata("application"));
         Assertions.assertEquals("test", serviceInstance1.getMetadata("env"));
 
-        Assertions.assertNull( serviceInstance1.getMetadata("side"));
-        Assertions.assertNull( serviceInstance1.getMetadata("group"));
+        Assertions.assertNull(serviceInstance1.getMetadata("side"));
+        Assertions.assertNull(serviceInstance1.getMetadata("group"));
     }
 }

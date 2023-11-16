@@ -27,12 +27,13 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 import org.apache.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.util.concurrent.ExecutorService;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -47,10 +48,7 @@ class WrappedChannelHandlerTest {
     }
 
     @Test
-    void test_Execute_Error() throws RemotingException {
-
-    }
-
+    void test_Execute_Error() throws RemotingException {}
 
     protected Object getField(Object obj, String fieldName, int parentdepth) {
         try {
@@ -124,7 +122,8 @@ class WrappedChannelHandlerTest {
         Channel channel = new MockedChannel();
         Request request = new Request(10);
         ExecutorService sharedExecutor = ExtensionLoader.getExtensionLoader(ExecutorRepository.class)
-            .getDefaultExtension().createExecutorIfAbsent(url);
+                .getDefaultExtension()
+                .createExecutorIfAbsent(url);
 
         DefaultFuture future = DefaultFuture.newFuture(channel, request, 1000, null);
         preferredExecutorService = handler.getPreferredExecutorService(response);

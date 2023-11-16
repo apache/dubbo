@@ -25,7 +25,6 @@ import org.apache.dubbo.rpc.RpcException;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 
-
 @Activate(group = CONSUMER, value = "log")
 public class LogFilter implements Filter, Filter.Listener {
 
@@ -35,12 +34,8 @@ public class LogFilter implements Filter, Filter.Listener {
     }
 
     @Override
-    public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
-
-    }
+    public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {}
 
     @Override
-    public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-
-    }
+    public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {}
 }

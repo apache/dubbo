@@ -42,5 +42,4 @@ public class DubboConfigInitEvent extends ApplicationEvent {
     public final ApplicationContext getApplicationContext() {
         return (ApplicationContext) getSource();
     }
-
 }

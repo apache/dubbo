@@ -74,9 +74,7 @@ public class MockProtocol implements Protocol {
             }
 
             @Override
-            public void destroy() {
-
-            }
+            public void destroy() {}
         };
     }
 
@@ -84,8 +82,5 @@ public class MockProtocol implements Protocol {
      * @see org.apache.dubbo.rpc.Protocol#destroy()
      */
     @Override
-    public void destroy() {
-
-    }
-
+    public void destroy() {}
 }

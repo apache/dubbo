@@ -105,7 +105,6 @@ public class ThreadlessExecutor extends AbstractExecutorService {
     /**
      * The following methods are still not supported
      */
-
     @Override
     public void shutdown() {
         shutdownNow();

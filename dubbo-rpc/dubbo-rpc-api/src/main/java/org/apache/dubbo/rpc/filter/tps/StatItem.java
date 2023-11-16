@@ -57,11 +57,9 @@ class StatItem {
         return interval;
     }
 
-
     public int getRate() {
         return rate;
     }
-
 
     long getLastResetTime() {
         return lastResetTime.get();
@@ -73,10 +71,6 @@ class StatItem {
 
     @Override
     public String toString() {
-        return "StatItem " +
-            "[name=" + name + ", " +
-            "rate = " + rate + ", " +
-            "interval = " + interval + ']';
+        return "StatItem " + "[name=" + name + ", " + "rate = " + rate + ", " + "interval = " + interval + ']';
     }
-
 }

@@ -24,6 +24,9 @@ import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Collection;
+import java.util.Map;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -33,9 +36,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
-
-import java.util.Collection;
-import java.util.Map;
 
 /**
  *
@@ -66,7 +66,10 @@ class Issue7003Test {
             Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
             Assertions.assertEquals(1, referenceBeanMap.size());
 
-            Collection<ReferenceConfigBase<?>> references = ApplicationModel.defaultModel().getDefaultModule().getConfigManager().getReferences();
+            Collection<ReferenceConfigBase<?>> references = ApplicationModel.defaultModel()
+                    .getDefaultModule()
+                    .getConfigManager()
+                    .getReferences();
             Assertions.assertEquals(1, references.size());
 
         } finally {
@@ -74,13 +77,11 @@ class Issue7003Test {
         }
     }
 
-
     @Component
     static class ClassA {
 
         @DubboReference(group = "demo", version = "1.2.3", check = false)
         private HelloService helloService;
-
     }
 
     @Component
@@ -88,6 +89,5 @@ class Issue7003Test {
 
         @DubboReference(check = false, version = "1.2.3", group = "demo")
         private HelloService helloService;
-
     }
 }

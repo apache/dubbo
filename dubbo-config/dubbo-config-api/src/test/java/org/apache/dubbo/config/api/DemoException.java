@@ -38,5 +38,4 @@ public class DemoException extends Exception {
     public DemoException(Throwable cause) {
         super(cause);
     }
-
 }

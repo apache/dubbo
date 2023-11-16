@@ -16,23 +16,24 @@
  */
 package org.apache.dubbo.config;
 
-
 import org.apache.dubbo.common.constants.CommonConstants;
+
+import java.io.File;
+import java.nio.file.Path;
+import java.util.Collections;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.File;
-import java.nio.file.Path;
-import java.util.Collections;
-
 class AbstractInterfaceConfigTest {
 
     @BeforeAll
     public static void setUp(@TempDir Path folder) {
-        File dubboProperties = folder.resolve(CommonConstants.DUBBO_PROPERTIES_KEY).toFile();
+        File dubboProperties =
+                folder.resolve(CommonConstants.DUBBO_PROPERTIES_KEY).toFile();
         System.setProperty(CommonConstants.DUBBO_PROPERTIES_KEY, dubboProperties.getAbsolutePath());
     }
 
@@ -40,7 +41,6 @@ class AbstractInterfaceConfigTest {
     public static void tearDown() {
         System.clearProperty(CommonConstants.DUBBO_PROPERTIES_KEY);
     }
-
 
     @Test
     void checkStub1() {
@@ -256,7 +256,5 @@ class AbstractInterfaceConfigTest {
         }
     }
 
-    public static class InterfaceConfig extends AbstractInterfaceConfig {
-
-    }
+    public static class InterfaceConfig extends AbstractInterfaceConfig {}
 }

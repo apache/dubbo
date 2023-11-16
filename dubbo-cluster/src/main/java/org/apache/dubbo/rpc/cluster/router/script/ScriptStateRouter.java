@@ -37,6 +37,7 @@ import javax.script.CompiledScript;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+
 import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.CodeSource;
@@ -77,12 +78,12 @@ public class ScriptStateRouter<T> extends AbstractStateRouter<T> {
     private AccessControlContext accessControlContext;
 
     {
-        //Just give permission of reflect to access member.
+        // Just give permission of reflect to access member.
         Permissions perms = new Permissions();
         perms.add(new RuntimePermission("accessDeclaredMembers"));
         // Cast to Certificate[] required because of ambiguity:
         ProtectionDomain domain = new ProtectionDomain(new CodeSource(null, (Certificate[]) null), perms);
-        accessControlContext = new AccessControlContext(new ProtectionDomain[]{domain});
+        accessControlContext = new AccessControlContext(new ProtectionDomain[] {domain});
     }
 
     public ScriptStateRouter(URL url) {
@@ -95,8 +96,13 @@ public class ScriptStateRouter<T> extends AbstractStateRouter<T> {
             Compilable compilable = (Compilable) engine;
             function = compilable.compile(rule);
         } catch (ScriptException e) {
-            logger.error(CLUSTER_SCRIPT_EXCEPTION, "script route rule invalid", "", "script route error, rule has been ignored. rule: " + rule +
-                ", url: " + RpcContext.getServiceContext().getUrl(), e);
+            logger.error(
+                    CLUSTER_SCRIPT_EXCEPTION,
+                    "script route rule invalid",
+                    "",
+                    "script route error, rule has been ignored. rule: " + rule + ", url: "
+                            + RpcContext.getServiceContext().getUrl(),
+                    e);
         }
     }
 
@@ -127,7 +133,14 @@ public class ScriptStateRouter<T> extends AbstractStateRouter<T> {
     }
 
     @Override
-    protected BitList<Invoker<T>> doRoute(BitList<Invoker<T>> invokers, URL url, Invocation invocation, boolean needToPrintMessage, Holder<RouterSnapshotNode<T>> nodeHolder, Holder<String> messageHolder) throws RpcException {
+    protected BitList<Invoker<T>> doRoute(
+            BitList<Invoker<T>> invokers,
+            URL url,
+            Invocation invocation,
+            boolean needToPrintMessage,
+            Holder<RouterSnapshotNode<T>> nodeHolder,
+            Holder<String> messageHolder)
+            throws RpcException {
         if (engine == null || function == null) {
             if (needToPrintMessage) {
                 messageHolder.set("Directly Return. Reason: engine or function is null");
@@ -135,15 +148,25 @@ public class ScriptStateRouter<T> extends AbstractStateRouter<T> {
             return invokers;
         }
         Bindings bindings = createBindings(invokers, invocation);
-        return getRoutedInvokers(invokers, AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
-            try {
-                return function.eval(bindings);
-            } catch (ScriptException e) {
-                logger.error(CLUSTER_SCRIPT_EXCEPTION, "Scriptrouter exec script error", "", "Script route error, rule has been ignored. rule: " + rule + ", method:" +
-                    RpcUtils.getMethodName(invocation) + ", url: " + RpcContext.getContext().getUrl(), e);
-                return invokers;
-            }
-        }, accessControlContext));
+        return getRoutedInvokers(
+                invokers,
+                AccessController.doPrivileged(
+                        (PrivilegedAction<Object>) () -> {
+                            try {
+                                return function.eval(bindings);
+                            } catch (ScriptException e) {
+                                logger.error(
+                                        CLUSTER_SCRIPT_EXCEPTION,
+                                        "Scriptrouter exec script error",
+                                        "",
+                                        "Script route error, rule has been ignored. rule: " + rule + ", method:"
+                                                + RpcUtils.getMethodName(invocation) + ", url: "
+                                                + RpcContext.getContext().getUrl(),
+                                        e);
+                                return invokers;
+                            }
+                        },
+                        accessControlContext));
     }
 
     /**
@@ -155,7 +178,8 @@ public class ScriptStateRouter<T> extends AbstractStateRouter<T> {
         if (obj instanceof Invoker[]) {
             result.retainAll(Arrays.asList((Invoker<T>[]) obj));
         } else if (obj instanceof Object[]) {
-            result.retainAll(Arrays.stream((Object[]) obj).map(item -> (Invoker<T>) item).collect(Collectors.toList()));
+            result.retainAll(
+                    Arrays.stream((Object[]) obj).map(item -> (Invoker<T>) item).collect(Collectors.toList()));
         } else {
             result.retainAll((List<Invoker<T>>) obj);
         }
@@ -183,5 +207,4 @@ public class ScriptStateRouter<T> extends AbstractStateRouter<T> {
     public boolean isForce() {
         return this.getUrl().getParameter(FORCE_KEY, false);
     }
-
 }

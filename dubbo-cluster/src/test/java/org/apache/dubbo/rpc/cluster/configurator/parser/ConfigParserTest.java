@@ -20,16 +20,16 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConditionMatch;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfiguratorConfig;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
@@ -121,7 +121,6 @@ class ConfigParserTest {
         }
     }
 
-
     @Test
     void parseConfiguratorsAppAnyServicesTest() throws IOException {
         try (InputStream yamlStream = this.getClass().getResourceAsStream("/AppAnyServices.yml")) {
@@ -182,9 +181,11 @@ class ConfigParserTest {
 
             URL matchURL1 = URL.valueOf("dubbo://10.0.0.1:20880/DemoService?match_key1=value1");
             URL matchURL2 = URL.valueOf("dubbo://10.0.0.1:20880/DemoService2?match_key1=value1");
-            URL notMatchURL1 = URL.valueOf("dubbo://10.0.0.2:20880/DemoService?match_key1=value1");// address not match
-            URL notMatchURL2 = URL.valueOf("dubbo://10.0.0.1:20880/DemoServiceNotMatch?match_key1=value1");// service not match
-            URL notMatchURL3 = URL.valueOf("dubbo://10.0.0.1:20880/DemoService?match_key1=value_not_match");// key not match
+            URL notMatchURL1 = URL.valueOf("dubbo://10.0.0.2:20880/DemoService?match_key1=value1"); // address not match
+            URL notMatchURL2 =
+                    URL.valueOf("dubbo://10.0.0.1:20880/DemoServiceNotMatch?match_key1=value1"); // service not match
+            URL notMatchURL3 =
+                    URL.valueOf("dubbo://10.0.0.1:20880/DemoService?match_key1=value_not_match"); // key not match
 
             ConditionMatch matcher = (ConditionMatch) url.getAttribute(MATCH_CONDITION);
             Assertions.assertTrue(matcher.isMatch(matchURL1.getAddress(), matchURL1));
@@ -208,7 +209,8 @@ class ConfigParserTest {
             Assertions.assertEquals("demo-provider", url.getApplication());
 
             URL matchURL = URL.valueOf("dubbo://10.0.0.1:20880/DemoService?match_key1=value1");
-            URL notMatchURL = URL.valueOf("dubbo://10.0.0.1:20880/DemoService?match_key1=value_not_match");// key not match
+            URL notMatchURL =
+                    URL.valueOf("dubbo://10.0.0.1:20880/DemoService?match_key1=value_not_match"); // key not match
 
             ConditionMatch matcher = (ConditionMatch) url.getAttribute(MATCH_CONDITION);
             Assertions.assertTrue(matcher.isMatch(matchURL.getAddress(), matchURL));
@@ -229,7 +231,8 @@ class ConfigParserTest {
             Assertions.assertEquals("demo-provider", url.getApplication());
 
             URL matchURL = URL.valueOf("dubbo://10.0.0.1:20880/DemoService?match_key1=value1");
-            URL notMatchURL = URL.valueOf("dubbo://10.0.0.1:20880/DemoService?match_key1=value_not_match");// key not match
+            URL notMatchURL =
+                    URL.valueOf("dubbo://10.0.0.1:20880/DemoService?match_key1=value_not_match"); // key not match
 
             ConditionMatch matcher = (ConditionMatch) url.getAttribute(MATCH_CONDITION);
             Assertions.assertTrue(matcher.isMatch(matchURL.getAddress(), matchURL));
@@ -240,7 +243,8 @@ class ConfigParserTest {
     @Test
     void parseURLJsonArrayCompatible() {
 
-        String configData = "[\"override://0.0.0.0/com.xx.Service?category=configurators&timeout=6666&disabled=true&dynamic=false&enabled=true&group=dubbo&priority=1&version=1.0\" ]";
+        String configData =
+                "[\"override://0.0.0.0/com.xx.Service?category=configurators&timeout=6666&disabled=true&dynamic=false&enabled=true&group=dubbo&priority=1&version=1.0\" ]";
 
         List<URL> urls = ConfigParser.parseConfigurators(configData);
 
@@ -252,5 +256,4 @@ class ConfigParserTest {
         Assertions.assertEquals("com.xx.Service", url.getServiceInterface());
         Assertions.assertEquals(6666, url.getParameter(TIMEOUT_KEY, 0));
     }
-
 }

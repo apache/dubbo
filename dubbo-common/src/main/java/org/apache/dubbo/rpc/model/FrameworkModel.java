@@ -51,7 +51,7 @@ public class FrameworkModel extends ScopeModel {
 
     private static final Object globalLock = new Object();
 
-    private volatile static FrameworkModel defaultInstance;
+    private static volatile FrameworkModel defaultInstance;
 
     private static final List<FrameworkModel> allInstances = new CopyOnWriteArrayList<>();
 
@@ -91,15 +91,18 @@ public class FrameworkModel extends ScopeModel {
 
                 serviceRepository = new FrameworkServiceRepository(this);
 
-                ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader = this.getExtensionLoader(ScopeModelInitializer.class);
+                ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader =
+                        this.getExtensionLoader(ScopeModelInitializer.class);
                 Set<ScopeModelInitializer> initializers = initializerExtensionLoader.getSupportedExtensionInstances();
                 for (ScopeModelInitializer initializer : initializers) {
                     initializer.initializeFrameworkModel(this);
                 }
 
                 internalApplicationModel = new ApplicationModel(this, true);
-                internalApplicationModel.getApplicationConfigManager().setApplication(
-                    new ApplicationConfig(internalApplicationModel, CommonConstants.DUBBO_INTERNAL_APPLICATION));
+                internalApplicationModel
+                        .getApplicationConfigManager()
+                        .setApplication(new ApplicationConfig(
+                                internalApplicationModel, CommonConstants.DUBBO_INTERNAL_APPLICATION));
                 internalApplicationModel.setModelName(CommonConstants.DUBBO_INTERNAL_APPLICATION);
             }
         }
@@ -109,7 +112,8 @@ public class FrameworkModel extends ScopeModel {
     protected void onDestroy() {
         synchronized (instLock) {
             if (defaultInstance == this) {
-                // NOTE: During destroying the default FrameworkModel, the FrameworkModel.defaultModel() or ApplicationModel.defaultModel()
+                // NOTE: During destroying the default FrameworkModel, the FrameworkModel.defaultModel() or
+                // ApplicationModel.defaultModel()
                 // will return a broken model, maybe cause unpredictable problem.
                 if (LOGGER.isInfoEnabled()) {
                     LOGGER.info("Destroying default framework model: " + getDesc());
@@ -149,11 +153,11 @@ public class FrameworkModel extends ScopeModel {
     private void checkApplicationDestroy() {
         synchronized (instLock) {
             if (applicationModels.size() > 0) {
-                List<String> remainApplications = applicationModels.stream()
-                    .map(ScopeModel::getDesc)
-                    .collect(Collectors.toList());
-                throw new IllegalStateException("Not all application models are completely destroyed, remaining " +
-                    remainApplications.size() + " application models may be created during destruction: " + remainApplications);
+                List<String> remainApplications =
+                        applicationModels.stream().map(ScopeModel::getDesc).collect(Collectors.toList());
+                throw new IllegalStateException(
+                        "Not all application models are completely destroyed, remaining " + remainApplications.size()
+                                + " application models may be created during destruction: " + remainApplications);
             }
         }
     }
@@ -305,7 +309,8 @@ public class FrameworkModel extends ScopeModel {
             }
             if (defaultInstance == this && oldDefaultAppModel != this.defaultAppModel) {
                 if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info("Reset global default application from " + safeGetModelDesc(oldDefaultAppModel) + " to " + safeGetModelDesc(this.defaultAppModel));
+                    LOGGER.info("Reset global default application from " + safeGetModelDesc(oldDefaultAppModel) + " to "
+                            + safeGetModelDesc(this.defaultAppModel));
                 }
             }
         }
@@ -324,7 +329,8 @@ public class FrameworkModel extends ScopeModel {
             }
             if (oldDefaultFrameworkModel != defaultInstance) {
                 if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info("Reset global default framework from " + safeGetModelDesc(oldDefaultFrameworkModel) + " to " + safeGetModelDesc(defaultInstance));
+                    LOGGER.info("Reset global default framework from " + safeGetModelDesc(oldDefaultFrameworkModel)
+                            + " to " + safeGetModelDesc(defaultInstance));
                 }
             }
         }
@@ -360,7 +366,6 @@ public class FrameworkModel extends ScopeModel {
         return serviceRepository;
     }
 
-
     @Override
     protected Lock acquireDestroyLock() {
         return destroyLock;
@@ -373,7 +378,8 @@ public class FrameworkModel extends ScopeModel {
 
     @Override
     protected boolean checkIfClassLoaderCanRemoved(ClassLoader classLoader) {
-        return super.checkIfClassLoaderCanRemoved(classLoader) &&
-            applicationModels.stream().noneMatch(applicationModel -> applicationModel.containsClassLoader(classLoader));
+        return super.checkIfClassLoaderCanRemoved(classLoader)
+                && applicationModels.stream()
+                        .noneMatch(applicationModel -> applicationModel.containsClassLoader(classLoader));
     }
 }

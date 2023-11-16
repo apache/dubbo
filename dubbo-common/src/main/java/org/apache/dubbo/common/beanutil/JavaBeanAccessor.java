@@ -38,5 +38,4 @@ public enum JavaBeanAccessor {
     public static boolean isAccessByField(JavaBeanAccessor accessor) {
         return FIELD.equals(accessor) || ALL.equals(accessor);
     }
-
 }

@@ -32,6 +32,5 @@ public interface ExtensionInjector extends ExtensionAccessorAware {
     <T> T getInstance(final Class<T> type, final String name);
 
     @Override
-    default void setExtensionAccessor(final ExtensionAccessor extensionAccessor) {
-    }
+    default void setExtensionAccessor(final ExtensionAccessor extensionAccessor) {}
 }

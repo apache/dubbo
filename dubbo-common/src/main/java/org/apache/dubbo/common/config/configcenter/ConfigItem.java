@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.config.configcenter;
 
 /**
@@ -52,7 +51,5 @@ public class ConfigItem {
         this.ticket = ticket;
     }
 
-    public ConfigItem() {
-
-    }
+    public ConfigItem() {}
 }

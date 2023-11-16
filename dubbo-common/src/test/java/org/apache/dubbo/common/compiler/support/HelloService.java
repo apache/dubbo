@@ -19,5 +19,4 @@ package org.apache.dubbo.common.compiler.support;
 public interface HelloService {
 
     String sayHello();
-
 }

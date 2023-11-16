@@ -17,20 +17,23 @@
 package org.apache.dubbo.config.spring.reference.registryNA.consumer;
 
 import org.apache.dubbo.config.spring.api.HelloService;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 class DubboXmlConsumerTest {
 
-
     @Test
     void testConsumer() {
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("classpath:/org/apache/dubbo/config/spring/reference/registryNA/consumer/dubbo-registryNA-consumer.xml");
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
+                "classpath:/org/apache/dubbo/config/spring/reference/registryNA/consumer/dubbo-registryNA-consumer.xml");
         context.start();
         HelloService helloService = context.getBean("helloService", HelloService.class);
-        IllegalStateException exception = Assertions.assertThrows(IllegalStateException.class, () -> helloService.sayHello("dubbo"));
-        Assertions.assertTrue(exception.getMessage().contains("No such any registry to reference org.apache.dubbo.config.spring.api.HelloService"));
+        IllegalStateException exception =
+                Assertions.assertThrows(IllegalStateException.class, () -> helloService.sayHello("dubbo"));
+        Assertions.assertTrue(exception
+                .getMessage()
+                .contains("No such any registry to reference org.apache.dubbo.config.spring.api.HelloService"));
     }
-
 }

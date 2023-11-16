@@ -26,5 +26,4 @@ public interface FooModuleService {
 
     @Adaptive
     void process(URL url);
-
 }

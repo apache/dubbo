@@ -14,18 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.embedded.EmbeddedChannel;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpScheme;
-import io.netty.handler.codec.http2.DefaultHttp2Headers;
-import io.netty.handler.codec.http2.Http2StreamChannel;
-import io.netty.util.concurrent.ImmediateEventExecutor;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -45,10 +35,20 @@ import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.Executor;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.embedded.EmbeddedChannel;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpScheme;
+import io.netty.handler.codec.http2.DefaultHttp2Headers;
+import io.netty.handler.codec.http2.Http2StreamChannel;
+import io.netty.util.concurrent.ImmediateEventExecutor;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -61,25 +61,29 @@ class TripleClientStreamTest {
     @Test
     void progress() {
         final URL url = URL.valueOf("tri://127.0.0.1:8080/foo.bar.service");
-        final ModuleServiceRepository repo = ApplicationModel.defaultModel().getDefaultModule()
-            .getServiceRepository();
+        final ModuleServiceRepository repo =
+                ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
         repo.registerService(IGreeter.class);
         final ServiceDescriptor serviceDescriptor = repo.getService(IGreeter.class.getName());
-        final MethodDescriptor methodDescriptor = serviceDescriptor.getMethod("echo",
-            new Class<?>[]{String.class});
+        final MethodDescriptor methodDescriptor = serviceDescriptor.getMethod("echo", new Class<?>[] {String.class});
 
         MockClientStreamListener listener = new MockClientStreamListener();
         TripleWriteQueue writeQueue = mock(TripleWriteQueue.class);
         final EmbeddedChannel channel = new EmbeddedChannel();
-        when(writeQueue.enqueueFuture(any(QueuedCommand.class), any(Executor.class))).thenReturn(channel.newPromise());
+        when(writeQueue.enqueueFuture(any(QueuedCommand.class), any(Executor.class)))
+                .thenReturn(channel.newPromise());
         Http2StreamChannel http2StreamChannel = mock(Http2StreamChannel.class);
         when(http2StreamChannel.isActive()).thenReturn(true);
         when(http2StreamChannel.newSucceededFuture()).thenReturn(channel.newSucceededFuture());
         when(http2StreamChannel.eventLoop()).thenReturn(new NioEventLoopGroup().next());
         when(http2StreamChannel.newPromise()).thenReturn(channel.newPromise());
         when(http2StreamChannel.parent()).thenReturn(channel);
-        TripleClientStream stream = new TripleClientStream(url.getOrDefaultFrameworkModel(),
-            ImmediateEventExecutor.INSTANCE, writeQueue, listener, http2StreamChannel);
+        TripleClientStream stream = new TripleClientStream(
+                url.getOrDefaultFrameworkModel(),
+                ImmediateEventExecutor.INSTANCE,
+                writeQueue,
+                listener,
+                http2StreamChannel);
         verify(writeQueue).enqueue(any(CreateStreamQueueCommand.class));
 
         final RequestMetadata requestMetadata = new RequestMetadata();
@@ -108,15 +112,13 @@ class TripleClientStreamTest {
 
         H2TransportListener transportListener = stream.createTransportListener();
         DefaultHttp2Headers headers = new DefaultHttp2Headers();
-        headers.scheme(HttpScheme.HTTP.name())
-            .status(HttpResponseStatus.OK.codeAsText());
+        headers.scheme(HttpScheme.HTTP.name()).status(HttpResponseStatus.OK.codeAsText());
         headers.set(TripleHeaderEnum.STATUS_KEY.getHeader(), TriRpcStatus.OK.code.code + "");
-        headers.set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(),
-            TripleHeaderEnum.CONTENT_PROTO.getHeader());
+        headers.set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleHeaderEnum.CONTENT_PROTO.getHeader());
         transportListener.onHeader(headers, false);
         Assertions.assertTrue(listener.started);
         stream.request(2);
-        byte[] data = new byte[]{0, 0, 0, 0, 1, 1};
+        byte[] data = new byte[] {0, 0, 0, 0, 1, 1};
         final ByteBuf buf = Unpooled.wrappedBuffer(data);
         transportListener.onData(buf, false);
         Assertions.assertEquals(1, listener.message.length);

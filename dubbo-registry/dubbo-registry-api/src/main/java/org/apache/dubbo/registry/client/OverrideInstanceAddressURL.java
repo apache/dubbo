@@ -128,34 +128,33 @@ public class OverrideInstanceAddressURL extends InstanceAddressURL {
     @Override
     public String getServiceMethodParameter(String protocolServiceKey, String method, String key) {
         String overrideParam = overrideParams.getMethodParameter(method, key);
-        return StringUtils.isNotEmpty(overrideParam) ?
-            overrideParam :
-            originUrl.getServiceMethodParameter(protocolServiceKey, method, key);
+        return StringUtils.isNotEmpty(overrideParam)
+                ? overrideParam
+                : originUrl.getServiceMethodParameter(protocolServiceKey, method, key);
     }
 
     @Override
     public String getMethodParameter(String method, String key) {
         String overrideParam = overrideParams.getMethodParameter(method, key);
-        return StringUtils.isNotEmpty(overrideParam) ?
-            overrideParam :
-            originUrl.getMethodParameter(method, key);
+        return StringUtils.isNotEmpty(overrideParam) ? overrideParam : originUrl.getMethodParameter(method, key);
     }
 
     @Override
     public boolean hasServiceMethodParameter(String protocolServiceKey, String method, String key) {
-        return StringUtils.isNotEmpty(overrideParams.getMethodParameter(method, key)) ||
-            originUrl.hasServiceMethodParameter(protocolServiceKey, method, key);
+        return StringUtils.isNotEmpty(overrideParams.getMethodParameter(method, key))
+                || originUrl.hasServiceMethodParameter(protocolServiceKey, method, key);
     }
 
     @Override
     public boolean hasMethodParameter(String method, String key) {
-        return StringUtils.isNotEmpty(overrideParams.getMethodParameter(method, key)) ||
-            originUrl.hasMethodParameter(method, key);
+        return StringUtils.isNotEmpty(overrideParams.getMethodParameter(method, key))
+                || originUrl.hasMethodParameter(method, key);
     }
 
     @Override
     public boolean hasServiceMethodParameter(String protocolServiceKey, String method) {
-        return overrideParams.hasMethodParameter(method) || originUrl.hasServiceMethodParameter(protocolServiceKey, method);
+        return overrideParams.hasMethodParameter(method)
+                || originUrl.hasServiceMethodParameter(protocolServiceKey, method);
     }
 
     @Override
@@ -311,6 +310,7 @@ public class OverrideInstanceAddressURL extends InstanceAddressURL {
         // create a new object from the deserialized one
         return new OverrideInstanceAddressURL(this.originUrl, this.overrideParams);
     }
+
     @Override
     protected OverrideInstanceAddressURL newURL(URLAddress urlAddress, URLParam urlParam) {
         return new OverrideInstanceAddressURL(originUrl, overrideParams);

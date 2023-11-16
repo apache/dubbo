@@ -41,22 +41,35 @@ public class Tag {
 
         if (version != null && version.startsWith(RULE_VERSION_V30)) {
             if (map.get("match") != null) {
-                tag.setMatch(((List<Map<String, Object>>) map.get("match")).stream().map((objectMap) -> {
-                    try {
-                        return PojoUtils.mapToPojo(objectMap, ParamMatch.class);
-                    } catch (ReflectiveOperationException e) {
-                        logger.error(CLUSTER_FAILED_RULE_PARSING, " Failed to parse tag rule ", String.valueOf(objectMap), "Error occurred when parsing rule component.", e);
-                    }
-                    return null;
-                }).collect(Collectors.toList()));
+                tag.setMatch(((List<Map<String, Object>>) map.get("match"))
+                        .stream()
+                                .map((objectMap) -> {
+                                    try {
+                                        return PojoUtils.mapToPojo(objectMap, ParamMatch.class);
+                                    } catch (ReflectiveOperationException e) {
+                                        logger.error(
+                                                CLUSTER_FAILED_RULE_PARSING,
+                                                " Failed to parse tag rule ",
+                                                String.valueOf(objectMap),
+                                                "Error occurred when parsing rule component.",
+                                                e);
+                                    }
+                                    return null;
+                                })
+                                .collect(Collectors.toList()));
             } else {
-                logger.warn(CLUSTER_FAILED_RULE_PARSING, "", String.valueOf(map), "It's recommended to use 'match' instead of 'addresses' for v3.0 tag rule.");
+                logger.warn(
+                        CLUSTER_FAILED_RULE_PARSING,
+                        "",
+                        String.valueOf(map),
+                        "It's recommended to use 'match' instead of 'addresses' for v3.0 tag rule.");
             }
         }
 
         Object addresses = map.get("addresses");
         if (addresses != null && List.class.isAssignableFrom(addresses.getClass())) {
-            tag.setAddresses(((List<Object>) addresses).stream().map(String::valueOf).collect(Collectors.toList()));
+            tag.setAddresses(
+                    ((List<Object>) addresses).stream().map(String::valueOf).collect(Collectors.toList()));
         }
 
         return tag;
@@ -85,5 +98,4 @@ public class Tag {
     public void setMatch(List<ParamMatch> match) {
         this.match = match;
     }
-
 }

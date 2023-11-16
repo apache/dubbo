@@ -30,9 +30,6 @@ import org.apache.dubbo.rpc.RpcException;
 @SPI(value = Constants.OK_HTTP, scope = ExtensionScope.FRAMEWORK)
 public interface RestClientFactory {
 
-
     @Adaptive({Constants.CLIENT_KEY})
     RestClient createRestClient(URL url) throws RpcException;
-
-
 }

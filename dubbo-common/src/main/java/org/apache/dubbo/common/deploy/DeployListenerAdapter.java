@@ -18,29 +18,22 @@ package org.apache.dubbo.common.deploy;
 
 import org.apache.dubbo.rpc.model.ScopeModel;
 
-public class DeployListenerAdapter<E extends ScopeModel> implements DeployListener<E>{
+public class DeployListenerAdapter<E extends ScopeModel> implements DeployListener<E> {
     @Override
-    public void onInitialize(E scopeModel) {
-
-    }
+    public void onInitialize(E scopeModel) {}
 
     @Override
-    public void onStarting(E scopeModel) {
-    }
+    public void onStarting(E scopeModel) {}
 
     @Override
-    public void onStarted(E scopeModel) {
-    }
+    public void onStarted(E scopeModel) {}
 
     @Override
-    public void onStopping(E scopeModel) {
-    }
+    public void onStopping(E scopeModel) {}
 
     @Override
-    public void onStopped(E scopeModel) {
-    }
+    public void onStopped(E scopeModel) {}
 
     @Override
-    public void onFailure(E scopeModel, Throwable cause) {
-    }
+    public void onFailure(E scopeModel, Throwable cause) {}
 }

@@ -21,12 +21,12 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.test.check.exception.DubboTestException;
 import org.apache.dubbo.test.check.registrycenter.context.ZookeeperWindowsContext;
 
+import java.io.IOException;
+
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.PumpStreamHandler;
-
-import java.io.IOException;
 
 /**
  * Create a {@link org.apache.dubbo.test.check.registrycenter.Processor} to kill pid on Windows OS.
@@ -55,7 +55,8 @@ public class KillProcessWindowsProcessor extends ZookeeperWindowsProcessor {
                 // clear pid
                 context.removePid(clientPort);
             } catch (IOException e) {
-                throw new DubboTestException(String.format("Failed to kill the pid %d of zookeeper with port %d", pid, clientPort), e);
+                throw new DubboTestException(
+                        String.format("Failed to kill the pid %d of zookeeper with port %d", pid, clientPort), e);
             }
         }
     }

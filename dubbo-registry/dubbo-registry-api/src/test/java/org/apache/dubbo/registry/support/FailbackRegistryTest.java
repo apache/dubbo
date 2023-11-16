@@ -22,13 +22,13 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.registry.NotifyListener;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
@@ -50,8 +50,10 @@ class FailbackRegistryTest {
     @BeforeEach
     public void setUp() throws Exception {
         String failedPeriod = String.valueOf(FAILED_PERIOD);
-        serviceUrl = URL.valueOf("remote://127.0.0.1/demoservice?method=get").addParameter(REGISTRY_RETRY_PERIOD_KEY, failedPeriod);
-        registryUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A").addParameter(REGISTRY_RETRY_PERIOD_KEY, failedPeriod);
+        serviceUrl = URL.valueOf("remote://127.0.0.1/demoservice?method=get")
+                .addParameter(REGISTRY_RETRY_PERIOD_KEY, failedPeriod);
+        registryUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A")
+                .addParameter(REGISTRY_RETRY_PERIOD_KEY, failedPeriod);
     }
 
     /**
@@ -68,7 +70,8 @@ class FailbackRegistryTest {
         final CountDownLatch latch = new CountDownLatch(2);
 
         NotifyListener listener = urls -> notified.set(Boolean.TRUE);
-        URL subscribeUrl = serviceUrl.setProtocol(CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false"));
+        URL subscribeUrl =
+                serviceUrl.setProtocol(CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false"));
         registry = new MockRegistry(registryUrl, serviceUrl, latch);
         registry.setBad(true);
         registry.register(serviceUrl);
@@ -76,7 +79,7 @@ class FailbackRegistryTest {
         registry.subscribe(subscribeUrl, listener);
         registry.unsubscribe(subscribeUrl, listener);
 
-        //Failure can not be called to listener.
+        // Failure can not be called to listener.
         assertEquals(false, notified.get());
         assertEquals(2, latch.getCount());
 
@@ -84,20 +87,20 @@ class FailbackRegistryTest {
 
         for (int i = 0; i < 20; i++) {
             logger.info("failback registry retry, times:" + i);
-            //System.out.println(latch.getCount());
-            if (latch.getCount() == 0)
-                break;
+            // System.out.println(latch.getCount());
+            if (latch.getCount() == 0) break;
             Thread.sleep(sleepTime);
         }
         assertEquals(0, latch.getCount());
-        //The failed subscribe corresponding key will be cleared when unsubscribing
+        // The failed subscribe corresponding key will be cleared when unsubscribing
         assertEquals(false, notified.get());
     }
 
     @Test
     void testDoRetryRegister() throws Exception {
 
-        final CountDownLatch latch = new CountDownLatch(1);//All of them are called 4 times. A successful attempt to lose 1. subscribe will not be done
+        final CountDownLatch latch = new CountDownLatch(
+                1); // All of them are called 4 times. A successful attempt to lose 1. subscribe will not be done
 
         registry = new MockRegistry(registryUrl, serviceUrl, latch);
         registry.setBad(true);
@@ -107,8 +110,7 @@ class FailbackRegistryTest {
 
         for (int i = 0; i < tryTimes; i++) {
             System.out.println("failback registry retry ,times:" + i);
-            if (latch.getCount() == 0)
-                break;
+            if (latch.getCount() == 0) break;
             Thread.sleep(sleepTime);
         }
         assertEquals(0, latch.getCount());
@@ -118,14 +120,17 @@ class FailbackRegistryTest {
     void testDoRetrySubscribe() throws Exception {
 
         final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
-        final CountDownLatch latch = new CountDownLatch(1);//All of them are called 4 times. A successful attempt to lose 1. subscribe will not be done
+        final CountDownLatch latch = new CountDownLatch(
+                1); // All of them are called 4 times. A successful attempt to lose 1. subscribe will not be done
 
         NotifyListener listener = urls -> notified.set(Boolean.TRUE);
         registry = new MockRegistry(registryUrl, serviceUrl, latch);
         registry.setBad(true);
-        registry.subscribe(serviceUrl.setProtocol(CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listener);
+        registry.subscribe(
+                serviceUrl.setProtocol(CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")),
+                listener);
 
-        //Failure can not be called to listener.
+        // Failure can not be called to listener.
         assertEquals(false, notified.get());
         assertEquals(1, latch.getCount());
 
@@ -133,12 +138,11 @@ class FailbackRegistryTest {
 
         for (int i = 0; i < tryTimes; i++) {
             System.out.println("failback registry retry ,times:" + i);
-            if (latch.getCount() == 0)
-                break;
+            if (latch.getCount() == 0) break;
             Thread.sleep(sleepTime);
         }
         assertEquals(0, latch.getCount());
-        //The failed subscribe corresponding key will be cleared when unsubscribing
+        // The failed subscribe corresponding key will be cleared when unsubscribing
         assertEquals(true, notified.get());
     }
 
@@ -189,7 +193,6 @@ class FailbackRegistryTest {
                 throw new RuntimeException("can not invoke!");
             }
             latch.countDown();
-
         }
 
         @Override
@@ -198,7 +201,6 @@ class FailbackRegistryTest {
                 throw new RuntimeException("can not invoke!");
             }
             latch.countDown();
-
         }
 
         @Override
@@ -206,7 +208,7 @@ class FailbackRegistryTest {
             if (bad) {
                 throw new RuntimeException("can not invoke!");
             }
-            super.notify(url, listener, Arrays.asList(new URL[]{serviceUrl}));
+            super.notify(url, listener, Arrays.asList(new URL[] {serviceUrl}));
             latch.countDown();
         }
 
@@ -240,6 +242,5 @@ class FailbackRegistryTest {
             super.removeFailedSubscribedTask(url, listener);
             latch.countDown();
         }
-
     }
 }

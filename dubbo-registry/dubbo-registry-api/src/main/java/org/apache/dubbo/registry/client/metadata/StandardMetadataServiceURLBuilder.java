@@ -102,16 +102,19 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
         String protocol = params.get(PROTOCOL_KEY);
         int port = Integer.parseInt(params.get(PORT_KEY));
         URLBuilder urlBuilder = new URLBuilder()
-            .setHost(host)
-            .setPort(port)
-            .setProtocol(protocol)
-            .setPath(MetadataService.class.getName())
-            .addParameter(TIMEOUT_KEY, ConfigurationUtils.get(applicationModel, METADATA_PROXY_TIMEOUT_KEY, DEFAULT_METADATA_TIMEOUT_VALUE))
-            .addParameter(CONNECTIONS_KEY, 1)
-            .addParameter(THREADPOOL_KEY, "cached")
-            .addParameter(THREADS_KEY, "100")
-            .addParameter(CORE_THREADS_KEY, "2")
-            .addParameter(RETRIES_KEY, 0);
+                .setHost(host)
+                .setPort(port)
+                .setProtocol(protocol)
+                .setPath(MetadataService.class.getName())
+                .addParameter(
+                        TIMEOUT_KEY,
+                        ConfigurationUtils.get(
+                                applicationModel, METADATA_PROXY_TIMEOUT_KEY, DEFAULT_METADATA_TIMEOUT_VALUE))
+                .addParameter(CONNECTIONS_KEY, 1)
+                .addParameter(THREADPOOL_KEY, "cached")
+                .addParameter(THREADS_KEY, "100")
+                .addParameter(CORE_THREADS_KEY, "2")
+                .addParameter(RETRIES_KEY, 0);
 
         // add parameters
         params.forEach(urlBuilder::addParameter);
@@ -128,9 +131,12 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
 
             // 1-18 - Metadata Service Port should be specified for consumer.
 
-            logger.warn(REGISTRY_MISSING_METADATA_CONFIG_PORT, "missing configuration of metadata service port", "",
-                "Metadata Service Port is not provided. Since DNS is not able to negotiate the metadata port " +
-                    "between Provider and Consumer, Dubbo will try using instance port as the default metadata port.");
+            logger.warn(
+                    REGISTRY_MISSING_METADATA_CONFIG_PORT,
+                    "missing configuration of metadata service port",
+                    "",
+                    "Metadata Service Port is not provided. Since DNS is not able to negotiate the metadata port "
+                            + "between Provider and Consumer, Dubbo will try using instance port as the default metadata port.");
 
             port = instancePort;
         }
@@ -139,15 +145,20 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
 
             // 1-18 - Metadata Service Port should be specified for consumer.
 
-            String message = "Metadata Service Port should be specified for consumer. " +
-                    "Please set dubbo.application.metadataServicePort and " +
-                    "make sure it has been set on provider side. " +
-                    "ServiceName: " + serviceName + " Host: " + host;
+            String message = "Metadata Service Port should be specified for consumer. "
+                    + "Please set dubbo.application.metadataServicePort and "
+                    + "make sure it has been set on provider side. "
+                    + "ServiceName: "
+                    + serviceName + " Host: " + host;
 
             IllegalStateException illegalStateException = new IllegalStateException(message);
 
-            logger.error(REGISTRY_MISSING_METADATA_CONFIG_PORT, "missing configuration of metadata service port", "",
-                message, illegalStateException);
+            logger.error(
+                    REGISTRY_MISSING_METADATA_CONFIG_PORT,
+                    "missing configuration of metadata service port",
+                    "",
+                    message,
+                    illegalStateException);
 
             throw illegalStateException;
         }
@@ -157,7 +168,10 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
                 .setPort(port)
                 .setProtocol(DUBBO_PROTOCOL)
                 .setPath(MetadataService.class.getName())
-                .addParameter(TIMEOUT_KEY, ConfigurationUtils.get(applicationModel, METADATA_PROXY_TIMEOUT_KEY, DEFAULT_METADATA_TIMEOUT_VALUE))
+                .addParameter(
+                        TIMEOUT_KEY,
+                        ConfigurationUtils.get(
+                                applicationModel, METADATA_PROXY_TIMEOUT_KEY, DEFAULT_METADATA_TIMEOUT_VALUE))
                 .addParameter(Constants.RECONNECT_KEY, false)
                 .addParameter(SIDE_KEY, CONSUMER)
                 .addParameter(GROUP_KEY, serviceName)

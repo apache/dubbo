@@ -20,7 +20,6 @@ import org.apache.dubbo.remoting.RemotingException;
 
 import java.util.concurrent.CompletableFuture;
 
-
 public interface RestClient {
     /**
      * send message.
@@ -46,5 +45,4 @@ public interface RestClient {
      * @return closed
      */
     boolean isClosed();
-
 }

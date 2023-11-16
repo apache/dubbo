@@ -16,13 +16,14 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.command;
 
+import org.apache.dubbo.rpc.protocol.tri.stream.TripleStreamChannelFuture;
+
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
 import io.netty.util.concurrent.Future;
-import org.apache.dubbo.rpc.protocol.tri.stream.TripleStreamChannelFuture;
 
 public class CreateStreamQueueCommand extends QueuedCommand {
 
@@ -30,27 +31,27 @@ public class CreateStreamQueueCommand extends QueuedCommand {
 
     private final TripleStreamChannelFuture streamChannelFuture;
 
-    private CreateStreamQueueCommand(Http2StreamChannelBootstrap bootstrap,
-                                     TripleStreamChannelFuture streamChannelFuture) {
+    private CreateStreamQueueCommand(
+            Http2StreamChannelBootstrap bootstrap, TripleStreamChannelFuture streamChannelFuture) {
         this.bootstrap = bootstrap;
         this.streamChannelFuture = streamChannelFuture;
         this.promise(streamChannelFuture.getParentChannel().newPromise());
         this.channel(streamChannelFuture.getParentChannel());
     }
 
-    public static CreateStreamQueueCommand create(Http2StreamChannelBootstrap bootstrap,
-                                                  TripleStreamChannelFuture streamChannelFuture) {
+    public static CreateStreamQueueCommand create(
+            Http2StreamChannelBootstrap bootstrap, TripleStreamChannelFuture streamChannelFuture) {
         return new CreateStreamQueueCommand(bootstrap, streamChannelFuture);
     }
 
     @Override
     public void doSend(ChannelHandlerContext ctx, ChannelPromise promise) {
-        //NOOP
+        // NOOP
     }
 
     @Override
     public void run(Channel channel) {
-        //work in I/O thread
+        // work in I/O thread
         Future<Http2StreamChannel> future = bootstrap.open();
         if (future.isSuccess()) {
             streamChannelFuture.complete(future.getNow());

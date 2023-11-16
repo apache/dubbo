@@ -16,6 +16,13 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.config;
 
+import java.io.IOException;
+import java.util.AbstractMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
+
 import org.springframework.beans.factory.config.YamlProcessor;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.PropertySource;
@@ -30,13 +37,6 @@ import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.parser.ParserException;
 import org.yaml.snakeyaml.representer.Representer;
 import org.yaml.snakeyaml.resolver.Resolver;
-
-import java.io.IOException;
-import java.util.AbstractMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Pattern;
 
 /**
  * YAML {@link PropertySourceFactory} implementation, some source code is copied Spring Boot
@@ -54,46 +54,51 @@ public class YamlPropertySourceFactory extends YamlProcessor implements Property
 
     @Override
     protected Yaml createYaml() {
-        return new Yaml(new Constructor(new LoaderOptions()) {
-            @Override
-            protected Map<Object, Object> constructMapping(MappingNode node) {
-                try {
-                    return super.constructMapping(node);
-                } catch (IllegalStateException ex) {
-                    throw new ParserException("while parsing MappingNode",
-                            node.getStartMark(), ex.getMessage(), node.getEndMark());
-                }
-            }
-
-            @Override
-            protected Map<Object, Object> createDefaultMap(int initSize) {
-                final Map<Object, Object> delegate = super.createDefaultMap(initSize);
-                return new AbstractMap<Object, Object>() {
+        return new Yaml(
+                new Constructor(new LoaderOptions()) {
                     @Override
-                    public Object put(Object key, Object value) {
-                        if (delegate.containsKey(key)) {
-                            throw new IllegalStateException("Duplicate key: " + key);
+                    protected Map<Object, Object> constructMapping(MappingNode node) {
+                        try {
+                            return super.constructMapping(node);
+                        } catch (IllegalStateException ex) {
+                            throw new ParserException(
+                                    "while parsing MappingNode",
+                                    node.getStartMark(),
+                                    ex.getMessage(),
+                                    node.getEndMark());
                         }
-                        return delegate.put(key, value);
                     }
 
                     @Override
-                    public Set<Entry<Object, Object>> entrySet() {
-                        return delegate.entrySet();
+                    protected Map<Object, Object> createDefaultMap(int initSize) {
+                        final Map<Object, Object> delegate = super.createDefaultMap(initSize);
+                        return new AbstractMap<Object, Object>() {
+                            @Override
+                            public Object put(Object key, Object value) {
+                                if (delegate.containsKey(key)) {
+                                    throw new IllegalStateException("Duplicate key: " + key);
+                                }
+                                return delegate.put(key, value);
+                            }
+
+                            @Override
+                            public Set<Entry<Object, Object>> entrySet() {
+                                return delegate.entrySet();
+                            }
+                        };
                     }
-                };
-            }
-        }, new Representer(new DumperOptions()),
-                new DumperOptions(), new Resolver() {
-            @Override
-            public void addImplicitResolver(Tag tag, Pattern regexp,
-                                            String first) {
-                if (tag == Tag.TIMESTAMP) {
-                    return;
-                }
-                super.addImplicitResolver(tag, regexp, first);
-            }
-        });
+                },
+                new Representer(new DumperOptions()),
+                new DumperOptions(),
+                new Resolver() {
+                    @Override
+                    public void addImplicitResolver(Tag tag, Pattern regexp, String first) {
+                        if (tag == Tag.TIMESTAMP) {
+                            return;
+                        }
+                        super.addImplicitResolver(tag, regexp, first);
+                    }
+                });
     }
 
     /**

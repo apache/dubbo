@@ -16,17 +16,16 @@
  */
 package org.apache.dubbo.registry.integration;
 
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.registry.Registry;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
@@ -55,61 +54,45 @@ class DynamicDirectoryTest {
         parameters.put("register", "true");
         parameters.put(REGISTER_IP_KEY, "172.23.236.180");
 
-
         Map<String, Object> attributes = new HashMap<>();
-        ServiceConfigURL serviceConfigURLWithoutSimplified = new ServiceConfigURL("registry",
-            "127.0.0.1",
-            2181,
-            "org.apache.dubbo.registry.RegistryService",
-            parameters);
+        ServiceConfigURL serviceConfigURLWithoutSimplified = new ServiceConfigURL(
+                "registry", "127.0.0.1", 2181, "org.apache.dubbo.registry.RegistryService", parameters);
         Map<String, String> refer = new HashMap<>();
         attributes.put(REFER_KEY, refer);
         attributes.put("key1", "value1");
         URL urlWithoutSimplified = serviceConfigURLWithoutSimplified.addAttributes(attributes);
 
         DemoDynamicDirectory<DemoService> dynamicDirectoryWithoutSimplified =
-            new DemoDynamicDirectory<>(DemoService.class, urlWithoutSimplified);
+                new DemoDynamicDirectory<>(DemoService.class, urlWithoutSimplified);
 
-        URL registeredConsumerUrlWithoutSimplified = new ServiceConfigURL("dubbo",
-            "127.0.0.1",
-            2181,
-            DemoService.class.getName(),
-            parameters);
+        URL registeredConsumerUrlWithoutSimplified =
+                new ServiceConfigURL("dubbo", "127.0.0.1", 2181, DemoService.class.getName(), parameters);
 
         dynamicDirectoryWithoutSimplified.setRegisteredConsumerUrl(registeredConsumerUrlWithoutSimplified);
 
-        URL urlForNotSimplified = registeredConsumerUrlWithoutSimplified
-            .addParameters(CATEGORY_KEY, CONSUMERS_CATEGORY, CHECK_KEY, String.valueOf(false));
+        URL urlForNotSimplified = registeredConsumerUrlWithoutSimplified.addParameters(
+                CATEGORY_KEY, CONSUMERS_CATEGORY, CHECK_KEY, String.valueOf(false));
 
         Assertions.assertEquals(urlForNotSimplified, dynamicDirectoryWithoutSimplified.getRegisteredConsumerUrl());
 
         // verify simplified consumer url information that needs to be registered
         parameters.put(SIMPLIFIED_KEY, "true");
-        ServiceConfigURL serviceConfigURLWithSimplified = new ServiceConfigURL("registry",
-            "127.0.0.1",
-            2181,
-            "org.apache.dubbo.registry.RegistryService",
-            parameters);
+        ServiceConfigURL serviceConfigURLWithSimplified = new ServiceConfigURL(
+                "registry", "127.0.0.1", 2181, "org.apache.dubbo.registry.RegistryService", parameters);
         URL urlWithSimplified = serviceConfigURLWithSimplified.addAttributes(attributes);
-        DemoDynamicDirectory<DemoService> dynamicDirectoryWithSimplified = new DemoDynamicDirectory<>(DemoService.class, urlWithSimplified);
+        DemoDynamicDirectory<DemoService> dynamicDirectoryWithSimplified =
+                new DemoDynamicDirectory<>(DemoService.class, urlWithSimplified);
 
-        URL registeredConsumerUrlWithSimplified = new ServiceConfigURL("dubbo",
-            "127.0.0.1",
-            2181,
-            DemoService.class.getName(),
-            parameters);
+        URL registeredConsumerUrlWithSimplified =
+                new ServiceConfigURL("dubbo", "127.0.0.1", 2181, DemoService.class.getName(), parameters);
 
         dynamicDirectoryWithSimplified.setRegisteredConsumerUrl(registeredConsumerUrlWithSimplified);
 
-        URL urlForSimplified = URL.valueOf(
-            registeredConsumerUrlWithSimplified,
-            DEFAULT_REGISTER_CONSUMER_KEYS,
-            null).addParameters(CATEGORY_KEY, CONSUMERS_CATEGORY, CHECK_KEY, String.valueOf(false));
+        URL urlForSimplified = URL.valueOf(registeredConsumerUrlWithSimplified, DEFAULT_REGISTER_CONSUMER_KEYS, null)
+                .addParameters(CATEGORY_KEY, CONSUMERS_CATEGORY, CHECK_KEY, String.valueOf(false));
 
         Assertions.assertEquals(urlForSimplified, dynamicDirectoryWithSimplified.getRegisteredConsumerUrl());
-
     }
-
 
     @Test
     void testSubscribe() {
@@ -120,13 +103,9 @@ class DynamicDirectoryTest {
         parameters.put("register", "true");
         parameters.put(REGISTER_IP_KEY, "172.23.236.180");
 
-
         Map<String, Object> attributes = new HashMap<>();
-        ServiceConfigURL serviceConfigUrl = new ServiceConfigURL("registry",
-            "127.0.0.1",
-            2181,
-            "org.apache.dubbo.registry.RegistryService",
-            parameters);
+        ServiceConfigURL serviceConfigUrl = new ServiceConfigURL(
+                "registry", "127.0.0.1", 2181, "org.apache.dubbo.registry.RegistryService", parameters);
         Map<String, String> refer = new HashMap<>();
         attributes.put(REFER_KEY, refer);
         attributes.put("key1", "value1");
@@ -134,11 +113,7 @@ class DynamicDirectoryTest {
 
         DemoDynamicDirectory<DemoService> demoDynamicDirectory = new DemoDynamicDirectory<>(DemoService.class, url);
 
-        URL subscribeUrl = new ServiceConfigURL("dubbo",
-            "127.0.0.1",
-            20881,
-            DemoService.class.getName(),
-            parameters);
+        URL subscribeUrl = new ServiceConfigURL("dubbo", "127.0.0.1", 20881, DemoService.class.getName(), parameters);
 
         Registry registry = mock(Registry.class);
         demoDynamicDirectory.setRegistry(registry);
@@ -149,7 +124,6 @@ class DynamicDirectoryTest {
         Assertions.assertEquals(subscribeUrl, demoDynamicDirectory.getSubscribeUrl());
     }
 
-
     static class DemoDynamicDirectory<T> extends DynamicDirectory<T> {
 
         public DemoDynamicDirectory(Class<T> serviceType, URL url) {
@@ -157,14 +131,10 @@ class DynamicDirectoryTest {
         }
 
         @Override
-        protected void destroyAllInvokers() {
-
-        }
+        protected void destroyAllInvokers() {}
 
         @Override
-        protected void refreshOverrideAndInvoker(List<URL> urls) {
-
-        }
+        protected void refreshOverrideAndInvoker(List<URL> urls) {}
 
         @Override
         public boolean isAvailable() {
@@ -172,8 +142,6 @@ class DynamicDirectoryTest {
         }
 
         @Override
-        public void notify(List<URL> urls) {
-
-        }
+        public void notify(List<URL> urls) {}
     }
 }

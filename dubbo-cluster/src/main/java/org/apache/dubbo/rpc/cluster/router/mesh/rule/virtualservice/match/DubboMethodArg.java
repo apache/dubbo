@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
-
 
 public class DubboMethodArg {
     private int index;
@@ -79,12 +77,11 @@ public class DubboMethodArg {
 
     @Override
     public String toString() {
-        return "DubboMethodArg{" +
-                "index=" + index +
-                ", type='" + type + '\'' +
-                ", str_value=" + str_value +
-                ", num_value=" + num_value +
-                ", bool_value=" + bool_value +
-                '}';
+        return "DubboMethodArg{" + "index="
+                + index + ", type='"
+                + type + '\'' + ", str_value="
+                + str_value + ", num_value="
+                + num_value + ", bool_value="
+                + bool_value + '}';
     }
 }
