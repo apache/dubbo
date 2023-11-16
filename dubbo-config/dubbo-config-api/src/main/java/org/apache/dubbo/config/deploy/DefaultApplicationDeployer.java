@@ -781,10 +781,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         exportMetricsService();
 
         if (moduleModel.getDeployer().hasRegistryInteraction()) {
-             ApplicationConfig applicationConfig = configManager.getApplicationOrElseThrow();
-             if (DEFAULT_APP_NAME.equals(applicationConfig.getName())) {
+            ApplicationConfig applicationConfig = configManager.getApplicationOrElseThrow();
+            if (DEFAULT_APP_NAME.equals(applicationConfig.getName())) {
                 throw new IllegalStateException("Application name must be set when registry is enabled.");
-             }
+            }
         }
 
         if (isRegisterConsumerInstance() || moduleModel.getDeployer().hasRegistryInteraction()) {
