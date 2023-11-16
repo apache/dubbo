@@ -42,7 +42,9 @@ public class TripleGoAwayHandler extends ChannelDuplexHandler {
                         + ctx.channel().remoteAddress() + " and will reconnect later.");
             }
             connectionHandler.onGoAway(ctx.channel());
+            ReferenceCountUtil.release(msg);
+            return;
         }
-        ReferenceCountUtil.release(msg);
+        super.channelRead(ctx, msg);
     }
 }
