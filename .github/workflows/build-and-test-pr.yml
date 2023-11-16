@@ -207,10 +207,15 @@ jobs:
         with:
           name: coverage-result
           path: "**/target/site/**/jacoco.xml"
+      - name: "Upload jacoco exec"
+        uses: actions/upload-artifact@v3
+        with:
+          name: exec-result
+          path: "**/target/**/*.exec"
       - name: "Upload ut jacoco report"
         uses: actions/upload-artifact@v3
         with:
-          name: jacoco-report
+          name: ut-jacoco-report
           path: "**/target/site/**/*.html"
 
 
@@ -346,6 +351,10 @@ jobs:
         with:
           name: jacoco-result
           path: dubbo-samples/target/
+      - name: "Restore jacoco exec from ut"
+        uses: actions/download-artifact@v3
+        with:
+          name: exec-result
       - name: "Merge jacoco result"
         run: |
           cd ${{ github.workspace }}/dubbo-samples/test/dubbo-test-jacoco-merger
@@ -361,7 +370,7 @@ jobs:
       - name: "Upload samples jacoco report"
         uses: actions/upload-artifact@v3
         with:
-          name: jacoco-report
+          name: samples-jacoco-report
           path: "**/target/site/**/*.html"
 
   error-code-inspecting:
