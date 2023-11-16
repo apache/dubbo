@@ -48,6 +48,8 @@ jobs:
       version: ${{ steps.dubbo-version.outputs.version }}
     steps:
       - uses: actions/checkout@v3
+        with:
+          path: dubbo
       - uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
@@ -67,6 +69,7 @@ jobs:
           key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}-${{ github.run_id }}
       - name: "Build Dubbo with Maven"
         run: |
+          cd ./dubbo
           ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean source:jar install -Pjacoco,checkstyle -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -Dmaven.test.skip=true -Dmaven.test.skip.exec=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper
       - name: "Pack class result"
         run: |
@@ -89,7 +92,7 @@ jobs:
       - name: "Calculate Dubbo Version"
         id: dubbo-version
         run: |
-          REVISION=`awk '/<revision>[^<]+<\/revision>/{gsub(/<revision>|<\/revision>/,"",$1);print $1;exit;}' ./pom.xml`
+          REVISION=`awk '/<revision>[^<]+<\/revision>/{gsub(/<revision>|<\/revision>/,"",$1);print $1;exit;}' ./dubbo/pom.xml`
           echo "version=$REVISION" >> $GITHUB_OUTPUT
           echo "dubbo version: $REVISION"
 
@@ -207,12 +210,11 @@ jobs:
         with:
           name: coverage-result
           path: "**/target/site/**/jacoco.xml"
-      - name: "Upload jacoco exec"
-        uses: actions/upload-artifact@v3
+      - name: "Upload coverage to Codecov"
+        uses: codecov/codecov-action@v3
         with:
-          name: exec-result
-          path: "**/target/**/*.exec"
-
+          flag: ut
+          verbose: true
 
   integration-test-prepare:
     runs-on: ubuntu-latest
@@ -324,6 +326,8 @@ jobs:
     needs: [integration-test-result, unit-test]
     steps:
       - uses: actions/checkout@v3
+        with:
+          path: "./dubbo"
       - uses: actions/checkout@v3
         with:
           repository: 'apache/dubbo-samples'
@@ -340,33 +344,36 @@ jobs:
           path: ${{ github.workspace }}
       - name: "Unpack class result"
         run: |
+          cd ${{ github.workspace }}/dubbo
           unzip -o ${{ github.workspace }}/class.zip
       - name: "Restore jacoco exec"
         uses: actions/download-artifact@v3
         with:
           name: jacoco-result
           path: dubbo-samples/target/
-      - name: "Restore jacoco exec from ut"
-        uses: actions/download-artifact@v3
-        with:
-          name: exec-result
       - name: "Merge jacoco result"
         run: |
           cd ${{ github.workspace }}/dubbo-samples/test/dubbo-test-jacoco-merger
-          mvn clean compile exec:java -Dexec.mainClass="org.apache.dubbo.test.JacocoReport" -Dexec.args="${{github.workspace}}/dubbo-samples ${{github.workspace}}/"
+          mvn clean compile exec:java -Dexec.mainClass="org.apache.dubbo.test.JacocoReport" -Dexec.args="${{github.workspace}}/dubbo-samples ${{github.workspace}}/dubbo"
+      - name: "Upload coverage to Codecov"
+        uses: codecov/codecov-action@v3
+        with:
+          flag: it
+          verbose: true
+          root_dir: ${{ github.workspace }}/dubbo/
+          directory: ${{ github.workspace }}/
       - name: "Restore coverage result"
         uses: actions/download-artifact@v3
         with:
           name: coverage-result
+          path: dubbo/
       - name: "Upload coverage to Codecov"
         uses: codecov/codecov-action@v3
         with:
+          flag: merged
           verbose: true
-      - name: "Upload samples jacoco report"
-        uses: actions/upload-artifact@v3
-        with:
-          name: samples-jacoco-report
-          path: "**/target/site/**/*.html"
+          root_dir: ${{ github.workspace }}/dubbo/
+          directory: ${{ github.workspace }}/
 
   error-code-inspecting:
     runs-on: ubuntu-latest
