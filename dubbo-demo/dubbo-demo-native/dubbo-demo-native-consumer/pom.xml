@@ -145,6 +145,10 @@
       <artifactId>dubbo-native</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+    </dependency>
   </dependencies>
 
   <profiles>
@@ -186,7 +190,6 @@
               </compilerArguments>
             </configuration>
           </plugin>
-
           <plugin>
             <groupId>org.graalvm.buildtools</groupId>
             <artifactId>native-maven-plugin</artifactId>

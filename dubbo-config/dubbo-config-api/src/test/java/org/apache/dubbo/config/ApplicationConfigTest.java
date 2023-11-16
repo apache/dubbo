@@ -142,8 +142,8 @@ class ApplicationConfigTest {
     @Test
     void testLogger() {
         ApplicationConfig application = new ApplicationConfig("app");
-        application.setLogger("log4j");
-        assertThat(application.getLogger(), equalTo("log4j"));
+        application.setLogger("log4j2");
+        assertThat(application.getLogger(), equalTo("log4j2"));
     }
 
     @Test

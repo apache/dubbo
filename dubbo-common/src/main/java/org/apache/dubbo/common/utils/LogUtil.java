@@ -16,13 +16,12 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.logger.Level;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.util.Iterator;
 import java.util.List;
-
-import org.apache.log4j.Level;
 
 public class LogUtil {
 
