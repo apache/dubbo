@@ -19,8 +19,10 @@ package org.apache.dubbo.common.threadpool.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadpool.event.ThreadPoolExhaustedEvent;
 import org.apache.dubbo.common.threadpool.event.ThreadPoolExhaustedListener;
+import org.apache.dubbo.common.utils.JVMUtil;
 
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -31,6 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_JSTACK_MAXLINE;
 import static org.apache.dubbo.common.constants.CommonConstants.OS_NAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.OS_WIN_PREFIX;
 import static org.awaitility.Awaitility.await;
@@ -39,14 +42,21 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class AbortPolicyWithReportTest {
     @Test
     void jStackDumpTest() {
+        /**
+         * use System.getProperty or run this test with jvm option -Ddubbo.jstack-dump.max-line=-1 to test printing full stack trace
+         */
+        System.setProperty(DUBBO_JSTACK_MAXLINE, String.valueOf(-1));
+
         URL url = URL.valueOf(
                 "dubbo://admin:hello1234@10.20.130.230:20880/context/path?dump.directory=/tmp&version=1.0.0&application=morgan&noValue=");
         AtomicReference<FileOutputStream> fileOutputStream = new AtomicReference<>();
 
         AbortPolicyWithReport abortPolicyWithReport = new AbortPolicyWithReport("Test", url) {
             @Override
-            protected void jstack(FileOutputStream jStackStream) {
+            protected void jstack(FileOutputStream jStackStream) throws IOException {
                 fileOutputStream.set(jStackStream);
+                // it will output a log file in /tmp . If you don't want it, delete the file or comment this line.
+                JVMUtil.jstack(jStackStream);
             }
         };
         ExecutorService executorService = Executors.newFixedThreadPool(1);
