@@ -217,6 +217,7 @@ public final class DubboBootstrap {
      * Start dubbo application and wait for finish
      */
     public DubboBootstrap start() {
+        //启动流程: 3. 启动服务
         this.start(true);
         return this;
     }
@@ -228,6 +229,7 @@ public final class DubboBootstrap {
      * @return
      */
     public DubboBootstrap start(boolean wait) {
+        //启动流程: 4. 启动服务
         // 这个发布器是在ApplicationModel对象创建之后初始化的时候初始化的具体类型为DefaultApplicationDeployer
         Future future = applicationDeployer.start();
         if (wait) {

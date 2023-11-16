@@ -27,6 +27,7 @@ public class Application {
     private static final String CONFIG_CENTER_URL = "zookeeper://127.0.0.1:2181";
 
     public static void main(String[] args) {
+        //执行流程: 1. 首先启动服务
         startWithBootstrap();
     }
 
@@ -62,6 +63,7 @@ public class Application {
             //设置服务
             .service(service)
             //启动服务
+            //执行流程: 2. 开启服务
             .start()
             .await();
     }
