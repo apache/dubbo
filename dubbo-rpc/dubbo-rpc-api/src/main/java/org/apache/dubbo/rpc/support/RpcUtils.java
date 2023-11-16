@@ -130,15 +130,12 @@ public class RpcUtils {
         if (value == null) {
             // add invocationid in async operation by default
             return isAsync(url, invocation);
-        } else if (Boolean.TRUE.toString().equalsIgnoreCase(value)) {
-            return true;
-        } else {
-            return false;
         }
+        return Boolean.TRUE.toString().equalsIgnoreCase(value);
     }
 
     public static String getMethodName(Invocation invocation) {
-        if ($INVOKE.equals(invocation.getMethodName())
+        if (($INVOKE.equals(invocation.getMethodName()) || $INVOKE_ASYNC.equals(invocation.getMethodName()))
                 && invocation.getArguments() != null
                 && invocation.getArguments().length > 0
                 && invocation.getArguments()[0] instanceof String) {
@@ -148,7 +145,7 @@ public class RpcUtils {
     }
 
     public static Object[] getArguments(Invocation invocation) {
-        if ($INVOKE.equals(invocation.getMethodName())
+        if (($INVOKE.equals(invocation.getMethodName()) || $INVOKE_ASYNC.equals(invocation.getMethodName()))
                 && invocation.getArguments() != null
                 && invocation.getArguments().length > 2
                 && invocation.getArguments()[2] instanceof Object[]) {
@@ -158,7 +155,7 @@ public class RpcUtils {
     }
 
     public static Class<?>[] getParameterTypes(Invocation invocation) {
-        if ($INVOKE.equals(invocation.getMethodName())
+        if (($INVOKE.equals(invocation.getMethodName()) || $INVOKE_ASYNC.equals(invocation.getMethodName()))
                 && invocation.getArguments() != null
                 && invocation.getArguments().length > 1
                 && invocation.getArguments()[1] instanceof String[]) {
