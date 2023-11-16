@@ -53,7 +53,6 @@ public class SystemPropertyConfigUtils {
      * @return
      */
     public static String getSystemProperty(String key) {
-        System.out.println("System Properties: " + systemProperties.toString());
         if (containsKey(key)) {
             return System.getProperty(key);
         } else {
@@ -116,7 +115,6 @@ public class SystemPropertyConfigUtils {
      * @return
      */
     private static boolean containsKey(String key) {
-        System.out.println("System Properties: " + systemProperties.toString());
         return systemProperties.contains(key);
     }
 }
