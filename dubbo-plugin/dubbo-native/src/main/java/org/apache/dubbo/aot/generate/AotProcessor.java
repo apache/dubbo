@@ -57,7 +57,7 @@ public class AotProcessor {
                         ClassSourceScanner.INSTANCE.adaptiveClasses().values()))
                 .registerBeanType(ClassSourceScanner.INSTANCE.scopeModelInitializer())
                 .registerConfigType(ClassSourceScanner.INSTANCE.configClasses())
-                .registerConfigType(getCustomClasses())
+                .registerFieldType(getCustomClasses())
                 .registerTypeDescriber(getTypes());
         writer.writeReflectionConfig(reflectRepository);
 
