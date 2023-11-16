@@ -212,14 +212,6 @@ jobs:
         with:
           name: exec-result
           path: "**/target/**/*.exec"
-      - name: "Pack ut jacoco report"
-        run: |
-          find ${{ github.workspace }}/ -name "*.html" | xargs -i zip ${{ github.workspace }}/ut-jacoco-report.zip {}
-      - name: "Upload ut jacoco report"
-        uses: actions/upload-artifact@v3
-        with:
-          name: ut-jacoco-report
-          path: ut-jacoco-report.zip
 
 
   integration-test-prepare:
