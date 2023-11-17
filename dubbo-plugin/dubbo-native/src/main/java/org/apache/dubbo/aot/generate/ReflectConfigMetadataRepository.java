@@ -91,7 +91,6 @@ public class ReflectConfigMetadataRepository {
                 .map((constructor) -> new ExecutableDescriber(constructor, INVOKE))
                 .collect(Collectors.toSet());
         Set<MemberCategory> memberCategories = new HashSet<>();
-        memberCategories.add(MemberCategory.INVOKE_PUBLIC_METHODS);
         memberCategories.add(MemberCategory.PUBLIC_FIELDS);
         return new TypeDescriber(c.getName(), null, new HashSet<>(), constructors, new HashSet<>(), memberCategories);
     }
