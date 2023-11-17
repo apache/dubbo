@@ -154,4 +154,6 @@ public interface Constants {
     String DEFAULT_NATIVE_COMPILER = "jdk";
 
     String DEFAULT_NATIVE_PROXY = "jdk";
+
+    String DEFAULT_APP_NAME = "DEFAULT_DUBBO_APP";
 }
