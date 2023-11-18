@@ -14,37 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
+package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory;
 import org.apache.dubbo.remoting.http12.message.MediaType;
-import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 @Activate
-public class GrpcCompositeCodecFactory implements HttpMessageCodecFactory {
-
-    private static final MediaType MEDIA_TYPE = new MediaType("application", "grpc");
-
+public class PlainTextCodecFactory implements HttpMessageCodecFactory {
     @Override
-    public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String fullContentType) {
-        final String serializeName = UrlUtils.serializationOrDefault(url);
-        WrapperHttpMessageCodec wrapperHttpMessageCodec = new WrapperHttpMessageCodec(url, frameworkModel);
-        wrapperHttpMessageCodec.setSerializeType(serializeName);
-        ProtobufHttpMessageCodec protobufHttpMessageCodec = new ProtobufHttpMessageCodec();
-        return new GrpcCompositeCodec(protobufHttpMessageCodec, wrapperHttpMessageCodec);
+    public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String contentType) {
+        return new PlainTextCodec(contentType);
     }
 
     @Override
     public MediaType contentType() {
-        return MEDIA_TYPE;
-    }
-
-    @Override
-    public boolean support(String contentType) {
-        return contentType.startsWith(MEDIA_TYPE.getName());
+        return MediaType.TEXT_PLAIN;
     }
 }

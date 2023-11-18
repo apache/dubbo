@@ -14,13 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.message;
+package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
+import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
+import org.apache.dubbo.remoting.http12.message.MediaType;
 
 import java.io.IOException;
 import java.io.InputStream;

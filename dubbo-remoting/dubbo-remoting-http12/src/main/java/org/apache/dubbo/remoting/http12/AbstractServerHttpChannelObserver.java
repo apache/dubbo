@@ -140,7 +140,7 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
                 .headers()
                 .set(
                         HttpHeaderNames.CONTENT_TYPE.getName(),
-                        httpMessageCodec.contentType().getName());
+                        httpMessageCodec.responseContentType().getName());
         this.headersCustomizer.accept(httpMetadata.headers());
         getHttpChannel().writeHeader(httpMetadata);
         this.headerSent = true;

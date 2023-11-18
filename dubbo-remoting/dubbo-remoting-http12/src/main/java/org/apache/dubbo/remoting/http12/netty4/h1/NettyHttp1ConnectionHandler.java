@@ -109,7 +109,7 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
             throw new UnsupportedMediaTypeException(contentType);
         }
         this.errorResponseObserver = new Http1ServerChannelObserver(new NettyHttp1Channel(ctx.channel()));
-        this.errorResponseObserver.setHttpMessageCodec(codecFactory.createCodec(url, frameworkModel));
+        this.errorResponseObserver.setHttpMessageCodec(codecFactory.createCodec(url, frameworkModel, contentType));
         return http1TransportListener;
     }
 

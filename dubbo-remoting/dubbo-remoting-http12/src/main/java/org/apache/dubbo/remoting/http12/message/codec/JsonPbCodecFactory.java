@@ -14,37 +14,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
+package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory;
 import org.apache.dubbo.remoting.http12.message.MediaType;
-import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-@Activate
-public class GrpcCompositeCodecFactory implements HttpMessageCodecFactory {
-
-    private static final MediaType MEDIA_TYPE = new MediaType("application", "grpc");
+@Activate(order = -100)
+public class JsonPbCodecFactory implements HttpMessageCodecFactory {
 
     @Override
     public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String fullContentType) {
-        final String serializeName = UrlUtils.serializationOrDefault(url);
-        WrapperHttpMessageCodec wrapperHttpMessageCodec = new WrapperHttpMessageCodec(url, frameworkModel);
-        wrapperHttpMessageCodec.setSerializeType(serializeName);
-        ProtobufHttpMessageCodec protobufHttpMessageCodec = new ProtobufHttpMessageCodec();
-        return new GrpcCompositeCodec(protobufHttpMessageCodec, wrapperHttpMessageCodec);
+        HttpMessageCodec codec = frameworkModel
+                .getExtensionLoader(HttpMessageCodecFactory.class)
+                .getExtension(JsonCodecFactory.NAME)
+                .createCodec(url, frameworkModel, fullContentType);
+        JsonPbCodec jsonPbCodec = new JsonPbCodec();
+        jsonPbCodec.setJsonCodec(codec);
+        return jsonPbCodec;
     }
 
     @Override
     public MediaType contentType() {
-        return MEDIA_TYPE;
+        return MediaType.APPLICATION_JSON_VALUE;
     }
 
     @Override
     public boolean support(String contentType) {
-        return contentType.startsWith(MEDIA_TYPE.getName());
+        return HttpMessageCodecFactory.super.support(contentType)
+                && ClassUtils.isPresent(
+                        "com.google.protobuf.Message", getClass().getClassLoader());
     }
 }

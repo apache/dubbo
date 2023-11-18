@@ -28,6 +28,15 @@ public class MediaType {
 
     public static final MediaType TEXT_EVENT_STREAM_VALUE = new MediaType("text", "event-stream");
 
+    public static final MediaType MULTIPART_FORM_DATA = new MediaType("multipart", "form-data");
+
+    public static final MediaType APPLICATION_X_WWW_FROM_URLENCODED =
+            new MediaType("application", "x-www-form-urlencoded");
+
+    public static final MediaType APPLICATION_XML = new MediaType("application", "xml");
+
+    public static final MediaType TEXT_PLAIN = new MediaType("text", "plain");
+
     private final String name;
 
     private final String type;

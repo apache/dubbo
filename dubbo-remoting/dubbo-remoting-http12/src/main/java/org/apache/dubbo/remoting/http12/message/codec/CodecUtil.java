@@ -14,25 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.message;
+package org.apache.dubbo.remoting.http12.message.codec;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.rpc.model.FrameworkModel;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
-/**
- * for http body codec
- */
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface HttpMessageCodecFactory {
+public class CodecUtil {
 
-    HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String fullContentType);
-
-    MediaType contentType();
-
-    default boolean support(String contentType) {
-        MediaType mediaType = this.contentType();
-        return mediaType.getName().startsWith(contentType);
+    public static ByteArrayOutputStream toByteArrayStream(InputStream in) throws IOException {
+        ByteArrayOutputStream result = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int length;
+        while ((length = in.read(buffer)) != -1) {
+            result.write(buffer, 0, length);
+        }
+        return result;
     }
 }
