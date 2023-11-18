@@ -33,9 +33,9 @@ import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.exception.IllegalPathException;
 import org.apache.dubbo.remoting.http12.exception.UnimplementedException;
 import org.apache.dubbo.remoting.http12.exception.UnsupportedMediaTypeException;
+import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory;
-import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.PathResolver;
@@ -164,6 +164,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         if (invoker == null) {
             throw new UnimplementedException(serviceName);
         }
+        // 传整个Header
         HttpMessageCodec httpMessageCodec = determineHttpMessageCodec(contentType);
         if (httpMessageCodec == null) {
             throw new UnsupportedMediaTypeException(contentType);
@@ -251,7 +252,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         for (HttpMessageCodecFactory httpMessageCodecFactory :
                 frameworkModel.getExtensionLoader(HttpMessageCodecFactory.class).getActivateExtensions()) {
             if (httpMessageCodecFactory.support(contentType)) {
-                return httpMessageCodecFactory.createCodec(invoker.getUrl(), frameworkModel);
+                return httpMessageCodecFactory.createCodec(invoker.getUrl(), frameworkModel, contentType);
             }
         }
         return null;

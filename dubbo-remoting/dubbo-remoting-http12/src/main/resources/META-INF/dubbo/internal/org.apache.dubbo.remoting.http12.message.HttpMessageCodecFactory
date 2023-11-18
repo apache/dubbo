@@ -1,2 +1,6 @@
-json=org.apache.dubbo.remoting.http12.message.JsonCodecFactory
-jsonpb=org.apache.dubbo.remoting.http12.message.JsonPbCodecFactory
+json=org.apache.dubbo.remoting.http12.message.codec.JsonCodecFactory
+jsonpb=org.apache.dubbo.remoting.http12.message.codec.JsonPbCodecFactory
+multipart=org.apache.dubbo.remoting.http12.message.codec.MultipartCodecFactory
+plaintext=org.apache.dubbo.remoting.http12.message.codec.PlainTextCodecFactory
+xml=org.apache.dubbo.remoting.http12.message.codec.XmlCodecFactory
+urlencoded=org.apache.dubbo.remoting.http12.message.codec.UrlEncodeFormCodecFactory

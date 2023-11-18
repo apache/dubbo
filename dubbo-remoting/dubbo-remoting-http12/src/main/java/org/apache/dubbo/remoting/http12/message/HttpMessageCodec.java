@@ -48,6 +48,10 @@ public interface HttpMessageCodec {
 
     MediaType contentType();
 
+    default MediaType responseContentType() {
+        return contentType();
+    }
+
     default boolean support(String contentType) {
         MediaType mediaType = this.contentType();
         return mediaType.getName().startsWith(contentType);

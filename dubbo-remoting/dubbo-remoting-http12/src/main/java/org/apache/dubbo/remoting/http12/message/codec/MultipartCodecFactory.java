@@ -14,24 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.message;
+package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
+import org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory;
+import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 @Activate
-public class JsonCodecFactory implements HttpMessageCodecFactory {
-
-    public static final String NAME = "json";
+public class MultipartCodecFactory implements HttpMessageCodecFactory {
 
     @Override
-    public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel) {
-        return new JsonCodec();
+    public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String fullContentType) {
+        return new MultipartCodec(url, frameworkModel, fullContentType);
     }
 
     @Override
     public MediaType contentType() {
-        return MediaType.APPLICATION_JSON_VALUE;
+        return MediaType.MULTIPART_FORM_DATA;
+    }
+
+    @Override
+    public boolean support(String contentType) {
+        return contentType.contains(MediaType.MULTIPART_FORM_DATA.getName());
     }
 }
