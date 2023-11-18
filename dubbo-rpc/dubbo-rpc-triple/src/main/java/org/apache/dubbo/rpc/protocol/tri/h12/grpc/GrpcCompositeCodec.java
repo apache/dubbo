@@ -19,8 +19,8 @@ package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.MediaType;
+import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 
 import java.io.IOException;
 import java.io.InputStream;
