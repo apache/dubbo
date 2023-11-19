@@ -25,6 +25,7 @@
   </parent>
 
   <artifactId>dubbo-dependencies</artifactId>
+  <version>3.3.0-beta.2-ORIGIN</version>
   <packaging>pom</packaging>
   <modules>
     <module>dubbo-dependencies-zookeeper</module>

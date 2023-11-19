@@ -71,9 +71,9 @@
       <version>3.0-alpha-1</version>
     </dependency>
     <dependency>
-      <groupId>jakarta.xml.bind</groupId>
-      <artifactId>jakarta.xml.bind-api</artifactId>
-      <version>2.3.3</version>
+      <groupId>org.jboss.resteasy</groupId>
+      <artifactId>resteasy-jaxb-provider</artifactId>
+      <version>3.15.6.Final</version>
     </dependency>
   </dependencies>
 </project>

@@ -44,7 +44,7 @@ public class PlainTextCodec implements HttpMessageCodec {
     @Override
     public Object decode(InputStream inputStream, Class<?> targetType) throws DecodeException {
         try {
-            if (targetType != String.class) {
+            if (!String.class.equals(targetType)) {
                 throw new DecodeException("Plain text content only supports String as method param.");
             }
             Charset charset;
@@ -54,7 +54,7 @@ public class PlainTextCodec implements HttpMessageCodec {
                 } catch (Exception e) {
                     throw new DecodeException("Unsupported charset:" + e.getMessage());
                 }
-                if(!charset.equals(StandardCharsets.UTF_8)&&!charset.equals(StandardCharsets.US_ASCII)) {
+                if (!charset.equals(StandardCharsets.UTF_8) && !charset.equals(StandardCharsets.US_ASCII)) {
                     String origin = CodecUtil.toByteArrayStream(inputStream).toString(charset.name());
                     return new String(origin.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
                 }

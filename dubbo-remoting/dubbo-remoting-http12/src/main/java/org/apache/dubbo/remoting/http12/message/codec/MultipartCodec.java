@@ -31,7 +31,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.UploadContext;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -107,7 +106,7 @@ public class MultipartCodec implements HttpMessageCodec {
             items = fileUpload.parseRequest(new UploadContext() {
                 @Override
                 public long contentLength() {
-                        return contentLen;
+                    return contentLen;
                 }
 
                 @Override

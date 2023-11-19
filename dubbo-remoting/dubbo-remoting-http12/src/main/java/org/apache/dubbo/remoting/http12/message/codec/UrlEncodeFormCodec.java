@@ -56,7 +56,7 @@ public class UrlEncodeFormCodec implements HttpMessageCodec {
         try {
             boolean toMap;
             // key=value&key2=value2 -> method(map<keys,values>)
-            if (targetTypes[0].isAssignableFrom(Map.class) && targetTypes.length == 1) {
+            if (targetTypes.length == 1 && targetTypes[0].isAssignableFrom(HashMap.class)) {
                 toMap = true;
             }
             // key=value&key2=value2 -> method(value,value2)
@@ -70,7 +70,7 @@ public class UrlEncodeFormCodec implements HttpMessageCodec {
             String decoded = URLDecoder.decode(
                             CodecUtil.toByteArrayStream(inputStream).toString(), StandardCharsets.UTF_8.name())
                     .trim();
-            Map<String, Object> res = toMap(decoded, targetTypes,toMap);
+            Map<String, Object> res = toMap(decoded, targetTypes, toMap);
             if (toMap) {
                 return new Object[] {res};
             } else {
@@ -81,7 +81,7 @@ public class UrlEncodeFormCodec implements HttpMessageCodec {
         }
     }
 
-    private Map<String, Object> toMap(String formString, Class<?>[] targetTypes,boolean toMap) {
+    private Map<String, Object> toMap(String formString, Class<?>[] targetTypes, boolean toMap) {
         Map<String, Object> res = new HashMap<>(1);
         String[] parts = formString.split("[=&]");
         if (parts.length % 2 != 0 && parts.length / 2 == targetTypes.length) {
@@ -90,7 +90,7 @@ public class UrlEncodeFormCodec implements HttpMessageCodec {
         for (int i = 0; i < parts.length - 1; i += 2) {
             res.put(
                     parts[i],
-                    //If method param is Map or String...
+                    // If method param is Map or String...
                     toMap || targetTypes[i / 2].equals(String.class)
                             ? parts[i + 1]
                             : converterUtil.convertIfPossible(parts[i + 1], targetTypes[i / 2]));
