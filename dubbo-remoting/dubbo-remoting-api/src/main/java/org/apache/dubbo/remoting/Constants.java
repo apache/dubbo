@@ -93,8 +93,6 @@ public interface Constants {
      */
     String PREFER_SERIALIZATION_KEY = "prefer.serialization";
 
-    String DEFAULT_REMOTING_SERIALIZATION_PROPERTY_KEY = "DUBBO_DEFAULT_SERIALIZATION";
-
     String CODEC_KEY = "codec";
 
     String CODEC_VERSION_KEY = "codec.version";
@@ -122,8 +120,6 @@ public interface Constants {
     String EVENT_LOOP_BOSS_POOL_NAME = "NettyServerBoss";
 
     String EVENT_LOOP_WORKER_POOL_NAME = "NettyServerWorker";
-
-    String NETTY_EPOLL_ENABLE_KEY = "netty.epoll.enable";
 
     String BIND_IP_KEY = "bind.ip";
 
@@ -158,8 +154,6 @@ public interface Constants {
     String DEFAULT_PROMPT = "dubbo>";
     String TELNET_KEY = "telnet";
     String HEARTBEAT_KEY = "heartbeat";
-    String HEARTBEAT_CONFIG_KEY = "dubbo.protocol.default-heartbeat";
-    String CLOSE_TIMEOUT_CONFIG_KEY = "dubbo.protocol.default-close-timeout";
     int DEFAULT_HEARTBEAT = 60 * 1000;
     String HEARTBEAT_TIMEOUT_KEY = "heartbeat.timeout";
     String CLOSE_TIMEOUT_KEY = "close.timeout";
@@ -180,7 +174,6 @@ public interface Constants {
 
     List<String> REST_SERVER = Arrays.asList("jetty", "tomcat", "netty");
     String CONTENT_LENGTH_KEY = "content-length";
-    String USE_SECURE_RANDOM_ID = "dubbo.application.use-secure-random-request-id";
 
     String CONNECTION_HANDLER_NAME = "connectionHandler";
 }

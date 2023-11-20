@@ -24,6 +24,7 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -50,6 +51,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_NAMESPACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ThirdPartyProperty.APOLLO_ADDR_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ThirdPartyProperty.APOLLO_APPID_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ThirdPartyProperty.APOLLO_CLUSTER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ThirdPartyProperty.APOLLO_ENV_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_CLOSE_CONNECT_APOLLO;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_CONNECT_REGISTRY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NOT_EFFECT_EMPTY_RULE_APOLLO;
@@ -70,12 +75,8 @@ import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
 public class ApolloDynamicConfiguration implements DynamicConfiguration {
     private static final ErrorTypeAwareLogger logger =
             LoggerFactory.getErrorTypeAwareLogger(ApolloDynamicConfiguration.class);
-    private static final String APOLLO_ENV_KEY = "env";
-    private static final String APOLLO_ADDR_KEY = "apollo.meta";
-    private static final String APOLLO_CLUSTER_KEY = "apollo.cluster";
     private static final String APOLLO_PROTOCOL_PREFIX = "http://";
     private static final String APOLLO_APPLICATION_KEY = "application";
-    private static final String APOLLO_APPID_KEY = "app.id";
 
     private final URL url;
     private final Config dubboConfig;
@@ -92,17 +93,19 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
         String configAddr = getAddressWithProtocolPrefix(url);
         String configCluster = url.getParameter(CLUSTER_KEY);
         String configAppId = url.getParameter(APOLLO_APPID_KEY);
-        if (StringUtils.isEmpty(System.getProperty(APOLLO_ENV_KEY)) && configEnv != null) {
-            System.setProperty(APOLLO_ENV_KEY, configEnv);
+        if (StringUtils.isEmpty(SystemPropertyConfigUtils.getSystemProperty(APOLLO_ENV_KEY)) && configEnv != null) {
+            SystemPropertyConfigUtils.getSystemProperty(APOLLO_ENV_KEY, configEnv);
         }
-        if (StringUtils.isEmpty(System.getProperty(APOLLO_ADDR_KEY)) && !ANYHOST_VALUE.equals(url.getHost())) {
-            System.setProperty(APOLLO_ADDR_KEY, configAddr);
+        if (StringUtils.isEmpty(SystemPropertyConfigUtils.getSystemProperty(APOLLO_ADDR_KEY))
+                && !ANYHOST_VALUE.equals(url.getHost())) {
+            SystemPropertyConfigUtils.setSystemProperty(APOLLO_ADDR_KEY, configAddr);
         }
-        if (StringUtils.isEmpty(System.getProperty(APOLLO_CLUSTER_KEY)) && configCluster != null) {
-            System.setProperty(APOLLO_CLUSTER_KEY, configCluster);
+        if (StringUtils.isEmpty(SystemPropertyConfigUtils.getSystemProperty(APOLLO_CLUSTER_KEY))
+                && configCluster != null) {
+            SystemPropertyConfigUtils.getSystemProperty(APOLLO_CLUSTER_KEY, configCluster);
         }
-        if (StringUtils.isEmpty(System.getProperty(APOLLO_APPID_KEY)) && configAppId != null) {
-            System.setProperty(APOLLO_APPID_KEY, configAppId);
+        if (StringUtils.isEmpty(SystemPropertyConfigUtils.getSystemProperty(APOLLO_APPID_KEY)) && configAppId != null) {
+            SystemPropertyConfigUtils.getSystemProperty(APOLLO_APPID_KEY, configAppId);
         }
 
         String namespace = url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP);

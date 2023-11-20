@@ -28,6 +28,7 @@ import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.utils.UrlUtils;
@@ -92,8 +93,8 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
     /**
      * Whether set future to Thread Local when invocation mode is sync
      */
-    private static final boolean setFutureWhenSync =
-            Boolean.parseBoolean(System.getProperty(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true"));
+    private static final boolean setFutureWhenSync = Boolean.parseBoolean(SystemPropertyConfigUtils.getSystemProperty(
+            CommonConstants.ThirdPartyProperty.SET_FUTURE_IN_SYNC_MODE, "true"));
 
     // -- Constructor
 

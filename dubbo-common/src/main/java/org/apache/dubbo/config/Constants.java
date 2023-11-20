@@ -89,8 +89,6 @@ public interface Constants {
 
     String MULTICAST = "multicast";
 
-    String DUBBO_IP_TO_REGISTRY = "DUBBO_IP_TO_REGISTRY";
-
     String DUBBO_PORT_TO_REGISTRY = "DUBBO_PORT_TO_REGISTRY";
 
     String DUBBO_PORT_TO_BIND = "DUBBO_PORT_TO_BIND";

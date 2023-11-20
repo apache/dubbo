@@ -18,9 +18,11 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.compact.Dubbo2CompactUtils;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.RegexProperties;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.context.ConfigMode;
 import org.apache.dubbo.config.support.Parameter;
@@ -41,6 +43,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.constants.CommonConstants.SystemProperty.USER_HOME;
 import static org.apache.dubbo.common.constants.CommonConstants.UNLOAD_CLUSTER_RELATED;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 
@@ -310,9 +313,10 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         String resolve = System.getProperty(interfaceName);
         String resolveFile = null;
         if (StringUtils.isEmpty(resolve)) {
-            resolveFile = System.getProperty("dubbo.resolve.file");
+            resolveFile = SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO_RESOLVE_FILE);
             if (StringUtils.isEmpty(resolveFile)) {
-                File userResolveFile = new File(new File(System.getProperty("user.home")), "dubbo-resolve.properties");
+                File userResolveFile = new File(
+                        new File(SystemPropertyConfigUtils.getSystemProperty(USER_HOME)), "dubbo-resolve.properties");
                 if (userResolveFile.exists()) {
                     resolveFile = userResolveFile.getAbsolutePath();
                 }

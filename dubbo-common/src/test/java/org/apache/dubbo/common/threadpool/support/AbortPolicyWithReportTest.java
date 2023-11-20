@@ -19,6 +19,7 @@ package org.apache.dubbo.common.threadpool.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadpool.event.ThreadPoolExhaustedEvent;
 import org.apache.dubbo.common.threadpool.event.ThreadPoolExhaustedListener;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 
 import java.io.FileOutputStream;
 import java.util.UUID;
@@ -31,8 +32,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static org.apache.dubbo.common.constants.CommonConstants.OS_NAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.OS_WIN_PREFIX;
+import static org.apache.dubbo.common.constants.CommonConstants.SystemProperty.SYSTEM_OS_NAME;
+import static org.apache.dubbo.common.constants.CommonConstants.SystemProperty.USER_HOME;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -69,11 +71,13 @@ class AbortPolicyWithReportTest {
                 + "&version=1.0.0&application=morgan&noValue=true");
         AbortPolicyWithReport abortPolicyWithReport = new AbortPolicyWithReport("Test", url);
 
-        Assertions.assertEquals(System.getProperty("user.home"), abortPolicyWithReport.getDumpPath());
+        Assertions.assertEquals(
+                SystemPropertyConfigUtils.getSystemProperty(USER_HOME), abortPolicyWithReport.getDumpPath());
     }
 
     private String dumpDirectoryCannotBeCreated() {
-        final String os = System.getProperty(OS_NAME_KEY).toLowerCase();
+        final String os =
+                SystemPropertyConfigUtils.getSystemProperty(SYSTEM_OS_NAME).toLowerCase();
         if (os.contains(OS_WIN_PREFIX)) {
             // "con" is one of Windows reserved names,
             // https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file
@@ -92,7 +96,8 @@ class AbortPolicyWithReportTest {
                 + "&version=1.0.0&application=morgan&noValue=true");
         AbortPolicyWithReport abortPolicyWithReport = new AbortPolicyWithReport("Test", url);
 
-        Assertions.assertNotEquals(System.getProperty("user.home"), abortPolicyWithReport.getDumpPath());
+        Assertions.assertNotEquals(
+                SystemPropertyConfigUtils.getSystemProperty(USER_HOME), abortPolicyWithReport.getDumpPath());
     }
 
     @Test

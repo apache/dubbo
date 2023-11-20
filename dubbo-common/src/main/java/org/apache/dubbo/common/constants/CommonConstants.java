@@ -60,13 +60,7 @@ public interface CommonConstants {
 
     String DISABLED_KEY = "disabled";
 
-    String DUBBO_PROPERTIES_KEY = "dubbo.properties.file";
-
     String DEFAULT_DUBBO_PROPERTIES = "dubbo.properties";
-
-    String DUBBO_MIGRATION_KEY = "dubbo.migration.file";
-
-    String DUBBO_MIGRATION_FILE_ENABLE = "dubbo.migration-file.enable";
 
     String DEFAULT_DUBBO_MIGRATION_FILE = "dubbo-migration.yaml";
 
@@ -299,14 +293,6 @@ public interface CommonConstants {
      */
     String BROADCAST_CLUSTER = "broadcast";
 
-    /**
-     * The property name for {@link NetworkInterface#getDisplayName() the name of network interface} that
-     * the Dubbo application prefers
-     *
-     * @since 2.7.6
-     */
-    String DUBBO_PREFERRED_NETWORK_INTERFACE = "dubbo.network.interface.preferred";
-
     @Deprecated
     String SHUTDOWN_WAIT_SECONDS_KEY = "dubbo.service.shutdown.wait.seconds";
 
@@ -439,12 +425,6 @@ public interface CommonConstants {
      */
     String DEFAULT_SERVICE_NAME_MAPPING_PROPERTIES_PATH = "META-INF/dubbo/service-name-mapping.properties";
 
-    String CLASS_DESERIALIZE_BLOCK_ALL = "dubbo.security.serialize.blockAllClassExceptAllow";
-
-    String CLASS_DESERIALIZE_ALLOWED_LIST = "dubbo.security.serialize.allowedClassList";
-
-    String CLASS_DESERIALIZE_BLOCKED_LIST = "dubbo.security.serialize.blockedClassList";
-
     String ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE = "dubbo.security.serialize.generic.native-java-enable";
 
     String SERIALIZE_BLOCKED_LIST_FILE_PATH = "security/serialize.blockedlist";
@@ -474,8 +454,6 @@ public interface CommonConstants {
     String CLASSPATH_URL_PREFIX = "classpath:";
 
     String DEFAULT_VERSION = "0.0.0";
-
-    String CLASS_DESERIALIZE_OPEN_CHECK = "dubbo.security.serialize.openCheckClass";
 
     String ROUTER_KEY = "router";
 
@@ -511,16 +489,6 @@ public interface CommonConstants {
     String SCOPE_MODEL = "scopeModel";
 
     String SERVICE_MODEL = "serviceModel";
-
-    /**
-     * The property name for {@link NetworkInterface#getDisplayName() the name of network interface} that
-     * the Dubbo application will be ignored
-     *
-     * @since 2.7.6
-     */
-    String DUBBO_NETWORK_IGNORED_INTERFACE = "dubbo.network.interface.ignored";
-
-    String OS_NAME_KEY = "os.name";
 
     String OS_LINUX_PREFIX = "linux";
 
@@ -566,10 +534,6 @@ public interface CommonConstants {
 
     String INJVM_IGNORE_SAME_MODULE_KEY = "injvm.ignore.same-module";
 
-    String SET_FUTURE_IN_SYNC_MODE = "future.sync.set";
-
-    String CLEAR_FUTURE_AFTER_GET = "future.clear.once";
-
     String NATIVE_STUB = "nativestub";
 
     String METADATA = "metadata";
@@ -577,8 +541,6 @@ public interface CommonConstants {
     String IGNORE_LISTEN_SHUTDOWN_HOOK = "dubbo.shutdownHook.listenIgnore";
 
     String OPTIMIZER_KEY = "optimizer";
-
-    String PREFER_JSON_FRAMEWORK_NAME = "dubbo.json-framework.prefer";
 
     /**
      * @since 3.1.0
@@ -616,18 +578,8 @@ public interface CommonConstants {
     String EXECUTOR_MANAGEMENT_MODE_DEFAULT = "default";
     String EXECUTOR_MANAGEMENT_MODE_ISOLATION = "isolation";
 
-    /**
-     * used in JVMUtil.java ,Control stack print lines, default is 32 lines
-     */
-    String DUBBO_JSTACK_MAXLINE = "dubbo.jstack-dump.max-line";
-
     String ENCODE_IN_IO_THREAD_KEY = "encode.in.io";
     boolean DEFAULT_ENCODE_IN_IO_THREAD = false;
-
-    /**
-     * @since 3.2.0
-     */
-    String BYTE_ACCESSOR_KEY = "byte.accessor";
 
     String PAYLOAD = "payload";
 
@@ -643,12 +595,6 @@ public interface CommonConstants {
 
     String REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY = "restServiceDeployerAttributeKey";
 
-    String SERVICE_DEPLOYER_ATTRIBUTE_KEY = "serviceDeployer";
-
-    String DUBBO_MANUAL_REGISTER_KEY = "dubbo.application.manual-register";
-
-    String DUBBO2_COMPACT_ENABLE = "dubbo.compact.enable";
-
     String POD_NAMESPACE = "POD_NAMESPACE";
 
     String CLUSTER_DOMAIN = "CLUSTER_DOMAIN";
@@ -656,4 +602,150 @@ public interface CommonConstants {
     String EXT_PROTOCOL = "ext.protocol";
 
     String IS_EXTRA = "isExtra";
+
+    /**
+     * System-related VM properties
+     */
+    interface SystemProperty {
+
+        String USER_HOME = "user.home";
+
+        String SYSTEM_JAVA_VERSION = "java.version";
+
+        String SYSTEM_JAVA_IO_TMPDIR = "java.io.tmpdir";
+
+        String SYSTEM_LINE_SEPARATOR = "line.separator";
+
+        String SERIALIZATION_SECURITY_CHECK_KEY = "serialization.security.check";
+
+        String SYSTEM_BYTE_ACCESSOR_KEY = "byte.accessor";
+
+        String SYSTEM_OS_NAME = "os.name";
+
+        String SYSTEM_OS_VERSION = "os.version";
+
+        String JAVA_RUNTIME_NAME = "java.runtime.name";
+
+        String JAVA_RUNTIME_VERSION = "java.runtime.version";
+
+        String JAVA_VM_NAME = "java.vm.name";
+
+        String JAVA_VM_VERSION = "java.vm.version";
+
+        String JAVA_VM_INFO = "java.vm.info";
+
+        String JAVA_HOME = "java.home";
+
+        String OS_ARCH = "os.arch";
+
+        String SYSTEM_FILE_ENCODING = "file.encoding";
+
+        String SYSTEM_TCP_RESPONSE_TIMEOUT = "sun.rmi.transport.tcp.responseTimeout";
+    }
+
+    /**
+     * Third-party-related VM properties
+     */
+    interface ThirdPartyProperty {
+        String NETTY_EPOLL_ENABLE_KEY = "netty.epoll.enable";
+
+        String SET_FUTURE_IN_SYNC_MODE = "future.sync.set";
+
+        String CLEAR_FUTURE_AFTER_GET = "future.clear.once";
+
+        String APOLLO_ADDR_KEY = "apollo.meta";
+
+        String APOLLO_CLUSTER_KEY = "apollo.cluster";
+
+        String APOLLO_ENV_KEY = "env";
+
+        String APOLLO_APPID_KEY = "app.id";
+
+        String NACOS_SERVICE_NAME_SEPARATOR = "nacos.service.name.separator";
+
+        String GRAALVM_NATIVEIMAGE_IMAGECODE = "org.graalvm.nativeimage.imagecode";
+
+        /**
+         * The JVM arguments to set if it can use embedded zookeeper, the default value is {@code true}.
+         */
+        String ZOOKEEPER_CONFIG_ENABLE_EMBEDDED = "enableEmbeddedZookeeper";
+    }
+
+    /**
+     * Dubbo custom VM properties
+     */
+    interface DubboProperty {
+        String DUBBO_MIGRATION_FILE_ENABLE = "dubbo.migration-file.enable";
+        String DUBBO_MIGRATION_KEY = "dubbo.migration.file";
+        String DUBBO_APPLICATION_LOGGER = "dubbo.application.logger";
+        String DUBBO_PROPERTIES_KEY = "dubbo.properties.file";
+        String DUBBO_PREFER_JSON_FRAMEWORK_NAME = "dubbo.json-framework.prefer";
+
+        /**
+         * used in JVMUtil.java ,Control stack print lines, default is 32 lines
+         */
+        String DUBBO_JSTACK_MAXLINE = "dubbo.jstack-dump.max-line";
+
+        /**
+         * The property name for {@link NetworkInterface#getDisplayName() the name of network interface} that
+         * the Dubbo application will be ignored
+         *
+         * @since 2.7.6
+         */
+        String DUBBO_NETWORK_IGNORED_INTERFACE = "dubbo.network.interface.ignored";
+
+        /**
+         * The property name for {@link NetworkInterface#getDisplayName() the name of network interface} that
+         * the Dubbo application prefers
+         *
+         * @since 2.7.6
+         */
+        String DUBBO_PREFERRED_NETWORK_INTERFACE = "dubbo.network.interface.preferred";
+
+        String DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST = "dubbo.security.serialize.allowedClassList";
+        String DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST = "dubbo.security.serialize.blockedClassList";
+        String DUBBO_CLASS_DESERIALIZE_OPEN_CHECK = "dubbo.security.serialize.openCheckClass";
+        String DUBBO_CLASS_DESERIALIZE_BLOCK_ALL = "dubbo.security.serialize.blockAllClassExceptAllow";
+        String DUBBO_RESOLVE_FILE = "dubbo.resolve.file";
+        String DUBBO_IP_TO_REGISTRY = "DUBBO_IP_TO_REGISTRY";
+        String DUBBO_MONITOR_ADDRESS = "dubbo.monitor.address";
+        String DUBBO_CONTAINER_KEY = "dubbo.container";
+        String DUBBO_SHUTDOWN_HOOK_KEY = "dubbo.shutdown.hook";
+        String DUBBO_SPRING_CONFIG = "dubbo.spring.config";
+        String DUBBO_MAPPING_CACHE_FILEPATH = "dubbo.mapping.cache.filePath";
+
+        String DUBBO_MAPPING_CACHE_FILENAME = "dubbo.mapping.cache.fileName";
+
+        String DUBBO_MAPPING_CACHE_ENTRYSIZE = "dubbo.mapping.cache.entrySize";
+
+        String DUBBO_MAPPING_CACHE_MAXFILESIZE = "dubbo.mapping.cache.maxFileSize";
+
+        String DUBBO_META_CACHE_FILEPATH = "dubbo.meta.cache.filePath";
+
+        String DUBBO_META_CACHE_FILENAME = "dubbo.meta.cache.fileName";
+
+        String DUBBO_META_CACHE_ENTRYSIZE = "dubbo.meta.cache.entrySize";
+
+        String DUBBO_META_CACHE_MAXFILESIZE = "dubbo.meta.cache.maxFileSize";
+
+        String DUBBO_USE_SECURE_RANDOM_ID = "dubbo.application.use-secure-random-request-id";
+
+        String DUBBO_CLOSE_TIMEOUT_CONFIG_KEY = "dubbo.protocol.default-close-timeout";
+
+        String DUBBO_HEARTBEAT_CONFIG_KEY = "dubbo.protocol.default-heartbeat";
+
+        String DUBBO_DEFAULT_REMOTING_SERIALIZATION_PROPERTY = "DUBBO_DEFAULT_SERIALIZATION";
+
+        String DUBBO_HESSIAN_ALLOW_NON_SERIALIZABLE = "dubbo.hessian.allowNonSerializable";
+
+        String DUBBO_HESSIAN_WHITELIST = "dubbo.application.hessian2.whitelist";
+
+        String DUBBO_HESSIAN_ALLOW = "dubbo.application.hessian2.allow";
+
+        String DUBBO_HESSIAN_DENY = "dubbo.application.hessian2.deny";
+
+        String DUBBO_MANUAL_REGISTER_KEY = "dubbo.application.manual-register";
+
+        String DUBBO2_COMPACT_ENABLE = "dubbo.compact.enable";
+    }
 }
