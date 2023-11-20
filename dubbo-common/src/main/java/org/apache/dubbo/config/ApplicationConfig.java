@@ -801,6 +801,9 @@ public class ApplicationConfig extends AbstractConfig {
         if (StringUtils.isEmpty(getName())) {
             this.setName(DEFAULT_APP_NAME);
             LOGGER.warn(
+                    COMMON_UNEXPECTED_EXCEPTION,
+                    "",
+                    "",
                     "No application name was set, '" + DEFAULT_APP_NAME
                             + "' will be used as the default application name,"
                             + " it's highly recommended to set a unique and customized name for it can be critical for some service governance features.");
