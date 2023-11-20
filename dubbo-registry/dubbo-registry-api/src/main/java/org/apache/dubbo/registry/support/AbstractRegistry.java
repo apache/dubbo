@@ -24,6 +24,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
@@ -61,6 +62,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_FILE_CACHE_ENABLED;
+import static org.apache.dubbo.common.constants.CommonConstants.SystemProperty.USER_HOME;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_EMPTY_ADDRESS;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_DELETE_LOCKFILE;
@@ -74,7 +76,6 @@ import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL
 import static org.apache.dubbo.registry.Constants.CACHE;
 import static org.apache.dubbo.registry.Constants.DUBBO_REGISTRY;
 import static org.apache.dubbo.registry.Constants.REGISTRY_FILESAVE_SYNC_KEY;
-import static org.apache.dubbo.registry.Constants.USER_HOME;
 
 /**
  * <p>
@@ -129,8 +130,8 @@ public abstract class AbstractRegistry implements Registry {
             // Start file save timer
             syncSaveFile = url.getParameter(REGISTRY_FILESAVE_SYNC_KEY, false);
 
-            String defaultFilename = System.getProperty(USER_HOME) + DUBBO_REGISTRY + url.getApplication() + "-"
-                    + url.getAddress().replaceAll(":", "-") + CACHE;
+            String defaultFilename = SystemPropertyConfigUtils.getSystemProperty(USER_HOME) + DUBBO_REGISTRY
+                    + url.getApplication() + "-" + url.getAddress().replaceAll(":", "-") + CACHE;
 
             String filename = url.getParameter(FILE_KEY, defaultFilename);
             File file = null;

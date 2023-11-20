@@ -18,6 +18,7 @@ package org.apache.dubbo.common.compact;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 
 import java.lang.annotation.Annotation;
 
@@ -38,17 +39,18 @@ public class Dubbo2CompactUtils {
 
     private static void initEnabled() {
         try {
-            String fromProp = System.getProperty(CommonConstants.DUBBO2_COMPACT_ENABLE);
+            String fromProp =
+                    SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO2_COMPACT_ENABLE);
             if (StringUtils.isNotEmpty(fromProp)) {
                 enabled = Boolean.parseBoolean(fromProp);
                 return;
             }
-            String fromEnv = System.getenv(CommonConstants.DUBBO2_COMPACT_ENABLE);
+            String fromEnv = System.getenv(CommonConstants.DubboProperty.DUBBO2_COMPACT_ENABLE);
             if (StringUtils.isNotEmpty(fromEnv)) {
                 enabled = Boolean.parseBoolean(fromEnv);
                 return;
             }
-            fromEnv = System.getenv(StringUtils.toOSStyleKey(CommonConstants.DUBBO2_COMPACT_ENABLE));
+            fromEnv = System.getenv(StringUtils.toOSStyleKey(CommonConstants.DubboProperty.DUBBO2_COMPACT_ENABLE));
             enabled = !StringUtils.isNotEmpty(fromEnv) || Boolean.parseBoolean(fromEnv);
         } catch (Throwable t) {
             enabled = true;

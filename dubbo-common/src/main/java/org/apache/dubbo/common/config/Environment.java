@@ -25,6 +25,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.context.ConfigConfigurationAdapter;
 import org.apache.dubbo.rpc.model.ScopeModel;
@@ -96,10 +97,12 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
      */
     @Deprecated
     private void loadMigrationRule() {
-        if (Boolean.parseBoolean(System.getProperty(CommonConstants.DUBBO_MIGRATION_FILE_ENABLE, "false"))) {
-            String path = System.getProperty(CommonConstants.DUBBO_MIGRATION_KEY);
+        if (Boolean.parseBoolean(SystemPropertyConfigUtils.getSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_MIGRATION_FILE_ENABLE, "false"))) {
+            String path =
+                    SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO_MIGRATION_KEY);
             if (StringUtils.isEmpty(path)) {
-                path = System.getenv(CommonConstants.DUBBO_MIGRATION_KEY);
+                path = System.getenv(CommonConstants.DubboProperty.DUBBO_MIGRATION_KEY);
                 if (StringUtils.isEmpty(path)) {
                     path = CommonConstants.DEFAULT_DUBBO_MIGRATION_FILE;
                 }

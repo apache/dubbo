@@ -166,19 +166,21 @@ class ConfigUtilsTest {
     @Test
     void testGetProperties1() throws Exception {
         try {
-            System.setProperty(CommonConstants.DUBBO_PROPERTIES_KEY, "properties.load");
+            SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO_PROPERTIES_KEY);
+            SystemPropertyConfigUtils.setSystemProperty(
+                    CommonConstants.DubboProperty.DUBBO_PROPERTIES_KEY, "properties.load");
             Properties p = ConfigUtils.getProperties(Collections.emptySet());
             assertThat((String) p.get("a"), equalTo("12"));
             assertThat((String) p.get("b"), equalTo("34"));
             assertThat((String) p.get("c"), equalTo("56"));
         } finally {
-            System.clearProperty(CommonConstants.DUBBO_PROPERTIES_KEY);
+            SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_PROPERTIES_KEY);
         }
     }
 
     @Test
     void testGetProperties2() throws Exception {
-        System.clearProperty(CommonConstants.DUBBO_PROPERTIES_KEY);
+        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_PROPERTIES_KEY);
         Properties p = ConfigUtils.getProperties(Collections.emptySet());
         assertThat((String) p.get("dubbo"), equalTo("properties"));
     }

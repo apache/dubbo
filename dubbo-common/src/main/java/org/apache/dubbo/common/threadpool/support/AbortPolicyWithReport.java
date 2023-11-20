@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.threadpool.support;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -25,6 +26,7 @@ import org.apache.dubbo.common.threadpool.event.ThreadPoolExhaustedListener;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.JVMUtil;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.File;
@@ -42,8 +44,8 @@ import static java.lang.String.format;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR_CHAR;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_ENABLE;
-import static org.apache.dubbo.common.constants.CommonConstants.OS_NAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.OS_WIN_PREFIX;
+import static org.apache.dubbo.common.constants.CommonConstants.SystemProperty.SYSTEM_OS_NAME;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_POOL_EXHAUSTED_LISTENERS_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_THREAD_POOL_EXHAUSTED;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_CREATE_DUMP;
@@ -71,7 +73,8 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
 
     protected static Semaphore guard = new Semaphore(1);
 
-    private static final String USER_HOME = System.getProperty("user.home");
+    private static final String USER_HOME =
+            SystemPropertyConfigUtils.getSystemProperty(CommonConstants.SystemProperty.USER_HOME);
 
     private final Set<ThreadPoolExhaustedListener> listeners = new ConcurrentHashSet<>();
 
@@ -168,7 +171,8 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
 
                 SimpleDateFormat sdf;
 
-                String os = System.getProperty(OS_NAME_KEY).toLowerCase();
+                String os = SystemPropertyConfigUtils.getSystemProperty(SYSTEM_OS_NAME)
+                        .toLowerCase();
 
                 // window system don't support ":" in file name
                 if (os.contains(OS_WIN_PREFIX)) {
