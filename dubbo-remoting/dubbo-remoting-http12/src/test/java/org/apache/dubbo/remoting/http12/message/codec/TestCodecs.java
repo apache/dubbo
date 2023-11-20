@@ -83,8 +83,8 @@ public class TestCodecs {
 
     @Test
     void testXml() {
-        InputStream in = new ByteArrayInputStream(("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
-                "<user><location>New York</location><username>JohnDoe</username></user>")
+        InputStream in = new ByteArrayInputStream(("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                        + "<user><location>New York</location><username>JohnDoe</username></user>")
                 .getBytes());
         HttpMessageCodec codec = new XmlCodec();
         User user = (User) codec.decode(in, User.class);
