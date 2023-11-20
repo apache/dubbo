@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.InvokeMode;
@@ -47,8 +48,8 @@ import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
 public class MockClusterInvoker<T> implements ClusterInvoker<T> {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MockClusterInvoker.class);
-    private static final boolean setFutureWhenSync =
-            Boolean.parseBoolean(System.getProperty(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true"));
+    private static final boolean setFutureWhenSync = Boolean.parseBoolean(SystemPropertyConfigUtils.getSystemProperty(
+            CommonConstants.ThirdPartyProperty.SET_FUTURE_IN_SYNC_MODE, "true"));
 
     private final Directory<T> directory;
 

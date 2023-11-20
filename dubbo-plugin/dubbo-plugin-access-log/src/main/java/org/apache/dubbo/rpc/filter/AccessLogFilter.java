@@ -23,6 +23,7 @@ import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -49,6 +50,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
+import static org.apache.dubbo.common.constants.CommonConstants.SystemProperty.SYSTEM_LINE_SEPARATOR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FILTER_VALIDATION_EXCEPTION;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.VULNERABILITY_WARNING;
 import static org.apache.dubbo.rpc.Constants.ACCESS_LOG_FIXED_PATH_KEY;
@@ -87,8 +89,6 @@ public class AccessLogFilter implements Filter {
 
     private final AtomicBoolean scheduled = new AtomicBoolean();
     private ScheduledFuture<?> future;
-
-    private static final String LINE_SEPARATOR = "line.separator";
 
     /**
      * Default constructor initialize demon thread for writing into access log file with names with access log key
@@ -215,7 +215,7 @@ public class AccessLogFilter implements Filter {
         try {
             while (!logQueue.isEmpty()) {
                 writer.write(logQueue.poll().getLogMessage());
-                writer.write(System.getProperty(LINE_SEPARATOR));
+                writer.write(SystemPropertyConfigUtils.getSystemProperty(SYSTEM_LINE_SEPARATOR));
             }
         } finally {
             writer.flush();

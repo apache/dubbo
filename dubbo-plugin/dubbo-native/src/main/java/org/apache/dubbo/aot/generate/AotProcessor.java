@@ -20,10 +20,12 @@ import org.apache.dubbo.aot.api.JdkProxyDescriber;
 import org.apache.dubbo.aot.api.ProxyDescriberRegistrar;
 import org.apache.dubbo.aot.api.ReflectionTypeDescriberRegistrar;
 import org.apache.dubbo.aot.api.TypeDescriber;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -55,6 +57,7 @@ public class AotProcessor {
                         ClassSourceScanner.INSTANCE.adaptiveClasses().values()))
                 .registerBeanType(ClassSourceScanner.INSTANCE.scopeModelInitializer())
                 .registerConfigType(ClassSourceScanner.INSTANCE.configClasses())
+                .registerFieldType(getCustomClasses())
                 .registerTypeDescriber(getTypes());
         writer.writeReflectionConfig(reflectRepository);
 
@@ -97,5 +100,14 @@ public class AotProcessor {
                 });
 
         return jdkProxyDescribers;
+    }
+
+    private static List<Class<?>> getCustomClasses() {
+        Class<?>[] configClasses = new Class[] {
+            CommonConstants.SystemProperty.class,
+            CommonConstants.ThirdPartyProperty.class,
+            CommonConstants.DubboProperty.class
+        };
+        return new ArrayList<>(Arrays.asList(configClasses));
     }
 }

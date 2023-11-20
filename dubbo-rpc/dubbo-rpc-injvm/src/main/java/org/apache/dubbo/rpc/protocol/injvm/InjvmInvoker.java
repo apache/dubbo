@@ -24,6 +24,7 @@ import org.apache.dubbo.common.url.component.DubboServiceAddressURL;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Constants;
@@ -72,8 +73,8 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
 
     private final boolean shouldIgnoreSameModule;
 
-    private static final boolean setFutureWhenSync =
-            Boolean.parseBoolean(System.getProperty(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true"));
+    private static final boolean setFutureWhenSync = Boolean.parseBoolean(SystemPropertyConfigUtils.getSystemProperty(
+            CommonConstants.ThirdPartyProperty.SET_FUTURE_IN_SYNC_MODE, "true"));
 
     InjvmInvoker(Class<T> type, URL url, String key, Map<String, Exporter<?>> exporterMap) {
         super(type, url);
