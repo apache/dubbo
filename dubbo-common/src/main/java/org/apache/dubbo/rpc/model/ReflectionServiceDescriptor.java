@@ -68,10 +68,6 @@ public class ReflectionServiceDescriptor implements ServiceDescriptor {
         for (Method method : methodsToExport) {
             method.setAccessible(true);
 
-            if (method.isDefault()) {
-                continue;
-            }
-
             MethodDescriptor methodDescriptor = new ReflectionMethodDescriptor(method);
 
             List<MethodDescriptor> methodModels = methods.computeIfAbsent(method.getName(), (k) -> new ArrayList<>(1));
