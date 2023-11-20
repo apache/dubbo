@@ -148,11 +148,11 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
                 listener.onCompletion(scopeModel);
             } catch (Throwable e) {
                 logger.error(
-                    COMMON_MONITOR_EXCEPTION,
-                    "",
-                    "",
-                    getIdentifier() + " an exception occurred when handle started event",
-                    e);
+                        COMMON_MONITOR_EXCEPTION,
+                        "",
+                        "",
+                        getIdentifier() + " an exception occurred when handle completion event",
+                        e);
             }
         }
     }
