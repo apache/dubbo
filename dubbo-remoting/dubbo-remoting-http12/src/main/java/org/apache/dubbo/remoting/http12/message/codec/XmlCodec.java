@@ -41,6 +41,12 @@ import org.xml.sax.InputSource;
 @Activate
 public class XmlCodec implements HttpMessageCodec {
 
+    private final CodecUtil codecUtil;
+
+    public XmlCodec(CodecUtil codecUtil) {
+        this.codecUtil = codecUtil;
+    }
+
     @Override
     public void encode(OutputStream outputStream, Object data) throws EncodeException {
         try {
@@ -63,7 +69,7 @@ public class XmlCodec implements HttpMessageCodec {
             Source xmlSource = new SAXSource(
                     spf.newSAXParser().getXMLReader(),
                     new InputSource(new StringReader(
-                            CodecUtil.toByteArrayStream(inputStream).toString())));
+                            codecUtil.toByteArrayStream(inputStream).toString())));
             JAXBContext context = JAXBContext.newInstance(targetType);
             Unmarshaller unmarshaller = context.createUnmarshaller();
             return unmarshaller.unmarshal(xmlSource);

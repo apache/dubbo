@@ -29,13 +29,19 @@ public class UrlEncodeFormCodecFactory implements HttpMessageCodecFactory {
 
     private ConverterUtil converterUtil;
 
+    private CodecUtil codecUtil;
+
     public void setConverterUtil(ConverterUtil converterUtil) {
         this.converterUtil = converterUtil;
     }
 
+    public void setCodecUtil(CodecUtil codecUtil) {
+        this.codecUtil = codecUtil;
+    }
+
     @Override
     public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String fullContentType) {
-        return new UrlEncodeFormCodec(converterUtil);
+        return new UrlEncodeFormCodec(converterUtil,codecUtil);
     }
 
     @Override

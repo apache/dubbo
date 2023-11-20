@@ -25,9 +25,16 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 
 @Activate
 public class XmlCodecFactory implements HttpMessageCodecFactory {
+
+    private CodecUtil codecUtil;
+
+    public void setCodecUtil(CodecUtil codecUtil) {
+        this.codecUtil = codecUtil;
+    }
+
     @Override
     public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String fullContentType) {
-        return new XmlCodec();
+        return new XmlCodec(codecUtil);
     }
 
     @Override

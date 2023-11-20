@@ -22,7 +22,7 @@ import java.io.InputStream;
 
 public class CodecUtil {
 
-    public static ByteArrayOutputStream toByteArrayStream(InputStream in) throws IOException {
+    public ByteArrayOutputStream toByteArrayStream(InputStream in) throws IOException {
         ByteArrayOutputStream result = new ByteArrayOutputStream();
         byte[] buffer = new byte[1024];
         int length;

@@ -22,12 +22,20 @@ import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.checkerframework.checker.units.qual.C;
 
 @Activate
 public class PlainTextCodecFactory implements HttpMessageCodecFactory {
+
+    private CodecUtil codecUtil;
+
+    public void setCodecUtil(CodecUtil codecUtil){
+        this.codecUtil = codecUtil;
+    }
+
     @Override
     public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String contentType) {
-        return new PlainTextCodec(contentType);
+        return new PlainTextCodec(contentType,codecUtil);
     }
 
     @Override

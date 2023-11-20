@@ -36,8 +36,11 @@ public class UrlEncodeFormCodec implements HttpMessageCodec {
 
     private final ConverterUtil converterUtil;
 
-    public UrlEncodeFormCodec(ConverterUtil converterUtil) {
+    private final CodecUtil codecUtil;
+
+    public UrlEncodeFormCodec(ConverterUtil converterUtil,CodecUtil codecUtil) {
         this.converterUtil = converterUtil;
+        this.codecUtil = codecUtil;
     }
 
     @Override
@@ -68,7 +71,7 @@ public class UrlEncodeFormCodec implements HttpMessageCodec {
                         "For x-www-form-urlencoded MIME type, please use Map/String/base-types as method param.");
             }
             String decoded = URLDecoder.decode(
-                            CodecUtil.toByteArrayStream(inputStream).toString(), StandardCharsets.UTF_8.name())
+                            codecUtil.toByteArrayStream(inputStream).toString(), StandardCharsets.UTF_8.name())
                     .trim();
             Map<String, Object> res = toMap(decoded, targetTypes, toMap);
             if (toMap) {
