@@ -16,7 +16,7 @@
 */
 
 {{#packageName}}
-    package {{packageName}};
+package {{packageName}};
 {{/packageName}}
 
 import org.apache.dubbo.common.stream.StreamObserver;
@@ -125,7 +125,7 @@ public final class {{className}} {
 
     {{#unaryMethods}}
         {{#javaDoc}}
-            {{{javaDoc}}}
+        {{{javaDoc}}}
         {{/javaDoc}}
         @Override
         public {{outputType}} {{methodName}}({{inputType}} request){
@@ -137,7 +137,7 @@ public final class {{className}} {
         }
 
         {{#javaDoc}}
-            {{{javaDoc}}}
+        {{{javaDoc}}}
         {{/javaDoc}}
         public void {{methodName}}({{inputType}} request, StreamObserver<{{outputType}}> responseObserver){
             StubInvocationUtil.unaryCall(invoker, {{methodName}}Method , request, responseObserver);
@@ -146,7 +146,7 @@ public final class {{className}} {
 
     {{#serverStreamingMethods}}
         {{#javaDoc}}
-            {{{javaDoc}}}
+        {{{javaDoc}}}
         {{/javaDoc}}
         @Override
         public void {{methodName}}({{inputType}} request, StreamObserver<{{outputType}}> responseObserver){
@@ -156,7 +156,7 @@ public final class {{className}} {
 
     {{#biStreamingWithoutClientStreamMethods}}
         {{#javaDoc}}
-            {{{javaDoc}}}
+        {{{javaDoc}}}
         {{/javaDoc}}
         @Override
         public StreamObserver<{{inputType}}> {{methodName}}(StreamObserver<{{outputType}}> responseObserver){
@@ -166,7 +166,7 @@ public final class {{className}} {
 
     {{#clientStreamingMethods}}
         {{#javaDoc}}
-            {{{javaDoc}}}
+        {{{javaDoc}}}
         {{/javaDoc}}
         @Override
         public StreamObserver<{{inputType}}> {{methodName}}(StreamObserver<{{outputType}}> responseObserver){

@@ -34,7 +34,7 @@ public interface {{interfaceClassName}} extends org.apache.dubbo.rpc.model.Dubbo
 
 {{#unaryMethods}}
     {{#javaDoc}}
-        {{{javaDoc}}}
+    {{{javaDoc}}}
     {{/javaDoc}}
     {{outputType}} {{methodName}}({{inputType}} request);
 
@@ -46,14 +46,14 @@ public interface {{interfaceClassName}} extends org.apache.dubbo.rpc.model.Dubbo
 
 {{#serverStreamingMethods}}
     {{#javaDoc}}
-        {{{javaDoc}}}
+    {{{javaDoc}}}
     {{/javaDoc}}
     void {{methodName}}({{inputType}} request, StreamObserver<{{outputType}}> responseObserver);
 {{/serverStreamingMethods}}
 
 {{#biStreamingWithoutClientStreamMethods}}
     {{#javaDoc}}
-        {{{javaDoc}}}
+    {{{javaDoc}}}
     {{/javaDoc}}
     StreamObserver<{{inputType}}> {{methodName}}(StreamObserver<{{outputType}}> responseObserver);
 {{/biStreamingWithoutClientStreamMethods}}
@@ -61,7 +61,7 @@ public interface {{interfaceClassName}} extends org.apache.dubbo.rpc.model.Dubbo
 
 {{#clientStreamingMethods}}
     {{#javaDoc}}
-        {{{javaDoc}}}
+    {{{javaDoc}}}
     {{/javaDoc}}
     StreamObserver<{{inputType}}> {{methodName}}(StreamObserver<{{outputType}}> responseObserver);
 {{/clientStreamingMethods}}
