@@ -384,7 +384,8 @@ class SingleRegistryCenterDubboProtocolIntegrationTest implements IntegrationTes
         Assertions.assertTrue(serviceDiscoveryRegistryDirectory.isShouldRegister());
         // ServiceDiscoveryRegistryDirectory's registered consumer url is right or not
         Assertions.assertEquals(
-                CONSUMERS_CATEGORY, serviceDiscoveryRegistryDirectory.getRegisteredConsumerUrl().getCategory());
+                CONSUMERS_CATEGORY,
+                serviceDiscoveryRegistryDirectory.getRegisteredConsumerUrl().getCategory());
         // ServiceDiscoveryRegistryDirectory's registry is right or not
         Assertions.assertTrue(serviceDiscoveryRegistryDirectory.getRegistry() instanceof ListenerRegistryWrapper);
         // Directory's invokers are right or not
