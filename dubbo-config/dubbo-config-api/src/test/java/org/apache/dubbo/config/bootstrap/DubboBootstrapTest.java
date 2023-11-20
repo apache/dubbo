@@ -261,7 +261,7 @@ class DubboBootstrapTest {
                 .start();
 
         Assertions.assertTrue(bootstrap.isInitialized());
-        Assertions.assertTrue(bootstrap.isStarted());
+        Assertions.assertTrue(bootstrap.isCompletion());
         Assertions.assertFalse(bootstrap.isStopped());
 
         ApplicationModel applicationModel = bootstrap.getApplicationModel();

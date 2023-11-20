@@ -55,6 +55,8 @@ public interface Deployer<E extends ScopeModel> {
      */
     boolean isStarted();
 
+    boolean isCompletion();
+
     /**
      * @return true if the component is starting.
      * @see #isStarted()

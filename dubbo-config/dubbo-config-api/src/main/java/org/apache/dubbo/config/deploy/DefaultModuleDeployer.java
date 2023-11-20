@@ -187,14 +187,17 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
             // if no async export/refer services, just set started
             if (asyncExportingFutures.isEmpty() && asyncReferringFutures.isEmpty()) {
+                // publish module started event
+                onModuleStarted();
+
                 // register services to registry
                 registerServices();
 
                 // check reference config
                 checkReferences();
 
-                // publish module started event
-                onModuleStarted();
+                // publish module completion event
+                onModuleCompletion();
 
                 // complete module start future after application state changed
                 completeStartFuture(true);
@@ -207,14 +210,17 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                         // wait for refer finish
                         waitReferFinish();
 
+                        // publish module started event
+                        onModuleStarted();
+
                         // register services to registry
                         registerServices();
 
                         // check reference config
                         checkReferences();
 
-                        // publish module started event
-                        onModuleStarted();
+                        // publish module completion event
+                        onModuleCompletion();
                     } catch (Throwable e) {
                         logger.warn(
                                 CONFIG_FAILED_WAIT_EXPORT_REFER,
@@ -365,6 +371,14 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             setStarted();
             logger.info(getIdentifier() + " has started.");
             applicationDeployer.notifyModuleChanged(moduleModel, DeployState.STARTED);
+        }
+    }
+
+    private void onModuleCompletion() {
+        if (isStarted()) {
+            setCompletion();
+            logger.info(getIdentifier() + " has completed.");
+            applicationDeployer.notifyModuleChanged(moduleModel, DeployState.COMPLETION);
         }
     }
 

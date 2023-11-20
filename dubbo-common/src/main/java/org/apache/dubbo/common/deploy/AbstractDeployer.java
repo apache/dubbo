@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_MONITOR_EXCEPTION;
+import static org.apache.dubbo.common.deploy.DeployState.COMPLETION;
 import static org.apache.dubbo.common.deploy.DeployState.FAILED;
 import static org.apache.dubbo.common.deploy.DeployState.PENDING;
 import static org.apache.dubbo.common.deploy.DeployState.STARTED;
@@ -56,12 +57,17 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
 
     @Override
     public boolean isRunning() {
-        return state == STARTING || state == STARTED;
+        return state == STARTING || state == STARTED || state == COMPLETION;
     }
 
     @Override
     public boolean isStarted() {
         return state == STARTED;
+    }
+
+    @Override
+    public boolean isCompletion() {
+        return state == COMPLETION;
     }
 
     @Override
@@ -131,6 +137,22 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
                         "",
                         getIdentifier() + " an exception occurred when handle started event",
                         e);
+            }
+        }
+    }
+
+    protected void setCompletion() {
+        this.state = COMPLETION;
+        for (DeployListener<E> listener : listeners) {
+            try {
+                listener.onCompletion(scopeModel);
+            } catch (Throwable e) {
+                logger.error(
+                    COMMON_MONITOR_EXCEPTION,
+                    "",
+                    "",
+                    getIdentifier() + " an exception occurred when handle started event",
+                    e);
             }
         }
     }

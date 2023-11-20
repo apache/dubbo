@@ -28,6 +28,8 @@ public interface DeployListener<E extends ScopeModel> {
 
     void onStarted(E scopeModel);
 
+    void onCompletion(E scopeModel);
+
     void onStopping(E scopeModel);
 
     void onStopped(E scopeModel);
