@@ -245,7 +245,8 @@ class SingleRegistryCenterDubboProtocolIntegrationTest implements IntegrationTes
                 .isEmpty());
         // MetadataInfo has reported or not has service or not
         Assertions.assertEquals(
-            1, inMemoryWritableMetadataService
+                1,
+                inMemoryWritableMetadataService
                         .getMetadataInfos()
                         .get(0)
                         .getServices()
@@ -279,7 +280,8 @@ class SingleRegistryCenterDubboProtocolIntegrationTest implements IntegrationTes
                 ExtensionLoader.getExtensionLoader(ServiceListener.class).getExtension("exported");
         Assertions.assertNotNull(singleRegistryCenterExportedServiceListener);
         Assertions.assertEquals(
-            1, singleRegistryCenterExportedServiceListener
+                1,
+                singleRegistryCenterExportedServiceListener
                         .getExportedServices()
                         .size());
         Assertions.assertEquals(
@@ -382,12 +384,12 @@ class SingleRegistryCenterDubboProtocolIntegrationTest implements IntegrationTes
         Assertions.assertTrue(serviceDiscoveryRegistryDirectory.isShouldRegister());
         // ServiceDiscoveryRegistryDirectory's registered consumer url is right or not
         Assertions.assertEquals(
-            CONSUMERS_CATEGORY, serviceDiscoveryRegistryDirectory.getRegisteredConsumerUrl().getCategory());
+                CONSUMERS_CATEGORY, serviceDiscoveryRegistryDirectory.getRegisteredConsumerUrl().getCategory());
         // ServiceDiscoveryRegistryDirectory's registry is right or not
         Assertions.assertTrue(serviceDiscoveryRegistryDirectory.getRegistry() instanceof ListenerRegistryWrapper);
         // Directory's invokers are right or not
         Assertions.assertEquals(
-            1, serviceDiscoveryRegistryDirectory.getAllInvokers().size());
+                1, serviceDiscoveryRegistryDirectory.getAllInvokers().size());
         Assertions.assertEquals(
                 serviceDiscoveryRegistryDirectory.getInvokers(), serviceDiscoveryRegistryDirectory.getAllInvokers());
     }

@@ -1262,7 +1262,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             return DeployState.STOPPING;
         }
         // all modules have been started
-        if (started > 0 ) {
+        if (started > 0) {
             return DeployState.STARTED;
         }
         return DeployState.UNKNOWN;
