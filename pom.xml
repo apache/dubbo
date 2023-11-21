@@ -23,6 +23,7 @@
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
     <version>23</version>
+    <relativePath/>
   </parent>
 
   <groupId>org.apache.dubbo</groupId>
