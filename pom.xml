@@ -19,12 +19,12 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>org.apache</groupId>
-    <artifactId>apache</artifactId>
-    <version>23</version>
-    <relativePath/>
-  </parent>
+    <parent>
+        <groupId>org.apache</groupId>
+        <artifactId>apache</artifactId>
+        <version>23</version>
+        <relativePath/>
+    </parent>
 
   <groupId>org.apache.dubbo</groupId>
   <artifactId>dubbo-parent</artifactId>
