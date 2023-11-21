@@ -691,7 +691,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 }
 
                 // if is started and no new module, just return
-                if (isStarted() && !hasPendingModule) {
+                if ((isStarted() || isCompletion()) && !hasPendingModule) {
                     return CompletableFuture.completedFuture(false);
                 }
 
@@ -803,7 +803,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             // start internal module
             ModuleDeployer internalModuleDeployer =
                     applicationModel.getInternalModule().getDeployer();
-            if (!internalModuleDeployer.isStarted()) {
+            if (!internalModuleDeployer.isCompletion()) {
                 Future future = internalModuleDeployer.start();
                 // wait for internal module startup
                 try {
@@ -1006,7 +1006,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
                                 // refresh for 30 times (default for 30s) when deployer is not started, prevent submit
                                 // too many revision
-                                if (instanceRefreshScheduleTimes.incrementAndGet() % 30 != 0 && !isStarted()) {
+                                if (instanceRefreshScheduleTimes.incrementAndGet() % 30 != 0 && !isCompletion()) {
                                     return;
                                 }
 
@@ -1284,7 +1284,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void doExportMetadataService() {
-        if (!isStarting() && !isStarted()) {
+        if (!isStarting() && !isStarted() && !isCompletion()) {
             return;
         }
         for (DeployListener<ApplicationModel> listener : listeners) {
@@ -1306,7 +1306,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private void onStarting() {
         // pending -> starting
         // started -> starting
-        if (!(isPending() || isStarted())) {
+        // completion -> starting
+        if (!(isPending() || isStarted() || isCompletion())) {
             return;
         }
         setStarting();

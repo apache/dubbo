@@ -165,7 +165,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         }
 
         try {
-            if (isStarting() || isStarted()) {
+            if (isStarting() || isStarted() || isCompletion()) {
                 return startFuture;
             }
 
