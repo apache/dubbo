@@ -24,15 +24,34 @@ public interface DeployListener<E extends ScopeModel> {
      */
     void onInitialize(E scopeModel);
 
+    /**
+     * Triggered before starting module.
+     */
     void onStarting(E scopeModel);
 
+    /**
+     * Triggered before registering and exposing the service.
+     */
     void onStarted(E scopeModel);
 
+    /**
+     * Triggered after deployer startup is complete.
+     */
     void onCompletion(E scopeModel);
 
+    /**
+     * Triggered before the app is destroyed, can do some customized things before offline the service.
+     */
     void onStopping(E scopeModel);
 
+    /**
+     * Triggered after the application is destroyed,
+     * can do some customized things after the service is offline and the reference is destroyed.
+     */
     void onStopped(E scopeModel);
 
+    /**
+     * Useful to do something when deployer was failed.
+     */
     void onFailure(E scopeModel, Throwable cause);
 }
