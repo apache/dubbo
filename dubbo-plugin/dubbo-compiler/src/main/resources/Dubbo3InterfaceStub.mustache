@@ -28,7 +28,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public interface {{interfaceClassName}} extends org.apache.dubbo.rpc.model.DubboStub {
 
     static final String JAVA_SERVICE_NAME = "{{packageName}}.{{serviceName}}";
+{{#commonPackageName}}
     static final String SERVICE_NAME = "{{commonPackageName}}.{{serviceName}}";
+{{/commonPackageName}}
+{{^commonPackageName}}
+    static final String SERVICE_NAME = "{{serviceName}}";
+{{/commonPackageName}}
 
     // FIXME, initialize Dubbo3 stub when interface loaded, thinking of new ways doing this.
     static final boolean inited = {{className}}.init();
