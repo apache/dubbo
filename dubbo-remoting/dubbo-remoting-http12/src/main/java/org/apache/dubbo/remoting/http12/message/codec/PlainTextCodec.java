@@ -38,7 +38,7 @@ public class PlainTextCodec implements HttpMessageCodec {
 
     @Override
     public void encode(OutputStream outputStream, Object data) throws EncodeException {
-        new JsonCodec().encode(outputStream, data);
+        throw new EncodeException("PlainTextCodec does not support encode.");
     }
 
     @Override

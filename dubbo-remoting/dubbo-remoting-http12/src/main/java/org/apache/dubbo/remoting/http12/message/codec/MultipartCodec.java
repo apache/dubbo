@@ -51,7 +51,7 @@ public class MultipartCodec implements HttpMessageCodec {
 
     @Override
     public void encode(OutputStream outputStream, Object data) throws EncodeException {
-        new JsonCodec().encode(outputStream, data);
+        throw new EncodeException("MultipartCodec does not support encode .");
     }
 
     @Override
