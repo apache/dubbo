@@ -183,7 +183,7 @@
     <metrics_version>2.0.6</metrics_version>
     <sofa_registry_version>5.4.3</sofa_registry_version>
     <gson_version>2.10.1</gson_version>
-    <jackson_version>2.15.3</jackson_version>
+    <jackson_version>2.16.0</jackson_version>
     <mortbay_jetty_version>6.1.26</mortbay_jetty_version>
     <portlet_version>2.0</portlet_version>
     <maven_flatten_version>1.5.0</maven_flatten_version>
