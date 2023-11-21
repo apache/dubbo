@@ -89,8 +89,6 @@ public interface Constants {
 
     String MULTICAST = "multicast";
 
-    String DUBBO_IP_TO_REGISTRY = "DUBBO_IP_TO_REGISTRY";
-
     String DUBBO_PORT_TO_REGISTRY = "DUBBO_PORT_TO_REGISTRY";
 
     String DUBBO_PORT_TO_BIND = "DUBBO_PORT_TO_BIND";
@@ -156,4 +154,6 @@ public interface Constants {
     String DEFAULT_NATIVE_COMPILER = "jdk";
 
     String DEFAULT_NATIVE_PROXY = "jdk";
+
+    String DEFAULT_APP_NAME = "DEFAULT_DUBBO_APP";
 }

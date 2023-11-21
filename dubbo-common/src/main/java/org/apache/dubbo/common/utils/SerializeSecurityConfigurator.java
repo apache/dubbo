@@ -40,9 +40,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.common.constants.CommonConstants.CLASS_DESERIALIZE_ALLOWED_LIST;
-import static org.apache.dubbo.common.constants.CommonConstants.CLASS_DESERIALIZE_BLOCKED_LIST;
-import static org.apache.dubbo.common.constants.CommonConstants.CLASS_DESERIALIZE_BLOCK_ALL;
 import static org.apache.dubbo.common.constants.CommonConstants.SERIALIZE_ALLOW_LIST_FILE_PATH;
 import static org.apache.dubbo.common.constants.CommonConstants.SERIALIZE_BLOCKED_LIST_FILE_PATH;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_IO_EXCEPTION;
@@ -102,10 +99,12 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
     }
 
     private void refreshConfig() {
-        String allowedClassList =
-                System.getProperty(CLASS_DESERIALIZE_ALLOWED_LIST, "").trim();
-        String blockedClassList =
-                System.getProperty(CLASS_DESERIALIZE_BLOCKED_LIST, "").trim();
+        String allowedClassList = SystemPropertyConfigUtils.getSystemProperty(
+                        CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST, "")
+                .trim();
+        String blockedClassList = SystemPropertyConfigUtils.getSystemProperty(
+                        CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST, "")
+                .trim();
 
         if (StringUtils.isNotEmpty(allowedClassList)) {
             String[] classStrings = allowedClassList.trim().split(",");
@@ -184,11 +183,13 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
         SerializeCheckStatus checkStatus = null;
 
         if (StringUtils.isEmpty(statusString)) {
-            String openCheckClass = System.getProperty(CommonConstants.CLASS_DESERIALIZE_OPEN_CHECK, "true");
+            String openCheckClass = SystemPropertyConfigUtils.getSystemProperty(
+                    CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_OPEN_CHECK, "true");
             if (!Boolean.parseBoolean(openCheckClass)) {
                 checkStatus = SerializeCheckStatus.DISABLE;
             }
-            String blockAllClassExceptAllow = System.getProperty(CLASS_DESERIALIZE_BLOCK_ALL, "false");
+            String blockAllClassExceptAllow = SystemPropertyConfigUtils.getSystemProperty(
+                    CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCK_ALL, "false");
             if (Boolean.parseBoolean(blockAllClassExceptAllow)) {
                 checkStatus = SerializeCheckStatus.STRICT;
             }

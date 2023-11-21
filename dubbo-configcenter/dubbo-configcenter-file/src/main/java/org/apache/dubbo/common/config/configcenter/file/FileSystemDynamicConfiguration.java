@@ -22,6 +22,7 @@ import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.TreePathDynamicConfiguration;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.function.ThrowableConsumer;
 import org.apache.dubbo.common.function.ThrowableFunction;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
@@ -29,6 +30,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
@@ -84,7 +86,8 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
     public static final String CONFIG_CENTER_ENCODING_PARAM_NAME = PARAM_NAME_PREFIX + "encoding";
 
     public static final String DEFAULT_CONFIG_CENTER_DIR_PATH =
-            System.getProperty("user.home") + File.separator + ".dubbo" + File.separator + "config-center";
+            SystemPropertyConfigUtils.getSystemProperty(CommonConstants.SystemProperty.USER_HOME) + File.separator
+                    + ".dubbo" + File.separator + "config-center";
 
     public static final int DEFAULT_THREAD_POOL_SIZE = 1;
 

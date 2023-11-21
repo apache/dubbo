@@ -105,6 +105,7 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_DEFAUL
 import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
+import static org.apache.dubbo.config.Constants.DEFAULT_APP_NAME;
 import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_METADATA_PUBLISH_DELAY;
 import static org.apache.dubbo.metadata.MetadataConstants.METADATA_PUBLISH_DELAY_KEY;
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
@@ -777,6 +778,13 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
         // export MetricsService
         exportMetricsService();
+
+        if (moduleModel.getDeployer().hasRegistryInteraction()) {
+            ApplicationConfig applicationConfig = configManager.getApplicationOrElseThrow();
+            if (DEFAULT_APP_NAME.equals(applicationConfig.getName())) {
+                throw new IllegalStateException("Application name must be set when registry is enabled.");
+            }
+        }
 
         if (isRegisterConsumerInstance() || moduleModel.getDeployer().hasRegistryInteraction()) {
             if (hasPreparedApplicationInstance.compareAndSet(false, true)) {

@@ -401,6 +401,32 @@ class RpcUtilsTest {
         Assertions.assertEquals(Object.class, parameterTypes5[2]);
     }
 
+    @Test
+    void testGet_$invokeAsync_ParameterTypes() {
+        Object[] args = new Object[] {"hello", true, 520};
+        Class<?> demoServiceClass = DemoService.class;
+        String serviceName = demoServiceClass.getName();
+        Invoker invoker = createMockInvoker();
+
+        RpcInvocation inv = new RpcInvocation(
+                "$invokeAsync",
+                serviceName,
+                "",
+                new Class<?>[] {String.class, String[].class, Object[].class},
+                new Object[] {
+                    "method", new String[] {"java.lang.String", "java.lang.Boolean", "java.lang.Integer"}, args
+                },
+                null,
+                invoker,
+                null);
+
+        Class<?>[] parameterTypes = RpcUtils.getParameterTypes(inv);
+        for (int i = 0; i < args.length; i++) {
+            Assertions.assertNotNull(parameterTypes[i]);
+            Assertions.assertEquals(args[i].getClass(), parameterTypes[i]);
+        }
+    }
+
     @ParameterizedTest
     @CsvSource({"echo", "stringLength", "testReturnType"})
     public void testGetMethodName(String methodName) {
@@ -436,6 +462,27 @@ class RpcUtilsTest {
         Assertions.assertEquals(method, actual);
     }
 
+    @ParameterizedTest
+    @CsvSource({"hello", "apache", "dubbo"})
+    public void testGet_$invokeAsync_MethodName(String method) {
+        Class<?> demoServiceClass = DemoService.class;
+        String serviceName = demoServiceClass.getName();
+        Invoker invoker = createMockInvoker();
+
+        RpcInvocation inv = new RpcInvocation(
+                "$invokeAsync",
+                serviceName,
+                "",
+                new Class<?>[] {String.class, String[].class},
+                new Object[] {method, new String[] {"java.lang.String", "void", "java.lang.Object"}},
+                null,
+                invoker,
+                null);
+        String actual = RpcUtils.getMethodName(inv);
+        Assertions.assertNotNull(actual);
+        Assertions.assertEquals(method, actual);
+    }
+
     @Test
     void testGet_$invoke_Arguments() {
         Object[] args = new Object[] {"hello", "dubbo", 520};
@@ -445,6 +492,32 @@ class RpcUtilsTest {
 
         RpcInvocation inv = new RpcInvocation(
                 "$invoke",
+                serviceName,
+                "",
+                new Class<?>[] {String.class, String[].class, Object[].class},
+                new Object[] {"method", new String[] {}, args},
+                null,
+                invoker,
+                null);
+
+        Object[] arguments = RpcUtils.getArguments(inv);
+        for (int i = 0; i < args.length; i++) {
+            Assertions.assertNotNull(arguments[i]);
+            Assertions.assertEquals(
+                    args[i].getClass().getName(), arguments[i].getClass().getName());
+            Assertions.assertEquals(args[i], arguments[i]);
+        }
+    }
+
+    @Test
+    void testGet_$invokeAsync_Arguments() {
+        Object[] args = new Object[] {"hello", "dubbo", 520};
+        Class<?> demoServiceClass = DemoService.class;
+        String serviceName = demoServiceClass.getName();
+        Invoker invoker = createMockInvoker();
+
+        RpcInvocation inv = new RpcInvocation(
+                "$invokeAsync",
                 serviceName,
                 "",
                 new Class<?>[] {String.class, String[].class, Object[].class},
