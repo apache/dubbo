@@ -71,8 +71,6 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
                 .getExecutorSupport(url);
         this.streamingDecoder = newStreamingDecoder();
         this.serverChannelObserver = new Http2ServerCallToObserverAdapter(frameworkModel, h2StreamChannel);
-        this.serverChannelObserver.findAndSetEncoder(
-                url, getMetadata().headers().getFirst(HttpHeaderNames.ACCEPT.getName()), frameworkModel);
         this.serverChannelObserver.setStreamingDecoder(streamingDecoder);
     }
 
@@ -130,6 +128,8 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
         if (metadata.isEndStream()) {
             return;
         }
+        this.serverChannelObserver.findAndSetEncoder(
+                getUrl(), metadata.headers().getFirst(HttpHeaderNames.ACCEPT.getName()), getFrameworkModel());
         super.doOnMetadata(metadata);
     }
 

@@ -121,6 +121,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
 
     @Override
     public void onMetadata(HEADER metadata) {
+
         try {
             this.executor = initializeExecutor(metadata);
         } catch (Throwable throwable) {
