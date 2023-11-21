@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.h12.http2;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
+import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.RequestMetadata;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
@@ -27,7 +28,6 @@ import org.apache.dubbo.remoting.http12.h2.Http2InputMessage;
 import org.apache.dubbo.remoting.http12.h2.Http2ServerChannelObserver;
 import org.apache.dubbo.remoting.http12.h2.Http2TransportListener;
 import org.apache.dubbo.remoting.http12.message.DefaultListeningDecoder;
-import org.apache.dubbo.remoting.http12.message.codec.JsonCodec;
 import org.apache.dubbo.remoting.http12.message.ListeningDecoder;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.remoting.http12.message.NoOpStreamingDecoder;
@@ -71,7 +71,8 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
                 .getExecutorSupport(url);
         this.streamingDecoder = newStreamingDecoder();
         this.serverChannelObserver = new Http2ServerCallToObserverAdapter(frameworkModel, h2StreamChannel);
-        this.serverChannelObserver.setHttpMessageCodec(JsonCodec.INSTANCE);
+        this.serverChannelObserver.findAndSetEncoder(
+                url, getMetadata().headers().getFirst(HttpHeaderNames.ACCEPT.getName()), frameworkModel);
         this.serverChannelObserver.setStreamingDecoder(streamingDecoder);
     }
 
@@ -164,7 +165,8 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     @Override
     protected void onMetadataCompletion(Http2Header metadata) {
         super.onMetadataCompletion(metadata);
-        this.serverChannelObserver.setHttpMessageCodec(getHttpMessageCodec());
+        this.serverChannelObserver.findAndSetEncoder(
+                getUrl(), metadata.headers().getFirst(HttpHeaderNames.ACCEPT.getName()), getFrameworkModel());
         this.serverChannelObserver.request(1);
     }
 

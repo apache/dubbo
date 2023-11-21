@@ -49,13 +49,13 @@ public class Http2ServerStreamObserver extends Http2ServerChannelObserver
     public void setCompression(String compression) {
         CompressibleCodec compressibleCodec = new CompressibleCodec(httpMessageCodec);
         compressibleCodec.setCompressor(Compressor.getCompressor(frameworkModel, compression));
-        super.setHttpMessageCodec(compressibleCodec);
+        super.setResponseEncoder(compressibleCodec);
     }
 
     @Override
-    public void setHttpMessageCodec(HttpMessageCodec httpMessageCodec) {
-        super.setHttpMessageCodec(httpMessageCodec);
-        this.httpMessageCodec = httpMessageCodec;
+    public void setResponseEncoder(HttpMessageCodec responseEncoder) {
+        super.setResponseEncoder(responseEncoder);
+        this.httpMessageCodec = responseEncoder;
     }
 
     @Override

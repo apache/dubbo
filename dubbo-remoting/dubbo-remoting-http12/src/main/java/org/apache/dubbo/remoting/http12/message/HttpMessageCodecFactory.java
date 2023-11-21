@@ -31,8 +31,12 @@ public interface HttpMessageCodecFactory {
 
     MediaType contentType();
 
-    default boolean support(String contentType) {
+    default boolean supportDecode(String contentType) {
         MediaType mediaType = this.contentType();
         return mediaType.getName().startsWith(contentType);
+    }
+
+    default boolean supportEncode(String acceptEncoding) {
+        return acceptEncoding.contains(this.contentType().getName());
     }
 }

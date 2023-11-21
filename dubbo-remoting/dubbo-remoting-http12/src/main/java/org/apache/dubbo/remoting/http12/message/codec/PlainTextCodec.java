@@ -32,11 +32,8 @@ public class PlainTextCodec implements HttpMessageCodec {
 
     private final String contentType;
 
-    private final CodecUtil codecUtil;
-
-    public PlainTextCodec(String contentType,CodecUtil codecUtil) {
+    public PlainTextCodec(String contentType) {
         this.contentType = contentType;
-        this.codecUtil = codecUtil;
     }
 
     @Override
@@ -58,11 +55,11 @@ public class PlainTextCodec implements HttpMessageCodec {
                     throw new DecodeException("Unsupported charset:" + e.getMessage());
                 }
                 if (!charset.equals(StandardCharsets.UTF_8) && !charset.equals(StandardCharsets.US_ASCII)) {
-                    String origin = codecUtil.toByteArrayStream(inputStream).toString(charset.name());
+                    String origin = toByteArrayStream(inputStream).toString(charset.name());
                     return new String(origin.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
                 }
             }
-            return codecUtil.toByteArrayStream(inputStream).toString(StandardCharsets.UTF_8.name());
+            return toByteArrayStream(inputStream).toString(StandardCharsets.UTF_8.name());
         } catch (Exception e) {
             throw new DecodeException(e);
         }

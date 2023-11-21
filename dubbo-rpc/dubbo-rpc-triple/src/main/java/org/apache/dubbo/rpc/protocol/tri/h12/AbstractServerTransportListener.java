@@ -26,6 +26,7 @@ import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpInputMessage;
+import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpStatus;
 import org.apache.dubbo.remoting.http12.HttpTransportListener;
 import org.apache.dubbo.remoting.http12.RequestMetadata;
@@ -251,7 +252,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
     protected HttpMessageCodec determineHttpMessageCodec(String contentType) {
         for (HttpMessageCodecFactory httpMessageCodecFactory :
                 frameworkModel.getExtensionLoader(HttpMessageCodecFactory.class).getActivateExtensions()) {
-            if (httpMessageCodecFactory.support(contentType)) {
+            if (httpMessageCodecFactory.supportDecode(contentType)) {
                 return httpMessageCodecFactory.createCodec(invoker.getUrl(), frameworkModel, contentType);
             }
         }
@@ -439,6 +440,10 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
 
     protected final URL getUrl() {
         return url;
+    }
+
+    protected HttpMetadata getMetadata() {
+        return httpMetadata;
     }
 
     public boolean isHasStub() {

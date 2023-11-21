@@ -44,8 +44,8 @@ public class JsonPbCodecFactory implements HttpMessageCodecFactory {
     }
 
     @Override
-    public boolean support(String contentType) {
-        return HttpMessageCodecFactory.super.support(contentType)
+    public boolean supportDecode(String contentType) {
+        return HttpMessageCodecFactory.super.supportDecode(contentType)
                 && ClassUtils.isPresent(
                         "com.google.protobuf.Message", getClass().getClassLoader());
     }

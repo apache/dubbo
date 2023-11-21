@@ -60,12 +60,18 @@ public class DefaultHttp11ServerTransportListener
         switch (methodDescriptor.getRpcType()) {
             case UNARY:
                 Http1ServerChannelObserver http1ChannelObserver = new Http1ServerChannelObserver(httpChannel);
-                http1ChannelObserver.setHttpMessageCodec(getHttpMessageCodec());
+                http1ChannelObserver.findAndSetEncoder(
+                        url,
+                        getHttpMetadata().headers().getFirst(HttpHeaderNames.ACCEPT.getName()),
+                        getFrameworkModel());
                 return new AutoCompleteUnaryServerCallListener(invocation, invoker, http1ChannelObserver);
             case SERVER_STREAM:
                 Http1ServerChannelObserver serverStreamChannelObserver =
                         new Http1ServerStreamChannelObserver(httpChannel);
-                serverStreamChannelObserver.setHttpMessageCodec(getHttpMessageCodec());
+                serverStreamChannelObserver.findAndSetEncoder(
+                        url,
+                        getHttpMetadata().headers().getFirst(HttpHeaderNames.ACCEPT.getName()),
+                        getFrameworkModel());
                 serverStreamChannelObserver.setHeadersCustomizer((headers) -> headers.set(
                         HttpHeaderNames.CONTENT_TYPE.getName(), MediaType.TEXT_EVENT_STREAM_VALUE.getName()));
                 return new AutoCompleteServerStreamServerCallListener(invocation, invoker, serverStreamChannelObserver);

@@ -21,6 +21,8 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -55,5 +57,15 @@ public interface HttpMessageCodec {
     default boolean support(String contentType) {
         MediaType mediaType = this.contentType();
         return mediaType.getName().startsWith(contentType);
+    }
+
+    default ByteArrayOutputStream toByteArrayStream(InputStream in) throws IOException {
+        ByteArrayOutputStream result = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int length;
+        while ((length = in.read(buffer)) != -1) {
+            result.write(buffer, 0, length);
+        }
+        return result;
     }
 }

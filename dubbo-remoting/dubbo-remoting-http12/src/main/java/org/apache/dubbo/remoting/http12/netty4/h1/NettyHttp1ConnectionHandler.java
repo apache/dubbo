@@ -78,6 +78,7 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
     protected void channelRead0(ChannelHandlerContext ctx, Http1Request http1Request) {
         // process h1 request
         Http1ServerTransportListener http1TransportListener = initTransportListenerIfNecessary(ctx, http1Request);
+        initErrorResponseObserver(ctx, http1Request);
         executor.execute(() -> {
             try {
                 http1TransportListener.onMetadata(http1Request);
@@ -108,15 +109,19 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
         if (codecFactory == null) {
             throw new UnsupportedMediaTypeException(contentType);
         }
-        this.errorResponseObserver = new Http1ServerChannelObserver(new NettyHttp1Channel(ctx.channel()));
-        this.errorResponseObserver.setHttpMessageCodec(codecFactory.createCodec(url, frameworkModel, contentType));
         return http1TransportListener;
+    }
+
+    private void initErrorResponseObserver(ChannelHandlerContext ctx, Http1Request request) {
+        String acceptEncoding = request.headers().getFirst(HttpHeaderNames.ACCEPT.getName());
+        this.errorResponseObserver = new Http1ServerChannelObserver(new NettyHttp1Channel(ctx.channel()));
+        this.errorResponseObserver.findAndSetEncoder(url, acceptEncoding, frameworkModel);
     }
 
     private static HttpMessageCodecFactory findSuitableCodec(
             String contentType, List<HttpMessageCodecFactory> candidates) {
         for (HttpMessageCodecFactory factory : candidates) {
-            if (factory.support(contentType)) {
+            if (factory.supportDecode(contentType)) {
                 return factory;
             }
         }

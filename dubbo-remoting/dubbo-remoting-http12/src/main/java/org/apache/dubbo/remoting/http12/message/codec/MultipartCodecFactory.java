@@ -37,7 +37,12 @@ public class MultipartCodecFactory implements HttpMessageCodecFactory {
     }
 
     @Override
-    public boolean support(String contentType) {
+    public boolean supportDecode(String contentType) {
         return contentType.contains(MediaType.MULTIPART_FORM_DATA.getName());
+    }
+
+    @Override
+    public boolean supportEncode(String acceptEncoding) {
+        return false;
     }
 }

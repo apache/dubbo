@@ -81,7 +81,7 @@ public class MultipartCodec implements HttpMessageCodec {
                 String contentType = part.getContentType();
                 boolean decoded = false;
                 for (HttpMessageCodecFactory factory : codecFactories) {
-                    if (factory.support(contentType)) {
+                    if (factory.supportDecode(contentType)) {
                         res[i] = factory.createCodec(url, frameworkModel, contentType)
                                 .decode(part.getInputStream(), targetTypes[i]);
                         decoded = true;

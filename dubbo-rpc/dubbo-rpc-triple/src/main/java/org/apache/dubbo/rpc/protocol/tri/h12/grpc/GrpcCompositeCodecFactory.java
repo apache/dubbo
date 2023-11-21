@@ -44,7 +44,7 @@ public class GrpcCompositeCodecFactory implements HttpMessageCodecFactory {
     }
 
     @Override
-    public boolean support(String contentType) {
+    public boolean supportDecode(String contentType) {
         return contentType.startsWith(MEDIA_TYPE.getName());
     }
 }

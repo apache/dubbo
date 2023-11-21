@@ -16,9 +16,17 @@
  */
 package org.apache.dubbo.remoting.http12;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
+import org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory;
+import org.apache.dubbo.remoting.http12.message.MediaType;
+import org.apache.dubbo.remoting.http12.message.codec.JsonCodecFactory;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import java.util.List;
 
 public abstract class AbstractServerHttpChannelObserver implements CustomizableHttpChannelObserver<Object> {
 
@@ -32,18 +40,18 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
 
     private boolean headerSent;
 
-    private HttpMessageCodec httpMessageCodec;
+    private HttpMessageCodec responseEncoder;
 
     public AbstractServerHttpChannelObserver(HttpChannel httpChannel) {
         this.httpChannel = httpChannel;
     }
 
-    public void setHttpMessageCodec(HttpMessageCodec httpMessageCodec) {
-        this.httpMessageCodec = httpMessageCodec;
+    public void setResponseEncoder(HttpMessageCodec responseEncoder) {
+        this.responseEncoder = responseEncoder;
     }
 
     protected HttpMessageCodec getHttpMessageCodec() {
-        return httpMessageCodec;
+        return responseEncoder;
     }
 
     @Override
@@ -77,7 +85,7 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
             }
             HttpOutputMessage outputMessage = encodeHttpOutputMessage(data);
             preOutputMessage(outputMessage);
-            this.httpMessageCodec.encode(outputMessage.getBody(), data);
+            this.responseEncoder.encode(outputMessage.getBody(), data);
             getHttpChannel().writeMessage(outputMessage);
             postOutputMessage(outputMessage);
         } catch (Throwable e) {
@@ -114,7 +122,7 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
             errorResponse.setMessage(throwable.getMessage());
             this.errorResponseCustomizer.accept(errorResponse, throwable);
             HttpOutputMessage httpOutputMessage = encodeHttpOutputMessage(errorResponse);
-            this.httpMessageCodec.encode(httpOutputMessage.getBody(), errorResponse);
+            this.responseEncoder.encode(httpOutputMessage.getBody(), errorResponse);
             getHttpChannel().writeMessage(httpOutputMessage);
         } catch (Throwable ex) {
             throwable = new EncodeException(ex);
@@ -140,7 +148,7 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
                 .headers()
                 .set(
                         HttpHeaderNames.CONTENT_TYPE.getName(),
-                        httpMessageCodec.responseContentType().getName());
+                        responseEncoder.responseContentType().getName());
         this.headersCustomizer.accept(httpMetadata.headers());
         getHttpChannel().writeHeader(httpMetadata);
         this.headerSent = true;
@@ -153,5 +161,27 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
         }
         this.trailersCustomizer.accept(httpMetadata.headers(), throwable);
         getHttpChannel().writeHeader(httpMetadata);
+    }
+
+    public void findAndSetEncoder(URL url, String acceptEncoding, FrameworkModel frameworkModel) {
+        List<HttpMessageCodecFactory> factories =
+                frameworkModel.getExtensionLoader(HttpMessageCodecFactory.class).getActivateExtensions();
+        this.responseEncoder =
+                findCodecFactoryForEncode(acceptEncoding, factories).createCodec(url, frameworkModel, acceptEncoding);
+    }
+
+    public HttpMessageCodecFactory findCodecFactoryForEncode(
+            String acceptEncoding, List<HttpMessageCodecFactory> candidates) {
+        if (acceptEncoding == null
+                || acceptEncoding.contains(MediaType.ALL_VALUE.getName())
+                || acceptEncoding.contains(MediaType.APPLICATION_JSON_VALUE.getName())) {
+            return new JsonCodecFactory();
+        }
+        for (HttpMessageCodecFactory factory : candidates) {
+            if (factory.supportEncode(acceptEncoding)) {
+                return factory;
+            }
+        }
+        throw new DecodeException("Unsupported accept header:" + acceptEncoding);
     }
 }

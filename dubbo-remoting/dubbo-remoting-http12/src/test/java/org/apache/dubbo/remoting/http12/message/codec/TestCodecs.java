@@ -64,7 +64,7 @@ public class TestCodecs {
     void testUrlForm() {
         InputStream in = new ByteArrayInputStream("Hello=World&Apache=Dubbo&id=10086".getBytes());
         HttpMessageCodec codec = new UrlEncodeFormCodec(
-                FrameworkModel.defaultModel().getBeanFactory().getBean(ConverterUtil.class),new CodecUtil());
+                FrameworkModel.defaultModel().getBeanFactory().getBean(ConverterUtil.class));
         Object res = codec.decode(in, Map.class);
         Assertions.assertTrue(res instanceof Map);
         Map<String, String> r = (Map<String, String>) res;
@@ -86,7 +86,7 @@ public class TestCodecs {
         InputStream in = new ByteArrayInputStream(("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
                         + "<user><location>New York</location><username>JohnDoe</username></user>")
                 .getBytes());
-        HttpMessageCodec codec = new XmlCodec(new CodecUtil());
+        HttpMessageCodec codec = new XmlCodec();
         User user = (User) codec.decode(in, User.class);
         Assertions.assertEquals("JohnDoe", user.getUsername());
         Assertions.assertEquals("New York", user.getLocation());
@@ -108,17 +108,17 @@ public class TestCodecs {
         };
         byte[] utf16Bytes = new byte[] {0x4F, 0x60, 0x59, 0x7D, (byte) 0xFF, 0x0C, 0x4E, 0x16, 0x75, 0x4C};
         InputStream in = new ByteArrayInputStream(asciiBytes);
-        HttpMessageCodec codec = new PlainTextCodec("text/plain; charset=ASCII",new CodecUtil());
+        HttpMessageCodec codec = new PlainTextCodec("text/plain; charset=ASCII");
         String res = (String) codec.decode(in, String.class);
         Assertions.assertEquals("Hello, world", res);
 
         in = new ByteArrayInputStream(utf8Bytes);
-        codec = new PlainTextCodec("text/plain; charset=UTF-8",new CodecUtil());
+        codec = new PlainTextCodec("text/plain; charset=UTF-8");
         res = (String) codec.decode(in, String.class);
         Assertions.assertEquals("你好，世界", res);
 
         in = new ByteArrayInputStream(utf16Bytes);
-        codec = new PlainTextCodec("text/plain; charset=UTF-16",new CodecUtil());
+        codec = new PlainTextCodec("text/plain; charset=UTF-16");
         res = (String) codec.decode(in, String.class);
         Assertions.assertEquals("你好，世界", res);
     }
