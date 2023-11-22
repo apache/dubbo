@@ -59,8 +59,9 @@ class NettyEventLoopFactoryTest {
     @Test
     void eventLoopGroup() {
         if (isEpoll()) {
-            EventLoopGroup eventLoopGroup = NettyEventLoopFactory.eventLoopGroup(1, "test");
-            Assertions.assertTrue(eventLoopGroup instanceof EpollEventLoopGroup);
+            try (EventLoopGroup eventLoopGroup = NettyEventLoopFactory.eventLoopGroup(1, "test")) {
+                Assertions.assertTrue(eventLoopGroup instanceof EpollEventLoopGroup);
+            }
 
             Class<? extends SocketChannel> socketChannelClass = NettyEventLoopFactory.socketChannelClass();
             Assertions.assertEquals(socketChannelClass, EpollSocketChannel.class);
@@ -70,8 +71,9 @@ class NettyEventLoopFactoryTest {
             Assertions.assertEquals(serverSocketChannelClass, EpollServerSocketChannel.class);
 
         } else {
-            EventLoopGroup eventLoopGroup = NettyEventLoopFactory.eventLoopGroup(1, "test");
-            Assertions.assertTrue(eventLoopGroup instanceof NioEventLoopGroup);
+            try (EventLoopGroup eventLoopGroup = NettyEventLoopFactory.eventLoopGroup(1, "test")) {
+                Assertions.assertTrue(eventLoopGroup instanceof NioEventLoopGroup);
+            }
 
             Class<? extends SocketChannel> socketChannelClass = NettyEventLoopFactory.socketChannelClass();
             Assertions.assertEquals(socketChannelClass, NioSocketChannel.class);
@@ -89,8 +91,9 @@ class NettyEventLoopFactoryTest {
         System.setProperty(NETTY_IO_URING_ENABLE_KEY, "true");
 
         if (isIOUring()) {
-            EventLoopGroup eventLoopGroup = NettyEventLoopFactory.eventLoopGroup(1, "test");
-            Assertions.assertTrue(eventLoopGroup instanceof IOUringEventLoopGroup);
+            try (EventLoopGroup eventLoopGroup = NettyEventLoopFactory.eventLoopGroup(1, "test")) {
+                Assertions.assertTrue(eventLoopGroup instanceof IOUringEventLoopGroup);
+            }
 
             Class<?> socketChannelClass = NettyEventLoopFactory.socketChannelClass();
             Assertions.assertEquals(socketChannelClass, IOUringSocketChannel.class);
@@ -98,8 +101,9 @@ class NettyEventLoopFactoryTest {
             Class<?> serverSocketChannelClass = NettyEventLoopFactory.serverSocketChannelClass();
             Assertions.assertEquals(serverSocketChannelClass, IOUringServerSocketChannel.class);
         } else {
-            EventLoopGroup eventLoopGroup = NettyEventLoopFactory.eventLoopGroup(1, "test");
-            Assertions.assertTrue(eventLoopGroup instanceof NioEventLoopGroup);
+            try (EventLoopGroup eventLoopGroup = NettyEventLoopFactory.eventLoopGroup(1, "test")) {
+                Assertions.assertTrue(eventLoopGroup instanceof NioEventLoopGroup);
+            }
 
             Class<? extends SocketChannel> socketChannelClass = NettyEventLoopFactory.socketChannelClass();
             Assertions.assertEquals(socketChannelClass, NioSocketChannel.class);
