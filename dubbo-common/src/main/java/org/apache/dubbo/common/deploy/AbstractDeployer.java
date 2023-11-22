@@ -62,7 +62,7 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
 
     @Override
     public boolean isStarted() {
-        return state == STARTED || state == COMPLETION;
+        return state == STARTED;
     }
 
     @Override

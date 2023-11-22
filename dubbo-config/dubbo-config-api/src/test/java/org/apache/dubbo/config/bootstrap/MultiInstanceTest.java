@@ -25,6 +25,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ConfigKeys;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
@@ -32,6 +33,7 @@ import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.SysProps;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.api.Greeting;
+import org.apache.dubbo.config.context.ConfigMode;
 import org.apache.dubbo.config.mock.GreetingLocal2;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.registry.client.migration.MigrationInvoker;
@@ -713,6 +715,7 @@ class MultiInstanceTest {
     void testOldApiDeploy() throws Exception {
 
         try {
+            SysProps.setProperty(ConfigKeys.DUBBO_CONFIG_MODE, ConfigMode.OVERRIDE.name());
             // provider app
             ApplicationModel providerApplicationModel = ApplicationModel.defaultModel();
             ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
@@ -749,7 +752,7 @@ class MultiInstanceTest {
             ApplicationModel consumerApplicationModel = ApplicationModel.defaultModel();
             ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
             referenceConfig.setScopeModel(consumerApplicationModel.getDefaultModule());
-            referenceConfig.setApplication(new ApplicationConfig("provider-app"));
+            referenceConfig.setApplication(new ApplicationConfig("consumer-app"));
             referenceConfig.setInterface(DemoService.class);
             referenceConfig.setRegistry(new RegistryConfig(registryConfig.getAddress()));
             referenceConfig.setScope("remote");
