@@ -40,7 +40,8 @@ public interface DeployListener<E extends ScopeModel> {
     void onCompletion(E scopeModel);
 
     /**
-     * Triggered before the app is destroyed, can do some customized things before offline the service.
+     * Triggered before the app is destroyed,
+     * can do some customized things before offline the service and destroy reference.
      */
     void onStopping(E scopeModel);
 
