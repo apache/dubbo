@@ -122,6 +122,8 @@ public interface Constants {
 
     String NETTY_EPOLL_ENABLE_KEY = "netty.epoll.enable";
 
+    String NETTY_IO_URING_ENABLE_KEY = "netty.io_uring_enable";
+
     String BIND_IP_KEY = "bind.ip";
 
     String BIND_PORT_KEY = "bind.port";

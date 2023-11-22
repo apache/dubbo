@@ -33,6 +33,7 @@
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <netty-iouring.version>0.0.21.Final</netty-iouring.version>
   </properties>
 
   <dependencies>
@@ -70,5 +71,24 @@
       <classifier>linux-aarch_64</classifier>
       <scope>runtime</scope>
     </dependency>
+
+    <!-- io_uring deps -->
+    <dependency>
+      <groupId>io.netty.incubator</groupId>
+      <artifactId>netty-incubator-transport-classes-io_uring</artifactId>
+      <version>${netty-iouring.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.netty.incubator</groupId>
+      <artifactId>netty-incubator-transport-native-io_uring</artifactId>
+      <version>${netty-iouring.version}</version>
+      <classifier>linux-x86_64</classifier>
+    </dependency>
+    <dependency>
+      <groupId>io.netty.incubator</groupId>
+      <artifactId>netty-incubator-transport-native-io_uring</artifactId>
+      <version>${netty-iouring.version}</version>
+      <classifier>linux-aarch_64</classifier>
+      </dependency>
   </dependencies>
 </project>
