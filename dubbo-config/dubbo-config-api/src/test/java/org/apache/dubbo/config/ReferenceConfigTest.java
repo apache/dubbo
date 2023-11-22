@@ -161,7 +161,7 @@ class ReferenceConfigTest {
         applicationConfig.setArchitecture("architecture1");
         applicationConfig.setEnvironment("test");
         applicationConfig.setCompiler("javassist");
-        applicationConfig.setLogger("log4j");
+        applicationConfig.setLogger("log4j2");
         applicationConfig.setDumpDirectory("/");
         applicationConfig.setQosEnable(false);
         applicationConfig.setQosHost("127.0.0.1");

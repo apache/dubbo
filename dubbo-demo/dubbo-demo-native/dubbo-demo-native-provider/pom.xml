@@ -118,6 +118,7 @@
       <artifactId>dubbo-serialization-fastjson2</artifactId>
       <version>${project.version}</version>
     </dependency>
+
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-filter-cache</artifactId>
@@ -133,14 +134,20 @@
       <artifactId>dubbo-remoting-http</artifactId>
       <version>${project.version}</version>
     </dependency>
+
     <dependency>
       <groupId>com.alibaba</groupId>
       <artifactId>fastjson</artifactId>
     </dependency>
+
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-native</artifactId>
       <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
     </dependency>
   </dependencies>
 
@@ -150,7 +157,6 @@
       <properties>
         <profileActive>native</profileActive>
       </properties>
-
       <build>
         <plugins>
           <plugin>

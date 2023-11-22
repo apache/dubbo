@@ -42,7 +42,6 @@
     <spring-boot.version>2.7.17</spring-boot.version>
     <!-- Spring boot buddy is lower than the delivery dependency package version and can only show the defined dependency version -->
     <byte-buddy.version>1.14.9</byte-buddy.version>
-    <slf4j-log4j12_version>1.7.33</slf4j-log4j12_version>
     <mockito_version>4.11.0</mockito_version>
   </properties>
 
@@ -73,12 +72,11 @@
             <groupId>org.slf4j</groupId>
             <artifactId>log4j-over-slf4j</artifactId>
           </exclusion>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>log4j-to-slf4j</artifactId>
+          </exclusion>
         </exclusions>
-      </dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-log4j12</artifactId>
-        <version>${slf4j-log4j12_version}</version>
       </dependency>
       <dependency>
         <groupId>org.mockito</groupId>
@@ -121,9 +119,8 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-      <version>${slf4j-log4j12_version}</version>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
