@@ -90,7 +90,7 @@
       </activation>
       <properties>
         <curator.test.version>5.1.0</curator.test.version>
-        <zookeeper.version>3.6.0</zookeeper.version>
+        <zookeeper.version>3.7.2</zookeeper.version>
         <curator5.version>5.1.0</curator5.version>
       </properties>
     </profile>
