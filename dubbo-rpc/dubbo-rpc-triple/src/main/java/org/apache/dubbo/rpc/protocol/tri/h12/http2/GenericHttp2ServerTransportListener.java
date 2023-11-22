@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol.tri.h12.http2;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
-import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.RequestMetadata;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
@@ -128,8 +127,6 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
         if (metadata.isEndStream()) {
             return;
         }
-        this.serverChannelObserver.findAndSetEncoder(
-                getUrl(), metadata.headers(), getFrameworkModel());
         super.doOnMetadata(metadata);
     }
 
@@ -165,8 +162,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     @Override
     protected void onMetadataCompletion(Http2Header metadata) {
         super.onMetadataCompletion(metadata);
-        this.serverChannelObserver.findAndSetEncoder(
-                getUrl(), metadata.headers(), getFrameworkModel());
+        this.serverChannelObserver.findAndSetEncoder(getUrl(), metadata.headers(), getFrameworkModel());
         this.serverChannelObserver.request(1);
     }
 

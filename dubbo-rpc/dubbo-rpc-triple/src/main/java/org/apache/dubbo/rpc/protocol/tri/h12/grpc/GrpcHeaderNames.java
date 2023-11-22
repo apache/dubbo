@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
 public enum GrpcHeaderNames {
     GRPC_STATUS("grpc-status"),
     GRPC_MESSAGE("grpc-message"),
-    GRPC_ENCODING("grpc-encoding"), //client request compress type
+    GRPC_ENCODING("grpc-encoding"), // client request compress type
     GRPC_ACCEPT_ENCODING("grpc-accept-encoding"), // client required response compress type
     GRPC_TIMEOUT("grpc-timeout"),
     ;

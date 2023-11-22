@@ -48,7 +48,7 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
         this.responseEncoder = responseEncoder;
     }
 
-    protected HttpMessageCodec getHttpMessageCodec() {
+    public HttpMessageCodec getResponseEncoder() {
         return responseEncoder;
     }
 
