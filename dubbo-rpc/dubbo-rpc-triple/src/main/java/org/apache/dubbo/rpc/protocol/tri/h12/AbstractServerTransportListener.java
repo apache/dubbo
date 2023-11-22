@@ -167,7 +167,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         if (invoker == null) {
             throw new UnimplementedException(serviceName);
         }
-        HttpMessageCodec httpMessageCodec = determineHttpMessageCodec(contentType);
+        HttpMessageCodec httpMessageCodec = determineHttpMessageCodec(headers);
         if (httpMessageCodec == null) {
             throw new UnsupportedMediaTypeException(contentType);
         }
@@ -250,11 +250,11 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         return invoker;
     }
 
-    protected HttpMessageCodec determineHttpMessageCodec(String contentType) {
+    protected HttpMessageCodec determineHttpMessageCodec(HttpHeaders headers) {
         for (HttpMessageCodecFactory httpMessageCodecFactory :
                 frameworkModel.getExtensionLoader(HttpMessageCodecFactory.class).getActivateExtensions()) {
-            if (httpMessageCodecFactory.supportDecode(contentType)) {
-                return httpMessageCodecFactory.createCodec(invoker.getUrl(), frameworkModel, contentType);
+            if (httpMessageCodecFactory.supportDecode(headers)) {
+                return httpMessageCodecFactory.createCodec(invoker.getUrl(), frameworkModel, headers);
             }
         }
         return null;

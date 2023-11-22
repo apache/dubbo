@@ -19,6 +19,8 @@ package org.apache.dubbo.remoting.http12.message;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.remoting.http12.HttpHeaderNames;
+import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 /**
@@ -27,16 +29,18 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface HttpMessageCodecFactory {
 
-    HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String fullContentType);
+    HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, HttpHeaders headers);
 
     MediaType contentType();
 
-    default boolean supportDecode(String contentType) {
+    default boolean supportDecode(HttpHeaders headers) {
+        String contentType = headers.getFirst(HttpHeaderNames.CONTENT_TYPE.getName());
         MediaType mediaType = this.contentType();
-        return mediaType.getName().startsWith(contentType);
+        return contentType.startsWith(mediaType.getName());
     }
 
-    default boolean supportEncode(String acceptEncoding) {
-        return acceptEncoding.contains(this.contentType().getName());
+    default boolean supportEncode(HttpHeaders headers) {
+        String acceptEncoding = headers.getFirst(HttpHeaderNames.ACCEPT.getName());
+        return acceptEncoding.startsWith(this.contentType().getName());
     }
 }

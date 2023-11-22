@@ -22,8 +22,6 @@ import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory;
-import org.apache.dubbo.remoting.http12.message.MediaType;
-import org.apache.dubbo.remoting.http12.message.codec.JsonCodecFactory;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.List;
@@ -163,25 +161,19 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
         getHttpChannel().writeHeader(httpMetadata);
     }
 
-    public void findAndSetEncoder(URL url, String acceptEncoding, FrameworkModel frameworkModel) {
+    public void findAndSetEncoder(URL url, HttpHeaders headers, FrameworkModel frameworkModel) {
         List<HttpMessageCodecFactory> factories =
                 frameworkModel.getExtensionLoader(HttpMessageCodecFactory.class).getActivateExtensions();
-        this.responseEncoder =
-                findCodecFactoryForEncode(acceptEncoding, factories).createCodec(url, frameworkModel, acceptEncoding);
+        this.responseEncoder = findCodecFactoryForEncode(headers, factories).createCodec(url, frameworkModel, headers);
     }
 
     public HttpMessageCodecFactory findCodecFactoryForEncode(
-            String acceptEncoding, List<HttpMessageCodecFactory> candidates) {
-        if (acceptEncoding == null
-                || acceptEncoding.contains(MediaType.ALL_VALUE.getName())
-                || acceptEncoding.contains(MediaType.APPLICATION_JSON_VALUE.getName())) {
-            return new JsonCodecFactory();
-        }
+            HttpHeaders headers, List<HttpMessageCodecFactory> candidates) {
         for (HttpMessageCodecFactory factory : candidates) {
-            if (factory.supportEncode(acceptEncoding)) {
+            if (factory.supportEncode(headers)) {
                 return factory;
             }
         }
-        throw new DecodeException("Unsupported accept header:" + acceptEncoding);
+        throw new DecodeException("Can not recognize accept header:" + headers.toString());
     }
 }

@@ -129,7 +129,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
             return;
         }
         this.serverChannelObserver.findAndSetEncoder(
-                getUrl(), metadata.headers().getFirst(HttpHeaderNames.ACCEPT.getName()), getFrameworkModel());
+                getUrl(), metadata.headers(), getFrameworkModel());
         super.doOnMetadata(metadata);
     }
 
@@ -166,7 +166,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     protected void onMetadataCompletion(Http2Header metadata) {
         super.onMetadataCompletion(metadata);
         this.serverChannelObserver.findAndSetEncoder(
-                getUrl(), metadata.headers().getFirst(HttpHeaderNames.ACCEPT.getName()), getFrameworkModel());
+                getUrl(), metadata.headers(), getFrameworkModel());
         this.serverChannelObserver.request(1);
     }
 

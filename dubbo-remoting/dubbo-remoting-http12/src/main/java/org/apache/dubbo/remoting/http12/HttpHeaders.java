@@ -212,6 +212,14 @@ public class HttpHeaders implements Map<String, List<String>>, Serializable, Clo
         return result;
     }
 
+    public String getContentType() {
+        return getFirst(HttpHeaderNames.CONTENT_TYPE.getName());
+    }
+
+    public String getAcceptEncoding() {
+        return getFirst(HttpHeaderNames.ACCEPT.getName());
+    }
+
     @Override
     public boolean equals(Object other) {
         return (this == other || this.targetMap.equals(other));

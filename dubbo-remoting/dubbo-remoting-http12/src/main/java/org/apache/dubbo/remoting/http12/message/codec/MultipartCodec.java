@@ -17,6 +17,8 @@
 package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.http12.HttpHeaderNames;
+import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
@@ -28,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.fileupload.FileItem;
@@ -43,10 +46,13 @@ public class MultipartCodec implements HttpMessageCodec {
 
     private final String headerContentType;
 
-    public MultipartCodec(URL url, FrameworkModel frameworkModel, String fullContentType) {
+    private final HttpHeaders headers;
+
+    public MultipartCodec(URL url, FrameworkModel frameworkModel, HttpHeaders headers) {
         this.url = url;
         this.frameworkModel = frameworkModel;
-        this.headerContentType = fullContentType;
+        this.headers = headers;
+        this.headerContentType = headers.getContentType();
     }
 
     @Override
@@ -78,18 +84,19 @@ public class MultipartCodec implements HttpMessageCodec {
                     res[i] = part.get();
                     continue;
                 }
-                String contentType = part.getContentType();
+                HttpHeaders subHeader = new HttpHeaders();
+                subHeader.put(HttpHeaderNames.CONTENT_TYPE.getName(), Collections.singletonList(part.getContentType()));
                 boolean decoded = false;
                 for (HttpMessageCodecFactory factory : codecFactories) {
-                    if (factory.supportDecode(contentType)) {
-                        res[i] = factory.createCodec(url, frameworkModel, contentType)
+                    if (factory.supportDecode(subHeader)) {
+                        res[i] = factory.createCodec(url, frameworkModel, subHeader)
                                 .decode(part.getInputStream(), targetTypes[i]);
                         decoded = true;
                     }
                 }
                 if (!decoded) {
-                    throw new DecodeException(
-                            "No available codec found for content type:" + contentType + ",body part index:" + i);
+                    throw new DecodeException("No available codec found for content type:" + part.getContentType()
+                            + ",body part index:" + i);
                 }
             }
         } catch (IOException ioException) {

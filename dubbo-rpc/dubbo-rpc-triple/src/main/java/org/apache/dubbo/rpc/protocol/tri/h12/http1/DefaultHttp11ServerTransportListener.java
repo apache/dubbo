@@ -62,7 +62,7 @@ public class DefaultHttp11ServerTransportListener
                 Http1ServerChannelObserver http1ChannelObserver = new Http1ServerChannelObserver(httpChannel);
                 http1ChannelObserver.findAndSetEncoder(
                         url,
-                        getHttpMetadata().headers().getFirst(HttpHeaderNames.ACCEPT.getName()),
+                        getHttpMetadata().headers(),
                         getFrameworkModel());
                 return new AutoCompleteUnaryServerCallListener(invocation, invoker, http1ChannelObserver);
             case SERVER_STREAM:
@@ -70,7 +70,7 @@ public class DefaultHttp11ServerTransportListener
                         new Http1ServerStreamChannelObserver(httpChannel);
                 serverStreamChannelObserver.findAndSetEncoder(
                         url,
-                        getHttpMetadata().headers().getFirst(HttpHeaderNames.ACCEPT.getName()),
+                        getHttpMetadata().headers(),
                         getFrameworkModel());
                 serverStreamChannelObserver.setHeadersCustomizer((headers) -> headers.set(
                         HttpHeaderNames.CONTENT_TYPE.getName(), MediaType.TEXT_EVENT_STREAM_VALUE.getName()));
