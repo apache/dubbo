@@ -27,9 +27,11 @@
   <packaging>jar</packaging>
   <name>${project.artifactId}</name>
   <description>The rest rpc module of dubbo project</description>
+
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>
   </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
@@ -164,6 +166,17 @@
     <dependency>
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-openfeign-core</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-logging</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

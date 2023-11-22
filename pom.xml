@@ -403,7 +403,7 @@
                 <echo append="true" file="${version_file}" message="artifact.id=${project.artifactId}${line.separator}" />
                 <echo append="true" file="${version_file}" message="git.commit.id=" />
                 <!-- get the latest commit id -->
-                <exec append="true" error=".git.exec.error" executable="git" failifexecutionfails="false" output="${version_file}" timeout="3000">
+                <exec append="true" error="${project.build.directory}/.git.exec.error" executable="git" failifexecutionfails="false" output="${version_file}" timeout="3000">
                   <arg line="rev-parse HEAD" />
                 </exec>
               </target>
@@ -661,7 +661,6 @@
               <charset>UTF-8</charset>
               <encoding>UTF-8</encoding>
               <docencoding>UTF-8</docencoding>
-              <source>${java_source_version}</source>
               <links>
                 <link>https://docs.oracle.com/javase/8/docs/api</link>
               </links>
