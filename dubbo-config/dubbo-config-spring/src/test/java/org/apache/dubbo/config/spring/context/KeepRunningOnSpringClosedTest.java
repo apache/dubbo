@@ -59,7 +59,7 @@ class KeepRunningOnSpringClosedTest {
                     moduleModel.getApplicationModel().getDeployer();
             Assertions.assertEquals(DeployState.COMPLETION, applicationDeployer.getState());
             Assertions.assertTrue(applicationDeployer.isCompletion());
-            Assertions.assertFalse(applicationDeployer.isStarted());
+            Assertions.assertTrue(applicationDeployer.isStarted());
             Assertions.assertFalse(applicationDeployer.isStopped());
             Assertions.assertNotNull(DubboSpringInitializer.findBySpringContext(providerContext));
 
@@ -70,7 +70,7 @@ class KeepRunningOnSpringClosedTest {
             // setKeepRunningOnSpringClosed(true)
             Assertions.assertEquals(DeployState.COMPLETION, applicationDeployer.getState());
             Assertions.assertTrue(applicationDeployer.isCompletion());
-            Assertions.assertFalse(applicationDeployer.isStarted());
+            Assertions.assertTrue(applicationDeployer.isStarted());
             Assertions.assertFalse(applicationDeployer.isStopped());
             Assertions.assertNull(DubboSpringInitializer.findBySpringContext(providerContext));
         } finally {

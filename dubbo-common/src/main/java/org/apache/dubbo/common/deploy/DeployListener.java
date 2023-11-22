@@ -37,7 +37,7 @@ public interface DeployListener<E extends ScopeModel> {
     /**
      * Triggered after deployer startup is complete.
      */
-    void onCompletion(E scopeModel);
+    default void onCompletion(E scopeModel) {}
 
     /**
      * Triggered before the app is destroyed,
