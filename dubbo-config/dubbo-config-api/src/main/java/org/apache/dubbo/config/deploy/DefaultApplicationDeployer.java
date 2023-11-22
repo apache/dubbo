@@ -1232,10 +1232,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 pending++;
             } else if (deployer.isStarting()) {
                 starting++;
-            } else if (deployer.isStarted()) {
-                started++;
             } else if (deployer.isCompletion()) {
                 completion++;
+            } else if (deployer.isStarted()) {
+                started++;
             } else if (deployer.isStopping()) {
                 stopping++;
             } else if (deployer.isStopped()) {
