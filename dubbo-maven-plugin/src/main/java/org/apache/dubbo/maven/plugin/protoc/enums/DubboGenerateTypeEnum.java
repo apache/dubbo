@@ -21,9 +21,6 @@ public enum DubboGenerateTypeEnum {
     Dubbo3("dubbo3", "org.apache.dubbo.gen.dubbo.Dubbo3Generator"),
     Tri("tri", "org.apache.dubbo.gen.tri.Dubbo3TripleGenerator"),
     Tri_reactor("tri_reactor", "org.apache.dubbo.gen.tri.reactive.ReactorDubbo3TripleGenerator"),
-    Grpc("grpc", "org.apache.dubbo.gen.grpc.DubboGrpcGenerator"),
-    Grpc_reactor("grpc_reactor", "org.apache.dubbo.gen.grpc.reactive.ReactorDubboGrpcGenerator"),
-    Grpc_rx("grpc_rx", "org.apache.dubbo.gen.grpc.reactive.RxDubboGrpcGenerator"),
     ;
     private String id;
     private String mainClass;
