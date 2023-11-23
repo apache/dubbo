@@ -84,6 +84,7 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
             HttpOutputMessage outputMessage = encodeHttpOutputMessage(data);
             preOutputMessage(outputMessage);
             this.responseEncoder.encode(outputMessage.getBody(), data);
+            // TODO: write时写入的序列化信息是客户端支持的吗？
             getHttpChannel().writeMessage(outputMessage);
             postOutputMessage(outputMessage);
         } catch (Throwable e) {

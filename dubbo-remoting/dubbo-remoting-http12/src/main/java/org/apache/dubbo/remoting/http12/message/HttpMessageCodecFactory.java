@@ -42,6 +42,6 @@ public interface HttpMessageCodecFactory {
     default boolean supportEncode(HttpHeaders headers) {
         String acceptEncoding = headers.getFirst(HttpHeaderNames.ACCEPT.getName());
         return acceptEncoding != null
-                && acceptEncoding.startsWith(this.contentType().getName());
+                && acceptEncoding.contains(this.contentType().getName());
     }
 }

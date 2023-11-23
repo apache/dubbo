@@ -134,6 +134,8 @@ public class UrlUtils {
                 .filter(StringUtils::isNotBlank)
                 .ifPresent(serializations::add);
         serializations.add(DefaultSerializationSelector.getDefaultRemotingSerialization());
+        System.out.println("Trying to find serializations from URL:"+url);
+        System.out.println("Found serialization(s):"+serializations);
         return Collections.unmodifiableSet(serializations);
     }
 
