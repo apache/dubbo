@@ -17,6 +17,8 @@
 package org.apache.dubbo.demo.graalvm.provider;
 
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.constants.CommonConstants.DubboProperty;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
@@ -32,9 +34,9 @@ public class Application {
     private static final String REGISTRY_URL = "zookeeper://127.0.0.1:2181";
 
     public static void main(String[] args) throws Exception {
-        System.setProperty("dubbo.application.logger", "log4j");
+        SystemPropertyConfigUtils.setSystemProperty(DubboProperty.DUBBO_APPLICATION_LOGGER, "logback");
         System.setProperty("native", "true");
-        System.setProperty("dubbo.json-framework.prefer", "fastjson");
+        SystemPropertyConfigUtils.setSystemProperty(DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME, "fastjson");
         startWithBootstrap();
         System.in.read();
     }

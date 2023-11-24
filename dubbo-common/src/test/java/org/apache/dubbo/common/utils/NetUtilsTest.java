@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.constants.CommonConstants;
+
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -26,7 +28,6 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_NETWORK_IGNORED_INTERFACE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
@@ -387,14 +388,17 @@ class NetUtilsTest {
     }
 
     private String getIgnoredInterfaces() {
-        return System.getProperty(DUBBO_NETWORK_IGNORED_INTERFACE);
+        return SystemPropertyConfigUtils.getSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_NETWORK_IGNORED_INTERFACE);
     }
 
     private void setIgnoredInterfaces(String ignoredInterfaces) {
         if (ignoredInterfaces != null) {
-            System.setProperty(DUBBO_NETWORK_IGNORED_INTERFACE, ignoredInterfaces);
+            SystemPropertyConfigUtils.setSystemProperty(
+                    CommonConstants.DubboProperty.DUBBO_NETWORK_IGNORED_INTERFACE, ignoredInterfaces);
         } else {
-            System.setProperty(DUBBO_NETWORK_IGNORED_INTERFACE, "");
+            SystemPropertyConfigUtils.setSystemProperty(
+                    CommonConstants.DubboProperty.DUBBO_NETWORK_IGNORED_INTERFACE, "");
         }
     }
 }

@@ -35,7 +35,8 @@ public class JsonUtils {
         if (jsonUtil == null) {
             synchronized (JsonUtils.class) {
                 if (jsonUtil == null) {
-                    String preferJsonFrameworkName = System.getProperty(CommonConstants.PREFER_JSON_FRAMEWORK_NAME);
+                    String preferJsonFrameworkName = SystemPropertyConfigUtils.getSystemProperty(
+                            CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME);
                     if (StringUtils.isNotEmpty(preferJsonFrameworkName)) {
                         try {
                             JsonUtil instance = null;

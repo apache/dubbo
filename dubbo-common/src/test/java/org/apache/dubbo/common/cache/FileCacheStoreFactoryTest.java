@@ -71,9 +71,9 @@ class FileCacheStoreFactoryTest {
     }
 
     private String getDirectoryOfClassPath() throws URISyntaxException {
-        URL resource = this.getClass().getResource("/log4j.xml");
+        URL resource = this.getClass().getResource("/log4j2-test.xml");
         String path = Paths.get(resource.toURI()).toFile().getAbsolutePath();
-        int index = path.indexOf("log4j.xml");
+        int index = path.indexOf("log4j2-test.xml");
         String directoryPath = path.substring(0, index);
         return directoryPath;
     }

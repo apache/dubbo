@@ -21,6 +21,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -57,7 +58,7 @@ class NoAnnotationRestProtocolTest {
                 setJson(null);
             }
         }.clearJson();
-        System.clearProperty(CommonConstants.PREFER_JSON_FRAMEWORK_NAME);
+        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME);
     }
 
     @Test
@@ -69,7 +70,8 @@ class NoAnnotationRestProtocolTest {
                     setJson(null);
                 }
             }.clearJson();
-            System.setProperty(CommonConstants.PREFER_JSON_FRAMEWORK_NAME, json);
+            SystemPropertyConfigUtils.setSystemProperty(
+                    CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME, json);
             testRestProtocol();
         }
     }

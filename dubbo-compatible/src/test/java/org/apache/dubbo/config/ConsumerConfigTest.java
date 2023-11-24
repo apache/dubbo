@@ -16,9 +16,12 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
+
 import com.alibaba.dubbo.config.ConsumerConfig;
 import org.junit.jupiter.api.Test;
 
+import static org.apache.dubbo.common.constants.CommonConstants.SystemProperty.SYSTEM_TCP_RESPONSE_TIMEOUT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -27,13 +30,13 @@ class ConsumerConfigTest {
     @Test
     void testTimeout() throws Exception {
         try {
-            System.clearProperty("sun.rmi.transport.tcp.responseTimeout");
+            SystemPropertyConfigUtils.clearSystemProperty(SYSTEM_TCP_RESPONSE_TIMEOUT);
             ConsumerConfig consumer = new ConsumerConfig();
             consumer.setTimeout(10);
             assertThat(consumer.getTimeout(), is(10));
-            assertThat(System.getProperty("sun.rmi.transport.tcp.responseTimeout"), equalTo("10"));
+            assertThat(SystemPropertyConfigUtils.getSystemProperty(SYSTEM_TCP_RESPONSE_TIMEOUT), equalTo("10"));
         } finally {
-            System.clearProperty("sun.rmi.transport.tcp.responseTimeout");
+            SystemPropertyConfigUtils.clearSystemProperty(SYSTEM_TCP_RESPONSE_TIMEOUT);
         }
     }
 
