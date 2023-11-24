@@ -88,6 +88,10 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
         }
     }
 
+    protected String toMetadataReportKey(URL url){
+        return url.toServiceString();
+    }
+
     @Override
     public void destroy() {
         lock.lock();

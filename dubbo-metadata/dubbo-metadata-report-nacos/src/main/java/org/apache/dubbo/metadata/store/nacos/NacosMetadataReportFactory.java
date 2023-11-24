@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata.store.nacos;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
 
@@ -24,8 +25,20 @@ import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
  * metadata report factory impl for nacos
  */
 public class NacosMetadataReportFactory extends AbstractMetadataReportFactory {
+
+    private static final String NAME_SPACE_KEY = "namespace";
+
     @Override
     protected MetadataReport createMetadataReport(URL url) {
         return new NacosMetadataReport(url);
+    }
+
+    @Override
+    protected String toMetadataReportKey(URL url) {
+        String namespace = url.getParameter(NAME_SPACE_KEY);
+        if(!StringUtils.isEmpty(namespace)){
+            return URL.valueOf(url.getServiceKey()).addParameter(NAME_SPACE_KEY ,namespace).toString();
+        }
+        return super.toMetadataReportKey(url);
     }
 }
