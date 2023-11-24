@@ -36,9 +36,17 @@ public class NacosMetadataReportFactory extends AbstractMetadataReportFactory {
     @Override
     protected String toMetadataReportKey(URL url) {
         String namespace = url.getParameter(NAME_SPACE_KEY);
-        if(!StringUtils.isEmpty(namespace)){
-            return URL.valueOf(url.getServiceKey()).addParameter(NAME_SPACE_KEY ,namespace).toString();
+        if (!StringUtils.isEmpty(namespace)) {
+            return URL.valueOf(url.getServiceKey())
+                    .addParameter(NAME_SPACE_KEY, namespace)
+                    .toString();
         }
         return super.toMetadataReportKey(url);
+    }
+
+    @Override
+    public String relatedRegistryIdSuffix(URL url) {
+        String namespace = url.getParameter(NAME_SPACE_KEY);
+        return namespace == null ? "" : ":"+NAME_SPACE_KEY+"=" + namespace;
     }
 }

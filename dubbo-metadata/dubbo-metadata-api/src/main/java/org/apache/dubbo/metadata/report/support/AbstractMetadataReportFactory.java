@@ -50,7 +50,7 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
     @Override
     public MetadataReport getMetadataReport(URL url) {
         url = url.setPath(MetadataReport.class.getName()).removeParameters(EXPORT_KEY, REFER_KEY);
-        String key = url.toServiceString();
+        String key = toMetadataReportKey(url);
 
         MetadataReport metadataReport = serviceStoreMap.get(key);
         if (metadataReport != null) {
@@ -88,7 +88,7 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
         }
     }
 
-    protected String toMetadataReportKey(URL url){
+    protected String toMetadataReportKey(URL url) {
         return url.toServiceString();
     }
 
