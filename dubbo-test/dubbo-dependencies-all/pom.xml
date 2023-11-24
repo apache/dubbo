@@ -99,18 +99,6 @@
       <version>${project.version}</version>
     </dependency>
 
-    <!-- container -->
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-container-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-container-spring</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
     <!-- distribution -->
     <dependency>
       <groupId>org.apache.dubbo</groupId>
