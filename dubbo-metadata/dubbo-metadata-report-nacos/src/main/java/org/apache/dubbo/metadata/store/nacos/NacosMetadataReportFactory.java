@@ -47,6 +47,6 @@ public class NacosMetadataReportFactory extends AbstractMetadataReportFactory {
     @Override
     public String relatedRegistryIdSuffix(URL url) {
         String namespace = url.getParameter(NAME_SPACE_KEY);
-        return namespace == null ? "" : ":"+NAME_SPACE_KEY+"=" + namespace;
+        return namespace == null ? "" : ":" + NAME_SPACE_KEY + "=" + namespace;
     }
 }
