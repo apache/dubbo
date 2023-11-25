@@ -24,6 +24,7 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CacheableSupplier;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Codec;
 import org.apache.dubbo.remoting.Constants;
@@ -56,11 +57,11 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KE
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PAYLOAD;
+import static org.apache.dubbo.common.constants.CommonConstants.SystemProperty.SERIALIZATION_SECURITY_CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DECODE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_EXCEED_PAYLOAD_LIMIT;
 import static org.apache.dubbo.rpc.Constants.SERIALIZATION_ID_KEY;
-import static org.apache.dubbo.rpc.Constants.SERIALIZATION_SECURITY_CHECK_KEY;
 
 public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Decodeable {
 
@@ -82,7 +83,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
     protected final transient Supplier<CallbackServiceCodec> callbackServiceCodecFactory;
 
     private static final boolean CHECK_SERIALIZATION =
-            Boolean.parseBoolean(System.getProperty(SERIALIZATION_SECURITY_CHECK_KEY, "true"));
+            Boolean.parseBoolean(SystemPropertyConfigUtils.getSystemProperty(SERIALIZATION_SECURITY_CHECK_KEY, "true"));
 
     public DecodeableRpcInvocation(
             FrameworkModel frameworkModel, Channel channel, Request request, InputStream is, byte id) {

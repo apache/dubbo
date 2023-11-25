@@ -19,6 +19,7 @@ package org.apache.dubbo.config.spring;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ArgumentConfig;
 import org.apache.dubbo.config.ConsumerConfig;
@@ -66,6 +67,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_BEAN;
+import static org.apache.dubbo.common.constants.CommonConstants.SystemProperty.SYSTEM_TCP_RESPONSE_TIMEOUT;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -371,12 +373,12 @@ class ConfigTest {
 
     @Test
     void testRmiTimeout() throws Exception {
-        System.clearProperty("sun.rmi.transport.tcp.responseTimeout");
+        SystemPropertyConfigUtils.clearSystemProperty(SYSTEM_TCP_RESPONSE_TIMEOUT);
         ConsumerConfig consumer = new ConsumerConfig();
         consumer.setTimeout(1000);
-        assertEquals("1000", System.getProperty("sun.rmi.transport.tcp.responseTimeout"));
+        assertEquals("1000", SystemPropertyConfigUtils.getSystemProperty(SYSTEM_TCP_RESPONSE_TIMEOUT));
         consumer.setTimeout(2000);
-        assertEquals("1000", System.getProperty("sun.rmi.transport.tcp.responseTimeout"));
+        assertEquals("1000", SystemPropertyConfigUtils.getSystemProperty(SYSTEM_TCP_RESPONSE_TIMEOUT));
     }
 
     @Test

@@ -16,7 +16,9 @@
  */
 package org.apache.dubbo.registry.client.metadata.store;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.JsonUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 
 import java.net.URISyntaxException;
@@ -39,14 +41,15 @@ class MetaCacheManagerTest {
     @BeforeEach
     public void setup() throws URISyntaxException {
         String directory = getDirectoryOfClassPath();
-        System.setProperty("dubbo.meta.cache.filePath", directory);
-        System.setProperty("dubbo.meta.cache.fileName", "test-metadata.dubbo.cache");
+        SystemPropertyConfigUtils.setSystemProperty(CommonConstants.DubboProperty.DUBBO_META_CACHE_FILEPATH, directory);
+        SystemPropertyConfigUtils.setSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_META_CACHE_FILENAME, "test-metadata.dubbo.cache");
     }
 
     @AfterEach
     public void clear() throws URISyntaxException {
-        System.clearProperty("dubbo.meta.cache.filePath");
-        System.clearProperty("dubbo.meta.cache.fileName");
+        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_META_CACHE_FILEPATH);
+        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_META_CACHE_FILENAME);
     }
 
     @Test
@@ -121,9 +124,9 @@ class MetaCacheManagerTest {
     }
 
     private String getDirectoryOfClassPath() throws URISyntaxException {
-        URL resource = this.getClass().getResource("/log4j.xml");
+        URL resource = this.getClass().getResource("/log4j2-test.xml");
         String path = Paths.get(resource.toURI()).toFile().getAbsolutePath();
-        int index = path.indexOf("log4j.xml");
+        int index = path.indexOf("log4j2-test.xml");
         String directoryPath = path.substring(0, index);
         return directoryPath;
     }

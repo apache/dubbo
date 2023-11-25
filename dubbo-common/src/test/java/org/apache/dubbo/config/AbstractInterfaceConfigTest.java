@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -32,14 +33,15 @@ class AbstractInterfaceConfigTest {
 
     @BeforeAll
     public static void setUp(@TempDir Path folder) {
-        File dubboProperties =
-                folder.resolve(CommonConstants.DUBBO_PROPERTIES_KEY).toFile();
-        System.setProperty(CommonConstants.DUBBO_PROPERTIES_KEY, dubboProperties.getAbsolutePath());
+        File dubboProperties = folder.resolve(CommonConstants.DubboProperty.DUBBO_PROPERTIES_KEY)
+                .toFile();
+        SystemPropertyConfigUtils.setSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_PROPERTIES_KEY, dubboProperties.getAbsolutePath());
     }
 
     @AfterAll
     public static void tearDown() {
-        System.clearProperty(CommonConstants.DUBBO_PROPERTIES_KEY);
+        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_PROPERTIES_KEY);
     }
 
     @Test

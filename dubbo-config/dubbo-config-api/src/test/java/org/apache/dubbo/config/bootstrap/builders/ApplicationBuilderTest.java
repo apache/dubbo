@@ -86,8 +86,8 @@ class ApplicationBuilderTest {
     @Test
     void logger() {
         ApplicationBuilder builder = new ApplicationBuilder();
-        builder.logger("log4j");
-        Assertions.assertEquals("log4j", builder.build().getLogger());
+        builder.logger("log4j2");
+        Assertions.assertEquals("log4j2", builder.build().getLogger());
     }
 
     @Test
@@ -255,7 +255,7 @@ class ApplicationBuilderTest {
                 .architecture("architecture")
                 .environment("develop")
                 .compiler("compiler")
-                .logger("log4j")
+                .logger("log4j2")
                 .monitor(monitor)
                 .isDefault(false)
                 .dumpDirectory("dumpDirectory")
@@ -282,7 +282,7 @@ class ApplicationBuilderTest {
         Assertions.assertEquals("architecture", config.getArchitecture());
         Assertions.assertEquals("develop", config.getEnvironment());
         Assertions.assertEquals("compiler", config.getCompiler());
-        Assertions.assertEquals("log4j", config.getLogger());
+        Assertions.assertEquals("log4j2", config.getLogger());
         Assertions.assertSame(monitor, config.getMonitor());
         Assertions.assertFalse(config.isDefault());
         Assertions.assertEquals("dumpDirectory", config.getDumpDirectory());

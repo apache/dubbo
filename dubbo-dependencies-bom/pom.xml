@@ -93,7 +93,7 @@
     <spring_version>5.3.25</spring_version>
     <spring_security_version>5.8.8</spring_security_version>
     <javassist_version>3.29.2-GA</javassist_version>
-    <bytebuddy.version>1.14.9</bytebuddy.version>
+    <byte-buddy_version>1.14.9</byte-buddy_version>
     <netty_version>3.2.10.Final</netty_version>
     <netty4_version>4.1.101.Final</netty4_version>
     <mina_version>2.2.1</mina_version>
@@ -102,7 +102,7 @@
     <httpcore_version>4.4.16</httpcore_version>
     <fastjson_version>1.2.83</fastjson_version>
     <fastjson2_version>2.0.42</fastjson2_version>
-    <zookeeper_version>3.7.0</zookeeper_version>
+    <zookeeper_version>3.7.2</zookeeper_version>
     <curator_version>5.1.0</curator_version>
     <curator_test_version>2.12.0</curator_test_version>
     <jedis_version>3.10.0</jedis_version>
@@ -157,8 +157,6 @@
     <mustache_version>0.9.10</mustache_version>
     <!-- Log libs -->
     <slf4j_version>1.7.36</slf4j_version>
-    <!-- Do not upgrade the log4j12 version, or else reload4j and log4j will coexist -->
-    <slf4j-log4j12_version>1.7.33</slf4j-log4j12_version>
     <jcl_version>1.2</jcl_version>
     <log4j_version>1.2.17</log4j_version>
     <logback_version>1.2.11</logback_version>
@@ -180,6 +178,7 @@
 
     <!-- Test libs -->
     <junit_jupiter_version>5.9.3</junit_jupiter_version>
+    <junit_version>4.13.2</junit_version>
     <awaitility_version>4.2.0</awaitility_version>
     <hamcrest_version>2.2</hamcrest_version>
     <cglib_version>2.2.2</cglib_version>
@@ -275,7 +274,13 @@
       <dependency>
         <groupId>net.bytebuddy</groupId>
         <artifactId>byte-buddy</artifactId>
-        <version>${bytebuddy.version}</version>
+        <version>${byte-buddy_version}</version>
+      </dependency>
+      <dependency>
+        <groupId>net.bytebuddy</groupId>
+        <artifactId>byte-buddy-agent</artifactId>
+        <version>${byte-buddy_version}</version>
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.jboss.netty</groupId>
@@ -319,7 +324,7 @@
         <exclusions>
           <exclusion>
             <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
+            <artifactId>log4j-slf4j-impl</artifactId>
           </exclusion>
           <exclusion>
             <groupId>log4j</groupId>
@@ -332,6 +337,10 @@
           <exclusion>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
             <groupId>org.apache.yetus</groupId>
@@ -649,11 +658,6 @@
         <version>${slf4j_version}</version>
       </dependency>
       <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-log4j12</artifactId>
-        <version>${slf4j-log4j12_version}</version>
-      </dependency>
-      <dependency>
         <groupId>commons-logging</groupId>
         <artifactId>commons-logging</artifactId>
         <version>${jcl_version}</version>
@@ -686,6 +690,16 @@
       <dependency>
         <groupId>org.apache.logging.log4j</groupId>
         <artifactId>log4j-core</artifactId>
+        <version>${log4j2_version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-slf4j-impl</artifactId>
+        <version>${log4j2_version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-slf4j2-impl</artifactId>
         <version>${log4j2_version}</version>
       </dependency>
       <dependency>
@@ -817,6 +831,12 @@
         <groupId>org.junit.vintage</groupId>
         <artifactId>junit-vintage-engine</artifactId>
         <version>${junit_jupiter_version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${junit_version}</version>
         <scope>test</scope>
       </dependency>
       <dependency>

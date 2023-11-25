@@ -20,6 +20,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ArrayUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -30,20 +31,18 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.DubboProperty.DUBBO_CONTAINER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DubboProperty.DUBBO_SHUTDOWN_HOOK_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_THREAD_INTERRUPTED_EXCEPTION;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_START_DUBBO_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_STOP_DUBBO_ERROR;
 
 /**
  * Main. (API, Static, ThreadSafe)
- *
+ * <p>
  * This class is entry point loading containers.
  */
 public class Main {
-
-    public static final String CONTAINER_KEY = "dubbo.container";
-
-    public static final String SHUTDOWN_HOOK_KEY = "dubbo.shutdown.hook";
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(Main.class);
 
@@ -56,7 +55,8 @@ public class Main {
     public static void main(String[] args) {
         try {
             if (ArrayUtils.isEmpty(args)) {
-                String config = System.getProperty(CONTAINER_KEY, LOADER.getDefaultExtensionName());
+                String config = SystemPropertyConfigUtils.getSystemProperty(
+                        DUBBO_CONTAINER_KEY, LOADER.getDefaultExtensionName());
                 args = COMMA_SPLIT_PATTERN.split(config);
             }
 
@@ -66,7 +66,7 @@ public class Main {
             }
             logger.info("Use container type(" + Arrays.toString(args) + ") to run dubbo serivce.");
 
-            if ("true".equals(System.getProperty(SHUTDOWN_HOOK_KEY))) {
+            if ("true".equals(SystemPropertyConfigUtils.getSystemProperty(DUBBO_SHUTDOWN_HOOK_KEY))) {
                 Runtime.getRuntime().addShutdownHook(new Thread("dubbo-container-shutdown-hook") {
                     @Override
                     public void run() {

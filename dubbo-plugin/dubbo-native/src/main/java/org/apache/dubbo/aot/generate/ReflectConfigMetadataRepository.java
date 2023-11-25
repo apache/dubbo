@@ -78,6 +78,23 @@ public class ReflectConfigMetadataRepository {
         return new TypeDescriber(c.getName(), null, new HashSet<>(), constructors, new HashSet<>(), memberCategories);
     }
 
+    protected ReflectConfigMetadataRepository registerFieldType(List<Class<?>> classes) {
+        types.addAll(classes.stream()
+                .filter(Objects::nonNull)
+                .map(this::buildTypeDescriberWithField)
+                .collect(Collectors.toList()));
+        return this;
+    }
+
+    private TypeDescriber buildTypeDescriberWithField(Class<?> c) {
+        Set<ExecutableDescriber> constructors = Arrays.stream(c.getConstructors())
+                .map((constructor) -> new ExecutableDescriber(constructor, INVOKE))
+                .collect(Collectors.toSet());
+        Set<MemberCategory> memberCategories = new HashSet<>();
+        memberCategories.add(MemberCategory.PUBLIC_FIELDS);
+        return new TypeDescriber(c.getName(), null, new HashSet<>(), constructors, new HashSet<>(), memberCategories);
+    }
+
     public void registerTypeDescriber(List<TypeDescriber> typeDescribers) {
         types.addAll(typeDescribers.stream().filter(Objects::nonNull).collect(Collectors.toList()));
     }

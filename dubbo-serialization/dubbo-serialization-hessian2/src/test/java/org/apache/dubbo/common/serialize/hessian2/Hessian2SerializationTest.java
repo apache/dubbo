@@ -22,6 +22,7 @@ import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.utils.SerializeCheckStatus;
 import org.apache.dubbo.common.utils.SerializeSecurityManager;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.ByteArrayInputStream;
@@ -37,6 +38,8 @@ import java.util.concurrent.ThreadLocalRandom;
 import com.example.test.TestPojo;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.apache.dubbo.common.constants.CommonConstants.DubboProperty.DUBBO_HESSIAN_ALLOW_NON_SERIALIZABLE;
 
 class Hessian2SerializationTest {
     @Test
@@ -617,7 +620,7 @@ class Hessian2SerializationTest {
         // write force un-serializable, read failed
 
         {
-            System.setProperty("dubbo.hessian.allowNonSerializable", "true");
+            SystemPropertyConfigUtils.setSystemProperty(DUBBO_HESSIAN_ALLOW_NON_SERIALIZABLE, "true");
             FrameworkModel frameworkModel = new FrameworkModel();
             Serialization serialization =
                     frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
@@ -635,7 +638,7 @@ class Hessian2SerializationTest {
             objectOutput.flushBuffer();
 
             frameworkModel.destroy();
-            System.clearProperty("dubbo.hessian.allowNonSerializable");
+            SystemPropertyConfigUtils.clearSystemProperty(DUBBO_HESSIAN_ALLOW_NON_SERIALIZABLE);
         }
 
         {
