@@ -83,13 +83,13 @@ public abstract class AbstractConditionMatcher implements ConditionMatcher {
                 return false;
             }
         }
-
         for (String match : matches) {
             if (doPatternMatch(match, value, param, invocation, isWhenCondition)) {
                 return true;
             }
         }
-        return false;
+        // return true if there are only mismatch rules. otherwise, return false.
+        return !mismatches.isEmpty() && matches.isEmpty();
     }
 
     @Override
