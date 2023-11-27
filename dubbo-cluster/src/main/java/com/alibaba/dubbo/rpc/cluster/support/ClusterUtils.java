@@ -109,6 +109,12 @@ public class ClusterUtils {
                     && localListener != null && localListener.length() > 0) {
                 localMap.put(Constants.INVOKER_LISTENER_KEY, remoteListener + "," + localListener);
             }
+
+            // Use owner passed from provider side
+            String owner = remoteMap.get(Constants.OWNER);
+            if (owner != null) {
+                map.put(Constants.OWNER, owner);
+            }
         }
 
         return remoteUrl.clearParameters().addParameters(map);

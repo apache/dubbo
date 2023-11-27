@@ -673,4 +673,6 @@ public class Constants {
 
     public static final String INVOCATION_KEY = "invocation";
 
+    public static final String OWNER = "owner";
+
 }
