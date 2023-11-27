@@ -92,6 +92,10 @@ public interface MetadataReport {
         return Collections.emptySet();
     }
 
+    default String relatedRegistryIdSuffix(URL url) {
+        return "";
+    }
+
     boolean shouldReportDefinition();
 
     boolean shouldReportMetadata();

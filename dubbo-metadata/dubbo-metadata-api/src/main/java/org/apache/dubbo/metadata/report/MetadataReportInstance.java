@@ -105,11 +105,12 @@ public class MetadataReportInstance implements Disposable {
         String relatedRegistryId = isEmpty(config.getRegistry())
                 ? (isEmpty(config.getId()) ? DEFAULT_KEY : config.getId())
                 : config.getRegistry();
-        relatedRegistryId += metadataReportFactory.relatedRegistryIdSuffix(url);
         //        RegistryConfig registryConfig = applicationModel.getConfigManager().getRegistry(relatedRegistryId)
         //                .orElseThrow(() -> new IllegalStateException("Registry id " + relatedRegistryId + " does not
         // exist."));
         MetadataReport metadataReport = metadataReportFactory.getMetadataReport(url);
+        relatedRegistryId += metadataReport.relatedRegistryIdSuffix(url);
+
         if (metadataReport != null) {
             metadataReports.put(relatedRegistryId, metadataReport);
         }

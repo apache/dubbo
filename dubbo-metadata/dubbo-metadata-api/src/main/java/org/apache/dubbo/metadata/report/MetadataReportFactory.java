@@ -34,9 +34,4 @@ public interface MetadataReportFactory {
     MetadataReport getMetadataReport(URL url);
 
     default void destroy() {}
-
-    @Adaptive({PROTOCOL_KEY})
-    default String relatedRegistryIdSuffix(URL url) {
-        return "";
-    }
 }

@@ -21,12 +21,12 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
 
+import static org.apache.dubbo.metadata.MetadataConstants.NAMESPACE_KEY;
+
 /**
  * metadata report factory impl for nacos
  */
 public class NacosMetadataReportFactory extends AbstractMetadataReportFactory {
-
-    private static final String NAME_SPACE_KEY = "namespace";
 
     @Override
     protected MetadataReport createMetadataReport(URL url) {
@@ -35,18 +35,12 @@ public class NacosMetadataReportFactory extends AbstractMetadataReportFactory {
 
     @Override
     protected String toMetadataReportKey(URL url) {
-        String namespace = url.getParameter(NAME_SPACE_KEY);
+        String namespace = url.getParameter(NAMESPACE_KEY);
         if (!StringUtils.isEmpty(namespace)) {
             return URL.valueOf(url.getServiceKey())
-                    .addParameter(NAME_SPACE_KEY, namespace)
+                    .addParameter(NAMESPACE_KEY, namespace)
                     .toString();
         }
         return super.toMetadataReportKey(url);
-    }
-
-    @Override
-    public String relatedRegistryIdSuffix(URL url) {
-        String namespace = url.getParameter(NAME_SPACE_KEY);
-        return namespace == null ? "" : ":" + NAME_SPACE_KEY + "=" + namespace;
     }
 }
