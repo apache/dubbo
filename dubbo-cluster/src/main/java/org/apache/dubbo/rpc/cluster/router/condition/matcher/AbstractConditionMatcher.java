@@ -88,7 +88,8 @@ public abstract class AbstractConditionMatcher implements ConditionMatcher {
                 return true;
             }
         }
-        // return true if there are only mismatch rules. otherwise, return false.
+        // If there are only mismatch conditions, it is used only to exclude cases, return true here.
+        // otherwise, return false.
         return !mismatches.isEmpty() && matches.isEmpty();
     }
 
