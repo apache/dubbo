@@ -23,18 +23,22 @@ import java.io.IOException;
  */
 public interface DefaultJsonDataOutput extends ObjectOutput {
 
+    @Override
     default void writeBool(boolean v) throws IOException {
         writeObject(v);
     }
 
+    @Override
     default void writeByte(byte v) throws IOException {
         writeObject(v);
     }
 
+    @Override
     default void writeShort(short v) throws IOException {
         writeObject(v);
     }
 
+    @Override
     default void writeInt(int v) throws IOException {
         writeObject(v);
     }

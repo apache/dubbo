@@ -69,5 +69,4 @@ public interface DefaultJsonDataInput extends ObjectInput {
     default Object readObject() throws IOException {
         return readObject(Object.class);
     }
-
 }
