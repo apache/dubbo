@@ -442,11 +442,11 @@ public class NacosMetadataReport extends AbstractMetadataReport {
         }
     }
 
-    @Override
-    public String relatedRegistryIdSuffix(URL url) {
-        String namespace = url.getParameter(NAMESPACE_KEY);
-        return namespace == null ? "" : ":" + NAMESPACE_KEY + "=" + namespace;
-    }
+//    @Override
+//    public String relatedRegistryIdSuffix(URL url) {
+//        String namespace = url.getParameter(NAMESPACE_KEY);
+//        return namespace == null ? "" : ":" + NAMESPACE_KEY + "=" + namespace;
+//    }
 
     public class NacosConfigListener extends AbstractSharedListener {
 

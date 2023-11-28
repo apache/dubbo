@@ -111,9 +111,9 @@ public class MetadataReportInstance implements Disposable {
         MetadataReport metadataReport = metadataReportFactory.getMetadataReport(url);
         if (metadataReport != null) {
             // TODO: remove later
-            System.out.println("MetadataReportFactory:" + metadataReportFactory.getClass() + ",MetadataReport:"
-                    + metadataReport + " url:" + url + " ,relatedRegistryId:" + relatedRegistryId
-                    + metadataReport.relatedRegistryIdSuffix(url) + " metadataReports:" + metadataReports);
+//            System.out.println("MetadataReportFactory:" + metadataReportFactory.getClass() + ",MetadataReport:"
+//                    + metadataReport + " url:" + url + " ,relatedRegistryId:" + relatedRegistryId
+//                    + metadataReport.relatedRegistryIdSuffix(url) + " metadataReports:" + metadataReports);
             //            relatedRegistryId += metadataReport.relatedRegistryIdSuffix(url);
             metadataReports.put(relatedRegistryId, metadataReport);
         }
