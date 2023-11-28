@@ -35,7 +35,6 @@ public interface DefaultJsonDataOutput extends ObjectOutput {
         writeObject(v);
     }
 
-
     default void writeInt(int v) throws IOException {
         writeObject(v);
     }

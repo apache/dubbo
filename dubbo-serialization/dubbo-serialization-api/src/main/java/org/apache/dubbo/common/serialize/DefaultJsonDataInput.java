@@ -70,7 +70,4 @@ public interface DefaultJsonDataInput extends ObjectInput {
         return readObject(Object.class);
     }
 
-
-
-
 }
