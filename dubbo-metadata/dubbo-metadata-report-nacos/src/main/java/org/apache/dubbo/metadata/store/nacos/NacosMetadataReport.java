@@ -63,6 +63,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_NAC
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of;
 import static org.apache.dubbo.common.utils.StringUtils.HYPHEN_CHAR;
+import static org.apache.dubbo.metadata.MetadataConstants.NAMESPACE_KEY;
 import static org.apache.dubbo.metadata.MetadataConstants.REPORT_CONSUMER_URL_KEY;
 import static org.apache.dubbo.metadata.ServiceNameMapping.DEFAULT_MAPPING_GROUP;
 import static org.apache.dubbo.metadata.ServiceNameMapping.getAppNames;
@@ -441,11 +442,11 @@ public class NacosMetadataReport extends AbstractMetadataReport {
         }
     }
 
-    //    @Override
-    //    public String relatedRegistryIdSuffix(URL url) {
-    //        String namespace = url.getParameter(NAMESPACE_KEY);
-    //        return namespace == null ? "" : ":" + NAMESPACE_KEY + "=" + namespace;
-    //    }
+    @Override
+    public String relatedRegistryIdSuffix(URL url) {
+        String namespace = url.getParameter(NAMESPACE_KEY);
+        return namespace == null ? "" : ":" + NAMESPACE_KEY + "=" + namespace;
+    }
 
     public class NacosConfigListener extends AbstractSharedListener {
 
