@@ -69,14 +69,14 @@ public abstract class AbstractConditionMatcher implements ConditionMatcher {
     public boolean isMatch(Map<String, String> sample, URL param, Invocation invocation, boolean isWhenCondition) {
         String value = getValue(sample, param, invocation);
         if (value == null) {
-            // if key does not exist in any url, invocation, or attachment based on the matcher type, return false.
+            // If key does not exist in any url, invocation, or attachment based on the matcher type, return false.
             return false;
         }
 
         /**
          * check mismatch conditions first, then check match conditions.
-         * if the same condition exists in both mismatch conditions and match conditions,
-         * it is the mismatch condition that actually works.
+         * Therefore, if the same condition exists in both mismatch conditions and match conditions,
+         * only the one in mismatches works, and false will be returned if this condition matches.
          */
         for (String mismatch : mismatches) {
             if (doPatternMatch(mismatch, value, param, invocation, isWhenCondition)) {
@@ -88,8 +88,11 @@ public abstract class AbstractConditionMatcher implements ConditionMatcher {
                 return true;
             }
         }
-        // If there are only mismatch conditions, it is used only to exclude cases, return true here.
-        // otherwise, return false.
+        /**
+         * If there are only mismatch conditions, then it is used to exclude cases,
+         * return true if it does not meet any mismatch condition.
+         * Otherwise, return false because no match conditions are met.
+         */
         return !mismatches.isEmpty() && matches.isEmpty();
     }
 
