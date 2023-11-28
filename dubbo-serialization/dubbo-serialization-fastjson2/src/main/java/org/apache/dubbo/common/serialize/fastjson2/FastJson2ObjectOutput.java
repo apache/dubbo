@@ -16,17 +16,13 @@
  */
 package org.apache.dubbo.common.serialize.fastjson2;
 
-import org.apache.dubbo.common.serialize.ObjectOutput;
-
-import java.io.IOException;
-import java.io.OutputStream;
-
 import com.alibaba.fastjson2.JSONB;
 import com.alibaba.fastjson2.JSONWriter;
 import org.apache.dubbo.common.serialize.DefaultJsonDataOutput;
 
 import java.io.IOException;
 import java.io.OutputStream;
+
 
 /**
  * FastJson object output implementation
