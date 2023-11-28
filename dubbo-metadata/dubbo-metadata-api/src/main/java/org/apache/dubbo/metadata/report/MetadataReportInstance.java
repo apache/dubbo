@@ -109,7 +109,6 @@ public class MetadataReportInstance implements Disposable {
         //                .orElseThrow(() -> new IllegalStateException("Registry id " + relatedRegistryId + " does not
         // exist."));
         MetadataReport metadataReport = metadataReportFactory.getMetadataReport(url);
-
         if (metadataReport != null) {
             relatedRegistryId += metadataReport.relatedRegistryIdSuffix(url);
             metadataReports.put(relatedRegistryId, metadataReport);
