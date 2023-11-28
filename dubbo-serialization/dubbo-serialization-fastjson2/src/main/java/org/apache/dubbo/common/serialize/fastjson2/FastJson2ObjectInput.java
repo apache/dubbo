@@ -16,15 +16,14 @@
  */
 package org.apache.dubbo.common.serialize.fastjson2;
 
+import com.alibaba.fastjson2.JSONB;
+import com.alibaba.fastjson2.JSONReader;
 import org.apache.dubbo.common.serialize.DefaultJsonDataInput;
 import org.apache.dubbo.common.utils.ClassUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
-
-import com.alibaba.fastjson2.JSONB;
-import com.alibaba.fastjson2.JSONReader;
 
 /**
  * FastJson object input implementation
@@ -59,11 +58,6 @@ public class FastJson2ObjectInput implements DefaultJsonDataInput {
                     "deserialize failed. expected read length: " + length + " but actual read: " + read);
         }
         return bytes;
-    }
-
-    @Override
-    public Object readObject() throws IOException {
-        return readObject(Object.class);
     }
 
     @Override
