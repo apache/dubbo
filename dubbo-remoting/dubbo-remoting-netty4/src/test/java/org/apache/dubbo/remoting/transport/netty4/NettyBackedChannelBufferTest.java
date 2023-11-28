@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
-
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 
 import io.netty.buffer.Unpooled;
@@ -61,5 +60,4 @@ class NettyBackedChannelBufferTest {
         assertEquals(1, actual[0]);
         assertEquals(2, actual[1]);
     }
-
 }

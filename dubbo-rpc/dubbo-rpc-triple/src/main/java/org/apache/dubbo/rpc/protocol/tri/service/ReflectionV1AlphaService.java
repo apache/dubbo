@@ -14,11 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.service;
 
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.TriRpcStatus;
+
+import java.util.ArrayDeque;
+import java.util.HashSet;
+import java.util.Queue;
+import java.util.Set;
 
 import com.google.protobuf.Descriptors.FileDescriptor;
 import io.grpc.reflection.v1alpha.DubboServerReflectionTriple;
@@ -31,11 +35,6 @@ import io.grpc.reflection.v1alpha.ServerReflectionRequest;
 import io.grpc.reflection.v1alpha.ServerReflectionResponse;
 import io.grpc.reflection.v1alpha.ServiceResponse;
 
-import java.util.ArrayDeque;
-import java.util.HashSet;
-import java.util.Queue;
-import java.util.Set;
-
 /**
  * Provides a reflection service for Protobuf service for service test and dynamic gateway.
  *
@@ -43,10 +42,9 @@ import java.util.Set;
  */
 public class ReflectionV1AlphaService extends DubboServerReflectionTriple.ServerReflectionImplBase {
 
-
     @Override
     public StreamObserver<ServerReflectionRequest> serverReflectionInfo(
-        StreamObserver<ServerReflectionResponse> responseObserver) {
+            StreamObserver<ServerReflectionResponse> responseObserver) {
         return new StreamObserver<ServerReflectionRequest>() {
             @Override
             public void onNext(ServerReflectionRequest request) {
@@ -68,9 +66,10 @@ public class ReflectionV1AlphaService extends DubboServerReflectionTriple.Server
                         break;
                     default:
                         sendErrorResponse(
-                            request,
-                            TriRpcStatus.Code.UNIMPLEMENTED,
-                            "not implemented " + request.getMessageRequestCase(), responseObserver);
+                                request,
+                                TriRpcStatus.Code.UNIMPLEMENTED,
+                                "not implemented " + request.getMessageRequestCase(),
+                                responseObserver);
                 }
             }
 
@@ -86,75 +85,66 @@ public class ReflectionV1AlphaService extends DubboServerReflectionTriple.Server
         };
     }
 
-    private void getFileByName(ServerReflectionRequest request,
-        StreamObserver<ServerReflectionResponse> responseObserver) {
+    private void getFileByName(
+            ServerReflectionRequest request, StreamObserver<ServerReflectionResponse> responseObserver) {
         String name = request.getFileByFilename();
         FileDescriptor fd = SchemaDescriptorRegistry.getSchemaDescriptor(name);
         if (fd != null) {
             responseObserver.onNext(createServerReflectionResponse(request, fd));
         } else {
-            sendErrorResponse(request, TriRpcStatus.Code.NOT_FOUND, "File not found.",
-                responseObserver);
+            sendErrorResponse(request, TriRpcStatus.Code.NOT_FOUND, "File not found.", responseObserver);
         }
     }
 
-    private void getFileContainingSymbol(ServerReflectionRequest request,
-        StreamObserver<ServerReflectionResponse> responseObserver) {
+    private void getFileContainingSymbol(
+            ServerReflectionRequest request, StreamObserver<ServerReflectionResponse> responseObserver) {
         String symbol = request.getFileContainingSymbol();
         FileDescriptor fd = SchemaDescriptorRegistry.getSchemaDescriptor(symbol);
         if (fd != null) {
             responseObserver.onNext(createServerReflectionResponse(request, fd));
         } else {
-            sendErrorResponse(request, TriRpcStatus.Code.NOT_FOUND, "Symbol not found.",
-                responseObserver);
+            sendErrorResponse(request, TriRpcStatus.Code.NOT_FOUND, "Symbol not found.", responseObserver);
         }
     }
 
-    private void getFileByExtension(ServerReflectionRequest request,
-        StreamObserver<ServerReflectionResponse> responseObserver) {
+    private void getFileByExtension(
+            ServerReflectionRequest request, StreamObserver<ServerReflectionResponse> responseObserver) {
         ExtensionRequest extensionRequest = request.getFileContainingExtension();
         String type = extensionRequest.getContainingType();
         int extension = extensionRequest.getExtensionNumber();
-        FileDescriptor fd =
-            SchemaDescriptorRegistry.getFileDescriptorByExtensionAndNumber(type, extension);
+        FileDescriptor fd = SchemaDescriptorRegistry.getFileDescriptorByExtensionAndNumber(type, extension);
         if (fd != null) {
             responseObserver.onNext(createServerReflectionResponse(request, fd));
         } else {
-            sendErrorResponse(request, TriRpcStatus.Code.NOT_FOUND, "Extension not found.",
-                responseObserver);
+            sendErrorResponse(request, TriRpcStatus.Code.NOT_FOUND, "Extension not found.", responseObserver);
         }
     }
 
-    private void getAllExtensions(ServerReflectionRequest request,
-        StreamObserver<ServerReflectionResponse> responseObserver) {
+    private void getAllExtensions(
+            ServerReflectionRequest request, StreamObserver<ServerReflectionResponse> responseObserver) {
         String type = request.getAllExtensionNumbersOfType();
         Set<Integer> extensions = SchemaDescriptorRegistry.getExtensionNumbers(type);
         if (extensions != null) {
             ExtensionNumberResponse.Builder builder =
-                ExtensionNumberResponse.newBuilder()
-                    .setBaseTypeName(type)
-                    .addAllExtensionNumber(extensions);
-            responseObserver.onNext(
-                ServerReflectionResponse.newBuilder()
+                    ExtensionNumberResponse.newBuilder().setBaseTypeName(type).addAllExtensionNumber(extensions);
+            responseObserver.onNext(ServerReflectionResponse.newBuilder()
                     .setValidHost(request.getHost())
                     .setOriginalRequest(request)
                     .setAllExtensionNumbersResponse(builder)
                     .build());
         } else {
-            sendErrorResponse(request, TriRpcStatus.Code.NOT_FOUND, "Type not found.",
-                responseObserver);
+            sendErrorResponse(request, TriRpcStatus.Code.NOT_FOUND, "Type not found.", responseObserver);
         }
     }
 
-    private void listServices(ServerReflectionRequest request,
-        StreamObserver<ServerReflectionResponse> responseObserver) {
+    private void listServices(
+            ServerReflectionRequest request, StreamObserver<ServerReflectionResponse> responseObserver) {
         ListServiceResponse.Builder builder = ListServiceResponse.newBuilder();
 
         for (String serviceName : SchemaDescriptorRegistry.listServiceNames()) {
             builder.addService(ServiceResponse.newBuilder().setName(serviceName));
         }
-        responseObserver.onNext(
-            ServerReflectionResponse.newBuilder()
+        responseObserver.onNext(ServerReflectionResponse.newBuilder()
                 .setValidHost(request.getHost())
                 .setOriginalRequest(request)
                 .setListServicesResponse(builder)
@@ -162,22 +152,21 @@ public class ReflectionV1AlphaService extends DubboServerReflectionTriple.Server
     }
 
     private void sendErrorResponse(
-        ServerReflectionRequest request, TriRpcStatus.Code code, String message,
-        StreamObserver<ServerReflectionResponse> responseObserver) {
-        ServerReflectionResponse response =
-            ServerReflectionResponse.newBuilder()
+            ServerReflectionRequest request,
+            TriRpcStatus.Code code,
+            String message,
+            StreamObserver<ServerReflectionResponse> responseObserver) {
+        ServerReflectionResponse response = ServerReflectionResponse.newBuilder()
                 .setValidHost(request.getHost())
                 .setOriginalRequest(request)
                 .setErrorResponse(
-                    ErrorResponse.newBuilder()
-                        .setErrorCode(code.code)
-                        .setErrorMessage(message))
+                        ErrorResponse.newBuilder().setErrorCode(code.code).setErrorMessage(message))
                 .build();
         responseObserver.onNext(response);
     }
 
     private ServerReflectionResponse createServerReflectionResponse(
-        ServerReflectionRequest request, FileDescriptor fd) {
+            ServerReflectionRequest request, FileDescriptor fd) {
         FileDescriptorResponse.Builder fdRBuilder = FileDescriptorResponse.newBuilder();
         Set<String> seenFiles = new HashSet<>();
         Queue<FileDescriptor> frontier = new ArrayDeque<>();
@@ -194,9 +183,9 @@ public class ReflectionV1AlphaService extends DubboServerReflectionTriple.Server
             }
         }
         return ServerReflectionResponse.newBuilder()
-            .setValidHost(request.getHost())
-            .setOriginalRequest(request)
-            .setFileDescriptorResponse(fdRBuilder)
-            .build();
+                .setValidHost(request.getHost())
+                .setOriginalRequest(request)
+                .setFileDescriptorResponse(fdRBuilder)
+                .build();
     }
 }

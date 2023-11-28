@@ -18,11 +18,11 @@ package org.apache.dubbo.config.bootstrap.builders;
 
 import org.apache.dubbo.config.ConfigCenterConfig;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class ConfigCenterBuilderTest {
 
@@ -139,10 +139,20 @@ class ConfigCenterBuilderTest {
     @Test
     void build() {
         ConfigCenterBuilder builder = new ConfigCenterBuilder();
-        builder.check(true).protocol("protocol").address("address").appConfigFile("appConfigFile")
-                .cluster("cluster").configFile("configFile").group("group").highestPriority(false)
-                .namespace("namespace").password("password").timeout(1000L).username("usernama")
-                .appendParameter("default.num", "one").id("id");
+        builder.check(true)
+                .protocol("protocol")
+                .address("address")
+                .appConfigFile("appConfigFile")
+                .cluster("cluster")
+                .configFile("configFile")
+                .group("group")
+                .highestPriority(false)
+                .namespace("namespace")
+                .password("password")
+                .timeout(1000L)
+                .username("usernama")
+                .appendParameter("default.num", "one")
+                .id("id");
 
         ConfigCenterConfig config = builder.build();
         ConfigCenterConfig config2 = builder.build();

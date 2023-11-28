@@ -21,7 +21,7 @@ import org.apache.dubbo.remoting.RemotingException;
 
 import org.mockito.Mockito;
 
-public class MockExchanger implements Exchanger{
+public class MockExchanger implements Exchanger {
     private ExchangeServer exchangeServer = Mockito.mock(ExchangeServer.class);
     private ExchangeClient exchangeClient = Mockito.mock(ExchangeClient.class);
 

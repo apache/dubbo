@@ -33,16 +33,16 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_ISOLATION;
 
@@ -64,11 +64,9 @@ public class ApiIsolationTest {
     private String version2 = "2.0";
     private String version3 = "3.0";
 
-
     @Test
     @Disabled
     public void test() throws Exception {
-
 
         DubboBootstrap providerBootstrap = null;
         DubboBootstrap consumerBootstrap1 = null;
@@ -110,14 +108,14 @@ public class ApiIsolationTest {
             applicationConfig.setExecutorManagementMode(EXECUTOR_MANAGEMENT_MODE_ISOLATION);
 
             providerBootstrap
-                .application(applicationConfig)
-                .registry(registryConfig)
-                // export with tri and dubbo protocol
-                .protocol(new ProtocolConfig("tri", 20001))
-                .protocol(new ProtocolConfig("dubbo", 20002))
-                .service(serviceConfig1)
-                .service(serviceConfig2)
-                .service(serviceConfig3);
+                    .application(applicationConfig)
+                    .registry(registryConfig)
+                    // export with tri and dubbo protocol
+                    .protocol(new ProtocolConfig("tri", 20001))
+                    .protocol(new ProtocolConfig("dubbo", 20002))
+                    .service(serviceConfig1)
+                    .service(serviceConfig2)
+                    .service(serviceConfig3);
 
             providerBootstrap.start();
 
@@ -180,13 +178,22 @@ public class ApiIsolationTest {
     private DubboBootstrap configConsumerBootstrapWithProtocol(String protocol) {
         DubboBootstrap consumerBootstrap;
         consumerBootstrap = DubboBootstrap.newInstance();
-        consumerBootstrap.application("consumer-app")
-            .registry(registryConfig)
-            .reference(builder -> builder.interfaceClass(DemoService.class).version(version1).protocol(protocol).injvm(false))
-            .reference(builder -> builder.interfaceClass(HelloService.class).version(version2).protocol(protocol).injvm(false))
-            .reference(builder -> builder.interfaceClass(HelloService.class).version(version3).protocol(protocol).injvm(false));
+        consumerBootstrap
+                .application("consumer-app")
+                .registry(registryConfig)
+                .reference(builder -> builder.interfaceClass(DemoService.class)
+                        .version(version1)
+                        .protocol(protocol)
+                        .injvm(false))
+                .reference(builder -> builder.interfaceClass(HelloService.class)
+                        .version(version2)
+                        .protocol(protocol)
+                        .injvm(false))
+                .reference(builder -> builder.interfaceClass(HelloService.class)
+                        .version(version3)
+                        .protocol(protocol)
+                        .injvm(false));
         consumerBootstrap.start();
         return consumerBootstrap;
     }
-
 }

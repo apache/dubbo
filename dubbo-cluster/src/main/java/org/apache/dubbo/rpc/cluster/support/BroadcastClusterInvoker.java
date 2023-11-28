@@ -39,7 +39,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_ERRO
  */
 public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(BroadcastClusterInvoker.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(BroadcastClusterInvoker.class);
     private static final String BROADCAST_FAIL_PERCENT_KEY = "broadcast.fail.percent";
     private static final int MAX_BROADCAST_FAIL_PERCENT = 100;
     private static final int MIN_BROADCAST_FAIL_PERCENT = 0;
@@ -50,19 +51,23 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public Result doInvoke(final Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
+    public Result doInvoke(final Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance)
+            throws RpcException {
         RpcContext.getServiceContext().setInvokers((List) invokers);
         RpcException exception = null;
         Result result = null;
         URL url = getUrl();
         // The value range of broadcast.fail.threshold must be 0～100.
-        // 100 means that an exception will be thrown last, and 0 means that as long as an exception occurs, it will be thrown.
+        // 100 means that an exception will be thrown last, and 0 means that as long as an exception occurs, it will be
+        // thrown.
         // see https://github.com/apache/dubbo/pull/7174
         int broadcastFailPercent = url.getParameter(BROADCAST_FAIL_PERCENT_KEY, MAX_BROADCAST_FAIL_PERCENT);
 
         if (broadcastFailPercent < MIN_BROADCAST_FAIL_PERCENT || broadcastFailPercent > MAX_BROADCAST_FAIL_PERCENT) {
-            logger.info(String.format("The value corresponding to the broadcast.fail.percent parameter must be between 0 and 100. " +
-                    "The current setting is %s, which is reset to 100.", broadcastFailPercent));
+            logger.info(String.format(
+                    "The value corresponding to the broadcast.fail.percent parameter must be between 0 and 100. "
+                            + "The current setting is %s, which is reset to 100.",
+                    broadcastFailPercent));
             broadcastFailPercent = MAX_BROADCAST_FAIL_PERCENT;
         }
 
@@ -72,17 +77,29 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
             Invoker<T> invoker = invokers.get(i);
             RpcContext.RestoreContext restoreContext = new RpcContext.RestoreContext();
             try {
-                RpcInvocation subInvocation = new RpcInvocation(invocation.getTargetServiceUniqueName(),
-                    invocation.getServiceModel(), invocation.getMethodName(), invocation.getServiceName(), invocation.getProtocolServiceKey(),
-                    invocation.getParameterTypes(), invocation.getArguments(), invocation.copyObjectAttachments(),
-                    invocation.getInvoker(), Collections.synchronizedMap(new HashMap<>(invocation.getAttributes())),
-                    invocation instanceof RpcInvocation ? ((RpcInvocation) invocation).getInvokeMode() : null);
+                RpcInvocation subInvocation = new RpcInvocation(
+                        invocation.getTargetServiceUniqueName(),
+                        invocation.getServiceModel(),
+                        invocation.getMethodName(),
+                        invocation.getServiceName(),
+                        invocation.getProtocolServiceKey(),
+                        invocation.getParameterTypes(),
+                        invocation.getArguments(),
+                        invocation.copyObjectAttachments(),
+                        invocation.getInvoker(),
+                        Collections.synchronizedMap(new HashMap<>(invocation.getAttributes())),
+                        invocation instanceof RpcInvocation ? ((RpcInvocation) invocation).getInvokeMode() : null);
                 result = invokeWithContext(invoker, subInvocation);
                 if (null != result && result.hasException()) {
                     Throwable resultException = result.getException();
                     if (null != resultException) {
                         exception = getRpcException(result.getException());
-                        logger.warn(CLUSTER_ERROR_RESPONSE,"provider return error response","",exception.getMessage(),exception);
+                        logger.warn(
+                                CLUSTER_ERROR_RESPONSE,
+                                "provider return error response",
+                                "",
+                                exception.getMessage(),
+                                exception);
                         failIndex++;
                         if (failIndex == failThresholdIndex) {
                             break;
@@ -91,7 +108,12 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 }
             } catch (Throwable e) {
                 exception = getRpcException(e);
-                logger.warn(CLUSTER_ERROR_RESPONSE,"provider return error response","",exception.getMessage(),exception);
+                logger.warn(
+                        CLUSTER_ERROR_RESPONSE,
+                        "provider return error response",
+                        "",
+                        exception.getMessage(),
+                        exception);
                 failIndex++;
                 if (failIndex == failThresholdIndex) {
                     break;
@@ -106,14 +128,15 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
         if (exception != null) {
             if (failIndex == failThresholdIndex) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug(
-                        String.format("The number of BroadcastCluster call failures has reached the threshold %s", failThresholdIndex));
-
+                    logger.debug(String.format(
+                            "The number of BroadcastCluster call failures has reached the threshold %s",
+                            failThresholdIndex));
                 }
             } else {
                 if (logger.isDebugEnabled()) {
-                    logger.debug(String.format("The number of BroadcastCluster call failures has not reached the threshold %s, fail size is %s",
-                        failThresholdIndex, failIndex));
+                    logger.debug(String.format(
+                            "The number of BroadcastCluster call failures has not reached the threshold %s, fail size is %s",
+                            failThresholdIndex, failIndex));
                 }
             }
             throw exception;

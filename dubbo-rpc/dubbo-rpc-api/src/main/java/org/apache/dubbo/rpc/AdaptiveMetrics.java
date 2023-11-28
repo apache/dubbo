@@ -37,7 +37,7 @@ public class AdaptiveMetrics {
     private long lastLatency = 0;
     private long currentTime = 0;
 
-    //Allow some time disorder
+    // Allow some time disorder
     private long pickTime = System.currentTimeMillis();
 
     private double beta = 0.5;
@@ -49,7 +49,7 @@ public class AdaptiveMetrics {
     public double getLoad(String idKey, int weight, int timeout) {
         AdaptiveMetrics metrics = getStatus(idKey);
 
-        //If the time more than 2 times, mandatory selected
+        // If the time more than 2 times, mandatory selected
         if (System.currentTimeMillis() - metrics.pickTime > timeout * 2) {
             return 0;
         }
@@ -58,7 +58,7 @@ public class AdaptiveMetrics {
             long multiple = (System.currentTimeMillis() - metrics.currentTime) / timeout + 1;
             if (multiple > 0) {
                 if (metrics.currentProviderTime == metrics.currentTime) {
-                    //penalty value
+                    // penalty value
                     metrics.lastLatency = timeout * 2L;
                 } else {
                     metrics.lastLatency = metrics.lastLatency >> multiple;
@@ -69,7 +69,10 @@ public class AdaptiveMetrics {
         }
 
         long inflight = metrics.consumerReq.get() - metrics.consumerSuccess.get() - metrics.errorReq.get();
-        return metrics.providerCPULoad * (Math.sqrt(metrics.ewma) + 1) * (inflight + 1) / ((((double) metrics.consumerSuccess.get() / (double) (metrics.consumerReq.get() + 1)) * weight) + 1);
+        return metrics.providerCPULoad
+                * (Math.sqrt(metrics.ewma) + 1)
+                * (inflight + 1)
+                / ((((double) metrics.consumerSuccess.get() / (double) (metrics.consumerReq.get() + 1)) * weight) + 1);
     }
 
     public AdaptiveMetrics getStatus(String idKey) {
@@ -96,26 +99,29 @@ public class AdaptiveMetrics {
         metrics.pickTime = time;
     }
 
-
     public void setProviderMetrics(String idKey, Map<String, String> metricsMap) {
 
         AdaptiveMetrics metrics = getStatus(idKey);
 
-        long serviceTime = Long.parseLong(Optional.ofNullable(metricsMap.get("curTime")).filter(v -> StringUtils.isNumeric(v, false)).orElse("0"));
-        //If server time is less than the current time, discard
+        long serviceTime = Long.parseLong(Optional.ofNullable(metricsMap.get("curTime"))
+                .filter(v -> StringUtils.isNumeric(v, false))
+                .orElse("0"));
+        // If server time is less than the current time, discard
         if (metrics.currentProviderTime > serviceTime) {
             return;
         }
 
         metrics.currentProviderTime = serviceTime;
         metrics.currentTime = serviceTime;
-        metrics.providerCPULoad = Double.parseDouble(Optional.ofNullable(metricsMap.get("load")).filter(v -> StringUtils.isNumeric(v, true)).orElse("0"));
-        metrics.lastLatency = Long.parseLong((Optional.ofNullable(metricsMap.get("rt")).filter(v -> StringUtils.isNumeric(v, false)).orElse("0")));
+        metrics.providerCPULoad = Double.parseDouble(Optional.ofNullable(metricsMap.get("load"))
+                .filter(v -> StringUtils.isNumeric(v, true))
+                .orElse("0"));
+        metrics.lastLatency = Long.parseLong((Optional.ofNullable(metricsMap.get("rt"))
+                .filter(v -> StringUtils.isNumeric(v, false))
+                .orElse("0")));
 
         metrics.beta = 0.5;
-        //Vt =  β * Vt-1 + (1 -  β ) * θt
+        // Vt =  β * Vt-1 + (1 -  β ) * θt
         metrics.ewma = metrics.beta * metrics.ewma + (1 - metrics.beta) * metrics.lastLatency;
-
     }
 }
-

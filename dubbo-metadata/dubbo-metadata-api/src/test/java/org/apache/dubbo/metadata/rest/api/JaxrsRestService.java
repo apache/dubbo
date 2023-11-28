@@ -66,6 +66,4 @@ public interface JaxrsRestService {
     @Produces(MediaType.TEXT_PLAIN)
     @POST
     String noAnno(String a);
-
-
 }

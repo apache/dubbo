@@ -27,8 +27,11 @@ public class RestFilterContext implements FilterContext {
     protected NettyHttpResponse response;
     protected ServiceDeployer serviceDeployer;
     protected boolean completed;
+    protected Object originRequest;
+    protected Object originResponse;
 
-    public RestFilterContext(URL url, RequestFacade requestFacade, NettyHttpResponse response, ServiceDeployer serviceDeployer) {
+    public RestFilterContext(
+            URL url, RequestFacade requestFacade, NettyHttpResponse response, ServiceDeployer serviceDeployer) {
         this.url = url;
         this.requestFacade = requestFacade;
         this.response = response;
@@ -63,5 +66,26 @@ public class RestFilterContext implements FilterContext {
     @Override
     public void setComplete(boolean complete) {
         this.completed = complete;
+    }
+
+    @Override
+    public Object getOriginRequest() {
+        return originRequest;
+    }
+
+    @Override
+    public Object getOriginResponse() {
+        return originResponse;
+    }
+
+    public void setOriginRequest(Object originRequest) {
+        if (this.originRequest != null) {
+            return;
+        }
+        this.originRequest = originRequest;
+    }
+
+    public void setOriginResponse(Object originResponse) {
+        this.originResponse = originResponse;
     }
 }

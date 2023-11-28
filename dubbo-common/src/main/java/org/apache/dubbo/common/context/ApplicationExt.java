@@ -20,6 +20,4 @@ import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
 @SPI(scope = ExtensionScope.APPLICATION)
-public interface ApplicationExt extends Lifecycle {
-
-}
+public interface ApplicationExt extends Lifecycle {}

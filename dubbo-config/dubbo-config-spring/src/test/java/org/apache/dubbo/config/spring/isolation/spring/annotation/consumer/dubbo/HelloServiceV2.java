@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.isolation.spring.annotation.consumer.dubb
 
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.spring.api.HelloService;
+
 import org.springframework.stereotype.Component;
 
 @Component("dubbo-helloServiceV2")

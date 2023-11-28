@@ -14,15 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.observer;
 
 import org.apache.dubbo.rpc.protocol.tri.CancelableStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.ClientStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.call.ClientCall;
 
-public class ClientCallToObserverAdapter<T> extends CancelableStreamObserver<T> implements
-    ClientStreamObserver<T> {
+public class ClientCallToObserverAdapter<T> extends CancelableStreamObserver<T> implements ClientStreamObserver<T> {
 
     private final ClientCall call;
     private boolean terminated;
@@ -38,8 +36,7 @@ public class ClientCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
     @Override
     public void onNext(Object data) {
         if (terminated) {
-            throw new IllegalStateException(
-                "Stream observer has been terminated, no more data is allowed");
+            throw new IllegalStateException("Stream observer has been terminated, no more data is allowed");
         }
         call.sendMessage(data);
     }

@@ -16,15 +16,15 @@
  */
 package org.apache.dubbo.registry.client;
 
-import java.util.List;
-import java.util.Set;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
+
+import java.util.List;
+import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_DELAY_NOTIFICATION_KEY;
 
@@ -49,8 +49,7 @@ public interface ServiceDiscovery extends RegistryService, Prioritized {
     List<ServiceInstance> getInstances(String serviceName) throws NullPointerException;
 
     default void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
-            throws NullPointerException, IllegalArgumentException {
-    }
+            throws NullPointerException, IllegalArgumentException {}
 
     /**
      * unsubscribe to instance change event.
@@ -59,8 +58,7 @@ public interface ServiceDiscovery extends RegistryService, Prioritized {
      * @throws IllegalArgumentException
      */
     default void removeServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
-            throws IllegalArgumentException {
-    }
+            throws IllegalArgumentException {}
 
     default ServiceInstancesChangedListener createListener(Set<String> serviceNames) {
         return new ServiceInstancesChangedListener(serviceNames, this);
@@ -107,7 +105,6 @@ public interface ServiceDiscovery extends RegistryService, Prioritized {
      *
      * @return The description.
      */
-
     @Override
     String toString();
 }

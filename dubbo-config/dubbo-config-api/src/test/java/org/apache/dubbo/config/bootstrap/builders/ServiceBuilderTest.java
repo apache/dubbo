@@ -20,10 +20,10 @@ import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ServiceConfig;
 
+import java.util.Collections;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.Collections;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_BEAN;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_DEFAULT;
@@ -91,22 +91,22 @@ class ServiceBuilderTest {
             builder.generic("illegal").build();
         });
     }
-//
-//    @Test
-//    public void Mock() throws Exception {
-//        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-//            ServiceBuilder builder = new ServiceBuilder();
-//            builder.mock("true");
-//        });
-//    }
-//
-//    @Test
-//    public void Mock1() throws Exception {
-//        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-//            ServiceBuilder builder = new ServiceBuilder();
-//            builder.mock(true);
-//        });
-//    }
+    //
+    //    @Test
+    //    public void Mock() throws Exception {
+    //        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+    //            ServiceBuilder builder = new ServiceBuilder();
+    //            builder.mock("true");
+    //        });
+    //    }
+    //
+    //    @Test
+    //    public void Mock1() throws Exception {
+    //        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+    //            ServiceBuilder builder = new ServiceBuilder();
+    //            builder.mock(true);
+    //        });
+    //    }
 
     @Test
     void build() {
@@ -114,7 +114,10 @@ class ServiceBuilderTest {
         ProviderConfig provider = new ProviderConfig();
 
         ServiceBuilder builder = new ServiceBuilder();
-        builder.path("path").addMethod(method).provider(provider).providerIds("providerIds")
+        builder.path("path")
+                .addMethod(method)
+                .provider(provider)
+                .providerIds("providerIds")
                 .generic(GENERIC_SERIALIZATION_DEFAULT);
 
         ServiceConfig config = builder.build();

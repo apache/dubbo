@@ -19,10 +19,8 @@ package org.apache.dubbo.demo.rest.api.impl;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.demo.rest.api.CurlService;
 
-@DubboService( interfaceClass = CurlService.class,protocol = "rest")
+@DubboService(interfaceClass = CurlService.class, protocol = "rest")
 public class CurlServiceImpl implements CurlService {
-
-
 
     @Override
     public String curl() {

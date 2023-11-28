@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.event;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -58,7 +57,6 @@ public class MetricsEventBus {
      */
     public static <T> T post(MetricsEvent event, Supplier<T> targetSupplier) {
         return post(event, targetSupplier, null);
-
     }
 
     /**

@@ -57,8 +57,8 @@ public class FixedParamValue implements ParamValue {
         Integer offset = val2Index.get(value.toLowerCase(Locale.ROOT));
         if (offset == null) {
             throw new IllegalArgumentException("unrecognized value " + value
-                    + " , please check if value is illegal. " +
-                    "Permitted values: " + Arrays.asList(values));
+                    + " , please check if value is illegal. " + "Permitted values: "
+                    + Arrays.asList(values));
         }
         return offset;
     }

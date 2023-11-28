@@ -22,6 +22,7 @@ import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
+
 import java.util.Set;
 
 /**
@@ -49,7 +50,8 @@ public interface ServiceRestMetadataResolver extends Prioritized {
      * @param annotations
      * @return non-null
      */
-    ServiceRestMetadata resolve(ProcessingEnvironment processingEnvironment,
-                                TypeElement serviceType,
-                                Set<? extends TypeElement> annotations);
+    ServiceRestMetadata resolve(
+            ProcessingEnvironment processingEnvironment,
+            TypeElement serviceType,
+            Set<? extends TypeElement> annotations);
 }

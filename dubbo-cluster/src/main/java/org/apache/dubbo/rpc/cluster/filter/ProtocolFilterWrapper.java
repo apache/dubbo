@@ -62,7 +62,8 @@ public class ProtocolFilterWrapper implements Protocol {
     }
 
     private <T> FilterChainBuilder getFilterChainBuilder(URL url) {
-        return ScopeModelUtil.getExtensionLoader(FilterChainBuilder.class, url.getScopeModel()).getDefaultExtension();
+        return ScopeModelUtil.getExtensionLoader(FilterChainBuilder.class, url.getScopeModel())
+                .getDefaultExtension();
     }
 
     @Override
@@ -83,5 +84,4 @@ public class ProtocolFilterWrapper implements Protocol {
     public List<ProtocolServer> getServers() {
         return protocol.getServers();
     }
-
 }

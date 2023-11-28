@@ -39,7 +39,9 @@ public class FrameworkStatusReportService implements ScopeModelAware {
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
-        reporters = applicationModel.getExtensionLoader(FrameworkStatusReporter.class).getSupportedExtensionInstances();
+        reporters = applicationModel
+                .getExtensionLoader(FrameworkStatusReporter.class)
+                .getSupportedExtensionInstances();
     }
 
     public void reportRegistrationStatus(Object obj) {
@@ -89,7 +91,8 @@ public class FrameworkStatusReportService implements ScopeModelAware {
         return JsonUtils.toJson(migrationStatus);
     }
 
-    public String createMigrationStepReport(String interfaceName, String version, String group, String originStep, String newStep, String success) {
+    public String createMigrationStepReport(
+            String interfaceName, String version, String group, String originStep, String newStep, String success) {
         HashMap<String, String> migrationStatus = new HashMap<>();
         migrationStatus.put("type", "migrationStepStatus");
         migrationStatus.put("application", applicationModel.getApplicationName());

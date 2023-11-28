@@ -20,13 +20,13 @@ import org.apache.dubbo.common.extension.DubboInternalLoadingStrategy;
 import org.apache.dubbo.common.extension.director.FooAppProvider;
 import org.apache.dubbo.common.resource.GlobalResourcesRepository;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * {@link ClassLoaderResourceLoader}
@@ -41,7 +41,8 @@ class ClassLoaderResourceLoaderTest {
         String fileName = directory + type;
 
         ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-        Map<ClassLoader, Set<URL>> loadResources = ClassLoaderResourceLoader.loadResources(fileName, Arrays.asList(contextClassLoader));
+        Map<ClassLoader, Set<URL>> loadResources =
+                ClassLoaderResourceLoader.loadResources(fileName, Arrays.asList(contextClassLoader));
         Assertions.assertTrue(loadResources.containsKey(contextClassLoader));
         Assertions.assertTrue(!loadResources.get(contextClassLoader).isEmpty());
 

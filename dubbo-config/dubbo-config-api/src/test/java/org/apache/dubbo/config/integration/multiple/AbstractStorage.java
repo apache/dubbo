@@ -28,7 +28,6 @@ public abstract class AbstractStorage<T> implements Storage<T> {
 
     private Map<String, T> storage = new ConcurrentHashMap<>();
 
-
     /**
      * Generate the key for storage
      *

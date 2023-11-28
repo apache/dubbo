@@ -31,7 +31,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXP
  * 2015/1/27.
  */
 public class EnumTypeBuilder implements TypeBuilder {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(TypeDefinitionBuilder.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(TypeDefinitionBuilder.class);
 
     @Override
     public boolean accept(Class<?> clazz) {
@@ -67,5 +68,4 @@ public class EnumTypeBuilder implements TypeBuilder {
         }
         return td;
     }
-
 }

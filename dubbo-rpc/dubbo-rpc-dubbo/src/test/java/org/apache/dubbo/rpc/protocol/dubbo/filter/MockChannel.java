@@ -33,8 +33,7 @@ public class MockChannel implements Channel {
     private List<Object> receivedObjects = new LinkedList<>();
     private URL url;
 
-    public MockChannel() {
-    }
+    public MockChannel() {}
 
     public MockChannel(URL url) {
         this.url = url;
@@ -96,19 +95,13 @@ public class MockChannel implements Channel {
     }
 
     @Override
-    public void close() {
-
-    }
+    public void close() {}
 
     @Override
-    public void close(int timeout) {
-
-    }
+    public void close(int timeout) {}
 
     @Override
-    public void startClose() {
-
-    }
+    public void startClose() {}
 
     @Override
     public boolean isClosed() {

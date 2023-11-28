@@ -28,7 +28,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 /**
  * ThreadPool
  */
-//TODO which scope for ThreadPool? APPLICATION or FRAMEWORK
+// TODO which scope for ThreadPool? APPLICATION or FRAMEWORK
 @SPI(value = "fixed", scope = ExtensionScope.FRAMEWORK)
 public interface ThreadPool {
 
@@ -40,5 +40,4 @@ public interface ThreadPool {
      */
     @Adaptive({THREADPOOL_KEY})
     Executor getExecutor(URL url);
-
 }

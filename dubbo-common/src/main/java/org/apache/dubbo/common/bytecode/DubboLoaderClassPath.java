@@ -16,11 +16,10 @@
  */
 package org.apache.dubbo.common.bytecode;
 
-import javassist.LoaderClassPath;
-import javassist.NotFoundException;
-
 import java.io.InputStream;
 import java.net.URL;
+import javassist.LoaderClassPath;
+import javassist.NotFoundException;
 
 /**
  * Ensure javassist will load Dubbo's class from Dubbo's classLoader
@@ -32,7 +31,9 @@ public class DubboLoaderClassPath extends LoaderClassPath {
 
     @Override
     public InputStream openClassfile(String classname) throws NotFoundException {
-        if (!classname.startsWith("org.apache.dubbo") && !classname.startsWith("grpc.health") && !classname.startsWith("com.google")) {
+        if (!classname.startsWith("org.apache.dubbo")
+                && !classname.startsWith("grpc.health")
+                && !classname.startsWith("com.google")) {
             return null;
         }
         return super.openClassfile(classname);

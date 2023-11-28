@@ -59,19 +59,21 @@ public class MetadataInfo implements Serializable {
     private static final Logger logger = LoggerFactory.getLogger(MetadataInfo.class);
 
     private String app;
-    // revision that will report to registry or remote meta center, must always update together with rawMetadataInfo, check {@link this#calAndGetRevision}
+    // revision that will report to registry or remote meta center, must always update together with rawMetadataInfo,
+    // check {@link this#calAndGetRevision}
     private volatile String revision;
     // key format is '{group}/{interface name}:{version}:{protocol}'
     private final Map<String, ServiceInfo> services;
 
     /* used at runtime */
     private transient AtomicBoolean initiated = new AtomicBoolean(false);
-    // Json formatted metadata that will report to remote meta center, must always update together with revision, check {@link this#calAndGetRevision}
+    // Json formatted metadata that will report to remote meta center, must always update together with revision, check
+    // {@link this#calAndGetRevision}
     private transient volatile String rawMetadataInfo;
     // key format is '{group}/{interface name}:{version}'
     private transient Map<String, Set<ServiceInfo>> subscribedServices;
-    private transient final Map<String, String> extendParams;
-    private transient final Map<String, String> instanceParams;
+    private final transient Map<String, String> extendParams;
+    private final transient Map<String, String> instanceParams;
     protected transient volatile boolean updated = false;
     private transient ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs;
     private transient ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs;
@@ -93,11 +95,17 @@ public class MetadataInfo implements Serializable {
         this.instanceParams = new ConcurrentHashMap<>();
     }
 
-    private MetadataInfo(String app, String revision, Map<String, ServiceInfo> services, AtomicBoolean initiated,
-                        Map<String, String> extendParams, Map<String, String> instanceParams, boolean updated,
-                        ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs,
-                        ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs,
-                        ExtensionLoader<MetadataParamsFilter> loader) {
+    private MetadataInfo(
+            String app,
+            String revision,
+            Map<String, ServiceInfo> services,
+            AtomicBoolean initiated,
+            Map<String, String> extendParams,
+            Map<String, String> instanceParams,
+            boolean updated,
+            ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs,
+            ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs,
+            ExtensionLoader<MetadataParamsFilter> loader) {
         this.app = app;
         this.revision = revision;
         this.services = new ConcurrentHashMap<>(services);
@@ -105,8 +113,10 @@ public class MetadataInfo implements Serializable {
         this.extendParams = new ConcurrentHashMap<>(extendParams);
         this.instanceParams = new ConcurrentHashMap<>(instanceParams);
         this.updated = updated;
-        this.subscribedServiceURLs = subscribedServiceURLs == null ? null : new ConcurrentSkipListMap<>(subscribedServiceURLs);
-        this.exportedServiceURLs = exportedServiceURLs == null ? null : new ConcurrentSkipListMap<>(exportedServiceURLs);
+        this.subscribedServiceURLs =
+                subscribedServiceURLs == null ? null : new ConcurrentSkipListMap<>(subscribedServiceURLs);
+        this.exportedServiceURLs =
+                exportedServiceURLs == null ? null : new ConcurrentSkipListMap<>(exportedServiceURLs);
         this.loader = loader;
     }
 
@@ -120,11 +130,13 @@ public class MetadataInfo implements Serializable {
         if (CollectionUtils.isNotEmptyMap(services)) {
             services.forEach((_k, serviceInfo) -> {
                 serviceInfo.init();
-                // create duplicate serviceKey(without protocol)->serviceInfo mapping to support metadata search when protocol is not specified on consumer side.
+                // create duplicate serviceKey(without protocol)->serviceInfo mapping to support metadata search when
+                // protocol is not specified on consumer side.
                 if (subscribedServices == null) {
                     subscribedServices = new HashMap<>();
                 }
-                Set<ServiceInfo> serviceInfos = subscribedServices.computeIfAbsent(serviceInfo.getServiceKey(), _key -> new HashSet<>());
+                Set<ServiceInfo> serviceInfos =
+                        subscribedServices.computeIfAbsent(serviceInfo.getServiceKey(), _key -> new HashSet<>());
                 serviceInfos.add(serviceInfo);
             });
         }
@@ -188,7 +200,9 @@ public class MetadataInfo implements Serializable {
             String tempRevision = RevisionResolver.calRevision(sb.toString());
             if (!StringUtils.isEquals(this.revision, tempRevision)) {
                 if (logger.isInfoEnabled()) {
-                    logger.info(String.format("metadata revision changed: %s -> %s, app: %s, services: %d", this.revision, tempRevision, this.app, this.services.size()));
+                    logger.info(String.format(
+                            "metadata revision changed: %s -> %s, app: %s, services: %d",
+                            this.revision, tempRevision, this.app, this.services.size()));
                 }
                 this.revision = tempRevision;
                 this.rawMetadataInfo = JsonUtils.toJson(this);
@@ -240,7 +254,7 @@ public class MetadataInfo implements Serializable {
         }
         Set<ServiceInfo> subServices = subscribedServices.get(serviceKeyWithoutProtocol);
         if (CollectionUtils.isNotEmpty(subServices)) {
-           return subServices.iterator().next();
+            return subServices.iterator().next();
         }
         return null;
     }
@@ -257,10 +271,9 @@ public class MetadataInfo implements Serializable {
     }
 
     public List<ServiceInfo> getMatchedServiceInfos(ProtocolServiceKey consumerProtocolServiceKey) {
-        return getServices().values()
-            .stream()
-            .filter(serviceInfo -> serviceInfo.matchProtocolServiceKey(consumerProtocolServiceKey))
-            .collect(Collectors.toList());
+        return getServices().values().stream()
+                .filter(serviceInfo -> serviceInfo.matchProtocolServiceKey(consumerProtocolServiceKey))
+                .collect(Collectors.toList());
     }
 
     public Map<String, String> getExtendParams() {
@@ -324,9 +337,9 @@ public class MetadataInfo implements Serializable {
             return Collections.emptySet();
         }
         return exportedServiceURLs.values().stream()
-            .filter(CollectionUtils::isNotEmpty)
-            .flatMap(Collection::stream)
-            .collect(Collectors.toSet());
+                .filter(CollectionUtils::isNotEmpty)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
     }
 
     private boolean addURL(Map<String, SortedSet<URL>> serviceURLs, URL url) {
@@ -368,11 +381,11 @@ public class MetadataInfo implements Serializable {
             return false;
         }
 
-        MetadataInfo other = (MetadataInfo)obj;
+        MetadataInfo other = (MetadataInfo) obj;
 
         return Objects.equals(app, other.getApp())
-            && ((services == null && other.services == null)
-                || (services != null && services.equals(other.services)));
+                && ((services == null && other.services == null)
+                        || (services != null && services.equals(other.services)));
     }
 
     private void extractInstanceParams(URL url, List<MetadataParamsFilter> filters) {
@@ -418,27 +431,23 @@ public class MetadataInfo implements Serializable {
         tmpInstanceParams.forEach((key, value) -> {
             String oldValue = instanceParams.put(key, value);
             if (!TIMESTAMP_KEY.equals(key) && oldValue != null && !oldValue.equals(value)) {
-                throw new IllegalStateException(String.format("Inconsistent instance metadata found in different services: %s, %s", oldValue, value));
+                throw new IllegalStateException(String.format(
+                        "Inconsistent instance metadata found in different services: %s, %s", oldValue, value));
             }
         });
     }
 
     @Override
     public String toString() {
-        return "metadata{" +
-            "app='" + app + "'," +
-            "revision='" + revision + "'," +
-            "size=" + (services == null ? 0 : services.size()) + "," +
-            "services=" + getSimplifiedServices(services) +
-            "}";
+        return "metadata{" + "app='"
+                + app + "'," + "revision='"
+                + revision + "'," + "size="
+                + (services == null ? 0 : services.size()) + "," + "services="
+                + getSimplifiedServices(services) + "}";
     }
 
     public String toFullString() {
-        return "metadata{" +
-            "app='" + app + "'," +
-            "revision='" + revision + "'," +
-            "services=" + services +
-            "}";
+        return "metadata{" + "app='" + app + "'," + "revision='" + revision + "'," + "services=" + services + "}";
     }
 
     private String getSimplifiedServices(Map<String, ServiceInfo> services) {
@@ -451,7 +460,17 @@ public class MetadataInfo implements Serializable {
 
     @Override
     public synchronized MetadataInfo clone() {
-        return new MetadataInfo(app, revision, services, initiated, extendParams, instanceParams, updated, subscribedServiceURLs, exportedServiceURLs, loader);
+        return new MetadataInfo(
+                app,
+                revision,
+                services,
+                initiated,
+                extendParams,
+                instanceParams,
+                updated,
+                subscribedServiceURLs,
+                exportedServiceURLs,
+                loader);
     }
 
     private Object readResolve() {
@@ -469,26 +488,33 @@ public class MetadataInfo implements Serializable {
         private Map<String, String> params;
 
         // params configured on consumer side,
-        private volatile transient Map<String, String> consumerParams;
+        private transient volatile Map<String, String> consumerParams;
         // cached method params
-        private volatile transient Map<String, Map<String, String>> methodParams;
-        private volatile transient Map<String, Map<String, String>> consumerMethodParams;
+        private transient volatile Map<String, Map<String, String>> methodParams;
+        private transient volatile Map<String, Map<String, String>> consumerMethodParams;
         // cached numbers
-        private volatile transient Map<String, Number> numbers;
-        private volatile transient Map<String, Map<String, Number>> methodNumbers;
+        private transient volatile Map<String, Number> numbers;
+        private transient volatile Map<String, Map<String, Number>> methodNumbers;
         // service + group + version
-        private volatile transient String serviceKey;
+        private transient volatile String serviceKey;
         // service + group + version + protocol
-        private volatile transient String matchKey;
+        private transient volatile String matchKey;
 
-        private volatile transient ProtocolServiceKey protocolServiceKey;
+        private transient volatile ProtocolServiceKey protocolServiceKey;
 
         private transient URL url;
 
         public ServiceInfo() {}
 
         public ServiceInfo(URL url, List<MetadataParamsFilter> filters) {
-            this(url.getServiceInterface(), url.getGroup(), url.getVersion(), url.getProtocol(), url.getPort(), url.getPath(), null);
+            this(
+                    url.getServiceInterface(),
+                    url.getGroup(),
+                    url.getVersion(),
+                    url.getProtocol(),
+                    url.getPort(),
+                    url.getPath(),
+                    null);
             this.url = url;
             Map<String, String> params = extractServiceParams(url, filters);
             // initialize method params caches.
@@ -496,7 +522,14 @@ public class MetadataInfo implements Serializable {
             this.consumerMethodParams = URLParam.initMethodParameters(consumerParams);
         }
 
-        public ServiceInfo(String name, String group, String version, String protocol, int port, String path, Map<String, String> params) {
+        public ServiceInfo(
+                String name,
+                String group,
+                String version,
+                String protocol,
+                int port,
+                String path,
+                Map<String, String> params) {
             this.name = name;
             this.group = group;
             this.version = version;
@@ -588,7 +621,7 @@ public class MetadataInfo implements Serializable {
             this.methodParams = URLParam.initMethodParameters(params);
             // Actually, consumer params is empty after deserialized on the consumer side, so no need to initialize.
             // Check how InstanceAddressURL operates on consumer url for more detail.
-//            this.consumerMethodParams = URLParam.initMethodParameters(consumerParams);
+            //            this.consumerMethodParams = URLParam.initMethodParameters(consumerParams);
             // no need to init numbers for it's only for cache purpose
         }
 
@@ -616,7 +649,7 @@ public class MetadataInfo implements Serializable {
             if (protocolServiceKey != null) {
                 return protocolServiceKey;
             }
-            protocolServiceKey = new ProtocolServiceKey(name, version, group,  protocol);
+            protocolServiceKey = new ProtocolServiceKey(name, version, group, protocol);
             return protocolServiceKey;
         }
 
@@ -695,7 +728,8 @@ public class MetadataInfo implements Serializable {
         @Transient
         public Map<String, String> getAllParams() {
             if (consumerParams != null) {
-                Map<String, String> allParams = new HashMap<>((int) ((params.size() + consumerParams.size()) / 0.75f + 1));
+                Map<String, String> allParams =
+                        new HashMap<>((int) ((params.size() + consumerParams.size()) / 0.75f + 1));
                 allParams.putAll(params);
                 allParams.putAll(consumerParams);
                 return allParams;
@@ -742,7 +776,7 @@ public class MetadataInfo implements Serializable {
 
         public boolean hasMethodParameter(String method) {
             return (consumerMethodParams != null && consumerMethodParams.containsKey(method))
-                || (methodParams != null && methodParams.containsKey(method));
+                    || (methodParams != null && methodParams.containsKey(method));
         }
 
         public String toDescString() {
@@ -808,11 +842,11 @@ public class MetadataInfo implements Serializable {
              * on json deserialization.
              */
             return Objects.equals(this.getVersion(), serviceInfo.getVersion())
-                && Objects.equals(this.getGroup(), serviceInfo.getGroup())
-                && Objects.equals(this.getName(), serviceInfo.getName())
-                && Objects.equals(this.getProtocol(), serviceInfo.getProtocol())
-                && Objects.equals(this.getPort(), serviceInfo.getPort())
-                && this.getParams().equals(serviceInfo.getParams());
+                    && Objects.equals(this.getGroup(), serviceInfo.getGroup())
+                    && Objects.equals(this.getName(), serviceInfo.getName())
+                    && Objects.equals(this.getProtocol(), serviceInfo.getProtocol())
+                    && Objects.equals(this.getPort(), serviceInfo.getPort())
+                    && this.getParams().equals(serviceInfo.getParams());
         }
 
         @Override
@@ -826,14 +860,13 @@ public class MetadataInfo implements Serializable {
         }
 
         public String toFullString() {
-            return "service{" +
-                "name='" + name + "'," +
-                "group='" + group + "'," +
-                "version='" + version + "'," +
-                "protocol='" + protocol + "'," +
-                "port='" + port + "'," +
-                "params=" + params + "," +
-                "}";
+            return "service{" + "name='"
+                    + name + "'," + "group='"
+                    + group + "'," + "version='"
+                    + version + "'," + "protocol='"
+                    + protocol + "'," + "port='"
+                    + port + "'," + "params="
+                    + params + "," + "}";
         }
     }
 

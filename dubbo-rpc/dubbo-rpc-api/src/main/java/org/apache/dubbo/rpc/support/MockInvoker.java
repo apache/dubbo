@@ -45,10 +45,10 @@ import static org.apache.dubbo.rpc.Constants.RETURN_KEY;
 import static org.apache.dubbo.rpc.Constants.RETURN_PREFIX;
 import static org.apache.dubbo.rpc.Constants.THROW_PREFIX;
 
-final public class MockInvoker<T> implements Invoker<T> {
+public final class MockInvoker<T> implements Invoker<T> {
     private final ProxyFactory proxyFactory;
-    private final static Map<String, Invoker<?>> MOCK_MAP = new ConcurrentHashMap<String, Invoker<?>>();
-    private final static Map<String, Throwable> THROWABLE_MAP = new ConcurrentHashMap<String, Throwable>();
+    private static final Map<String, Invoker<?>> MOCK_MAP = new ConcurrentHashMap<String, Invoker<?>>();
+    private static final Map<String, Throwable> THROWABLE_MAP = new ConcurrentHashMap<String, Throwable>();
 
     private final URL url;
     private final Class<T> type;
@@ -56,7 +56,9 @@ final public class MockInvoker<T> implements Invoker<T> {
     public MockInvoker(URL url, Class<T> type) {
         this.url = url;
         this.type = type;
-        this.proxyFactory = url.getOrDefaultFrameworkModel().getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        this.proxyFactory = url.getOrDefaultFrameworkModel()
+                .getExtensionLoader(ProxyFactory.class)
+                .getAdaptiveExtension();
     }
 
     public static Object parseMockValue(String mock) throws Exception {
@@ -66,15 +68,16 @@ final public class MockInvoker<T> implements Invoker<T> {
     public static Object parseMockValue(String mock, Type[] returnTypes) throws Exception {
         Object value;
         if ("empty".equals(mock)) {
-            value = ReflectUtils.getEmptyObject(returnTypes != null && returnTypes.length > 0 ? (Class<?>) returnTypes[0] : null);
+            value = ReflectUtils.getEmptyObject(
+                    returnTypes != null && returnTypes.length > 0 ? (Class<?>) returnTypes[0] : null);
         } else if ("null".equals(mock)) {
             value = null;
         } else if ("true".equals(mock)) {
             value = true;
         } else if ("false".equals(mock)) {
             value = false;
-        } else if (mock.length() >= 2 && (mock.startsWith("\"") && mock.endsWith("\"")
-            || mock.startsWith("\'") && mock.endsWith("\'"))) {
+        } else if (mock.length() >= 2
+                && (mock.startsWith("\"") && mock.endsWith("\"") || mock.startsWith("\'") && mock.endsWith("\'"))) {
             value = mock.subSequence(1, mock.length() - 1);
         } else if (returnTypes != null && returnTypes.length > 0 && returnTypes[0] == String.class) {
             value = mock;
@@ -111,8 +114,10 @@ final public class MockInvoker<T> implements Invoker<T> {
                 Object value = parseMockValue(mock, returnTypes);
                 return AsyncRpcResult.newDefaultAsyncResult(value, invocation);
             } catch (Exception ew) {
-                throw new RpcException("mock return invoke error. method :" + invocation.getMethodName()
-                    + ", mock:" + mock + ", url: " + url, ew);
+                throw new RpcException(
+                        "mock return invoke error. method :" + invocation.getMethodName() + ", mock:" + mock + ", url: "
+                                + url,
+                        ew);
             }
         } else if (mock.startsWith(THROW_PREFIX)) {
             mock = mock.substring(THROW_PREFIX.length()).trim();
@@ -122,7 +127,7 @@ final public class MockInvoker<T> implements Invoker<T> {
                 Throwable t = getThrowable(mock);
                 throw new RpcException(RpcException.BIZ_EXCEPTION, t);
             }
-        } else { //impl mock
+        } else { // impl mock
             try {
                 Invoker<T> invoker = getInvoker(mock);
                 return invoker.invoke(invocation);
@@ -143,7 +148,7 @@ final public class MockInvoker<T> implements Invoker<T> {
             Class<?> bizException = ReflectUtils.forName(throwstr);
             Constructor<?> constructor;
             constructor = ReflectUtils.findConstructor(bizException, String.class);
-            t = (Throwable) constructor.newInstance(new Object[]{"mocked exception for service degradation."});
+            t = (Throwable) constructor.newInstance(new Object[] {"mocked exception for service degradation."});
             if (THROWABLE_MAP.size() < 1000) {
                 THROWABLE_MAP.put(throwstr, t);
             }
@@ -181,22 +186,25 @@ final public class MockInvoker<T> implements Invoker<T> {
         try {
             mockClass = ReflectUtils.forName(mockService);
         } catch (Exception e) {
-            if (!isDefault) {// does not check Spring bean if it is default config.
-                ExtensionInjector extensionFactory =
-                    extensionDirector.getExtensionLoader(ExtensionInjector.class).getAdaptiveExtension();
+            if (!isDefault) { // does not check Spring bean if it is default config.
+                ExtensionInjector extensionFactory = extensionDirector
+                        .getExtensionLoader(ExtensionInjector.class)
+                        .getAdaptiveExtension();
                 Object obj = extensionFactory.getInstance(serviceType, mockService);
                 if (obj != null) {
                     return obj;
                 }
             }
-            throw new IllegalStateException("Did not find mock class or instance "
-                + mockService
-                + ", please check if there's mock class or instance implementing interface "
-                + serviceType.getName(), e);
+            throw new IllegalStateException(
+                    "Did not find mock class or instance "
+                            + mockService
+                            + ", please check if there's mock class or instance implementing interface "
+                            + serviceType.getName(),
+                    e);
         }
         if (mockClass == null || !serviceType.isAssignableFrom(mockClass)) {
-            throw new IllegalStateException("The mock class " + mockClass.getName() +
-                " not implement interface " + serviceType.getName());
+            throw new IllegalStateException(
+                    "The mock class " + mockClass.getName() + " not implement interface " + serviceType.getName());
         }
 
         try {
@@ -207,7 +215,6 @@ final public class MockInvoker<T> implements Invoker<T> {
             throw new IllegalStateException(e);
         }
     }
-
 
     /**
      * Normalize mock string:
@@ -269,7 +276,7 @@ final public class MockInvoker<T> implements Invoker<T> {
 
     @Override
     public void destroy() {
-        //do nothing
+        // do nothing
     }
 
     @Override

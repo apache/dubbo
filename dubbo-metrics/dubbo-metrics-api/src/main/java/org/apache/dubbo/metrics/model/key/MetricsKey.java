@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.model.key;
 
 public enum MetricsKey {
@@ -33,19 +32,24 @@ public enum MetricsKey {
     METRIC_REQUESTS_FAILED("dubbo.%s.requests.unknown.failed.total", "Total Unknown Failed Requests"),
     METRIC_REQUESTS_TOTAL_FAILED("dubbo.%s.requests.failed.total", "Total Failed Requests"),
     METRIC_REQUESTS_NETWORK_FAILED("dubbo.%s.requests.failed.network.total", "Total network Failed Requests"),
-    METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED("dubbo.%s.requests.failed.service.unavailable.total", "Total Service Unavailable Failed Requests"),
+    METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED(
+            "dubbo.%s.requests.failed.service.unavailable.total", "Total Service Unavailable Failed Requests"),
     METRIC_REQUESTS_CODEC_FAILED("dubbo.%s.requests.failed.codec.total", "Total Codec Failed Requests"),
 
     METRIC_REQUESTS_TOTAL_AGG("dubbo.%s.requests.total.aggregate", "Aggregated Total Requests"),
     METRIC_REQUESTS_SUCCEED_AGG("dubbo.%s.requests.succeed.aggregate", "Aggregated Succeed Requests"),
     METRIC_REQUESTS_FAILED_AGG("dubbo.%s.requests.failed.aggregate", "Aggregated Failed Requests"),
-    METRIC_REQUEST_BUSINESS_FAILED_AGG("dubbo.%s.requests.business.failed.aggregate", "Aggregated Business Failed Requests"),
+    METRIC_REQUEST_BUSINESS_FAILED_AGG(
+            "dubbo.%s.requests.business.failed.aggregate", "Aggregated Business Failed Requests"),
     METRIC_REQUESTS_TIMEOUT_AGG("dubbo.%s.requests.timeout.failed.aggregate", "Aggregated timeout Failed Requests"),
     METRIC_REQUESTS_LIMIT_AGG("dubbo.%s.requests.limit.aggregate", "Aggregated limit Requests"),
     METRIC_REQUESTS_TOTAL_FAILED_AGG("dubbo.%s.requests.failed.total.aggregate", "Aggregated failed total Requests"),
-    METRIC_REQUESTS_NETWORK_FAILED_AGG("dubbo.%s.requests.failed.network.total.aggregate", "Aggregated failed network total Requests"),
-    METRIC_REQUESTS_CODEC_FAILED_AGG("dubbo.%s.requests.failed.codec.total.aggregate", "Aggregated failed codec total Requests"),
-    METRIC_REQUESTS_TOTAL_SERVICE_UNAVAILABLE_FAILED_AGG("dubbo.%s.requests.failed.service.unavailable.total.aggregate", "Aggregated failed codec total Requests"),
+    METRIC_REQUESTS_NETWORK_FAILED_AGG(
+            "dubbo.%s.requests.failed.network.total.aggregate", "Aggregated failed network total Requests"),
+    METRIC_REQUESTS_CODEC_FAILED_AGG(
+            "dubbo.%s.requests.failed.codec.total.aggregate", "Aggregated failed codec total Requests"),
+    METRIC_REQUESTS_TOTAL_SERVICE_UNAVAILABLE_FAILED_AGG(
+            "dubbo.%s.requests.failed.service.unavailable.total.aggregate", "Aggregated failed codec total Requests"),
 
     METRIC_QPS("dubbo.%s.qps.total", "Query Per Seconds"),
     METRIC_RT_LAST("dubbo.%s.rt.milliseconds.last", "Last Response Time"),
@@ -66,7 +70,6 @@ public enum MetricsKey {
     REGISTER_METRIC_REQUESTS_SUCCEED("dubbo.registry.register.requests.succeed.total", "Succeed Register Requests"),
     REGISTER_METRIC_REQUESTS_FAILED("dubbo.registry.register.requests.failed.total", "Failed Register Requests"),
     METRIC_RT_HISTOGRAM("dubbo.%s.rt.milliseconds.histogram", "Response Time Histogram"),
-
 
     GENERIC_METRIC_REQUESTS("dubbo.%s.requests.total", "Total %s Requests"),
     GENERIC_METRIC_REQUESTS_SUCCEED("dubbo.%s.requests.succeed.total", "Succeed %s Requests"),
@@ -101,18 +104,23 @@ public enum MetricsKey {
 
     // metadata subscribe metrics key
     METADATA_SUBSCRIBE_METRIC_NUM("dubbo.metadata.subscribe.num.total", "Total Metadata Subscribe Num"),
-    METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED("dubbo.metadata.subscribe.num.succeed.total", "Succeed Metadata Subscribe Num"),
+    METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED(
+            "dubbo.metadata.subscribe.num.succeed.total", "Succeed Metadata Subscribe Num"),
     METADATA_SUBSCRIBE_METRIC_NUM_FAILED("dubbo.metadata.subscribe.num.failed.total", "Failed Metadata Subscribe Num"),
 
     // register service metrics key
     SERVICE_REGISTER_METRIC_REQUESTS("dubbo.registry.register.service.total", "Total Service-Level Register Requests"),
-    SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED("dubbo.registry.register.service.succeed.total", "Succeed Service-Level Register Requests"),
-    SERVICE_REGISTER_METRIC_REQUESTS_FAILED("dubbo.registry.register.service.failed.total", "Failed Service-Level Register Requests"),
+    SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED(
+            "dubbo.registry.register.service.succeed.total", "Succeed Service-Level Register Requests"),
+    SERVICE_REGISTER_METRIC_REQUESTS_FAILED(
+            "dubbo.registry.register.service.failed.total", "Failed Service-Level Register Requests"),
 
     // subscribe metrics key
     SERVICE_SUBSCRIBE_METRIC_NUM("dubbo.registry.subscribe.service.num.total", "Total Service-Level Subscribe Num"),
-    SERVICE_SUBSCRIBE_METRIC_NUM_SUCCEED("dubbo.registry.subscribe.service.num.succeed.total", "Succeed Service-Level Num"),
-    SERVICE_SUBSCRIBE_METRIC_NUM_FAILED("dubbo.registry.subscribe.service.num.failed.total", "Failed Service-Level Num"),
+    SERVICE_SUBSCRIBE_METRIC_NUM_SUCCEED(
+            "dubbo.registry.subscribe.service.num.succeed.total", "Succeed Service-Level Num"),
+    SERVICE_SUBSCRIBE_METRIC_NUM_FAILED(
+            "dubbo.registry.subscribe.service.num.failed.total", "Failed Service-Level Num"),
     // store provider metadata service key
     STORE_PROVIDER_METADATA("dubbo.metadata.store.provider.total", "Store Provider Metadata"),
 
@@ -122,7 +130,8 @@ public enum MetricsKey {
     METADATA_GIT_COMMITID_METRIC("git.commit.id", "Git Commit Id Metrics"),
 
     // consumer metrics key
-    INVOKER_NO_AVAILABLE_COUNT("dubbo.consumer.invoker.no.available.count", "Request Throw No Invoker Available Exception Count"),
+    INVOKER_NO_AVAILABLE_COUNT(
+            "dubbo.consumer.invoker.no.available.count", "Request Throw No Invoker Available Exception Count"),
     ;
 
     private String name;

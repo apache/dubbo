@@ -40,9 +40,7 @@ public class MockChannel implements Channel {
     private List<Object> receivedObjects = new LinkedList<>();
     private CountDownLatch latch;
 
-    public MockChannel() {
-
-    }
+    public MockChannel() {}
 
     public MockChannel(URL remoteUrl) {
         this.remoteUrl = remoteUrl;

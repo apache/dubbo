@@ -19,9 +19,6 @@ package org.apache.dubbo.metadata;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.JsonUtils;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -31,12 +28,15 @@ import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PAYLOAD;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PAYLOAD;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -49,29 +49,30 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Some construction and filter cases are covered in InMemoryMetadataServiceTest
  */
 class MetadataInfoTest {
-    private static URL url = URL.valueOf("dubbo://30.225.21.30:20880/org.apache.dubbo.registry.service.DemoService2?" +
-        "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2" +
-        "&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.registry.service.DemoService2" +
-        "&metadata-type=remote&methods=sayHello&sayHello.timeout=7000&pid=36621&release=&revision=1.0.0&service-name-mapping=true" +
-        "&side=provider&timeout=5000&timestamp=1629970068002&version=1.0.0&params-filter=customized,-excluded");
+    private static URL url = URL.valueOf("dubbo://30.225.21.30:20880/org.apache.dubbo.registry.service.DemoService2?"
+            + "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2"
+            + "&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.registry.service.DemoService2"
+            + "&metadata-type=remote&methods=sayHello&sayHello.timeout=7000&pid=36621&release=&revision=1.0.0&service-name-mapping=true"
+            + "&side=provider&timeout=5000&timestamp=1629970068002&version=1.0.0&params-filter=customized,-excluded");
 
-    private static URL url2 = URL.valueOf("dubbo://30.225.21.30:20880/org.apache.dubbo.registry.service.DemoService?" +
-        "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2" +
-        "&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.registry.service.DemoService" +
-        "&metadata-type=remote&methods=sayHello&pid=36621&release=&revision=1.0.0&service-name-mapping=true" +
-        "&side=provider&timeout=5000&timestamp=1629970068002&version=1.0.0&params-filter=customized,-excluded");
+    private static URL url2 = URL.valueOf("dubbo://30.225.21.30:20880/org.apache.dubbo.registry.service.DemoService?"
+            + "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2"
+            + "&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.registry.service.DemoService"
+            + "&metadata-type=remote&methods=sayHello&pid=36621&release=&revision=1.0.0&service-name-mapping=true"
+            + "&side=provider&timeout=5000&timestamp=1629970068002&version=1.0.0&params-filter=customized,-excluded");
 
-    private static URL url3 = URL.valueOf("dubbo://30.225.21.30:20880/org.apache.dubbo.registry.service.DemoService?" +
-        "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2" +
-        "&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.registry.service.DemoService" +
-        "&metadata-type=remote&methods=sayHello&sayHello.timeout=7000&pid=36621&release=&revision=1.0.0&service-name-mapping=true" +
-        "&side=provider&timeout=5000&timestamp=1629970068002&version=1.0.0&params-filter=-customized,excluded");
+    private static URL url3 = URL.valueOf("dubbo://30.225.21.30:20880/org.apache.dubbo.registry.service.DemoService?"
+            + "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2"
+            + "&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.registry.service.DemoService"
+            + "&metadata-type=remote&methods=sayHello&sayHello.timeout=7000&pid=36621&release=&revision=1.0.0&service-name-mapping=true"
+            + "&side=provider&timeout=5000&timestamp=1629970068002&version=1.0.0&params-filter=-customized,excluded");
 
-    private static URL url4 = URL.valueOf("dubbo://30.225.21.30:20880/org.apache.dubbo.registry.service.DemoService?" +
-        "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2" +
-        "&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.registry.service.DemoService" +
-        "&metadata-type=remote&methods=sayHello&sayHello.timeout=7000&pid=36621&release=&revision=1.0.0&service-name-mapping=true" +
-        "&side=provider&timeout=5000&timestamp=1629970068002&version=1.0.0&params-filter=-customized,excluded&payload=1024");
+    private static URL url4 = URL.valueOf(
+            "dubbo://30.225.21.30:20880/org.apache.dubbo.registry.service.DemoService?"
+                    + "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2"
+                    + "&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.registry.service.DemoService"
+                    + "&metadata-type=remote&methods=sayHello&sayHello.timeout=7000&pid=36621&release=&revision=1.0.0&service-name-mapping=true"
+                    + "&side=provider&timeout=5000&timestamp=1629970068002&version=1.0.0&params-filter=-customized,excluded&payload=1024");
 
     @Test
     void testEmptyRevision() {
@@ -175,7 +176,6 @@ class MetadataInfoTest {
         metadataInfo2.addService(url);
         metadataInfo2.addService(url2);
         System.out.println(JsonUtils.toJson(metadataInfo2));
-
     }
 
     @Test
@@ -198,7 +198,7 @@ class MetadataInfoTest {
         Field initiatedField = MetadataInfo.class.getDeclaredField("initiated");
         initiatedField.setAccessible(true);
         Assertions.assertInstanceOf(AtomicBoolean.class, initiatedField.get(metadataInfo2));
-        Assertions.assertFalse(((AtomicBoolean)initiatedField.get(metadataInfo2)).get());
+        Assertions.assertFalse(((AtomicBoolean) initiatedField.get(metadataInfo2)).get());
     }
 
     @Test
@@ -218,7 +218,7 @@ class MetadataInfoTest {
 
         metadataInfo.calAndGetRevision();
 
-        Map<String, Object> ret  = JsonUtils.toJavaObject(metadataInfo.getContent(), Map.class);
+        Map<String, Object> ret = JsonUtils.toJavaObject(metadataInfo.getContent(), Map.class);
         assertNull(ret.get("content"));
         assertNull(ret.get("rawMetadataInfo"));
     }

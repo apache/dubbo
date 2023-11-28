@@ -24,9 +24,7 @@ public class DemoImpl implements Demo {
         return msg;
     }
 
-    public DemoImpl() {
-    }
+    public DemoImpl() {}
 
-    public DemoImpl(String test) {
-    }
+    public DemoImpl(String test) {}
 }

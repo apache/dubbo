@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.qos.legacy.service;
 
-
 import java.io.Serializable;
 
 /**

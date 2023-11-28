@@ -14,13 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.prometheus;
 
-import io.micrometer.prometheus.PrometheusConfig;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
-import io.prometheus.client.exporter.BasicAuthHttpConnectionFactory;
-import io.prometheus.client.exporter.PushGateway;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -33,6 +28,11 @@ import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import io.micrometer.prometheus.PrometheusConfig;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.prometheus.client.exporter.BasicAuthHttpConnectionFactory;
+import io.prometheus.client.exporter.PushGateway;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
 import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_DEFAULT_JOB_NAME;
@@ -73,7 +73,8 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
         if (pushEnabled) {
             String baseUrl = url.getParameter(PROMETHEUS_PUSHGATEWAY_BASE_URL_KEY);
             String job = url.getParameter(PROMETHEUS_PUSHGATEWAY_JOB_KEY, PROMETHEUS_DEFAULT_JOB_NAME);
-            int pushInterval = url.getParameter(PROMETHEUS_PUSHGATEWAY_PUSH_INTERVAL_KEY, PROMETHEUS_DEFAULT_PUSH_INTERVAL);
+            int pushInterval =
+                    url.getParameter(PROMETHEUS_PUSHGATEWAY_PUSH_INTERVAL_KEY, PROMETHEUS_DEFAULT_PUSH_INTERVAL);
             String username = url.getParameter(PROMETHEUS_PUSHGATEWAY_USERNAME_KEY);
             String password = url.getParameter(PROMETHEUS_PUSHGATEWAY_PASSWORD_KEY);
 
@@ -84,16 +85,22 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
                 pushGateway.setConnectionFactory(new BasicAuthHttpConnectionFactory(username, password));
             }
 
-            pushJobExecutor.scheduleWithFixedDelay(() -> push(pushGateway, job), pushInterval, pushInterval, TimeUnit.SECONDS);
+            pushJobExecutor.scheduleWithFixedDelay(
+                    () -> push(pushGateway, job), pushInterval, pushInterval, TimeUnit.SECONDS);
         }
     }
 
     protected void push(PushGateway pushGateway, String job) {
         try {
-            refreshData();
+            resetIfSamplesChanged();
             pushGateway.pushAdd(prometheusRegistry.getPrometheusRegistry(), job);
         } catch (IOException e) {
-            logger.error(COMMON_METRICS_COLLECTOR_EXCEPTION, "", "", "Error occurred when pushing metrics to prometheus: ", e);
+            logger.error(
+                    COMMON_METRICS_COLLECTOR_EXCEPTION,
+                    "",
+                    "",
+                    "Error occurred when pushing metrics to prometheus: ",
+                    e);
         }
     }
 

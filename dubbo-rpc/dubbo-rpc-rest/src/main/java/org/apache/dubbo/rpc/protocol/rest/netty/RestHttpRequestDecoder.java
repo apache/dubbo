@@ -14,17 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.rest.netty;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.MessageToMessageDecoder;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.Executor;
-
-import io.netty.handler.codec.http.HttpHeaders;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -35,8 +26,15 @@ import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 import org.apache.dubbo.rpc.protocol.rest.handler.NettyHttpHandler;
 import org.apache.dubbo.rpc.protocol.rest.request.NettyRequestFacade;
 
-import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_NAME;
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.Executor;
 
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.MessageToMessageDecoder;
+import io.netty.handler.codec.http.HttpHeaders;
+
+import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_NAME;
 
 public class RestHttpRequestDecoder extends MessageToMessageDecoder<io.netty.handler.codec.http.FullHttpRequest> {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
@@ -46,22 +44,23 @@ public class RestHttpRequestDecoder extends MessageToMessageDecoder<io.netty.han
     private final URL url;
     private final NettyHttpHandler nettyHttpHandler;
 
-
     public RestHttpRequestDecoder(URL url, ServiceDeployer serviceDeployer) {
 
         this.url = url;
         this.serviceDeployer = serviceDeployer;
-        executor = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel()).createExecutorIfAbsent(ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME));
+        executor = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel())
+                .createExecutorIfAbsent(ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME));
         nettyHttpHandler = new NettyHttpHandler(serviceDeployer, url);
     }
 
-
     @Override
-    protected void decode(ChannelHandlerContext ctx, io.netty.handler.codec.http.FullHttpRequest request, List<Object> out) throws Exception {
+    protected void decode(
+            ChannelHandlerContext ctx, io.netty.handler.codec.http.FullHttpRequest request, List<Object> out)
+            throws Exception {
         boolean keepAlive = HttpHeaders.isKeepAlive(request);
 
-        NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(ctx, keepAlive,url);
-        NettyRequestFacade requestFacade = new NettyRequestFacade(request, ctx,serviceDeployer);
+        NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(ctx, keepAlive, url);
+        NettyRequestFacade requestFacade = new NettyRequestFacade(request, ctx, serviceDeployer);
 
         executor.execute(() -> {
 
@@ -70,20 +69,22 @@ public class RestHttpRequestDecoder extends MessageToMessageDecoder<io.netty.han
                 nettyHttpHandler.handle(requestFacade, nettyHttpResponse);
 
             } catch (IOException e) {
-                logger.error("", e.getCause().getMessage(), "dubbo rest rest http request handler error", e.getMessage(), e);
+                logger.error(
+                        "", e.getCause().getMessage(), "dubbo rest rest http request handler error", e.getMessage(), e);
             } finally {
                 // write response
                 try {
                     nettyHttpResponse.addOutputHeaders(RestHeaderEnum.CONNECTION.getHeader(), "close");
                     nettyHttpResponse.finish();
                 } catch (IOException e) {
-                    logger.error("", e.getCause().getMessage(), "dubbo rest rest http response flush error", e.getMessage(), e);
+                    logger.error(
+                            "",
+                            e.getCause().getMessage(),
+                            "dubbo rest rest http response flush error",
+                            e.getMessage(),
+                            e);
                 }
             }
-
         });
-
-
     }
 }
-

@@ -22,12 +22,12 @@ import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.support.Replier;
 
+import java.util.concurrent.CompletableFuture;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.CompletableFuture;
 
 /**
  * ClientToServer
@@ -54,11 +54,9 @@ public abstract class ClientToServerTest {
     @AfterEach
     protected void tearDown() {
         try {
-            if (server != null)
-                server.close();
+            if (server != null) server.close();
         } finally {
-            if (client != null)
-                client.close();
+            if (client != null) client.close();
         }
     }
 

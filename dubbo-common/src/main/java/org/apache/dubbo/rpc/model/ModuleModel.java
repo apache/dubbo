@@ -69,7 +69,8 @@ public class ModuleModel extends ScopeModel {
 
             initModuleExt();
 
-            ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader = this.getExtensionLoader(ScopeModelInitializer.class);
+            ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader =
+                    this.getExtensionLoader(ScopeModelInitializer.class);
             Set<ScopeModelInitializer> initializers = initializerExtensionLoader.getSupportedExtensionInstances();
             for (ScopeModelInitializer initializer : initializers) {
                 initializer.initializeModuleModel(this);
@@ -152,16 +153,16 @@ public class ModuleModel extends ScopeModel {
     @Override
     public ModuleEnvironment modelEnvironment() {
         if (moduleEnvironment == null) {
-            moduleEnvironment = (ModuleEnvironment) this.getExtensionLoader(ModuleExt.class)
-                .getExtension(ModuleEnvironment.NAME);
+            moduleEnvironment =
+                    (ModuleEnvironment) this.getExtensionLoader(ModuleExt.class).getExtension(ModuleEnvironment.NAME);
         }
         return moduleEnvironment;
     }
 
     public ModuleConfigManager getConfigManager() {
         if (moduleConfigManager == null) {
-            moduleConfigManager = (ModuleConfigManager) this.getExtensionLoader(ModuleExt.class)
-                .getExtension(ModuleConfigManager.NAME);
+            moduleConfigManager = (ModuleConfigManager)
+                    this.getExtensionLoader(ModuleExt.class).getExtension(ModuleConfigManager.NAME);
         }
         return moduleConfigManager;
     }
@@ -197,8 +198,14 @@ public class ModuleModel extends ScopeModel {
         String serviceKey = URL.buildKey(internalService.getName(), url.getGroup(), url.getVersion());
         serviceMetadata.setServiceKey(serviceKey);
 
-        ConsumerModel consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), "jdk", serviceRepository.lookupService(serviceMetadata.getServiceInterfaceName()),
-            this, serviceMetadata, new HashMap<>(0), ClassUtils.getClassLoader(internalService));
+        ConsumerModel consumerModel = new ConsumerModel(
+                serviceMetadata.getServiceKey(),
+                "jdk",
+                serviceRepository.lookupService(serviceMetadata.getServiceInterfaceName()),
+                this,
+                serviceMetadata,
+                new HashMap<>(0),
+                ClassUtils.getClassLoader(internalService));
 
         logger.info("Dynamically registering consumer model " + serviceKey + " into model " + this.getDesc());
         serviceRepository.registerConsumer(consumerModel);

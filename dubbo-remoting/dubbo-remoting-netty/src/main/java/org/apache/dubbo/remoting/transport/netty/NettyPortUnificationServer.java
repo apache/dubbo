@@ -30,13 +30,6 @@ import org.apache.dubbo.remoting.api.WireProtocol;
 import org.apache.dubbo.remoting.api.pu.AbstractPortUnificationServer;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
 
-import org.jboss.netty.bootstrap.ServerBootstrap;
-import org.jboss.netty.channel.ChannelFactory;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.channel.Channels;
-import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
-
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,6 +37,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import org.jboss.netty.bootstrap.ServerBootstrap;
+import org.jboss.netty.channel.ChannelFactory;
+import org.jboss.netty.channel.ChannelPipeline;
+import org.jboss.netty.channel.ChannelPipelineFactory;
+import org.jboss.netty.channel.Channels;
+import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
@@ -58,14 +58,14 @@ import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_WORKER_POOL_NAME;
  */
 public class NettyPortUnificationServer extends AbstractPortUnificationServer {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NettyPortUnificationServer.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(NettyPortUnificationServer.class);
 
-    private Map<String, Channel> dubboChannels = new ConcurrentHashMap<>();// <ip:port, channel>
+    private Map<String, Channel> dubboChannels = new ConcurrentHashMap<>(); // <ip:port, channel>
 
     private ServerBootstrap bootstrap;
 
     private org.jboss.netty.channel.Channel channel;
-
 
     public NettyPortUnificationServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, ChannelHandlers.wrap(handler, url));
@@ -83,8 +83,8 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
         }
     }
 
-    public void bind(){
-        if(channel == null) {
+    public void bind() {
+        if (channel == null) {
             doOpen();
         }
     }
@@ -93,8 +93,10 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
     protected void doOpen() {
         NettyHelper.setNettyLoggerFactory();
         ExecutorService boss = Executors.newCachedThreadPool(new NamedThreadFactory(EVENT_LOOP_BOSS_POOL_NAME, true));
-        ExecutorService worker = Executors.newCachedThreadPool(new NamedThreadFactory(EVENT_LOOP_WORKER_POOL_NAME, true));
-        ChannelFactory channelFactory = new NioServerSocketChannelFactory(boss, worker, getUrl().getPositiveParameter(IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS));
+        ExecutorService worker =
+                Executors.newCachedThreadPool(new NamedThreadFactory(EVENT_LOOP_WORKER_POOL_NAME, true));
+        ChannelFactory channelFactory = new NioServerSocketChannelFactory(
+                boss, worker, getUrl().getPositiveParameter(IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS));
         bootstrap = new ServerBootstrap(channelFactory);
 
         final NettyHandler nettyHandler = new NettyHandler(getUrl(), this);
@@ -107,7 +109,8 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
         bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
             @Override
             public ChannelPipeline getPipeline() {
-                NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyPortUnificationServer.this);
+                NettyCodecAdapter adapter =
+                        new NettyCodecAdapter(getCodec(), getUrl(), NettyPortUnificationServer.this);
                 ChannelPipeline pipeline = Channels.pipeline();
                 /*int idleTimeout = getIdleTimeout();
                 if (idleTimeout > 10000) {
@@ -127,8 +130,6 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
         }
         InetSocketAddress bindAddress = new InetSocketAddress(bindIp, bindPort);
         channel = bootstrap.bind(bindAddress);
-
-
     }
 
     @Override
@@ -201,5 +202,4 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
     public boolean isBound() {
         return channel.isBound();
     }
-
 }

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -34,7 +33,8 @@ public class CloseTimerTask extends AbstractTimerTask {
 
     private final int closeTimeout;
 
-    public CloseTimerTask(ChannelProvider channelProvider, HashedWheelTimer hashedWheelTimer, Long tick, int closeTimeout) {
+    public CloseTimerTask(
+            ChannelProvider channelProvider, HashedWheelTimer hashedWheelTimer, Long tick, int closeTimeout) {
         super(channelProvider, hashedWheelTimer, tick);
         this.closeTimeout = closeTimeout;
     }
@@ -47,12 +47,21 @@ public class CloseTimerTask extends AbstractTimerTask {
             Long now = now();
             // check ping & pong at server
             if ((lastRead != null && now - lastRead > closeTimeout)
-                || (lastWrite != null && now - lastWrite > closeTimeout)) {
-                logger.warn(PROTOCOL_FAILED_RESPONSE, "", "", "Close channel " + channel + ", because idleCheck timeout: " + closeTimeout + "ms");
+                    || (lastWrite != null && now - lastWrite > closeTimeout)) {
+                logger.warn(
+                        PROTOCOL_FAILED_RESPONSE,
+                        "",
+                        "",
+                        "Close channel " + channel + ", because idleCheck timeout: " + closeTimeout + "ms");
                 channel.close();
             }
         } catch (Throwable t) {
-            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", "Exception when close remote channel " + channel.getRemoteAddress(), t);
+            logger.warn(
+                    TRANSPORT_FAILED_CLOSE,
+                    "",
+                    "",
+                    "Exception when close remote channel " + channel.getRemoteAddress(),
+                    t);
         }
     }
 }

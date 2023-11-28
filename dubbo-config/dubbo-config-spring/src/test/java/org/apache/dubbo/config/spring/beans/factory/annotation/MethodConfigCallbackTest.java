@@ -43,15 +43,12 @@ import static org.awaitility.Awaitility.await;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(
-    classes = {
-        ProviderConfiguration.class,
-        MethodConfigCallbackTest.class,
-        MethodConfigCallbackTest.MethodCallbackConfiguration.class
-    })
-@TestPropertySource(properties = {
-    "dubbo.protocol.port=-1",
-    "dubbo.registry.address=${zookeeper.connection.address}"
-})
+        classes = {
+            ProviderConfiguration.class,
+            MethodConfigCallbackTest.class,
+            MethodConfigCallbackTest.MethodCallbackConfiguration.class
+        })
+@TestPropertySource(properties = {"dubbo.protocol.port=-1", "dubbo.registry.address=${zookeeper.connection.address}"})
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class MethodConfigCallbackTest {
@@ -69,20 +66,32 @@ class MethodConfigCallbackTest {
     @Autowired
     private ConfigurableApplicationContext context;
 
-    @DubboReference(check = false, async = true,
-        injvm = false, // Currently, local call is not supported method callback cause by Injvm protocol is not supported ClusterFilter
-        methods = {@Method(name = "sayHello",
-            oninvoke = "methodCallback.oninvoke1",
-            onreturn = "methodCallback.onreturn1",
-            onthrow = "methodCallback.onthrow1")})
+    @DubboReference(
+            check = false,
+            async = true,
+            injvm = false, // Currently, local call is not supported method callback cause by Injvm protocol is not
+            // supported ClusterFilter
+            methods = {
+                @Method(
+                        name = "sayHello",
+                        oninvoke = "methodCallback.oninvoke1",
+                        onreturn = "methodCallback.onreturn1",
+                        onthrow = "methodCallback.onthrow1")
+            })
     private HelloService helloServiceMethodCallBack;
 
-    @DubboReference(check = false, async = true,
-        injvm = false, // Currently, local call is not supported method callback cause by Injvm protocol is not supported ClusterFilter
-        methods = {@Method(name = "sayHello",
-            oninvoke = "methodCallback.oninvoke2",
-            onreturn = "methodCallback.onreturn2",
-            onthrow = "methodCallback.onthrow2")})
+    @DubboReference(
+            check = false,
+            async = true,
+            injvm = false, // Currently, local call is not supported method callback cause by Injvm protocol is not
+            // supported ClusterFilter
+            methods = {
+                @Method(
+                        name = "sayHello",
+                        oninvoke = "methodCallback.oninvoke2",
+                        onreturn = "methodCallback.onreturn2",
+                        onthrow = "methodCallback.onthrow2")
+            })
     private HelloService helloServiceMethodCallBack2;
 
     @Test
@@ -91,11 +100,12 @@ class MethodConfigCallbackTest {
         int callCnt = 2 * threadCnt;
         for (int i = 0; i < threadCnt; i++) {
             new Thread(() -> {
-                for (int j = 0; j < callCnt; j++) {
-                    helloServiceMethodCallBack.sayHello("dubbo");
-                    helloServiceMethodCallBack2.sayHello("dubbo(2)");
-                }
-            }).start();
+                        for (int j = 0; j < callCnt; j++) {
+                            helloServiceMethodCallBack.sayHello("dubbo");
+                            helloServiceMethodCallBack2.sayHello("dubbo(2)");
+                        }
+                    })
+                    .start();
         }
         await().until(() -> MethodCallbackImpl.cnt.get() >= (2 * threadCnt * callCnt));
         MethodCallback notify = (MethodCallback) context.getBean("methodCallback");
@@ -122,6 +132,5 @@ class MethodConfigCallbackTest {
         public MethodCallback methodCallback() {
             return new MethodCallbackImpl();
         }
-
     }
 }

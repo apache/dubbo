@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.observer;
 
 import org.apache.dubbo.common.constants.CommonConstants;
@@ -28,8 +27,7 @@ import org.apache.dubbo.rpc.protocol.tri.call.AbstractServerCall;
 
 import java.util.Map;
 
-public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> implements
-    ServerStreamObserver<T> {
+public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> implements ServerStreamObserver<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CancelableStreamObserver.class);
     public final CancellationContext cancellationContext;
@@ -57,8 +55,7 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
         isNeedReturnException = needReturnException;
     }
 
-    public ServerCallToObserverAdapter(AbstractServerCall call,
-        CancellationContext cancellationContext) {
+    public ServerCallToObserverAdapter(AbstractServerCall call, CancellationContext cancellationContext) {
         this.call = call;
         this.cancellationContext = cancellationContext;
     }
@@ -66,7 +63,6 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
     public boolean isAutoRequestN() {
         return call.isAutoRequestN();
     }
-
 
     public boolean isTerminated() {
         return terminated;
@@ -79,8 +75,7 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
     @Override
     public void onNext(Object data) {
         if (isTerminated()) {
-            throw new IllegalStateException(
-                "Stream observer has been terminated, no more data is allowed");
+            throw new IllegalStateException("Stream observer has been terminated, no more data is allowed");
         }
         call.setExceptionCode(exceptionCode);
         call.setNeedReturnException(isNeedReturnException);

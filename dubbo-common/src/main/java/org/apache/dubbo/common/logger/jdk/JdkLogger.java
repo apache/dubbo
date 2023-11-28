@@ -127,5 +127,4 @@ public class JdkLogger implements Logger {
     public boolean isErrorEnabled() {
         return logger.isLoggable(Level.SEVERE);
     }
-
 }

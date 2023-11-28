@@ -49,8 +49,7 @@ public class UnsafeStringWriter extends Writer {
 
     @Override
     public void write(char[] cs, int off, int len) throws IOException {
-        if ((off < 0) || (off > cs.length) || (len < 0) ||
-                ((off + len) > cs.length) || ((off + len) < 0)) {
+        if ((off < 0) || (off > cs.length) || (len < 0) || ((off + len) > cs.length) || ((off + len) < 0)) {
             throw new IndexOutOfBoundsException();
         }
 
@@ -93,12 +92,10 @@ public class UnsafeStringWriter extends Writer {
     }
 
     @Override
-    public void close() {
-    }
+    public void close() {}
 
     @Override
-    public void flush() {
-    }
+    public void flush() {}
 
     @Override
     public String toString() {

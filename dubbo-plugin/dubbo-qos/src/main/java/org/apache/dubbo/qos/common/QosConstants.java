@@ -24,5 +24,4 @@ public interface QosConstants {
     String CLOSE = "close!";
 
     String QOS_PERMISSION_CHECKER = "qosPermissionChecker";
-
 }

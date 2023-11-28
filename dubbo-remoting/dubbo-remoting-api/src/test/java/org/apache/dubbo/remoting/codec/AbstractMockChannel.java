@@ -39,9 +39,7 @@ public class AbstractMockChannel implements Channel {
     private Map<String, Object> attributes = new HashMap<String, Object>(1);
     private volatile Object receivedMessage = null;
 
-    public AbstractMockChannel() {
-
-    }
+    public AbstractMockChannel() {}
 
     public AbstractMockChannel(URL remoteUrl) {
         this.remoteUrl = remoteUrl;

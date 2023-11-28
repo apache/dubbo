@@ -72,7 +72,10 @@ public abstract class AbstractConfigurator implements Configurator {
     @Override
     public URL configure(URL url) {
         // If override url is not enabled or is invalid, just return.
-        if (!configuratorUrl.getParameter(ENABLED_KEY, true) || configuratorUrl.getHost() == null || url == null || url.getHost() == null) {
+        if (!configuratorUrl.getParameter(ENABLED_KEY, true)
+                || configuratorUrl.getHost() == null
+                || url == null
+                || url.getHost() == null) {
             logger.info("Cannot apply configurator rule, the rule is disabled or is invalid: \n" + configuratorUrl);
             return url;
         }
@@ -98,7 +101,9 @@ public abstract class AbstractConfigurator implements Configurator {
 
     @Deprecated
     private URL configureDeprecated(URL url) {
-        // If override url has port, means it is a provider address. We want to control a specific provider with this override url, it may take effect on the specific provider instance or on consumers holding this provider instance.
+        // If override url has port, means it is a provider address. We want to control a specific provider with this
+        // override url, it may take effect on the specific provider instance or on consumers holding this provider
+        // instance.
         if (configuratorUrl.getPort() != 0) {
             if (url.getPort() == configuratorUrl.getPort()) {
                 return configureIfMatch(url.getHost(), url);
@@ -131,7 +136,8 @@ public abstract class AbstractConfigurator implements Configurator {
                         if (matcher.isMatch(host, url)) {
                             return doConfigure(url, configuratorUrl.removeParameters(conditionKeys));
                         } else {
-                            logger.debug("Cannot apply configurator rule, param mismatch, current params are " + url + ", params in rule is " + matcher);
+                            logger.debug("Cannot apply configurator rule, param mismatch, current params are " + url
+                                    + ", params in rule is " + matcher);
                         }
                     } else {
                         return doConfigure(url, configuratorUrl.removeParameters(conditionKeys));
@@ -141,7 +147,8 @@ public abstract class AbstractConfigurator implements Configurator {
                 }
             }
         } else {
-            logger.debug("Cannot apply configurator rule, host mismatch, current host is " + host + ", host in rule is " + configuratorUrl.getHost());
+            logger.debug("Cannot apply configurator rule, host mismatch, current host is " + host + ", host in rule is "
+                    + configuratorUrl.getHost());
         }
         return url;
     }
@@ -159,15 +166,16 @@ public abstract class AbstractConfigurator implements Configurator {
             String[] providerAddresses = providers.split(CommonConstants.COMMA_SEPARATOR);
             for (String address : providerAddresses) {
                 if (address.equals(url.getAddress())
-                    || address.equals(ANYHOST_VALUE)
-                    || address.equals(ANYHOST_VALUE + CommonConstants.GROUP_CHAR_SEPARATOR + ANY_VALUE)
-                    || address.equals(ANYHOST_VALUE + CommonConstants.GROUP_CHAR_SEPARATOR + url.getPort())
-                    || address.equals(url.getHost())) {
+                        || address.equals(ANYHOST_VALUE)
+                        || address.equals(ANYHOST_VALUE + CommonConstants.GROUP_CHAR_SEPARATOR + ANY_VALUE)
+                        || address.equals(ANYHOST_VALUE + CommonConstants.GROUP_CHAR_SEPARATOR + url.getPort())
+                        || address.equals(url.getHost())) {
                     match = true;
                 }
             }
             if (!match) {
-                logger.debug("Cannot apply configurator rule, provider address mismatch, current address " + url.getAddress() + ", address in rule is " + providers);
+                logger.debug("Cannot apply configurator rule, provider address mismatch, current address "
+                        + url.getAddress() + ", address in rule is " + providers);
                 return false;
             }
         }
@@ -175,17 +183,18 @@ public abstract class AbstractConfigurator implements Configurator {
         String configApplication = configuratorUrl.getApplication(configuratorUrl.getUsername());
         String currentApplication = url.getApplication(url.getUsername());
         if (configApplication != null
-            && !ANY_VALUE.equals(configApplication)
-            && !configApplication.equals(currentApplication)) {
-            logger.debug("Cannot apply configurator rule, application name mismatch, current application is " + currentApplication + ", application in rule is " + configApplication);
+                && !ANY_VALUE.equals(configApplication)
+                && !configApplication.equals(currentApplication)) {
+            logger.debug("Cannot apply configurator rule, application name mismatch, current application is "
+                    + currentApplication + ", application in rule is " + configApplication);
             return false;
         }
 
         String configServiceKey = configuratorUrl.getServiceKey();
         String currentServiceKey = url.getServiceKey();
-        if (!ANY_VALUE.equals(configServiceKey)
-            && !configServiceKey.equals(currentServiceKey)) {
-            logger.debug("Cannot apply configurator rule, service mismatch, current service is " + currentServiceKey + ", service in rule is " + configServiceKey);
+        if (!ANY_VALUE.equals(configServiceKey) && !configServiceKey.equals(currentServiceKey)) {
+            logger.debug("Cannot apply configurator rule, service mismatch, current service is " + currentServiceKey
+                    + ", service in rule is " + configServiceKey);
             return false;
         }
 
@@ -202,8 +211,9 @@ public abstract class AbstractConfigurator implements Configurator {
                 if (startWithTilde) {
                     conditionKeys.add(key);
                 }
-                if (value != null && !ANY_VALUE.equals(value)
-                    && !value.equals(url.getParameter(startWithTilde ? key.substring(1) : key))) {
+                if (value != null
+                        && !ANY_VALUE.equals(value)
+                        && !value.equals(url.getParameter(startWithTilde ? key.substring(1) : key))) {
                     result = false;
                     break;
                 }
@@ -233,5 +243,4 @@ public abstract class AbstractConfigurator implements Configurator {
     }
 
     protected abstract URL doConfigure(URL currentUrl, URL configUrl);
-
 }

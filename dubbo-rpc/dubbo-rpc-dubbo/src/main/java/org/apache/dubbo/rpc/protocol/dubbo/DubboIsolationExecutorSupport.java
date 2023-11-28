@@ -29,7 +29,8 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceModel;
 
 public class DubboIsolationExecutorSupport extends AbstractIsolationExecutorSupport {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DubboIsolationExecutorSupport.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(DubboIsolationExecutorSupport.class);
 
     private final FrameworkServiceRepository frameworkServiceRepository;
     private final DubboProtocol dubboProtocol;

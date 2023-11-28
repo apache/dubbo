@@ -18,8 +18,6 @@ package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.common.URL;
 
-import org.junit.jupiter.api.Test;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
@@ -29,6 +27,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
@@ -40,10 +40,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class UrlUtilsTest {
 
     String localAddress = "127.0.0.1";
-
-
-
-
 
     @Test
     void testAddressNull() {
@@ -187,7 +183,9 @@ class UrlUtilsTest {
         Map<String, String> subscribe = new HashMap<String, String>();
         subscribe.put(key, "version=1.0.0&group=test&dubbo.version=2.0.0");
         Map<String, String> newSubscribe = UrlUtils.convertSubscribe(subscribe);
-        assertEquals("dubbo.version=2.0.0&group=test&version=1.0.0", newSubscribe.get("test/dubbo.test.api.HelloService:1.0.0"));
+        assertEquals(
+                "dubbo.version=2.0.0&group=test&version=1.0.0",
+                newSubscribe.get("test/dubbo.test.api.HelloService:1.0.0"));
     }
 
     @Test
@@ -387,7 +385,8 @@ class UrlUtilsTest {
         URL consumerUrl = URL.valueOf("consumer://127.0.0.1/com.xxx.XxxService?version=1.0.0&group=test");
         assertTrue(UrlUtils.isMatch(consumerUrl, url));
 
-        URL consumerUrl1 = URL.valueOf("consumer://127.0.0.1/com.xxx.XxxService?default.version=1.0.0&default.group=test");
+        URL consumerUrl1 =
+                URL.valueOf("consumer://127.0.0.1/com.xxx.XxxService?default.version=1.0.0&default.group=test");
         assertTrue(UrlUtils.isMatch(consumerUrl1, url));
     }
 
@@ -403,7 +402,6 @@ class UrlUtilsTest {
         assertFalse(UrlUtils.isConsumer(url1));
         assertTrue(UrlUtils.isConsumer(url2));
         assertTrue(UrlUtils.isConsumer(url3));
-
     }
 
     @Test
@@ -415,7 +413,6 @@ class UrlUtilsTest {
             constructor.newInstance();
         });
     }
-
 
     @Test
     public void testClassifyUrls() {
@@ -456,7 +453,6 @@ class UrlUtilsTest {
         assertFalse(UrlUtils.hasServiceDiscoveryRegistryProtocol(url1));
         assertTrue(UrlUtils.hasServiceDiscoveryRegistryProtocol(url2));
     }
-
 
     private static final String SERVICE_REGISTRY_TYPE = "service";
     private static final String REGISTRY_TYPE_KEY = "registry-type";
@@ -514,14 +510,12 @@ class UrlUtilsTest {
         String address5 = "http://example.com?category=something-else";
         URL url5 = UrlUtils.parseURL(address5, null);
 
-
         assertTrue(UrlUtils.isProvider(url1));
         assertFalse(UrlUtils.isProvider(url2));
         assertFalse(UrlUtils.isProvider(url3));
         assertTrue(UrlUtils.isProvider(url4));
         assertFalse(UrlUtils.isProvider(url5));
     }
-
 
     @Test
     public void testIsRegistry() {
@@ -539,8 +533,6 @@ class UrlUtilsTest {
         assertFalse(UrlUtils.isRegistry(url3));
         assertTrue(UrlUtils.isRegistry(url4));
     }
-
-
 
     @Test
     public void testIsServiceDiscoveryURL() {

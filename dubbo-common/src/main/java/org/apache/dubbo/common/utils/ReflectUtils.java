@@ -16,11 +16,6 @@
  */
 package org.apache.dubbo.common.utils;
 
-import javassist.CtClass;
-import javassist.CtConstructor;
-import javassist.CtMethod;
-import javassist.NotFoundException;
-
 import java.beans.BeanInfo;
 import java.beans.Introspector;
 import java.beans.MethodDescriptor;
@@ -52,6 +47,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javassist.CtClass;
+import javassist.CtConstructor;
+import javassist.CtMethod;
+import javassist.NotFoundException;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
@@ -121,15 +120,19 @@ public final class ReflectUtils {
 
     public static final Pattern DESC_PATTERN = Pattern.compile(DESC_REGEX);
 
-    public static final String METHOD_DESC_REGEX = "(?:(" + JAVA_IDENT_REGEX + ")?\\((" + DESC_REGEX + "*)\\)(" + DESC_REGEX + ")?)";
+    public static final String METHOD_DESC_REGEX =
+            "(?:(" + JAVA_IDENT_REGEX + ")?\\((" + DESC_REGEX + "*)\\)(" + DESC_REGEX + ")?)";
 
     public static final Pattern METHOD_DESC_PATTERN = Pattern.compile(METHOD_DESC_REGEX);
 
-    public static final Pattern GETTER_METHOD_DESC_PATTERN = Pattern.compile("get([A-Z][_a-zA-Z0-9]*)\\(\\)(" + DESC_REGEX + ")");
+    public static final Pattern GETTER_METHOD_DESC_PATTERN =
+            Pattern.compile("get([A-Z][_a-zA-Z0-9]*)\\(\\)(" + DESC_REGEX + ")");
 
-    public static final Pattern SETTER_METHOD_DESC_PATTERN = Pattern.compile("set([A-Z][_a-zA-Z0-9]*)\\((" + DESC_REGEX + ")\\)V");
+    public static final Pattern SETTER_METHOD_DESC_PATTERN =
+            Pattern.compile("set([A-Z][_a-zA-Z0-9]*)\\((" + DESC_REGEX + ")\\)V");
 
-    public static final Pattern IS_HAS_CAN_METHOD_DESC_PATTERN = Pattern.compile("(?:is|has|can)([A-Z][_a-zA-Z0-9]*)\\(\\)Z");
+    public static final Pattern IS_HAS_CAN_METHOD_DESC_PATTERN =
+            Pattern.compile("(?:is|has|can)([A-Z][_a-zA-Z0-9]*)\\(\\)Z");
 
     private static Map<Class<?>, Object> primitiveDefaults = new HashMap<>();
 
@@ -145,8 +148,7 @@ public final class ReflectUtils {
         primitiveDefaults.put(void.class, null);
     }
 
-    private ReflectUtils() {
-    }
+    private ReflectUtils() {}
 
     public static boolean isPrimitives(Class<?> cls) {
         while (cls.isArray()) {
@@ -156,8 +158,12 @@ public final class ReflectUtils {
     }
 
     public static boolean isPrimitive(Class<?> cls) {
-        return cls.isPrimitive() || cls == String.class || cls == Boolean.class || cls == Character.class
-                || Number.class.isAssignableFrom(cls) || Date.class.isAssignableFrom(cls);
+        return cls.isPrimitive()
+                || cls == String.class
+                || cls == Boolean.class
+                || cls == Character.class
+                || Number.class.isAssignableFrom(cls)
+                || Date.class.isAssignableFrom(cls);
     }
 
     public static Class<?> getBoxedClass(Class<?> c) {
@@ -256,8 +262,7 @@ public final class ReflectUtils {
             do {
                 sb.append("[]");
                 c = c.getComponentType();
-            }
-            while (c.isArray());
+            } while (c.isArray());
 
             return c.getName() + sb.toString();
         }
@@ -894,10 +899,6 @@ public final class ReflectUtils {
     @Deprecated
     public static Method findMethodByMethodSignature(Class<?> clazz, String methodName, String[] parameterTypes)
             throws NoSuchMethodException, ClassNotFoundException {
-        String signature = clazz.getName() + "." + methodName;
-        if (parameterTypes != null && parameterTypes.length > 0) {
-            signature += StringUtils.join(parameterTypes);
-        }
         Method method;
         if (parameterTypes == null) {
             List<Method> finded = new ArrayList<>();
@@ -910,7 +911,8 @@ public final class ReflectUtils {
                 throw new NoSuchMethodException("No such method " + methodName + " in class " + clazz);
             }
             if (finded.size() > 1) {
-                String msg = String.format("Not unique method for method name(%s) in class(%s), find %d methods.",
+                String msg = String.format(
+                        "Not unique method for method name(%s) in class(%s), find %d methods.",
                         methodName, clazz.getName(), finded.size());
                 throw new IllegalStateException(msg);
             }
@@ -921,7 +923,6 @@ public final class ReflectUtils {
                 types[i] = ReflectUtils.name2class(parameterTypes[i]);
             }
             method = clazz.getMethod(methodName, types);
-
         }
         return method;
     }
@@ -944,7 +945,7 @@ public final class ReflectUtils {
     public static Constructor<?> findConstructor(Class<?> clazz, Class<?> paramType) throws NoSuchMethodException {
         Constructor<?> targetConstructor;
         try {
-            targetConstructor = clazz.getConstructor(new Class<?>[]{paramType});
+            targetConstructor = clazz.getConstructor(new Class<?>[] {paramType});
         } catch (NoSuchMethodException e) {
             targetConstructor = null;
             Constructor<?>[] constructors = clazz.getConstructors();
@@ -975,8 +976,8 @@ public final class ReflectUtils {
      */
     public static boolean isInstance(Object obj, String interfaceClazzName) {
         for (Class<?> clazz = obj.getClass();
-             clazz != null && !clazz.equals(Object.class);
-             clazz = clazz.getSuperclass()) {
+                clazz != null && !clazz.equals(Object.class);
+                clazz = clazz.getSuperclass()) {
             Class<?>[] interfaces = clazz.getInterfaces();
             for (Class<?> itf : interfaces) {
                 if (itf.getName().equals(interfaceClazzName)) {
@@ -1097,7 +1098,8 @@ public final class ReflectUtils {
                 && method.getDeclaringClass() != Object.class
                 && method.getParameterTypes().length == 0
                 && ((method.getName().startsWith("get") && method.getName().length() > 3)
-                || (method.getName().startsWith("is") && method.getName().length() > 2));
+                        || (method.getName().startsWith("is")
+                                && method.getName().length() > 2));
     }
 
     public static String getPropertyNameFromBeanReadMethod(Method method) {
@@ -1144,8 +1146,7 @@ public final class ReflectUtils {
         for (; cl != null; cl = cl.getSuperclass()) {
             Field[] fields = cl.getDeclaredFields();
             for (Field field : fields) {
-                if (Modifier.isTransient(field.getModifiers())
-                        || Modifier.isStatic(field.getModifiers())) {
+                if (Modifier.isTransient(field.getModifiers()) || Modifier.isStatic(field.getModifiers())) {
                     continue;
                 }
 
@@ -1195,7 +1196,7 @@ public final class ReflectUtils {
                 genericReturnType = null;
             }
         }
-        return new Type[]{returnType, genericReturnType};
+        return new Type[] {returnType, genericReturnType};
     }
 
     /**
@@ -1212,8 +1213,8 @@ public final class ReflectUtils {
         genericTypes.add(sourceClass.getGenericSuperclass());
 
         Set<ParameterizedType> parameterizedTypes = genericTypes.stream()
-                .filter(type -> type instanceof ParameterizedType)// filter ParameterizedType
-                .map(ParameterizedType.class::cast)  // cast to ParameterizedType
+                .filter(type -> type instanceof ParameterizedType) // filter ParameterizedType
+                .map(ParameterizedType.class::cast) // cast to ParameterizedType
                 .collect(Collectors.toSet());
 
         if (parameterizedTypes.isEmpty()) { // If not found, try to search super types recursively
@@ -1223,8 +1224,7 @@ public final class ReflectUtils {
                     .forEach(superClass -> parameterizedTypes.addAll(findParameterizedTypes(superClass)));
         }
 
-        return unmodifiableSet(parameterizedTypes);                     // build as a Set
-
+        return unmodifiableSet(parameterizedTypes); // build as a Set
     }
 
     /**
@@ -1276,10 +1276,11 @@ public final class ReflectUtils {
                         try {
                             return method.getMethod().invoke(bean);
                         } catch (Exception e) {
-                            //ignore
+                            // ignore
                         }
                         return null;
-                    }).get();
+                    })
+                    .get();
         } catch (Exception e) {
 
         }
@@ -1352,10 +1353,11 @@ public final class ReflectUtils {
      * @param method the method to make accessible
      * @see java.lang.reflect.Method#setAccessible
      */
-    @SuppressWarnings("deprecation")  // on JDK 9
+    @SuppressWarnings("deprecation") // on JDK 9
     public static void makeAccessible(Method method) {
-        if ((!Modifier.isPublic(method.getModifiers()) ||
-                !Modifier.isPublic(method.getDeclaringClass().getModifiers())) && !method.isAccessible()) {
+        if ((!Modifier.isPublic(method.getModifiers())
+                        || !Modifier.isPublic(method.getDeclaringClass().getModifiers()))
+                && !method.isAccessible()) {
             method.setAccessible(true);
         }
     }

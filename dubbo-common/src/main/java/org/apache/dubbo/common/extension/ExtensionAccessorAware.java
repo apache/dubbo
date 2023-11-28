@@ -22,5 +22,4 @@ package org.apache.dubbo.common.extension;
 public interface ExtensionAccessorAware {
 
     void setExtensionAccessor(final ExtensionAccessor extensionAccessor);
-
 }

@@ -24,5 +24,4 @@ public class Ext4Impl2 implements NoUrlParamExt {
     public String bark(String name, List<Object> list) {
         return null;
     }
-
 }

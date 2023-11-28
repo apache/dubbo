@@ -21,7 +21,6 @@ import java.io.Serializable;
 /**
  * AppResponse.
  */
-
 public class MockResult implements Serializable {
     private static final long serialVersionUID = -3630485157441794463L;
 

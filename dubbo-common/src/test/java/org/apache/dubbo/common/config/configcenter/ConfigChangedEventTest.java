@@ -57,9 +57,15 @@ class ConfigChangedEventTest {
     @Test
     void testEqualsAndHashCode() {
         for (ConfigChangeType type : ConfigChangeType.values()) {
-            assertEquals(new ConfigChangedEvent(KEY, GROUP, CONTENT, type), new ConfigChangedEvent(KEY, GROUP, CONTENT, type));
-            assertEquals(new ConfigChangedEvent(KEY, GROUP, CONTENT, type).hashCode(), new ConfigChangedEvent(KEY, GROUP, CONTENT, type).hashCode());
-            assertEquals(new ConfigChangedEvent(KEY, GROUP, CONTENT, type).toString(), new ConfigChangedEvent(KEY, GROUP, CONTENT, type).toString());
+            assertEquals(
+                    new ConfigChangedEvent(KEY, GROUP, CONTENT, type),
+                    new ConfigChangedEvent(KEY, GROUP, CONTENT, type));
+            assertEquals(
+                    new ConfigChangedEvent(KEY, GROUP, CONTENT, type).hashCode(),
+                    new ConfigChangedEvent(KEY, GROUP, CONTENT, type).hashCode());
+            assertEquals(
+                    new ConfigChangedEvent(KEY, GROUP, CONTENT, type).toString(),
+                    new ConfigChangedEvent(KEY, GROUP, CONTENT, type).toString());
         }
     }
 

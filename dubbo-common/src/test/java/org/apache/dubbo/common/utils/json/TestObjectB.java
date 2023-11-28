@@ -20,7 +20,6 @@ public class TestObjectB {
     private Inner innerA;
     private Inner innerB;
 
-
     public Inner getInnerA() {
         return innerA;
     }

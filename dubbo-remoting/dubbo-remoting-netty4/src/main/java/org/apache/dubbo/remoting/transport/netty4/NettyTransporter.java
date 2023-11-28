@@ -39,5 +39,4 @@ public class NettyTransporter implements Transporter {
     public Client connect(URL url, ChannelHandler handler) throws RemotingException {
         return new NettyClient(url, handler);
     }
-
 }

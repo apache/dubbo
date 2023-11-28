@@ -16,5 +16,4 @@
  */
 package com.pojo;
 
-public class Demo2 {
-}
+public class Demo2 {}

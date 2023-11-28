@@ -14,14 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.collector.sample;
 
 import org.apache.dubbo.metrics.model.Metric;
 
 import java.util.function.Function;
 
-public class MetricsCountSampleConfigurer<S,K,M extends Metric> {
+public class MetricsCountSampleConfigurer<S, K, M extends Metric> {
 
     public S source;
 
@@ -29,16 +28,17 @@ public class MetricsCountSampleConfigurer<S,K,M extends Metric> {
 
     public M metric;
 
-    public void setSource(S source){
+    public void setSource(S source) {
         this.source = source;
     }
 
-    public MetricsCountSampleConfigurer<S,K,M> setMetricsName(K metricName){
+    public MetricsCountSampleConfigurer<S, K, M> setMetricsName(K metricName) {
         this.metricName = metricName;
         return this;
     }
 
-    public MetricsCountSampleConfigurer<S,K,M> configureMetrics(Function<MetricsCountSampleConfigurer<S,K,M>,M> builder){
+    public MetricsCountSampleConfigurer<S, K, M> configureMetrics(
+            Function<MetricsCountSampleConfigurer<S, K, M>, M> builder) {
         this.metric = builder.apply(this);
         return this;
     }
@@ -50,5 +50,4 @@ public class MetricsCountSampleConfigurer<S,K,M extends Metric> {
     public M getMetric() {
         return metric;
     }
-
 }

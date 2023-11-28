@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.integration.swagger;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 
 @Path("/demoService")
 @Api(value = "SwaggerService")
@@ -30,5 +30,4 @@ public interface SwaggerService {
     @Path("/hello")
     @ApiOperation(value = "hello")
     Integer hello(@QueryParam("a") Integer a, @QueryParam("b") Integer b);
-
 }

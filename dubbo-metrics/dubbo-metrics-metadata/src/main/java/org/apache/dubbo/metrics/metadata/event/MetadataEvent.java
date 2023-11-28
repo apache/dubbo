@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.metadata.event;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
@@ -50,17 +49,34 @@ public class MetadataEvent extends TimeCounterEvent {
     }
 
     public static MetadataEvent toPushEvent(ApplicationModel applicationModel) {
-        return new MetadataEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, METADATA_PUSH_METRIC_NUM, METADATA_PUSH_METRIC_NUM_SUCCEED, METADATA_PUSH_METRIC_NUM_FAILED));
+        return new MetadataEvent(
+                applicationModel,
+                new TypeWrapper(
+                        MetricsLevel.APP,
+                        METADATA_PUSH_METRIC_NUM,
+                        METADATA_PUSH_METRIC_NUM_SUCCEED,
+                        METADATA_PUSH_METRIC_NUM_FAILED));
     }
 
     public static MetadataEvent toSubscribeEvent(ApplicationModel applicationModel) {
-        return new MetadataEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, METADATA_SUBSCRIBE_METRIC_NUM, METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED, METADATA_SUBSCRIBE_METRIC_NUM_FAILED));
+        return new MetadataEvent(
+                applicationModel,
+                new TypeWrapper(
+                        MetricsLevel.APP,
+                        METADATA_SUBSCRIBE_METRIC_NUM,
+                        METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED,
+                        METADATA_SUBSCRIBE_METRIC_NUM_FAILED));
     }
 
     public static MetadataEvent toServiceSubscribeEvent(ApplicationModel applicationModel, String serviceKey) {
-        MetadataEvent metadataEvent = new MetadataEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, STORE_PROVIDER_METADATA, STORE_PROVIDER_METADATA_SUCCEED, STORE_PROVIDER_METADATA_FAILED));
+        MetadataEvent metadataEvent = new MetadataEvent(
+                applicationModel,
+                new TypeWrapper(
+                        MetricsLevel.APP,
+                        STORE_PROVIDER_METADATA,
+                        STORE_PROVIDER_METADATA_SUCCEED,
+                        STORE_PROVIDER_METADATA_FAILED));
         metadataEvent.putAttachment(ATTACHMENT_KEY_SERVICE, serviceKey);
         return metadataEvent;
     }
-
 }

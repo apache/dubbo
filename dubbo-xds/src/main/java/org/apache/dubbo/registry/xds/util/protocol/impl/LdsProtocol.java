@@ -16,13 +16,6 @@
  */
 package org.apache.dubbo.registry.xds.util.protocol.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.xds.util.AdsObserver;
@@ -30,9 +23,15 @@ import org.apache.dubbo.registry.xds.util.protocol.AbstractProtocol;
 import org.apache.dubbo.registry.xds.util.protocol.delta.DeltaListener;
 import org.apache.dubbo.registry.xds.util.protocol.message.ListenerResult;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
-
 import io.envoyproxy.envoy.config.core.v3.Node;
 import io.envoyproxy.envoy.config.listener.v3.Filter;
 import io.envoyproxy.envoy.config.listener.v3.Listener;
@@ -62,10 +61,10 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
     protected Map<String, ListenerResult> decodeDiscoveryResponse(DiscoveryResponse response) {
         if (getTypeUrl().equals(response.getTypeUrl())) {
             Set<String> set = response.getResourcesList().stream()
-                .map(LdsProtocol::unpackListener)
-                .filter(Objects::nonNull)
-                .flatMap(e -> decodeResourceToListener(e).stream())
-                .collect(Collectors.toSet());
+                    .map(LdsProtocol::unpackListener)
+                    .filter(Objects::nonNull)
+                    .flatMap(e -> decodeResourceToListener(e).stream())
+                    .collect(Collectors.toSet());
             Map<String, ListenerResult> listenerDecodeResult = new ConcurrentHashMap<>();
             listenerDecodeResult.put(emptyResourceName, new ListenerResult(set));
             return listenerDecodeResult;
@@ -75,13 +74,13 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
 
     private Set<String> decodeResourceToListener(Listener resource) {
         return resource.getFilterChainsList().stream()
-            .flatMap(e -> e.getFiltersList().stream())
-            .map(Filter::getTypedConfig)
-            .map(LdsProtocol::unpackHttpConnectionManager)
-            .filter(Objects::nonNull)
-            .map(HttpConnectionManager::getRds)
-            .map(Rds::getRouteConfigName)
-            .collect(Collectors.toSet());
+                .flatMap(e -> e.getFiltersList().stream())
+                .map(Filter::getTypedConfig)
+                .map(LdsProtocol::unpackHttpConnectionManager)
+                .filter(Objects::nonNull)
+                .map(HttpConnectionManager::getRds)
+                .map(Rds::getRouteConfigName)
+                .collect(Collectors.toSet());
     }
 
     private static Listener unpackListener(Any any) {

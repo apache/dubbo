@@ -20,13 +20,12 @@ import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.serialize.support.DefaultSerializationSelector;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class CodecSupportTest {
 

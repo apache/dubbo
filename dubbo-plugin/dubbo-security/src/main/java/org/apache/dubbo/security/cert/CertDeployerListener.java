@@ -25,32 +25,29 @@ import java.util.Objects;
 public class CertDeployerListener implements ApplicationDeployListener {
     private final DubboCertManager dubboCertManager;
 
-
     public CertDeployerListener(FrameworkModel frameworkModel) {
         dubboCertManager = frameworkModel.getBeanFactory().getBean(DubboCertManager.class);
     }
 
     @Override
-    public void onInitialize(ApplicationModel scopeModel) {
-
-    }
+    public void onInitialize(ApplicationModel scopeModel) {}
 
     @Override
     public void onStarting(ApplicationModel scopeModel) {
         scopeModel.getApplicationConfigManager().getSsl().ifPresent(sslConfig -> {
             if (Objects.nonNull(sslConfig.getCaAddress()) && dubboCertManager != null) {
-                CertConfig certConfig = new CertConfig(sslConfig.getCaAddress(),
-                    sslConfig.getEnvType(),
-                    sslConfig.getCaCertPath(),
-                    sslConfig.getOidcTokenPath());
+                CertConfig certConfig = new CertConfig(
+                        sslConfig.getCaAddress(),
+                        sslConfig.getEnvType(),
+                        sslConfig.getCaCertPath(),
+                        sslConfig.getOidcTokenPath());
                 dubboCertManager.connect(certConfig);
             }
         });
     }
 
     @Override
-    public void onStarted(ApplicationModel scopeModel) {
-    }
+    public void onStarted(ApplicationModel scopeModel) {}
 
     @Override
     public void onStopping(ApplicationModel scopeModel) {
@@ -60,9 +57,7 @@ public class CertDeployerListener implements ApplicationDeployListener {
     }
 
     @Override
-    public void onStopped(ApplicationModel scopeModel) {
-
-    }
+    public void onStopped(ApplicationModel scopeModel) {}
 
     @Override
     public void onFailure(ApplicationModel scopeModel, Throwable cause) {

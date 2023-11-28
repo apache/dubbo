@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.logger.Logger;
@@ -47,6 +46,9 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
     private final List<Runnable> timeoutListeners = new ArrayList<>();
     private final Timeout timeoutTask;
     private ExecutorService executor;
+    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(
+            () -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true), 30, TimeUnit.MILLISECONDS),
+            DeadlineFuture::destroy);
 
     private DeadlineFuture(String serviceName, String methodName, String address, int timeout) {
         this.serviceName = serviceName;
@@ -54,8 +56,7 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
         this.address = address;
         this.timeout = timeout;
         TimeoutCheckTask timeoutCheckTask = new TimeoutCheckTask();
-        this.timeoutTask = TIME_OUT_TIMER.get()
-            .newTimeout(timeoutCheckTask, timeout, TimeUnit.MILLISECONDS);
+        this.timeoutTask = TIME_OUT_TIMER.get().newTimeout(timeoutCheckTask, timeout, TimeUnit.MILLISECONDS);
     }
 
     public static void destroy() {
@@ -68,28 +69,23 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
      * @param timeout timeout in Mills
      * @return a new DeadlineFuture
      */
-    public static DeadlineFuture newFuture(String serviceName, String methodName, String address,
-        int timeout, ExecutorService executor) {
+    public static DeadlineFuture newFuture(
+            String serviceName, String methodName, String address, int timeout, ExecutorService executor) {
         final DeadlineFuture future = new DeadlineFuture(serviceName, methodName, address, timeout);
         future.setExecutor(executor);
         return future;
     }
 
     public void received(TriRpcStatus status, AppResponse appResponse) {
-        if (status.code != TriRpcStatus.Code.DEADLINE_EXCEEDED) {
-            // decrease Time
-            if (!timeoutTask.isCancelled()) {
-                timeoutTask.cancel();
-            }
+        if (status.code != TriRpcStatus.Code.DEADLINE_EXCEEDED && !timeoutTask.isCancelled()) {
+            timeoutTask.cancel();
         }
         if (getExecutor() != null) {
             getExecutor().execute(() -> doReceived(status, appResponse));
         } else {
             doReceived(status, appResponse);
         }
-    }    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(
-        () -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true), 30,
-            TimeUnit.MILLISECONDS), DeadlineFuture::destroy);
+    }
 
     public void addTimeoutListener(Runnable runnable) {
         timeoutListeners.add(runnable);
@@ -128,17 +124,15 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
         // but there are also exceptions in the onResponse in the filter,which is a bit confusing.
         // We recommend only handling onResponse in which onError is called for handling
         this.complete(appResponse);
-
-
     }
 
     private String getTimeoutMessage() {
         long nowTimestamp = System.currentTimeMillis();
         return "Waiting server-side response timeout by scan timer. start time: "
-            + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(start)))
-            + ", end time: " + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(
-            new Date(nowTimestamp))) + ", timeout: " + timeout + " ms, service: " + serviceName
-            + ", method: " + methodName;
+                + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(start)))
+                + ", end time: " + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(nowTimestamp)))
+                + ", timeout: " + timeout + " ms, service: " + serviceName
+                + ", method: " + methodName;
     }
 
     private class TimeoutCheckTask implements TimerTask {
@@ -163,12 +157,10 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
         }
 
         private void notifyTimeout() {
-            final TriRpcStatus status = TriRpcStatus.DEADLINE_EXCEEDED.withDescription(
-                getTimeoutMessage());
+            final TriRpcStatus status = TriRpcStatus.DEADLINE_EXCEEDED.withDescription(getTimeoutMessage());
             AppResponse timeoutResponse = new AppResponse();
             timeoutResponse.setException(status.asException());
             DeadlineFuture.this.doReceived(status, timeoutResponse);
         }
     }
-
 }

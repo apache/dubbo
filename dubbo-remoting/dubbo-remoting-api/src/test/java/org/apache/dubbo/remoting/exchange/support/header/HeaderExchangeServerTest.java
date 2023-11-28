@@ -23,13 +23,13 @@ import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.RemotingServer;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Collection;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 /**
  * {@link HeaderExchangeServer}
@@ -51,8 +51,10 @@ class HeaderExchangeServerTest {
         Channel channel2 = Mockito.mock(Channel.class);
         Channel exchangeChannel1 = new HeaderExchangeChannel(channel1);
         Channel exchangeChannel2 = new HeaderExchangeChannel(channel2);
-        Mockito.when(channel1.getAttribute(HeaderExchangeChannel.class.getName() + ".CHANNEL")).thenReturn(exchangeChannel1);
-        Mockito.when(channel2.getAttribute(HeaderExchangeChannel.class.getName() + ".CHANNEL")).thenReturn(exchangeChannel2);
+        Mockito.when(channel1.getAttribute(HeaderExchangeChannel.class.getName() + ".CHANNEL"))
+                .thenReturn(exchangeChannel1);
+        Mockito.when(channel2.getAttribute(HeaderExchangeChannel.class.getName() + ".CHANNEL"))
+                .thenReturn(exchangeChannel2);
         Collection<Channel> exChannels = Arrays.asList(exchangeChannel1, exchangeChannel2);
         Mockito.when(server.getChannels()).thenReturn(Arrays.asList(channel1, channel2));
         Assertions.assertEquals(headerExchangeServer.getChannels(), exChannels);
@@ -87,5 +89,4 @@ class HeaderExchangeServerTest {
         Assertions.assertThrows(RemotingException.class, () -> headerExchangeServer.send("test"));
         Assertions.assertThrows(RemotingException.class, () -> headerExchangeServer.send("test", true));
     }
-
 }

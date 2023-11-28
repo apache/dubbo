@@ -16,10 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.extension.resteasy;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.handler.codec.http.HttpContent;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpRequest;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
@@ -31,6 +27,20 @@ import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.NettyRequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
+
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.ContainerResponseFilter;
+import javax.ws.rs.core.MultivaluedMap;
+
+import java.io.IOException;
+import java.net.URI;
+import java.util.List;
+import java.util.Map;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpRequest;
 import org.jboss.resteasy.core.interception.ResponseContainerRequestContext;
 import org.jboss.resteasy.plugins.server.netty.NettyHttpRequest;
 import org.jboss.resteasy.plugins.server.netty.NettyUtil;
@@ -39,19 +49,10 @@ import org.jboss.resteasy.specimpl.ResteasyHttpHeaders;
 import org.jboss.resteasy.spi.HttpResponse;
 import org.jboss.resteasy.spi.ResteasyUriInfo;
 
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.container.ContainerResponseFilter;
-import javax.ws.rs.core.MultivaluedMap;
-import java.io.IOException;
-import java.net.URI;
-import java.util.List;
-import java.util.Map;
-
 public interface ResteasyContext {
     String HTTP_PROTOCOL = "http://";
     String HTTP = "http";
     String HTTPS_PROTOCOL = "https://";
-
 
     /**
      * return extensions that are  filtered by  extension type
@@ -63,11 +64,10 @@ public interface ResteasyContext {
     default <T> List<T> getExtension(ServiceDeployer serviceDeployer, Class<T> extension) {
 
         return serviceDeployer.getExtensions(extension);
-
     }
 
-    default DubboPreMatchContainerRequestContext convertHttpRequestToContainerRequestContext(RequestFacade requestFacade, ContainerRequestFilter[] requestFilters) {
-
+    default DubboPreMatchContainerRequestContext convertHttpRequestToContainerRequestContext(
+            RequestFacade requestFacade, ContainerRequestFilter[] requestFilters) {
 
         NettyRequestFacade nettyRequestFacade = (NettyRequestFacade) requestFacade;
         HttpRequest request = (HttpRequest) requestFacade.getRequest();
@@ -78,7 +78,8 @@ public interface ResteasyContext {
 
             try {
                 byte[] inputStream = requestFacade.getInputStream();
-                ByteBuf buffer = nettyRequestFacade.getNettyChannelContext().alloc().buffer();
+                ByteBuf buffer =
+                        nettyRequestFacade.getNettyChannelContext().alloc().buffer();
                 buffer.writeBytes(inputStream);
                 nettyRequest.setContentBuffer(buffer);
             } catch (IOException e) {
@@ -86,7 +87,6 @@ public interface ResteasyContext {
         }
 
         return new DubboPreMatchContainerRequestContext(nettyRequest, requestFilters, null);
-
     }
 
     default ResteasyUriInfo extractUriInfo(HttpRequest request) {
@@ -112,12 +112,17 @@ public interface ResteasyContext {
     default NettyHttpRequest createNettyHttpRequest(NettyRequestFacade nettyRequestFacade, HttpRequest request) {
         ResteasyHttpHeaders headers = NettyUtil.extractHttpHeaders(request);
         ResteasyUriInfo uriInfo = extractUriInfo(request);
-        NettyHttpRequest nettyRequest = new NettyHttpRequest(nettyRequestFacade.getNettyChannelContext(), headers, uriInfo, request.getMethod().name(),
-            null, null, HttpHeaders.is100ContinueExpected(request));
+        NettyHttpRequest nettyRequest = new NettyHttpRequest(
+                nettyRequestFacade.getNettyChannelContext(),
+                headers,
+                uriInfo,
+                request.getMethod().name(),
+                null,
+                null,
+                HttpHeaders.is100ContinueExpected(request));
 
         return nettyRequest;
     }
-
 
     default NettyHttpRequest createNettyHttpRequest(RequestFacade requestFacade) {
         NettyRequestFacade nettyRequestFacade = (NettyRequestFacade) requestFacade;
@@ -125,18 +130,29 @@ public interface ResteasyContext {
 
         ResteasyHttpHeaders headers = NettyUtil.extractHttpHeaders(request);
         ResteasyUriInfo uriInfo = extractUriInfo(request);
-        NettyHttpRequest nettyRequest = new NettyHttpRequest(nettyRequestFacade.getNettyChannelContext(), headers, uriInfo, request.getMethod().name(),
-            null, null, HttpHeaders.is100ContinueExpected(request));
+        NettyHttpRequest nettyRequest = new NettyHttpRequest(
+                nettyRequestFacade.getNettyChannelContext(),
+                headers,
+                uriInfo,
+                request.getMethod().name(),
+                null,
+                null,
+                HttpHeaders.is100ContinueExpected(request));
 
         return nettyRequest;
     }
 
-    default void writeResteasyResponse(URL url, RequestFacade requestFacade, NettyHttpResponse response, BuiltResponse restResponse) throws Exception {
+    default void writeResteasyResponse(
+            URL url, RequestFacade requestFacade, NettyHttpResponse response, BuiltResponse restResponse)
+            throws Exception {
         if (restResponse.getMediaType() != null) {
-            MediaType mediaType = MediaTypeUtil.convertMediaType(restResponse.getEntityClass(), restResponse.getMediaType().toString());
-            ServiceInvokeRestFilter.writeResult(response, url, restResponse.getEntity(), restResponse.getEntityClass(), mediaType);
+            MediaType mediaType = MediaTypeUtil.convertMediaType(
+                    restResponse.getEntityClass(), restResponse.getMediaType().toString());
+            ServiceInvokeRestFilter.writeResult(
+                    response, url, restResponse.getEntity(), restResponse.getEntityClass(), mediaType);
         } else {
-            ServiceInvokeRestFilter.writeResult(response, requestFacade, url, restResponse.getEntity(), restResponse.getEntityClass());
+            ServiceInvokeRestFilter.writeResult(
+                    response, requestFacade, url, restResponse.getEntity(), restResponse.getEntityClass());
         }
     }
 
@@ -160,13 +176,19 @@ public interface ResteasyContext {
         }
     }
 
-    default DubboContainerResponseContextImpl createContainerResponseContext(RequestFacade request, HttpResponse httpResponse, BuiltResponse jaxrsResponse, ContainerResponseFilter[] responseFilters) {
+    default DubboContainerResponseContextImpl createContainerResponseContext(
+            Object originRequest,
+            RequestFacade request,
+            HttpResponse httpResponse,
+            BuiltResponse jaxrsResponse,
+            ContainerResponseFilter[] responseFilters) {
 
-        NettyHttpRequest nettyHttpRequest = createNettyHttpRequest(request);
+        NettyHttpRequest nettyHttpRequest =
+                originRequest == null ? createNettyHttpRequest(request) : (NettyHttpRequest) originRequest;
 
         ResponseContainerRequestContext requestContext = new ResponseContainerRequestContext(nettyHttpRequest);
-        DubboContainerResponseContextImpl responseContext = new DubboContainerResponseContextImpl(nettyHttpRequest, httpResponse, jaxrsResponse,
-            requestContext, responseFilters, null, null);
+        DubboContainerResponseContextImpl responseContext = new DubboContainerResponseContextImpl(
+                nettyHttpRequest, httpResponse, jaxrsResponse, requestContext, responseFilters, null, null);
 
         return responseContext;
     }
@@ -175,6 +197,4 @@ public interface ResteasyContext {
         ChunkOutputStream outputStream = (ChunkOutputStream) response.getOutputStream();
         outputStream.reset();
     }
-
-
 }

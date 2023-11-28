@@ -27,6 +27,7 @@ public class SecondCertProvider implements CertProvider {
     private static final AtomicBoolean isSupport = new AtomicBoolean(false);
     private static final AtomicReference<ProviderCert> providerCert = new AtomicReference<>();
     private static final AtomicReference<Cert> cert = new AtomicReference<>();
+
     @Override
     public boolean isSupport(URL address) {
         return isSupport.get();

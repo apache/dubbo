@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.serialize;
 
 import org.apache.dubbo.common.URL;
@@ -28,16 +27,21 @@ public class DefaultMultipleSerialization implements MultipleSerialization {
     @Override
     public void serialize(URL url, String serializeType, Class<?> clz, Object obj, OutputStream os) throws IOException {
         serializeType = convertHessian(serializeType);
-        final Serialization serialization = url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(serializeType);
+        final Serialization serialization = url.getOrDefaultFrameworkModel()
+                .getExtensionLoader(Serialization.class)
+                .getExtension(serializeType);
         final ObjectOutput serialize = serialization.serialize(null, os);
         serialize.writeObject(obj);
         serialize.flushBuffer();
     }
 
     @Override
-    public Object deserialize(URL url, String serializeType, Class<?> clz, InputStream os) throws IOException, ClassNotFoundException {
+    public Object deserialize(URL url, String serializeType, Class<?> clz, InputStream os)
+            throws IOException, ClassNotFoundException {
         serializeType = convertHessian(serializeType);
-        final Serialization serialization = url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(serializeType);
+        final Serialization serialization = url.getOrDefaultFrameworkModel()
+                .getExtensionLoader(Serialization.class)
+                .getExtension(serializeType);
         final ObjectInput in = serialization.deserialize(null, os);
         return in.readObject(clz);
     }

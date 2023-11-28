@@ -47,5 +47,4 @@ public class DemoServiceImpl implements DemoService {
     public int echo(int i) {
         return i;
     }
-
 }

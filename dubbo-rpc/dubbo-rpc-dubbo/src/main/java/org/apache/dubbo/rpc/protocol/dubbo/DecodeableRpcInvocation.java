@@ -64,7 +64,8 @@ import static org.apache.dubbo.rpc.Constants.SERIALIZATION_SECURITY_CHECK_KEY;
 
 public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Decodeable {
 
-    protected static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(DecodeableRpcInvocation.class);
+    protected static final ErrorTypeAwareLogger log =
+            LoggerFactory.getErrorTypeAwareLogger(DecodeableRpcInvocation.class);
 
     protected final transient Channel channel;
 
@@ -80,9 +81,11 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
     protected final transient Supplier<CallbackServiceCodec> callbackServiceCodecFactory;
 
-    private static final boolean CHECK_SERIALIZATION = Boolean.parseBoolean(System.getProperty(SERIALIZATION_SECURITY_CHECK_KEY, "true"));
+    private static final boolean CHECK_SERIALIZATION =
+            Boolean.parseBoolean(System.getProperty(SERIALIZATION_SECURITY_CHECK_KEY, "true"));
 
-    public DecodeableRpcInvocation(FrameworkModel frameworkModel, Channel channel, Request request, InputStream is, byte id) {
+    public DecodeableRpcInvocation(
+            FrameworkModel frameworkModel, Channel channel, Request request, InputStream is, byte id) {
         this.frameworkModel = frameworkModel;
         Assert.notNull(channel, "channel == null");
         Assert.notNull(request, "request == null");
@@ -91,8 +94,8 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         this.request = request;
         this.inputStream = is;
         this.serializationType = id;
-        this.callbackServiceCodecFactory = CacheableSupplier.newSupplier(() ->
-            new CallbackServiceCodec(frameworkModel));
+        this.callbackServiceCodecFactory =
+                CacheableSupplier.newSupplier(() -> new CallbackServiceCodec(frameworkModel));
     }
 
     @Override
@@ -122,8 +125,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         int contentLength = input.available();
         getAttributes().put(Constants.CONTENT_LENGTH_KEY, contentLength);
 
-        ObjectInput in = CodecSupport.getSerialization(serializationType)
-            .deserialize(channel.getUrl(), input);
+        ObjectInput in = CodecSupport.getSerialization(serializationType).deserialize(channel.getUrl(), input);
         this.put(SERIALIZATION_ID_KEY, serializationType);
 
         String dubboVersion = in.readUTF();
@@ -147,9 +149,11 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             if (CHECK_SERIALIZATION) {
-                PermittedSerializationKeeper keeper = frameworkModel.getBeanFactory().getBean(PermittedSerializationKeeper.class);
+                PermittedSerializationKeeper keeper =
+                        frameworkModel.getBeanFactory().getBean(PermittedSerializationKeeper.class);
                 if (!keeper.checkSerializationPermitted(keyWithoutGroup, serializationType)) {
-                    throw new IOException("Unexpected serialization id:" + serializationType + " received from network, please check if the peer send the right id.");
+                    throw new IOException("Unexpected serialization id:" + serializationType
+                            + " received from network, please check if the peer send the right id.");
                 }
             }
             Object[] args = DubboCodec.EMPTY_OBJECT_ARRAY;
@@ -158,9 +162,10 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                 pts = drawPts(path, version, desc, pts);
                 if (pts == DubboCodec.EMPTY_CLASS_ARRAY) {
                     if (RpcUtils.isGenericCall(desc, getMethodName())) {
-                        pts = DubboCodec.GENERIC_PTS_ARRAY;
+                        // Should recreate here for each invocation because the parameterTypes may be changed by user.
+                        pts = new Class<?>[] {String.class, String[].class, Object[].class};
                     } else if (RpcUtils.isEcho(desc, getMethodName())) {
-                        pts = DubboCodec.ECHO_PTS_ARRAY;
+                        pts = new Class<?>[] {Object.class};
                     } else {
                         throw new IllegalArgumentException("Service not found:" + path + ", " + getMethodName());
                     }
@@ -186,7 +191,6 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         return this;
     }
 
-
     protected void decodeArgument(Channel channel, Class<?>[] pts, Object[] args) throws IOException {
         CallbackServiceCodec callbackServiceCodec = callbackServiceCodecFactory.get();
         for (int i = 0; i < args.length; i++) {
@@ -194,15 +198,15 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         }
 
         setArguments(args);
-        String targetServiceName = buildKey(getAttachment(PATH_KEY),
-            getAttachment(GROUP_KEY),
-            getAttachment(VERSION_KEY));
+        String targetServiceName =
+                buildKey(getAttachment(PATH_KEY), getAttachment(GROUP_KEY), getAttachment(VERSION_KEY));
         setTargetServiceUniqueName(targetServiceName);
     }
 
     protected Class<?>[] drawPts(String path, String version, String desc, Class<?>[] pts) {
         FrameworkServiceRepository repository = frameworkModel.getServiceRepository();
-        List<ProviderModel> providerModels = repository.lookupExportedServicesWithoutGroup(keyWithoutGroup(path, version));
+        List<ProviderModel> providerModels =
+                repository.lookupExportedServicesWithoutGroup(keyWithoutGroup(path, version));
         ServiceDescriptor serviceDescriptor = null;
         if (CollectionUtils.isNotEmpty(providerModels)) {
             for (ProviderModel providerModel : providerModels) {
@@ -233,7 +237,8 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                 // switch TCCL
                 if (CollectionUtils.isNotEmpty(providerModels)) {
                     if (providerModels.size() == 1) {
-                        Thread.currentThread().setContextClassLoader(providerModels.get(0).getClassLoader());
+                        Thread.currentThread()
+                                .setContextClassLoader(providerModels.get(0).getClassLoader());
                     } else {
                         // try all providerModels' classLoader can load pts, use the first one
                         for (ProviderModel providerModel : providerModels) {
@@ -271,17 +276,18 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
     private void checkPayload(String serviceKey) throws IOException {
         ProviderModel providerModel =
-            frameworkModel.getServiceRepository().lookupExportedServiceWithoutGroup(serviceKey);
+                frameworkModel.getServiceRepository().lookupExportedServiceWithoutGroup(serviceKey);
         if (providerModel != null) {
-            String payloadStr = (String) providerModel.getServiceMetadata().getAttachments().get(PAYLOAD);
+            String payloadStr =
+                    (String) providerModel.getServiceMetadata().getAttachments().get(PAYLOAD);
             if (payloadStr != null) {
                 int payload = Integer.parseInt(payloadStr);
                 if (payload <= 0) {
                     return;
                 }
                 if (request.getPayload() > payload) {
-                    ExceedPayloadLimitException e = new ExceedPayloadLimitException(
-                        "Data length too large: " + request.getPayload() + ", max payload: " + payload + ", channel: " + channel);
+                    ExceedPayloadLimitException e = new ExceedPayloadLimitException("Data length too large: "
+                            + request.getPayload() + ", max payload: " + payload + ", channel: " + channel);
                     log.error(TRANSPORT_EXCEED_PAYLOAD_LIMIT, "", "", e.getMessage(), e);
                     throw e;
                 }

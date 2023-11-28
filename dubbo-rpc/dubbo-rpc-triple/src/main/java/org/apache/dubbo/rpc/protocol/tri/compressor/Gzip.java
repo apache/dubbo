@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.compressor;
 
 import org.apache.dubbo.rpc.RpcException;
@@ -72,5 +71,4 @@ public class Gzip implements Compressor, DeCompressor {
 
         return byteOutStream.toByteArray();
     }
-
 }

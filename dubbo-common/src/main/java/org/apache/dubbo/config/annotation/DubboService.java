@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.annotation;
 
-
 import org.apache.dubbo.common.constants.ClusterRules;
 import org.apache.dubbo.common.constants.LoadbalanceRules;
 

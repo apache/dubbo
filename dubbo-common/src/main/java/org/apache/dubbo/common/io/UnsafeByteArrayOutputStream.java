@@ -96,6 +96,5 @@ public class UnsafeByteArrayOutputStream extends OutputStream {
     }
 
     @Override
-    public void close() throws IOException {
-    }
+    public void close() throws IOException {}
 }

@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_DELAY_EXECUTE_TIMES;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_NOTIFY_EVENT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_NOTIFY_EVENT;
 
 public abstract class RegistryNotifier {
@@ -34,7 +35,7 @@ public abstract class RegistryNotifier {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RegistryNotifier.class);
     private volatile long lastExecuteTime;
     private volatile long lastEventTime;
-
+    private final URL url;
     private Object rawAddresses;
     private long delayTime;
 
@@ -50,10 +51,14 @@ public abstract class RegistryNotifier {
     }
 
     public RegistryNotifier(URL registryUrl, long delayTime, ScheduledExecutorService scheduler) {
+        this.url = registryUrl;
         this.delayTime = delayTime;
         if (scheduler == null) {
-            this.scheduler = registryUrl.getOrDefaultFrameworkModel().getBeanFactory()
-                .getBean(FrameworkExecutorRepository.class).getRegistryNotificationExecutor();
+            this.scheduler = registryUrl
+                    .getOrDefaultFrameworkModel()
+                    .getBeanFactory()
+                    .getBean(FrameworkExecutorRepository.class)
+                    .getRegistryNotificationExecutor();
         } else {
             this.scheduler = scheduler;
         }
@@ -68,7 +73,17 @@ public abstract class RegistryNotifier {
 
         // more than 10 calls && next execute time is in the future
         boolean delay = shouldDelay.get() && delta < 0;
-        if (delay) {
+        // when the scheduler is shutdown, no notification is sent
+        if (scheduler.isShutdown()) {
+            if (logger.isWarnEnabled()) {
+                logger.warn(
+                        COMMON_FAILED_NOTIFY_EVENT,
+                        "",
+                        "",
+                        "Notification scheduler is off, no notifications are sent. Registry URL:  " + url);
+            }
+            return;
+        } else if (delay) {
             scheduler.schedule(new NotificationTask(this, notifyTime), -delta, TimeUnit.MILLISECONDS);
         } else {
             // check if more than 10 calls
@@ -124,5 +139,4 @@ public abstract class RegistryNotifier {
             }
         }
     }
-
 }

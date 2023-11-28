@@ -39,5 +39,4 @@ public interface Cache {
      * @return Return stored object against key
      */
     Object get(Object key);
-
 }

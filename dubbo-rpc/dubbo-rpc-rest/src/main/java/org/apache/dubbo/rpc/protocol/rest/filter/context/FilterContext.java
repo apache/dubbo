@@ -23,7 +23,6 @@ import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 
 public interface FilterContext {
 
-
     URL getUrl();
 
     RequestFacade getRequestFacade();
@@ -35,4 +34,8 @@ public interface FilterContext {
     boolean complete();
 
     void setComplete(boolean complete);
+
+    Object getOriginRequest();
+
+    Object getOriginResponse();
 }

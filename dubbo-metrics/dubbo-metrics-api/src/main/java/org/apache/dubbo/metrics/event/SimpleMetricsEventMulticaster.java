@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.event;
 
 import org.apache.dubbo.common.utils.StringUtils;
@@ -40,10 +39,6 @@ public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
     public void publishEvent(MetricsEvent event) {
-        if (event instanceof EmptyEvent) {
-            return;
-        }
-
         if (validateIfApplicationConfigExist(event)) return;
         for (MetricsListener listener : listeners) {
             if (listener.isSupport(event)) {
@@ -75,9 +70,6 @@ public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
     @SuppressWarnings({"rawtypes"})
     private void publishTimeEvent(MetricsEvent event, Consumer<MetricsLifeListener> consumer) {
         if (validateIfApplicationConfigExist(event)) return;
-        if (event instanceof EmptyEvent) {
-            return;
-        }
         if (event instanceof TimeCounterEvent) {
             ((TimeCounterEvent) event).getTimePair().end();
         }

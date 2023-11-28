@@ -49,9 +49,14 @@ public class MockInvokersSelector<T> extends AbstractStateRouter<T> {
     }
 
     @Override
-    protected BitList<Invoker<T>> doRoute(BitList<Invoker<T>> invokers, URL url, Invocation invocation,
-                                          boolean needToPrintMessage, Holder<RouterSnapshotNode<T>> nodeHolder,
-                                          Holder<String> messageHolder) throws RpcException {
+    protected BitList<Invoker<T>> doRoute(
+            BitList<Invoker<T>> invokers,
+            URL url,
+            Invocation invocation,
+            boolean needToPrintMessage,
+            Holder<RouterSnapshotNode<T>> nodeHolder,
+            Holder<String> messageHolder)
+            throws RpcException {
         if (CollectionUtils.isEmpty(invokers)) {
             if (needToPrintMessage) {
                 messageHolder.set("Empty invokers. Directly return.");
@@ -108,6 +113,8 @@ public class MockInvokersSelector<T> extends AbstractStateRouter<T> {
         Map<String, BitList<Invoker<T>>> grouping = new HashMap<>();
         grouping.put("Mocked", mockedInvokers);
         grouping.put("Normal", normalInvokers);
-        return new RouterGroupingState<>(this.getClass().getSimpleName(), mockedInvokers.size() + normalInvokers.size(), grouping).toString();
+        return new RouterGroupingState<>(
+                        this.getClass().getSimpleName(), mockedInvokers.size() + normalInvokers.size(), grouping)
+                .toString();
     }
 }

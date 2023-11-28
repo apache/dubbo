@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.remoting;
 
 import org.apache.dubbo.remoting.Channel;
@@ -27,34 +26,27 @@ public interface ChannelHandler extends org.apache.dubbo.remoting.ChannelHandler
 
     void disconnected(com.alibaba.dubbo.remoting.Channel channel) throws com.alibaba.dubbo.remoting.RemotingException;
 
-    void sent(com.alibaba.dubbo.remoting.Channel channel, Object message) throws com.alibaba.dubbo.remoting.RemotingException;
+    void sent(com.alibaba.dubbo.remoting.Channel channel, Object message)
+            throws com.alibaba.dubbo.remoting.RemotingException;
 
-    void received(com.alibaba.dubbo.remoting.Channel channel, Object message) throws com.alibaba.dubbo.remoting.RemotingException;
+    void received(com.alibaba.dubbo.remoting.Channel channel, Object message)
+            throws com.alibaba.dubbo.remoting.RemotingException;
 
-    void caught(com.alibaba.dubbo.remoting.Channel channel, Throwable exception) throws com.alibaba.dubbo.remoting.RemotingException;
-
-    @Override
-    default void connected(Channel channel) throws RemotingException {
-
-    }
+    void caught(com.alibaba.dubbo.remoting.Channel channel, Throwable exception)
+            throws com.alibaba.dubbo.remoting.RemotingException;
 
     @Override
-    default void disconnected(Channel channel) throws RemotingException {
-
-    }
+    default void connected(Channel channel) throws RemotingException {}
 
     @Override
-    default void sent(Channel channel, Object message) throws RemotingException {
-
-    }
+    default void disconnected(Channel channel) throws RemotingException {}
 
     @Override
-    default void received(Channel channel, Object message) throws RemotingException {
-
-    }
+    default void sent(Channel channel, Object message) throws RemotingException {}
 
     @Override
-    default void caught(Channel channel, Throwable exception) throws RemotingException {
+    default void received(Channel channel, Object message) throws RemotingException {}
 
-    }
+    @Override
+    default void caught(Channel channel, Throwable exception) throws RemotingException {}
 }

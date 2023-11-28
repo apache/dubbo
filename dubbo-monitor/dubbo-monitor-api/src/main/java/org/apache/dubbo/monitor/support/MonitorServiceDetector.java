@@ -25,5 +25,4 @@ public class MonitorServiceDetector implements BuiltinServiceDetector {
     public Class<?> getService() {
         return MonitorService.class;
     }
-
 }

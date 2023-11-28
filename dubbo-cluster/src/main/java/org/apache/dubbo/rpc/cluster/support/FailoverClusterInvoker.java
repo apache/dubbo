@@ -47,7 +47,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAIL
  */
 public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(FailoverClusterInvoker.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(FailoverClusterInvoker.class);
 
     public FailoverClusterInvoker(Directory<T> directory) {
         super(directory);
@@ -55,7 +56,8 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public Result doInvoke(Invocation invocation, final List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
+    public Result doInvoke(Invocation invocation, final List<Invoker<T>> invokers, LoadBalance loadbalance)
+            throws RpcException {
         List<Invoker<T>> copyInvokers = invokers;
         String methodName = RpcUtils.getMethodName(invocation);
         int len = calculateInvokeTimes(methodName);
@@ -64,8 +66,8 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
         List<Invoker<T>> invoked = new ArrayList<Invoker<T>>(copyInvokers.size()); // invoked invokers.
         Set<String> providers = new HashSet<String>(len);
         for (int i = 0; i < len; i++) {
-            //Reselect before retry to avoid a change of candidate `invokers`.
-            //NOTE: if `invokers` changed, then `invoked` also lose accuracy.
+            // Reselect before retry to avoid a change of candidate `invokers`.
+            // NOTE: if `invokers` changed, then `invoked` also lose accuracy.
             if (i > 0) {
                 checkWhetherDestroyed();
                 copyInvokers = list(invocation);
@@ -79,15 +81,22 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
             try {
                 Result result = invokeWithContext(invoker, invocation);
                 if (le != null && logger.isWarnEnabled()) {
-                    logger.warn(CLUSTER_FAILED_MULTIPLE_RETRIES,"failed to retry do invoke","","Although retry the method " + methodName
-                        + " in the service " + getInterface().getName()
-                        + " was successful by the provider " + invoker.getUrl().getAddress()
-                        + ", but there have been failed providers " + providers
-                        + " (" + providers.size() + "/" + copyInvokers.size()
-                        + ") from the registry " + directory.getUrl().getAddress()
-                        + " on the consumer " + NetUtils.getLocalHost()
-                        + " using the dubbo version " + Version.getVersion() + ". Last error is: "
-                        + le.getMessage(),le);
+                    logger.warn(
+                            CLUSTER_FAILED_MULTIPLE_RETRIES,
+                            "failed to retry do invoke",
+                            "",
+                            "Although retry the method " + methodName
+                                    + " in the service " + getInterface().getName()
+                                    + " was successful by the provider "
+                                    + invoker.getUrl().getAddress()
+                                    + ", but there have been failed providers " + providers
+                                    + " (" + providers.size() + "/" + copyInvokers.size()
+                                    + ") from the registry "
+                                    + directory.getUrl().getAddress()
+                                    + " on the consumer " + NetUtils.getLocalHost()
+                                    + " using the dubbo version " + Version.getVersion() + ". Last error is: "
+                                    + le.getMessage(),
+                            le);
                 }
                 success = true;
                 return result;
@@ -104,14 +113,17 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 }
             }
         }
-        throw new RpcException(le.getCode(), "Failed to invoke the method "
-                + methodName + " in the service " + getInterface().getName()
-                + ". Tried " + len + " times of the providers " + providers
-                + " (" + providers.size() + "/" + copyInvokers.size()
-                + ") from the registry " + directory.getUrl().getAddress()
-                + " on the consumer " + NetUtils.getLocalHost() + " using the dubbo version "
-                + Version.getVersion() + ". Last error is: "
-                + le.getMessage(), le.getCause() != null ? le.getCause() : le);
+        throw new RpcException(
+                le.getCode(),
+                "Failed to invoke the method "
+                        + methodName + " in the service " + getInterface().getName()
+                        + ". Tried " + len + " times of the providers " + providers
+                        + " (" + providers.size() + "/" + copyInvokers.size()
+                        + ") from the registry " + directory.getUrl().getAddress()
+                        + " on the consumer " + NetUtils.getLocalHost() + " using the dubbo version "
+                        + Version.getVersion() + ". Last error is: "
+                        + le.getMessage(),
+                le.getCause() != null ? le.getCause() : le);
     }
 
     private int calculateInvokeTimes(String methodName) {
@@ -128,5 +140,4 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
         return len;
     }
-
 }

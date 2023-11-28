@@ -16,13 +16,13 @@
  */
 package org.apache.dubbo.common.cache;
 
-import org.junit.jupiter.api.Test;
-
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -74,5 +74,4 @@ class FileCacheStoreTest {
         String directoryPath = path.substring(0, index);
         return directoryPath;
     }
-
 }

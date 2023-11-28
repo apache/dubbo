@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo;
 
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.RpcException;
@@ -36,12 +35,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.LAZY_CONNECT_KEY
 class DubboLazyConnectTest {
 
     @BeforeAll
-    public static void setUpBeforeClass() {
-    }
+    public static void setUpBeforeClass() {}
 
     @BeforeEach
-    public void setUp() {
-    }
+    public void setUp() {}
 
     @AfterAll
     public static void tearDownAfterClass() {
@@ -60,7 +57,8 @@ class DubboLazyConnectTest {
     @Test
     void testSticky2() {
         int port = NetUtils.getAvailablePort();
-        URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?" + LAZY_CONNECT_KEY + "=true");
+        URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?"
+                + LAZY_CONNECT_KEY + "=true");
         ProtocolUtils.refer(IDemoService.class, url);
     }
 
@@ -68,7 +66,8 @@ class DubboLazyConnectTest {
     void testSticky3() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             int port = NetUtils.getAvailablePort();
-            URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?" + LAZY_CONNECT_KEY + "=true");
+            URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?"
+                    + LAZY_CONNECT_KEY + "=true");
             IDemoService service = ProtocolUtils.refer(IDemoService.class, url);
             service.get();
         });
@@ -77,7 +76,8 @@ class DubboLazyConnectTest {
     @Test
     void testSticky4() {
         int port = NetUtils.getAvailablePort();
-        URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?" + LAZY_CONNECT_KEY + "=true&timeout=20000");
+        URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?"
+                + LAZY_CONNECT_KEY + "=true&timeout=20000");
 
         ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
 

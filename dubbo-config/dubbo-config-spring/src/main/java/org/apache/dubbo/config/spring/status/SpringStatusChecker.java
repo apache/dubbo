@@ -24,10 +24,10 @@ import org.apache.dubbo.common.status.StatusChecker;
 import org.apache.dubbo.config.spring.extension.SpringExtensionInjector;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.lang.reflect.Method;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.Lifecycle;
-
-import java.lang.reflect.Method;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_WARN_STATUS_CHECKER;
 
@@ -99,13 +99,12 @@ public class SpringStatusChecker implements StatusChecker {
                 }
             }
         } catch (Throwable t) {
-            if (t.getCause() instanceof UnsupportedOperationException){
+            if (t.getCause() instanceof UnsupportedOperationException) {
                 logger.debug(t.getMessage(), t);
-            }else {
+            } else {
                 logger.warn(CONFIG_WARN_STATUS_CHECKER, "", "", t.getMessage(), t);
             }
         }
         return new Status(level, buf.toString());
     }
-
 }

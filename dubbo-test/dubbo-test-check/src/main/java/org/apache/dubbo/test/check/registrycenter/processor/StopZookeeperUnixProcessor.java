@@ -44,16 +44,22 @@ public class StopZookeeperUnixProcessor extends ZookeeperUnixProcessor {
     protected Process doProcess(ZookeeperContext context, int clientPort) throws DubboTestException {
         logger.info(String.format("The zookeeper-%d is stopping...", clientPort));
         List<String> commands = new ArrayList<>();
-        Path zookeeperBin = Paths.get(context.getSourceFile().getParent().toString(),
-            String.valueOf(clientPort),
-            context.getUnpackedDirectory(),
-            "bin");
+        Path zookeeperBin = Paths.get(
+                context.getSourceFile().getParent().toString(),
+                String.valueOf(clientPort),
+                context.getUnpackedDirectory(),
+                "bin");
         commands.add(Paths.get(zookeeperBin.toString(), "zkServer.sh")
-            .toAbsolutePath().toString());
+                .toAbsolutePath()
+                .toString());
         commands.add("stop");
         try {
-            return new ProcessBuilder().directory(zookeeperBin.getParent().toFile())
-                .command(commands).inheritIO().redirectOutput(ProcessBuilder.Redirect.PIPE).start();
+            return new ProcessBuilder()
+                    .directory(zookeeperBin.getParent().toFile())
+                    .command(commands)
+                    .inheritIO()
+                    .redirectOutput(ProcessBuilder.Redirect.PIPE)
+                    .start();
         } catch (IOException e) {
             throw new DubboTestException(String.format("Failed to stop zookeeper-%d", clientPort), e);
         }

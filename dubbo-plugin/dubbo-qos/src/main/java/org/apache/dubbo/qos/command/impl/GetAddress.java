@@ -40,10 +40,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@Cmd(name = "getAddress",
-    summary = "Get service available address ",
-    example = {"getAddress com.example.DemoService", "getAddress group/com.example.DemoService"},
-    requiredPermissionLevel = PermissionLevel.PRIVATE)
+@Cmd(
+        name = "getAddress",
+        summary = "Get service available address ",
+        example = {"getAddress com.example.DemoService", "getAddress group/com.example.DemoService"},
+        requiredPermissionLevel = PermissionLevel.PRIVATE)
 public class GetAddress implements BaseCommand {
     public final FrameworkServiceRepository serviceRepository;
 
@@ -76,14 +77,18 @@ public class GetAddress implements BaseCommand {
         }
     }
 
-    private static void appendConsumer(StringBuilder plainOutput, Map<String, Object> jsonOutput, ConsumerModel consumerModel) {
-        plainOutput.append("ConsumerModel: ")
-            .append(consumerModel.getServiceKey())
-            .append("@")
-            .append(Integer.toHexString(System.identityHashCode(consumerModel)))
-            .append("\n\n");
+    private static void appendConsumer(
+            StringBuilder plainOutput, Map<String, Object> jsonOutput, ConsumerModel consumerModel) {
+        plainOutput
+                .append("ConsumerModel: ")
+                .append(consumerModel.getServiceKey())
+                .append("@")
+                .append(Integer.toHexString(System.identityHashCode(consumerModel)))
+                .append("\n\n");
         Map<String, Object> consumerMap = new HashMap<>();
-        jsonOutput.put(consumerModel.getServiceKey() + "@" + Integer.toHexString(System.identityHashCode(consumerModel)), consumerMap);
+        jsonOutput.put(
+                consumerModel.getServiceKey() + "@" + Integer.toHexString(System.identityHashCode(consumerModel)),
+                consumerMap);
 
         Object object = consumerModel.getServiceMetadata().getAttribute(CommonConstants.CURRENT_CLUSTER_INVOKER_KEY);
         Map<Registry, MigrationInvoker<?>> invokerMap;
@@ -95,21 +100,20 @@ public class GetAddress implements BaseCommand {
         }
     }
 
-    private static void appendInvokers(StringBuilder plainOutput, Map<String, Object> consumerMap, Map.Entry<Registry, MigrationInvoker<?>> entry) {
+    private static void appendInvokers(
+            StringBuilder plainOutput,
+            Map<String, Object> consumerMap,
+            Map.Entry<Registry, MigrationInvoker<?>> entry) {
         URL registryUrl = entry.getKey().getUrl();
 
-        plainOutput.append("Registry: ")
-            .append(registryUrl)
-            .append("\n");
+        plainOutput.append("Registry: ").append(registryUrl).append("\n");
         Map<String, Object> registryMap = new HashMap<>();
         consumerMap.put(registryUrl.toString(), registryMap);
 
         MigrationInvoker<?> migrationInvoker = entry.getValue();
 
         MigrationStep migrationStep = migrationInvoker.getMigrationStep();
-        plainOutput.append("MigrationStep: ")
-            .append(migrationStep)
-            .append("\n\n");
+        plainOutput.append("MigrationStep: ").append(migrationStep).append("\n\n");
         registryMap.put("MigrationStep", migrationStep);
 
         Map<String, Object> invokersMap = new HashMap<>();
@@ -124,99 +128,100 @@ public class GetAddress implements BaseCommand {
         RpcContext.getServiceContext().setConsumerUrl(originConsumerUrl);
     }
 
-    private static void appendAppLevel(StringBuilder plainOutput, MigrationInvoker<?> migrationInvoker, Map<String, Object> invokersMap) {
+    private static void appendAppLevel(
+            StringBuilder plainOutput, MigrationInvoker<?> migrationInvoker, Map<String, Object> invokersMap) {
         Map<String, Object> appMap = new HashMap<>();
         invokersMap.put("Application-Level", appMap);
         Optional.ofNullable(migrationInvoker.getServiceDiscoveryInvoker())
-            .ifPresent(i -> plainOutput.append("Application-Level: \n"));
+                .ifPresent(i -> plainOutput.append("Application-Level: \n"));
         Optional.ofNullable(migrationInvoker.getServiceDiscoveryInvoker())
-            .map(ClusterInvoker::getDirectory)
-            .map(Directory::getAllInvokers)
-            .ifPresent(invokers -> {
-                List<String> invokerUrls = new LinkedList<>();
-                plainOutput.append("All Invokers: \n");
-                for (org.apache.dubbo.rpc.Invoker<?> invoker : invokers) {
-                    invokerUrls.add(invoker.getUrl().toFullString());
-                    plainOutput.append(invoker.getUrl().toFullString()).append("\n");
-                }
-                plainOutput.append("\n");
-                appMap.put("All", invokerUrls);
-            });
+                .map(ClusterInvoker::getDirectory)
+                .map(Directory::getAllInvokers)
+                .ifPresent(invokers -> {
+                    List<String> invokerUrls = new LinkedList<>();
+                    plainOutput.append("All Invokers: \n");
+                    for (org.apache.dubbo.rpc.Invoker<?> invoker : invokers) {
+                        invokerUrls.add(invoker.getUrl().toFullString());
+                        plainOutput.append(invoker.getUrl().toFullString()).append("\n");
+                    }
+                    plainOutput.append("\n");
+                    appMap.put("All", invokerUrls);
+                });
         Optional.ofNullable(migrationInvoker.getServiceDiscoveryInvoker())
-            .map(ClusterInvoker::getDirectory)
-            .map(s -> (AbstractDirectory<?>) s)
-            .map(AbstractDirectory::getValidInvokers)
-            .ifPresent(invokers -> {
-                List<String> invokerUrls = new LinkedList<>();
-                plainOutput.append("Valid Invokers: \n");
-                for (org.apache.dubbo.rpc.Invoker<?> invoker : invokers) {
-                    invokerUrls.add(invoker.getUrl().toFullString());
-                    plainOutput.append(invoker.getUrl().toFullString()).append("\n");
-                }
-                plainOutput.append("\n");
-                appMap.put("Valid", invokerUrls);
-            });
+                .map(ClusterInvoker::getDirectory)
+                .map(s -> (AbstractDirectory<?>) s)
+                .map(AbstractDirectory::getValidInvokers)
+                .ifPresent(invokers -> {
+                    List<String> invokerUrls = new LinkedList<>();
+                    plainOutput.append("Valid Invokers: \n");
+                    for (org.apache.dubbo.rpc.Invoker<?> invoker : invokers) {
+                        invokerUrls.add(invoker.getUrl().toFullString());
+                        plainOutput.append(invoker.getUrl().toFullString()).append("\n");
+                    }
+                    plainOutput.append("\n");
+                    appMap.put("Valid", invokerUrls);
+                });
         Optional.ofNullable(migrationInvoker.getServiceDiscoveryInvoker())
-            .map(ClusterInvoker::getDirectory)
-            .map(s -> (AbstractDirectory<?>) s)
-            .map(AbstractDirectory::getDisabledInvokers)
-            .ifPresent(invokers -> {
-                List<String> invokerUrls = new LinkedList<>();
-                plainOutput.append("Disabled Invokers: \n");
-                for (org.apache.dubbo.rpc.Invoker<?> invoker : invokers) {
-                    invokerUrls.add(invoker.getUrl().toFullString());
-                    plainOutput.append(invoker.getUrl().toFullString()).append("\n");
-                }
-                plainOutput.append("\n");
-                appMap.put("Disabled", invokerUrls);
-            });
+                .map(ClusterInvoker::getDirectory)
+                .map(s -> (AbstractDirectory<?>) s)
+                .map(AbstractDirectory::getDisabledInvokers)
+                .ifPresent(invokers -> {
+                    List<String> invokerUrls = new LinkedList<>();
+                    plainOutput.append("Disabled Invokers: \n");
+                    for (org.apache.dubbo.rpc.Invoker<?> invoker : invokers) {
+                        invokerUrls.add(invoker.getUrl().toFullString());
+                        plainOutput.append(invoker.getUrl().toFullString()).append("\n");
+                    }
+                    plainOutput.append("\n");
+                    appMap.put("Disabled", invokerUrls);
+                });
     }
 
-    private static void appendInterfaceLevel(StringBuilder plainOutput, MigrationInvoker<?> migrationInvoker, Map<String, Object> invokersMap) {
+    private static void appendInterfaceLevel(
+            StringBuilder plainOutput, MigrationInvoker<?> migrationInvoker, Map<String, Object> invokersMap) {
         Map<String, Object> interfaceMap = new HashMap<>();
         invokersMap.put("Interface-Level", interfaceMap);
+        Optional.ofNullable(migrationInvoker.getInvoker()).ifPresent(i -> plainOutput.append("Interface-Level: \n"));
         Optional.ofNullable(migrationInvoker.getInvoker())
-            .ifPresent(i -> plainOutput.append("Interface-Level: \n"));
+                .map(ClusterInvoker::getDirectory)
+                .map(Directory::getAllInvokers)
+                .ifPresent(invokers -> {
+                    List<String> invokerUrls = new LinkedList<>();
+                    plainOutput.append("All Invokers: \n");
+                    for (org.apache.dubbo.rpc.Invoker<?> invoker : invokers) {
+                        invokerUrls.add(invoker.getUrl().toFullString());
+                        plainOutput.append(invoker.getUrl().toFullString()).append("\n");
+                    }
+                    plainOutput.append("\n");
+                    interfaceMap.put("All", invokerUrls);
+                });
         Optional.ofNullable(migrationInvoker.getInvoker())
-            .map(ClusterInvoker::getDirectory)
-            .map(Directory::getAllInvokers)
-            .ifPresent(invokers -> {
-                List<String> invokerUrls = new LinkedList<>();
-                plainOutput.append("All Invokers: \n");
-                for (org.apache.dubbo.rpc.Invoker<?> invoker : invokers) {
-                    invokerUrls.add(invoker.getUrl().toFullString());
-                    plainOutput.append(invoker.getUrl().toFullString()).append("\n");
-                }
-                plainOutput.append("\n");
-                interfaceMap.put("All", invokerUrls);
-            });
+                .map(ClusterInvoker::getDirectory)
+                .map(s -> (AbstractDirectory<?>) s)
+                .map(AbstractDirectory::getValidInvokers)
+                .ifPresent(invokers -> {
+                    List<String> invokerUrls = new LinkedList<>();
+                    plainOutput.append("Valid Invokers: \n");
+                    for (org.apache.dubbo.rpc.Invoker<?> invoker : invokers) {
+                        invokerUrls.add(invoker.getUrl().toFullString());
+                        plainOutput.append(invoker.getUrl().toFullString()).append("\n");
+                    }
+                    plainOutput.append("\n");
+                    interfaceMap.put("Valid", invokerUrls);
+                });
         Optional.ofNullable(migrationInvoker.getInvoker())
-            .map(ClusterInvoker::getDirectory)
-            .map(s -> (AbstractDirectory<?>) s)
-            .map(AbstractDirectory::getValidInvokers)
-            .ifPresent(invokers -> {
-                List<String> invokerUrls = new LinkedList<>();
-                plainOutput.append("Valid Invokers: \n");
-                for (org.apache.dubbo.rpc.Invoker<?> invoker : invokers) {
-                    invokerUrls.add(invoker.getUrl().toFullString());
-                    plainOutput.append(invoker.getUrl().toFullString()).append("\n");
-                }
-                plainOutput.append("\n");
-                interfaceMap.put("Valid", invokerUrls);
-            });
-        Optional.ofNullable(migrationInvoker.getInvoker())
-            .map(ClusterInvoker::getDirectory)
-            .map(s -> (AbstractDirectory<?>) s)
-            .map(AbstractDirectory::getDisabledInvokers)
-            .ifPresent(invokers -> {
-                List<String> invokerUrls = new LinkedList<>();
-                plainOutput.append("Disabled Invokers: \n");
-                for (org.apache.dubbo.rpc.Invoker<?> invoker : invokers) {
-                    invokerUrls.add(invoker.getUrl().toFullString());
-                    plainOutput.append(invoker.getUrl().toFullString()).append("\n");
-                }
-                plainOutput.append("\n");
-                interfaceMap.put("Disabled", invokerUrls);
-            });
+                .map(ClusterInvoker::getDirectory)
+                .map(s -> (AbstractDirectory<?>) s)
+                .map(AbstractDirectory::getDisabledInvokers)
+                .ifPresent(invokers -> {
+                    List<String> invokerUrls = new LinkedList<>();
+                    plainOutput.append("Disabled Invokers: \n");
+                    for (org.apache.dubbo.rpc.Invoker<?> invoker : invokers) {
+                        invokerUrls.add(invoker.getUrl().toFullString());
+                        plainOutput.append(invoker.getUrl().toFullString()).append("\n");
+                    }
+                    plainOutput.append("\n");
+                    interfaceMap.put("Disabled", invokerUrls);
+                });
     }
 }

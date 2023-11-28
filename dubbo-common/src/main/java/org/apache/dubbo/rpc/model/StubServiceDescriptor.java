@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -38,7 +37,8 @@ public class StubServiceDescriptor implements ServiceDescriptor {
     // to accelerate search
     private final Map<String, List<MethodDescriptor>> methods = new HashMap<>();
     private final Map<String, Map<String, MethodDescriptor>> descToMethods = new HashMap<>();
-    private final ConcurrentNavigableMap<String, FullServiceDefinition> serviceDefinitions = new ConcurrentSkipListMap<>();
+    private final ConcurrentNavigableMap<String, FullServiceDefinition> serviceDefinitions =
+            new ConcurrentSkipListMap<>();
 
     public StubServiceDescriptor(String interfaceName, Class<?> interfaceClass) {
         this.interfaceName = interfaceName;
@@ -47,14 +47,15 @@ public class StubServiceDescriptor implements ServiceDescriptor {
 
     public void addMethod(MethodDescriptor methodDescriptor) {
         methods.put(methodDescriptor.getMethodName(), Collections.singletonList(methodDescriptor));
-        Map<String, MethodDescriptor> descMap = descToMethods.computeIfAbsent(methodDescriptor.getMethodName(),
-            k -> new HashMap<>());
+        Map<String, MethodDescriptor> descMap =
+                descToMethods.computeIfAbsent(methodDescriptor.getMethodName(), k -> new HashMap<>());
         descMap.put(methodDescriptor.getParamDesc(), methodDescriptor);
     }
 
     public FullServiceDefinition getFullServiceDefinition(String serviceKey) {
-        return serviceDefinitions.computeIfAbsent(serviceKey,
-            (k) -> ServiceDefinitionBuilder.buildFullDefinition(serviceInterfaceClass, Collections.emptyMap()));
+        return serviceDefinitions.computeIfAbsent(
+                serviceKey,
+                (k) -> ServiceDefinitionBuilder.buildFullDefinition(serviceInterfaceClass, Collections.emptyMap()));
     }
 
     public String getInterfaceName() {
@@ -118,9 +119,10 @@ public class StubServiceDescriptor implements ServiceDescriptor {
             return false;
         }
         StubServiceDescriptor that = (StubServiceDescriptor) o;
-        return Objects.equals(interfaceName, that.interfaceName) && Objects.equals(serviceInterfaceClass,
-            that.serviceInterfaceClass) && Objects.equals(methods, that.methods) && Objects.equals(descToMethods,
-            that.descToMethods);
+        return Objects.equals(interfaceName, that.interfaceName)
+                && Objects.equals(serviceInterfaceClass, that.serviceInterfaceClass)
+                && Objects.equals(methods, that.methods)
+                && Objects.equals(descToMethods, that.descToMethods);
     }
 
     @Override

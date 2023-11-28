@@ -28,10 +28,10 @@ import java.util.Objects;
  */
 public class ComplexObject {
 
-    public ComplexObject() {
-    }
+    public ComplexObject() {}
 
-    public ComplexObject(String var1, int var2, long l, String[] var3, List<Integer> var4, ComplexObject.TestEnum testEnum) {
+    public ComplexObject(
+            String var1, int var2, long l, String[] var3, List<Integer> var4, ComplexObject.TestEnum testEnum) {
         this.setInnerObject(new ComplexObject.InnerObject());
         this.getInnerObject().setInnerA(var1);
         this.getInnerObject().setInnerB(var2);
@@ -53,7 +53,7 @@ public class ComplexObject {
         io32.setInnerA3(var1 + "_32");
         InnerObject3 io33 = new InnerObject3();
         io33.setInnerA3(var1 + "_33");
-        this.setInnerObject3(new InnerObject3[]{io31, io32, io33});
+        this.setInnerObject3(new InnerObject3[] {io31, io32, io33});
         this.maps = new HashMap<>(4);
         this.maps.put(var1 + "_k1", var1 + "_v1");
         this.maps.put(var1 + "_k2", var1 + "_v2");
@@ -134,16 +134,15 @@ public class ComplexObject {
 
     @Override
     public String toString() {
-        return "ComplexObject{" +
-                "innerObject=" + innerObject +
-                ", innerObject2=" + innerObject2 +
-                ", innerObject3=" + Arrays.toString(innerObject3) +
-                ", strArrays=" + Arrays.toString(strArrays) +
-                ", intList=" + intList +
-                ", v=" + v +
-                ", testEnum=" + testEnum +
-                ", maps=" + maps +
-                '}';
+        return "ComplexObject{" + "innerObject="
+                + innerObject + ", innerObject2="
+                + innerObject2 + ", innerObject3="
+                + Arrays.toString(innerObject3) + ", strArrays="
+                + Arrays.toString(strArrays) + ", intList="
+                + intList + ", v="
+                + v + ", testEnum="
+                + testEnum + ", maps="
+                + maps + '}';
     }
 
     @Override
@@ -151,14 +150,14 @@ public class ComplexObject {
         if (this == o) return true;
         if (!(o instanceof ComplexObject)) return false;
         ComplexObject that = (ComplexObject) o;
-        return getV() == that.getV() &&
-                Objects.equals(getInnerObject(), that.getInnerObject()) &&
-                Objects.equals(getInnerObject2(), that.getInnerObject2()) &&
-                Arrays.equals(getInnerObject3(), that.getInnerObject3()) &&
-                Arrays.equals(getStrArrays(), that.getStrArrays()) &&
-                Objects.equals(getIntList(), that.getIntList()) &&
-                getTestEnum() == that.getTestEnum() &&
-                Objects.equals(getMaps(), that.getMaps());
+        return getV() == that.getV()
+                && Objects.equals(getInnerObject(), that.getInnerObject())
+                && Objects.equals(getInnerObject2(), that.getInnerObject2())
+                && Arrays.equals(getInnerObject3(), that.getInnerObject3())
+                && Arrays.equals(getStrArrays(), that.getStrArrays())
+                && Objects.equals(getIntList(), that.getIntList())
+                && getTestEnum() == that.getTestEnum()
+                && Objects.equals(getMaps(), that.getMaps());
     }
 
     @Override
@@ -170,10 +169,11 @@ public class ComplexObject {
     }
 
     public enum TestEnum {
-        VALUE1, VALUE2
+        VALUE1,
+        VALUE2
     }
 
-    static public class InnerObject {
+    public static class InnerObject {
         String innerA;
         int innerB;
 
@@ -195,10 +195,7 @@ public class ComplexObject {
 
         @Override
         public String toString() {
-            return "InnerObject{" +
-                    "innerA='" + innerA + '\'' +
-                    ", innerB=" + innerB +
-                    '}';
+            return "InnerObject{" + "innerA='" + innerA + '\'' + ", innerB=" + innerB + '}';
         }
 
         @Override
@@ -206,8 +203,7 @@ public class ComplexObject {
             if (this == o) return true;
             if (!(o instanceof InnerObject)) return false;
             InnerObject that = (InnerObject) o;
-            return getInnerB() == that.getInnerB() &&
-                    Objects.equals(getInnerA(), that.getInnerA());
+            return getInnerB() == that.getInnerB() && Objects.equals(getInnerA(), that.getInnerA());
         }
 
         @Override
@@ -216,7 +212,7 @@ public class ComplexObject {
         }
     }
 
-    static public class InnerObject2 {
+    public static class InnerObject2 {
         String innerA2;
         int innerB2;
 
@@ -238,10 +234,7 @@ public class ComplexObject {
 
         @Override
         public String toString() {
-            return "InnerObject{" +
-                    "innerA='" + innerA2 + '\'' +
-                    ", innerB=" + innerB2 +
-                    '}';
+            return "InnerObject{" + "innerA='" + innerA2 + '\'' + ", innerB=" + innerB2 + '}';
         }
 
         @Override
@@ -249,8 +242,7 @@ public class ComplexObject {
             if (this == o) return true;
             if (!(o instanceof InnerObject2)) return false;
             InnerObject2 that = (InnerObject2) o;
-            return getInnerB2() == that.getInnerB2() &&
-                    Objects.equals(getInnerA2(), that.getInnerA2());
+            return getInnerB2() == that.getInnerB2() && Objects.equals(getInnerA2(), that.getInnerA2());
         }
 
         @Override
@@ -259,7 +251,7 @@ public class ComplexObject {
         }
     }
 
-    static public class InnerObject3 {
+    public static class InnerObject3 {
         String innerA3;
 
         public String getInnerA3() {
@@ -272,9 +264,7 @@ public class ComplexObject {
 
         @Override
         public String toString() {
-            return "InnerObject3{" +
-                    "innerA3='" + innerA3 + '\'' +
-                    '}';
+            return "InnerObject3{" + "innerA3='" + innerA3 + '\'' + '}';
         }
 
         @Override
@@ -291,5 +281,3 @@ public class ComplexObject {
         }
     }
 }
-
-

@@ -27,17 +27,11 @@ import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 public class SpringScopeModelInitializer implements ScopeModelInitializer {
 
     @Override
-    public void initializeFrameworkModel(FrameworkModel frameworkModel) {
-
-    }
+    public void initializeFrameworkModel(FrameworkModel frameworkModel) {}
 
     @Override
-    public void initializeApplicationModel(ApplicationModel applicationModel) {
-
-    }
+    public void initializeApplicationModel(ApplicationModel applicationModel) {}
 
     @Override
-    public void initializeModuleModel(ModuleModel moduleModel) {
-
-    }
+    public void initializeModuleModel(ModuleModel moduleModel) {}
 }

@@ -58,7 +58,7 @@ class Issue6000Test {
             String result = helloDubbo.sayHello("dubbo");
             System.out.println(result);
 
-        } catch (Exception e){
+        } catch (Exception e) {
             String s = e.toString();
             Assertions.assertTrue(s.contains("No provider available"), s);
             Assertions.assertTrue(s.contains("org.apache.dubbo.config.spring.api.HelloService:1.0.0"), s);
@@ -66,5 +66,4 @@ class Issue6000Test {
             context.close();
         }
     }
-
 }

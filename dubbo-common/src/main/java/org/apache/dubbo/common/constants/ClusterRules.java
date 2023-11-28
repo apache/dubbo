@@ -52,12 +52,9 @@ public interface ClusterRules {
      **/
     String BROADCAST = "broadcast";
 
-
     String AVAILABLE = "available";
 
     String MERGEABLE = "mergeable";
 
     String EMPTY = "";
-
-
 }

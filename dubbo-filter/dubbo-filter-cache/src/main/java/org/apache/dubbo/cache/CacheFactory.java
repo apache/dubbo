@@ -39,5 +39,4 @@ public interface CacheFactory {
      */
     @Adaptive("cache")
     Cache getCache(URL url, Invocation invocation);
-
 }

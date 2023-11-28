@@ -18,20 +18,19 @@ package org.apache.dubbo.rpc.cluster.router.xds;
 
 import org.apache.dubbo.registry.xds.util.protocol.message.Endpoint;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class EdsEndpointManagerTest {
-
 
     @BeforeEach
     public void before() {
@@ -48,15 +47,12 @@ public class EdsEndpointManagerTest {
         for (int i = 0; i < subscribeNum; i++) {
             manager.subscribeEds(cluster, new EdsEndpointListener() {
                 @Override
-                public void onEndPointChange(String cluster, Set<Endpoint> endpoints) {
-
-                }
+                public void onEndPointChange(String cluster, Set<Endpoint> endpoints) {}
             });
         }
         assertNotNull(EdsEndpointManager.getEdsListeners().get(cluster));
         assertEquals(EdsEndpointManager.getEndpointListeners().get(cluster).size(), subscribeNum);
     }
-
 
     @Test
     public void unsubscribeRdsTest() {
@@ -64,9 +60,7 @@ public class EdsEndpointManagerTest {
         String domain = "testApp";
         EdsEndpointListener listener = new EdsEndpointListener() {
             @Override
-            public void onEndPointChange(String cluster, Set<Endpoint> endpoints) {
-
-            }
+            public void onEndPointChange(String cluster, Set<Endpoint> endpoints) {}
         };
         manager.subscribeEds(domain, listener);
         assertNotNull(EdsEndpointManager.getEdsListeners().get(domain));
@@ -76,7 +70,6 @@ public class EdsEndpointManagerTest {
         assertNull(EdsEndpointManager.getEdsListeners().get(domain));
         assertNull(EdsEndpointManager.getEndpointListeners().get(domain));
     }
-
 
     @Test
     public void notifyRuleChangeTest() {
@@ -112,5 +105,4 @@ public class EdsEndpointManagerTest {
         manager.notifyEndpointChange(domain, new HashSet<>());
         assertEquals(cacheData.get(domain).size(), 0);
     }
-
 }

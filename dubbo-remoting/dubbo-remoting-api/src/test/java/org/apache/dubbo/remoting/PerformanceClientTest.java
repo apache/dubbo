@@ -24,8 +24,6 @@ import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import org.junit.jupiter.api.Test;
-
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -33,6 +31,8 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
@@ -46,7 +46,8 @@ import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
  */
 class PerformanceClientTest {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(PerformanceClientTest.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(PerformanceClientTest.class);
 
     @Test
     @SuppressWarnings("unchecked")
@@ -57,8 +58,10 @@ class PerformanceClientTest {
             return;
         }
         final String server = System.getProperty("server", "127.0.0.1:9911");
-        final String transporter = PerformanceUtils.getProperty(Constants.TRANSPORTER_KEY, Constants.DEFAULT_TRANSPORTER);
-        final String serialization = PerformanceUtils.getProperty(Constants.SERIALIZATION_KEY, DefaultSerializationSelector.getDefaultRemotingSerialization());
+        final String transporter =
+                PerformanceUtils.getProperty(Constants.TRANSPORTER_KEY, Constants.DEFAULT_TRANSPORTER);
+        final String serialization = PerformanceUtils.getProperty(
+                Constants.SERIALIZATION_KEY, DefaultSerializationSelector.getDefaultRemotingSerialization());
         final int timeout = PerformanceUtils.getIntProperty(TIMEOUT_KEY, DEFAULT_TIMEOUT);
         final int length = PerformanceUtils.getIntProperty("length", 1024);
         final int connections = PerformanceUtils.getIntProperty(CONNECTIONS_KEY, 1);
@@ -67,16 +70,19 @@ class PerformanceClientTest {
         final int runs = r > 0 ? r : Integer.MAX_VALUE;
         final String onerror = PerformanceUtils.getProperty("onerror", "continue");
 
-        final String url = "exchange://" + server + "?transporter=" + transporter + "&serialization=" + serialization + "&timeout=" + timeout;
+        final String url = "exchange://" + server + "?transporter=" + transporter + "&serialization=" + serialization
+                + "&timeout=" + timeout;
         // Create clients and build connections
         final ExchangeClient[] exchangeClients = new ExchangeClient[connections];
         for (int i = 0; i < connections; i++) {
-            //exchangeClients[i] = Exchangers.connect(url,handler);
+            // exchangeClients[i] = Exchangers.connect(url,handler);
             exchangeClients[i] = Exchangers.connect(url);
         }
 
-        List<String> serverEnvironment = (List<String>) exchangeClients[0].request("environment").get();
-        List<String> serverScene = (List<String>) exchangeClients[0].request("scene").get();
+        List<String> serverEnvironment =
+                (List<String>) exchangeClients[0].request("environment").get();
+        List<String> serverScene =
+                (List<String>) exchangeClients[0].request("scene").get();
 
         // Create some data for test
         StringBuilder buf = new StringBuilder(length);
@@ -95,67 +101,71 @@ class PerformanceClientTest {
         final CountDownLatch latch = new CountDownLatch(concurrent);
         for (int i = 0; i < concurrent; i++) {
             new Thread(new Runnable() {
-                public void run() {
-                    try {
-                        AtomicInteger index = new AtomicInteger();
-                        long init = System.currentTimeMillis();
-                        for (int i = 0; i < runs; i++) {
+                        public void run() {
                             try {
-                                count.incrementAndGet();
-                                ExchangeClient client = exchangeClients[index.getAndIncrement() % connections];
-                                long start = System.currentTimeMillis();
-                                String result = (String) client.request(data).get();
-                                long end = System.currentTimeMillis();
-                                if (!data.equals(result)) {
-                                    throw new IllegalStateException("Invalid result " + result);
-                                }
-                                time.addAndGet(end - start);
-                            } catch (Exception e) {
-                                error.incrementAndGet();
-                                e.printStackTrace();
-                                if ("exit".equals(onerror)) {
-                                    System.exit(-1);
-                                } else if ("break".equals(onerror)) {
-                                    break;
-                                } else if ("sleep".equals(onerror)) {
+                                AtomicInteger index = new AtomicInteger();
+                                long init = System.currentTimeMillis();
+                                for (int i = 0; i < runs; i++) {
                                     try {
-                                        Thread.sleep(30000);
-                                    } catch (InterruptedException e1) {
+                                        count.incrementAndGet();
+                                        ExchangeClient client = exchangeClients[index.getAndIncrement() % connections];
+                                        long start = System.currentTimeMillis();
+                                        String result =
+                                                (String) client.request(data).get();
+                                        long end = System.currentTimeMillis();
+                                        if (!data.equals(result)) {
+                                            throw new IllegalStateException("Invalid result " + result);
+                                        }
+                                        time.addAndGet(end - start);
+                                    } catch (Exception e) {
+                                        error.incrementAndGet();
+                                        e.printStackTrace();
+                                        if ("exit".equals(onerror)) {
+                                            System.exit(-1);
+                                        } else if ("break".equals(onerror)) {
+                                            break;
+                                        } else if ("sleep".equals(onerror)) {
+                                            try {
+                                                Thread.sleep(30000);
+                                            } catch (InterruptedException e1) {
+                                            }
+                                        }
                                     }
                                 }
+                                all.addAndGet(System.currentTimeMillis() - init);
+                            } finally {
+                                latch.countDown();
                             }
                         }
-                        all.addAndGet(System.currentTimeMillis() - init);
-                    } finally {
-                        latch.countDown();
-                    }
-                }
-            }).start();
+                    })
+                    .start();
         }
 
         // Output, tps is not for accuracy, but it reflects the situation to a certain extent.
         new Thread(new Runnable() {
-            public void run() {
-                try {
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-                    long lastCount = count.get();
-                    long sleepTime = 2000;
-                    long elapsd = sleepTime / 1000;
-                    boolean bfirst = true;
-                    while (latch.getCount() > 0) {
-                        long c = count.get() - lastCount;
-                        if (!bfirst)// The first time is inaccurate.
-                            System.out.println("[" + dateFormat.format(new Date()) + "] count: " + count.get() + ", error: " + error.get() + ",tps:" + (c / elapsd));
+                    public void run() {
+                        try {
+                            SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+                            long lastCount = count.get();
+                            long sleepTime = 2000;
+                            long elapsd = sleepTime / 1000;
+                            boolean bfirst = true;
+                            while (latch.getCount() > 0) {
+                                long c = count.get() - lastCount;
+                                if (!bfirst) // The first time is inaccurate.
+                                System.out.println("[" + dateFormat.format(new Date()) + "] count: " + count.get()
+                                        + ", error: " + error.get() + ",tps:" + (c / elapsd));
 
-                        bfirst = false;
-                        lastCount = count.get();
-                        Thread.sleep(sleepTime);
+                                bfirst = false;
+                                lastCount = count.get();
+                                Thread.sleep(sleepTime);
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
+                })
+                .start();
 
         latch.await();
 
@@ -209,12 +219,14 @@ class PerformanceClientTest {
         PerformanceUtils.printSeparator();
         PerformanceUtils.printHeader("Test Result");
         PerformanceUtils.printSeparator();
-        PerformanceUtils.printBody("Succeeded Requests: " + DecimalFormat.getIntegerInstance().format(succeeded));
+        PerformanceUtils.printBody(
+                "Succeeded Requests: " + DecimalFormat.getIntegerInstance().format(succeeded));
         PerformanceUtils.printBody("Failed Requests: " + failed);
         PerformanceUtils.printBody("Client Elapsed Time: " + clientElapsed + " ms");
         PerformanceUtils.printBody("Average Response Time: " + art + " ms");
         PerformanceUtils.printBody("Requests Per Second: " + qps + "/s");
-        PerformanceUtils.printBody("Throughput Per Second: " + DecimalFormat.getIntegerInstance().format(throughput) + " bytes/s");
+        PerformanceUtils.printBody(
+                "Throughput Per Second: " + DecimalFormat.getIntegerInstance().format(throughput) + " bytes/s");
         PerformanceUtils.printBorder();
     }
 

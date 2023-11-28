@@ -58,5 +58,4 @@ public class GlobalResourceInitializer<T> extends CallableSafeInitializer<T> {
         }
         return value;
     }
-
 }

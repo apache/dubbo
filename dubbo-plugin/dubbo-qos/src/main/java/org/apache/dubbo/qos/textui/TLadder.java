@@ -37,7 +37,6 @@ public class TLadder implements TComponent {
 
     private final List<String> items = new LinkedList<String>();
 
-
     @Override
     public String rendering() {
         final StringBuilder ladderSB = new StringBuilder();
@@ -46,22 +45,18 @@ public class TLadder implements TComponent {
 
             // no separator is required for the first item
             if (deep == 0) {
-                ladderSB
-                        .append(item)
-                        .append(System.lineSeparator());
+                ladderSB.append(item).append(System.lineSeparator());
             }
 
             // need separator for others
             else {
-                ladderSB
-                        .append(repeat(STEP_CHAR, deep * INDENT_STEP))
+                ladderSB.append(repeat(STEP_CHAR, deep * INDENT_STEP))
                         .append(LADDER_CHAR)
                         .append(item)
                         .append(System.lineSeparator());
             }
 
             deep++;
-
         }
         return ladderSB.toString();
     }
@@ -73,5 +68,4 @@ public class TLadder implements TComponent {
         items.add(item);
         return this;
     }
-
 }

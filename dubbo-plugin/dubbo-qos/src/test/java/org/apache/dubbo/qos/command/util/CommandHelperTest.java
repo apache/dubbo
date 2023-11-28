@@ -59,10 +59,10 @@ import org.apache.dubbo.qos.command.impl.SwitchLogger;
 import org.apache.dubbo.qos.command.impl.Version;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import org.junit.jupiter.api.Test;
-
 import java.util.LinkedList;
 import java.util.List;
+
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;

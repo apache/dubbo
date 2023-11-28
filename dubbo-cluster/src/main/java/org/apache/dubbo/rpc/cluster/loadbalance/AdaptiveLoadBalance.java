@@ -41,36 +41,36 @@ public class AdaptiveLoadBalance extends AbstractLoadBalance {
 
     public static final String NAME = "adaptive";
 
-    //default key
+    // default key
     private String attachmentKey = "mem,load";
 
     private final AdaptiveMetrics adaptiveMetrics;
 
-    public AdaptiveLoadBalance(ApplicationModel scopeModel){
+    public AdaptiveLoadBalance(ApplicationModel scopeModel) {
         adaptiveMetrics = scopeModel.getBeanFactory().getBean(AdaptiveMetrics.class);
     }
 
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
-        Invoker<T> invoker = selectByP2C(invokers,invocation);
-        invocation.setAttachment(Constants.ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY,attachmentKey);
+        Invoker<T> invoker = selectByP2C(invokers, invocation);
+        invocation.setAttachment(Constants.ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY, attachmentKey);
         long startTime = System.currentTimeMillis();
-        invocation.getAttributes().put(Constants.ADAPTIVE_LOADBALANCE_START_TIME,startTime);
-        invocation.getAttributes().put(LOADBALANCE_KEY,LoadbalanceRules.ADAPTIVE);
-        adaptiveMetrics.addConsumerReq(getServiceKey(invoker,invocation));
-        adaptiveMetrics.setPickTime(getServiceKey(invoker,invocation),startTime);
+        invocation.getAttributes().put(Constants.ADAPTIVE_LOADBALANCE_START_TIME, startTime);
+        invocation.getAttributes().put(LOADBALANCE_KEY, LoadbalanceRules.ADAPTIVE);
+        adaptiveMetrics.addConsumerReq(getServiceKey(invoker, invocation));
+        adaptiveMetrics.setPickTime(getServiceKey(invoker, invocation), startTime);
 
         return invoker;
     }
 
-    private <T> Invoker<T> selectByP2C(List<Invoker<T>> invokers, Invocation invocation){
+    private <T> Invoker<T> selectByP2C(List<Invoker<T>> invokers, Invocation invocation) {
         int length = invokers.size();
-        if(length == 1) {
+        if (length == 1) {
             return invokers.get(0);
         }
 
-        if(length == 2) {
-            return chooseLowLoadInvoker(invokers.get(0),invokers.get(1),invocation);
+        if (length == 2) {
+            return chooseLowLoadInvoker(invokers.get(0), invokers.get(1), invocation);
         }
 
         int pos1 = ThreadLocalRandom.current().nextInt(length);
@@ -79,22 +79,22 @@ public class AdaptiveLoadBalance extends AbstractLoadBalance {
             pos2 = pos2 + 1;
         }
 
-        return chooseLowLoadInvoker(invokers.get(pos1),invokers.get(pos2),invocation);
+        return chooseLowLoadInvoker(invokers.get(pos1), invokers.get(pos2), invocation);
     }
 
-    private String getServiceKey(Invoker<?> invoker,Invocation invocation){
+    private String getServiceKey(Invoker<?> invoker, Invocation invocation) {
 
         String key = (String) invocation.getAttributes().get(invoker);
-        if (StringUtils.isNotEmpty(key)){
+        if (StringUtils.isNotEmpty(key)) {
             return key;
         }
 
-        key = buildServiceKey(invoker,invocation);
-        invocation.getAttributes().put(invoker,key);
+        key = buildServiceKey(invoker, invocation);
+        invocation.getAttributes().put(invoker, key);
         return key;
     }
 
-    private String buildServiceKey(Invoker<?> invoker,Invocation invocation){
+    private String buildServiceKey(Invoker<?> invoker, Invocation invocation) {
         URL url = invoker.getUrl();
         StringBuilder sb = new StringBuilder(128);
         sb.append(url.getAddress()).append(":").append(invocation.getProtocolServiceKey());
@@ -104,16 +104,19 @@ public class AdaptiveLoadBalance extends AbstractLoadBalance {
     private int getTimeout(Invoker<?> invoker, Invocation invocation) {
         URL url = invoker.getUrl();
         String methodName = RpcUtils.getMethodName(invocation);
-        return (int) RpcUtils.getTimeout(url,methodName, RpcContext.getClientAttachment(),invocation, DEFAULT_TIMEOUT);
+        return (int)
+                RpcUtils.getTimeout(url, methodName, RpcContext.getClientAttachment(), invocation, DEFAULT_TIMEOUT);
     }
 
-    private <T> Invoker<T> chooseLowLoadInvoker(Invoker<T> invoker1,Invoker<T> invoker2,Invocation invocation){
+    private <T> Invoker<T> chooseLowLoadInvoker(Invoker<T> invoker1, Invoker<T> invoker2, Invocation invocation) {
         int weight1 = getWeight(invoker1, invocation);
         int weight2 = getWeight(invoker2, invocation);
         int timeout1 = getTimeout(invoker1, invocation);
         int timeout2 = getTimeout(invoker2, invocation);
-        long load1 = Double.doubleToLongBits(adaptiveMetrics.getLoad(getServiceKey(invoker1,invocation),weight1,timeout1 ));
-        long load2 = Double.doubleToLongBits(adaptiveMetrics.getLoad(getServiceKey(invoker2,invocation),weight2,timeout2 ));
+        long load1 = Double.doubleToLongBits(
+                adaptiveMetrics.getLoad(getServiceKey(invoker1, invocation), weight1, timeout1));
+        long load2 = Double.doubleToLongBits(
+                adaptiveMetrics.getLoad(getServiceKey(invoker2, invocation), weight2, timeout2));
 
         if (load1 == load2) {
             // The sum of weights
@@ -129,5 +132,4 @@ public class AdaptiveLoadBalance extends AbstractLoadBalance {
         }
         return load1 > load2 ? invoker2 : invoker1;
     }
-
 }

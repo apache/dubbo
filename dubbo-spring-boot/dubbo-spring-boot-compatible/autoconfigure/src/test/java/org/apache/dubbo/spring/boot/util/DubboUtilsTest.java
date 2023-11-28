@@ -78,8 +78,5 @@ public class DubboUtilsTest {
         Assert.assertTrue(DEFAULT_MULTIPLE_CONFIG_PROPERTY_VALUE);
 
         Assert.assertTrue(DEFAULT_OVERRIDE_CONFIG_PROPERTY_VALUE);
-
-
     }
-
 }

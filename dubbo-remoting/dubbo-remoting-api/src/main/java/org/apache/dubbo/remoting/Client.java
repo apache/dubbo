@@ -34,5 +34,4 @@ public interface Client extends Endpoint, Channel, Resetable, IdleSensible {
 
     @Deprecated
     void reset(org.apache.dubbo.common.Parameters parameters);
-
 }

@@ -42,7 +42,6 @@ public class JarScanner {
 
     private final List<String> resourcePathCache;
 
-
     protected Map<String, Class<?>> getClasses() {
         if (classesCache == null || classesCache.size() == 0) {
             this.classesCache = forNames(classNameCache.values());
@@ -67,7 +66,6 @@ public class JarScanner {
         });
         return classes;
     }
-
 
     private void scanURL(String prefixName) {
         try {
@@ -127,7 +125,6 @@ public class JarScanner {
             } else {
                 resourcePathCache.add(name);
             }
-
         }
     }
 
@@ -142,5 +139,4 @@ public class JarScanner {
     private String toClassName(String path) {
         return path.substring(0, path.length() - 6).replace(File.separator, ".");
     }
-
 }

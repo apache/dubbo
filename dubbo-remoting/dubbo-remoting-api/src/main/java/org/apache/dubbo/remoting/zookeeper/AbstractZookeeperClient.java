@@ -34,7 +34,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ZOO
 
 public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildListener> implements ZookeeperClient {
 
-    protected static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractZookeeperClient.class);
+    protected static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(AbstractZookeeperClient.class);
 
     // may hang up to wait name resolution up to 10s
     protected int DEFAULT_CONNECTION_TIMEOUT_MS = 30 * 1000;
@@ -44,9 +45,11 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
 
     private final Set<StateListener> stateListeners = new CopyOnWriteArraySet<>();
 
-    private final ConcurrentMap<String, ConcurrentMap<ChildListener, TargetChildListener>> childListeners = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ConcurrentMap<ChildListener, TargetChildListener>> childListeners =
+            new ConcurrentHashMap<>();
 
-    private final ConcurrentMap<String, ConcurrentMap<DataListener, TargetDataListener>> listeners = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ConcurrentMap<DataListener, TargetDataListener>> listeners =
+            new ConcurrentHashMap<>();
 
     private volatile boolean closed = false;
 
@@ -63,7 +66,7 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
 
     @Override
     public void delete(String path) {
-        //never mind if ephemeral
+        // never mind if ephemeral
         persistentExistNodePath.remove(path);
         deletePath(path);
     }
@@ -107,8 +110,10 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
 
     @Override
     public List<String> addChildListener(String path, final ChildListener listener) {
-        ConcurrentMap<ChildListener, TargetChildListener> listeners = ConcurrentHashMapUtils.computeIfAbsent(childListeners, path, k -> new ConcurrentHashMap<>());
-        TargetChildListener targetListener = ConcurrentHashMapUtils.computeIfAbsent(listeners, listener, k -> createTargetChildListener(path, k));
+        ConcurrentMap<ChildListener, TargetChildListener> listeners =
+                ConcurrentHashMapUtils.computeIfAbsent(childListeners, path, k -> new ConcurrentHashMap<>());
+        TargetChildListener targetListener =
+                ConcurrentHashMapUtils.computeIfAbsent(listeners, listener, k -> createTargetChildListener(path, k));
         return addTargetChildListener(path, targetListener);
     }
 
@@ -119,8 +124,10 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
 
     @Override
     public void addDataListener(String path, DataListener listener, Executor executor) {
-        ConcurrentMap<DataListener, TargetDataListener> dataListenerMap = ConcurrentHashMapUtils.computeIfAbsent(listeners, path, k -> new ConcurrentHashMap<>());
-        TargetDataListener targetListener = ConcurrentHashMapUtils.computeIfAbsent(dataListenerMap, listener, k -> createTargetDataListener(path, k));
+        ConcurrentMap<DataListener, TargetDataListener> dataListenerMap =
+                ConcurrentHashMapUtils.computeIfAbsent(listeners, path, k -> new ConcurrentHashMap<>());
+        TargetDataListener targetListener = ConcurrentHashMapUtils.computeIfAbsent(
+                dataListenerMap, listener, k -> createTargetDataListener(path, k));
         addTargetDataListener(path, targetListener, executor);
     }
 
@@ -256,5 +263,4 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
      * @param path the node path
      */
     protected abstract void deletePath(String path);
-
 }

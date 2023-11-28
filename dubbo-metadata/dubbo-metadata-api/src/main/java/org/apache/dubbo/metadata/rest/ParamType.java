@@ -23,34 +23,41 @@ import java.util.ArrayList;
 import java.util.List;
 
 public enum ParamType {
-    HEADER(addSupportTypes(JAXRSClassConstants.HEADER_PARAM_ANNOTATION_CLASS,
-        SpringMvcClassConstants.REQUEST_HEADER_ANNOTATION_CLASS)),
+    HEADER(addSupportTypes(
+            JAXRSClassConstants.HEADER_PARAM_ANNOTATION_CLASS,
+            SpringMvcClassConstants.REQUEST_HEADER_ANNOTATION_CLASS)),
 
-    PARAM(addSupportTypes(JAXRSClassConstants.QUERY_PARAM_ANNOTATION_CLASS,
-        SpringMvcClassConstants.REQUEST_PARAM_ANNOTATION_CLASS, ParamTag.class)),
+    PARAM(addSupportTypes(
+            JAXRSClassConstants.QUERY_PARAM_ANNOTATION_CLASS,
+            SpringMvcClassConstants.REQUEST_PARAM_ANNOTATION_CLASS,
+            ParamTag.class)),
 
     BODY(addSupportTypes(
-        JAXRSClassConstants.REST_EASY_BODY_ANNOTATION_CLASS,
-        SpringMvcClassConstants.REQUEST_BODY_ANNOTATION_CLASS, BodyTag.class)),
+            JAXRSClassConstants.REST_EASY_BODY_ANNOTATION_CLASS,
+            SpringMvcClassConstants.REQUEST_BODY_ANNOTATION_CLASS,
+            BodyTag.class)),
 
-    PATH(addSupportTypes(JAXRSClassConstants.PATH_PARAM_ANNOTATION_CLASS,
-        SpringMvcClassConstants.PATH_VARIABLE_ANNOTATION_CLASS)),
+    PATH(addSupportTypes(
+            JAXRSClassConstants.PATH_PARAM_ANNOTATION_CLASS, SpringMvcClassConstants.PATH_VARIABLE_ANNOTATION_CLASS)),
 
-    FORM(addSupportTypes(JAXRSClassConstants.FORM_PARAM_ANNOTATION_CLASS,
-        SpringMvcClassConstants.REQUEST_BODY_ANNOTATION_CLASS)),
+    FORM(addSupportTypes(
+            JAXRSClassConstants.FORM_PARAM_ANNOTATION_CLASS,
+            JAXRSClassConstants.FORM_BODY_ANNOTATION_CLASS,
+            SpringMvcClassConstants.REQUEST_BODY_ANNOTATION_CLASS)),
 
     PROVIDER_BODY(addSupportTypes(
-        JAXRSClassConstants.REST_EASY_BODY_ANNOTATION_CLASS,JAXRSClassConstants.FORM_PARAM_ANNOTATION_CLASS,
-        SpringMvcClassConstants.REQUEST_BODY_ANNOTATION_CLASS, BodyTag.class)),
+            JAXRSClassConstants.REST_EASY_BODY_ANNOTATION_CLASS,
+            JAXRSClassConstants.FORM_PARAM_ANNOTATION_CLASS,
+            SpringMvcClassConstants.REQUEST_BODY_ANNOTATION_CLASS,
+            BodyTag.class,
+            JAXRSClassConstants.FORM_BODY_ANNOTATION_CLASS)),
 
     EMPTY(addSupportTypes());
     private List<Class> annotationClasses;
 
-
     ParamType(List<Class> annotationClasses) {
         this.annotationClasses = annotationClasses;
     }
-
 
     public boolean supportAnno(Class anno) {
         if (anno == null) {
@@ -79,9 +86,5 @@ public enum ParamType {
         }
 
         return types;
-
-
     }
-
-
 }

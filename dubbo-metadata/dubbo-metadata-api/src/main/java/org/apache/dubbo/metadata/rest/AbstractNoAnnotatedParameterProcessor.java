@@ -41,7 +41,7 @@ public abstract class AbstractNoAnnotatedParameterProcessor implements NoAnnotat
 
         // @RequestParam String,number param
         if (mediaType.equals(MediaType.ALL_VALUE)) {
-             // jaxrs no annotation param is from http body
+            // jaxrs no annotation param is from http body
             if (JAXRSServiceRestMetadataResolver.class.equals(restMethodMetadata.getCodeStyle())) {
                 return true;
             }
@@ -67,12 +67,12 @@ public abstract class AbstractNoAnnotatedParameterProcessor implements NoAnnotat
         return false;
     }
 
-
-    protected void addArgInfo(Parameter parameter, int parameterIndex,
-                              RestMethodMetadata restMethodMetadata, boolean isFormBody) {
+    protected void addArgInfo(
+            Parameter parameter, int parameterIndex, RestMethodMetadata restMethodMetadata, boolean isFormBody) {
         ArgInfo argInfo = ArgInfo.build(parameterIndex, parameter)
-            .setParamAnnotationType(resolveClass(defaultAnnotationClassName(restMethodMetadata), getClassLoader()))
-            .setAnnotationNameAttribute(parameter.getName()).setFormContentType(isFormBody);
+                .setParamAnnotationType(resolveClass(defaultAnnotationClassName(restMethodMetadata), getClassLoader()))
+                .setAnnotationNameAttribute(parameter.getName())
+                .setFormContentType(isFormBody);
         restMethodMetadata.addArgInfo(argInfo);
     }
 }

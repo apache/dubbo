@@ -29,15 +29,23 @@ public class StatisticsItem {
     private long maxElapsed;
     private long maxConcurrent;
 
-    public StatisticsItem() {
-    }
+    public StatisticsItem() {}
 
     public void setItems(long success, long failure, long input, long output, long elapsed, long concurrent) {
         this.setItems(success, failure, input, output, elapsed, concurrent, 0, 0, 0, 0);
     }
 
-    public void setItems(long success, long failure, long input, long output, long elapsed, long concurrent,
-                         long maxInput, long maxOutput, long maxElapsed, long maxConcurrent) {
+    public void setItems(
+            long success,
+            long failure,
+            long input,
+            long output,
+            long elapsed,
+            long concurrent,
+            long maxInput,
+            long maxOutput,
+            long maxElapsed,
+            long maxConcurrent) {
         this.success = success;
         this.failure = failure;
         this.input = input;

@@ -20,12 +20,12 @@ import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
+import java.util.concurrent.locks.Lock;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.locks.Lock;
 
 /**
  * {@link ScopeModelUtil}
@@ -54,48 +54,53 @@ class ScopeModelUtilTest {
         Assertions.assertEquals(ScopeModelUtil.getFrameworkModel(frameworkModel), frameworkModel);
         Assertions.assertEquals(ScopeModelUtil.getFrameworkModel(applicationModel), frameworkModel);
         Assertions.assertEquals(ScopeModelUtil.getFrameworkModel(moduleModel), frameworkModel);
-        Assertions.assertThrows(IllegalArgumentException.class, () -> ScopeModelUtil.getFrameworkModel(new MockScopeModel(null, null)));
+        Assertions.assertThrows(
+                IllegalArgumentException.class, () -> ScopeModelUtil.getFrameworkModel(new MockScopeModel(null, null)));
 
         Assertions.assertEquals(ScopeModelUtil.getApplicationModel(null), ApplicationModel.defaultModel());
         Assertions.assertEquals(ScopeModelUtil.getApplicationModel(applicationModel), applicationModel);
         Assertions.assertEquals(ScopeModelUtil.getApplicationModel(moduleModel), applicationModel);
-        Assertions.assertThrows(IllegalArgumentException.class, () -> ScopeModelUtil.getApplicationModel(frameworkModel));
+        Assertions.assertThrows(
+                IllegalArgumentException.class, () -> ScopeModelUtil.getApplicationModel(frameworkModel));
 
-        Assertions.assertEquals(ScopeModelUtil.getModuleModel(null), ApplicationModel.defaultModel().getDefaultModule());
+        Assertions.assertEquals(
+                ScopeModelUtil.getModuleModel(null),
+                ApplicationModel.defaultModel().getDefaultModule());
         Assertions.assertEquals(ScopeModelUtil.getModuleModel(moduleModel), moduleModel);
         Assertions.assertThrows(IllegalArgumentException.class, () -> ScopeModelUtil.getModuleModel(frameworkModel));
         Assertions.assertThrows(IllegalArgumentException.class, () -> ScopeModelUtil.getModuleModel(applicationModel));
 
         Assertions.assertEquals(ScopeModelUtil.getOrDefault(null, SPIDemo1.class), FrameworkModel.defaultModel());
         Assertions.assertEquals(ScopeModelUtil.getOrDefault(null, SPIDemo2.class), ApplicationModel.defaultModel());
-        Assertions.assertEquals(ScopeModelUtil.getOrDefault(null, SPIDemo3.class), ApplicationModel.defaultModel().getDefaultModule());
-        Assertions.assertThrows(IllegalArgumentException.class, () -> ScopeModelUtil.getOrDefault(null, SPIDemo4.class));
+        Assertions.assertEquals(
+                ScopeModelUtil.getOrDefault(null, SPIDemo3.class),
+                ApplicationModel.defaultModel().getDefaultModule());
+        Assertions.assertThrows(
+                IllegalArgumentException.class, () -> ScopeModelUtil.getOrDefault(null, SPIDemo4.class));
 
-        Assertions.assertEquals(ScopeModelUtil.getExtensionLoader(SPIDemo1.class, null), FrameworkModel.defaultModel().getExtensionLoader(SPIDemo1.class));
-        Assertions.assertEquals(ScopeModelUtil.getExtensionLoader(SPIDemo2.class, null), ApplicationModel.defaultModel().getExtensionLoader(SPIDemo2.class));
-        Assertions.assertEquals(ScopeModelUtil.getExtensionLoader(SPIDemo3.class, null), ApplicationModel.defaultModel().getDefaultModule().getExtensionLoader(SPIDemo3.class));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> ScopeModelUtil.getExtensionLoader(SPIDemo4.class, null));
+        Assertions.assertEquals(
+                ScopeModelUtil.getExtensionLoader(SPIDemo1.class, null),
+                FrameworkModel.defaultModel().getExtensionLoader(SPIDemo1.class));
+        Assertions.assertEquals(
+                ScopeModelUtil.getExtensionLoader(SPIDemo2.class, null),
+                ApplicationModel.defaultModel().getExtensionLoader(SPIDemo2.class));
+        Assertions.assertEquals(
+                ScopeModelUtil.getExtensionLoader(SPIDemo3.class, null),
+                ApplicationModel.defaultModel().getDefaultModule().getExtensionLoader(SPIDemo3.class));
+        Assertions.assertThrows(
+                IllegalArgumentException.class, () -> ScopeModelUtil.getExtensionLoader(SPIDemo4.class, null));
     }
-
 
     @SPI(scope = ExtensionScope.FRAMEWORK)
-    interface SPIDemo1 {
-
-    }
+    interface SPIDemo1 {}
 
     @SPI(scope = ExtensionScope.APPLICATION)
-    interface SPIDemo2 {
-
-    }
+    interface SPIDemo2 {}
 
     @SPI(scope = ExtensionScope.MODULE)
-    interface SPIDemo3 {
+    interface SPIDemo3 {}
 
-    }
-
-    interface SPIDemo4 {
-
-    }
+    interface SPIDemo4 {}
 
     class MockScopeModel extends ScopeModel {
         public MockScopeModel(ScopeModel parent, ExtensionScope scope) {
@@ -103,9 +108,7 @@ class ScopeModelUtilTest {
         }
 
         @Override
-        protected void onDestroy() {
-
-        }
+        protected void onDestroy() {}
 
         @Override
         public Environment modelEnvironment() {
@@ -117,5 +120,4 @@ class ScopeModelUtilTest {
             return null;
         }
     }
-
 }

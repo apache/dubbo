@@ -19,8 +19,8 @@ package org.apache.dubbo.qos.command.impl;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.qos.api.BaseCommand;
-import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.qos.api.Cmd;
+import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.telnet.support.TelnetUtils;
 import org.apache.dubbo.remoting.utils.PayloadDropper;
@@ -30,20 +30,21 @@ import org.apache.dubbo.rpc.RpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.qos.server.handler.QosProcessHandler.PROMPT;
 
-@Cmd(name = "count", summary = "Count the service.", example = {
-    "count [service] [method] [times]"
-})
+@Cmd(
+        name = "count",
+        summary = "Count the service.",
+        example = {"count [service] [method] [times]"})
 public class CountTelnet implements BaseCommand {
     private final DubboProtocol dubboProtocol;
 
@@ -55,8 +56,7 @@ public class CountTelnet implements BaseCommand {
     public String execute(CommandContext commandContext, String[] args) {
         Channel channel = commandContext.getRemote();
         String service = channel.attr(ChangeTelnet.SERVICE_KEY).get();
-        if ((service == null || service.length() == 0)
-            && (args == null || args.length == 0)) {
+        if ((service == null || service.length() == 0) && (args == null || args.length == 0)) {
             return "Please input service name, eg: \r\ncount XxxService\r\ncount XxxService xxxMethod\r\ncount XxxService xxxMethod 10\r\nor \"cd XxxService\" firstly.";
         }
         StringBuilder buf = new StringBuilder();
@@ -84,8 +84,8 @@ public class CountTelnet implements BaseCommand {
         Invoker<?> invoker = null;
         for (Exporter<?> exporter : dubboProtocol.getExporters()) {
             if (service.equals(exporter.getInvoker().getInterface().getSimpleName())
-                || service.equals(exporter.getInvoker().getInterface().getName())
-                || service.equals(exporter.getInvoker().getUrl().getPath())) {
+                    || service.equals(exporter.getInvoker().getInterface().getName())
+                    || service.equals(exporter.getInvoker().getUrl().getPath())) {
                 invoker = exporter.getInvoker();
                 break;
             }
@@ -94,26 +94,28 @@ public class CountTelnet implements BaseCommand {
             if (t > 0) {
                 final String mtd = method;
                 final Invoker<?> inv = invoker;
-                Thread thread = new Thread(() -> {
-                    for (int i = 0; i < t; i++) {
-                        String result = count(inv, mtd);
-                        try {
-                            send(channel, "\r\n" + result);
-                        } catch (RemotingException e1) {
-                            return;
-                        }
-                        if (i < t - 1) {
-                            try {
-                                Thread.sleep(1000);
-                            } catch (InterruptedException ignored) {
+                Thread thread = new Thread(
+                        () -> {
+                            for (int i = 0; i < t; i++) {
+                                String result = count(inv, mtd);
+                                try {
+                                    send(channel, "\r\n" + result);
+                                } catch (RemotingException e1) {
+                                    return;
+                                }
+                                if (i < t - 1) {
+                                    try {
+                                        Thread.sleep(1000);
+                                    } catch (InterruptedException ignored) {
+                                    }
+                                }
                             }
-                        }
-                    }
-                    try {
-                        send(channel, "\r\n" + PROMPT);
-                    } catch (RemotingException ignored) {
-                    }
-                }, "TelnetCount");
+                            try {
+                                send(channel, "\r\n" + PROMPT);
+                            } catch (RemotingException ignored) {
+                            }
+                        },
+                        "TelnetCount");
                 thread.setDaemon(true);
                 thread.start();
             }
@@ -134,11 +136,19 @@ public class CountTelnet implements BaseCommand {
                 throw cause;
             }
         } catch (Throwable e) {
-            throw new RemotingException((InetSocketAddress) channel.localAddress(), (InetSocketAddress) channel.remoteAddress(), "Failed to send message " + PayloadDropper.getRequestWithoutData(message) + " to " + channel.remoteAddress().toString() + ", cause: " + e.getMessage(), e);
+            throw new RemotingException(
+                    (InetSocketAddress) channel.localAddress(),
+                    (InetSocketAddress) channel.remoteAddress(),
+                    "Failed to send message " + PayloadDropper.getRequestWithoutData(message) + " to "
+                            + channel.remoteAddress().toString() + ", cause: " + e.getMessage(),
+                    e);
         }
         if (!success) {
-            throw new RemotingException((InetSocketAddress) channel.localAddress(), (InetSocketAddress) channel.remoteAddress(), "Failed to send message " + PayloadDropper.getRequestWithoutData(message) + " to " + channel.remoteAddress().toString()
-                + "in timeout(" + timeout + "ms) limit");
+            throw new RemotingException(
+                    (InetSocketAddress) channel.localAddress(),
+                    (InetSocketAddress) channel.remoteAddress(),
+                    "Failed to send message " + PayloadDropper.getRequestWithoutData(message) + " to "
+                            + channel.remoteAddress().toString() + "in timeout(" + timeout + "ms) limit");
         }
     }
 
@@ -169,7 +179,8 @@ public class CountTelnet implements BaseCommand {
                 RpcStatus count = RpcStatus.getStatus(url, method);
                 table.add(createRow(method, count));
             } else {
-                return "No such method " + method + " in class " + invoker.getInterface().getName();
+                return "No such method " + method + " in class "
+                        + invoker.getInterface().getName();
             }
         }
         return TelnetUtils.toTable(header, table);

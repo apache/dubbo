@@ -46,7 +46,11 @@ public class RangeValuePattern implements ValuePattern {
 
             String[] arr = pattern.split("~");
             if (arr.length < 2) {
-                logger.error(CLUSTER_FAILED_EXEC_CONDITION_ROUTER, "", "", "Invalid condition rule " + pattern + " or value " + value + ", will ignore.");
+                logger.error(
+                        CLUSTER_FAILED_EXEC_CONDITION_ROUTER,
+                        "",
+                        "",
+                        "Invalid condition rule " + pattern + " or value " + value + ", will ignore.");
                 return defaultValue;
             }
 
@@ -75,7 +79,12 @@ public class RangeValuePattern implements ValuePattern {
                 }
             }
         } catch (Exception e) {
-            logger.error(CLUSTER_FAILED_EXEC_CONDITION_ROUTER, "Parse integer error", "", "Invalid condition rule " + pattern + " or value " + value + ", will ignore.", e);
+            logger.error(
+                    CLUSTER_FAILED_EXEC_CONDITION_ROUTER,
+                    "Parse integer error",
+                    "",
+                    "Invalid condition rule " + pattern + " or value " + value + ", will ignore.",
+                    e);
             return defaultValue;
         }
 

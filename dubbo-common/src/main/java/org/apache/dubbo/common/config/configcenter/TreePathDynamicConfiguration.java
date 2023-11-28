@@ -63,12 +63,13 @@ public abstract class TreePathDynamicConfiguration extends AbstractDynamicConfig
         this.rootPath = getRootPath(url);
     }
 
-    public TreePathDynamicConfiguration(String rootPath,
-                                        String threadPoolPrefixName,
-                                        int threadPoolSize,
-                                        long keepAliveTime,
-                                        String group,
-                                        long timeout) {
+    public TreePathDynamicConfiguration(
+            String rootPath,
+            String threadPoolPrefixName,
+            int threadPoolSize,
+            long keepAliveTime,
+            String group,
+            long timeout) {
         super(threadPoolPrefixName, threadPoolSize, keepAliveTime, group, timeout);
         this.rootPath = rootPath;
     }

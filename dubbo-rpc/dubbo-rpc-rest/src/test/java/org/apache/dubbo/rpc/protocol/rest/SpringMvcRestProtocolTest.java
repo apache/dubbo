@@ -35,19 +35,19 @@ import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionHandler;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
 import org.apache.dubbo.rpc.protocol.rest.mvc.SpringDemoServiceImpl;
-
 import org.apache.dubbo.rpc.protocol.rest.mvc.SpringRestDemoService;
 import org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestService;
 import org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestServiceImpl;
+
+import java.util.Arrays;
+import java.util.Map;
+
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.util.LinkedMultiValueMap;
-
-import java.util.Arrays;
-import java.util.Map;
 
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
 import static org.apache.dubbo.rpc.protocol.rest.Constants.EXTENSION_KEY;
@@ -57,13 +57,16 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class SpringMvcRestProtocolTest {
-    private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("rest");
-    private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-    private final static int availablePort = NetUtils.getAvailablePort();
-    private final static URL exportUrl = URL.valueOf("rest://127.0.0.1:" + availablePort + "/rest?interface=org.apache.dubbo.rpc.protocol.rest.mvc.SpringRestDemoService");
+    private Protocol protocol =
+            ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("rest");
+    private ProxyFactory proxy =
+            ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+    private static final int availablePort = NetUtils.getAvailablePort();
+    private static final URL exportUrl = URL.valueOf("rest://127.0.0.1:" + availablePort
+            + "/rest?interface=org.apache.dubbo.rpc.protocol.rest.mvc.SpringRestDemoService");
 
-
-    private final ModuleServiceRepository repository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
+    private final ModuleServiceRepository repository =
+            ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
 
     private final ExceptionMapper exceptionMapper = new ExceptionMapper();
 
@@ -76,7 +79,6 @@ public class SpringMvcRestProtocolTest {
     public SpringRestDemoService getServerImpl() {
         return new SpringDemoServiceImpl();
     }
-
 
     public Class<SpringRestDemoService> getServerClass() {
         return SpringRestDemoService.class;
@@ -93,10 +95,10 @@ public class SpringMvcRestProtocolTest {
         return protocol.export(proxy.getInvoker(server, getServerClass(), url));
     }
 
-
     @Test
     void testRestProtocol() {
-        URL url = URL.valueOf("rest://127.0.0.1:" + NetUtils.getAvailablePort() + "/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.mvc.SpringRestDemoService");
+        URL url = URL.valueOf("rest://127.0.0.1:" + NetUtils.getAvailablePort()
+                + "/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.mvc.SpringRestDemoService");
 
         SpringRestDemoService server = getServerImpl();
 
@@ -120,18 +122,18 @@ public class SpringMvcRestProtocolTest {
         exporter.unexport();
     }
 
-
     @Test
     void testAnotherUserRestProtocol() {
-        URL url = URL.valueOf("rest://127.0.0.1:" + NetUtils.getAvailablePort() + "/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestService");
+        URL url = URL.valueOf("rest://127.0.0.1:" + NetUtils.getAvailablePort()
+                + "/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestService");
 
         AnotherUserRestServiceImpl server = new AnotherUserRestServiceImpl();
 
         url = this.registerProvider(url, server, SpringRestDemoService.class);
 
-        Exporter<AnotherUserRestService> exporter = protocol.export(proxy.getInvoker(server, AnotherUserRestService.class, url));
+        Exporter<AnotherUserRestService> exporter =
+                protocol.export(proxy.getInvoker(server, AnotherUserRestService.class, url));
         Invoker<AnotherUserRestService> invoker = protocol.refer(AnotherUserRestService.class, url);
-
 
         AnotherUserRestService client = proxy.getProxy(invoker);
         User result = client.getUser(123l);
@@ -157,13 +159,15 @@ public class SpringMvcRestProtocolTest {
         SpringRestDemoService server = getServerImpl();
         Assertions.assertFalse(server.isCalled());
         int port = NetUtils.getAvailablePort();
-        URL url = URL.valueOf("rest://127.0.0.1:" + port + "/a/b/c?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.mvc.SpringRestDemoService");
+        URL url = URL.valueOf("rest://127.0.0.1:" + port
+                + "/a/b/c?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.mvc.SpringRestDemoService");
 
         url = this.registerProvider(url, server, SpringRestDemoService.class);
 
         Exporter<SpringRestDemoService> exporter = getExport(url, server);
 
-        url = URL.valueOf("rest://127.0.0.1:" + port + "/a/b/c/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.mvc.SpringRestDemoService");
+        url = URL.valueOf("rest://127.0.0.1:" + port
+                + "/a/b/c/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.mvc.SpringRestDemoService");
         Invoker<SpringRestDemoService> invoker = protocol.refer(SpringRestDemoService.class, url);
         SpringRestDemoService client = proxy.getProxy(invoker);
         String result = client.sayHello("haha");
@@ -195,7 +199,6 @@ public class SpringMvcRestProtocolTest {
         SpringRestDemoService server = getServerImpl();
 
         URL nettyUrl = this.registerProvider(exportUrl, server, SpringRestDemoService.class);
-
 
         Exporter<SpringRestDemoService> exporter = getExport(nettyUrl, server);
 
@@ -231,7 +234,8 @@ public class SpringMvcRestProtocolTest {
 
             Exporter<SpringRestDemoService> exporter = getExport(nettyUrl, server);
 
-            SpringRestDemoService demoService = this.proxy.getProxy(protocol.refer(SpringRestDemoService.class, nettyUrl));
+            SpringRestDemoService demoService =
+                    this.proxy.getProxy(protocol.refer(SpringRestDemoService.class, nettyUrl));
 
             demoService.error();
         });
@@ -245,7 +249,12 @@ public class SpringMvcRestProtocolTest {
 
         Exporter<SpringRestDemoService> exporter = getExport(url, server);
 
-        RpcInvocation rpcInvocation = new RpcInvocation("hello", SpringRestDemoService.class.getName(), "", new Class[]{Integer.class, Integer.class}, new Integer[]{2, 3});
+        RpcInvocation rpcInvocation = new RpcInvocation(
+                "hello",
+                SpringRestDemoService.class.getName(),
+                "",
+                new Class[] {Integer.class, Integer.class},
+                new Integer[] {2, 3});
 
         Result result = exporter.getInvoker().invoke(rpcInvocation);
         assertThat(result.getValue(), CoreMatchers.<Object>is(5));
@@ -275,8 +284,8 @@ public class SpringMvcRestProtocolTest {
         URL nettyUrl = this.registerProvider(exportUrl, server, SpringRestDemoService.class);
 
         // use RpcContextFilter
-//        URL nettyUrl = url.addParameter(SERVER_KEY, "netty")
-//            .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.RpcContextFilter");
+        //        URL nettyUrl = url.addParameter(SERVER_KEY, "netty")
+        //            .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.RpcContextFilter");
         Exporter<SpringRestDemoService> exporter = getExport(nettyUrl, server);
 
         SpringRestDemoService demoService = this.proxy.getProxy(protocol.refer(SpringRestDemoService.class, nettyUrl));
@@ -319,7 +328,6 @@ public class SpringMvcRestProtocolTest {
         assertThat(protocol.getDefaultPort(), is(80));
     }
 
-
     @Test
     void testExceptionMapper() {
 
@@ -329,21 +337,19 @@ public class SpringMvcRestProtocolTest {
 
         Exporter<SpringRestDemoService> exporter = getExceptionHandlerExport(exceptionUrl, server);
 
-
-        SpringRestDemoService referDemoService = this.proxy.getProxy(protocol.refer(SpringRestDemoService.class, exceptionUrl));
+        SpringRestDemoService referDemoService =
+                this.proxy.getProxy(protocol.refer(SpringRestDemoService.class, exceptionUrl));
 
         Assertions.assertEquals("test-exception", referDemoService.error());
 
         exporter.unexport();
     }
 
-
     @Test
     void testFormConsumerParser() {
         SpringRestDemoService server = getServerImpl();
 
         URL nettyUrl = this.registerProvider(exportUrl, server, SpringRestDemoService.class);
-
 
         Exporter<SpringRestDemoService> exporter = getExport(nettyUrl, server);
 
@@ -369,7 +375,6 @@ public class SpringMvcRestProtocolTest {
         SpringRestDemoService server = getServerImpl();
 
         URL nettyUrl = this.registerProvider(exportUrl, server, SpringRestDemoService.class);
-
 
         Exporter<SpringRestDemoService> exporter = getExport(nettyUrl, server);
 
@@ -398,12 +403,7 @@ public class SpringMvcRestProtocolTest {
 
     private URL registerProvider(URL url, Object impl, Class<?> interfaceClass) {
         ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
-        ProviderModel providerModel = new ProviderModel(
-            url.getServiceKey(),
-            impl,
-            serviceDescriptor,
-            null,
-            null);
+        ProviderModel providerModel = new ProviderModel(url.getServiceKey(), impl, serviceDescriptor, null, null);
         repository.registerProvider(providerModel);
         return url.setServiceModel(providerModel);
     }

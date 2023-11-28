@@ -17,13 +17,14 @@
 package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.qos.api.BaseCommand;
-import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.qos.api.Cmd;
+import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.rpc.cluster.router.RouterSnapshotSwitcher;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-@Cmd(name = "getEnabledRouterSnapshot",
-    summary = "Get enabled Dubbo invocation level router snapshot print service list")
+@Cmd(
+        name = "getEnabledRouterSnapshot",
+        summary = "Get enabled Dubbo invocation level router snapshot print service list")
 public class GetEnabledRouterSnapshot implements BaseCommand {
     private final RouterSnapshotSwitcher routerSnapshotSwitcher;
 

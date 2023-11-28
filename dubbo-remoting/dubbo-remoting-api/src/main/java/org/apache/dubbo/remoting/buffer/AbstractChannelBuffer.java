@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.remoting.buffer;
 
 import java.io.IOException;
@@ -310,8 +309,7 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer {
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof ChannelBuffer
-                && ChannelBuffers.equals(this, (ChannelBuffer) o);
+        return o instanceof ChannelBuffer && ChannelBuffers.equals(this, (ChannelBuffer) o);
     }
 
     @Override
@@ -326,11 +324,10 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + '(' +
-                "ridx=" + readerIndex + ", " +
-                "widx=" + writerIndex + ", " +
-                "cap=" + capacity() +
-                ')';
+        return getClass().getSimpleName() + '(' + "ridx="
+                + readerIndex + ", " + "widx="
+                + writerIndex + ", " + "cap="
+                + capacity() + ')';
     }
 
     protected void checkReadableBytes(int minimumReadableBytes) {

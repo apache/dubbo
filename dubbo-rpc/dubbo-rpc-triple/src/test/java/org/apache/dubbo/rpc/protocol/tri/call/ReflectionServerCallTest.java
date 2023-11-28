@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.URL;
@@ -24,16 +23,17 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ReflectionMethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorService;
 import org.apache.dubbo.rpc.protocol.tri.HelloReply;
 import org.apache.dubbo.rpc.protocol.tri.stream.TripleServerStream;
 
+import java.lang.reflect.Method;
+import java.util.Collections;
+
 import io.netty.util.concurrent.ImmediateEventExecutor;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import java.lang.reflect.Method;
-import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -46,39 +46,45 @@ class ReflectionServerCallTest {
         Invoker<?> invoker = Mockito.mock(Invoker.class);
         TripleServerStream serverStream = Mockito.mock(TripleServerStream.class);
         ProviderModel providerModel = Mockito.mock(ProviderModel.class);
+        ServiceMetadata serviceMetadata = new ServiceMetadata();
         Method method = DescriptorService.class.getMethod("sayHello", HelloReply.class);
         MethodDescriptor methodDescriptor = new ReflectionMethodDescriptor(method);
         URL url = Mockito.mock(URL.class);
-        when(invoker.getUrl())
-            .thenReturn(url);
-        when(url.getServiceModel())
-            .thenReturn(providerModel);
+        when(invoker.getUrl()).thenReturn(url);
+        when(url.getServiceModel()).thenReturn(providerModel);
+        when(providerModel.getServiceMetadata()).thenReturn(serviceMetadata);
 
         String service = "testService";
         String methodName = "method";
         try {
-            ReflectionAbstractServerCall call = new ReflectionAbstractServerCall(invoker, serverStream,
-                new FrameworkModel(), "",
-                service, methodName,
-                Collections.emptyList(),
-                ImmediateEventExecutor.INSTANCE);
+            ReflectionAbstractServerCall call = new ReflectionAbstractServerCall(
+                    invoker,
+                    serverStream,
+                    new FrameworkModel(),
+                    "",
+                    service,
+                    methodName,
+                    Collections.emptyList(),
+                    ImmediateEventExecutor.INSTANCE);
             fail();
         } catch (Exception e) {
             // pass
         }
 
         ServiceDescriptor serviceDescriptor = Mockito.mock(ServiceDescriptor.class);
-        when(serviceDescriptor.getMethods(anyString()))
-            .thenReturn(Collections.singletonList(methodDescriptor));
+        when(serviceDescriptor.getMethods(anyString())).thenReturn(Collections.singletonList(methodDescriptor));
 
-        when(providerModel.getServiceModel())
-            .thenReturn(serviceDescriptor);
+        when(providerModel.getServiceModel()).thenReturn(serviceDescriptor);
 
-        ReflectionAbstractServerCall call2 = new ReflectionAbstractServerCall(invoker, serverStream,
-            new FrameworkModel(), "",
-            service, methodName,
-            Collections.emptyList(),
-            ImmediateEventExecutor.INSTANCE);
+        ReflectionAbstractServerCall call2 = new ReflectionAbstractServerCall(
+                invoker,
+                serverStream,
+                new FrameworkModel(),
+                "",
+                service,
+                methodName,
+                Collections.emptyList(),
+                ImmediateEventExecutor.INSTANCE);
         call2.onHeader(Collections.emptyMap());
         call2.onMessage(new byte[0], false);
         call2.onComplete();

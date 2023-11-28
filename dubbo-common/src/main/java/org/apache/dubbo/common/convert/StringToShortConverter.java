@@ -31,7 +31,6 @@ public class StringToShortConverter implements StringConverter<Short> {
         return isNotEmpty(source) ? valueOf(source) : null;
     }
 
-
     @Override
     public int getPriority() {
         return NORMAL_PRIORITY + 2;

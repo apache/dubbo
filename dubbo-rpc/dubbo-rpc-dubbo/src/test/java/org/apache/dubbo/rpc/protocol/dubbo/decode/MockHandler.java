@@ -18,10 +18,10 @@ package org.apache.dubbo.rpc.protocol.dubbo.decode;
 
 import org.apache.dubbo.remoting.ChannelHandler;
 
+import java.util.function.Consumer;
+
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
-
-import java.util.function.Consumer;
 
 public class MockHandler extends ChannelDuplexHandler {
     private final Consumer consumer;

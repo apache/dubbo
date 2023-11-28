@@ -104,5 +104,4 @@ class FrameworkModelTest {
             Assertions.assertEquals("FrameworkModel is destroyed", e.getMessage(), StringUtils.toString(e));
         }
     }
-
 }

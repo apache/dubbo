@@ -28,106 +28,70 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.ApplicationContext;
-import org.springframework.core.env.Environment;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncludingAncestors;
 
 /**
  * {@link DubboAutoConfiguration} Test On multiple Dubbo Configuration
  *
  * @since 2.7.0
  */
-@Ignore
 @RunWith(SpringRunner.class)
 @TestPropertySource(
         properties = {
-                "dubbo.applications.application1.NAME = dubbo-demo-application",
-                "dubbo.modules.module1.name = dubbo-demo-module",
-                "dubbo.registries.registry1.address = zookeeper://192.168.99.100:32770",
-                "dubbo.protocols.protocol1.name=dubbo",
-                "dubbo.protocols.protocol1.pORt=20880",
-                "dubbo.monitors.monitor1.Address=zookeeper://127.0.0.1:32770",
-                "dubbo.providers.provider1.host=127.0.0.1",
-                "dubbo.consumers.consumer1.client=netty",
-                "dubbo.config.multiple=true",
-                "dubbo.scan.basePackages=org.apache.dubbo.spring.boot.dubbo, org.apache.dubbo.spring.boot.condition"
-        }
-)
-@SpringBootTest(
-        classes = {
-                DubboAutoConfigurationOnMultipleConfigTest.class
-        }
-)
+            "dubbo.applications.application1.name=dubbo-demo-multi-application",
+            "dubbo.modules.module1.name=dubbo-demo-module",
+            "dubbo.registries.registry1.address=test://192.168.99.100:32770",
+            "dubbo.protocols.protocol1.name=dubbo",
+            "dubbo.protocols.protocol1.port=20880",
+            "dubbo.monitors.monitor1.address=test://127.0.0.1:32770",
+            "dubbo.providers.provider1.host=127.0.0.1",
+            "dubbo.consumers.consumer1.client=netty",
+            "dubbo.config.multiple=true",
+            "dubbo.scan.basePackages=org.apache.dubbo.spring.boot.dubbo, org.apache.dubbo.spring.boot.condition"
+        })
+@SpringBootTest(classes = {DubboAutoConfigurationOnMultipleConfigTest.class})
 @EnableAutoConfiguration
+@ComponentScan
 public class DubboAutoConfigurationOnMultipleConfigTest {
 
-    @Autowired
-    private Environment environment;
-
-    @Autowired
-    private ApplicationContext applicationContext;
-
     /**
-     * {@link ApplicationConfig}
+     * @see TestBeansConfiguration
      */
     @Autowired
     @Qualifier("application1")
-    private ApplicationConfig application;
+    ApplicationConfig application;
 
-    /**
-     * {@link ModuleConfig}
-     */
     @Autowired
     @Qualifier("module1")
-    private ModuleConfig module;
+    ModuleConfig module;
 
-    /**
-     * {@link RegistryConfig}
-     */
     @Autowired
     @Qualifier("registry1")
-    private RegistryConfig registry;
+    RegistryConfig registry;
 
-    /**
-     * {@link ProtocolConfig}
-     */
-    @Autowired
-    @Qualifier("protocol1")
-    private ProtocolConfig protocol;
-
-    /**
-     * {@link MonitorConfig}
-     */
     @Autowired
     @Qualifier("monitor1")
-    private MonitorConfig monitor;
+    MonitorConfig monitor;
 
-    /**
-     * {@link ProviderConfig}
-     */
     @Autowired
-    @Qualifier("provider1")
-    private ProviderConfig provider;
+    @Qualifier("protocol1")
+    ProtocolConfig protocol;
 
-    /**
-     * {@link ConsumerConfig}
-     */
     @Autowired
     @Qualifier("consumer1")
-    private ConsumerConfig consumer;
+    ConsumerConfig consumer;
+
+    @Autowired
+    @Qualifier("provider1")
+    ProviderConfig provider;
 
     @Before
     public void init() {
@@ -139,141 +103,24 @@ public class DubboAutoConfigurationOnMultipleConfigTest {
         DubboBootstrap.reset();
     }
 
-    @Autowired
-    private Map<String, ApplicationConfig> applications = new LinkedHashMap<>();
-
-    @Autowired
-    private Map<String, ModuleConfig> modules = new LinkedHashMap<>();
-
-    @Autowired
-    private Map<String, RegistryConfig> registries = new LinkedHashMap<>();
-
-    @Autowired
-    private Map<String, ProtocolConfig> protocols = new LinkedHashMap<>();
-
-    @Autowired
-    private Map<String, MonitorConfig> monitors = new LinkedHashMap<>();
-
-    @Autowired
-    private Map<String, ProviderConfig> providers = new LinkedHashMap<>();
-
-    @Autowired
-    private Map<String, ConsumerConfig> consumers = new LinkedHashMap<>();
-
     @Test
-    public void testMultipleDubboConfigBindingProperties() {
-
-
-        Assert.assertEquals(1, applications.size());
-
-        Assert.assertEquals(1, modules.size());
-
-        Assert.assertEquals(1, registries.size());
-
-        Assert.assertEquals(1, protocols.size());
-
-        Assert.assertEquals(1, monitors.size());
-
-        Assert.assertEquals(1, providers.size());
-
-        Assert.assertEquals(1, consumers.size());
-
-    }
-
-    @Test
-    public void testApplicationContext() {
-
-        /**
-         * Multiple {@link ApplicationConfig}
-         */
-        Map<String, ApplicationConfig> applications = beansOfTypeIncludingAncestors(applicationContext, ApplicationConfig.class);
-
-        Assert.assertEquals(1, applications.size());
-
-        /**
-         * Multiple {@link ModuleConfig}
-         */
-        Map<String, ModuleConfig> modules = beansOfTypeIncludingAncestors(applicationContext, ModuleConfig.class);
-
-        Assert.assertEquals(1, modules.size());
-
-        /**
-         * Multiple {@link RegistryConfig}
-         */
-        Map<String, RegistryConfig> registries = beansOfTypeIncludingAncestors(applicationContext, RegistryConfig.class);
-
-        Assert.assertEquals(1, registries.size());
-
-        /**
-         * Multiple {@link ProtocolConfig}
-         */
-        Map<String, ProtocolConfig> protocols = beansOfTypeIncludingAncestors(applicationContext, ProtocolConfig.class);
-
-        Assert.assertEquals(1, protocols.size());
-
-        /**
-         * Multiple {@link MonitorConfig}
-         */
-        Map<String, MonitorConfig> monitors = beansOfTypeIncludingAncestors(applicationContext, MonitorConfig.class);
-
-        Assert.assertEquals(1, monitors.size());
-
-        /**
-         * Multiple {@link ProviderConfig}
-         */
-        Map<String, ProviderConfig> providers = beansOfTypeIncludingAncestors(applicationContext, ProviderConfig.class);
-
-        Assert.assertEquals(1, providers.size());
-
-        /**
-         * Multiple {@link ConsumerConfig}
-         */
-        Map<String, ConsumerConfig> consumers = beansOfTypeIncludingAncestors(applicationContext, ConsumerConfig.class);
-
-        Assert.assertEquals(1, consumers.size());
-
-    }
-
-    @Test
-    public void testApplicationConfig() {
-
-        Assert.assertEquals("dubbo-demo-application", application.getName());
-
-    }
-
-    @Test
-    public void testModuleConfig() {
-
+    public void testMultiConfig() {
+        // application
+        Assert.assertEquals("dubbo-demo-multi-application", application.getName());
+        // module
         Assert.assertEquals("dubbo-demo-module", module.getName());
-
-    }
-
-    @Test
-    public void testRegistryConfig() {
-
-        Assert.assertEquals("zookeeper://192.168.99.100:32770", registry.getAddress());
-
-    }
-
-    @Test
-    public void testMonitorConfig() {
-
-        Assert.assertEquals("zookeeper://127.0.0.1:32770", monitor.getAddress());
-
-    }
-
-    @Test
-    public void testProtocolConfig() {
-
+        // registry
+        Assert.assertEquals("test://192.168.99.100:32770", registry.getAddress());
+        Assert.assertEquals("test", registry.getProtocol());
+        Assert.assertEquals(Integer.valueOf(32770), registry.getPort());
+        // monitor
+        Assert.assertEquals("test://127.0.0.1:32770", monitor.getAddress());
+        // protocol
         Assert.assertEquals("dubbo", protocol.getName());
         Assert.assertEquals(Integer.valueOf(20880), protocol.getPort());
-
-    }
-
-    @Test
-    public void testConsumerConfig() {
-
+        // consumer
         Assert.assertEquals("netty", consumer.getClient());
-
+        // provider
+        Assert.assertEquals("127.0.0.1", provider.getHost());
     }
 }

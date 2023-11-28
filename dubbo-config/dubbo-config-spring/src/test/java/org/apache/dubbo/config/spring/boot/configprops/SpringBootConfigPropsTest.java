@@ -33,6 +33,9 @@ import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -42,39 +45,33 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.Collection;
-import java.util.List;
-
 import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 
 @SpringBootTest(
-    properties = {
-        "dubbo.application.NAME = dubbo-demo-application",
-        "dubbo.module.name = dubbo-demo-module",
-        "dubbo.registry.address = zookeeper://192.168.99.100:32770",
-        "dubbo.protocol.name=dubbo",
-        "dubbo.protocol.port=20880",
-        "dubbo.metrics.protocol=prometheus",
-        "dubbo.metrics.enable-jvm=true",
-        "dubbo.metrics.prometheus.exporter.enabled=true",
-        "dubbo.metrics.prometheus.exporter.enable-http-service-discovery=true",
-        "dubbo.metrics.prometheus.exporter.http-service-discovery-url=localhost:8080",
-        "dubbo.metrics.aggregation.enabled=true",
-        "dubbo.metrics.aggregation.bucket-num=5",
-        "dubbo.metrics.aggregation.time-window-seconds=120",
-        "dubbo.metrics.histogram.enabled=true",
-        "dubbo.monitor.address=zookeeper://127.0.0.1:32770",
-        "dubbo.Config-center.address=${zookeeper.connection.address.1}",
-        "dubbo.config-Center.group=group1",
-        "dubbo.metadata-report.address=${zookeeper.connection.address.2}",
-        "dubbo.METADATA-REPORT.username=User",
-        "dubbo.provider.host=127.0.0.1",
-        "dubbo.consumer.client=netty"
-    },
-    classes = {
-        SpringBootConfigPropsTest.class
-    }
-)
+        properties = {
+            "dubbo.application.NAME = dubbo-demo-application",
+            "dubbo.module.name = dubbo-demo-module",
+            "dubbo.registry.address = zookeeper://192.168.99.100:32770",
+            "dubbo.protocol.name=dubbo",
+            "dubbo.protocol.port=20880",
+            "dubbo.metrics.protocol=prometheus",
+            "dubbo.metrics.enable-jvm=true",
+            "dubbo.metrics.prometheus.exporter.enabled=true",
+            "dubbo.metrics.prometheus.exporter.enable-http-service-discovery=true",
+            "dubbo.metrics.prometheus.exporter.http-service-discovery-url=localhost:8080",
+            "dubbo.metrics.aggregation.enabled=true",
+            "dubbo.metrics.aggregation.bucket-num=5",
+            "dubbo.metrics.aggregation.time-window-seconds=120",
+            "dubbo.metrics.histogram.enabled=true",
+            "dubbo.monitor.address=zookeeper://127.0.0.1:32770",
+            "dubbo.Config-center.address=${zookeeper.connection.address.1}",
+            "dubbo.config-Center.group=group1",
+            "dubbo.metadata-report.address=${zookeeper.connection.address.2}",
+            "dubbo.METADATA-REPORT.username=User",
+            "dubbo.provider.host=127.0.0.1",
+            "dubbo.consumer.client=netty"
+        },
+        classes = {SpringBootConfigPropsTest.class})
 @Configuration
 @ComponentScan
 @EnableDubbo
@@ -109,7 +106,8 @@ class SpringBootConfigPropsTest {
         Assertions.assertEquals(PROTOCOL_PROMETHEUS, metricsConfig.getProtocol());
         Assertions.assertTrue(metricsConfig.getPrometheus().getExporter().getEnabled());
         Assertions.assertTrue(metricsConfig.getPrometheus().getExporter().getEnableHttpServiceDiscovery());
-        Assertions.assertEquals("localhost:8080", metricsConfig.getPrometheus().getExporter().getHttpServiceDiscoveryUrl());
+        Assertions.assertEquals(
+                "localhost:8080", metricsConfig.getPrometheus().getExporter().getHttpServiceDiscoveryUrl());
         Assertions.assertEquals(5, metricsConfig.getAggregation().getBucketNum());
         Assertions.assertEquals(120, metricsConfig.getAggregation().getTimeWindowSeconds());
         Assertions.assertTrue(metricsConfig.getAggregation().getEnabled());
@@ -148,7 +146,5 @@ class SpringBootConfigPropsTest {
 
         ConsumerConfig consumerConfig = moduleConfigManager.getDefaultConsumer().get();
         Assertions.assertEquals("netty", consumerConfig.getClient());
-
     }
-
 }

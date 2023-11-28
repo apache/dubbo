@@ -32,7 +32,8 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ReferenceCountInvokerWrapper<T> implements Invoker<T> {
-    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ReferenceCountInvokerWrapper.class);
+    private final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(ReferenceCountInvokerWrapper.class);
     private final Invoker<T> invoker;
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
@@ -55,18 +56,32 @@ public class ReferenceCountInvokerWrapper<T> implements Invoker<T> {
     @Override
     public void destroy() {
         try {
-            int timeout = ConfigurationUtils.getServerShutdownTimeout(invoker.getUrl().getScopeModel());
-            boolean locked = lock.writeLock().tryLock(
-                timeout, TimeUnit.MILLISECONDS);
+            int timeout =
+                    ConfigurationUtils.getServerShutdownTimeout(invoker.getUrl().getScopeModel());
+            boolean locked = lock.writeLock().tryLock(timeout, TimeUnit.MILLISECONDS);
             if (!locked) {
-                logger.warn(LoggerCodeConstants.PROTOCOL_CLOSED_SERVER, "", "",
-                    "Failed to wait for invocation end in " + timeout + "ms.");
+                logger.warn(
+                        LoggerCodeConstants.PROTOCOL_CLOSED_SERVER,
+                        "",
+                        "",
+                        "Failed to wait for invocation end in " + timeout + "ms.");
             }
             destroyed.set(true);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } finally {
-            lock.writeLock().unlock();
+            try {
+                lock.writeLock().unlock();
+            } catch (IllegalMonitorStateException ignore) {
+                // ignore if lock failed, maybe in a long invoke
+            } catch (Throwable t) {
+                logger.warn(
+                        LoggerCodeConstants.PROTOCOL_CLOSED_SERVER,
+                        "",
+                        "",
+                        "Unexpected error occurred when releasing write lock, cause: " + t.getMessage(),
+                        t);
+            }
         }
         invoker.destroy();
     }
@@ -81,8 +96,11 @@ public class ReferenceCountInvokerWrapper<T> implements Invoker<T> {
         try {
             lock.readLock().lock();
             if (destroyed.get()) {
-                logger.warn(LoggerCodeConstants.PROTOCOL_CLOSED_SERVER, "", "",
-                    "Remote invoker has been destroyed, and unable to invoke anymore.");
+                logger.warn(
+                        LoggerCodeConstants.PROTOCOL_CLOSED_SERVER,
+                        "",
+                        "",
+                        "Remote invoker has been destroyed, and unable to invoke anymore.");
                 throw new RpcException("This invoker has been destroyed!");
             }
             return invoker.invoke(invocation);

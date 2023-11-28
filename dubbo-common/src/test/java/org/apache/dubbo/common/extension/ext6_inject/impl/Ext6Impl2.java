@@ -35,5 +35,4 @@ public class Ext6Impl2 implements Ext6 {
     public String echo(URL url, String s) {
         throw new UnsupportedOperationException();
     }
-
 }

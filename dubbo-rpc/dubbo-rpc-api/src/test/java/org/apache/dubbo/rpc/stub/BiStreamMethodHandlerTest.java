@@ -14,29 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.stub;
 
 import org.apache.dubbo.common.stream.StreamObserver;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
 class BiStreamMethodHandlerTest {
 
     @Test
     void invoke() throws ExecutionException, InterruptedException, TimeoutException {
         StreamObserver<String> responseObserver = Mockito.mock(StreamObserver.class);
-        BiStreamMethodHandler<String, String> handler = new BiStreamMethodHandler<>(
-            o -> responseObserver);
-        CompletableFuture<StreamObserver<String>> future = handler.invoke(
-            new Object[]{responseObserver});
+        BiStreamMethodHandler<String, String> handler = new BiStreamMethodHandler<>(o -> responseObserver);
+        CompletableFuture<StreamObserver<String>> future = handler.invoke(new Object[] {responseObserver});
         Assertions.assertEquals(responseObserver, future.get(1, TimeUnit.SECONDS));
     }
 }

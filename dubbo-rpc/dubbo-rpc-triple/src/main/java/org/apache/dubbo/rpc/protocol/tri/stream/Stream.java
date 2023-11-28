@@ -14,16 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.stream;
-
 
 import org.apache.dubbo.rpc.TriRpcStatus;
 
+import java.net.SocketAddress;
+
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.util.concurrent.Future;
-
-import java.net.SocketAddress;
 
 /**
  * Stream is a bi-directional channel that manipulates the data flow between peers. Inbound data
@@ -51,7 +49,6 @@ public interface Stream {
          * @param status the cancel status
          */
         void onCancelByRemote(TriRpcStatus status);
-
     }
 
     /**
@@ -83,5 +80,4 @@ public interface Stream {
      * @param n number of message
      */
     void request(int n);
-
 }

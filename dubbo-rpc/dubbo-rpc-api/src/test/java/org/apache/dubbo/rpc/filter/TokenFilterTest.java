@@ -23,12 +23,12 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.mockito.ArgumentMatchers.any;
@@ -89,4 +89,3 @@ class TokenFilterTest {
         });
     }
 }
-

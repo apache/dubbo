@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.integration.swagger;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 import javax.servlet.ServletConfig;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -30,6 +28,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 @Path("dubbo")
 @Consumes({MediaType.APPLICATION_JSON, MediaType.TEXT_XML})
@@ -38,6 +37,7 @@ public interface DubboSwaggerService {
 
     @GET
     @Path("swagger")
-    Response getListingJson(@Context Application app, @Context ServletConfig sc,
-                            @Context HttpHeaders headers, @Context UriInfo uriInfo) throws JsonProcessingException;
+    Response getListingJson(
+            @Context Application app, @Context ServletConfig sc, @Context HttpHeaders headers, @Context UriInfo uriInfo)
+            throws JsonProcessingException;
 }

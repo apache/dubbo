@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
@@ -40,6 +41,8 @@ import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
 public class RegistryStatComposite extends AbstractMetricsExport {
 
     private final Map<MetricsKey, Map<ApplicationMetric, AtomicLong>> appStats = new ConcurrentHashMap<>();
+
+    private final AtomicBoolean samplesChanged = new AtomicBoolean(true);
 
     public RegistryStatComposite(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -50,7 +53,10 @@ public class RegistryStatComposite extends AbstractMetricsExport {
         if (CollectionUtils.isEmpty(appKeys)) {
             return;
         }
-        appKeys.forEach(appKey -> appStats.put(appKey, new ConcurrentHashMap<>()));
+        appKeys.forEach(appKey -> {
+            appStats.put(appKey, new ConcurrentHashMap<>());
+        });
+        samplesChanged.set(true);
     }
 
     @Override
@@ -59,7 +65,10 @@ public class RegistryStatComposite extends AbstractMetricsExport {
         for (MetricsKey metricsKey : appStats.keySet()) {
             Map<ApplicationMetric, AtomicLong> stringAtomicLongMap = appStats.get(metricsKey);
             for (ApplicationMetric registerKeyMetric : stringAtomicLongMap.keySet()) {
-                list.add(new GaugeMetricSample<>(metricsKey, registerKeyMetric.getTags(), category, stringAtomicLongMap, value -> value.get(registerKeyMetric).get()));
+                list.add(new GaugeMetricSample<>(
+                        metricsKey, registerKeyMetric.getTags(), category, stringAtomicLongMap, value -> value.get(
+                                        registerKeyMetric)
+                                .get()));
             }
         }
         return list;
@@ -70,12 +79,25 @@ public class RegistryStatComposite extends AbstractMetricsExport {
             return;
         }
         ApplicationMetric applicationMetric = new ApplicationMetric(getApplicationModel());
-        applicationMetric.setExtraInfo(Collections.singletonMap(RegistryConstants.REGISTRY_CLUSTER_KEY.toLowerCase(), name));
-        appStats.get(metricsKey).computeIfAbsent(applicationMetric, k -> new AtomicLong(0L)).getAndAdd(SELF_INCREMENT_SIZE);
+        applicationMetric.setExtraInfo(
+                Collections.singletonMap(RegistryConstants.REGISTRY_CLUSTER_KEY.toLowerCase(), name));
+        Map<ApplicationMetric, AtomicLong> stats = appStats.get(metricsKey);
+        AtomicLong metrics = stats.get(applicationMetric);
+        if (metrics == null) {
+            metrics = stats.computeIfAbsent(applicationMetric, k -> new AtomicLong(0L));
+            samplesChanged.set(true);
+        }
+        metrics.getAndAdd(SELF_INCREMENT_SIZE);
         MetricsSupport.fillZero(appStats);
     }
 
     public Map<MetricsKey, Map<ApplicationMetric, AtomicLong>> getAppStats() {
         return appStats;
+    }
+
+    @Override
+    public boolean calSamplesChanged() {
+        // CAS to get and reset the flag in an atomic operation
+        return samplesChanged.compareAndSet(true, false);
     }
 }

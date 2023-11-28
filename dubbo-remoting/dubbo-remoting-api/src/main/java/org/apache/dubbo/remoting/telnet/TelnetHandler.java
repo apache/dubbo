@@ -34,5 +34,4 @@ public interface TelnetHandler {
      * @param message
      */
     String telnet(Channel channel, String message) throws RemotingException;
-
 }

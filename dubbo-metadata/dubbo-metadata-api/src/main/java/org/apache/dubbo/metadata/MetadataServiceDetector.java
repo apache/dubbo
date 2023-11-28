@@ -24,5 +24,4 @@ public class MetadataServiceDetector implements BuiltinServiceDetector {
     public Class<?> getService() {
         return MetadataService.class;
     }
-
 }

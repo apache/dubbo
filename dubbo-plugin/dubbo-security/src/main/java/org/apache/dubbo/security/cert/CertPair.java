@@ -60,7 +60,10 @@ public class CertPair {
             return false;
         }
         CertPair certPair = (CertPair) o;
-        return expireTime == certPair.expireTime && Objects.equals(privateKey, certPair.privateKey) && Objects.equals(certificate, certPair.certificate) && Objects.equals(trustCerts, certPair.trustCerts);
+        return expireTime == certPair.expireTime
+                && Objects.equals(privateKey, certPair.privateKey)
+                && Objects.equals(certificate, certPair.certificate)
+                && Objects.equals(trustCerts, certPair.trustCerts);
     }
 
     @Override

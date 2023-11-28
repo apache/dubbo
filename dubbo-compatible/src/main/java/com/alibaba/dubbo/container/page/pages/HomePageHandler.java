@@ -18,14 +18,14 @@ package com.alibaba.dubbo.container.page.pages;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.container.page.Menu;
 import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
 import com.alibaba.dubbo.container.page.PageServlet;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * HomePageHandler
@@ -44,7 +44,6 @@ public class HomePageHandler implements PageHandler {
             row.add(menu.desc());
             rows.add(row);
         }
-        return new Page("Home", "Menus", new String[]{"Menu Name", "Menu Desc"}, rows);
+        return new Page("Home", "Menus", new String[] {"Menu Name", "Menu Desc"}, rows);
     }
-
 }

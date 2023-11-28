@@ -47,12 +47,14 @@ public class DefaultFilterChainBuilder implements FilterChainBuilder {
         List<ModuleModel> moduleModels = getModuleModelsFromUrl(url);
         List<Filter> filters;
         if (moduleModels != null && moduleModels.size() == 1) {
-            filters = ScopeModelUtil.getExtensionLoader(Filter.class, moduleModels.get(0)).getActivateExtension(url, key, group);
+            filters = ScopeModelUtil.getExtensionLoader(Filter.class, moduleModels.get(0))
+                    .getActivateExtension(url, key, group);
         } else if (moduleModels != null && moduleModels.size() > 1) {
             filters = new ArrayList<>();
             List<ExtensionDirector> directors = new ArrayList<>();
             for (ModuleModel moduleModel : moduleModels) {
-                List<Filter> tempFilters = ScopeModelUtil.getExtensionLoader(Filter.class, moduleModel).getActivateExtension(url, key, group);
+                List<Filter> tempFilters = ScopeModelUtil.getExtensionLoader(Filter.class, moduleModel)
+                        .getActivateExtension(url, key, group);
                 filters.addAll(tempFilters);
                 directors.add(moduleModel.getExtensionDirector());
             }
@@ -61,7 +63,6 @@ public class DefaultFilterChainBuilder implements FilterChainBuilder {
         } else {
             filters = ScopeModelUtil.getExtensionLoader(Filter.class, null).getActivateExtension(url, key, group);
         }
-
 
         if (!CollectionUtils.isEmpty(filters)) {
             for (int i = filters.size() - 1; i >= 0; i--) {
@@ -79,25 +80,29 @@ public class DefaultFilterChainBuilder implements FilterChainBuilder {
      * build consumer cluster filter chain
      */
     @Override
-    public <T> ClusterInvoker<T> buildClusterInvokerChain(final ClusterInvoker<T> originalInvoker, String key, String group) {
+    public <T> ClusterInvoker<T> buildClusterInvokerChain(
+            final ClusterInvoker<T> originalInvoker, String key, String group) {
         ClusterInvoker<T> last = originalInvoker;
         URL url = originalInvoker.getUrl();
         List<ModuleModel> moduleModels = getModuleModelsFromUrl(url);
         List<ClusterFilter> filters;
         if (moduleModels != null && moduleModels.size() == 1) {
-            filters = ScopeModelUtil.getExtensionLoader(ClusterFilter.class, moduleModels.get(0)).getActivateExtension(url, key, group);
+            filters = ScopeModelUtil.getExtensionLoader(ClusterFilter.class, moduleModels.get(0))
+                    .getActivateExtension(url, key, group);
         } else if (moduleModels != null && moduleModels.size() > 1) {
             filters = new ArrayList<>();
             List<ExtensionDirector> directors = new ArrayList<>();
             for (ModuleModel moduleModel : moduleModels) {
-                List<ClusterFilter> tempFilters = ScopeModelUtil.getExtensionLoader(ClusterFilter.class, moduleModel).getActivateExtension(url, key, group);
+                List<ClusterFilter> tempFilters = ScopeModelUtil.getExtensionLoader(ClusterFilter.class, moduleModel)
+                        .getActivateExtension(url, key, group);
                 filters.addAll(tempFilters);
                 directors.add(moduleModel.getExtensionDirector());
             }
             filters = sortingAndDeduplication(filters, directors);
 
         } else {
-            filters = ScopeModelUtil.getExtensionLoader(ClusterFilter.class, null).getActivateExtension(url, key, group);
+            filters =
+                    ScopeModelUtil.getExtensionLoader(ClusterFilter.class, null).getActivateExtension(url, key, group);
         }
 
         if (!CollectionUtils.isEmpty(filters)) {
@@ -141,5 +146,4 @@ public class DefaultFilterChainBuilder implements FilterChainBuilder {
         }
         return moduleModels;
     }
-
 }

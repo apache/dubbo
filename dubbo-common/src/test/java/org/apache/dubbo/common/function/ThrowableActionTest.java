@@ -30,8 +30,11 @@ class ThrowableActionTest {
 
     @Test
     void testExecute() {
-        Assertions.assertThrows(RuntimeException.class, () -> execute(() -> {
-            throw new Exception("Test");
-        }), "Test");
+        Assertions.assertThrows(
+                RuntimeException.class,
+                () -> execute(() -> {
+                    throw new Exception("Test");
+                }),
+                "Test");
     }
 }

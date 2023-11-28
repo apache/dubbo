@@ -47,9 +47,11 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
 
     public AbstractStateRouter(URL url) {
         moduleModel = url.getOrDefaultModuleModel();
-        this.ruleRepository = moduleModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
+        this.ruleRepository =
+                moduleModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
         this.url = url;
-        this.shouldFailFast = Boolean.parseBoolean(ConfigurationUtils.getProperty(moduleModel, Constants.SHOULD_FAIL_FAST_KEY, "true"));
+        this.shouldFailFast = Boolean.parseBoolean(
+                ConfigurationUtils.getProperty(moduleModel, Constants.SHOULD_FAIL_FAST_KEY, "true"));
     }
 
     @Override
@@ -89,7 +91,13 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
     }
 
     @Override
-    public final BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url, Invocation invocation, boolean needToPrintMessage, Holder<RouterSnapshotNode<T>> nodeHolder) throws RpcException {
+    public final BitList<Invoker<T>> route(
+            BitList<Invoker<T>> invokers,
+            URL url,
+            Invocation invocation,
+            boolean needToPrintMessage,
+            Holder<RouterSnapshotNode<T>> nodeHolder)
+            throws RpcException {
         if (needToPrintMessage && (nodeHolder == null || nodeHolder.get() == null)) {
             needToPrintMessage = false;
         }
@@ -151,17 +159,26 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
      * @param messageHolder message holder when router should current router print message
      * @return routed result
      */
-    protected abstract BitList<Invoker<T>> doRoute(BitList<Invoker<T>> invokers, URL url, Invocation invocation,
-                                                boolean needToPrintMessage, Holder<RouterSnapshotNode<T>> nodeHolder,
-                                                Holder<String> messageHolder) throws RpcException;
+    protected abstract BitList<Invoker<T>> doRoute(
+            BitList<Invoker<T>> invokers,
+            URL url,
+            Invocation invocation,
+            boolean needToPrintMessage,
+            Holder<RouterSnapshotNode<T>> nodeHolder,
+            Holder<String> messageHolder)
+            throws RpcException;
 
     /**
      * Call next router to get result
      *
      * @param invokers current router filtered invokers
      */
-    protected final BitList<Invoker<T>> continueRoute(BitList<Invoker<T>> invokers, URL url, Invocation invocation,
-                                                      boolean needToPrintMessage, Holder<RouterSnapshotNode<T>> nodeHolder) {
+    protected final BitList<Invoker<T>> continueRoute(
+            BitList<Invoker<T>> invokers,
+            URL url,
+            Invocation invocation,
+            boolean needToPrintMessage,
+            Holder<RouterSnapshotNode<T>> nodeHolder) {
         if (nextRouter != null) {
             return nextRouter.route(invokers, url, invocation, needToPrintMessage, nodeHolder);
         } else {
@@ -192,9 +209,7 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
 
     @Override
     public final String buildSnapshot() {
-        return doBuildSnapshot() +
-            "            v \n" +
-            nextRouter.buildSnapshot();
+        return doBuildSnapshot() + "            v \n" + nextRouter.buildSnapshot();
     }
 
     protected String doBuildSnapshot() {
