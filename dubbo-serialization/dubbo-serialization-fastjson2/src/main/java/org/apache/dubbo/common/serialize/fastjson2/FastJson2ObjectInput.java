@@ -16,8 +16,9 @@
  */
 package org.apache.dubbo.common.serialize.fastjson2;
 
-import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.serialize.DefaultJsonDataInput;
+import org.apache.dubbo.common.utils.ClassUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
