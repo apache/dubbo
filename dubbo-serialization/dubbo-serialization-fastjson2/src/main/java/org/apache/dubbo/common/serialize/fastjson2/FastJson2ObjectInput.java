@@ -16,11 +16,10 @@
  */
 package org.apache.dubbo.common.serialize.fastjson2;
 
-import org.apache.dubbo.common.serialize.ObjectInput;
-import org.apache.dubbo.common.utils.ClassUtils;
-
 import com.alibaba.fastjson2.JSONB;
 import com.alibaba.fastjson2.JSONReader;
+import org.apache.dubbo.common.serialize.DefaultJsonDataInput;
+import org.apache.dubbo.common.utils.ClassUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,7 +28,7 @@ import java.lang.reflect.Type;
 /**
  * FastJson object input implementation
  */
-public class FastJson2ObjectInput implements ObjectInput {
+public class FastJson2ObjectInput implements DefaultJsonDataInput {
 
     private final Fastjson2CreatorManager fastjson2CreatorManager;
 
@@ -48,46 +47,6 @@ public class FastJson2ObjectInput implements ObjectInput {
     }
 
     @Override
-    public boolean readBool() throws IOException {
-        return readObject(boolean.class);
-    }
-
-    @Override
-    public byte readByte() throws IOException {
-        return readObject(byte.class);
-    }
-
-    @Override
-    public short readShort() throws IOException {
-        return readObject(short.class);
-    }
-
-    @Override
-    public int readInt() throws IOException {
-        return readObject(int.class);
-    }
-
-    @Override
-    public long readLong() throws IOException {
-        return readObject(long.class);
-    }
-
-    @Override
-    public float readFloat() throws IOException {
-        return readObject(float.class);
-    }
-
-    @Override
-    public double readDouble() throws IOException {
-        return readObject(double.class);
-    }
-
-    @Override
-    public String readUTF() throws IOException {
-        return readObject(String.class);
-    }
-
-    @Override
     public byte[] readBytes() throws IOException {
         int length = is.read();
         byte[] bytes = new byte[length];
@@ -99,7 +58,7 @@ public class FastJson2ObjectInput implements ObjectInput {
     }
 
     @Override
-    public Object readObject() throws IOException, ClassNotFoundException {
+    public Object readObject() throws IOException {
         return readObject(Object.class);
     }
 

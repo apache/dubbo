@@ -16,18 +16,17 @@
  */
 package org.apache.dubbo.common.serialize.fastjson2;
 
-import java.io.IOException;
-import java.io.OutputStream;
-
-import org.apache.dubbo.common.serialize.ObjectOutput;
-
 import com.alibaba.fastjson2.JSONB;
 import com.alibaba.fastjson2.JSONWriter;
+import org.apache.dubbo.common.serialize.DefaultJsonDataOutput;
+
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * FastJson object output implementation
  */
-public class FastJson2ObjectOutput implements ObjectOutput {
+public class FastJson2ObjectOutput implements DefaultJsonDataOutput {
 
     private final Fastjson2CreatorManager fastjson2CreatorManager;
 
@@ -44,46 +43,6 @@ public class FastJson2ObjectOutput implements ObjectOutput {
         this.classLoader = Thread.currentThread().getContextClassLoader();
         this.os = out;
         fastjson2CreatorManager.setCreator(classLoader);
-    }
-
-    @Override
-    public void writeBool(boolean v) throws IOException {
-        writeObject(v);
-    }
-
-    @Override
-    public void writeByte(byte v) throws IOException {
-        writeObject(v);
-    }
-
-    @Override
-    public void writeShort(short v) throws IOException {
-        writeObject(v);
-    }
-
-    @Override
-    public void writeInt(int v) throws IOException {
-        writeObject(v);
-    }
-
-    @Override
-    public void writeLong(long v) throws IOException {
-        writeObject(v);
-    }
-
-    @Override
-    public void writeFloat(float v) throws IOException {
-        writeObject(v);
-    }
-
-    @Override
-    public void writeDouble(double v) throws IOException {
-        writeObject(v);
-    }
-
-    @Override
-    public void writeUTF(String v) throws IOException {
-        writeObject(v);
     }
 
     @Override
