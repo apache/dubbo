@@ -36,8 +36,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_FILE_CACHE_ENABLED;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
-import static org.apache.dubbo.metadata.report.support.Constants.METADATA_REPORT_KEY;
 import static org.apache.dubbo.metadata.MetadataConstants.NAMESPACE_KEY;
+import static org.apache.dubbo.metadata.report.support.Constants.METADATA_REPORT_KEY;
 
 /**
  * Repository of MetadataReport instances that can talk to remote metadata server.
