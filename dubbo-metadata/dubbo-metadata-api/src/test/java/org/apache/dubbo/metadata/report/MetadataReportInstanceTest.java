@@ -80,7 +80,6 @@ class MetadataReportInstanceTest {
 
         Map<String, MetadataReport> metadataReports = metadataReportInstance.getMetadataReports(true);
         Assertions.assertEquals(metadataReports.size(), 1);
-        //null，<JTest://127.0.0.1:20880/org.apache.dubbo.metadata.report.MetadataReport?application=test&file-cache=null&version=1.0.0>
         Assertions.assertEquals(metadataReports.get(registryId), metadataReport);
 
         Assertions.assertEquals(metadataReportConfig.getUsername(), "username");
