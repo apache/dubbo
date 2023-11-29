@@ -41,6 +41,11 @@ public enum DeployState {
     STARTED,
 
     /**
+     * Completion
+     */
+    COMPLETION,
+
+    /**
      * Stopping
      */
     STOPPING,

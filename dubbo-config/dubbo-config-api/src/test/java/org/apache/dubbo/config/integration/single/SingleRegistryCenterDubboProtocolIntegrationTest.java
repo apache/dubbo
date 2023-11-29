@@ -151,7 +151,7 @@ class SingleRegistryCenterDubboProtocolIntegrationTest implements IntegrationTes
         // ServiceConfig is exported or not
         Assertions.assertFalse(serviceConfig.isExported());
         // ServiceConfig's exportedUrl has values or not
-        Assertions.assertEquals(serviceConfig.getExportedUrls().size(), 0);
+        Assertions.assertEquals(0, serviceConfig.getExportedUrls().size());
         // DubboBootstrap is pending or not
         Assertions.assertTrue(DubboBootstrap.getInstance().isPending());
         // DubboBootstrap is initialized or not
@@ -195,13 +195,15 @@ class SingleRegistryCenterDubboProtocolIntegrationTest implements IntegrationTes
         // DubboBootstrap is pending or not
         Assertions.assertFalse(DubboBootstrap.getInstance().isPending());
         // DubboBootstrap is started or not
-        Assertions.assertTrue(DubboBootstrap.getInstance().isStarted());
+        Assertions.assertTrue(DubboBootstrap.getInstance().isCompletion());
+        // DubboBootstrap is running
+        Assertions.assertTrue(DubboBootstrap.getInstance().isRunning());
         // DubboBootstrap is shutdown or not
         Assertions.assertFalse(DubboBootstrap.getInstance().isStopped());
         // Service has been exported or not
         Assertions.assertTrue(this.serviceConfig.isExported());
         // There is exported urls or not
-        Assertions.assertEquals(this.serviceConfig.getExportedUrls().size(), 1);
+        Assertions.assertEquals(1, this.serviceConfig.getExportedUrls().size());
         URL exportedUrl = this.serviceConfig.getExportedUrls().get(0);
         // Protocol name is right or not
         Assertions.assertEquals(exportedUrl.getProtocol(), PROTOCOL_NAME);
@@ -231,7 +233,7 @@ class SingleRegistryCenterDubboProtocolIntegrationTest implements IntegrationTes
                 serviceConfig.getScopeModel().getBeanFactory().getBean(MetadataService.class);
         // Exported url is right or not in InMemoryWritableMetadataService
         Assertions.assertEquals(
-                inMemoryWritableMetadataService.getExportedURLs().size(), 1);
+                1, inMemoryWritableMetadataService.getExportedURLs().size());
         // MetadataInfo exists or not in InMemoryWritableMetadataService
         Assertions.assertFalse(
                 inMemoryWritableMetadataService.getMetadataInfos().isEmpty());
@@ -243,12 +245,12 @@ class SingleRegistryCenterDubboProtocolIntegrationTest implements IntegrationTes
                 .isEmpty());
         // MetadataInfo has reported or not has service or not
         Assertions.assertEquals(
+                1,
                 inMemoryWritableMetadataService
                         .getMetadataInfos()
                         .get(0)
                         .getServices()
-                        .size(),
-                1);
+                        .size());
         // obtain the service's key
         String key = SingleRegistryCenterIntegrationService.class.getName() + ":" + PROTOCOL_NAME;
         MetadataInfo.ServiceInfo serviceInfo = inMemoryWritableMetadataService
@@ -278,10 +280,10 @@ class SingleRegistryCenterDubboProtocolIntegrationTest implements IntegrationTes
                 ExtensionLoader.getExtensionLoader(ServiceListener.class).getExtension("exported");
         Assertions.assertNotNull(singleRegistryCenterExportedServiceListener);
         Assertions.assertEquals(
+                1,
                 singleRegistryCenterExportedServiceListener
                         .getExportedServices()
-                        .size(),
-                1);
+                        .size());
         Assertions.assertEquals(
                 SingleRegistryCenterIntegrationService.class,
                 singleRegistryCenterExportedServiceListener
@@ -382,12 +384,13 @@ class SingleRegistryCenterDubboProtocolIntegrationTest implements IntegrationTes
         Assertions.assertTrue(serviceDiscoveryRegistryDirectory.isShouldRegister());
         // ServiceDiscoveryRegistryDirectory's registered consumer url is right or not
         Assertions.assertEquals(
-                serviceDiscoveryRegistryDirectory.getRegisteredConsumerUrl().getCategory(), CONSUMERS_CATEGORY);
+                CONSUMERS_CATEGORY,
+                serviceDiscoveryRegistryDirectory.getRegisteredConsumerUrl().getCategory());
         // ServiceDiscoveryRegistryDirectory's registry is right or not
         Assertions.assertTrue(serviceDiscoveryRegistryDirectory.getRegistry() instanceof ListenerRegistryWrapper);
         // Directory's invokers are right or not
         Assertions.assertEquals(
-                serviceDiscoveryRegistryDirectory.getAllInvokers().size(), 1);
+                1, serviceDiscoveryRegistryDirectory.getAllInvokers().size());
         Assertions.assertEquals(
                 serviceDiscoveryRegistryDirectory.getInvokers(), serviceDiscoveryRegistryDirectory.getAllInvokers());
     }

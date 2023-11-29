@@ -294,6 +294,10 @@ public final class DubboBootstrap {
         return applicationDeployer.isStarted();
     }
 
+    public boolean isCompletion() {
+        return applicationDeployer.isCompletion();
+    }
+
     /**
      * @return true if the dubbo application is stopping.
      * @see #isStopped()
@@ -524,8 +528,7 @@ public final class DubboBootstrap {
     private <S> ServiceConfig createServiceConfig(String id, Consumer<ServiceBuilder<S>> consumerBuilder) {
         ServiceBuilder builder = createServiceBuilder(id);
         consumerBuilder.accept(builder);
-        ServiceConfig serviceConfig = builder.build();
-        return serviceConfig;
+        return builder.build();
     }
 
     public DubboBootstrap services(List<ServiceConfig> serviceConfigs) {
@@ -561,8 +564,7 @@ public final class DubboBootstrap {
     private <S> ReferenceConfig createReferenceConfig(String id, Consumer<ReferenceBuilder<S>> consumerBuilder) {
         ReferenceBuilder builder = createReferenceBuilder(id);
         consumerBuilder.accept(builder);
-        ReferenceConfig referenceConfig = builder.build();
-        return referenceConfig;
+        return builder.build();
     }
 
     public DubboBootstrap references(List<ReferenceConfig> referenceConfigs) {
@@ -599,8 +601,7 @@ public final class DubboBootstrap {
     private ProviderConfig createProviderConfig(String id, Consumer<ProviderBuilder> builderConsumer) {
         ProviderBuilder builder = createProviderBuilder(id);
         builderConsumer.accept(builder);
-        ProviderConfig providerConfig = builder.build();
-        return providerConfig;
+        return builder.build();
     }
 
     public DubboBootstrap provider(ProviderConfig providerConfig) {
@@ -632,8 +633,7 @@ public final class DubboBootstrap {
     private ConsumerConfig createConsumerConfig(String id, Consumer<ConsumerBuilder> builderConsumer) {
         ConsumerBuilder builder = createConsumerBuilder(id);
         builderConsumer.accept(builder);
-        ConsumerConfig consumerConfig = builder.build();
-        return consumerConfig;
+        return builder.build();
     }
 
     public DubboBootstrap consumer(ConsumerConfig consumerConfig) {
