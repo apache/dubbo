@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_DIRECTORY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
@@ -38,6 +37,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_FILE_CACHE_ENABLED;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.metadata.report.support.Constants.METADATA_REPORT_KEY;
+import static org.apache.dubbo.metadata.MetadataConstants.NAMESPACE_KEY;
 
 /**
  * Repository of MetadataReport instances that can talk to remote metadata server.
@@ -117,7 +117,7 @@ public class MetadataReportInstance implements Disposable {
         String relatedRegistryId = isEmpty(config.getRegistry())
                 ? (isEmpty(config.getId()) ? DEFAULT_KEY : config.getId())
                 : config.getRegistry();
-        String namespace = url.getParameter(CONFIG_NAMESPACE_KEY);
+        String namespace = url.getParameter(NAMESPACE_KEY);
         if (!StringUtils.isEmpty(namespace)) {
             relatedRegistryId += ":" + namespace;
         }
