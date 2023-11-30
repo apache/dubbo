@@ -129,36 +129,30 @@ class ReflectionPackableMethodTest {
 
         Method method1 = DescriptorService.class.getMethod("serverStream1", Object.class, StreamObserver.class);
         Class<?> clazz1 = ReflectionPackableMethod.obtainActualTypeInStreamObserver(
-            ((ParameterizedType) method1.getGenericParameterTypes()[1])
-                .getActualTypeArguments()[0]);
+                ((ParameterizedType) method1.getGenericParameterTypes()[1]).getActualTypeArguments()[0]);
         Assertions.assertEquals(clazz1.getName(), String.class.getName());
 
         Method method2 = DescriptorService.class.getMethod("serverStream2", Object.class, StreamObserver.class);
         Class<?> clazz2 = ReflectionPackableMethod.obtainActualTypeInStreamObserver(
-            ((ParameterizedType) method2.getGenericParameterTypes()[1])
-                .getActualTypeArguments()[0]);
+                ((ParameterizedType) method2.getGenericParameterTypes()[1]).getActualTypeArguments()[0]);
         Assertions.assertEquals(clazz2.getName(), DataWrapper.class.getName());
 
         Method method3 = DescriptorService.class.getMethod("biStream1", StreamObserver.class);
         Class<?> clazz31 = ReflectionPackableMethod.obtainActualTypeInStreamObserver(
-            ((ParameterizedType) method3.getGenericReturnType())
-                .getActualTypeArguments()[0]);
+                ((ParameterizedType) method3.getGenericReturnType()).getActualTypeArguments()[0]);
         Assertions.assertEquals(clazz31.getName(), String.class.getName());
 
         Class<?> clazz32 = ReflectionPackableMethod.obtainActualTypeInStreamObserver(
-            ((ParameterizedType) method3.getGenericParameterTypes()[0])
-                .getActualTypeArguments()[0]);
+                ((ParameterizedType) method3.getGenericParameterTypes()[0]).getActualTypeArguments()[0]);
         Assertions.assertEquals(clazz32.getName(), String.class.getName());
 
         Method method4 = DescriptorService.class.getMethod("biStream2", StreamObserver.class);
         Class<?> clazz41 = ReflectionPackableMethod.obtainActualTypeInStreamObserver(
-            ((ParameterizedType) method4.getGenericReturnType())
-                .getActualTypeArguments()[0]);
+                ((ParameterizedType) method4.getGenericReturnType()).getActualTypeArguments()[0]);
         Assertions.assertEquals(clazz41.getName(), DataWrapper.class.getName());
 
         Class<?> clazz42 = ReflectionPackableMethod.obtainActualTypeInStreamObserver(
-            ((ParameterizedType) method4.getGenericParameterTypes()[0])
-                .getActualTypeArguments()[0]);
+                ((ParameterizedType) method4.getGenericParameterTypes()[0]).getActualTypeArguments()[0]);
         Assertions.assertEquals(clazz42.getName(), DataWrapper.class.getName());
     }
 

@@ -73,18 +73,19 @@ public class ReflectionPackableMethod implements PackableMethod {
         switch (method.getRpcType()) {
             case CLIENT_STREAM:
             case BI_STREAM:
-                actualRequestTypes = new Class<?>[]{obtainActualTypeInStreamObserver(
-                    ((ParameterizedType) method.getMethod().getGenericReturnType())
-                        .getActualTypeArguments()[0])};
+                actualRequestTypes = new Class<?>[] {
+                    obtainActualTypeInStreamObserver(
+                            ((ParameterizedType) method.getMethod().getGenericReturnType()).getActualTypeArguments()[0])
+                };
                 actualResponseType = obtainActualTypeInStreamObserver(
-                    ((ParameterizedType) method.getMethod().getGenericParameterTypes()[0])
-                        .getActualTypeArguments()[0]);
+                        ((ParameterizedType) method.getMethod().getGenericParameterTypes()[0])
+                                .getActualTypeArguments()[0]);
                 break;
             case SERVER_STREAM:
                 actualRequestTypes = method.getMethod().getParameterTypes();
                 actualResponseType = obtainActualTypeInStreamObserver(
-                    ((ParameterizedType) method.getMethod().getGenericParameterTypes()[1])
-                        .getActualTypeArguments()[0]);
+                        ((ParameterizedType) method.getMethod().getGenericParameterTypes()[1])
+                                .getActualTypeArguments()[0]);
                 break;
             case UNARY:
                 actualRequestTypes = method.getParameterClasses();
@@ -291,8 +292,10 @@ public class ReflectionPackableMethod implements PackableMethod {
     }
 
     static Class<?> obtainActualTypeInStreamObserver(Type typeInStreamObserver) {
-        return (Class<?>) (typeInStreamObserver instanceof ParameterizedType ?
-            ((ParameterizedType) typeInStreamObserver).getRawType() : typeInStreamObserver);
+        return (Class<?>)
+                (typeInStreamObserver instanceof ParameterizedType
+                        ? ((ParameterizedType) typeInStreamObserver).getRawType()
+                        : typeInStreamObserver);
     }
 
     @Override
