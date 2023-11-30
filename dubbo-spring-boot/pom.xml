@@ -39,9 +39,9 @@
   </modules>
 
   <properties>
-    <spring-boot.version>2.7.17</spring-boot.version>
+    <spring-boot.version>2.7.18</spring-boot.version>
     <!-- Spring boot buddy is lower than the delivery dependency package version and can only show the defined dependency version -->
-    <byte-buddy.version>1.14.9</byte-buddy.version>
+    <byte-buddy.version>1.14.10</byte-buddy.version>
     <mockito_version>4.11.0</mockito_version>
   </properties>
 
