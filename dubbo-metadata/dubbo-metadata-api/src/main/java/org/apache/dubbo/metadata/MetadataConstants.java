@@ -29,4 +29,6 @@ public interface MetadataConstants {
     String REPORT_CONSUMER_URL_KEY = "report-consumer-definition";
 
     String PATH_SEPARATOR = "/";
+
+    String NAMESPACE_KEY = "namespace";
 }
