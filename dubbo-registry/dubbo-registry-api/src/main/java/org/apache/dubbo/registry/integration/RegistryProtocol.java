@@ -328,10 +328,10 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
         ReferenceCountExporter<?> exporter =
                 exporterFactory.createExporter(providerUrlKey, () -> protocol.export(invokerDelegate));
-        return (ExporterChangeableWrapper<T>) bounds.computeIfAbsent(providerUrlKey, _k -> new ConcurrentHashMap<>())
-                .computeIfAbsent(registryUrlKey, s -> {
-                    return new ExporterChangeableWrapper<>((ReferenceCountExporter<T>) exporter, originInvoker);
-                });
+        return (ExporterChangeableWrapper<T>) bounds.computeIfAbsent(providerUrlKey, k -> new ConcurrentHashMap<>())
+                .computeIfAbsent(
+                        registryUrlKey,
+                        s -> new ExporterChangeableWrapper<>((ReferenceCountExporter<T>) exporter, originInvoker));
     }
 
     public <T> void reExport(Exporter<T> exporter, URL newInvokerUrl) {
@@ -379,7 +379,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         URL newProviderUrl = getUrlToRegistry(newInvokerUrl);
 
         // update local exporter
-        Invoker<T> invokerDelegate = new InvokerDelegate<T>(originInvoker, newInvokerUrl);
+        Invoker<T> invokerDelegate = new InvokerDelegate<>(originInvoker, newInvokerUrl);
         exporter.setExporter(protocol.export(invokerDelegate));
 
         // update registry
@@ -479,7 +479,8 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
      * @return url to registry.
      */
     private URL getUrlToRegistry(final URL providerUrl) {
-        ExtensionLoader<RegistryParameterCustomizer> loader = providerUrl.getOrDefaultApplicationModel().getExtensionLoader(RegistryParameterCustomizer.class);
+        ExtensionLoader<RegistryParameterCustomizer> loader =
+                providerUrl.getOrDefaultApplicationModel().getExtensionLoader(RegistryParameterCustomizer.class);
         Map<String, String> extraParameter = new HashMap<>(providerUrl.getParameters());
         Set<String> parametersIncludedList = new HashSet<>();
         Set<String> parametersExcludedList = new HashSet<>();
@@ -508,16 +509,18 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         while (iterator.hasNext()) {
             String key = iterator.next().getKey();
             // Remove exclude key first
-            if (parametersExcludedList.contains(key) || prefixExcludedList.stream().anyMatch(key::startsWith)) {
+            if (parametersExcludedList.contains(key)
+                    || prefixExcludedList.stream().anyMatch(key::startsWith)) {
                 iterator.remove();
                 continue;
             }
             // Keep include key second
-            if (parametersIncludedList.contains(key) || prefixIncludedList.stream().anyMatch(key::startsWith)) {
+            if (parametersIncludedList.contains(key)
+                    || prefixIncludedList.stream().anyMatch(key::startsWith)) {
                 continue;
             }
             // Remove other unused key
-            // TODO for compatible,it need call iterator.remove();
+            iterator.remove();
         }
         return providerUrl.clearParameters().addParameters(extraParameter);
     }
@@ -611,7 +614,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             Class<T> type,
             URL url,
             URL consumerUrl) {
-        return new ServiceDiscoveryMigrationInvoker<T>(registryProtocol, cluster, registry, type, url, consumerUrl);
+        return new ServiceDiscoveryMigrationInvoker<>(registryProtocol, cluster, registry, type, url, consumerUrl);
     }
 
     /**
@@ -735,7 +738,10 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                         // already removed
                         continue;
                     }
-                    if (moduleModel.getServiceRepository().getExportedServices().size() > 0) {
+                    if (!moduleModel
+                            .getServiceRepository()
+                            .getExportedServices()
+                            .isEmpty()) {
                         moduleModel
                                 .getExtensionLoader(GovernanceRuleRepository.class)
                                 .getDefaultExtension()
@@ -1144,11 +1150,10 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                                         .getConfiguration()
                                         .convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
                                     for (ModuleModel moduleModel : applicationModel.getPubModuleModels()) {
-                                        if (moduleModel
-                                                        .getServiceRepository()
-                                                        .getExportedServices()
-                                                        .size()
-                                                > 0) {
+                                        if (!moduleModel
+                                                .getServiceRepository()
+                                                .getExportedServices()
+                                                .isEmpty()) {
                                             moduleModel
                                                     .getExtensionLoader(GovernanceRuleRepository.class)
                                                     .getDefaultExtension()
