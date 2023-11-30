@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.serialize.hessian2;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -25,10 +26,17 @@ import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 public class Hessian2ScopeModelInitializer implements ScopeModelInitializer {
     @Override
     public void initializeFrameworkModel(FrameworkModel frameworkModel) {
-        ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
-        beanFactory.registerBean(Hessian2FactoryManager.class);
+        Class<?> aClass = null;
+        try {
+            aClass = ClassUtils.forName("com.alibaba.com.caucho.hessian.io.Hessian2Output");
+        } catch (Throwable ignored) { }
 
-        frameworkModel.addClassLoaderListener(new Hessian2ClassLoaderListener());
+        if (aClass != null) {
+            ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
+            beanFactory.registerBean(Hessian2FactoryManager.class);
+
+            frameworkModel.addClassLoaderListener(new Hessian2ClassLoaderListener());
+        }
     }
 
     @Override

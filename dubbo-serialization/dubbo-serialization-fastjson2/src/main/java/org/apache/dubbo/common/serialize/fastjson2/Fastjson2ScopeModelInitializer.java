@@ -17,6 +17,9 @@
 package org.apache.dubbo.common.serialize.fastjson2;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -26,9 +29,16 @@ public class Fastjson2ScopeModelInitializer implements ScopeModelInitializer {
 
     @Override
     public void initializeFrameworkModel(FrameworkModel frameworkModel) {
-        ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
-        beanFactory.registerBean(Fastjson2CreatorManager.class);
-        beanFactory.registerBean(Fastjson2SecurityManager.class);
+        Class<?> aClass = null;
+        try {
+            aClass = ClassUtils.forName("com.alibaba.fastjson2.JSONB");
+        } catch (Throwable ignored) { }
+
+        if (aClass != null) {
+            ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
+            beanFactory.registerBean(Fastjson2CreatorManager.class);
+            beanFactory.registerBean(Fastjson2SecurityManager.class);
+        }
     }
 
     @Override
