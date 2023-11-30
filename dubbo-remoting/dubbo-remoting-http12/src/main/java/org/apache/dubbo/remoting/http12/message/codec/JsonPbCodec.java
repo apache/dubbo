@@ -41,7 +41,7 @@ public class JsonPbCodec implements HttpMessageCodec {
     }
 
     @Override
-    public MediaType mediaType(){
+    public MediaType mediaType() {
         return jsonCodec.mediaType();
     }
 

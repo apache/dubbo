@@ -17,8 +17,6 @@
 package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.convert.ConverterUtil;
-import org.apache.dubbo.remoting.http12.HttpHeaderNames;
-import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -52,7 +50,8 @@ public class TestCodecs {
                                 + "<binary-image data>\r\n"
                                 + "--example-part-boundary--\r\n")
                         .getBytes());
-        HttpMessageCodec codec = new MultipartCodec(null, FrameworkModel.defaultModel(), "multipart/form-data; boundary=example-part-boundary");
+        HttpMessageCodec codec = new MultipartCodec(
+                null, FrameworkModel.defaultModel(), "multipart/form-data; boundary=example-part-boundary");
         Object[] result = codec.decode(in, new Class[] {String.class, User.class, byte[].class});
         Assertions.assertEquals("LuYue", result[0]);
         Assertions.assertTrue(result[1] instanceof User);

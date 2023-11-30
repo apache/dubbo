@@ -47,7 +47,9 @@ public class GrpcCompositeCodecFactory implements HttpMessageCodecFactory {
             @Override
             public boolean supportDecode(HttpHeaders headers) {
                 String compressType = headers.getFirst(GrpcHeaderNames.GRPC_ACCEPT_ENCODING.getName());
-                return compressType.contains("bzip2") || compressType.contains("gzip") || compressType.contains("snappy");
+                return compressType.contains("bzip2")
+                        || compressType.contains("gzip")
+                        || compressType.contains("snappy");
             }
 
             @Override

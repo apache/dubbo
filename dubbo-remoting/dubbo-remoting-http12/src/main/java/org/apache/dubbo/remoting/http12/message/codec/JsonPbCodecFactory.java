@@ -47,7 +47,7 @@ public class JsonPbCodecFactory implements HttpMessageCodecFactory {
             public boolean supportDecode(HttpHeaders headers) {
                 return super.supportDecode(headers)
                         && ClassUtils.isPresent(
-                        "com.google.protobuf.Message", getClass().getClassLoader());
+                                "com.google.protobuf.Message", getClass().getClassLoader());
             }
         };
     }

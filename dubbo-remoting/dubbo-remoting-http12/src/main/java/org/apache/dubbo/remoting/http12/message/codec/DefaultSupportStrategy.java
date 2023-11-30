@@ -35,8 +35,7 @@ public class DefaultSupportStrategy implements CodecSupportStrategy {
 
     public boolean supportEncode(HttpHeaders headers) {
         String acceptEncoding = headers.getFirst(HttpHeaderNames.ACCEPT.getName());
-        return acceptEncoding != null
-                && acceptEncoding.contains(mediaType.getName());
+        return acceptEncoding != null && acceptEncoding.contains(mediaType.getName());
     }
 
     @Override
