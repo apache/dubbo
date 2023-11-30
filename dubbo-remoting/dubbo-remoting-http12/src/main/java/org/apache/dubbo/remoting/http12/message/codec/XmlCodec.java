@@ -73,7 +73,7 @@ public class XmlCodec implements HttpMessageCodec {
     }
 
     @Override
-    public MediaType contentType() {
+    public MediaType mediaType() {
         return MediaType.APPLICATION_XML;
     }
 }

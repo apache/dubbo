@@ -52,9 +52,7 @@ public class TestCodecs {
                                 + "<binary-image data>\r\n"
                                 + "--example-part-boundary--\r\n")
                         .getBytes());
-        HttpHeaders headers = new HttpHeaders();
-        headers.set(HttpHeaderNames.CONTENT_TYPE.getName(), "multipart/form-data; boundary=example-part-boundary");
-        HttpMessageCodec codec = new MultipartCodec(null, FrameworkModel.defaultModel(), headers);
+        HttpMessageCodec codec = new MultipartCodec(null, FrameworkModel.defaultModel(), "multipart/form-data; boundary=example-part-boundary");
         Object[] result = codec.decode(in, new Class[] {String.class, User.class, byte[].class});
         Assertions.assertEquals("LuYue", result[0]);
         Assertions.assertTrue(result[1] instanceof User);

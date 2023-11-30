@@ -19,9 +19,11 @@ package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
+import org.apache.dubbo.remoting.http12.message.CodecSupportStrategy;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory;
 import org.apache.dubbo.remoting.http12.message.MediaType;
+import org.apache.dubbo.remoting.http12.message.codec.DefaultSupportStrategy;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -31,7 +33,7 @@ public class GrpcCompositeCodecFactory implements HttpMessageCodecFactory {
     private static final MediaType MEDIA_TYPE = new MediaType("application", "grpc");
 
     @Override
-    public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, HttpHeaders headers) {
+    public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String mediaType) {
         final String serializeName = UrlUtils.serializationOrDefault(url);
         WrapperHttpMessageCodec wrapperHttpMessageCodec = new WrapperHttpMessageCodec(url, frameworkModel);
         wrapperHttpMessageCodec.setSerializeType(serializeName);
@@ -40,19 +42,19 @@ public class GrpcCompositeCodecFactory implements HttpMessageCodecFactory {
     }
 
     @Override
-    public MediaType contentType() {
-        return MEDIA_TYPE;
-    }
+    public CodecSupportStrategy codecSupport() {
+        return new DefaultSupportStrategy(MEDIA_TYPE) {
+            @Override
+            public boolean supportDecode(HttpHeaders headers) {
+                String compressType = headers.getFirst(GrpcHeaderNames.GRPC_ACCEPT_ENCODING.getName());
+                return compressType.contains("bzip2") || compressType.contains("gzip") || compressType.contains("snappy");
+            }
 
-    @Override
-    public boolean supportEncode(HttpHeaders headers) {
-        String compressType = headers.getFirst(GrpcHeaderNames.GRPC_ENCODING.getName());
-        return compressType != null || headers.getContentType().startsWith(MEDIA_TYPE.getName());
-    }
-
-    @Override
-    public boolean supportDecode(HttpHeaders headers) {
-        String compressType = headers.getFirst(GrpcHeaderNames.GRPC_ACCEPT_ENCODING.getName());
-        return compressType.contains("bzip2") || compressType.contains("gzip") || compressType.contains("snappy");
+            @Override
+            public boolean supportEncode(HttpHeaders headers) {
+                String compressType = headers.getFirst(GrpcHeaderNames.GRPC_ENCODING.getName());
+                return compressType != null || headers.getContentType().startsWith(MEDIA_TYPE.getName());
+            }
+        };
     }
 }

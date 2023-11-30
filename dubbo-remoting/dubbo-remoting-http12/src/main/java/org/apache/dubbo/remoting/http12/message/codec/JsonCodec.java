@@ -38,7 +38,7 @@ import com.alibaba.fastjson2.JSONObject;
 public class JsonCodec implements HttpMessageCodec {
 
     @Override
-    public MediaType contentType() {
+    public MediaType mediaType() {
         return MediaType.APPLICATION_JSON_VALUE;
     }
 

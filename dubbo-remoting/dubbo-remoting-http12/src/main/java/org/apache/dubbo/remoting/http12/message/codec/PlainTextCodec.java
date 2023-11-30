@@ -66,12 +66,7 @@ public class PlainTextCodec implements HttpMessageCodec {
     }
 
     @Override
-    public MediaType responseContentType() {
-        return MediaType.APPLICATION_JSON_VALUE;
-    }
-
-    @Override
-    public MediaType contentType() {
+    public MediaType mediaType() {
         return MediaType.TEXT_PLAIN;
     }
 }

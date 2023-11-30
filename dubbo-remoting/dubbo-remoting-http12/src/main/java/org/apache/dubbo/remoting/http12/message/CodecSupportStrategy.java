@@ -16,19 +16,15 @@
  */
 package org.apache.dubbo.remoting.http12.message;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
-import org.apache.dubbo.rpc.model.FrameworkModel;
 
-/**
- * for http body codec
- */
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface HttpMessageCodecFactory {
+public interface CodecSupportStrategy {
 
-    HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String mediaType);
+    boolean supportDecode(HttpHeaders headers);
 
-    CodecSupportStrategy codecSupport();
+    boolean supportEncode(HttpHeaders headers);
+
+    MediaType contentType();
+
 }

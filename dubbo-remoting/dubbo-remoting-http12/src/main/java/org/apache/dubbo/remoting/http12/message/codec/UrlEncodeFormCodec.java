@@ -98,12 +98,7 @@ public class UrlEncodeFormCodec implements HttpMessageCodec {
     }
 
     @Override
-    public MediaType contentType() {
+    public MediaType mediaType() {
         return MediaType.APPLICATION_X_WWW_FROM_URLENCODED;
-    }
-
-    @Override
-    public MediaType responseContentType() {
-        return MediaType.APPLICATION_JSON_VALUE;
     }
 }

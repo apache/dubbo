@@ -17,7 +17,6 @@
 package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
@@ -42,15 +41,8 @@ public class JsonPbCodec implements HttpMessageCodec {
     }
 
     @Override
-    public MediaType contentType() {
-        return jsonCodec.contentType();
-    }
-
-    @Override
-    public boolean support(String contentType) {
-        return HttpMessageCodec.super.support(contentType)
-                && ClassUtils.isPresent(
-                        "com.google.protobuf.Message", getClass().getClassLoader());
+    public MediaType mediaType(){
+        return jsonCodec.mediaType();
     }
 
     @Override

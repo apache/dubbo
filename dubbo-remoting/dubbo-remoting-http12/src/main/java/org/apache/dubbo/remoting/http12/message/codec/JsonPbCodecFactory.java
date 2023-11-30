@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
+import org.apache.dubbo.remoting.http12.message.CodecSupportStrategy;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory;
 import org.apache.dubbo.remoting.http12.message.MediaType;
@@ -29,25 +30,25 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 public class JsonPbCodecFactory implements HttpMessageCodecFactory {
 
     @Override
-    public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, HttpHeaders headers) {
+    public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String mediaType) {
         HttpMessageCodec codec = frameworkModel
                 .getExtensionLoader(HttpMessageCodecFactory.class)
                 .getExtension(JsonCodecFactory.NAME)
-                .createCodec(url, frameworkModel, headers);
+                .createCodec(url, frameworkModel, mediaType);
         JsonPbCodec jsonPbCodec = new JsonPbCodec();
         jsonPbCodec.setJsonCodec(codec);
         return jsonPbCodec;
     }
 
     @Override
-    public MediaType contentType() {
-        return MediaType.APPLICATION_JSON_VALUE;
-    }
-
-    @Override
-    public boolean supportDecode(HttpHeaders headers) {
-        return HttpMessageCodecFactory.super.supportDecode(headers)
-                && ClassUtils.isPresent(
+    public CodecSupportStrategy codecSupport() {
+        return new DefaultSupportStrategy(MediaType.APPLICATION_JSON_VALUE) {
+            @Override
+            public boolean supportDecode(HttpHeaders headers) {
+                return super.supportDecode(headers)
+                        && ClassUtils.isPresent(
                         "com.google.protobuf.Message", getClass().getClassLoader());
+            }
+        };
     }
 }

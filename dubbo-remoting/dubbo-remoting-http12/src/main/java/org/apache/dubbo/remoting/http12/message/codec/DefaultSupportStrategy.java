@@ -16,25 +16,31 @@
  */
 package org.apache.dubbo.remoting.http12.message.codec;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.remoting.http12.HttpHeaderNames;
+import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.message.CodecSupportStrategy;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory;
 import org.apache.dubbo.remoting.http12.message.MediaType;
-import org.apache.dubbo.rpc.model.FrameworkModel;
 
-@Activate
-public class MultipartCodecFactory implements HttpMessageCodecFactory {
+public class DefaultSupportStrategy implements CodecSupportStrategy {
+    private final MediaType mediaType;
 
-    @Override
-    public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String mediaType) {
-        return new MultipartCodec(url, frameworkModel, mediaType);
+    public DefaultSupportStrategy(MediaType mediaType) {
+        this.mediaType = mediaType;
+    }
+
+    public boolean supportDecode(HttpHeaders headers) {
+        String contentType = headers.getFirst(HttpHeaderNames.CONTENT_TYPE.getName());
+        return contentType.startsWith(mediaType.getName());
+    }
+
+    public boolean supportEncode(HttpHeaders headers) {
+        String acceptEncoding = headers.getFirst(HttpHeaderNames.ACCEPT.getName());
+        return acceptEncoding != null
+                && acceptEncoding.contains(mediaType.getName());
     }
 
     @Override
-    public CodecSupportStrategy codecSupport() {
-        return new OnlyDecodeStrategy(MediaType.MULTIPART_FORM_DATA);
+    public MediaType contentType() {
+        return mediaType;
     }
-
 }

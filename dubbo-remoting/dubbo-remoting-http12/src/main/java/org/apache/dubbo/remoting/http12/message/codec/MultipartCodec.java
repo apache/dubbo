@@ -46,13 +46,10 @@ public class MultipartCodec implements HttpMessageCodec {
 
     private final String headerContentType;
 
-    private final HttpHeaders headers;
-
-    public MultipartCodec(URL url, FrameworkModel frameworkModel, HttpHeaders headers) {
+    public MultipartCodec(URL url, FrameworkModel frameworkModel, String contentType) {
         this.url = url;
         this.frameworkModel = frameworkModel;
-        this.headers = headers;
-        this.headerContentType = headers.getContentType();
+        this.headerContentType = contentType;
     }
 
     @Override
@@ -88,8 +85,8 @@ public class MultipartCodec implements HttpMessageCodec {
                 subHeader.put(HttpHeaderNames.CONTENT_TYPE.getName(), Collections.singletonList(part.getContentType()));
                 boolean decoded = false;
                 for (HttpMessageCodecFactory factory : codecFactories) {
-                    if (factory.supportDecode(subHeader)) {
-                        res[i] = factory.createCodec(url, frameworkModel, subHeader)
+                    if (factory.codecSupport().supportDecode(subHeader)) {
+                        res[i] = factory.createCodec(url, frameworkModel, part.getContentType())
                                 .decode(part.getInputStream(), targetTypes[i]);
                         decoded = true;
                     }
@@ -143,12 +140,7 @@ public class MultipartCodec implements HttpMessageCodec {
     }
 
     @Override
-    public MediaType responseContentType() {
-        return MediaType.APPLICATION_JSON_VALUE;
-    }
-
-    @Override
-    public MediaType contentType() {
+    public MediaType mediaType() {
         return MediaType.MULTIPART_FORM_DATA;
     }
 }

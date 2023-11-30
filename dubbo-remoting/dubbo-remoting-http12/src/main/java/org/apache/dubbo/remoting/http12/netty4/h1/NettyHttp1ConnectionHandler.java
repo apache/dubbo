@@ -120,7 +120,7 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
     private static HttpMessageCodecFactory findSuitableCodec(
             HttpHeaders headers, List<HttpMessageCodecFactory> candidates) {
         for (HttpMessageCodecFactory factory : candidates) {
-            if (factory.supportDecode(headers)) {
+            if (factory.codecSupport().supportDecode(headers)) {
                 return factory;
             }
         }

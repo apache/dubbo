@@ -48,16 +48,7 @@ public interface HttpMessageCodec {
         };
     }
 
-    MediaType contentType();
-
-    default MediaType responseContentType() {
-        return contentType();
-    }
-
-    default boolean support(String contentType) {
-        MediaType mediaType = this.contentType();
-        return mediaType.getName().startsWith(contentType);
-    }
+    MediaType mediaType();
 
     default ByteArrayOutputStream toByteArrayStream(InputStream in) throws IOException {
         ByteArrayOutputStream result = new ByteArrayOutputStream();

@@ -19,7 +19,7 @@ package org.apache.dubbo.remoting.http12.message.codec;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.convert.ConverterUtil;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.remoting.http12.HttpHeaders;
+import org.apache.dubbo.remoting.http12.message.CodecSupportStrategy;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory;
 import org.apache.dubbo.remoting.http12.message.MediaType;
@@ -35,17 +35,12 @@ public class UrlEncodeFormCodecFactory implements HttpMessageCodecFactory {
     }
 
     @Override
-    public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, HttpHeaders headers) {
+    public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String mediaType) {
         return new UrlEncodeFormCodec(converterUtil);
     }
 
     @Override
-    public MediaType contentType() {
-        return MediaType.APPLICATION_X_WWW_FROM_URLENCODED;
-    }
-
-    @Override
-    public boolean supportEncode(HttpHeaders headers) {
-        return false;
+    public CodecSupportStrategy codecSupport() {
+        return new OnlyDecodeStrategy(MediaType.APPLICATION_X_WWW_FROM_URLENCODED);
     }
 }

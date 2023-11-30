@@ -84,7 +84,6 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
             HttpOutputMessage outputMessage = encodeHttpOutputMessage(data);
             preOutputMessage(outputMessage);
             this.responseEncoder.encode(outputMessage.getBody(), data);
-            // TODO: write时写入的序列化信息是客户端支持的吗？
             getHttpChannel().writeMessage(outputMessage);
             postOutputMessage(outputMessage);
         } catch (Throwable e) {
@@ -147,7 +146,7 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
                 .headers()
                 .set(
                         HttpHeaderNames.CONTENT_TYPE.getName(),
-                        responseEncoder.responseContentType().getName());
+                        responseEncoder.mediaType().getName());
         this.headersCustomizer.accept(httpMetadata.headers());
         getHttpChannel().writeHeader(httpMetadata);
         this.headerSent = true;
@@ -165,13 +164,13 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
     public void findAndSetEncoder(URL url, HttpHeaders headers, FrameworkModel frameworkModel) {
         List<HttpMessageCodecFactory> factories =
                 frameworkModel.getExtensionLoader(HttpMessageCodecFactory.class).getActivateExtensions();
-        this.responseEncoder = findCodecFactoryForEncode(headers, factories).createCodec(url, frameworkModel, headers);
+        this.responseEncoder = findCodecFactoryForEncode(headers, factories).createCodec(url, frameworkModel, headers.getContentType());
     }
 
     public HttpMessageCodecFactory findCodecFactoryForEncode(
             HttpHeaders headers, List<HttpMessageCodecFactory> candidates) {
         for (HttpMessageCodecFactory factory : candidates) {
-            if (factory.supportEncode(headers)) {
+            if (factory.codecSupport().supportEncode(headers)) {
                 return factory;
             }
         }

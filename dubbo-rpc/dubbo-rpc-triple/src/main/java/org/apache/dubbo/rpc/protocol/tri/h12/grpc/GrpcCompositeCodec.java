@@ -106,13 +106,8 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
     }
 
     @Override
-    public MediaType contentType() {
+    public MediaType mediaType() {
         return MEDIA_TYPE;
-    }
-
-    @Override
-    public boolean support(String contentType) {
-        return contentType.startsWith(MEDIA_TYPE.getName());
     }
 
     private static boolean isProtobuf(Object data) {

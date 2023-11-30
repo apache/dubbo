@@ -18,7 +18,7 @@ package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.remoting.http12.HttpHeaders;
+import org.apache.dubbo.remoting.http12.message.CodecSupportStrategy;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory;
 import org.apache.dubbo.remoting.http12.message.MediaType;
@@ -30,12 +30,12 @@ public class JsonCodecFactory implements HttpMessageCodecFactory {
     public static final String NAME = "json";
 
     @Override
-    public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, HttpHeaders headers) {
+    public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String mediaType) {
         return new JsonCodec();
     }
 
     @Override
-    public MediaType contentType() {
-        return MediaType.APPLICATION_JSON_VALUE;
+    public CodecSupportStrategy codecSupport() {
+        return new DefaultSupportStrategy(MediaType.APPLICATION_JSON_VALUE);
     }
 }

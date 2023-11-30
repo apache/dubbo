@@ -253,8 +253,8 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
     protected HttpMessageCodec determineHttpMessageCodec(HttpHeaders headers) {
         for (HttpMessageCodecFactory httpMessageCodecFactory :
                 frameworkModel.getExtensionLoader(HttpMessageCodecFactory.class).getActivateExtensions()) {
-            if (httpMessageCodecFactory.supportDecode(headers)) {
-                return httpMessageCodecFactory.createCodec(invoker.getUrl(), frameworkModel, headers);
+            if (httpMessageCodecFactory.codecSupport().supportDecode(headers)) {
+                return httpMessageCodecFactory.createCodec(invoker.getUrl(), frameworkModel, headers.getContentType());
             }
         }
         return null;

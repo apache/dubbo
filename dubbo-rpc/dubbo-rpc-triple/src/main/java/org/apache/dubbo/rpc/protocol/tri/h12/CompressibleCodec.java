@@ -60,12 +60,7 @@ public class CompressibleCodec implements HttpMessageCodec {
     }
 
     @Override
-    public boolean support(String contentType) {
-        return delegate.support(contentType);
-    }
-
-    @Override
-    public MediaType contentType() {
-        return delegate.contentType();
+    public MediaType mediaType() {
+        return delegate.mediaType();
     }
 }
