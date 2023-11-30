@@ -302,7 +302,7 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>build-helper-maven-plugin</artifactId>
-          <version>3.4.0</version>
+          <version>3.5.0</version>
         </plugin>
         <plugin>
           <groupId>org.fusesource.hawtjni</groupId>
@@ -894,6 +894,9 @@
                   <exclude>src/main/java/org/apache/dubbo/aot/generate/MemberCategory.java</exclude>
                   <exclude>src/main/java/org/apache/dubbo/metrics/aggregate/DubboMergingDigest.java</exclude>
                   <exclude>src/main/java/org/apache/dubbo/metrics/aggregate/DubboAbstractTDigest.java</exclude>
+                  <exclude>**/TripleWrapper.java</exclude>
+                  <exclude>**/com/google/rpc/**</exclude>
+                  <exclude>**/io/grpc/**</exclude>
                 </excludes>
                 <palantirJavaFormat>
                   <version>${palantirJavaFormat.version}</version>
