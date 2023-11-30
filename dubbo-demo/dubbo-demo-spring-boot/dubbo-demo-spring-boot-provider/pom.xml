@@ -29,7 +29,7 @@
   <properties>
     <maven.compiler.source>8</maven.compiler.source>
     <maven.compiler.target>8</maven.compiler.target>
-    <slf4j-log4j12.version>1.7.33</slf4j-log4j12.version>
+    <slf4j-log4j12.version>2.0.9</slf4j-log4j12.version>
     <spring-boot.version>2.7.18</spring-boot.version>
     <skip_maven_deploy>true</skip_maven_deploy>
   </properties>
