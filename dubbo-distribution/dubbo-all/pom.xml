@@ -104,22 +104,6 @@
       <optional>true</optional>
     </dependency>
 
-    <!-- container -->
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-container-api</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-container-spring</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
     <!-- filter -->
     <dependency>
       <groupId>org.apache.dubbo</groupId>
@@ -672,8 +656,6 @@
                   <include>org.apache.dubbo:dubbo-configcenter-apollo</include>
                   <include>org.apache.dubbo:dubbo-configcenter-nacos</include>
                   <include>org.apache.dubbo:dubbo-configcenter-zookeeper</include>
-                  <include>org.apache.dubbo:dubbo-container-api</include>
-                  <include>org.apache.dubbo:dubbo-container-spring</include>
                   <include>org.apache.dubbo:dubbo-filter-cache</include>
                   <include>org.apache.dubbo:dubbo-filter-validation</include>
                   <include>org.apache.dubbo:dubbo-metadata-api</include>
@@ -842,9 +824,6 @@
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.config.spring.extension.SpringExtensionInjector</resource>
-                </transformer>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                  <resource>META-INF/dubbo/internal/org.apache.dubbo.container.Container</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.metadata.MetadataParamsFilter</resource>

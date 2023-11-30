@@ -34,9 +34,6 @@ dubbo-configcenter-file
 dubbo-configcenter-apollo
 dubbo-configcenter-nacos
 dubbo-configcenter-zookeeper
-dubbo-container
-dubbo-container-api
-dubbo-container-spring
 dubbo-core-spi
 dubbo-dependencies
 dubbo-dependencies-all
