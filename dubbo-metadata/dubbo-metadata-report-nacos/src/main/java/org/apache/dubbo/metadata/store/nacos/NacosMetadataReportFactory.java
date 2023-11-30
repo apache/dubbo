@@ -37,8 +37,8 @@ public class NacosMetadataReportFactory extends AbstractMetadataReportFactory {
         String namespace = url.getParameter(NAMESPACE_KEY);
         if (!StringUtils.isEmpty(namespace)) {
             return URL.valueOf(url.toServiceString())
-                .addParameter(NAMESPACE_KEY, namespace)
-                .toString();
+                    .addParameter(NAMESPACE_KEY, namespace)
+                    .toString();
         }
         return super.toMetadataReportKey(url);
     }

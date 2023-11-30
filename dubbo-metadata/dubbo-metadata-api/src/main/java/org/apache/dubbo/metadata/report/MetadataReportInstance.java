@@ -115,8 +115,8 @@ public class MetadataReportInstance implements Disposable {
 
     private String getRelatedRegistryId(MetadataReportConfig config, URL url) {
         String relatedRegistryId = isEmpty(config.getRegistry())
-            ? (isEmpty(config.getId()) ? DEFAULT_KEY : config.getId())
-            : config.getRegistry();
+                ? (isEmpty(config.getId()) ? DEFAULT_KEY : config.getId())
+                : config.getRegistry();
         String namespace = url.getParameter(NAMESPACE_KEY);
         if (!StringUtils.isEmpty(namespace)) {
             relatedRegistryId += ":" + namespace;
