@@ -35,7 +35,7 @@
     <maven_flatten_version>1.5.0</maven_flatten_version>
     <curator5_version>5.1.0</curator5_version>
     <zookeeper_version>3.8.1</zookeeper_version>
-    <spotless-maven-plugin.version>2.40.0</spotless-maven-plugin.version>
+    <spotless-maven-plugin.version>2.41.0</spotless-maven-plugin.version>
     <spotless.action>check</spotless.action>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
