@@ -898,6 +898,7 @@
                   <exclude>**/com/google/rpc/**</exclude>
                   <exclude>**/io/grpc/**</exclude>
                   <exclude>**/istio/**</exclude>
+                  <exclude>**/org/apache/dubbo/auth/v1alpha1/**</exclude>
                 </excludes>
                 <palantirJavaFormat>
                   <version>${palantirJavaFormat.version}</version>
