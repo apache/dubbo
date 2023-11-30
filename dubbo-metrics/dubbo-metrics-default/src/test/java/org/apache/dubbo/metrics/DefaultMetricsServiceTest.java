@@ -24,14 +24,15 @@ import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.service.DefaultMetricsService;
 import org.apache.dubbo.metrics.service.MetricsEntity;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.mockito.Mockito.when;
 
@@ -42,7 +43,6 @@ public class DefaultMetricsServiceTest {
 
     private DefaultMetricsService defaultMetricsService;
 
-
     @BeforeEach
     public void setUp() {
         ApplicationModel applicationModel = Mockito.mock(ApplicationModel.class);
@@ -50,7 +50,8 @@ public class DefaultMetricsServiceTest {
         metricsCollector = Mockito.mock(MetricsCollector.class);
 
         when(applicationModel.getBeanFactory()).thenReturn(beanFactory);
-        when(beanFactory.getBeansOfType(MetricsCollector.class)).thenReturn(Collections.singletonList(metricsCollector));
+        when(beanFactory.getBeansOfType(MetricsCollector.class))
+                .thenReturn(Collections.singletonList(metricsCollector));
 
         defaultMetricsService = new DefaultMetricsService(applicationModel);
     }
@@ -58,13 +59,7 @@ public class DefaultMetricsServiceTest {
     @Test
     public void testGetMetricsByCategories() {
         MetricSample sample = new GaugeMetricSample<>(
-            "testMetric",
-            "testDescription",
-            null,
-            MetricsCategory.REQUESTS,
-            42,
-            value -> 42.0
-        );
+                "testMetric", "testDescription", null, MetricsCategory.REQUESTS, 42, value -> 42.0);
         when(metricsCollector.collect()).thenReturn(Collections.singletonList(sample));
         List<MetricsCategory> categories = Collections.singletonList(MetricsCategory.REQUESTS);
 

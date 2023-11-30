@@ -16,9 +16,7 @@
  */
 package org.apache.dubbo.remoting.api;
 
-
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
-
 
 /**
  * Determine incoming bytes belong to the specific protocol.
@@ -29,6 +27,8 @@ public interface ProtocolDetector {
     Result detect(ChannelBuffer in);
 
     enum Result {
-        RECOGNIZED, UNRECOGNIZED, NEED_MORE_DATA
+        RECOGNIZED,
+        UNRECOGNIZED,
+        NEED_MORE_DATA
     }
 }

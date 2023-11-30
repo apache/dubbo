@@ -55,8 +55,10 @@ class FailsafeErrorTypeAwareLoggerTest {
         doThrow(new RuntimeException()).when(failLogger).debug(any(Throwable.class));
         doThrow(new RuntimeException()).when(failLogger).trace(any(Throwable.class));
 
-        failsafeLogger.error(REGISTRY_ADDRESS_INVALID, "Registry center", "May be it's offline.", "error", new Exception("error"));
-        failsafeLogger.warn(REGISTRY_ADDRESS_INVALID, "Registry center", "May be it's offline.", "warn", new Exception("warn"));
+        failsafeLogger.error(
+                REGISTRY_ADDRESS_INVALID, "Registry center", "May be it's offline.", "error", new Exception("error"));
+        failsafeLogger.warn(
+                REGISTRY_ADDRESS_INVALID, "Registry center", "May be it's offline.", "warn", new Exception("warn"));
     }
 
     @Test
@@ -70,8 +72,10 @@ class FailsafeErrorTypeAwareLoggerTest {
         verify(successLogger).error(anyString());
         verify(successLogger).warn(anyString());
 
-        failsafeLogger.error(REGISTRY_ADDRESS_INVALID, "Registry center", "May be it's offline.", "error", new Exception("error"));
-        failsafeLogger.warn(REGISTRY_ADDRESS_INVALID, "Registry center", "May be it's offline.", "warn", new Exception("warn"));
+        failsafeLogger.error(
+                REGISTRY_ADDRESS_INVALID, "Registry center", "May be it's offline.", "error", new Exception("error"));
+        failsafeLogger.warn(
+                REGISTRY_ADDRESS_INVALID, "Registry center", "May be it's offline.", "warn", new Exception("warn"));
     }
 
     @Test
@@ -91,10 +95,18 @@ class FailsafeErrorTypeAwareLoggerTest {
 
         ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(FailsafeErrorTypeAwareLoggerTest.class);
 
-        logger.error(REGISTRY_ADDRESS_INVALID, "Registry center", "May be it's offline.",
-            "error message", new Exception("error"));
+        logger.error(
+                REGISTRY_ADDRESS_INVALID,
+                "Registry center",
+                "May be it's offline.",
+                "error message",
+                new Exception("error"));
 
-        logger.error(REGISTRY_ADDRESS_INVALID, "Registry center", "May be it's offline.",
-            "error message", new Exception("error"));
+        logger.error(
+                REGISTRY_ADDRESS_INVALID,
+                "Registry center",
+                "May be it's offline.",
+                "error message",
+                new Exception("error"));
     }
 }

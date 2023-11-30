@@ -20,17 +20,17 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.common.status.support.StatusUtils;
 
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.status.StatusChecker;
-import com.alibaba.dubbo.container.page.Menu;
-import com.alibaba.dubbo.container.page.Page;
-import com.alibaba.dubbo.container.page.PageHandler;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.status.StatusChecker;
+import com.alibaba.dubbo.container.page.Menu;
+import com.alibaba.dubbo.container.page.Page;
+import com.alibaba.dubbo.container.page.PageHandler;
 
 /**
  * StatusPageHandler
@@ -41,10 +41,12 @@ public class StatusPageHandler implements PageHandler {
     @Override
     public Page handle(URL url) {
         List<List<String>> rows = new ArrayList<List<String>>();
-        Set<String> names = ExtensionLoader.getExtensionLoader(StatusChecker.class).getSupportedExtensions();
+        Set<String> names =
+                ExtensionLoader.getExtensionLoader(StatusChecker.class).getSupportedExtensions();
         Map<String, Status> statuses = new HashMap<String, Status>();
         for (String name : names) {
-            StatusChecker checker = ExtensionLoader.getExtensionLoader(StatusChecker.class).getExtension(name);
+            StatusChecker checker =
+                    ExtensionLoader.getExtensionLoader(StatusChecker.class).getExtension(name);
             List<String> row = new ArrayList<String>();
             row.add(name);
             Status status = checker.check();
@@ -64,7 +66,11 @@ public class StatusPageHandler implements PageHandler {
             row.add(getLevelHtml(status.getLevel()));
             row.add("<a href=\"/status\" target=\"_blank\">summary</a>");
             rows.add(row);
-            return new Page("Status (<a href=\"/status\" target=\"_blank\">summary</a>)", "Status", new String[]{"Name", "Status", "Description"}, rows);
+            return new Page(
+                    "Status (<a href=\"/status\" target=\"_blank\">summary</a>)",
+                    "Status",
+                    new String[] {"Name", "Status", "Description"},
+                    rows);
         }
     }
 
@@ -82,5 +88,4 @@ public class StatusPageHandler implements PageHandler {
         }
         return "gray";
     }
-
 }

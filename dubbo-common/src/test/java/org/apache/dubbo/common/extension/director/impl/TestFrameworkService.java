@@ -55,7 +55,5 @@ public class TestFrameworkService extends BaseTestService implements FooFramewor
     }
 
     @Override
-    public void process(URL url) {
-
-    }
+    public void process(URL url) {}
 }

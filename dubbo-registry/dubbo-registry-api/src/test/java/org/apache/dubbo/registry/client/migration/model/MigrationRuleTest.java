@@ -20,13 +20,13 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_TYPE_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -44,28 +44,27 @@ class MigrationRuleTest {
     void test_parse() {
         when(mapping.getMapping(any(URL.class))).thenReturn(Collections.emptySet());
 
-        String rule = "key: demo-consumer\n" +
-            "step: APPLICATION_FIRST\n" +
-            "threshold: 1.0\n" +
-            "proportion: 60\n" +
-            "delay: 60\n" +
-            "force: false\n" +
-            "interfaces:\n" +
-            "  - serviceKey: DemoService:1.0.0\n" +
-            "    threshold: 0.5\n" +
-            "    proportion: 30\n" +
-            "    delay: 30\n" +
-            "    force: true\n" +
-            "    step: APPLICATION_FIRST\n" +
-            "  - serviceKey: GreetingService:1.0.0\n" +
-            "    step: FORCE_APPLICATION\n" +
-            "applications:\n" +
-            "  - serviceKey: TestApplication\n" +
-            "    threshold: 0.3\n" +
-            "    proportion: 20\n" +
-            "    delay: 10\n" +
-            "    force: false\n" +
-            "    step: FORCE_INTERFACE\n";
+        String rule = "key: demo-consumer\n" + "step: APPLICATION_FIRST\n"
+                + "threshold: 1.0\n"
+                + "proportion: 60\n"
+                + "delay: 60\n"
+                + "force: false\n"
+                + "interfaces:\n"
+                + "  - serviceKey: DemoService:1.0.0\n"
+                + "    threshold: 0.5\n"
+                + "    proportion: 30\n"
+                + "    delay: 30\n"
+                + "    force: true\n"
+                + "    step: APPLICATION_FIRST\n"
+                + "  - serviceKey: GreetingService:1.0.0\n"
+                + "    step: FORCE_APPLICATION\n"
+                + "applications:\n"
+                + "  - serviceKey: TestApplication\n"
+                + "    threshold: 0.3\n"
+                + "    proportion: 20\n"
+                + "    delay: 10\n"
+                + "    force: false\n"
+                + "    step: FORCE_INTERFACE\n";
 
         MigrationRule migrationRule = MigrationRule.parse(rule);
         assertEquals("demo-consumer", migrationRule.getKey());
@@ -81,8 +80,10 @@ class MigrationRuleTest {
 
         Mockito.when(url.getScopeModel()).thenReturn(defaultModel);
         Mockito.when(url.getDisplayServiceKey()).thenReturn("DemoService:1.0.0");
-        Mockito.when(url.getParameter(ArgumentMatchers.eq(REGISTRY_CLUSTER_TYPE_KEY), anyString())).thenReturn("default");
-        Mockito.when(url.getParameter(ArgumentMatchers.eq(REGISTRY_CLUSTER_TYPE_KEY), anyString())).thenReturn("default");
+        Mockito.when(url.getParameter(ArgumentMatchers.eq(REGISTRY_CLUSTER_TYPE_KEY), anyString()))
+                .thenReturn("default");
+        Mockito.when(url.getParameter(ArgumentMatchers.eq(REGISTRY_CLUSTER_TYPE_KEY), anyString()))
+                .thenReturn("default");
 
         assertEquals(2, migrationRule.getInterfaces().size());
 

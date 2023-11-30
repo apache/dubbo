@@ -20,12 +20,12 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.RegistryConfig;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class ApplicationBuilderTest {
 
@@ -247,12 +247,29 @@ class ApplicationBuilderTest {
         RegistryConfig registry = new RegistryConfig();
 
         ApplicationBuilder builder = new ApplicationBuilder();
-        builder.id("id").name("name").version("version").owner("owner").organization("organization").architecture("architecture")
-                .environment("develop").compiler("compiler").logger("log4j").monitor(monitor).isDefault(false)
-                .dumpDirectory("dumpDirectory").qosEnable(true).qosPort(8080).qosAcceptForeignIp(false)
-                .shutwait("shutwait").registryIds("registryIds").addRegistry(registry)
-                .appendParameter("default.num", "one").metadataServicePort(12345)
-                .livenessProbe("liveness").readinessProbe("readiness").startupProbe("startup");
+        builder.id("id")
+                .name("name")
+                .version("version")
+                .owner("owner")
+                .organization("organization")
+                .architecture("architecture")
+                .environment("develop")
+                .compiler("compiler")
+                .logger("log4j")
+                .monitor(monitor)
+                .isDefault(false)
+                .dumpDirectory("dumpDirectory")
+                .qosEnable(true)
+                .qosPort(8080)
+                .qosAcceptForeignIp(false)
+                .shutwait("shutwait")
+                .registryIds("registryIds")
+                .addRegistry(registry)
+                .appendParameter("default.num", "one")
+                .metadataServicePort(12345)
+                .livenessProbe("liveness")
+                .readinessProbe("readiness")
+                .startupProbe("startup");
 
         ApplicationConfig config = builder.build();
         ApplicationConfig config2 = builder.build();

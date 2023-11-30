@@ -36,5 +36,4 @@ public interface ExchangeHandler extends ChannelHandler, TelnetHandler {
      * @throws RemotingException
      */
     CompletableFuture<Object> reply(ExchangeChannel channel, Object request) throws RemotingException;
-
 }

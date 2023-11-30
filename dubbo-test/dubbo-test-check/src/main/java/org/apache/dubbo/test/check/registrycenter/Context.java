@@ -19,5 +19,4 @@ package org.apache.dubbo.test.check.registrycenter;
 /**
  * The global context to store all initialized variables.
  */
-public interface Context {
-}
+public interface Context {}

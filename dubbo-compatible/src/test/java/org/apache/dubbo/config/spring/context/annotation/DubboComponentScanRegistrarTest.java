@@ -45,8 +45,7 @@ class DubboComponentScanRegistrarTest {
     }
 
     @AfterEach
-    public void tearDown() {
-    }
+    public void tearDown() {}
 
     @Test
     void test() {
@@ -70,7 +69,6 @@ class DubboComponentScanRegistrarTest {
 
         // Test @Transactional is present or not
         Assertions.assertNotNull(findAnnotation(beanClass, Transactional.class));
-
 
         // consumer app
         AnnotationConfigApplicationContext consumerContext = new AnnotationConfigApplicationContext();
@@ -121,9 +119,5 @@ class DubboComponentScanRegistrarTest {
 
         providerContext.close();
         consumerContext.close();
-
-
     }
-
-
 }

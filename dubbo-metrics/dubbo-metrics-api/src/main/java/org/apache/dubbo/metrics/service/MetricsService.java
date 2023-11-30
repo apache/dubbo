@@ -14,13 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.service;
 
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
+import org.apache.dubbo.metrics.model.MetricsCategory;
 
 import java.util.List;
 import java.util.Map;
@@ -59,7 +58,8 @@ public interface MetricsService {
      * @param categories categories
      * @return metrics - key=MetricCategory value=MetricsEntityList
      */
-    Map<MetricsCategory, List<MetricsEntity>> getMetricsByCategories(String serviceUniqueName, List<MetricsCategory> categories);
+    Map<MetricsCategory, List<MetricsEntity>> getMetricsByCategories(
+            String serviceUniqueName, List<MetricsCategory> categories);
 
     /**
      * Get metrics by interface、method and prefixes
@@ -70,5 +70,6 @@ public interface MetricsService {
      * @param categories categories
      * @return metrics - key=MetricCategory value=MetricsEntityList
      */
-    Map<MetricsCategory, List<MetricsEntity>> getMetricsByCategories(String serviceUniqueName, String methodName, Class<?>[] parameterTypes, List<MetricsCategory> categories);
+    Map<MetricsCategory, List<MetricsEntity>> getMetricsByCategories(
+            String serviceUniqueName, String methodName, Class<?>[] parameterTypes, List<MetricsCategory> categories);
 }

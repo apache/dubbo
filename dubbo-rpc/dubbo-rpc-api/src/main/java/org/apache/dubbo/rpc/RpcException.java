@@ -111,7 +111,7 @@ public class RpcException extends RuntimeException {
         return code == SERIALIZATION_EXCEPTION;
     }
 
-    public boolean isAuthorization(){
+    public boolean isAuthorization() {
         return code == AUTHORIZATION_EXCEPTION;
     }
 

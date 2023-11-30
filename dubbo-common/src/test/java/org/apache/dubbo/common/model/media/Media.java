@@ -21,22 +21,33 @@ import java.util.List;
 @SuppressWarnings("serial")
 public class Media implements java.io.Serializable {
     public String uri;
-    public String title;        // Can be unset.
+    public String title; // Can be unset.
     public int width;
     public int height;
     public String format;
     public long duration;
     public long size;
-    public int bitrate;         // Can be unset.
+    public int bitrate; // Can be unset.
     public boolean hasBitrate;
     public List<String> persons;
     public Player player;
-    public String copyright;    // Can be unset.
+    public String copyright; // Can be unset.
 
-    public Media() {
-    }
+    public Media() {}
 
-    public Media(String uri, String title, int width, int height, String format, long duration, long size, int bitrate, boolean hasBitrate, List<String> persons, Player player, String copyright) {
+    public Media(
+            String uri,
+            String title,
+            int width,
+            int height,
+            String format,
+            long duration,
+            long size,
+            int bitrate,
+            boolean hasBitrate,
+            List<String> persons,
+            Player player,
+            String copyright) {
         this.uri = uri;
         this.title = title;
         this.width = width;
@@ -200,6 +211,7 @@ public class Media implements java.io.Serializable {
     }
 
     public enum Player {
-        JAVA, FLASH
+        JAVA,
+        FLASH
     }
 }

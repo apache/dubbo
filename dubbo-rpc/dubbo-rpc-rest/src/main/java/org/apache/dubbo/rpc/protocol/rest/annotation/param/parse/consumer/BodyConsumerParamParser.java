@@ -28,14 +28,11 @@ public class BodyConsumerParamParser implements BaseConsumerParamParser {
     @Override
     public void parse(ConsumerParseContext parseContext, ArgInfo argInfo) {
 
-
         List<Object> args = parseContext.getArgs();
 
         RequestTemplate requestTemplate = parseContext.getRequestTemplate();
 
-        requestTemplate.body(args.get(argInfo.getIndex()),argInfo.getParamType());
-
-
+        requestTemplate.body(args.get(argInfo.getIndex()), argInfo.getParamType());
     }
 
     @Override

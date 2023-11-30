@@ -66,8 +66,7 @@ public class ServiceRestMetadata implements Serializable {
         this.consumer = consumer;
     }
 
-    public ServiceRestMetadata() {
-    }
+    public ServiceRestMetadata() {}
 
     public ServiceRestMetadata(String serviceInterface, String version, String group) {
         this(serviceInterface, version, group, false);
@@ -109,14 +108,17 @@ public class ServiceRestMetadata implements Serializable {
     }
 
     public void addRestMethodMetadata(RestMethodMetadata restMethodMetadata) {
-        PathMatcher pathMather = new PathMatcher(restMethodMetadata.getRequest().getPath(),
-            this.getVersion(), this.getGroup(), this.getPort(),restMethodMetadata.getRequest().getMethod());
+        PathMatcher pathMather = new PathMatcher(
+                restMethodMetadata.getRequest().getPath(),
+                this.getVersion(),
+                this.getGroup(),
+                this.getPort(),
+                restMethodMetadata.getRequest().getMethod());
         pathMather.setMethod(restMethodMetadata.getReflectMethod());
         addPathToServiceMap(pathMather, restMethodMetadata);
         addMethodToServiceMap(restMethodMetadata);
         getMeta().add(restMethodMetadata);
     }
-
 
     public Map<PathMatcher, RestMethodMetadata> getPathContainPathVariableToServiceMap() {
         return pathToServiceMapContainPathVariable;
@@ -133,28 +135,28 @@ public class ServiceRestMetadata implements Serializable {
         } else {
             doublePathCheck(pathToServiceMapUnContainPathVariable, pathMather, restMethodMetadata, false);
         }
-
-
     }
 
-    private void doublePathCheck(Map<PathMatcher, RestMethodMetadata> pathMatcherRestMethodMetadataMap,
-                                 PathMatcher pathMather,
-                                 RestMethodMetadata restMethodMetadata, boolean containPathVariable) {
+    private void doublePathCheck(
+            Map<PathMatcher, RestMethodMetadata> pathMatcherRestMethodMetadataMap,
+            PathMatcher pathMather,
+            RestMethodMetadata restMethodMetadata,
+            boolean containPathVariable) {
         if (pathMatcherRestMethodMetadataMap.containsKey(pathMather)) {
             if (containPathVariable) {
-                throw new IllegalArgumentException("dubbo rest metadata resolve double path error,and contain path variable  is:  "
-                    + pathMather + ", rest method metadata is: " + restMethodMetadata);
+                throw new IllegalArgumentException(
+                        "dubbo rest metadata resolve double path error,and contain path variable  is:  " + pathMather
+                                + ", rest method metadata is: " + restMethodMetadata);
 
             } else {
-                throw new IllegalArgumentException("dubbo rest metadata resolve double path error,and do not  contain path variable  is: "
-                    + pathMather + ", rest method metadata is: " + restMethodMetadata);
+                throw new IllegalArgumentException(
+                        "dubbo rest metadata resolve double path error,and do not  contain path variable  is: "
+                                + pathMather + ", rest method metadata is: " + restMethodMetadata);
             }
         }
 
         pathMatcherRestMethodMetadataMap.put(pathMather, restMethodMetadata);
-
     }
-
 
     public Integer getPort() {
         return port;
@@ -189,8 +191,12 @@ public class ServiceRestMetadata implements Serializable {
             this.methodToServiceMap = new HashMap<>();
         }
 
-        this.methodToServiceMap.computeIfAbsent(restMethodMetadata.getReflectMethod().getName(), k -> new HashMap<>())
-            .put(ParameterTypesComparator.getInstance(restMethodMetadata.getReflectMethod().getParameterTypes()), restMethodMetadata);
+        this.methodToServiceMap
+                .computeIfAbsent(restMethodMetadata.getReflectMethod().getName(), k -> new HashMap<>())
+                .put(
+                        ParameterTypesComparator.getInstance(
+                                restMethodMetadata.getReflectMethod().getParameterTypes()),
+                        restMethodMetadata);
     }
 
     public Class getCodeStyle() {
@@ -218,11 +224,11 @@ public class ServiceRestMetadata implements Serializable {
             return false;
         }
         ServiceRestMetadata that = (ServiceRestMetadata) o;
-        return Objects.equals(getServiceInterface(), that.getServiceInterface()) &&
-            Objects.equals(getVersion(), that.getVersion()) &&
-            Objects.equals(getGroup(), that.getGroup()) &&
-            Objects.equals(getMeta(), that.getMeta()) &&
-            Objects.equals(getPort(), that.getPort());
+        return Objects.equals(getServiceInterface(), that.getServiceInterface())
+                && Objects.equals(getVersion(), that.getVersion())
+                && Objects.equals(getGroup(), that.getGroup())
+                && Objects.equals(getMeta(), that.getMeta())
+                && Objects.equals(getPort(), that.getPort());
     }
 
     @Override

@@ -44,8 +44,7 @@ class SpringExtensionInjectorTest {
     }
 
     @AfterEach
-    public void destroy() {
-    }
+    public void destroy() {}
 
     @Test
     void testSpringInjector() {
@@ -55,8 +54,9 @@ class SpringExtensionInjectorTest {
             context.register(getClass());
             context.refresh();
 
-            SpringExtensionInjector springExtensionInjector = SpringExtensionInjector.get(DubboBeanUtils.getApplicationModel(context));
-            Assertions.assertEquals(springExtensionInjector.getContext(),context);
+            SpringExtensionInjector springExtensionInjector =
+                    SpringExtensionInjector.get(DubboBeanUtils.getApplicationModel(context));
+            Assertions.assertEquals(springExtensionInjector.getContext(), context);
 
             Protocol protocol = springExtensionInjector.getInstance(Protocol.class, "protocol");
             Assertions.assertNull(protocol);
@@ -70,10 +70,12 @@ class SpringExtensionInjectorTest {
             Assertions.assertNotNull(helloServiceBean);
 
             HelloService helloService = springExtensionInjector.getInstance(HelloService.class, null);
-            Assertions.assertEquals(helloService,helloServiceBean);
+            Assertions.assertEquals(helloService, helloServiceBean);
 
-            Assertions.assertThrows(IllegalStateException.class, () -> springExtensionInjector.getInstance(DemoService.class, null),
-                "Expect single but found 2 beans in spring context: [bean1, bean2]");
+            Assertions.assertThrows(
+                    IllegalStateException.class,
+                    () -> springExtensionInjector.getInstance(DemoService.class, null),
+                    "Expect single but found 2 beans in spring context: [bean1, bean2]");
 
         } finally {
             context.close();

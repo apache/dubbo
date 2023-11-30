@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   Licensed to the Apache Software Foundation (ASF) under one or more
   contributor license agreements.  See the NOTICE file distributed with
@@ -15,39 +16,39 @@
   limitations under the License.
   -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-demo</artifactId>
-        <version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
-    <artifactId>dubbo-demo-interface</artifactId>
-    <packaging>jar</packaging>
-    <name>${project.artifactId}</name>
-    <description>The demo module of dubbo project</description>
-    <properties>
-        <skip_maven_deploy>true</skip_maven_deploy>
-    </properties>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.dubbo</groupId>
+    <artifactId>dubbo-demo</artifactId>
+    <version>${revision}</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <artifactId>dubbo-demo-interface</artifactId>
+  <packaging>jar</packaging>
+  <name>${project.artifactId}</name>
+  <description>The demo module of dubbo project</description>
+  <properties>
+    <skip_maven_deploy>true</skip_maven_deploy>
+  </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-rpc-rest</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-rpc-rest</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
-        <!-- Spring Web MVC -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-            <scope>test</scope>
-        </dependency>
+    <!-- Spring Web MVC -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+      <scope>test</scope>
+    </dependency>
 
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-web</artifactId>
+    </dependency>
 
-    </dependencies>
+  </dependencies>
 </project>

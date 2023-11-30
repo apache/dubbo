@@ -30,7 +30,7 @@ public class CustomizedParamsFilter implements MetadataParamsFilter {
 
     @Override
     public String[] serviceParamsIncluded() {
-        return new String[]{APPLICATION_KEY, TIMEOUT_KEY, GROUP_KEY, VERSION_KEY};
+        return new String[] {APPLICATION_KEY, TIMEOUT_KEY, GROUP_KEY, VERSION_KEY};
     }
 
     @Override
@@ -43,7 +43,7 @@ public class CustomizedParamsFilter implements MetadataParamsFilter {
      */
     @Override
     public String[] instanceParamsIncluded() {
-        return new String[]{SIDE_KEY};
+        return new String[] {SIDE_KEY};
     }
 
     @Override

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.registry;
 
 import org.apache.dubbo.common.URL;
@@ -24,7 +23,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 class RegistryFactoryWrapperTest {
-    private RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
+    private RegistryFactory registryFactory =
+            ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
 
     @Test
     void test() throws Exception {
@@ -33,7 +33,8 @@ class RegistryFactoryWrapperTest {
         RegistryServiceListener listener2 = Mockito.mock(RegistryServiceListener.class);
         RegistryServiceListener2.delegate = listener2;
 
-        Registry registry = registryFactory.getRegistry(URL.valueOf("simple://localhost:8080/registry-service?registry.listeners=listener-one,listener-two"));
+        Registry registry = registryFactory.getRegistry(
+                URL.valueOf("simple://localhost:8080/registry-service?registry.listeners=listener-one,listener-two"));
         URL url = URL.valueOf("dubbo://localhost:8081/simple.service");
         registry.register(url);
 
@@ -52,5 +53,4 @@ class RegistryFactoryWrapperTest {
         Mockito.verify(listener1, Mockito.times(1)).onUnsubscribe(url, SimpleRegistryFactory.registry);
         Mockito.verify(listener2, Mockito.times(1)).onUnsubscribe(url, SimpleRegistryFactory.registry);
     }
-
 }

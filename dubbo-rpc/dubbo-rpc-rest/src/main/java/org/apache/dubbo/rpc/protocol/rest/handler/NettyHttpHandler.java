@@ -37,7 +37,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
  * netty http request handler
  */
@@ -48,14 +47,16 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
     private final List<RestFilter> restRequestFilters;
     private final List<RestFilter> restResponseFilters;
 
-
     public NettyHttpHandler(ServiceDeployer serviceDeployer, URL url) {
         this.serviceDeployer = serviceDeployer;
         this.url = url;
-        restRequestFilters = new ArrayList<>(url.getOrDefaultFrameworkModel().getExtensionLoader(RestRequestFilter.class).getActivateExtensions());
-        restResponseFilters = new ArrayList<>(url.getOrDefaultFrameworkModel().getExtensionLoader(RestResponseFilter.class).getActivateExtensions());
+        restRequestFilters = new ArrayList<>(url.getOrDefaultFrameworkModel()
+                .getExtensionLoader(RestRequestFilter.class)
+                .getActivateExtensions());
+        restResponseFilters = new ArrayList<>(url.getOrDefaultFrameworkModel()
+                .getExtensionLoader(RestResponseFilter.class)
+                .getActivateExtensions());
     }
-
 
     @Override
     public void handle(NettyRequestFacade requestFacade, NettyHttpResponse nettyHttpResponse) throws IOException {
@@ -74,7 +75,8 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
 
         Object nettyHttpRequest = requestFacade.getRequest();
 
-        RestFilterContext restFilterContext = new RestFilterContext(url, requestFacade, nettyHttpResponse, serviceDeployer);
+        RestFilterContext restFilterContext =
+                new RestFilterContext(url, requestFacade, nettyHttpResponse, serviceDeployer);
 
         try {
 
@@ -82,31 +84,60 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
             executeFilters(restFilterContext, restRequestFilters);
 
         } catch (PathNoFoundException pathNoFoundException) {
-            logger.error("", pathNoFoundException.getMessage(), "", "dubbo rest protocol provider path   no found ,raw request is :" + nettyHttpRequest, pathNoFoundException);
+            logger.error(
+                    "",
+                    pathNoFoundException.getMessage(),
+                    "",
+                    "dubbo rest protocol provider path   no found ,raw request is :" + nettyHttpRequest,
+                    pathNoFoundException);
             nettyHttpResponse.sendError(404, pathNoFoundException.getMessage());
         } catch (ParamParseException paramParseException) {
-            logger.error("", paramParseException.getMessage(), "", "dubbo rest protocol provider param parse error ,and raw request is :" + nettyHttpRequest, paramParseException);
+            logger.error(
+                    "",
+                    paramParseException.getMessage(),
+                    "",
+                    "dubbo rest protocol provider param parse error ,and raw request is :" + nettyHttpRequest,
+                    paramParseException);
             nettyHttpResponse.sendError(400, paramParseException.getMessage());
         } catch (MediaTypeUnSupportException contentTypeException) {
-            logger.error("", contentTypeException.getMessage(), "", "dubbo rest protocol provider content-type un support" + nettyHttpRequest, contentTypeException);
+            logger.error(
+                    "",
+                    contentTypeException.getMessage(),
+                    "",
+                    "dubbo rest protocol provider content-type un support" + nettyHttpRequest,
+                    contentTypeException);
             nettyHttpResponse.sendError(415, contentTypeException.getMessage());
         } catch (Throwable throwable) {
-            logger.error("", throwable.getMessage(), "", "dubbo rest protocol provider error ,and raw request is  " + nettyHttpRequest, throwable);
-            nettyHttpResponse.sendError(500, "dubbo rest invoke Internal error, message is " + throwable.getMessage() + " ,and exception type is : " + throwable.getClass()
-                + " , stacktrace is: " + ServiceInvokeRestFilter.stackTraceToString(throwable));
+            logger.error(
+                    "",
+                    throwable.getMessage(),
+                    "",
+                    "dubbo rest protocol provider error ,and raw request is  " + nettyHttpRequest,
+                    throwable);
+            nettyHttpResponse.sendError(
+                    500,
+                    "dubbo rest invoke Internal error, message is " + throwable.getMessage()
+                            + " ,and exception type is : " + throwable.getClass() + " , stacktrace is: "
+                            + ServiceInvokeRestFilter.stackTraceToString(throwable));
         }
 
         // second response filter
         try {
             executeFilters(restFilterContext, restResponseFilters);
         } catch (Throwable throwable) {
-            logger.error("", throwable.getMessage(), "", "dubbo rest protocol provider error ,and raw request is  " + nettyHttpRequest, throwable);
-            nettyHttpResponse.sendError(500, "dubbo rest invoke Internal error, message is " + throwable.getMessage() + " ,and exception type is : " + throwable.getClass()
-                + " , stacktrace is: " + ServiceInvokeRestFilter.stackTraceToString(throwable));
+            logger.error(
+                    "",
+                    throwable.getMessage(),
+                    "",
+                    "dubbo rest protocol provider error ,and raw request is  " + nettyHttpRequest,
+                    throwable);
+            nettyHttpResponse.sendError(
+                    500,
+                    "dubbo rest invoke Internal error, message is " + throwable.getMessage()
+                            + " ,and exception type is : " + throwable.getClass() + " , stacktrace is: "
+                            + ServiceInvokeRestFilter.stackTraceToString(throwable));
         }
-
     }
-
 
     /**
      * execute rest filters
@@ -124,5 +155,4 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
             }
         }
     }
-
 }

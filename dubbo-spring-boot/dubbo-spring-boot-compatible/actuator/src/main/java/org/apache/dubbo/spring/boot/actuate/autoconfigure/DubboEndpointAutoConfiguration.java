@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.spring.boot.actuate.autoconfigure;
 
-
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboEndpoint;
 import org.apache.dubbo.spring.boot.autoconfigure.DubboAutoConfiguration;
 import org.apache.dubbo.spring.boot.autoconfigure.DubboRelaxedBindingAutoConfiguration;
@@ -36,13 +35,10 @@ import org.springframework.context.annotation.Configuration;
  * @since 2.7.0
  */
 @Configuration
-@ConditionalOnClass(name = {
-        "org.springframework.boot.actuate.endpoint.Endpoint" // Spring Boot 1.x
-})
-@AutoConfigureAfter(value = {
-        DubboAutoConfiguration.class,
-        DubboRelaxedBindingAutoConfiguration.class
-})
+@ConditionalOnClass(
+        name = {"org.springframework.boot.actuate.endpoint.Endpoint" // Spring Boot 1.x
+        })
+@AutoConfigureAfter(value = {DubboAutoConfiguration.class, DubboRelaxedBindingAutoConfiguration.class})
 @EnableConfigurationProperties(DubboEndpoint.class)
 public class DubboEndpointAutoConfiguration {
 

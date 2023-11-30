@@ -60,5 +60,4 @@ public class InvokerWrapper<T> implements Invoker<T> {
     public void destroy() {
         invoker.destroy();
     }
-
 }

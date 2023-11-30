@@ -16,13 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.router.xds;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.function.Consumer;
-
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
@@ -31,12 +24,19 @@ import org.apache.dubbo.registry.xds.util.protocol.message.ListenerResult;
 import org.apache.dubbo.registry.xds.util.protocol.message.RouteResult;
 import org.apache.dubbo.rpc.cluster.router.xds.rule.XdsRouteRule;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.function.Consumer;
+
 import io.envoyproxy.envoy.config.route.v3.VirtualHost;
 
 public class RdsRouteRuleManager {
 
-
-    private static final ConcurrentHashMap<String, Set<XdsRouteRuleListener>> RULE_LISTENERS = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, Set<XdsRouteRuleListener>> RULE_LISTENERS =
+            new ConcurrentHashMap<>();
 
     private static final ConcurrentHashMap<String, List<XdsRouteRule>> ROUTE_DATA_CACHE = new ConcurrentHashMap<>();
 
@@ -48,14 +48,12 @@ public class RdsRouteRuleManager {
 
     private static Map<String, RouteResult> RDS_RESULT;
 
-    public RdsRouteRuleManager() {
-    }
+    public RdsRouteRuleManager() {}
 
     public synchronized void subscribeRds(String domain, XdsRouteRuleListener listener) {
 
-        Set<XdsRouteRuleListener> listeners = ConcurrentHashMapUtils.computeIfAbsent(RULE_LISTENERS, domain, key ->
-            new ConcurrentHashSet<>()
-        );
+        Set<XdsRouteRuleListener> listeners =
+                ConcurrentHashMapUtils.computeIfAbsent(RULE_LISTENERS, domain, key -> new ConcurrentHashSet<>());
         if (CollectionUtils.isEmpty(listeners)) {
             doSubscribeRds(domain);
         }
@@ -129,7 +127,6 @@ public class RdsRouteRuleManager {
         RDS_LISTENERS.remove(domain);
     }
 
-
     public void notifyRuleChange(String domain, List<XdsRouteRule> xdsRouteRules) {
 
         ROUTE_DATA_CACHE.put(domain, xdsRouteRules);
@@ -162,5 +159,4 @@ public class RdsRouteRuleManager {
     static Map<String, RdsVirtualHostListener> getRdsListeners() {
         return RDS_LISTENERS;
     }
-
 }

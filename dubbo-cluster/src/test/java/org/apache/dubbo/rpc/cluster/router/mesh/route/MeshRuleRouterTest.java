@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
 import org.apache.dubbo.common.URL;
@@ -29,14 +28,6 @@ import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.yaml.snakeyaml.LoaderOptions;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.SafeConstructor;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -46,123 +37,126 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.yaml.snakeyaml.LoaderOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-
 class MeshRuleRouterTest {
-    private final static String rule1 = "apiVersion: service.dubbo.apache.org/v1alpha1\n" +
-        "kind: DestinationRule\n" +
-        "metadata: { name: demo-route }\n" +
-        "spec:\n" +
-        "  host: demo\n" +
-        "  subsets:\n" +
-        "    - labels: { env-sign: xxx, tag1: hello }\n" +
-        "      name: isolation\n" +
-        "    - labels: { env-sign: yyy }\n" +
-        "      name: testing-trunk\n" +
-        "    - labels: { env-sign: zzz }\n" +
-        "      name: testing\n" +
-        "  trafficPolicy:\n" +
-        "    loadBalancer: { simple: ROUND_ROBIN }\n" +
-        "\n";
-    private final static String rule2 = "apiVersion: service.dubbo.apache.org/v1alpha1\n" +
-        "kind: VirtualService\n" +
-        "metadata: { name: demo-route }\n" +
-        "spec:\n" +
-        "  dubbo:\n" +
-        "    - routedetail:\n" +
-        "        - match:\n" +
-        "            - attachments: \n" +
-        "                dubboContext: {trafficLabel: {regex: xxx}}\n" +
-        "          name: xxx-project\n" +
-        "          route:\n" +
-        "            - destination: {host: demo, subset: isolation}\n" +
-        "        - match:\n" +
-        "            - attachments: \n" +
-        "                dubboContext: {trafficLabel: {regex: testing-trunk}}\n" +
-        "          name: testing-trunk\n" +
-        "          route:\n" +
-        "            - destination:\n" +
-        "                host: demo\n" +
-        "                subset: testing-trunk\n" +
-        "                fallback:\n" +
-        "                  host: demo\n" +
-        "                  subset: testing\n" +
-        "        - name: testing\n" +
-        "          route:\n" +
-        "            - destination: {host: demo, subset: testing}\n" +
-        "      services:\n" +
-        "        - {regex: ccc}\n" +
-        "  hosts: [demo]\n";
-    private final static String rule3 = "apiVersion: service.dubbo.apache.org/v1alpha1\n" +
-        "kind: VirtualService\n" +
-        "metadata: { name: demo-route }\n" +
-        "spec:\n" +
-        "  dubbo:\n" +
-        "    - routedetail:\n" +
-        "        - match:\n" +
-        "            - attachments: \n" +
-        "                dubboContext: {trafficLabel: {regex: xxx}}\n" +
-        "          name: xxx-project\n" +
-        "          route:\n" +
-        "            - destination: {host: demo, subset: isolation}\n" +
-        "        - match:\n" +
-        "            - attachments: \n" +
-        "                dubboContext: {trafficLabel: {regex: testing-trunk}}\n" +
-        "          name: testing-trunk\n" +
-        "          route:\n" +
-        "            - destination:\n" +
-        "                host: demo\n" +
-        "                subset: testing-trunk\n" +
-        "                fallback:\n" +
-        "                  host: demo\n" +
-        "                  subset: testing\n" +
-        "        - match:\n" +
-        "            - attachments: \n" +
-        "                dubboContext: {trafficLabel: {regex: testing}}\n" +
-        "          name: testing\n" +
-        "          route:\n" +
-        "            - destination: {host: demo, subset: testing}\n" +
-        "  hosts: [demo]\n";
-    private final static String rule4 = "apiVersion: service.dubbo.apache.org/v1alpha1\n" +
-        "kind: VirtualService\n" +
-        "metadata: { name: demo-route }\n" +
-        "spec:\n" +
-        "  dubbo:\n" +
-        "    - routedetail:\n" +
-        "        - match:\n" +
-        "            - attachments: \n" +
-        "                dubboContext: {trafficLabel: {regex: xxx}}\n" +
-        "          name: xxx-project\n" +
-        "          route:\n" +
-        "            - destination: {host: demo, subset: isolation}\n" +
-        "        - match:\n" +
-        "            - attachments: \n" +
-        "                dubboContext: {trafficLabel: {regex: testing-trunk}}\n" +
-        "          name: testing-trunk\n" +
-        "          route:\n" +
-        "            - destination:\n" +
-        "                host: demo\n" +
-        "                subset: testing-trunk\n" +
-        "                fallback:\n" +
-        "                  destination:\n" +
-        "                    host: demo\n" +
-        "                    subset: testing\n" +
-        "            - weight: 10\n" +
-        "              destination:\n" +
-        "                host: demo\n" +
-        "                subset: isolation\n" +
-        "        - match:\n" +
-        "            - attachments: \n" +
-        "                dubboContext: {trafficLabel: {regex: testing}}\n" +
-        "          name: testing\n" +
-        "          route:\n" +
-        "            - destination: {host: demo, subset: testing}\n" +
-        "  hosts: [demo]\n";
+    private static final String rule1 = "apiVersion: service.dubbo.apache.org/v1alpha1\n" + "kind: DestinationRule\n"
+            + "metadata: { name: demo-route }\n"
+            + "spec:\n"
+            + "  host: demo\n"
+            + "  subsets:\n"
+            + "    - labels: { env-sign: xxx, tag1: hello }\n"
+            + "      name: isolation\n"
+            + "    - labels: { env-sign: yyy }\n"
+            + "      name: testing-trunk\n"
+            + "    - labels: { env-sign: zzz }\n"
+            + "      name: testing\n"
+            + "  trafficPolicy:\n"
+            + "    loadBalancer: { simple: ROUND_ROBIN }\n"
+            + "\n";
+    private static final String rule2 = "apiVersion: service.dubbo.apache.org/v1alpha1\n" + "kind: VirtualService\n"
+            + "metadata: { name: demo-route }\n"
+            + "spec:\n"
+            + "  dubbo:\n"
+            + "    - routedetail:\n"
+            + "        - match:\n"
+            + "            - attachments: \n"
+            + "                dubboContext: {trafficLabel: {regex: xxx}}\n"
+            + "          name: xxx-project\n"
+            + "          route:\n"
+            + "            - destination: {host: demo, subset: isolation}\n"
+            + "        - match:\n"
+            + "            - attachments: \n"
+            + "                dubboContext: {trafficLabel: {regex: testing-trunk}}\n"
+            + "          name: testing-trunk\n"
+            + "          route:\n"
+            + "            - destination:\n"
+            + "                host: demo\n"
+            + "                subset: testing-trunk\n"
+            + "                fallback:\n"
+            + "                  host: demo\n"
+            + "                  subset: testing\n"
+            + "        - name: testing\n"
+            + "          route:\n"
+            + "            - destination: {host: demo, subset: testing}\n"
+            + "      services:\n"
+            + "        - {regex: ccc}\n"
+            + "  hosts: [demo]\n";
+    private static final String rule3 = "apiVersion: service.dubbo.apache.org/v1alpha1\n" + "kind: VirtualService\n"
+            + "metadata: { name: demo-route }\n"
+            + "spec:\n"
+            + "  dubbo:\n"
+            + "    - routedetail:\n"
+            + "        - match:\n"
+            + "            - attachments: \n"
+            + "                dubboContext: {trafficLabel: {regex: xxx}}\n"
+            + "          name: xxx-project\n"
+            + "          route:\n"
+            + "            - destination: {host: demo, subset: isolation}\n"
+            + "        - match:\n"
+            + "            - attachments: \n"
+            + "                dubboContext: {trafficLabel: {regex: testing-trunk}}\n"
+            + "          name: testing-trunk\n"
+            + "          route:\n"
+            + "            - destination:\n"
+            + "                host: demo\n"
+            + "                subset: testing-trunk\n"
+            + "                fallback:\n"
+            + "                  host: demo\n"
+            + "                  subset: testing\n"
+            + "        - match:\n"
+            + "            - attachments: \n"
+            + "                dubboContext: {trafficLabel: {regex: testing}}\n"
+            + "          name: testing\n"
+            + "          route:\n"
+            + "            - destination: {host: demo, subset: testing}\n"
+            + "  hosts: [demo]\n";
+    private static final String rule4 = "apiVersion: service.dubbo.apache.org/v1alpha1\n" + "kind: VirtualService\n"
+            + "metadata: { name: demo-route }\n"
+            + "spec:\n"
+            + "  dubbo:\n"
+            + "    - routedetail:\n"
+            + "        - match:\n"
+            + "            - attachments: \n"
+            + "                dubboContext: {trafficLabel: {regex: xxx}}\n"
+            + "          name: xxx-project\n"
+            + "          route:\n"
+            + "            - destination: {host: demo, subset: isolation}\n"
+            + "        - match:\n"
+            + "            - attachments: \n"
+            + "                dubboContext: {trafficLabel: {regex: testing-trunk}}\n"
+            + "          name: testing-trunk\n"
+            + "          route:\n"
+            + "            - destination:\n"
+            + "                host: demo\n"
+            + "                subset: testing-trunk\n"
+            + "                fallback:\n"
+            + "                  destination:\n"
+            + "                    host: demo\n"
+            + "                    subset: testing\n"
+            + "            - weight: 10\n"
+            + "              destination:\n"
+            + "                host: demo\n"
+            + "                subset: isolation\n"
+            + "        - match:\n"
+            + "            - attachments: \n"
+            + "                dubboContext: {trafficLabel: {regex: testing}}\n"
+            + "          name: testing\n"
+            + "          route:\n"
+            + "            - destination: {host: demo, subset: testing}\n"
+            + "  hosts: [demo]\n";
 
     private ModuleModel originModel;
     private ModuleModel moduleModel;
@@ -196,19 +190,20 @@ class MeshRuleRouterTest {
     }
 
     private Invoker<Object> createInvoker(String app) {
-        URL url = URL.valueOf("dubbo://localhost/DemoInterface?" + (StringUtils.isEmpty(app) ? "" : "remote.application=" + app));
+        URL url = URL.valueOf(
+                "dubbo://localhost/DemoInterface?" + (StringUtils.isEmpty(app) ? "" : "remote.application=" + app));
         Invoker invoker = Mockito.mock(Invoker.class);
         when(invoker.getUrl()).thenReturn(url);
         return invoker;
     }
 
     private Invoker<Object> createInvoker(Map<String, String> parameters) {
-        URL url = URL.valueOf("dubbo://localhost/DemoInterface?remote.application=app1").addParameters(parameters);
+        URL url = URL.valueOf("dubbo://localhost/DemoInterface?remote.application=app1")
+                .addParameters(parameters);
         Invoker invoker = Mockito.mock(Invoker.class);
         when(invoker.getUrl()).thenReturn(url);
         return invoker;
     }
-
 
     @Test
     void testNotify() {
@@ -216,7 +211,8 @@ class MeshRuleRouterTest {
         meshRuleRouter.notify(null);
         assertEquals(0, meshRuleRouter.getRemoteAppName().size());
 
-        BitList<Invoker<Object>> invokers = new BitList<>(Arrays.asList(createInvoker(""), createInvoker("unknown"), createInvoker("app1")));
+        BitList<Invoker<Object>> invokers =
+                new BitList<>(Arrays.asList(createInvoker(""), createInvoker("unknown"), createInvoker("app1")));
 
         meshRuleRouter.notify(invokers);
 
@@ -265,7 +261,8 @@ class MeshRuleRouterTest {
     @Test
     void testRoute1() {
         StandardMeshRuleRouter<Object> meshRuleRouter = new StandardMeshRuleRouter<>(url);
-        BitList<Invoker<Object>> invokers = new BitList<>(Arrays.asList(createInvoker(""), createInvoker("unknown"), createInvoker("app1")));
+        BitList<Invoker<Object>> invokers =
+                new BitList<>(Arrays.asList(createInvoker(""), createInvoker("unknown"), createInvoker("app1")));
         assertEquals(invokers, meshRuleRouter.route(invokers.clone(), null, null, false, null));
         Holder<String> message = new Holder<>();
         meshRuleRouter.doRoute(invokers.clone(), null, null, true, null, message);
@@ -282,10 +279,12 @@ class MeshRuleRouterTest {
         rules.add(yaml.load(rule2));
         meshRuleRouter.onRuleChange("app1", rules);
 
-        Invoker<Object> isolation = createInvoker(new HashMap<String, String>() {{
-            put("env-sign", "xxx");
-            put("tag1", "hello");
-        }});
+        Invoker<Object> isolation = createInvoker(new HashMap<String, String>() {
+            {
+                put("env-sign", "xxx");
+                put("tag1", "hello");
+            }
+        });
         Invoker<Object> testingTrunk = createInvoker(Collections.singletonMap("env-sign", "yyy"));
         Invoker<Object> testing = createInvoker(Collections.singletonMap("env-sign", "zzz"));
 
@@ -296,19 +295,43 @@ class MeshRuleRouterTest {
 
         rpcInvocation.setServiceName("ccc");
         rpcInvocation.setAttachment("trafficLabel", "xxx");
-        assertEquals(1, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).size());
-        assertEquals(isolation, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).get(0));
+        assertEquals(
+                1,
+                meshRuleRouter
+                        .route(invokers.clone(), null, rpcInvocation, false, null)
+                        .size());
+        assertEquals(
+                isolation,
+                meshRuleRouter
+                        .route(invokers.clone(), null, rpcInvocation, false, null)
+                        .get(0));
         Holder<String> message = new Holder<>();
         meshRuleRouter.doRoute(invokers.clone(), null, rpcInvocation, true, null, message);
         assertEquals("Match App: app1 Subset: isolation ", message.get());
 
         rpcInvocation.setAttachment("trafficLabel", "testing-trunk");
-        assertEquals(1, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).size());
-        assertEquals(testingTrunk, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).get(0));
+        assertEquals(
+                1,
+                meshRuleRouter
+                        .route(invokers.clone(), null, rpcInvocation, false, null)
+                        .size());
+        assertEquals(
+                testingTrunk,
+                meshRuleRouter
+                        .route(invokers.clone(), null, rpcInvocation, false, null)
+                        .get(0));
 
         rpcInvocation.setAttachment("trafficLabel", null);
-        assertEquals(1, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).size());
-        assertEquals(testing, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).get(0));
+        assertEquals(
+                1,
+                meshRuleRouter
+                        .route(invokers.clone(), null, rpcInvocation, false, null)
+                        .size());
+        assertEquals(
+                testing,
+                meshRuleRouter
+                        .route(invokers.clone(), null, rpcInvocation, false, null)
+                        .get(0));
 
         rpcInvocation.setServiceName("aaa");
         assertEquals(invokers, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null));
@@ -323,22 +346,54 @@ class MeshRuleRouterTest {
 
         rpcInvocation.setServiceName("ccc");
         rpcInvocation.setAttachment("trafficLabel", "xxx");
-        assertEquals(1, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).size());
-        assertEquals(isolation, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).get(0));
+        assertEquals(
+                1,
+                meshRuleRouter
+                        .route(invokers.clone(), null, rpcInvocation, false, null)
+                        .size());
+        assertEquals(
+                isolation,
+                meshRuleRouter
+                        .route(invokers.clone(), null, rpcInvocation, false, null)
+                        .get(0));
 
         rpcInvocation.setAttachment("trafficLabel", "testing-trunk");
-        assertEquals(1, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).size());
-        assertEquals(testingTrunk, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).get(0));
+        assertEquals(
+                1,
+                meshRuleRouter
+                        .route(invokers.clone(), null, rpcInvocation, false, null)
+                        .size());
+        assertEquals(
+                testingTrunk,
+                meshRuleRouter
+                        .route(invokers.clone(), null, rpcInvocation, false, null)
+                        .get(0));
 
         rpcInvocation.setAttachment("trafficLabel", "testing");
-        assertEquals(1, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).size());
-        assertEquals(testing, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).get(0));
+        assertEquals(
+                1,
+                meshRuleRouter
+                        .route(invokers.clone(), null, rpcInvocation, false, null)
+                        .size());
+        assertEquals(
+                testing,
+                meshRuleRouter
+                        .route(invokers.clone(), null, rpcInvocation, false, null)
+                        .get(0));
 
         rpcInvocation.setServiceName("aaa");
-        assertEquals(1, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).size());
-        assertEquals(testing, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).get(0));
+        assertEquals(
+                1,
+                meshRuleRouter
+                        .route(invokers.clone(), null, rpcInvocation, false, null)
+                        .size());
+        assertEquals(
+                testing,
+                meshRuleRouter
+                        .route(invokers.clone(), null, rpcInvocation, false, null)
+                        .get(0));
 
-        rpcInvocation.setAttachment("trafficLabel",null);
+        rpcInvocation.setAttachment("trafficLabel", null);
         assertEquals(invokers, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null));
 
         rules = new LinkedList<>();
@@ -363,15 +418,31 @@ class MeshRuleRouterTest {
 
         invokers.removeAll(Arrays.asList(isolation, testingTrunk));
         for (int i = 0; i < 1000; i++) {
-            assertEquals(1, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).size());
-            assertEquals(testing, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).get(0));
+            assertEquals(
+                    1,
+                    meshRuleRouter
+                            .route(invokers.clone(), null, rpcInvocation, false, null)
+                            .size());
+            assertEquals(
+                    testing,
+                    meshRuleRouter
+                            .route(invokers.clone(), null, rpcInvocation, false, null)
+                            .get(0));
         }
 
         meshRuleRouter.notify(invokers);
 
         for (int i = 0; i < 1000; i++) {
-            assertEquals(1, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).size());
-            assertEquals(testing, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).get(0));
+            assertEquals(
+                    1,
+                    meshRuleRouter
+                            .route(invokers.clone(), null, rpcInvocation, false, null)
+                            .size());
+            assertEquals(
+                    testing,
+                    meshRuleRouter
+                            .route(invokers.clone(), null, rpcInvocation, false, null)
+                            .get(0));
         }
 
         Invoker<Object> mock = createInvoker(Collections.singletonMap("env-sign", "mock"));
@@ -380,6 +451,5 @@ class MeshRuleRouterTest {
         meshRuleRouter.notify(invokers);
         invokers.removeAll(Arrays.asList(isolation, testingTrunk, testing));
         assertEquals(invokers, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null));
-
     }
 }

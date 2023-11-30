@@ -61,7 +61,7 @@ class ShutdownTelnetTest {
     void testInvokeWithTimeParameter() throws RemotingException {
         int sleepTime = 2000;
         long start = System.currentTimeMillis();
-        String result = shutdown.execute(mockCommandContext, new String[]{"-t", "" + sleepTime});
+        String result = shutdown.execute(mockCommandContext, new String[] {"-t", "" + sleepTime});
         long end = System.currentTimeMillis();
         assertTrue(result.contains("Application has shutdown successfully"), result);
         assertTrue((end - start) >= sleepTime, "sleepTime: " + sleepTime + ", execTime: " + (end - start));

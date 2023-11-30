@@ -40,5 +40,4 @@ public class EchoFilter implements Filter {
         }
         return invoker.invoke(inv);
     }
-
 }

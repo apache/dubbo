@@ -23,17 +23,17 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils;
 
-import com.alibaba.nacos.api.NacosFactory;
-import com.alibaba.nacos.api.PropertyKeyConst;
-import com.alibaba.nacos.api.exception.NacosException;
-import com.alibaba.nacos.api.naming.NamingService;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
+
+import com.alibaba.nacos.api.NacosFactory;
+import com.alibaba.nacos.api.PropertyKeyConst;
+import com.alibaba.nacos.api.exception.NacosException;
+import com.alibaba.nacos.api.naming.NamingService;
 
 import static com.alibaba.nacos.api.PropertyKeyConst.PASSWORD;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
@@ -47,8 +47,8 @@ import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of
 
 public class NacosConnectionManager {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NacosNamingServiceUtils.class);
-
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(NacosNamingServiceUtils.class);
 
     private final URL connectionURL;
 
@@ -126,12 +126,18 @@ public class NacosConnectionManager {
                 if (!check || (UP.equals(serverStatus) && namingServiceAvailable)) {
                     break;
                 } else {
-                    logger.warn(LoggerCodeConstants.REGISTRY_NACOS_EXCEPTION, "", "",
-                        "Failed to connect to nacos naming server. " +
-                            "Server status: " + serverStatus + ". " +
-                            "Naming Service Available: " + namingServiceAvailable + ". " +
-                            (i < retryTimes ? "Dubbo will try to retry in " + sleepMsBetweenRetries + ". " : "Exceed retry max times.") +
-                            "Try times: " + (i + 1));
+                    logger.warn(
+                            LoggerCodeConstants.REGISTRY_NACOS_EXCEPTION,
+                            "",
+                            "",
+                            "Failed to connect to nacos naming server. " + "Server status: "
+                                    + serverStatus + ". " + "Naming Service Available: "
+                                    + namingServiceAvailable + ". "
+                                    + (i < retryTimes
+                                            ? "Dubbo will try to retry in " + sleepMsBetweenRetries + ". "
+                                            : "Exceed retry max times.")
+                                    + "Try times: "
+                                    + (i + 1));
                 }
                 namingService.shutDown();
                 namingService = null;
@@ -148,8 +154,13 @@ public class NacosConnectionManager {
         }
 
         if (namingService == null) {
-            logger.error(REGISTRY_NACOS_EXCEPTION, "", "", "Failed to create nacos naming service client. Reason: server status check failed.");
-            throw new IllegalStateException("Failed to create nacos naming service client. Reason: server status check failed.");
+            logger.error(
+                    REGISTRY_NACOS_EXCEPTION,
+                    "",
+                    "",
+                    "Failed to create nacos naming service client. Reason: server status check failed.");
+            throw new IllegalStateException(
+                    "Failed to create nacos naming service client. Reason: server status check failed.");
         }
 
         return namingService;
@@ -164,7 +175,6 @@ public class NacosConnectionManager {
         }
     }
 
-
     private Properties buildNacosProperties(URL url) {
         Properties properties = new Properties();
         setServerAddr(url, properties);
@@ -173,8 +183,7 @@ public class NacosConnectionManager {
     }
 
     private void setServerAddr(URL url, Properties properties) {
-        StringBuilder serverAddrBuilder =
-            new StringBuilder(url.getHost()) // Host
+        StringBuilder serverAddrBuilder = new StringBuilder(url.getHost()) // Host
                 .append(':')
                 .append(url.getPort()); // Port
 

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.rpc.cluster;
 
 import org.apache.dubbo.common.URL;
@@ -22,26 +21,28 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 
-import com.alibaba.dubbo.common.DelegateURL;
-
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.alibaba.dubbo.common.DelegateURL;
 
 @Deprecated
 public interface LoadBalance extends org.apache.dubbo.rpc.cluster.LoadBalance {
 
-    <T> com.alibaba.dubbo.rpc.Invoker<T> select(List<com.alibaba.dubbo.rpc.Invoker<T>> invokers,
-                                                com.alibaba.dubbo.common.URL url,
-                                                com.alibaba.dubbo.rpc.Invocation invocation) throws RpcException;
+    <T> com.alibaba.dubbo.rpc.Invoker<T> select(
+            List<com.alibaba.dubbo.rpc.Invoker<T>> invokers,
+            com.alibaba.dubbo.common.URL url,
+            com.alibaba.dubbo.rpc.Invocation invocation)
+            throws RpcException;
 
     @Override
     default <T> Invoker<T> select(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
-        List<com.alibaba.dubbo.rpc.Invoker<T>> invs = invokers.stream().
-                map(invoker -> new com.alibaba.dubbo.rpc.Invoker.CompatibleInvoker<T>(invoker)).
-                collect(Collectors.toList());
+        List<com.alibaba.dubbo.rpc.Invoker<T>> invs = invokers.stream()
+                .map(invoker -> new com.alibaba.dubbo.rpc.Invoker.CompatibleInvoker<T>(invoker))
+                .collect(Collectors.toList());
 
-        com.alibaba.dubbo.rpc.Invoker<T> selected = select(invs, new DelegateURL(url),
-            new com.alibaba.dubbo.rpc.Invocation.CompatibleInvocation(invocation));
+        com.alibaba.dubbo.rpc.Invoker<T> selected = select(
+                invs, new DelegateURL(url), new com.alibaba.dubbo.rpc.Invocation.CompatibleInvocation(invocation));
 
         return selected == null ? null : selected.getOriginal();
     }

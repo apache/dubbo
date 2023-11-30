@@ -36,7 +36,8 @@ class StringToCharacterConverterTest {
 
     @BeforeEach
     public void init() {
-        converter = (StringToCharacterConverter) getExtensionLoader(Converter.class).getExtension("string-to-character");
+        converter =
+                (StringToCharacterConverter) getExtensionLoader(Converter.class).getExtension("string-to-character");
     }
 
     @Test

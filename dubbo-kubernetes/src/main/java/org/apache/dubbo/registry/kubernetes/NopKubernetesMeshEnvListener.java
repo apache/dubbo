@@ -27,12 +27,8 @@ public class NopKubernetesMeshEnvListener implements MeshEnvListener {
     }
 
     @Override
-    public void onSubscribe(String appName, MeshAppRuleListener listener) {
-
-    }
+    public void onSubscribe(String appName, MeshAppRuleListener listener) {}
 
     @Override
-    public void onUnSubscribe(String appName) {
-
-    }
+    public void onUnSubscribe(String appName) {}
 }

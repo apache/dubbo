@@ -16,10 +16,11 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
-
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.api.connection.ConnectionHandler;
+
+import java.util.concurrent.TimeUnit;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
@@ -29,15 +30,14 @@ import io.netty.channel.EventLoop;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 
-import java.util.concurrent.TimeUnit;
-
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_RECONNECT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNEXPECTED_EXCEPTION;
 
 @ChannelHandler.Sharable
 public class NettyConnectionHandler extends ChannelInboundHandlerAdapter implements ConnectionHandler {
 
-    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(NettyConnectionHandler.class);
+    private static final ErrorTypeAwareLogger LOGGER =
+            LoggerFactory.getErrorTypeAwareLogger(NettyConnectionHandler.class);
 
     private static final AttributeKey<Boolean> GO_AWAY_KEY = AttributeKey.valueOf("dubbo_channel_goaway");
     private final NettyConnectionClient connectionClient;
@@ -81,13 +81,21 @@ public class NettyConnectionHandler extends ChannelInboundHandlerAdapter impleme
             LOGGER.info("The client has been closed and will not reconnect. ");
             return;
         }
-        eventLoop.schedule(() -> {
-            try {
-                connectionClient.doConnect();
-            } catch (Throwable e) {
-                LOGGER.error(TRANSPORT_FAILED_RECONNECT, "", "",  "Fail to connect to " + connectionClient.getChannel(), e);
-            }
-        }, 1, TimeUnit.SECONDS);
+        eventLoop.schedule(
+                () -> {
+                    try {
+                        connectionClient.doConnect();
+                    } catch (Throwable e) {
+                        LOGGER.error(
+                                TRANSPORT_FAILED_RECONNECT,
+                                "",
+                                "",
+                                "Fail to connect to " + connectionClient.getChannel(),
+                                e);
+                    }
+                },
+                1,
+                TimeUnit.SECONDS);
     }
 
     @Override
@@ -97,13 +105,13 @@ public class NettyConnectionHandler extends ChannelInboundHandlerAdapter impleme
         if (!connectionClient.isClosed()) {
             connectionClient.onConnected(ctx.channel());
             if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("The connection of " + channel.getLocalAddress() + " -> " + channel.getRemoteAddress() + " is established.");
+                LOGGER.info("The connection of " + channel.getLocalAddress() + " -> " + channel.getRemoteAddress()
+                        + " is established.");
             }
         } else {
             ctx.close();
         }
     }
-
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
@@ -119,5 +127,4 @@ public class NettyConnectionHandler extends ChannelInboundHandlerAdapter impleme
             reconnect(ctx.channel());
         }
     }
-
 }

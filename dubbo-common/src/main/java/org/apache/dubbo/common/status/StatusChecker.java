@@ -31,5 +31,4 @@ public interface StatusChecker {
      * @return status
      */
     Status check();
-
 }

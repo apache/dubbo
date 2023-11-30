@@ -33,7 +33,8 @@ import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
  * Application level router, "application.condition-router"
  */
 public class ProviderAppStateRouter<T> extends ListenableStateRouter<T> {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ListenableStateRouter.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(ListenableStateRouter.class);
     public static final String NAME = "PROVIDER_APP_ROUTER";
     private String application;
     private final String currentApplication;
@@ -55,7 +56,11 @@ public class ProviderAppStateRouter<T> extends ListenableStateRouter<T> {
 
         // provider application is empty or equals with the current application
         if (isEmpty(providerApplication)) {
-            logger.warn(CLUSTER_TAG_ROUTE_EMPTY, "condition router get providerApplication is empty, will not subscribe to provider app rules.", "", "");
+            logger.warn(
+                    CLUSTER_TAG_ROUTE_EMPTY,
+                    "condition router get providerApplication is empty, will not subscribe to provider app rules.",
+                    "",
+                    "");
             return;
         }
         if (providerApplication.equals(currentApplication)) {

@@ -23,6 +23,16 @@ import org.apache.dubbo.config.spring.SysProps;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.stream.Collectors;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.BeansException;
@@ -34,19 +44,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.stream.Collectors;
-
 class ConfigCenterBeanTest {
 
-    private static final String DUBBO_PROPERTIES_FILE = "/META-INF/issues/issue9207/dubbo-properties-in-configcenter.properties";
+    private static final String DUBBO_PROPERTIES_FILE =
+            "/META-INF/issues/issue9207/dubbo-properties-in-configcenter.properties";
     private static final String DUBBO_EXTERNAL_CONFIG_KEY = "my-dubbo.properties";
 
     @Test
@@ -54,15 +55,17 @@ class ConfigCenterBeanTest {
         SysProps.setProperty("dubbo.config-center.include-spring-env", "true");
         SysProps.setProperty("dubbo.config-center.config-file", DUBBO_EXTERNAL_CONFIG_KEY);
 
-        AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(ProviderConfiguration.class);
+        AnnotationConfigApplicationContext applicationContext =
+                new AnnotationConfigApplicationContext(ProviderConfiguration.class);
         try {
-            ConfigManager configManager = DubboBeanUtils.getApplicationModel(applicationContext).getApplicationConfigManager();
+            ConfigManager configManager =
+                    DubboBeanUtils.getApplicationModel(applicationContext).getApplicationConfigManager();
             Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
             Assertions.assertEquals(1, configCenters.size());
 
             ConfigCenterConfig cc = configCenters.stream().findFirst().get();
             Assertions.assertFalse(cc.getExternalConfiguration().isEmpty());
-            Assertions.assertTrue( cc instanceof ConfigCenterBean);
+            Assertions.assertTrue(cc instanceof ConfigCenterBean);
 
             // check loaded external config
             String content = readContent(DUBBO_PROPERTIES_FILE);
@@ -76,7 +79,6 @@ class ConfigCenterBeanTest {
                 applicationContext.close();
             }
         }
-
     }
 
     @EnableDubbo(scanBasePackages = "")
@@ -93,16 +95,17 @@ class ConfigCenterBeanTest {
                     Map<String, Object> dubboProperties = new HashMap<>();
                     String content = readContent(DUBBO_PROPERTIES_FILE);
                     dubboProperties.put(DUBBO_EXTERNAL_CONFIG_KEY, content);
-                    MapPropertySource dubboPropertySource = new MapPropertySource("dubbo external config", dubboProperties);
+                    MapPropertySource dubboPropertySource =
+                            new MapPropertySource("dubbo external config", dubboProperties);
                     environment.getPropertySources().addLast(dubboPropertySource);
                 }
             };
         }
-
     }
 
     private static String readContent(String file) {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(ConfigCenterBeanTest.class.getResourceAsStream(file)));
+        BufferedReader reader =
+                new BufferedReader(new InputStreamReader(ConfigCenterBeanTest.class.getResourceAsStream(file)));
         String content = reader.lines().collect(Collectors.joining("\n"));
         return content;
     }

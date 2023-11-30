@@ -30,7 +30,8 @@ public interface DemoService {
 
     String complexCompute(String input, ComplexObject co);
 
-    ComplexObject findComplexObject(String var1, int var2, long l, String[] var3, List<Integer> var4, ComplexObject.TestEnum testEnum);
+    ComplexObject findComplexObject(
+            String var1, int var2, long l, String[] var3, List<Integer> var4, ComplexObject.TestEnum testEnum);
 
     @MockMethodAnnotation(777)
     @MockMethodAnnotation2(888)

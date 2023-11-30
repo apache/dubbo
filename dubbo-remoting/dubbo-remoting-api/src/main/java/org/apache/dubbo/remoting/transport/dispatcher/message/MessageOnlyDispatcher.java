@@ -31,5 +31,4 @@ public class MessageOnlyDispatcher implements Dispatcher {
     public ChannelHandler dispatch(ChannelHandler handler, URL url) {
         return new MessageOnlyChannelHandler(handler, url);
     }
-
 }

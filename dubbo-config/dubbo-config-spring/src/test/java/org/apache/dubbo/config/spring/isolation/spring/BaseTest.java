@@ -26,13 +26,14 @@ import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.isolation.spring.support.DemoServiceExecutor;
 import org.apache.dubbo.config.spring.isolation.spring.support.HelloServiceExecutor;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.springframework.context.ApplicationContext;
 
 import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationContext;
 
 public abstract class BaseTest {
 
@@ -102,5 +103,4 @@ public abstract class BaseTest {
             helloServiceV3.sayHello("hello");
         }
     }
-
 }

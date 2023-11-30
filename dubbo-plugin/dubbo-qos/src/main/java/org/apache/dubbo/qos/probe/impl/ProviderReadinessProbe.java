@@ -51,9 +51,9 @@ public class ProviderReadinessProbe implements ReadinessProbe {
                 continue;
             }
             hasService = true;
-            anyOnline = anyOnline ||
-                providerModel.getStatedUrl().isEmpty() ||
-                providerModel.getStatedUrl().stream().anyMatch(ProviderModel.RegisterStatedURL::isRegistered);
+            anyOnline = anyOnline
+                    || providerModel.getStatedUrl().isEmpty()
+                    || providerModel.getStatedUrl().stream().anyMatch(ProviderModel.RegisterStatedURL::isRegistered);
         }
 
         // no service => check pass

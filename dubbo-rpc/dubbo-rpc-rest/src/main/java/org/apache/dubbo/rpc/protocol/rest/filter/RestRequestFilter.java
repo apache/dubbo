@@ -23,6 +23,4 @@ import org.apache.dubbo.common.extension.SPI;
  * Rest filter will be invoked before http handler
  */
 @SPI(scope = ExtensionScope.FRAMEWORK)
-public interface RestRequestFilter extends RestFilter {
-
-}
+public interface RestRequestFilter extends RestFilter {}

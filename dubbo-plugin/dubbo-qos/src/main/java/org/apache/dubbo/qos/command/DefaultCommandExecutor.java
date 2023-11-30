@@ -16,13 +16,12 @@
  */
 package org.apache.dubbo.qos.command;
 
-import io.netty.channel.Channel;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.qos.api.BaseCommand;
+import org.apache.dubbo.qos.api.Cmd;
 import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.qos.api.PermissionLevel;
-import org.apache.dubbo.qos.api.Cmd;
 import org.apache.dubbo.qos.command.exception.NoSuchCommandException;
 import org.apache.dubbo.qos.command.exception.PermissionDenyException;
 import org.apache.dubbo.qos.common.QosConstants;
@@ -34,8 +33,10 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 
+import io.netty.channel.Channel;
+
 public class DefaultCommandExecutor implements CommandExecutor {
-    private final static Logger logger = LoggerFactory.getLogger(DefaultCommandExecutor.class);
+    private static final Logger logger = LoggerFactory.getLogger(DefaultCommandExecutor.class);
     private final FrameworkModel frameworkModel;
 
     public DefaultCommandExecutor(FrameworkModel frameworkModel) {
@@ -45,20 +46,23 @@ public class DefaultCommandExecutor implements CommandExecutor {
     @Override
     public String execute(CommandContext commandContext) throws NoSuchCommandException, PermissionDenyException {
         String remoteAddress = Optional.ofNullable(commandContext.getRemote())
-            .map(Channel::remoteAddress).map(Objects::toString).orElse("unknown");
+                .map(Channel::remoteAddress)
+                .map(Objects::toString)
+                .orElse("unknown");
 
-        logger.info("[Dubbo QoS] Command Process start. Command: " + commandContext.getCommandName() +
-            ", Args: " + Arrays.toString(commandContext.getArgs()) + ", Remote Address: " + remoteAddress);
+        logger.info("[Dubbo QoS] Command Process start. Command: " + commandContext.getCommandName() + ", Args: "
+                + Arrays.toString(commandContext.getArgs()) + ", Remote Address: " + remoteAddress);
 
         BaseCommand command = null;
         try {
-            command = frameworkModel.getExtensionLoader(BaseCommand.class).getExtension(commandContext.getCommandName());
+            command =
+                    frameworkModel.getExtensionLoader(BaseCommand.class).getExtension(commandContext.getCommandName());
         } catch (Throwable throwable) {
-            //can't find command
+            // can't find command
         }
         if (command == null) {
-            logger.info("[Dubbo QoS] Command Not found. Command: " + commandContext.getCommandName() +
-                ", Remote Address: " + remoteAddress);
+            logger.info("[Dubbo QoS] Command Not found. Command: " + commandContext.getCommandName()
+                    + ", Remote Address: " + remoteAddress);
             throw new NoSuchCommandException(commandContext.getCommandName());
         }
 
@@ -66,18 +70,22 @@ public class DefaultCommandExecutor implements CommandExecutor {
         if (commandContext.isAllowAnonymousAccess()) {
             PermissionChecker permissionChecker = DefaultAnonymousAccessPermissionChecker.INSTANCE;
             try {
-                permissionChecker = frameworkModel.getExtensionLoader(PermissionChecker.class).getExtension(QosConstants.QOS_PERMISSION_CHECKER);
+                permissionChecker = frameworkModel
+                        .getExtensionLoader(PermissionChecker.class)
+                        .getExtension(QosConstants.QOS_PERMISSION_CHECKER);
             } catch (Throwable throwable) {
-                //can't find valid custom permissionChecker
+                // can't find valid custom permissionChecker
             }
 
             final Cmd cmd = command.getClass().getAnnotation(Cmd.class);
             final PermissionLevel cmdRequiredPermissionLevel = cmd.requiredPermissionLevel();
 
             if (!permissionChecker.access(commandContext, cmdRequiredPermissionLevel)) {
-                logger.info("[Dubbo QoS] Command Deny to access. Command: " + commandContext.getCommandName() +
-                    ", Args: " + Arrays.toString(commandContext.getArgs()) + ", Required Permission Level: " + cmdRequiredPermissionLevel +
-                    ", Remote Address: " + remoteAddress);
+                logger.info(
+                        "[Dubbo QoS] Command Deny to access. Command: " + commandContext.getCommandName() + ", Args: "
+                                + Arrays.toString(commandContext.getArgs()) + ", Required Permission Level: "
+                                + cmdRequiredPermissionLevel + ", Remote Address: "
+                                + remoteAddress);
                 throw new PermissionDenyException(commandContext.getCommandName());
             }
         }
@@ -85,15 +93,18 @@ public class DefaultCommandExecutor implements CommandExecutor {
         try {
             String result = command.execute(commandContext, commandContext.getArgs());
             if (command.logResult()) {
-                logger.info("[Dubbo QoS] Command Process success. Command: " + commandContext.getCommandName() +
-                    ", Args: " + Arrays.toString(commandContext.getArgs()) + ", Result: " + result +
-                    ", Remote Address: " + remoteAddress);
+                logger.info("[Dubbo QoS] Command Process success. Command: " + commandContext.getCommandName()
+                        + ", Args: "
+                        + Arrays.toString(commandContext.getArgs()) + ", Result: " + result + ", Remote Address: "
+                        + remoteAddress);
             }
             return result;
         } catch (Throwable t) {
-            logger.info("[Dubbo QoS] Command Process Failed. Command: " + commandContext.getCommandName() +
-                ", Args: " + Arrays.toString(commandContext.getArgs()) +
-                ", Remote Address: " + remoteAddress, t);
+            logger.info(
+                    "[Dubbo QoS] Command Process Failed. Command: " + commandContext.getCommandName() + ", Args: "
+                            + Arrays.toString(commandContext.getArgs()) + ", Remote Address: "
+                            + remoteAddress,
+                    t);
             throw t;
         }
     }

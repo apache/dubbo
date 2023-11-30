@@ -194,8 +194,7 @@ public class RegistryConfig extends AbstractConfig {
         this.secure = secure;
     }
 
-    public RegistryConfig() {
-    }
+    public RegistryConfig() {}
 
     public RegistryConfig(ApplicationModel applicationModel) {
         super(applicationModel);

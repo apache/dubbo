@@ -14,22 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.spring.security.jackson;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.springframework.security.jackson2.CoreJackson2Module;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.security.jackson2.CoreJackson2Module;
 
 public class ObjectMapperCodec {
 
@@ -50,7 +50,12 @@ public class ObjectMapperCodec {
             return mapper.readValue(bytes, clazz);
 
         } catch (Exception exception) {
-            logger.warn(LoggerCodeConstants.COMMON_JSON_CONVERT_EXCEPTION, "objectMapper! deserialize error, you can try to customize the ObjectMapperCodecCustomer.","","", exception);
+            logger.warn(
+                    LoggerCodeConstants.COMMON_JSON_CONVERT_EXCEPTION,
+                    "objectMapper! deserialize error, you can try to customize the ObjectMapperCodecCustomer.",
+                    "",
+                    "",
+                    exception);
         }
         return null;
     }
@@ -72,8 +77,12 @@ public class ObjectMapperCodec {
             return mapper.writeValueAsString(object);
 
         } catch (Exception ex) {
-            logger.warn(LoggerCodeConstants.COMMON_JSON_CONVERT_EXCEPTION, "objectMapper! serialize error, you can try to customize the ObjectMapperCodecCustomer.","","", ex);
-
+            logger.warn(
+                    LoggerCodeConstants.COMMON_JSON_CONVERT_EXCEPTION,
+                    "objectMapper! serialize error, you can try to customize the ObjectMapperCodecCustomer.",
+                    "",
+                    "",
+                    ex);
         }
         return null;
     }
@@ -93,8 +102,10 @@ public class ObjectMapperCodec {
         mapper.registerModule(new JavaTimeModule());
 
         List<String> jacksonModuleClassNameList = new ArrayList<>();
-        jacksonModuleClassNameList.add("org.springframework.security.oauth2.server.authorization.jackson2.OAuth2AuthorizationServerJackson2Module");
-        jacksonModuleClassNameList.add("org.springframework.security.oauth2.client.jackson2.OAuth2ClientJackson2Module");
+        jacksonModuleClassNameList.add(
+                "org.springframework.security.oauth2.server.authorization.jackson2.OAuth2AuthorizationServerJackson2Module");
+        jacksonModuleClassNameList.add(
+                "org.springframework.security.oauth2.client.jackson2.OAuth2ClientJackson2Module");
         jacksonModuleClassNameList.add("org.springframework.security.web.server.jackson2.WebServerJackson2Module");
         jacksonModuleClassNameList.add("com.fasterxml.jackson.module.paramnames.ParameterNamesModule");
         jacksonModuleClassNameList.add("org.springframework.security.web.jackson2.WebServletJackson2Module");
@@ -102,19 +113,19 @@ public class ObjectMapperCodec {
         jacksonModuleClassNameList.add("org.springframework.boot.jackson.JsonMixinModule");
         jacksonModuleClassNameList.add("org.springframework.security.ldap.jackson2.LdapJackson2Module");
         loadModuleIfPresent(jacksonModuleClassNameList);
-
     }
 
     private void loadModuleIfPresent(List<String> jacksonModuleClassNameList) {
         for (String moduleClassName : jacksonModuleClassNameList) {
             try {
-                SimpleModule objectMapperModule = (SimpleModule) ClassUtils.forName(moduleClassName,
-                    ObjectMapperCodec.class.getClassLoader()).getDeclaredConstructor().newInstance();
+                SimpleModule objectMapperModule =
+                        (SimpleModule) ClassUtils.forName(moduleClassName, ObjectMapperCodec.class.getClassLoader())
+                                .getDeclaredConstructor()
+                                .newInstance();
                 mapper.registerModule(objectMapperModule);
 
             } catch (Throwable ex) {
             }
         }
     }
-
 }

@@ -25,15 +25,13 @@ import org.apache.dubbo.metadata.tools.DefaultTestService;
 import org.apache.dubbo.metadata.tools.GenericTestService;
 import org.apache.dubbo.metadata.tools.TestServiceImpl;
 
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+
 import java.io.File;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
@@ -44,6 +42,9 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import static java.util.Arrays.asList;
 import static org.apache.dubbo.metadata.annotation.processing.util.FieldUtils.findField;
@@ -172,8 +173,7 @@ class TypeUtilsTest extends AbstractAnnotationProcessingTest {
     @Test
     void testIsPrimitiveType() {
         TypeElement type = getType(PrimitiveTypeModel.class);
-        getDeclaredFields(type.asType())
-                .stream()
+        getDeclaredFields(type.asType()).stream()
                 .map(VariableElement::asType)
                 .forEach(t -> assertTrue(isPrimitiveType(t)));
 
@@ -217,11 +217,18 @@ class TypeUtilsTest extends AbstractAnnotationProcessingTest {
         Set hierarchicalTypes = getHierarchicalTypes(testType.asType(), true, true, true);
         Iterator iterator = hierarchicalTypes.iterator();
         assertEquals(8, hierarchicalTypes.size());
-        assertEquals("org.apache.dubbo.metadata.tools.TestServiceImpl", iterator.next().toString());
-        assertEquals("org.apache.dubbo.metadata.tools.GenericTestService", iterator.next().toString());
-        assertEquals("org.apache.dubbo.metadata.tools.DefaultTestService", iterator.next().toString());
+        assertEquals(
+                "org.apache.dubbo.metadata.tools.TestServiceImpl",
+                iterator.next().toString());
+        assertEquals(
+                "org.apache.dubbo.metadata.tools.GenericTestService",
+                iterator.next().toString());
+        assertEquals(
+                "org.apache.dubbo.metadata.tools.DefaultTestService",
+                iterator.next().toString());
         assertEquals("java.lang.Object", iterator.next().toString());
-        assertEquals("org.apache.dubbo.metadata.tools.TestService", iterator.next().toString());
+        assertEquals(
+                "org.apache.dubbo.metadata.tools.TestService", iterator.next().toString());
         assertEquals("java.lang.AutoCloseable", iterator.next().toString());
         assertEquals("java.io.Serializable", iterator.next().toString());
         assertEquals("java.util.EventListener", iterator.next().toString());
@@ -229,11 +236,18 @@ class TypeUtilsTest extends AbstractAnnotationProcessingTest {
         hierarchicalTypes = getHierarchicalTypes(testType);
         iterator = hierarchicalTypes.iterator();
         assertEquals(8, hierarchicalTypes.size());
-        assertEquals("org.apache.dubbo.metadata.tools.TestServiceImpl", iterator.next().toString());
-        assertEquals("org.apache.dubbo.metadata.tools.GenericTestService", iterator.next().toString());
-        assertEquals("org.apache.dubbo.metadata.tools.DefaultTestService", iterator.next().toString());
+        assertEquals(
+                "org.apache.dubbo.metadata.tools.TestServiceImpl",
+                iterator.next().toString());
+        assertEquals(
+                "org.apache.dubbo.metadata.tools.GenericTestService",
+                iterator.next().toString());
+        assertEquals(
+                "org.apache.dubbo.metadata.tools.DefaultTestService",
+                iterator.next().toString());
         assertEquals("java.lang.Object", iterator.next().toString());
-        assertEquals("org.apache.dubbo.metadata.tools.TestService", iterator.next().toString());
+        assertEquals(
+                "org.apache.dubbo.metadata.tools.TestService", iterator.next().toString());
         assertEquals("java.lang.AutoCloseable", iterator.next().toString());
         assertEquals("java.io.Serializable", iterator.next().toString());
         assertEquals("java.util.EventListener", iterator.next().toString());
@@ -241,10 +255,17 @@ class TypeUtilsTest extends AbstractAnnotationProcessingTest {
         hierarchicalTypes = getHierarchicalTypes(testType.asType(), Object.class);
         iterator = hierarchicalTypes.iterator();
         assertEquals(7, hierarchicalTypes.size());
-        assertEquals("org.apache.dubbo.metadata.tools.TestServiceImpl", iterator.next().toString());
-        assertEquals("org.apache.dubbo.metadata.tools.GenericTestService", iterator.next().toString());
-        assertEquals("org.apache.dubbo.metadata.tools.DefaultTestService", iterator.next().toString());
-        assertEquals("org.apache.dubbo.metadata.tools.TestService", iterator.next().toString());
+        assertEquals(
+                "org.apache.dubbo.metadata.tools.TestServiceImpl",
+                iterator.next().toString());
+        assertEquals(
+                "org.apache.dubbo.metadata.tools.GenericTestService",
+                iterator.next().toString());
+        assertEquals(
+                "org.apache.dubbo.metadata.tools.DefaultTestService",
+                iterator.next().toString());
+        assertEquals(
+                "org.apache.dubbo.metadata.tools.TestService", iterator.next().toString());
         assertEquals("java.lang.AutoCloseable", iterator.next().toString());
         assertEquals("java.io.Serializable", iterator.next().toString());
         assertEquals("java.util.EventListener", iterator.next().toString());
@@ -252,16 +273,25 @@ class TypeUtilsTest extends AbstractAnnotationProcessingTest {
         hierarchicalTypes = getHierarchicalTypes(testType.asType(), true, true, false);
         iterator = hierarchicalTypes.iterator();
         assertEquals(4, hierarchicalTypes.size());
-        assertEquals("org.apache.dubbo.metadata.tools.TestServiceImpl", iterator.next().toString());
-        assertEquals("org.apache.dubbo.metadata.tools.GenericTestService", iterator.next().toString());
-        assertEquals("org.apache.dubbo.metadata.tools.DefaultTestService", iterator.next().toString());
+        assertEquals(
+                "org.apache.dubbo.metadata.tools.TestServiceImpl",
+                iterator.next().toString());
+        assertEquals(
+                "org.apache.dubbo.metadata.tools.GenericTestService",
+                iterator.next().toString());
+        assertEquals(
+                "org.apache.dubbo.metadata.tools.DefaultTestService",
+                iterator.next().toString());
         assertEquals("java.lang.Object", iterator.next().toString());
 
         hierarchicalTypes = getHierarchicalTypes(testType.asType(), true, false, true);
         iterator = hierarchicalTypes.iterator();
         assertEquals(5, hierarchicalTypes.size());
-        assertEquals("org.apache.dubbo.metadata.tools.TestServiceImpl", iterator.next().toString());
-        assertEquals("org.apache.dubbo.metadata.tools.TestService", iterator.next().toString());
+        assertEquals(
+                "org.apache.dubbo.metadata.tools.TestServiceImpl",
+                iterator.next().toString());
+        assertEquals(
+                "org.apache.dubbo.metadata.tools.TestService", iterator.next().toString());
         assertEquals("java.lang.AutoCloseable", iterator.next().toString());
         assertEquals("java.io.Serializable", iterator.next().toString());
         assertEquals("java.util.EventListener", iterator.next().toString());
@@ -269,7 +299,8 @@ class TypeUtilsTest extends AbstractAnnotationProcessingTest {
         hierarchicalTypes = getHierarchicalTypes(testType.asType(), false, false, true);
         iterator = hierarchicalTypes.iterator();
         assertEquals(4, hierarchicalTypes.size());
-        assertEquals("org.apache.dubbo.metadata.tools.TestService", iterator.next().toString());
+        assertEquals(
+                "org.apache.dubbo.metadata.tools.TestService", iterator.next().toString());
         assertEquals("java.lang.AutoCloseable", iterator.next().toString());
         assertEquals("java.io.Serializable", iterator.next().toString());
         assertEquals("java.util.EventListener", iterator.next().toString());
@@ -277,7 +308,9 @@ class TypeUtilsTest extends AbstractAnnotationProcessingTest {
         hierarchicalTypes = getHierarchicalTypes(testType.asType(), true, false, false);
         iterator = hierarchicalTypes.iterator();
         assertEquals(1, hierarchicalTypes.size());
-        assertEquals("org.apache.dubbo.metadata.tools.TestServiceImpl", iterator.next().toString());
+        assertEquals(
+                "org.apache.dubbo.metadata.tools.TestServiceImpl",
+                iterator.next().toString());
 
         hierarchicalTypes = getHierarchicalTypes(testType.asType(), false, false, false);
         assertEquals(0, hierarchicalTypes.size());
@@ -285,7 +318,6 @@ class TypeUtilsTest extends AbstractAnnotationProcessingTest {
         assertTrue(getHierarchicalTypes((TypeElement) null).isEmpty());
         assertTrue(getHierarchicalTypes((TypeMirror) null).isEmpty());
     }
-
 
     @Test
     void testGetInterfaces() {
@@ -296,7 +328,8 @@ class TypeUtilsTest extends AbstractAnnotationProcessingTest {
         interfaces = getInterfaces(testType.asType());
 
         assertEquals(3, interfaces.size());
-        assertEquals("org.apache.dubbo.metadata.tools.TestService", interfaces.get(0).toString());
+        assertEquals(
+                "org.apache.dubbo.metadata.tools.TestService", interfaces.get(0).toString());
         assertEquals("java.lang.AutoCloseable", interfaces.get(1).toString());
         assertEquals("java.io.Serializable", interfaces.get(2).toString());
 
@@ -309,7 +342,8 @@ class TypeUtilsTest extends AbstractAnnotationProcessingTest {
         Set<? extends TypeMirror> interfaces = getAllInterfaces(testType.asType());
         assertEquals(4, interfaces.size());
         Iterator<? extends TypeMirror> iterator = interfaces.iterator();
-        assertEquals("org.apache.dubbo.metadata.tools.TestService", iterator.next().toString());
+        assertEquals(
+                "org.apache.dubbo.metadata.tools.TestService", iterator.next().toString());
         assertEquals("java.lang.AutoCloseable", iterator.next().toString());
         assertEquals("java.io.Serializable", iterator.next().toString());
         assertEquals("java.util.EventListener", iterator.next().toString());
@@ -318,7 +352,9 @@ class TypeUtilsTest extends AbstractAnnotationProcessingTest {
         assertEquals(4, interfaces.size());
 
         Iterator<TypeElement> allIterator = allInterfaces.iterator();
-        assertEquals("org.apache.dubbo.metadata.tools.TestService", allIterator.next().toString());
+        assertEquals(
+                "org.apache.dubbo.metadata.tools.TestService",
+                allIterator.next().toString());
         assertEquals("java.lang.AutoCloseable", allIterator.next().toString());
         assertEquals("java.io.Serializable", allIterator.next().toString());
         assertEquals("java.util.EventListener", allIterator.next().toString());
@@ -416,7 +452,8 @@ class TypeUtilsTest extends AbstractAnnotationProcessingTest {
 
     @Test
     void testOfDeclaredTypes() {
-        Set<DeclaredType> declaredTypes = ofDeclaredTypes(asList(getType(String.class), getType(TestServiceImpl.class), getType(Color.class)));
+        Set<DeclaredType> declaredTypes =
+                ofDeclaredTypes(asList(getType(String.class), getType(TestServiceImpl.class), getType(Color.class)));
         assertTrue(declaredTypes.contains(getType(String.class).asType()));
         assertTrue(declaredTypes.contains(getType(TestServiceImpl.class).asType()));
         assertTrue(declaredTypes.contains(getType(Color.class).asType()));
@@ -430,7 +467,7 @@ class TypeUtilsTest extends AbstractAnnotationProcessingTest {
         assertEquals(1, types.size());
         assertEquals(ofDeclaredType(testType), types.get(0));
 
-        types = listDeclaredTypes(asList(new Element[]{null}));
+        types = listDeclaredTypes(asList(new Element[] {null}));
         assertTrue(types.isEmpty());
     }
 
@@ -440,10 +477,11 @@ class TypeUtilsTest extends AbstractAnnotationProcessingTest {
         assertEquals(1, typeElements.size());
         assertEquals(testType, typeElements.get(0));
 
-        typeElements = listTypeElements(asList(types.getPrimitiveType(TypeKind.BYTE), types.getNullType(), types.getNoType(TypeKind.NONE)));
+        typeElements = listTypeElements(
+                asList(types.getPrimitiveType(TypeKind.BYTE), types.getNullType(), types.getNoType(TypeKind.NONE)));
         assertTrue(typeElements.isEmpty());
 
-        typeElements = listTypeElements(asList(new TypeMirror[]{null}));
+        typeElements = listTypeElements(asList(new TypeMirror[] {null}));
         assertTrue(typeElements.isEmpty());
 
         typeElements = listTypeElements(null);

@@ -31,7 +31,6 @@ public class DubboWireProtocol extends AbstractWireProtocol {
         super(new DubboDetector());
     }
 
-
     @Override
     public void configServerProtocolHandler(URL url, ChannelOperator operator) {
         List<ChannelHandler> handlers = new ArrayList<>();

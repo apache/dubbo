@@ -17,7 +17,7 @@
 package org.apache.dubbo.common.extension;
 
 @Activate
-public class SPI4Impl implements SPI4{
+public class SPI4Impl implements SPI4 {
     @Override
     public String sayHello() {
         return null;

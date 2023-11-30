@@ -21,12 +21,12 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.support.DemoService;
 import org.apache.dubbo.rpc.support.DemoServiceImpl;
 
+import java.util.List;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 import static org.apache.dubbo.common.BaseServiceMetadata.interfaceFromServiceKey;
 import static org.apache.dubbo.common.BaseServiceMetadata.versionFromServiceKey;
@@ -56,14 +56,17 @@ class FrameworkServiceRepositoryTest {
         FrameworkServiceRepository frameworkServiceRepository = frameworkModel.getServiceRepository();
         ModuleServiceRepository moduleServiceRepository = moduleModel.getServiceRepository();
 
-        ServiceMetadata serviceMetadata = new ServiceMetadata(DemoService.class.getName(), "GROUP", "1.0.0", DemoService.class);
+        ServiceMetadata serviceMetadata =
+                new ServiceMetadata(DemoService.class.getName(), "GROUP", "1.0.0", DemoService.class);
         ServiceDescriptor serviceDescriptor = moduleServiceRepository.registerService(DemoService.class);
         String serviceKey = serviceMetadata.getServiceKey();
-        ProviderModel providerModel = new ProviderModel(serviceKey,
-            new DemoServiceImpl(),
-            serviceDescriptor,
-            moduleModel,
-            serviceMetadata, ClassUtils.getClassLoader(DemoService.class));
+        ProviderModel providerModel = new ProviderModel(
+                serviceKey,
+                new DemoServiceImpl(),
+                serviceDescriptor,
+                moduleModel,
+                serviceMetadata,
+                ClassUtils.getClassLoader(DemoService.class));
         frameworkServiceRepository.registerProvider(providerModel);
 
         ProviderModel lookupExportedService = frameworkServiceRepository.lookupExportedService(serviceKey);
@@ -74,16 +77,23 @@ class FrameworkServiceRepositoryTest {
         Assertions.assertEquals(allProviderModels.get(0), providerModel);
 
         String keyWithoutGroup = keyWithoutGroup(serviceKey);
-        ProviderModel exportedServiceWithoutGroup = frameworkServiceRepository.lookupExportedServiceWithoutGroup(keyWithoutGroup);
+        ProviderModel exportedServiceWithoutGroup =
+                frameworkServiceRepository.lookupExportedServiceWithoutGroup(keyWithoutGroup);
         Assertions.assertEquals(exportedServiceWithoutGroup, providerModel);
 
-        List<ProviderModel> providerModels = frameworkServiceRepository.lookupExportedServicesWithoutGroup(keyWithoutGroup);
+        List<ProviderModel> providerModels =
+                frameworkServiceRepository.lookupExportedServicesWithoutGroup(keyWithoutGroup);
         Assertions.assertEquals(providerModels.size(), 1);
         Assertions.assertEquals(providerModels.get(0), providerModel);
 
         ConsumerModel consumerModel = new ConsumerModel(
-            serviceMetadata.getServiceKey(), new DemoServiceImpl(), serviceDescriptor,
-            moduleModel, serviceMetadata, null, ClassUtils.getClassLoader(DemoService.class));
+                serviceMetadata.getServiceKey(),
+                new DemoServiceImpl(),
+                serviceDescriptor,
+                moduleModel,
+                serviceMetadata,
+                null,
+                ClassUtils.getClassLoader(DemoService.class));
         moduleServiceRepository.registerConsumer(consumerModel);
         List<ConsumerModel> consumerModels = frameworkServiceRepository.allConsumerModels();
         Assertions.assertEquals(consumerModels.size(), 1);
@@ -92,7 +102,6 @@ class FrameworkServiceRepositoryTest {
         frameworkServiceRepository.unregisterProvider(providerModel);
         Assertions.assertNull(frameworkServiceRepository.lookupExportedService(serviceKey));
         Assertions.assertNull(frameworkServiceRepository.lookupExportedServiceWithoutGroup(keyWithoutGroup));
-
     }
 
     private static String keyWithoutGroup(String serviceKey) {

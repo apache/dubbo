@@ -20,6 +20,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
@@ -71,8 +72,7 @@ public interface FieldUtils {
     }
 
     static List<VariableElement> getAllDeclaredFields(TypeMirror type, Predicate<VariableElement>... fieldFilters) {
-        return getHierarchicalTypes(type)
-                .stream()
+        return getHierarchicalTypes(type).stream()
                 .map(t -> getDeclaredFields(t, fieldFilters))
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
@@ -87,7 +87,8 @@ public interface FieldUtils {
     }
 
     static VariableElement getDeclaredField(TypeMirror type, String fieldName) {
-        return filterFirst(getDeclaredFields(type, field -> fieldName.equals(field.getSimpleName().toString())));
+        return filterFirst(getDeclaredFields(
+                type, field -> fieldName.equals(field.getSimpleName().toString())));
     }
 
     static VariableElement findField(Element element, String fieldName) {
@@ -140,7 +141,8 @@ public interface FieldUtils {
     }
 
     static boolean equals(VariableElement field, CharSequence fieldName) {
-        return field != null && fieldName != null && field.getSimpleName().toString().equals(fieldName.toString());
+        return field != null
+                && fieldName != null
+                && field.getSimpleName().toString().equals(fieldName.toString());
     }
-
 }

@@ -70,12 +70,12 @@ public class DefaultServiceInstance implements ServiceInstance {
      * extendParams can be more flexible, but one single property uses less space
      */
     private transient Map<String, String> extendParams;
+
     private transient List<Endpoint> endpoints;
     private transient ApplicationModel applicationModel;
     private transient Map<String, InstanceAddressURL> instanceAddressURL = new ConcurrentHashMap<>();
 
-    public DefaultServiceInstance() {
-    }
+    public DefaultServiceInstance() {}
 
     public DefaultServiceInstance(DefaultServiceInstance other) {
         this.serviceName = other.serviceName;
@@ -110,7 +110,6 @@ public class DefaultServiceInstance implements ServiceInstance {
     public void setRawAddress(String rawAddress) {
         this.rawAddress = rawAddress;
     }
-
 
     public void setServiceName(String serviceName) {
         this.serviceName = serviceName;
@@ -292,8 +291,8 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     @Override
     public InstanceAddressURL toURL(String protocol) {
-        return instanceAddressURL.computeIfAbsent(protocol,
-            key -> new InstanceAddressURL(this, serviceMetadata, protocol));
+        return instanceAddressURL.computeIfAbsent(
+                protocol, key -> new InstanceAddressURL(this, serviceMetadata, protocol));
     }
 
     @Override
@@ -305,9 +304,9 @@ public class DefaultServiceInstance implements ServiceInstance {
             return false;
         }
         DefaultServiceInstance that = (DefaultServiceInstance) o;
-        boolean equals = Objects.equals(getServiceName(), that.getServiceName()) &&
-            Objects.equals(getHost(), that.getHost()) &&
-            Objects.equals(getPort(), that.getPort());
+        boolean equals = Objects.equals(getServiceName(), that.getServiceName())
+                && Objects.equals(getHost(), that.getHost())
+                && Objects.equals(getPort(), that.getPort());
         for (Map.Entry<String, String> entry : this.getMetadata().entrySet()) {
             if (entry.getKey().equals(EXPORTED_SERVICES_REVISION_PROPERTY_NAME)) {
                 continue;
@@ -329,7 +328,8 @@ public class DefaultServiceInstance implements ServiceInstance {
             if (entry.getKey().equals(EXPORTED_SERVICES_REVISION_PROPERTY_NAME)) {
                 continue;
             }
-            result = 31 * result + (entry.getValue() == null ? 0 : entry.getValue().hashCode());
+            result = 31 * result
+                    + (entry.getValue() == null ? 0 : entry.getValue().hashCode());
         }
         return result;
     }
@@ -340,22 +340,20 @@ public class DefaultServiceInstance implements ServiceInstance {
     }
 
     public String toFullString() {
-        return "DefaultServiceInstance{" +
-            "serviceName='" + serviceName + '\'' +
-            ", host='" + host + '\'' +
-            ", port=" + port +
-            ", enabled=" + enabled +
-            ", healthy=" + healthy +
-            ", metadata=" + metadata +
-            '}';
+        return "DefaultServiceInstance{" + "serviceName='"
+                + serviceName + '\'' + ", host='"
+                + host + '\'' + ", port="
+                + port + ", enabled="
+                + enabled + ", healthy="
+                + healthy + ", metadata="
+                + metadata + '}';
     }
 
     public static class Endpoint {
         int port;
         String protocol;
 
-        public Endpoint() {
-        }
+        public Endpoint() {}
 
         public Endpoint(int port, String protocol) {
             this.port = port;

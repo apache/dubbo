@@ -30,19 +30,19 @@ import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.transport.AbstractServer;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
 
-import org.jboss.netty.bootstrap.ServerBootstrap;
-import org.jboss.netty.channel.ChannelFactory;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.channel.Channels;
-import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
-
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import org.jboss.netty.bootstrap.ServerBootstrap;
+import org.jboss.netty.channel.ChannelFactory;
+import org.jboss.netty.channel.ChannelPipeline;
+import org.jboss.netty.channel.ChannelPipelineFactory;
+import org.jboss.netty.channel.Channels;
+import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
 import static org.apache.dubbo.common.constants.CommonConstants.BACKLOG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
@@ -71,8 +71,10 @@ public class NettyServer extends AbstractServer implements RemotingServer {
     protected void doOpen() throws Throwable {
         NettyHelper.setNettyLoggerFactory();
         ExecutorService boss = Executors.newCachedThreadPool(new NamedThreadFactory(EVENT_LOOP_BOSS_POOL_NAME, true));
-        ExecutorService worker = Executors.newCachedThreadPool(new NamedThreadFactory(EVENT_LOOP_WORKER_POOL_NAME, true));
-        ChannelFactory channelFactory = new NioServerSocketChannelFactory(boss, worker, getUrl().getPositiveParameter(IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS));
+        ExecutorService worker =
+                Executors.newCachedThreadPool(new NamedThreadFactory(EVENT_LOOP_WORKER_POOL_NAME, true));
+        ChannelFactory channelFactory = new NioServerSocketChannelFactory(
+                boss, worker, getUrl().getPositiveParameter(IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS));
         bootstrap = new ServerBootstrap(channelFactory);
 
         final NettyHandler nettyHandler = new NettyHandler(getUrl(), this);
@@ -164,5 +166,4 @@ public class NettyServer extends AbstractServer implements RemotingServer {
     public boolean isBound() {
         return channel.isBound();
     }
-
 }

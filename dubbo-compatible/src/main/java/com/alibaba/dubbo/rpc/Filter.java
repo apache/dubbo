@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.rpc;
 
 import org.apache.dubbo.rpc.AsyncRpcResult;
@@ -28,11 +27,11 @@ public interface Filter extends org.apache.dubbo.rpc.Filter {
     Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException;
 
     @Override
-    default org.apache.dubbo.rpc.Result invoke(org.apache.dubbo.rpc.Invoker<?> invoker,
-                                               org.apache.dubbo.rpc.Invocation invocation)
-        throws org.apache.dubbo.rpc.RpcException {
-        Result invokeResult = invoke(new Invoker.CompatibleInvoker<>(invoker),
-            new Invocation.CompatibleInvocation(invocation));
+    default org.apache.dubbo.rpc.Result invoke(
+            org.apache.dubbo.rpc.Invoker<?> invoker, org.apache.dubbo.rpc.Invocation invocation)
+            throws org.apache.dubbo.rpc.RpcException {
+        Result invokeResult =
+                invoke(new Invoker.CompatibleInvoker<>(invoker), new Invocation.CompatibleInvocation(invocation));
 
         if (invokeResult instanceof Result.CompatibleResult) {
             return ((Result.CompatibleResult) invokeResult).getDelegate();

@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.rest;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
+
 import java.io.Serializable;
 
 @XmlRootElement(name = "constraintViolation")
@@ -37,8 +38,7 @@ public class RestConstraintViolation implements Serializable {
         this.value = value;
     }
 
-    public RestConstraintViolation() {
-    }
+    public RestConstraintViolation() {}
 
     public String getPath() {
         return path;

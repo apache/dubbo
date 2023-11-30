@@ -16,18 +16,15 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.annotation;
 
-
 import org.apache.dubbo.metadata.rest.ArgInfo;
 
 import java.util.List;
 
 public class BaseParseContext {
 
-
     protected List<Object> args;
 
     protected List<ArgInfo> argInfos;
-
 
     public List<Object> getArgs() {
         return args;

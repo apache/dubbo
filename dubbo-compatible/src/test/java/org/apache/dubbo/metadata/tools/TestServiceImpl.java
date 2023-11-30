@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metadata.tools;
 
-
 import org.apache.dubbo.config.annotation.Service;
 
 import java.io.Serializable;
@@ -30,14 +29,12 @@ import java.io.Serializable;
         interfaceName = "org.apache.dubbo.metadata.tools.TestService",
         interfaceClass = TestService.class,
         version = "3.0.0",
-        group = "test"
-)
+        group = "test")
 @Service(
         interfaceName = "org.apache.dubbo.metadata.tools.TestService",
         interfaceClass = TestService.class,
         version = "3.0.0",
-        group = "test"
-)
+        group = "test")
 public class TestServiceImpl extends GenericTestService implements TestService, AutoCloseable, Serializable {
 
     @Override
@@ -46,6 +43,5 @@ public class TestServiceImpl extends GenericTestService implements TestService, 
     }
 
     @Override
-    public void close() throws Exception {
-    }
+    public void close() throws Exception {}
 }

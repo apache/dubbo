@@ -32,7 +32,6 @@ public class HeaderMatcherTest {
         assertTrue(headMatcher.match(value));
     }
 
-
     @Test
     public void regexMatcherTest() {
         HeaderMatcher headMatcher = new HeaderMatcher();
@@ -52,7 +51,6 @@ public class HeaderMatcherTest {
         assertTrue(headMatcher.match("300"));
     }
 
-
     @Test
     public void presentMatcherTest() {
         HeaderMatcher headMatcher = new HeaderMatcher();
@@ -70,7 +68,6 @@ public class HeaderMatcherTest {
         headMatcher.setPrefix("test");
         assertTrue(headMatcher.match("testValue"));
     }
-
 
     @Test
     public void suffixMatcherTest() {

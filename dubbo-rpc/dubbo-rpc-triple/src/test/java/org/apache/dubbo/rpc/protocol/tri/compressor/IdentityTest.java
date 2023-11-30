@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.compressor;
 
 import org.junit.jupiter.api.Assertions;
@@ -29,14 +28,14 @@ class IdentityTest {
 
     @Test
     void compress() {
-        byte[] input = new byte[]{1, 2, 3, 4, 5};
+        byte[] input = new byte[] {1, 2, 3, 4, 5};
         final byte[] compressed = Identity.IDENTITY.compress(input);
         Assertions.assertEquals(input, compressed);
     }
 
     @Test
     void decompress() {
-        byte[] input = new byte[]{1, 2, 3, 4, 5};
+        byte[] input = new byte[] {1, 2, 3, 4, 5};
         final byte[] decompressed = Identity.IDENTITY.decompress(input);
         Assertions.assertEquals(input, decompressed);
     }

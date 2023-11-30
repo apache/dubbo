@@ -18,11 +18,11 @@ package org.apache.dubbo.config.bootstrap.builders;
 
 import org.apache.dubbo.config.MonitorConfig;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class MonitorBuilderTest {
 
@@ -111,9 +111,16 @@ class MonitorBuilderTest {
     @Test
     void build() {
         MonitorBuilder builder = new MonitorBuilder();
-        builder.protocol("protocol").address("address").group("group").interval("interval").isDefault(true)
-                .password("password").username("username").version("version")
-                .appendParameter("default.num", "one").id("id");
+        builder.protocol("protocol")
+                .address("address")
+                .group("group")
+                .interval("interval")
+                .isDefault(true)
+                .password("password")
+                .username("username")
+                .version("version")
+                .appendParameter("default.num", "one")
+                .id("id");
 
         MonitorConfig config = builder.build();
         MonitorConfig config2 = builder.build();

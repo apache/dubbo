@@ -23,28 +23,27 @@ import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
 
-import java.util.concurrent.atomic.AtomicReference;
-
 class CertDeployerListenerTest {
     @Test
     void testEmpty1() {
         AtomicReference<DubboCertManager> reference = new AtomicReference<>();
         try (MockedConstruction<DubboCertManager> construction =
-                 Mockito.mockConstruction(DubboCertManager.class, (mock, context) -> {
-                     reference.set(mock);
-                 })) {
+                Mockito.mockConstruction(DubboCertManager.class, (mock, context) -> {
+                    reference.set(mock);
+                })) {
             FrameworkModel frameworkModel = new FrameworkModel();
             ApplicationModel applicationModel = frameworkModel.newApplication();
             applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("test"));
             applicationModel.getDeployer().start();
-            Mockito.verify(reference.get(), Mockito.times(0))
-                .connect(Mockito.any());
+            Mockito.verify(reference.get(), Mockito.times(0)).connect(Mockito.any());
             applicationModel.getDeployer().stop();
             Mockito.verify(reference.get(), Mockito.atLeast(1)).disConnect();
             frameworkModel.destroy();
@@ -55,16 +54,15 @@ class CertDeployerListenerTest {
     void testEmpty2() {
         AtomicReference<DubboCertManager> reference = new AtomicReference<>();
         try (MockedConstruction<DubboCertManager> construction =
-                 Mockito.mockConstruction(DubboCertManager.class, (mock, context) -> {
-                     reference.set(mock);
-                 })) {
+                Mockito.mockConstruction(DubboCertManager.class, (mock, context) -> {
+                    reference.set(mock);
+                })) {
             FrameworkModel frameworkModel = new FrameworkModel();
             ApplicationModel applicationModel = frameworkModel.newApplication();
             applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("test"));
             applicationModel.getApplicationConfigManager().setSsl(new SslConfig());
             applicationModel.getDeployer().start();
-            Mockito.verify(reference.get(), Mockito.times(0))
-                .connect(Mockito.any());
+            Mockito.verify(reference.get(), Mockito.times(0)).connect(Mockito.any());
             applicationModel.getDeployer().stop();
             Mockito.verify(reference.get(), Mockito.atLeast(1)).disConnect();
             frameworkModel.destroy();
@@ -75,9 +73,9 @@ class CertDeployerListenerTest {
     void testCreate() {
         AtomicReference<DubboCertManager> reference = new AtomicReference<>();
         try (MockedConstruction<DubboCertManager> construction =
-                 Mockito.mockConstruction(DubboCertManager.class, (mock, context) -> {
-                     reference.set(mock);
-                 })) {
+                Mockito.mockConstruction(DubboCertManager.class, (mock, context) -> {
+                    reference.set(mock);
+                })) {
             FrameworkModel frameworkModel = new FrameworkModel();
             ApplicationModel applicationModel = frameworkModel.newApplication();
             applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("test"));
@@ -86,11 +84,9 @@ class CertDeployerListenerTest {
             applicationModel.getApplicationConfigManager().setSsl(sslConfig);
 
             applicationModel.getDeployer().start();
-            Mockito.verify(reference.get(), Mockito.times(1))
-                .connect(Mockito.any());
+            Mockito.verify(reference.get(), Mockito.times(1)).connect(Mockito.any());
             applicationModel.getDeployer().stop();
-            Mockito.verify(reference.get(), Mockito.atLeast(1))
-                .disConnect();
+            Mockito.verify(reference.get(), Mockito.atLeast(1)).disConnect();
             frameworkModel.destroy();
         }
     }
@@ -99,9 +95,9 @@ class CertDeployerListenerTest {
     void testFailure() {
         AtomicReference<DubboCertManager> reference = new AtomicReference<>();
         try (MockedConstruction<DubboCertManager> construction =
-                 Mockito.mockConstruction(DubboCertManager.class, (mock, context) -> {
-                     reference.set(mock);
-                 })) {
+                Mockito.mockConstruction(DubboCertManager.class, (mock, context) -> {
+                    reference.set(mock);
+                })) {
             FrameworkModel frameworkModel = new FrameworkModel();
             ApplicationModel applicationModel = frameworkModel.newApplication();
             applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("test"));
@@ -112,10 +108,8 @@ class CertDeployerListenerTest {
 
             ApplicationDeployer deployer = applicationModel.getDeployer();
             Assertions.assertThrows(IllegalArgumentException.class, deployer::start);
-            Mockito.verify(reference.get(), Mockito.times(1))
-                .connect(Mockito.any());
-            Mockito.verify(reference.get(), Mockito.atLeast(1))
-                .disConnect();
+            Mockito.verify(reference.get(), Mockito.times(1)).connect(Mockito.any());
+            Mockito.verify(reference.get(), Mockito.atLeast(1)).disConnect();
             frameworkModel.destroy();
         }
     }
@@ -134,9 +128,9 @@ class CertDeployerListenerTest {
         };
         Thread.currentThread().setContextClassLoader(newClassLoader);
         try (MockedConstruction<DubboCertManager> construction =
-                 Mockito.mockConstruction(DubboCertManager.class, (mock, context) -> {
-                     // ignore
-                 })) {
+                Mockito.mockConstruction(DubboCertManager.class, (mock, context) -> {
+                    // ignore
+                })) {
             FrameworkModel frameworkModel = new FrameworkModel();
             ApplicationModel applicationModel = frameworkModel.newApplication();
             applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("test"));
@@ -166,9 +160,9 @@ class CertDeployerListenerTest {
         };
         Thread.currentThread().setContextClassLoader(newClassLoader);
         try (MockedConstruction<DubboCertManager> construction =
-                 Mockito.mockConstruction(DubboCertManager.class, (mock, context) -> {
-                     // ignore
-                 })) {
+                Mockito.mockConstruction(DubboCertManager.class, (mock, context) -> {
+                    // ignore
+                })) {
             FrameworkModel frameworkModel = new FrameworkModel();
             ApplicationModel applicationModel = frameworkModel.newApplication();
             applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("test"));
@@ -188,9 +182,9 @@ class CertDeployerListenerTest {
     void testParams1() {
         AtomicReference<DubboCertManager> reference = new AtomicReference<>();
         try (MockedConstruction<DubboCertManager> construction =
-                 Mockito.mockConstruction(DubboCertManager.class, (mock, context) -> {
-                     reference.set(mock);
-                 })) {
+                Mockito.mockConstruction(DubboCertManager.class, (mock, context) -> {
+                    reference.set(mock);
+                })) {
             FrameworkModel frameworkModel = new FrameworkModel();
             ApplicationModel applicationModel = frameworkModel.newApplication();
             applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("test"));
@@ -203,10 +197,9 @@ class CertDeployerListenerTest {
 
             applicationModel.getDeployer().start();
             Mockito.verify(reference.get(), Mockito.times(1))
-                .connect(new CertConfig("127.0.0.1:30060", "test", "certs/ca.crt", "token"));
+                    .connect(new CertConfig("127.0.0.1:30060", "test", "certs/ca.crt", "token"));
             applicationModel.getDeployer().stop();
-            Mockito.verify(reference.get(), Mockito.atLeast(1))
-                .disConnect();
+            Mockito.verify(reference.get(), Mockito.atLeast(1)).disConnect();
             frameworkModel.destroy();
         }
     }
@@ -216,9 +209,9 @@ class CertDeployerListenerTest {
     void testParams2() {
         AtomicReference<DubboCertManager> reference = new AtomicReference<>();
         try (MockedConstruction<DubboCertManager> construction =
-                 Mockito.mockConstruction(DubboCertManager.class, (mock, context) -> {
-                     reference.set(mock);
-                 })) {
+                Mockito.mockConstruction(DubboCertManager.class, (mock, context) -> {
+                    reference.set(mock);
+                })) {
             System.setProperty("dubbo.ssl.ca-address", "127.0.0.1:30060");
             System.setProperty("dubbo.ssl.ca-cert-path", "certs/ca.crt");
             System.setProperty("dubbo.ssl.oidc-token-path", "token");
@@ -229,7 +222,7 @@ class CertDeployerListenerTest {
 
             applicationModel.getDeployer().start();
             Mockito.verify(reference.get(), Mockito.times(1))
-                .connect(new CertConfig("127.0.0.1:30060", "test", "certs/ca.crt", "token"));
+                    .connect(new CertConfig("127.0.0.1:30060", "test", "certs/ca.crt", "token"));
             applicationModel.getDeployer().stop();
             Mockito.verify(reference.get(), Mockito.atLeast(1)).disConnect();
             frameworkModel.destroy();

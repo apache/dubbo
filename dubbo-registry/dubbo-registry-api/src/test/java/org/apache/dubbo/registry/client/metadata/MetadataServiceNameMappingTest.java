@@ -16,13 +16,6 @@
  */
 package org.apache.dubbo.registry.client.metadata;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.config.ApplicationConfig;
@@ -31,6 +24,13 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -99,21 +99,23 @@ class MetadataServiceNameMappingTest {
         // metadata report using cas and retry, succeeded after retried 10 times
         when(metadataReport.registerServiceAppMapping(any(), any(), any())).thenReturn(false);
         when(metadataReport.getConfigItem(any(), any())).thenReturn(new ConfigItem());
-        when(metadataReport.registerServiceAppMapping(any(), any(), any(), any())).thenAnswer(new Answer<Boolean>() {
-            private int counter = 0;
+        when(metadataReport.registerServiceAppMapping(any(), any(), any(), any()))
+                .thenAnswer(new Answer<Boolean>() {
+                    private int counter = 0;
 
-            @Override
-            public Boolean answer(InvocationOnMock invocationOnMock) {
-                if (++counter == 10) {
-                    return true;
-                }
-                return false;
-            }
-        });
+                    @Override
+                    public Boolean answer(InvocationOnMock invocationOnMock) {
+                        if (++counter == 10) {
+                            return true;
+                        }
+                        return false;
+                    }
+                });
         assertTrue(mapping.map(url));
 
         // metadata report using cas and retry, failed after 11 times retry
-        when(metadataReport.registerServiceAppMapping(any(), any(), any(), any())).thenReturn(false);
+        when(metadataReport.registerServiceAppMapping(any(), any(), any(), any()))
+                .thenReturn(false);
         Exception exceptionExpected = null;
         assertFalse(mapping.map(url));
     }

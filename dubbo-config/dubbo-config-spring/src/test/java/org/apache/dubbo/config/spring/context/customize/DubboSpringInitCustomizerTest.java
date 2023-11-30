@@ -38,7 +38,6 @@ class DubboSpringInitCustomizerTest {
     public static void beforeAll() {
         DubboBootstrap.reset();
         SysProps.setProperty("dubbo.registry.address", ZookeeperRegistryCenterConfig.getConnectionAddress());
-
     }
 
     @AfterAll
@@ -67,7 +66,8 @@ class DubboSpringInitCustomizerTest {
             ModuleModel moduleModelFromSpring1 = providerContext1.getBean(ModuleModel.class);
             Assertions.assertSame(moduleModel1, moduleModelFromSpring1);
             String serviceKey1 = HelloService.class.getName() + ":1.0.0";
-            ServiceDescriptor serviceDescriptor1 = moduleModelFromSpring1.getServiceRepository().lookupService(serviceKey1);
+            ServiceDescriptor serviceDescriptor1 =
+                    moduleModelFromSpring1.getServiceRepository().lookupService(serviceKey1);
             Assertions.assertNotNull(serviceDescriptor1);
 
             // close spring context 1
@@ -87,13 +87,14 @@ class DubboSpringInitCustomizerTest {
             Assertions.assertSame(moduleModel2, moduleModelFromSpring2);
             Assertions.assertNotSame(moduleModelFromSpring1, moduleModelFromSpring2);
             String serviceKey2 = HelloService.class.getName() + ":2.0.0";
-            ServiceDescriptor serviceDescriptor2 = moduleModelFromSpring2.getServiceRepository().lookupService(serviceKey2);
+            ServiceDescriptor serviceDescriptor2 =
+                    moduleModelFromSpring2.getServiceRepository().lookupService(serviceKey2);
             Assertions.assertNotNull(serviceDescriptor2);
             Assertions.assertNotSame(serviceDescriptor1, serviceDescriptor2);
 
             providerContext2.close();
             providerContext2 = null;
-        }finally {
+        } finally {
             if (providerContext1 != null) {
                 providerContext1.close();
             }
@@ -103,6 +104,4 @@ class DubboSpringInitCustomizerTest {
             applicationModel.destroy();
         }
     }
-
-
 }

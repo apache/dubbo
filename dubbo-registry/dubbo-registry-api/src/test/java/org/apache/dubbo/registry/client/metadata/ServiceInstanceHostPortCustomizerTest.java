@@ -24,12 +24,12 @@ import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.concurrent.ExecutionException;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.ExecutionException;
 
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -41,7 +41,7 @@ import static org.mockito.Mockito.when;
  */
 class ServiceInstanceHostPortCustomizerTest {
     private static ServiceInstanceHostPortCustomizer serviceInstanceHostPortCustomizer;
-    
+
     @BeforeAll
     public static void setUp() {
         serviceInstanceHostPortCustomizer = new ServiceInstanceHostPortCustomizer();
@@ -51,7 +51,7 @@ class ServiceInstanceHostPortCustomizerTest {
     public static void clearUp() {
         ApplicationModel.reset();
     }
-    
+
     @Test
     void customizePreferredProtocol() throws ExecutionException, InterruptedException {
         ScopeBeanFactory beanFactory = mock(ScopeBeanFactory.class);
@@ -64,7 +64,8 @@ class ServiceInstanceHostPortCustomizerTest {
         ApplicationConfig applicationConfig = new ApplicationConfig("aa");
         // when(applicationModel.getCurrentConfig()).thenReturn(applicationConfig);
         doReturn(applicationConfig).when(applicationModel).getCurrentConfig();
-        DefaultServiceInstance serviceInstance1 = new DefaultServiceInstance("without-preferredProtocol", applicationModel);
+        DefaultServiceInstance serviceInstance1 =
+                new DefaultServiceInstance("without-preferredProtocol", applicationModel);
         MetadataInfo metadataInfo = new MetadataInfo();
         metadataInfo.addService(URL.valueOf("tri://127.1.1.1:50052/org.apache.dubbo.demo.GreetingService"));
         serviceInstance1.setServiceMetadata(metadataInfo);

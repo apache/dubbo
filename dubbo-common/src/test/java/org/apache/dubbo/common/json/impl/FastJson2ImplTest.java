@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.json.impl;
 
+import java.lang.reflect.Type;
+
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONWriter;
 import org.junit.jupiter.api.AfterAll;
@@ -24,8 +26,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-
-import java.lang.reflect.Type;
 
 import static org.mockito.Answers.CALLS_REAL_METHODS;
 
@@ -46,19 +46,27 @@ class FastJson2ImplTest {
     void testSupported() {
         Assertions.assertTrue(new FastJson2Impl().isSupport());
 
-        fastjson2Mock.when(() -> JSON.toJSONString(Mockito.any(), (JSONWriter.Feature) Mockito.any())).thenThrow(new RuntimeException());
+        fastjson2Mock
+                .when(() -> JSON.toJSONString(Mockito.any(), (JSONWriter.Feature) Mockito.any()))
+                .thenThrow(new RuntimeException());
         Assertions.assertFalse(new FastJson2Impl().isSupport());
         fastjson2Mock.reset();
 
-        fastjson2Mock.when(() -> JSON.toJSONString(Mockito.any(), (JSONWriter.Feature) Mockito.any())).thenReturn(null);
+        fastjson2Mock
+                .when(() -> JSON.toJSONString(Mockito.any(), (JSONWriter.Feature) Mockito.any()))
+                .thenReturn(null);
         Assertions.assertFalse(new FastJson2Impl().isSupport());
         fastjson2Mock.reset();
 
-        fastjson2Mock.when(() -> JSON.parseObject((String) Mockito.any(), (Type) Mockito.any())).thenReturn(null);
+        fastjson2Mock
+                .when(() -> JSON.parseObject((String) Mockito.any(), (Type) Mockito.any()))
+                .thenReturn(null);
         Assertions.assertFalse(new FastJson2Impl().isSupport());
         fastjson2Mock.reset();
 
-        fastjson2Mock.when(() -> JSON.parseArray(Mockito.any(), (Class) Mockito.any())).thenReturn(null);
+        fastjson2Mock
+                .when(() -> JSON.parseArray(Mockito.any(), (Class) Mockito.any()))
+                .thenReturn(null);
         Assertions.assertFalse(new FastJson2Impl().isSupport());
         fastjson2Mock.reset();
     }

@@ -56,7 +56,9 @@ public class FrameworkServiceRepository {
             // throw new IllegalStateException("Register duplicate provider for key: " + key);
         }
         String keyWithoutGroup = keyWithoutGroup(key);
-        ConcurrentHashMapUtils.computeIfAbsent(providersWithoutGroup, keyWithoutGroup, (k) -> new CopyOnWriteArrayList<>()).add(providerModel);
+        ConcurrentHashMapUtils.computeIfAbsent(
+                        providersWithoutGroup, keyWithoutGroup, (k) -> new CopyOnWriteArrayList<>())
+                .add(providerModel);
     }
 
     public void unregisterProvider(ProviderModel providerModel) {
@@ -88,8 +90,10 @@ public class FrameworkServiceRepository {
 
     public List<ConsumerModel> allConsumerModels() {
         List<ConsumerModel> consumerModels = new LinkedList<>();
-        frameworkModel.getApplicationModels().forEach(applicationModel ->
-            consumerModels.addAll(applicationModel.getApplicationServiceRepository().allConsumerModels()));
+        frameworkModel
+                .getApplicationModels()
+                .forEach(applicationModel -> consumerModels.addAll(
+                        applicationModel.getApplicationServiceRepository().allConsumerModels()));
         return Collections.unmodifiableList(consumerModels);
     }
 
@@ -101,5 +105,4 @@ public class FrameworkServiceRepository {
         }
         return interfaceName + CommonConstants.GROUP_CHAR_SEPARATOR + version;
     }
-
 }

@@ -19,16 +19,13 @@ package po;
 import java.io.Serializable;
 import java.util.Objects;
 
-
 public class User implements Serializable {
-
 
     private Long id;
 
     private String name;
 
-    public User() {
-    }
+    public User() {}
 
     public User(Long id, String name) {
         this.id = id;
@@ -70,9 +67,6 @@ public class User implements Serializable {
 
     @Override
     public String toString() {
-        return "User (" +
-            "id=" + id +
-            ", name='" + name + '\'' +
-            ')';
+        return "User (" + "id=" + id + ", name='" + name + '\'' + ')';
     }
 }

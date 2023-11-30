@@ -27,6 +27,7 @@ import javax.cache.configuration.MutableConfiguration;
 import javax.cache.expiry.CreatedExpiryPolicy;
 import javax.cache.expiry.Duration;
 import javax.cache.spi.CachingProvider;
+
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
@@ -51,19 +52,21 @@ public class JCache implements org.apache.dubbo.cache.Cache {
         // jcache parameter is the full-qualified class name of SPI implementation
         String type = url.getParameter("jcache");
 
-        CachingProvider provider = StringUtils.isEmpty(type) ? Caching.getCachingProvider() : Caching.getCachingProvider(type);
+        CachingProvider provider =
+                StringUtils.isEmpty(type) ? Caching.getCachingProvider() : Caching.getCachingProvider(type);
         CacheManager cacheManager = provider.getCacheManager();
         Cache<Object, Object> cache = cacheManager.getCache(key);
         if (cache == null) {
             try {
-                //configure the cache
-                MutableConfiguration config =
-                        new MutableConfiguration<>()
-                                .setTypes(Object.class, Object.class)
-                                .setExpiryPolicyFactory(CreatedExpiryPolicy.factoryOf(new Duration(TimeUnit.MILLISECONDS, url.getMethodParameter(method, "cache.write.expire", 60 * 1000))))
-                                .setStoreByValue(false)
-                                .setManagementEnabled(true)
-                                .setStatisticsEnabled(true);
+                // configure the cache
+                MutableConfiguration config = new MutableConfiguration<>()
+                        .setTypes(Object.class, Object.class)
+                        .setExpiryPolicyFactory(CreatedExpiryPolicy.factoryOf(new Duration(
+                                TimeUnit.MILLISECONDS,
+                                url.getMethodParameter(method, "cache.write.expire", 60 * 1000))))
+                        .setStoreByValue(false)
+                        .setManagementEnabled(true)
+                        .setStatisticsEnabled(true);
                 cache = cacheManager.createCache(key, config);
             } catch (CacheException e) {
                 // concurrent cache initialization
@@ -83,5 +86,4 @@ public class JCache implements org.apache.dubbo.cache.Cache {
     public Object get(Object key) {
         return store.get(key);
     }
-
 }

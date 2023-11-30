@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.collector;
 
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
@@ -35,4 +34,3 @@ public interface ServiceMetricsCollector<E extends TimeCounterEvent> extends Met
 
     void addServiceRt(Invocation invocation, String registryOpType, Long responseTime);
 }
-

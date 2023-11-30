@@ -35,10 +35,9 @@ class ExchangersTest {
         Exchangers.bind(url, new ChannelHandlerAdapter(), Mockito.mock(Replier.class));
         Exchangers.bind(url, new ExchangeHandlerDispatcher());
 
-        Assertions.assertThrows(RuntimeException.class,
-                () -> Exchangers.bind((URL) null, new ExchangeHandlerDispatcher()));
-        Assertions.assertThrows(RuntimeException.class,
-                () -> Exchangers.bind(url, (ExchangeHandlerDispatcher) null));
+        Assertions.assertThrows(
+                RuntimeException.class, () -> Exchangers.bind((URL) null, new ExchangeHandlerDispatcher()));
+        Assertions.assertThrows(RuntimeException.class, () -> Exchangers.bind(url, (ExchangeHandlerDispatcher) null));
     }
 
     @Test
@@ -50,9 +49,9 @@ class ExchangersTest {
         Exchangers.connect(url, new ChannelHandlerAdapter(), Mockito.mock(Replier.class));
         Exchangers.connect(url, new ExchangeHandlerDispatcher());
 
-        Assertions.assertThrows(RuntimeException.class,
-                () -> Exchangers.connect((URL) null, new ExchangeHandlerDispatcher()));
-        Assertions.assertThrows(RuntimeException.class,
-                () -> Exchangers.connect(url, (ExchangeHandlerDispatcher) null));
+        Assertions.assertThrows(
+                RuntimeException.class, () -> Exchangers.connect((URL) null, new ExchangeHandlerDispatcher()));
+        Assertions.assertThrows(
+                RuntimeException.class, () -> Exchangers.connect(url, (ExchangeHandlerDispatcher) null));
     }
 }

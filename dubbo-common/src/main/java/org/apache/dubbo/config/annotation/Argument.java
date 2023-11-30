@@ -33,12 +33,12 @@ import java.lang.annotation.Target;
 @Target({ElementType.ANNOTATION_TYPE})
 @Inherited
 public @interface Argument {
-    //argument: index -1 represents not set
+    // argument: index -1 represents not set
     int index() default -1;
 
-    //argument type
+    // argument type
     String type() default "";
 
-    //callback interface
+    // callback interface
     boolean callback() default false;
 }

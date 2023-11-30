@@ -16,17 +16,15 @@
  */
 package org.apache.dubbo.rpc.model.media;
 
-
 public class Image implements java.io.Serializable {
     private static final long serialVersionUID = 1L;
     public String uri;
-    public String title;  // Can be null
+    public String title; // Can be null
     public int width;
     public int height;
     public Size size;
 
-    public Image() {
-    }
+    public Image() {}
 
     public Image(String uri, String title, int width, int height, Size size) {
         this.height = height;
@@ -115,6 +113,7 @@ public class Image implements java.io.Serializable {
     }
 
     public enum Size {
-        SMALL, LARGE
+        SMALL,
+        LARGE
     }
 }

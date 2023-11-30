@@ -27,39 +27,48 @@ import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 class MultiThreadTest {
 
-    private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-    private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+    private Protocol protocol =
+            ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+    private ProxyFactory proxy =
+            ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
     @AfterEach
     public void after() {
         ProtocolUtils.closeAll();
-        ApplicationModel.defaultModel().getDefaultModule().getServiceRepository().destroy();
+        ApplicationModel.defaultModel()
+                .getDefaultModule()
+                .getServiceRepository()
+                .destroy();
     }
 
     @Test
     void testDubboMultiThreadInvoke() throws Exception {
-        ApplicationModel.defaultModel().getDefaultModule().getServiceRepository().registerService("TestService", DemoService.class);
+        ApplicationModel.defaultModel()
+                .getDefaultModule()
+                .getServiceRepository()
+                .registerService("TestService", DemoService.class);
         int port = NetUtils.getAvailablePort();
-        Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/TestService")));
+        Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(
+                new DemoServiceImpl(), DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/TestService")));
 
         final AtomicInteger counter = new AtomicInteger();
-        final DemoService service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/TestService")));
-        Assertions.assertEquals(service.getSize(new String[]{"123", "456", "789"}), 3);
+        final DemoService service = proxy.getProxy(
+                protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/TestService")));
+        Assertions.assertEquals(service.getSize(new String[] {"123", "456", "789"}), 3);
 
         final StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < 1024 * 64 + 32; i++)
-            sb.append('A');
+        for (int i = 0; i < 1024 * 64 + 32; i++) sb.append('A');
         Assertions.assertEquals(sb.toString(), service.echo(sb.toString()));
 
         ExecutorService exec = Executors.newFixedThreadPool(10);

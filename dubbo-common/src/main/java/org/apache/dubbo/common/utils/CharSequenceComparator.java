@@ -25,10 +25,9 @@ import java.util.Comparator;
  */
 public class CharSequenceComparator implements Comparator<CharSequence> {
 
-    public final static CharSequenceComparator INSTANCE = new CharSequenceComparator();
+    public static final CharSequenceComparator INSTANCE = new CharSequenceComparator();
 
-    private CharSequenceComparator() {
-    }
+    private CharSequenceComparator() {}
 
     @Override
     public int compare(CharSequence c1, CharSequence c2) {

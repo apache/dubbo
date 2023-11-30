@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.observation;
 
 import org.apache.dubbo.config.ApplicationConfig;
@@ -81,5 +80,4 @@ abstract class AbstractObservationFilterTest extends SampleTestRunner {
         invocation.setMethodName(METHOD_NAME);
         invocation.setParameterTypes(new Class[] {String.class});
     }
-
 }

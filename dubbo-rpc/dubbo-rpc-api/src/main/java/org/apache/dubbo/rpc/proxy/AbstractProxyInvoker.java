@@ -81,8 +81,7 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
     }
 
     @Override
-    public void destroy() {
-    }
+    public void destroy() {}
 
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
@@ -91,13 +90,15 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
             if (ProfilerSwitch.isEnableSimpleProfiler()) {
                 Object fromInvocation = invocation.get(Profiler.PROFILER_KEY);
                 if (fromInvocation instanceof ProfilerEntry) {
-                    ProfilerEntry profiler = Profiler.enter((ProfilerEntry) fromInvocation, "Receive request. Server biz impl invoke begin.");
+                    ProfilerEntry profiler = Profiler.enter(
+                            (ProfilerEntry) fromInvocation, "Receive request. Server biz impl invoke begin.");
                     invocation.put(Profiler.PROFILER_KEY, profiler);
                     originEntry = Profiler.setToBizProfiler(profiler);
                 }
             }
 
-            Object value = doInvoke(proxy, invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
+            Object value = doInvoke(
+                    proxy, invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
 
             CompletableFuture<Object> future = wrapWithFuture(value, invocation);
             CompletableFuture<AppResponse> appResponseFuture = future.handle((obj, t) -> {
@@ -115,12 +116,21 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
             });
             return new AsyncRpcResult(appResponseFuture, invocation);
         } catch (InvocationTargetException e) {
-            if (RpcContext.getServiceContext().isAsyncStarted() && !RpcContext.getServiceContext().stopAsync()) {
-                logger.error(PROXY_ERROR_ASYNC_RESPONSE, "", "", "Provider async started, but got an exception from the original method, cannot write the exception back to consumer because an async result may have returned the new thread.", e);
+            if (RpcContext.getServiceContext().isAsyncStarted()
+                    && !RpcContext.getServiceContext().stopAsync()) {
+                logger.error(
+                        PROXY_ERROR_ASYNC_RESPONSE,
+                        "",
+                        "",
+                        "Provider async started, but got an exception from the original method, cannot write the exception back to consumer because an async result may have returned the new thread.",
+                        e);
             }
             return AsyncRpcResult.newDefaultAsyncResult(null, e.getTargetException(), invocation);
         } catch (Throwable e) {
-            throw new RpcException("Failed to invoke remote proxy method " + invocation.getMethodName() + " to " + getUrl() + ", cause: " + e.getMessage(), e);
+            throw new RpcException(
+                    "Failed to invoke remote proxy method " + invocation.getMethodName() + " to " + getUrl()
+                            + ", cause: " + e.getMessage(),
+                    e);
         } finally {
             if (ProfilerSwitch.isEnableSimpleProfiler()) {
                 Object fromInvocation = invocation.get(Profiler.PROFILER_KEY);
@@ -134,7 +144,6 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
                 Profiler.setToBizProfiler(originEntry);
             }
         }
-
     }
 
     private CompletableFuture<Object> wrapWithFuture(Object value, Invocation invocation) {
@@ -148,12 +157,11 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
         return CompletableFuture.completedFuture(value);
     }
 
-    protected abstract Object doInvoke(T proxy, String methodName, Class<?>[] parameterTypes, Object[] arguments) throws Throwable;
+    protected abstract Object doInvoke(T proxy, String methodName, Class<?>[] parameterTypes, Object[] arguments)
+            throws Throwable;
 
     @Override
     public String toString() {
         return getInterface() + " -> " + (getUrl() == null ? " " : getUrl().toString());
     }
-
-
 }

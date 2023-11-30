@@ -36,5 +36,4 @@ public class PropagationConfig implements Serializable {
     public void setType(String type) {
         this.type = type;
     }
-
 }

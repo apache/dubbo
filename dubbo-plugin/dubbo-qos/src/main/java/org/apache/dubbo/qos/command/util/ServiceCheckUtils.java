@@ -41,9 +41,12 @@ public class ServiceCheckUtils {
         for (ProviderModel.RegisterStatedURL registerStatedURL : providerModel.getStatedUrl()) {
             URL registryUrl = registerStatedURL.getRegistryUrl();
             boolean isServiceDiscovery = UrlUtils.isServiceDiscoveryURL(registryUrl);
-            String protocol = isServiceDiscovery ? registryUrl.getParameter(RegistryConstants.REGISTRY_KEY) : registryUrl.getProtocol();
+            String protocol = isServiceDiscovery
+                    ? registryUrl.getParameter(RegistryConstants.REGISTRY_KEY)
+                    : registryUrl.getProtocol();
             // e.g. zookeeper-A(Y)
-            statuses.add(protocol + "-" + (isServiceDiscovery ? "A" : "I") + "(" + (registerStatedURL.isRegistered() ? "Y" : "N") + ")");
+            statuses.add(protocol + "-" + (isServiceDiscovery ? "A" : "I") + "("
+                    + (registerStatedURL.isRegistered() ? "Y" : "N") + ")");
         }
         // e.g. zookeeper-A(Y)/zookeeper-I(Y)
         return String.join("/", statuses.toArray(new String[0]));
@@ -59,21 +62,23 @@ public class ServiceCheckUtils {
             for (Map.Entry<Registry, MigrationInvoker<?>> entry : invokerMap.entrySet()) {
                 URL registryUrl = entry.getKey().getUrl();
                 boolean isServiceDiscovery = UrlUtils.isServiceDiscoveryURL(registryUrl);
-                String protocol = isServiceDiscovery ? registryUrl.getParameter(RegistryConstants.REGISTRY_KEY) : registryUrl.getProtocol();
+                String protocol = isServiceDiscovery
+                        ? registryUrl.getParameter(RegistryConstants.REGISTRY_KEY)
+                        : registryUrl.getProtocol();
                 MigrationInvoker<?> migrationInvoker = entry.getValue();
                 MigrationStep migrationStep = migrationInvoker.getMigrationStep();
                 String interfaceSize = Optional.ofNullable(migrationInvoker.getInvoker())
-                    .map(ClusterInvoker::getDirectory)
-                    .map(Directory::getAllInvokers)
-                    .map(List::size)
-                    .map(String::valueOf)
-                    .orElse("-");
+                        .map(ClusterInvoker::getDirectory)
+                        .map(Directory::getAllInvokers)
+                        .map(List::size)
+                        .map(String::valueOf)
+                        .orElse("-");
                 String applicationSize = Optional.ofNullable(migrationInvoker.getServiceDiscoveryInvoker())
-                    .map(ClusterInvoker::getDirectory)
-                    .map(Directory::getAllInvokers)
-                    .map(List::size)
-                    .map(String::valueOf)
-                    .orElse("-");
+                        .map(ClusterInvoker::getDirectory)
+                        .map(Directory::getAllInvokers)
+                        .map(List::size)
+                        .map(String::valueOf)
+                        .orElse("-");
                 String step;
                 String size;
                 switch (migrationStep) {

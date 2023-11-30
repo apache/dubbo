@@ -16,13 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster;
 
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
@@ -41,6 +34,13 @@ import org.apache.dubbo.rpc.cluster.router.mesh.route.MeshAppRuleListener;
 import org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleManager;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -66,11 +66,7 @@ class RouterChainTest {
         Map<String, String> parameters = new HashMap<>();
         parameters.put(INTERFACE_KEY, DemoService.class.getName());
         parameters.put("registry", "zookeeper");
-        URL url = new ServiceConfigURL("dubbo",
-            "127.0.0.1",
-            20881,
-            DemoService.class.getName(),
-            parameters);
+        URL url = new ServiceConfigURL("dubbo", "127.0.0.1", 20881, DemoService.class.getName(), parameters);
 
         RouterChain<DemoService> routerChain = RouterChain.buildChain(DemoService.class, url);
         return routerChain;
@@ -118,27 +114,43 @@ class RouterChainTest {
         map5.put("serialization", "hessian2");
         Invoker<DemoService> invoker5 = createNormalInvoker(map5);
 
-        BitList<Invoker<DemoService>> invokers = new BitList<>(Arrays.asList(mockInvoker, invoker1, invoker2, invoker3, invoker4, invoker5));
+        BitList<Invoker<DemoService>> invokers =
+                new BitList<>(Arrays.asList(mockInvoker, invoker1, invoker2, invoker3, invoker4, invoker5));
         routerChain.setInvokers(invokers, () -> {});
 
         // mesh rule for MeshStateRouter
-        MeshRuleManager meshRuleManager = mockInvoker.getUrl().getOrDefaultModuleModel().getBeanFactory().getBean(MeshRuleManager.class);
+        MeshRuleManager meshRuleManager =
+                mockInvoker.getUrl().getOrDefaultModuleModel().getBeanFactory().getBean(MeshRuleManager.class);
         ConcurrentHashMap<String, MeshAppRuleListener> appRuleListeners = meshRuleManager.getAppRuleListeners();
-        MeshAppRuleListener meshAppRuleListener = appRuleListeners.get(invoker1.getUrl().getRemoteApplication());
-        ConfigChangedEvent configChangedEvent = new ConfigChangedEvent("demo-route" + MESH_RULE_DATA_ID_SUFFIX, DynamicConfiguration.DEFAULT_GROUP,
-            MESH_RULE1 + "---\n" + MESH_RULE2, ConfigChangeType.ADDED);
+        MeshAppRuleListener meshAppRuleListener =
+                appRuleListeners.get(invoker1.getUrl().getRemoteApplication());
+        ConfigChangedEvent configChangedEvent = new ConfigChangedEvent(
+                "demo-route" + MESH_RULE_DATA_ID_SUFFIX,
+                DynamicConfiguration.DEFAULT_GROUP,
+                MESH_RULE1 + "---\n" + MESH_RULE2,
+                ConfigChangeType.ADDED);
         meshAppRuleListener.process(configChangedEvent);
 
-
         // condition rule for AppStateRouter&ServiceStateRouter
-        ListenableStateRouter serviceRouter = routerChain.getStateRouters().stream().filter(s -> s instanceof ServiceStateRouter).map(s -> (ListenableStateRouter) s).findAny().orElse(null);
-        ConfigChangedEvent serviceConditionEvent = new ConfigChangedEvent(DynamicConfiguration.getRuleKey(mockInvoker.getUrl()) + ".condition-router", DynamicConfiguration.DEFAULT_GROUP,
-            SERVICE_CONDITION_RULE, ConfigChangeType.ADDED);
+        ListenableStateRouter serviceRouter = routerChain.getStateRouters().stream()
+                .filter(s -> s instanceof ServiceStateRouter)
+                .map(s -> (ListenableStateRouter) s)
+                .findAny()
+                .orElse(null);
+        ConfigChangedEvent serviceConditionEvent = new ConfigChangedEvent(
+                DynamicConfiguration.getRuleKey(mockInvoker.getUrl()) + ".condition-router",
+                DynamicConfiguration.DEFAULT_GROUP,
+                SERVICE_CONDITION_RULE,
+                ConfigChangeType.ADDED);
         serviceRouter.process(serviceConditionEvent);
 
-        ListenableStateRouter appRouter = routerChain.getStateRouters().stream().filter(s -> s instanceof AppStateRouter).map(s -> (ListenableStateRouter) s).findAny().orElse(null);
-        ConfigChangedEvent appConditionEvent = new ConfigChangedEvent("app.condition-router", DynamicConfiguration.DEFAULT_GROUP,
-            APP_CONDITION_RULE, ConfigChangeType.ADDED);
+        ListenableStateRouter appRouter = routerChain.getStateRouters().stream()
+                .filter(s -> s instanceof AppStateRouter)
+                .map(s -> (ListenableStateRouter) s)
+                .findAny()
+                .orElse(null);
+        ConfigChangedEvent appConditionEvent = new ConfigChangedEvent(
+                "app.condition-router", DynamicConfiguration.DEFAULT_GROUP, APP_CONDITION_RULE, ConfigChangeType.ADDED);
         appRouter.process(appConditionEvent);
 
         // prepare consumerUrl and RpcInvocation
@@ -149,38 +161,40 @@ class RouterChainTest {
         rpcInvocation.setObjectAttachment(TAG_KEY, "TAG_");
 
         RpcContext.getServiceContext().setNeedPrintRouterSnapshot(true);
-        RouterSnapshotSwitcher routerSnapshotSwitcher = FrameworkModel.defaultModel().getBeanFactory().getBean(RouterSnapshotSwitcher.class);
+        RouterSnapshotSwitcher routerSnapshotSwitcher =
+                FrameworkModel.defaultModel().getBeanFactory().getBean(RouterSnapshotSwitcher.class);
         routerSnapshotSwitcher.addEnabledService("org.apache.dubbo.demo.DemoService");
         // route
-        List<Invoker<DemoService>> result = routerChain.getSingleChain(consumerUrl, invokers, rpcInvocation)
-            .route(consumerUrl, invokers, rpcInvocation);
+        List<Invoker<DemoService>> result = routerChain
+                .getSingleChain(consumerUrl, invokers, rpcInvocation)
+                .route(consumerUrl, invokers, rpcInvocation);
         Assertions.assertEquals(result.size(), 1);
         Assertions.assertTrue(result.contains(invoker5));
 
         String snapshotLog =
-            "[ Parent (Input: 6) (Current Node Output: 6) (Chain Node Output: 1) ] Input: localhost:9103,localhost:9103,localhost:9103,localhost:9103,localhost:9103 -> Chain Node Output: localhost:9103...\n" +
-                "  [ MockInvokersSelector (Input: 6) (Current Node Output: 5) (Chain Node Output: 1) Router message: invocation.need.mock not set. Return normal Invokers. ] Current Node Output: localhost:9103,localhost:9103,localhost:9103,localhost:9103,localhost:9103\n" +
-                "    [ StandardMeshRuleRouter (Input: 5) (Current Node Output: 4) (Chain Node Output: 1) Router message: Match App: app Subset: isolation  ] Current Node Output: localhost:9103,localhost:9103,localhost:9103,localhost:9103\n" +
-                "      [ TagStateRouter (Input: 4) (Current Node Output: 3) (Chain Node Output: 1) Router message: Disable Tag Router. Reason: tagRouterRule is invalid or disabled ] Current Node Output: localhost:9103,localhost:9103,localhost:9103\n" +
-                "        [ ServiceStateRouter (Input: 3) (Current Node Output: 3) (Chain Node Output: 1) Router message: null ] Current Node Output: localhost:9103,localhost:9103,localhost:9103\n" +
-                "          [ ConditionStateRouter (Input: 3) (Current Node Output: 2) (Chain Node Output: 2) Router message: Match return. ] Current Node Output: localhost:9103,localhost:9103\n" +
-                "          [ ProviderAppStateRouter (Input: 2) (Current Node Output: 2) (Chain Node Output: 1) Router message: Directly return. Reason: Invokers from previous router is empty or conditionRouters is empty. ] Current Node Output: localhost:9103,localhost:9103\n" +
-                "            [ AppStateRouter (Input: 2) (Current Node Output: 2) (Chain Node Output: 1) Router message: null ] Current Node Output: localhost:9103,localhost:9103\n" +
-                "              [ ConditionStateRouter (Input: 2) (Current Node Output: 1) (Chain Node Output: 1) Router message: Match return. ] Current Node Output: localhost:9103\n" +
-                "              [ AppScriptStateRouter (Input: 1) (Current Node Output: 1) (Chain Node Output: 1) Router message: Directly return from script router. Reason: Invokers from previous router is empty or script is not enabled. Script rule is: null ] Current Node Output: localhost:9103";
+                "[ Parent (Input: 6) (Current Node Output: 6) (Chain Node Output: 1) ] Input: localhost:9103,localhost:9103,localhost:9103,localhost:9103,localhost:9103 -> Chain Node Output: localhost:9103...\n"
+                        + "  [ MockInvokersSelector (Input: 6) (Current Node Output: 5) (Chain Node Output: 1) Router message: invocation.need.mock not set. Return normal Invokers. ] Current Node Output: localhost:9103,localhost:9103,localhost:9103,localhost:9103,localhost:9103\n"
+                        + "    [ StandardMeshRuleRouter (Input: 5) (Current Node Output: 4) (Chain Node Output: 1) Router message: Match App: app Subset: isolation  ] Current Node Output: localhost:9103,localhost:9103,localhost:9103,localhost:9103\n"
+                        + "      [ TagStateRouter (Input: 4) (Current Node Output: 3) (Chain Node Output: 1) Router message: Disable Tag Router. Reason: tagRouterRule is invalid or disabled ] Current Node Output: localhost:9103,localhost:9103,localhost:9103\n"
+                        + "        [ ServiceStateRouter (Input: 3) (Current Node Output: 3) (Chain Node Output: 1) Router message: null ] Current Node Output: localhost:9103,localhost:9103,localhost:9103\n"
+                        + "          [ ConditionStateRouter (Input: 3) (Current Node Output: 2) (Chain Node Output: 2) Router message: Match return. ] Current Node Output: localhost:9103,localhost:9103\n"
+                        + "          [ ProviderAppStateRouter (Input: 2) (Current Node Output: 2) (Chain Node Output: 1) Router message: Directly return. Reason: Invokers from previous router is empty or conditionRouters is empty. ] Current Node Output: localhost:9103,localhost:9103\n"
+                        + "            [ AppStateRouter (Input: 2) (Current Node Output: 2) (Chain Node Output: 1) Router message: null ] Current Node Output: localhost:9103,localhost:9103\n"
+                        + "              [ ConditionStateRouter (Input: 2) (Current Node Output: 1) (Chain Node Output: 1) Router message: Match return. ] Current Node Output: localhost:9103\n"
+                        + "              [ AppScriptStateRouter (Input: 1) (Current Node Output: 1) (Chain Node Output: 1) Router message: Directly return from script router. Reason: Invokers from previous router is empty or script is not enabled. Script rule is: null ] Current Node Output: localhost:9103";
         String[] snapshot = routerSnapshotSwitcher.cloneSnapshot();
         Assertions.assertTrue(snapshot[0].contains(snapshotLog));
 
         RpcContext.getServiceContext().setNeedPrintRouterSnapshot(false);
-        result = routerChain.getSingleChain(consumerUrl, invokers, rpcInvocation)
-            .route(consumerUrl, invokers, rpcInvocation);
+        result = routerChain
+                .getSingleChain(consumerUrl, invokers, rpcInvocation)
+                .route(consumerUrl, invokers, rpcInvocation);
         Assertions.assertEquals(result.size(), 1);
         Assertions.assertTrue(result.contains(invoker5));
 
         routerChain.destroy();
         Assertions.assertEquals(routerChain.getRouters().size(), 0);
         Assertions.assertEquals(routerChain.getStateRouters().size(), 0);
-
     }
 
     private Invoker<DemoService> createMockInvoker() {
@@ -200,54 +214,51 @@ class RouterChainTest {
         return invoker;
     }
 
+    private static final String MESH_RULE1 =
+            "apiVersion: service.dubbo.apache.org/v1alpha1\n" + "kind: DestinationRule\n"
+                    + "metadata: { name: demo-route }\n"
+                    + "spec:\n"
+                    + "  host: demo\n"
+                    + "  subsets:\n"
+                    + "    - labels: { env-sign: xxx, tag1: hello }\n"
+                    + "      name: isolation\n"
+                    + "    - labels: { env-sign: yyy }\n"
+                    + "      name: testing-trunk\n"
+                    + "    - labels: { env-sign: zzz }\n"
+                    + "      name: testing\n"
+                    + "  trafficPolicy:\n"
+                    + "    loadBalancer: { simple: ROUND_ROBIN }\n"
+                    + "\n";
 
-    private final static String MESH_RULE1 = "apiVersion: service.dubbo.apache.org/v1alpha1\n" +
-        "kind: DestinationRule\n" +
-        "metadata: { name: demo-route }\n" +
-        "spec:\n" +
-        "  host: demo\n" +
-        "  subsets:\n" +
-        "    - labels: { env-sign: xxx, tag1: hello }\n" +
-        "      name: isolation\n" +
-        "    - labels: { env-sign: yyy }\n" +
-        "      name: testing-trunk\n" +
-        "    - labels: { env-sign: zzz }\n" +
-        "      name: testing\n" +
-        "  trafficPolicy:\n" +
-        "    loadBalancer: { simple: ROUND_ROBIN }\n" +
-        "\n";
+    private static final String MESH_RULE2 =
+            "apiVersion: service.dubbo.apache.org/v1alpha1\n" + "kind: VirtualService\n"
+                    + "metadata: { name: demo-route }\n"
+                    + "spec:\n"
+                    + "  dubbo:\n"
+                    + "    - routedetail:\n"
+                    + "        - match:\n"
+                    + "            - attachments: \n"
+                    + "                dubboContext: {trafficLabel: {regex: xxx}}\n"
+                    + "          name: xxx-project\n"
+                    + "          route:\n"
+                    + "            - destination: {host: demo, subset: isolation}\n"
+                    + "      services:\n"
+                    + "        - {regex: DemoService}\n"
+                    + "  hosts: [demo]\n";
 
-    private final static String MESH_RULE2 = "apiVersion: service.dubbo.apache.org/v1alpha1\n" +
-        "kind: VirtualService\n" +
-        "metadata: { name: demo-route }\n" +
-        "spec:\n" +
-        "  dubbo:\n" +
-        "    - routedetail:\n" +
-        "        - match:\n" +
-        "            - attachments: \n" +
-        "                dubboContext: {trafficLabel: {regex: xxx}}\n" +
-        "          name: xxx-project\n" +
-        "          route:\n" +
-        "            - destination: {host: demo, subset: isolation}\n" +
-        "      services:\n" +
-        "        - {regex: DemoService}\n" +
-        "  hosts: [demo]\n";
+    private static final String APP_CONDITION_RULE = "scope: application\n" + "force: true\n"
+            + "runtime: false\n"
+            + "enabled: true\n"
+            + "priority: 1\n"
+            + "key: demo-consumer\n"
+            + "conditions:\n"
+            + "- => serialization=hessian2";
 
-    private static final String APP_CONDITION_RULE = "scope: application\n" +
-        "force: true\n" +
-        "runtime: false\n" +
-        "enabled: true\n" +
-        "priority: 1\n" +
-        "key: demo-consumer\n" +
-        "conditions:\n" +
-        "- => serialization=hessian2";
-
-    private static final String SERVICE_CONDITION_RULE = "scope: service\n" +
-        "force: true\n" +
-        "runtime: false\n" +
-        "enabled: true\n" +
-        "priority: 1\n" +
-        "key: org.apache.dubbo.demo.DemoService\n" +
-        "conditions:\n" +
-        "- => timeout=5000";
+    private static final String SERVICE_CONDITION_RULE = "scope: service\n" + "force: true\n"
+            + "runtime: false\n"
+            + "enabled: true\n"
+            + "priority: 1\n"
+            + "key: org.apache.dubbo.demo.DemoService\n"
+            + "conditions:\n"
+            + "- => timeout=5000";
 }

@@ -18,13 +18,13 @@ package org.apache.dubbo.common.extension.support;
 
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class ActivateComparatorTest {
 
@@ -32,11 +32,12 @@ class ActivateComparatorTest {
 
     @BeforeEach
     public void setup() {
-        activateComparator = new ActivateComparator(ApplicationModel.defaultModel().getExtensionDirector());
+        activateComparator =
+                new ActivateComparator(ApplicationModel.defaultModel().getExtensionDirector());
     }
 
     @Test
-    void testActivateComparator(){
+    void testActivateComparator() {
         Filter1 f1 = new Filter1();
         Filter2 f2 = new Filter2();
         Filter3 f3 = new Filter3();

@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metadata.rest;
 
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -33,8 +32,14 @@ import static org.apache.dubbo.common.utils.ClassUtils.resolveClass;
 public abstract class AbstractAnnotatedMethodParameterProcessor implements AnnotatedMethodParameterProcessor {
 
     @Override
-    public void process(Annotation annotation, Parameter parameter, int parameterIndex, Method method,
-                        Class<?> serviceType, Class<?> serviceInterfaceClass, RestMethodMetadata restMethodMetadata) {
+    public void process(
+            Annotation annotation,
+            Parameter parameter,
+            int parameterIndex,
+            Method method,
+            Class<?> serviceType,
+            Class<?> serviceInterfaceClass,
+            RestMethodMetadata restMethodMetadata) {
 
         String annotationValue = getAnnotationValue(annotation, parameter, parameterIndex);
         String defaultValue = getDefaultValue(annotation, parameter, parameterIndex);
@@ -42,23 +47,30 @@ public abstract class AbstractAnnotatedMethodParameterProcessor implements Annot
         process(annotationValue, defaultValue, annotation, parameter, parameterIndex, method, restMethodMetadata);
     }
 
-
-    protected void process(String annotationValue, String defaultValue, Annotation annotation, Parameter parameter,
-                           int parameterIndex, Method method, RestMethodMetadata restMethodMetadata) {
-
-    }
-
+    protected void process(
+            String annotationValue,
+            String defaultValue,
+            Annotation annotation,
+            Parameter parameter,
+            int parameterIndex,
+            Method method,
+            RestMethodMetadata restMethodMetadata) {}
 
     @Override
     public Class getAnnotationClass() {
         return resolveClass(getAnnotationName(), getClassLoader());
     }
 
-    protected void addArgInfo(Parameter parameter, int parameterIndex,
-                              RestMethodMetadata restMethodMetadata, String annotationValue, Object defaultValue) {
+    protected void addArgInfo(
+            Parameter parameter,
+            int parameterIndex,
+            RestMethodMetadata restMethodMetadata,
+            String annotationValue,
+            Object defaultValue) {
         ArgInfo argInfo = ArgInfo.build(parameterIndex, parameter)
-            .setParamAnnotationType(getAnnotationClass())
-            .setAnnotationNameAttribute(annotationValue).setDefaultValue(defaultValue);
+                .setParamAnnotationType(getAnnotationClass())
+                .setAnnotationNameAttribute(annotationValue)
+                .setDefaultValue(defaultValue);
         restMethodMetadata.addArgInfo(argInfo);
     }
 
@@ -69,5 +81,4 @@ public abstract class AbstractAnnotatedMethodParameterProcessor implements Annot
     protected String getDefaultValue(Annotation annotation, Parameter parameter, int parameterIndex) {
         return AnnotatedMethodParameterProcessor.buildDefaultValue(parameterIndex);
     }
-
 }

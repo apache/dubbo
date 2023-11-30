@@ -20,16 +20,17 @@ import org.apache.dubbo.metadata.annotation.processing.AbstractAnnotationProcess
 import org.apache.dubbo.metadata.annotation.processing.model.MapTypeModel;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 
-import org.junit.jupiter.api.Test;
-
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
+
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.metadata.annotation.processing.util.FieldUtils.findField;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -71,7 +72,8 @@ class MapTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
 
         assertEquals("strings", stringsField.getSimpleName().toString());
         assertEquals("colors", colorsField.getSimpleName().toString());
-        assertEquals("primitiveTypeModels", primitiveTypeModelsField.getSimpleName().toString());
+        assertEquals(
+                "primitiveTypeModels", primitiveTypeModelsField.getSimpleName().toString());
         assertEquals("models", modelsField.getSimpleName().toString());
         assertEquals("modelArrays", modelArraysField.getSimpleName().toString());
     }
@@ -88,41 +90,55 @@ class MapTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
     @Test
     void testBuild() {
 
-        buildAndAssertTypeDefinition(processingEnv, stringsField,
+        buildAndAssertTypeDefinition(
+                processingEnv,
+                stringsField,
                 "java.util.Map<java.lang.String,java.lang.String>",
                 "java.lang.String",
                 "java.lang.String",
                 builder);
 
-        buildAndAssertTypeDefinition(processingEnv, colorsField,
+        buildAndAssertTypeDefinition(
+                processingEnv,
+                colorsField,
                 "java.util.SortedMap<java.lang.String,org.apache.dubbo.metadata.annotation.processing.model.Color>",
                 "java.lang.String",
                 "org.apache.dubbo.metadata.annotation.processing.model.Color",
                 builder);
 
-        buildAndAssertTypeDefinition(processingEnv, primitiveTypeModelsField,
+        buildAndAssertTypeDefinition(
+                processingEnv,
+                primitiveTypeModelsField,
                 "java.util.NavigableMap<org.apache.dubbo.metadata.annotation.processing.model.Color,org.apache.dubbo.metadata.annotation.processing.model.PrimitiveTypeModel>",
                 "org.apache.dubbo.metadata.annotation.processing.model.Color",
                 "org.apache.dubbo.metadata.annotation.processing.model.PrimitiveTypeModel",
                 builder);
 
-        buildAndAssertTypeDefinition(processingEnv, modelsField,
+        buildAndAssertTypeDefinition(
+                processingEnv,
+                modelsField,
                 "java.util.HashMap<java.lang.String,org.apache.dubbo.metadata.annotation.processing.model.Model>",
                 "java.lang.String",
                 "org.apache.dubbo.metadata.annotation.processing.model.Model",
                 builder);
 
-        buildAndAssertTypeDefinition(processingEnv, modelArraysField,
+        buildAndAssertTypeDefinition(
+                processingEnv,
+                modelArraysField,
                 "java.util.TreeMap<org.apache.dubbo.metadata.annotation.processing.model.PrimitiveTypeModel,org.apache.dubbo.metadata.annotation.processing.model.Model[]>",
                 "org.apache.dubbo.metadata.annotation.processing.model.PrimitiveTypeModel",
                 "org.apache.dubbo.metadata.annotation.processing.model.Model[]",
                 builder);
     }
 
-    static void buildAndAssertTypeDefinition(ProcessingEnvironment processingEnv, VariableElement field,
-                                             String expectedType, String keyType, String valueType,
-                                             TypeBuilder builder,
-                                             BiConsumer<TypeDefinition, TypeDefinition>... assertions) {
+    static void buildAndAssertTypeDefinition(
+            ProcessingEnvironment processingEnv,
+            VariableElement field,
+            String expectedType,
+            String keyType,
+            String valueType,
+            TypeBuilder builder,
+            BiConsumer<TypeDefinition, TypeDefinition>... assertions) {
         Map<String, TypeDefinition> typeCache = new HashMap<>();
         TypeDefinition typeDefinition = TypeDefinitionBuilder.build(processingEnv, field, typeCache);
         String keyTypeName = typeDefinition.getItems().get(0);
@@ -130,10 +146,10 @@ class MapTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
         String valueTypeName = typeDefinition.getItems().get(1);
         TypeDefinition valueTypeDefinition = typeCache.get(valueTypeName);
         assertEquals(expectedType, typeDefinition.getType());
-//        assertEquals(field.getSimpleName().toString(), typeDefinition.get$ref());
+        //        assertEquals(field.getSimpleName().toString(), typeDefinition.get$ref());
         assertEquals(keyType, keyTypeDefinition.getType());
         assertEquals(valueType, valueTypeDefinition.getType());
-//        assertEquals(builder.getClass().getName(), typeDefinition.getTypeBuilderName());
+        //        assertEquals(builder.getClass().getName(), typeDefinition.getTypeBuilderName());
         Stream.of(assertions).forEach(assertion -> assertion.accept(typeDefinition, keyTypeDefinition));
     }
 }

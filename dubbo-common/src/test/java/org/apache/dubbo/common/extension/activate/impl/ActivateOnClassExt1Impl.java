@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.extension.activate.impl;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.activate.ActivateExt1;
 
-@Activate(group = {"onClass"},
-    onClass = "org.springframework.security.core.context.SecurityContextHolder")
+@Activate(
+        group = {"onClass"},
+        onClass = "org.springframework.security.core.context.SecurityContextHolder")
 public class ActivateOnClassExt1Impl implements ActivateExt1 {
     @Override
     public String echo(String msg) {

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.filter;
 
 import org.apache.dubbo.common.URL;
@@ -42,20 +41,32 @@ class ObservationSenderFilterTest extends AbstractObservationFilterTest {
 
             BDDAssertions.then(invocation.getObjectAttachment("X-B3-TraceId")).isNotNull();
             MeterRegistryAssert.then(meterRegistry)
-                .hasMeterWithNameAndTags("rpc.client.duration", KeyValues.of("net.peer.name", "foo.bar.com", "net.peer.port", "8080", "rpc.method", "mockMethod", "rpc.service", "DemoService", "rpc.system", "apache_dubbo"));
+                    .hasMeterWithNameAndTags(
+                            "rpc.client.duration",
+                            KeyValues.of(
+                                    "net.peer.name",
+                                    "foo.bar.com",
+                                    "net.peer.port",
+                                    "8080",
+                                    "rpc.method",
+                                    "mockMethod",
+                                    "rpc.service",
+                                    "DemoService",
+                                    "rpc.system",
+                                    "apache_dubbo"));
             SpansAssert.then(buildingBlocks.getFinishedSpans())
-                .hasASpanWithNameIgnoreCase("DemoService/mockMethod", spanAssert ->
-                    spanAssert
-                        .hasTag("net.peer.name", "foo.bar.com")
-                        .hasTag("net.peer.port", "8080")
-                        .hasTag("rpc.method", "mockMethod")
-                        .hasTag("rpc.service", "DemoService")
-                        .hasTag("rpc.system", "apache_dubbo"));
+                    .hasASpanWithNameIgnoreCase("DemoService/mockMethod", spanAssert -> spanAssert
+                            .hasTag("net.peer.name", "foo.bar.com")
+                            .hasTag("net.peer.port", "8080")
+                            .hasTag("rpc.method", "mockMethod")
+                            .hasTag("rpc.service", "DemoService")
+                            .hasTag("rpc.system", "apache_dubbo"));
         };
     }
 
     void setupAttachments() {
-        RpcContext.getClientAttachment().setUrl(URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&side=consumer"));
+        RpcContext.getClientAttachment()
+                .setUrl(URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&side=consumer"));
         RpcContext.getClientAttachment().setRemoteAddress("foo.bar.com", 8080);
     }
 

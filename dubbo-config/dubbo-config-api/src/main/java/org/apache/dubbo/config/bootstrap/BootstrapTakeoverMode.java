@@ -26,5 +26,8 @@ import org.apache.dubbo.config.ServiceConfig;
  * SERVLET: will be controlled by java servlet container
  */
 public enum BootstrapTakeoverMode {
-    SPRING, MANUAL, AUTO, SERVLET
+    SPRING,
+    MANUAL,
+    AUTO,
+    SERVLET
 }

@@ -25,13 +25,14 @@ public class CounterMetricSample<T extends Number> extends MetricSample {
 
     private final T value;
 
-    public CounterMetricSample(String name, String description, Map<String, String> tags,
-                               MetricsCategory category, T value) {
+    public CounterMetricSample(
+            String name, String description, Map<String, String> tags, MetricsCategory category, T value) {
         super(name, description, tags, Type.COUNTER, category);
         this.value = value;
     }
 
-    public CounterMetricSample(MetricsKeyWrapper metricsKeyWrapper, Map<String, String> tags, MetricsCategory category, T value) {
+    public CounterMetricSample(
+            MetricsKeyWrapper metricsKeyWrapper, Map<String, String> tags, MetricsCategory category, T value) {
         this(metricsKeyWrapper.targetKey(), metricsKeyWrapper.targetDesc(), tags, category, value);
     }
 

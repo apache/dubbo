@@ -24,5 +24,4 @@ public interface DemoService {
     String sayName(String name);
 
     Box getBox();
-
 }

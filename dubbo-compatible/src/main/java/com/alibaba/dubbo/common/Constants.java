@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.common;
 
 import org.apache.dubbo.common.constants.CommonConstants;
@@ -27,22 +26,23 @@ import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
 
 @Deprecated
-public class Constants implements CommonConstants,
-    QosConstants,
-    FilterConstants,
-    RegistryConstants,
-    RemotingConstants,
-    org.apache.dubbo.config.Constants,
-    org.apache.dubbo.remoting.Constants,
-    org.apache.dubbo.rpc.cluster.Constants,
-    org.apache.dubbo.monitor.Constants,
-    org.apache.dubbo.rpc.Constants,
-    org.apache.dubbo.rpc.protocol.dubbo.Constants,
-    org.apache.dubbo.common.serialize.Constants,
-    org.apache.dubbo.common.config.configcenter.Constants,
-    org.apache.dubbo.metadata.report.support.Constants,
-    org.apache.dubbo.rpc.protocol.rest.Constants,
-    org.apache.dubbo.registry.Constants {
+public class Constants
+        implements CommonConstants,
+                QosConstants,
+                FilterConstants,
+                RegistryConstants,
+                RemotingConstants,
+                org.apache.dubbo.config.Constants,
+                org.apache.dubbo.remoting.Constants,
+                org.apache.dubbo.rpc.cluster.Constants,
+                org.apache.dubbo.monitor.Constants,
+                org.apache.dubbo.rpc.Constants,
+                org.apache.dubbo.rpc.protocol.dubbo.Constants,
+                org.apache.dubbo.common.serialize.Constants,
+                org.apache.dubbo.common.config.configcenter.Constants,
+                org.apache.dubbo.metadata.report.support.Constants,
+                org.apache.dubbo.rpc.protocol.rest.Constants,
+                org.apache.dubbo.registry.Constants {
     public static final String PROVIDER = "provider";
 
     public static final String CONSUMER = "consumer";
@@ -91,8 +91,7 @@ public class Constants implements CommonConstants,
 
     public static final String $ECHO = "$echo";
 
-    public static final int DEFAULT_IO_THREADS = Runtime.getRuntime()
-        .availableProcessors() + 1;
+    public static final int DEFAULT_IO_THREADS = Runtime.getRuntime().availableProcessors() + 1;
 
     public static final String DEFAULT_PROXY = "javassist";
 
@@ -354,20 +353,17 @@ public class Constants implements CommonConstants,
 
     public static final String COMMA_SEPARATOR = ",";
 
-    public static final Pattern COMMA_SPLIT_PATTERN = Pattern
-        .compile("\\s*[,]+\\s*");
+    public static final Pattern COMMA_SPLIT_PATTERN = Pattern.compile("\\s*[,]+\\s*");
 
-    public final static String PATH_SEPARATOR = "/";
+    public static final String PATH_SEPARATOR = "/";
 
     public static final String REGISTRY_SEPARATOR = "|";
 
-    public static final Pattern REGISTRY_SPLIT_PATTERN = Pattern
-        .compile("\\s*[|;]+\\s*");
+    public static final Pattern REGISTRY_SPLIT_PATTERN = Pattern.compile("\\s*[|;]+\\s*");
 
     public static final String SEMICOLON_SEPARATOR = ";";
 
-    public static final Pattern SEMICOLON_SPLIT_PATTERN = Pattern
-        .compile("\\s*[;]+\\s*");
+    public static final Pattern SEMICOLON_SPLIT_PATTERN = Pattern.compile("\\s*[;]+\\s*");
 
     public static final String CONNECT_QUEUE_CAPACITY = "connect.queue.capacity";
 

@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.aot.generate;
 
-
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -55,17 +54,22 @@ public class ClassSourceScanner extends JarScanner {
      */
     public List<Class<?>> spiClassesWithAdaptive() {
         Map<String, Class<?>> allClasses = getClasses();
-        List<Class<?>> spiClasses = new ArrayList<>(allClasses.values()).stream().filter(it -> {
-            if (null == it) {
-                return false;
-            }
-            Annotation anno = it.getAnnotation(SPI.class);
-            if (null == anno) {
-                return false;
-            }
-            Optional<Method> optional = Arrays.stream(it.getMethods()).filter(it2 -> it2.getAnnotation(Adaptive.class) != null).findAny();
-            return optional.isPresent();
-        }).collect(Collectors.toList());
+        List<Class<?>> spiClasses = new ArrayList<>(allClasses.values())
+                .stream()
+                        .filter(it -> {
+                            if (null == it) {
+                                return false;
+                            }
+                            Annotation anno = it.getAnnotation(SPI.class);
+                            if (null == anno) {
+                                return false;
+                            }
+                            Optional<Method> optional = Arrays.stream(it.getMethods())
+                                    .filter(it2 -> it2.getAnnotation(Adaptive.class) != null)
+                                    .findAny();
+                            return optional.isPresent();
+                        })
+                        .collect(Collectors.toList());
 
         return spiClasses;
     }
@@ -76,7 +80,9 @@ public class ClassSourceScanner extends JarScanner {
      * @return adaptive class
      */
     public Map<String, Class<?>> adaptiveClasses() {
-        List<String> res = spiClassesWithAdaptive().stream().map((c) -> c.getName() + "$Adaptive").collect(Collectors.toList());
+        List<String> res = spiClassesWithAdaptive().stream()
+                .map((c) -> c.getName() + "$Adaptive")
+                .collect(Collectors.toList());
         return forNames(res);
     }
 
@@ -86,7 +92,9 @@ public class ClassSourceScanner extends JarScanner {
      * @return configuration class
      */
     public List<Class<?>> configClasses() {
-        return getClasses().values().stream().filter(c -> AbstractConfig.class.isAssignableFrom(c) && !Modifier.isAbstract(c.getModifiers())).collect(Collectors.toList());
+        return getClasses().values().stream()
+                .filter(c -> AbstractConfig.class.isAssignableFrom(c) && !Modifier.isAbstract(c.getModifiers()))
+                .collect(Collectors.toList());
     }
 
     public Map<String, Class<?>> distinctSpiExtensionClasses(Set<String> spiResource) {
@@ -114,14 +122,20 @@ public class ClassSourceScanner extends JarScanner {
      * For example, the RouterSnapshotSwitcher that needs to be injected when ClusterScopeModelInitializer executes initializeFrameworkModel
      * @return Beans that need to be injected in advance
      */
-    public  List<Class<?>> scopeModelInitializer(){
+    public List<Class<?>> scopeModelInitializer() {
         List<Class<?>> classes = new ArrayList<>();
         classes.addAll(FrameworkModel.defaultModel().getBeanFactory().getRegisteredClasses());
-        classes.addAll(FrameworkModel.defaultModel().defaultApplication().getBeanFactory().getRegisteredClasses());
-        classes.addAll(FrameworkModel.defaultModel().defaultApplication().getDefaultModule().getBeanFactory().getRegisteredClasses());
+        classes.addAll(FrameworkModel.defaultModel()
+                .defaultApplication()
+                .getBeanFactory()
+                .getRegisteredClasses());
+        classes.addAll(FrameworkModel.defaultModel()
+                .defaultApplication()
+                .getDefaultModule()
+                .getBeanFactory()
+                .getRegisteredClasses());
         return classes.stream().distinct().collect(Collectors.toList());
     }
-
 
     private Map<String, Class<?>> loadResource(URL resourceUrl) {
         Map<String, Class<?>> extensionClasses = new HashMap<>();
@@ -151,8 +165,8 @@ public class ClassSourceScanner extends JarScanner {
     private List<String> getResourceContent(URL resourceUrl) throws IOException {
         List<String> newContentList = new ArrayList<>();
 
-        try (BufferedReader reader = new BufferedReader(
-            new InputStreamReader(resourceUrl.openStream(), StandardCharsets.UTF_8))) {
+        try (BufferedReader reader =
+                new BufferedReader(new InputStreamReader(resourceUrl.openStream(), StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 final int ci = line.indexOf('#');
@@ -169,6 +183,4 @@ public class ClassSourceScanner extends JarScanner {
         }
         return newContentList;
     }
-
-
 }

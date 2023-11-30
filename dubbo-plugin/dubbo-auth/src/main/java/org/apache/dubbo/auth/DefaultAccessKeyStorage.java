@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.auth;
 
-
 import org.apache.dubbo.auth.model.AccessKeyPair;
 import org.apache.dubbo.auth.spi.AccessKeyStorage;
 import org.apache.dubbo.common.URL;

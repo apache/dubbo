@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata.rest.api;
 
 import org.apache.dubbo.metadata.rest.User;
+
 import org.springframework.http.MediaType;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,42 +30,74 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class SpringControllerService {
-    @RequestMapping(value = "/param", method = RequestMethod.GET, consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+    @RequestMapping(
+            value = "/param",
+            method = RequestMethod.GET,
+            consumes = MediaType.TEXT_PLAIN_VALUE,
+            produces = MediaType.TEXT_PLAIN_VALUE)
     public String param(@RequestParam String param) {
         return param;
     }
 
-    @RequestMapping(value = "/header", method = RequestMethod.GET, consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+    @RequestMapping(
+            value = "/header",
+            method = RequestMethod.GET,
+            consumes = MediaType.TEXT_PLAIN_VALUE,
+            produces = MediaType.TEXT_PLAIN_VALUE)
     public String header(@RequestHeader String header) {
         return header;
     }
 
-    @RequestMapping(value = "/body", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(
+            value = "/body",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public User body(@RequestBody User user) {
         return user;
     }
 
-    @RequestMapping(value = "/multiValue", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @RequestMapping(
+            value = "/multiValue",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public MultiValueMap multiValue(@RequestBody MultiValueMap map) {
         return map;
     }
 
-    @RequestMapping(value = "/pathVariable/{a}", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @RequestMapping(
+            value = "/pathVariable/{a}",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public String pathVariable(@PathVariable String a) {
         return a;
     }
 
-    @RequestMapping(value = "/noAnnoParam", method = RequestMethod.POST, consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+    @RequestMapping(
+            value = "/noAnnoParam",
+            method = RequestMethod.POST,
+            consumes = MediaType.TEXT_PLAIN_VALUE,
+            produces = MediaType.TEXT_PLAIN_VALUE)
     public String noAnnoParam(String a) {
         return a;
     }
 
-    @RequestMapping(value = "/noAnnoNumber", method = RequestMethod.POST, consumes = MediaType.ALL_VALUE, produces = MediaType.ALL_VALUE)
+    @RequestMapping(
+            value = "/noAnnoNumber",
+            method = RequestMethod.POST,
+            consumes = MediaType.ALL_VALUE,
+            produces = MediaType.ALL_VALUE)
     public int noAnnoNumber(Integer b) {
         return b;
     }
 
-    @RequestMapping(value = "/noAnnoPrimitive", method = RequestMethod.POST, consumes = MediaType.ALL_VALUE, produces = MediaType.ALL_VALUE)
+    @RequestMapping(
+            value = "/noAnnoPrimitive",
+            method = RequestMethod.POST,
+            consumes = MediaType.ALL_VALUE,
+            produces = MediaType.ALL_VALUE)
     public int noAnnoPrimitive(int c) {
         return c;
     }

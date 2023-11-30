@@ -14,12 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.service;
-
-import com.google.protobuf.Descriptors.Descriptor;
-import com.google.protobuf.Descriptors.FieldDescriptor;
-import com.google.protobuf.Descriptors.FileDescriptor;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,6 +24,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.google.protobuf.Descriptors.Descriptor;
+import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.Descriptors.FileDescriptor;
 
 public class SchemaDescriptorRegistry {
 
@@ -66,8 +65,7 @@ public class SchemaDescriptorRegistry {
         fdMap.put(number, fd);
     }
 
-    public static FileDescriptor getFileDescriptorByExtensionAndNumber(String extension,
-        int number) {
+    public static FileDescriptor getFileDescriptorByExtensionAndNumber(String extension, int number) {
         return EXTENSIONS.getOrDefault(extension, Collections.emptyMap()).get(number);
     }
 

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.registry.retry;
 
 import org.apache.dubbo.common.URL;
@@ -117,8 +116,10 @@ public abstract class AbstractRetryTask implements TimerTask {
             // 1-13 - failed to execute the retrying task.
 
             logger.warn(
-                REGISTRY_EXECUTE_RETRYING_TASK, "registry center offline", "Check the registry server.",
-                "Final failed to execute task " + taskName + ", url: " + url + ", retry " + retryTimes + " times.");
+                    REGISTRY_EXECUTE_RETRYING_TASK,
+                    "registry center offline",
+                    "Check the registry server.",
+                    "Final failed to execute task " + taskName + ", url: " + url + ", retry " + retryTimes + " times.");
 
             return;
         }
@@ -131,8 +132,13 @@ public abstract class AbstractRetryTask implements TimerTask {
 
             // 1-13 - failed to execute the retrying task.
 
-            logger.warn(REGISTRY_EXECUTE_RETRYING_TASK, "registry center offline", "Check the registry server.",
-                "Failed to execute task " + taskName + ", url: " + url + ", waiting for again, cause:" + t.getMessage(), t);
+            logger.warn(
+                    REGISTRY_EXECUTE_RETRYING_TASK,
+                    "registry center offline",
+                    "Check the registry server.",
+                    "Failed to execute task " + taskName + ", url: " + url + ", waiting for again, cause:"
+                            + t.getMessage(),
+                    t);
 
             // reput this task when catch exception.
             reput(timeout, retryPeriod);

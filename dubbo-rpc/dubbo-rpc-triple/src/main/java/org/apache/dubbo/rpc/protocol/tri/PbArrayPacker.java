@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri;
 
-import com.google.protobuf.Message;
 import org.apache.dubbo.rpc.model.Pack;
+
+import com.google.protobuf.Message;
 
 public class PbArrayPacker implements Pack {
 
@@ -37,5 +37,4 @@ public class PbArrayPacker implements Pack {
         }
         return PB_PACK.pack(obj);
     }
-
 }

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.compressor;
 
 import org.apache.dubbo.common.extension.ExtensionScope;
@@ -50,5 +49,4 @@ public interface Compressor extends MessageEncoding {
      * @return compressed payload byte array
      */
     byte[] compress(byte[] payloadByteArr);
-
 }

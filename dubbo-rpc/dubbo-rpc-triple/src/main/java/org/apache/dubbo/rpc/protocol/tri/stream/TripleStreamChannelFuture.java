@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
-import io.netty.channel.Channel;
-import io.netty.handler.codec.http2.Http2StreamChannel;
 import org.apache.dubbo.common.utils.Assert;
 
 import java.util.concurrent.CompletableFuture;
+
+import io.netty.channel.Channel;
+import io.netty.handler.codec.http2.Http2StreamChannel;
 
 public class TripleStreamChannelFuture extends CompletableFuture<Http2StreamChannel> {
 

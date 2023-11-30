@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,12 +23,10 @@ import org.apache.dubbo.config.AbstractConfig;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-
 public class RpcConfigGetSetProxy {
 
     private static final String RPC_CONFIG_BASECLASS = AbstractConfig.class.getName();
     private static final Logger log = LoggerFactory.getLogger(RpcConfigGetSetProxy.class);
-
 
     private Object proxiee = null;
     private Class<?> proxieeClass = null;
@@ -45,10 +43,9 @@ public class RpcConfigGetSetProxy {
         }
 
         proxiee = p;
-        //proxieeClass = c;
+        // proxieeClass = c;
         proxieeClass = p.getClass();
         isOk = true;
-
     }
 
     public static boolean isKindOf(Class<?> c, String type) {
@@ -162,5 +159,4 @@ public class RpcConfigGetSetProxy {
 
         return getMethod(methodName, value, clazz);
     }
-
 }

@@ -38,7 +38,6 @@ public class HeaderConsumerParamParser implements BaseConsumerParamParser {
             return;
         }
 
-
         // Map<String,String>
         if (Map.class.isAssignableFrom(argInfo.getParamType())) {
             Map headerValues = (Map) headerValue;
@@ -48,9 +47,7 @@ public class HeaderConsumerParamParser implements BaseConsumerParamParser {
         } else {
             // others
             requestTemplate.addHeader(argInfo.getAnnotationNameAttribute(), headerValue);
-
         }
-
     }
 
     @Override

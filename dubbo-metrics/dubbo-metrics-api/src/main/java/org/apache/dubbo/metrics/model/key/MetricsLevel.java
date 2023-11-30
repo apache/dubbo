@@ -14,9 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.model.key;
 
 public enum MetricsLevel {
-    APP, SERVICE, METHOD, CONFIG, REGISTRY
+    APP,
+    SERVICE,
+    METHOD,
+    CONFIG,
+    REGISTRY
 }

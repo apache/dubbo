@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.rpc.CancellationContext;
@@ -24,13 +23,13 @@ import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 
+import java.util.Map;
+
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.util.AsciiString;
-
-import java.util.Map;
 
 public class RequestMetadata {
 
@@ -53,35 +52,29 @@ public class RequestMetadata {
     public DefaultHttp2Headers toHeaders() {
         DefaultHttp2Headers header = new DefaultHttp2Headers(false);
         header.scheme(scheme)
-            .authority(address)
-            .method(HttpMethod.POST.asciiName())
-            .path("/" + service + "/" + method.getMethodName())
-            .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.CONTENT_PROTO)
-            .set(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
+                .authority(address)
+                .method(HttpMethod.POST.asciiName())
+                .path("/" + service + "/" + method.getMethodName())
+                .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.CONTENT_PROTO)
+                .set(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
         setIfNotNull(header, TripleHeaderEnum.TIMEOUT.getHeader(), timeout);
         if (!ignoreDefaultVersion || !"1.0.0".equals(version)) {
             setIfNotNull(header, TripleHeaderEnum.SERVICE_VERSION.getHeader(), version);
         }
         setIfNotNull(header, TripleHeaderEnum.SERVICE_GROUP.getHeader(), group);
-        setIfNotNull(header, TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(),
-            application);
-        setIfNotNull(header, TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(),
-            acceptEncoding);
+        setIfNotNull(header, TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(), application);
+        setIfNotNull(header, TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(), acceptEncoding);
         if (!Identity.MESSAGE_ENCODING.equals(compressor.getMessageEncoding())) {
-            setIfNotNull(header, TripleHeaderEnum.GRPC_ENCODING.getHeader(),
-                compressor.getMessageEncoding());
+            setIfNotNull(header, TripleHeaderEnum.GRPC_ENCODING.getHeader(), compressor.getMessageEncoding());
         }
         StreamUtils.convertAttachment(header, attachments, convertNoLowerHeader);
         return header;
     }
 
-    private void setIfNotNull(DefaultHttp2Headers headers, CharSequence key,
-        CharSequence value) {
+    private void setIfNotNull(DefaultHttp2Headers headers, CharSequence key, CharSequence value) {
         if (value == null) {
             return;
         }
         headers.set(key, value);
     }
-
-
 }

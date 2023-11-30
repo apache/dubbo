@@ -16,13 +16,13 @@
  */
 package org.apache.dubbo.metadata.annotation.processing.util;
 
-
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
+
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -59,7 +59,8 @@ public interface MethodUtils {
         return filterAll(methodsIn(getDeclaredMembers(type)), methodFilters);
     }
 
-    static List<ExecutableElement> getAllDeclaredMethods(TypeElement type, Predicate<ExecutableElement>... methodFilters) {
+    static List<ExecutableElement> getAllDeclaredMethods(
+            TypeElement type, Predicate<ExecutableElement>... methodFilters) {
         return type == null ? emptyList() : getAllDeclaredMethods(type.asType(), methodFilters);
     }
 
@@ -67,9 +68,9 @@ public interface MethodUtils {
         return getAllDeclaredMethods(type, EMPTY_ARRAY);
     }
 
-    static List<ExecutableElement> getAllDeclaredMethods(TypeMirror type, Predicate<ExecutableElement>... methodFilters) {
-        return getHierarchicalTypes(type)
-                .stream()
+    static List<ExecutableElement> getAllDeclaredMethods(
+            TypeMirror type, Predicate<ExecutableElement>... methodFilters) {
+        return getHierarchicalTypes(type).stream()
                 .map(t -> getDeclaredMethods(t, methodFilters))
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
@@ -84,8 +85,7 @@ public interface MethodUtils {
     }
 
     static List<ExecutableElement> getAllDeclaredMethods(TypeMirror type, Type... excludedTypes) {
-        return getHierarchicalTypes(type, excludedTypes)
-                .stream()
+        return getHierarchicalTypes(type, excludedTypes).stream()
                 .map(t -> getDeclaredMethods(t))
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
@@ -107,15 +107,18 @@ public interface MethodUtils {
         return isMethod(method) && isPublicNonStatic(method);
     }
 
-    static ExecutableElement findMethod(TypeElement type, String methodName, Type oneParameterType, Type... otherParameterTypes) {
+    static ExecutableElement findMethod(
+            TypeElement type, String methodName, Type oneParameterType, Type... otherParameterTypes) {
         return type == null ? null : findMethod(type.asType(), methodName, oneParameterType, otherParameterTypes);
     }
 
-    static ExecutableElement findMethod(TypeMirror type, String methodName, Type oneParameterType, Type... otherParameterTypes) {
+    static ExecutableElement findMethod(
+            TypeMirror type, String methodName, Type oneParameterType, Type... otherParameterTypes) {
         List<Type> parameterTypes = new LinkedList<>();
         parameterTypes.add(oneParameterType);
         parameterTypes.addAll(asList(otherParameterTypes));
-        return findMethod(type, methodName, parameterTypes.stream().map(Type::getTypeName).toArray(String[]::new));
+        return findMethod(
+                type, methodName, parameterTypes.stream().map(Type::getTypeName).toArray(String[]::new));
     }
 
     static ExecutableElement findMethod(TypeElement type, String methodName, CharSequence... parameterTypes) {
@@ -123,18 +126,17 @@ public interface MethodUtils {
     }
 
     static ExecutableElement findMethod(TypeMirror type, String methodName, CharSequence... parameterTypes) {
-        return filterFirst(getAllDeclaredMethods(type),
+        return filterFirst(
+                getAllDeclaredMethods(type),
                 method -> methodName.equals(method.getSimpleName().toString()),
-                method -> matchParameterTypes(method.getParameters(), parameterTypes)
-        );
+                method -> matchParameterTypes(method.getParameters(), parameterTypes));
     }
 
-    static ExecutableElement getOverrideMethod(ProcessingEnvironment processingEnv, TypeElement type,
-                                               ExecutableElement declaringMethod) {
+    static ExecutableElement getOverrideMethod(
+            ProcessingEnvironment processingEnv, TypeElement type, ExecutableElement declaringMethod) {
         Elements elements = processingEnv.getElementUtils();
         return filterFirst(getAllDeclaredMethods(type), method -> elements.overrides(method, declaringMethod, type));
     }
-
 
     static String getMethodName(ExecutableElement method) {
         return method == null ? null : method.getSimpleName().toString();
@@ -145,10 +147,9 @@ public interface MethodUtils {
     }
 
     static String[] getMethodParameterTypes(ExecutableElement method) {
-        return method == null ?
-                new String[0] :
-                method.getParameters()
-                        .stream()
+        return method == null
+                ? new String[0]
+                : method.getParameters().stream()
                         .map(VariableElement::asType)
                         .map(TypeUtils::toString)
                         .toArray(String[]::new);

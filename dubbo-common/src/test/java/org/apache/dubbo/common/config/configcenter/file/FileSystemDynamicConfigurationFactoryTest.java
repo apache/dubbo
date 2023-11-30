@@ -32,6 +32,9 @@ class FileSystemDynamicConfigurationFactoryTest {
 
     @Test
     void testGetFactory() {
-        assertEquals(FileSystemDynamicConfigurationFactory.class, ConfigurationUtils.getDynamicConfigurationFactory(ApplicationModel.defaultModel(), "file").getClass());
+        assertEquals(
+                FileSystemDynamicConfigurationFactory.class,
+                ConfigurationUtils.getDynamicConfigurationFactory(ApplicationModel.defaultModel(), "file")
+                        .getClass());
     }
 }

@@ -105,9 +105,9 @@ public class MethodDefinition implements Serializable {
             return false;
         }
         MethodDefinition that = (MethodDefinition) o;
-        return Objects.equals(getName(), that.getName()) &&
-                Arrays.equals(getParameterTypes(), that.getParameterTypes()) &&
-                Objects.equals(getReturnType(), that.getReturnType());
+        return Objects.equals(getName(), that.getName())
+                && Arrays.equals(getParameterTypes(), that.getParameterTypes())
+                && Objects.equals(getReturnType(), that.getReturnType());
     }
 
     @Override

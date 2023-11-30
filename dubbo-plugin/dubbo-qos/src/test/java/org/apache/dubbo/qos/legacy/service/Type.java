@@ -17,5 +17,7 @@
 package org.apache.dubbo.qos.legacy.service;
 
 public enum Type {
-    High, Normal, Lower
+    High,
+    Normal,
+    Lower
 }

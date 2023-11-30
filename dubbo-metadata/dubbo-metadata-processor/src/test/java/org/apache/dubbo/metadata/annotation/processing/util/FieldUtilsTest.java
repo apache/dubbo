@@ -21,18 +21,19 @@ import org.apache.dubbo.metadata.annotation.processing.model.Color;
 import org.apache.dubbo.metadata.annotation.processing.model.Model;
 import org.apache.dubbo.metadata.tools.TestServiceImpl;
 
-import org.junit.jupiter.api.Test;
-
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+import org.junit.jupiter.api.Test;
 
 import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PRIVATE;
@@ -62,8 +63,7 @@ class FieldUtilsTest extends AbstractAnnotationProcessingTest {
     private TypeElement testType;
 
     @Override
-    protected void addCompiledClasses(Set<Class<?>> classesToBeCompiled) {
-    }
+    protected void addCompiledClasses(Set<Class<?>> classesToBeCompiled) {}
 
     @Override
     protected void beforeEach() {
@@ -184,7 +184,6 @@ class FieldUtilsTest extends AbstractAnnotationProcessingTest {
 
         type = getType(Color.class);
         assertTrue(isField(findField(type, "BLUE"), PUBLIC, STATIC, FINAL));
-
 
         assertFalse(isField(null));
         assertFalse(isField(null, PUBLIC, STATIC, FINAL));

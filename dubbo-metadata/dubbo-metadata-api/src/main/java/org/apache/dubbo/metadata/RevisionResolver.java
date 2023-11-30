@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metadata;
 
-
 import org.apache.dubbo.common.utils.MD5Utils;
 
 public class RevisionResolver {
@@ -28,5 +27,4 @@ public class RevisionResolver {
     public static String calRevision(String metadata) {
         return md5Utils.getMd5(metadata);
     }
-
 }

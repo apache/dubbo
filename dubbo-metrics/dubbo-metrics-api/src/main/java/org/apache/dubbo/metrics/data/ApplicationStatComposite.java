@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.data;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -39,7 +38,6 @@ import java.util.concurrent.atomic.AtomicLong;
  * the key is displayed and the initial data is 0 value of the AtomicLong type
  */
 public class ApplicationStatComposite extends AbstractMetricsExport {
-
 
     public ApplicationStatComposite(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -66,7 +64,6 @@ public class ApplicationStatComposite extends AbstractMetricsExport {
         applicationNumStats.get(metricsKey).getAndAdd(size);
     }
 
-
     public List<MetricSample> export(MetricsCategory category) {
         List<MetricSample> list = new ArrayList<>();
         for (MetricsKey type : applicationNumStats.keySet()) {
@@ -77,13 +74,13 @@ public class ApplicationStatComposite extends AbstractMetricsExport {
 
     @SuppressWarnings({"rawtypes"})
     private GaugeMetricSample convertToSample(MetricsKey type, MetricsCategory category, AtomicLong targetNumber) {
-        return new GaugeMetricSample<>(type, MetricsSupport.applicationTags(getApplicationModel()), category, targetNumber, AtomicLong::get);
+        return new GaugeMetricSample<>(
+                type, MetricsSupport.applicationTags(getApplicationModel()), category, targetNumber, AtomicLong::get);
     }
 
     public Map<MetricsKey, AtomicLong> getApplicationNumStats() {
         return applicationNumStats;
     }
-
 
     @Override
     public boolean calSamplesChanged() {

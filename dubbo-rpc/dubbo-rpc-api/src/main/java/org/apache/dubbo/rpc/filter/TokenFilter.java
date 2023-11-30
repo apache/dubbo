@@ -39,19 +39,19 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 public class TokenFilter implements Filter {
 
     @Override
-    public Result invoke(Invoker<?> invoker, Invocation inv)
-            throws RpcException {
+    public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
         String token = invoker.getUrl().getParameter(TOKEN_KEY);
         if (ConfigUtils.isNotEmpty(token)) {
             Class<?> serviceType = invoker.getInterface();
             String remoteToken = (String) inv.getObjectAttachmentWithoutConvert(TOKEN_KEY);
             if (!token.equals(remoteToken)) {
-                throw new RpcException("Invalid token! Forbid invoke remote service " + serviceType + " method " + RpcUtils.getMethodName(inv) +
-                        "() from consumer " + RpcContext.getServiceContext().getRemoteHost() + " to provider " +
-                        RpcContext.getServiceContext().getLocalHost()+ ", consumer incorrect token is " + remoteToken);
+                throw new RpcException("Invalid token! Forbid invoke remote service " + serviceType + " method "
+                        + RpcUtils.getMethodName(inv) + "() from consumer "
+                        + RpcContext.getServiceContext().getRemoteHost() + " to provider "
+                        + RpcContext.getServiceContext().getLocalHost()
+                        + ", consumer incorrect token is " + remoteToken);
             }
         }
         return invoker.invoke(inv);
     }
-
 }

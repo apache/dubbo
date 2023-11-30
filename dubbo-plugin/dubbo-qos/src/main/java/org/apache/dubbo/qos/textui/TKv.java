@@ -28,21 +28,19 @@ public class TKv implements TComponent {
     private final TTable tTable;
 
     public TKv() {
-        this.tTable = new TTable(new TTable.ColumnDefine[]{
-                new TTable.ColumnDefine(TTable.Align.RIGHT),
-                new TTable.ColumnDefine(TTable.Align.RIGHT),
-                new TTable.ColumnDefine(TTable.Align.LEFT)
-        })
+        this.tTable = new TTable(new TTable.ColumnDefine[] {
+                    new TTable.ColumnDefine(TTable.Align.RIGHT),
+                    new TTable.ColumnDefine(TTable.Align.RIGHT),
+                    new TTable.ColumnDefine(TTable.Align.LEFT)
+                })
                 .padding(0);
         this.tTable.getBorder().set(TTable.Border.BORDER_NON);
     }
 
     public TKv(TTable.ColumnDefine keyColumnDefine, TTable.ColumnDefine valueColumnDefine) {
-        this.tTable = new TTable(new TTable.ColumnDefine[]{
-                keyColumnDefine,
-                new TTable.ColumnDefine(TTable.Align.RIGHT),
-                valueColumnDefine
-        })
+        this.tTable = new TTable(new TTable.ColumnDefine[] {
+                    keyColumnDefine, new TTable.ColumnDefine(TTable.Align.RIGHT), valueColumnDefine
+                })
                 .padding(0);
         this.tTable.getBorder().set(TTable.Border.BORDER_NON);
     }

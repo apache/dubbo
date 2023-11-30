@@ -19,14 +19,14 @@ package org.apache.dubbo.common.url;
 import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class URLParamTest {
     @Test
@@ -121,7 +121,6 @@ class URLParamTest {
 
         URLParam urlParam4 = URLParam.parse("aaa=aaa&side=provider");
         Assertions.assertEquals("provider", urlParam4.getParameter("side"));
-
     }
 
     @Test
@@ -208,8 +207,7 @@ class URLParamTest {
         URLParam urlParam10 = urlParam8.addParametersIfAbsent(map);
         Assertions.assertEquals("provider", urlParam10.getParameter("side"));
 
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> urlParam1.addParameter("side", "unrecognized"));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> urlParam1.addParameter("side", "unrecognized"));
     }
 
     @Test
@@ -220,7 +218,9 @@ class URLParamTest {
         Assertions.assertFalse(urlParam1.getParameters().containsKey("aaa"));
         Assertions.assertFalse(urlParam1.getParameters().containsKey("version"));
         Assertions.assertFalse(urlParam1.getParameters().containsKey(new Object()));
-        Assertions.assertEquals(new HashMap<>(urlParam1.getParameters()).toString(), urlParam1.getParameters().toString());
+        Assertions.assertEquals(
+                new HashMap<>(urlParam1.getParameters()).toString(),
+                urlParam1.getParameters().toString());
 
         URLParam urlParam2 = URLParam.parse("aaa=aaa&version=1.0");
         URLParam.URLParamMap urlParam2Map = (URLParam.URLParamMap) urlParam2.getParameters();
@@ -267,39 +267,45 @@ class URLParamTest {
 
         URLParam urlParam3 = URLParam.parse("aaa=aaa&version=1.0");
         Assertions.assertTrue(CollectionUtils.mapEquals(urlParam2Map, urlParam3.getParameters()));
-        Assertions.assertTrue(CollectionUtils.equals(urlParam2Map.entrySet(), urlParam3.getParameters().entrySet()));
-        Assertions.assertTrue(CollectionUtils.equals(urlParam2Map.keySet(), urlParam3.getParameters().keySet()));
-        Assertions.assertTrue(CollectionUtils.equals(urlParam2Map.values(), urlParam3.getParameters().values()));
+        Assertions.assertTrue(CollectionUtils.equals(
+                urlParam2Map.entrySet(), urlParam3.getParameters().entrySet()));
+        Assertions.assertTrue(CollectionUtils.equals(
+                urlParam2Map.keySet(), urlParam3.getParameters().keySet()));
+        Assertions.assertTrue(CollectionUtils.equals(
+                urlParam2Map.values(), urlParam3.getParameters().values()));
 
         URLParam urlParam4 = URLParam.parse("aaa=aaa&version=1.0&side=consumer");
         Assertions.assertFalse(CollectionUtils.mapEquals(urlParam2Map, urlParam4.getParameters()));
-        Assertions.assertFalse(CollectionUtils.equals(urlParam2Map.entrySet(), urlParam4.getParameters().entrySet()));
-        Assertions.assertFalse(CollectionUtils.equals(urlParam2Map.keySet(), urlParam4.getParameters().keySet()));
-        Assertions.assertFalse(CollectionUtils.equals(urlParam2Map.values(), urlParam4.getParameters().values()));
+        Assertions.assertFalse(CollectionUtils.equals(
+                urlParam2Map.entrySet(), urlParam4.getParameters().entrySet()));
+        Assertions.assertFalse(CollectionUtils.equals(
+                urlParam2Map.keySet(), urlParam4.getParameters().keySet()));
+        Assertions.assertFalse(CollectionUtils.equals(
+                urlParam2Map.values(), urlParam4.getParameters().values()));
 
-        Set<Map<String,String>> set = new HashSet<>();
+        Set<Map<String, String>> set = new HashSet<>();
 
         set.add(urlParam2Map);
         set.add(urlParam3.getParameters());
-        Assertions.assertEquals(1,set.size());
+        Assertions.assertEquals(1, set.size());
 
         set.add(urlParam4.getParameters());
-        Assertions.assertEquals(2,set.size());
+        Assertions.assertEquals(2, set.size());
 
         URLParam urlParam5 = URLParam.parse("version=1.0");
-        Assertions.assertEquals(new HashMap<>(urlParam5.getParameters()).toString(), urlParam5.getParameters().toString());
-
+        Assertions.assertEquals(
+                new HashMap<>(urlParam5.getParameters()).toString(),
+                urlParam5.getParameters().toString());
     }
 
     @Test
     void testMethodParameters() {
         URLParam urlParam1 = URLParam.parse("aaa.method1=aaa&bbb.method2=bbb");
-        Assertions.assertEquals("aaa",urlParam1.getAnyMethodParameter("method1"));
-        Assertions.assertEquals("bbb",urlParam1.getAnyMethodParameter("method2"));
-
+        Assertions.assertEquals("aaa", urlParam1.getAnyMethodParameter("method1"));
+        Assertions.assertEquals("bbb", urlParam1.getAnyMethodParameter("method2"));
 
         URLParam urlParam2 = URLParam.parse("methods=aaa&aaa.method1=aaa&bbb.method2=bbb");
-        Assertions.assertEquals("aaa",urlParam2.getAnyMethodParameter("method1"));
+        Assertions.assertEquals("aaa", urlParam2.getAnyMethodParameter("method1"));
         Assertions.assertNull(urlParam2.getAnyMethodParameter("method2"));
     }
 }

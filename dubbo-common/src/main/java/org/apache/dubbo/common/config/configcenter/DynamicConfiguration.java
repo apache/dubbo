@@ -19,7 +19,6 @@ package org.apache.dubbo.common.config.configcenter;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
 
-
 /**
  * Dynamic Configuration
  * <br/>
@@ -47,7 +46,6 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
     default void addListener(String key, ConfigurationListener listener) {
         addListener(key, getDefaultGroup(), listener);
     }
-
 
     /**
      * {@link #removeListener(String, String, ConfigurationListener)}
@@ -170,7 +168,8 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      * @return
      * @throws UnsupportedOperationException
      */
-    default boolean publishConfigCas(String key, String group, String content, Object ticket) throws UnsupportedOperationException {
+    default boolean publishConfigCas(String key, String group, String content, Object ticket)
+            throws UnsupportedOperationException {
         return false;
     }
 

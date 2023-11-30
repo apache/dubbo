@@ -30,8 +30,7 @@ public class ChannelDelegate implements Channel {
 
     private transient Channel channel;
 
-    public ChannelDelegate() {
-    }
+    public ChannelDelegate() {}
 
     public ChannelDelegate(Channel channel) {
         setChannel(channel);
@@ -122,5 +121,4 @@ public class ChannelDelegate implements Channel {
     public boolean isClosed() {
         return channel.isClosed();
     }
-
 }
