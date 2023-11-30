@@ -897,6 +897,7 @@
                   <exclude>**/TripleWrapper.java</exclude>
                   <exclude>**/com/google/rpc/**</exclude>
                   <exclude>**/io/grpc/**</exclude>
+                  <exclude>**/istio/**</exclude>
                 </excludes>
                 <palantirJavaFormat>
                   <version>${palantirJavaFormat.version}</version>
