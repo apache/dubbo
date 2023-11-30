@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.integration;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
 
 import java.util.Map;
@@ -35,33 +36,33 @@ public interface RegistryParameterCustomizer {
      *
      * @return map of extra parameter
      */
-    Map<String, String> getExtraParameter();
+    Map<String, String> getExtraParameter(URL providerUrl, URL registryUrl);
 
     /**
      * params that need to be sent to registry center.
      *
      * @return arrays of keys
      */
-    String[] parametersIncluded();
+    String[] parametersIncluded(URL providerUrl, URL registryUrl);
 
     /**
      * params that need to be excluded before sending to registry center.
      *
      * @return arrays of keys
      */
-    String[] parametersExcluded();
+    String[] parametersExcluded(URL providerUrl, URL registryUrl);
 
     /**
      * params start with include prefix that need to be sent to registry center.
      *
      * @return arrays of prefixes
      */
-    String[] prefixesIncluded();
+    String[] prefixesIncluded(URL providerUrl, URL registryUrl);
 
     /**
      * params start with exclude prefix that need to be excluded before sending to registry center.
      *
      * @return arrays of prefixes
      */
-    String[] prefixesExcluded();
+    String[] prefixesExcluded(URL providerUrl, URL registryUrl);
 }

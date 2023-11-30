@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.registry.integration;
 
+import org.apache.dubbo.common.URL;
+
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ALIVE_KEY;
@@ -30,7 +32,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.HIDE_KEY_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.IPV6_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PACKABLE_METHOD_FACTORY_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
@@ -69,12 +70,12 @@ import static org.apache.dubbo.rpc.cluster.Constants.WEIGHT_KEY;
 public class DefaultRegistryParameterCustomizer implements RegistryParameterCustomizer {
 
     @Override
-    public Map<String, String> getExtraParameter() {
+    public Map<String, String> getExtraParameter(URL providerUrl, URL registryUrl) {
         return null;
     }
 
     @Override
-    public String[] parametersIncluded() {
+    public String[] parametersIncluded(URL providerUrl, URL registryUrl) {
         return new String[] {
             APPLICATION_KEY,
             CODEC_KEY,
@@ -104,7 +105,7 @@ public class DefaultRegistryParameterCustomizer implements RegistryParameterCust
     }
 
     @Override
-    public String[] parametersExcluded() {
+    public String[] parametersExcluded(URL providerUrl, URL registryUrl) {
         return new String[] {
             MONITOR_KEY,
             BIND_IP_KEY,
@@ -131,12 +132,12 @@ public class DefaultRegistryParameterCustomizer implements RegistryParameterCust
     }
 
     @Override
-    public String[] prefixesIncluded() {
-        return new String[] {METHODS_KEY};
+    public String[] prefixesIncluded(URL providerUrl, URL registryUrl) {
+        return new String[0];
     }
 
     @Override
-    public String[] prefixesExcluded() {
+    public String[] prefixesExcluded(URL providerUrl, URL registryUrl) {
         return new String[] {HIDE_KEY_PREFIX};
     }
 }

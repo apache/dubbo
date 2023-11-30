@@ -266,7 +266,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
         // url to registry
         final Registry registry = getRegistry(registryUrl);
-        final URL registeredProviderUrl = getUrlToRegistry(providerUrl);
+        final URL registeredProviderUrl = getUrlToRegistry(providerUrl, registryUrl);
 
         // decide if we need to delay publish (provider itself and registry should both need to register)
         boolean register = providerUrl.getParameter(REGISTER_KEY, true) && registryUrl.getParameter(REGISTER_KEY, true);
@@ -376,7 +376,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         URL registeredUrl = exporter.getRegisterUrl();
 
         URL registryUrl = getRegistryUrl(originInvoker);
-        URL newProviderUrl = getUrlToRegistry(newInvokerUrl);
+        URL newProviderUrl = getUrlToRegistry(newInvokerUrl, registryUrl);
 
         // update local exporter
         Invoker<T> invokerDelegate = new InvokerDelegate<>(originInvoker, newInvokerUrl);
@@ -478,7 +478,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
      * @param providerUrl
      * @return url to registry.
      */
-    private URL getUrlToRegistry(final URL providerUrl) {
+    private URL getUrlToRegistry(final URL providerUrl, final URL registryUrl) {
         ExtensionLoader<RegistryParameterCustomizer> loader =
                 providerUrl.getOrDefaultApplicationModel().getExtensionLoader(RegistryParameterCustomizer.class);
         Map<String, String> extraParameter = new HashMap<>(providerUrl.getParameters());
@@ -487,22 +487,23 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         Set<String> prefixIncludedList = new HashSet<>();
         Set<String> prefixExcludedList = new HashSet<>();
         for (RegistryParameterCustomizer customizer : loader.getSupportedExtensionInstances()) {
-            if (CollectionUtils.isNotEmptyMap(customizer.getExtraParameter())) {
-                extraParameter.putAll(customizer.getExtraParameter());
+            if (CollectionUtils.isNotEmptyMap(customizer.getExtraParameter(providerUrl, registryUrl))) {
+                extraParameter.putAll(customizer.getExtraParameter(providerUrl, registryUrl));
                 // default include extra keys
-                parametersIncludedList.addAll(customizer.getExtraParameter().keySet());
+                parametersIncludedList.addAll(
+                        customizer.getExtraParameter(providerUrl, registryUrl).keySet());
             }
-            if (ArrayUtils.isNotEmpty(customizer.parametersIncluded())) {
-                parametersIncludedList.addAll(Arrays.asList(customizer.parametersIncluded()));
+            if (ArrayUtils.isNotEmpty(customizer.parametersIncluded(providerUrl, registryUrl))) {
+                parametersIncludedList.addAll(Arrays.asList(customizer.parametersIncluded(providerUrl, registryUrl)));
             }
-            if (ArrayUtils.isNotEmpty(customizer.parametersExcluded())) {
-                parametersExcludedList.addAll(Arrays.asList(customizer.parametersExcluded()));
+            if (ArrayUtils.isNotEmpty(customizer.parametersExcluded(providerUrl, registryUrl))) {
+                parametersExcludedList.addAll(Arrays.asList(customizer.parametersExcluded(providerUrl, registryUrl)));
             }
-            if (ArrayUtils.isNotEmpty(customizer.prefixesIncluded())) {
-                prefixIncludedList.addAll(Arrays.asList(customizer.prefixesIncluded()));
+            if (ArrayUtils.isNotEmpty(customizer.prefixesIncluded(providerUrl, registryUrl))) {
+                prefixIncludedList.addAll(Arrays.asList(customizer.prefixesIncluded(providerUrl, registryUrl)));
             }
-            if (ArrayUtils.isNotEmpty(customizer.prefixesExcluded())) {
-                prefixExcludedList.addAll(Arrays.asList(customizer.prefixesExcluded()));
+            if (ArrayUtils.isNotEmpty(customizer.prefixesExcluded(providerUrl, registryUrl))) {
+                prefixExcludedList.addAll(Arrays.asList(customizer.prefixesExcluded(providerUrl, registryUrl)));
             }
         }
         Iterator<Map.Entry<String, String>> iterator = extraParameter.entrySet().iterator();
@@ -700,15 +701,6 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     protected List<RegistryProtocolListener> findRegistryProtocolListeners(URL url) {
         return ScopeModelUtil.getExtensionLoader(RegistryProtocolListener.class, url.getScopeModel())
                 .getActivateExtension(url, REGISTRY_PROTOCOL_LISTENER_KEY);
-    }
-
-    // available to test
-    public String[] getParamsToRegistry(String[] defaultKeys, String[] additionalParameterKeys) {
-        int additionalLen = additionalParameterKeys.length;
-        String[] registryParams = new String[defaultKeys.length + additionalLen];
-        System.arraycopy(defaultKeys, 0, registryParams, 0, defaultKeys.length);
-        System.arraycopy(additionalParameterKeys, 0, registryParams, defaultKeys.length, additionalLen);
-        return registryParams;
     }
 
     @Override

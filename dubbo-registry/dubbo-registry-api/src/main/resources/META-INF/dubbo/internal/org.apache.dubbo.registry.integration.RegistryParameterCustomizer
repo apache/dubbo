@@ -1,1 +1,2 @@
 default=org.apache.dubbo.registry.integration.DefaultRegistryParameterCustomizer
+simplified=org.apache.dubbo.registry.integration.SimplifiedRegistryParameterCustomizer
