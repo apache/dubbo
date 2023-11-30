@@ -16,13 +16,13 @@
  */
 package org.apache.dubbo.qos.server.handler;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.util.function.Predicate;
-
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.qos.api.QosConfiguration;
 import org.apache.dubbo.qos.common.QosConstants;
+
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.function.Predicate;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -72,9 +72,9 @@ public class ForeignHostPermitHandler extends ChannelHandlerAdapter {
             return;
         }
 
-
-        ByteBuf cb = Unpooled.wrappedBuffer((QosConstants.BR_STR + "Foreign Ip Not Permitted, Consider Config It In Whitelist."
-            + QosConstants.BR_STR).getBytes());
+        ByteBuf cb = Unpooled.wrappedBuffer((QosConstants.BR_STR
+                        + "Foreign Ip Not Permitted, Consider Config It In Whitelist." + QosConstants.BR_STR)
+                .getBytes());
         ctx.writeAndFlush(cb).addListener(ChannelFutureListener.CLOSE);
     }
 

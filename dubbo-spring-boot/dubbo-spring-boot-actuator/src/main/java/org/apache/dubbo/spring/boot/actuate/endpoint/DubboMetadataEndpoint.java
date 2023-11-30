@@ -18,11 +18,11 @@ package org.apache.dubbo.spring.boot.actuate.endpoint;
 
 import org.apache.dubbo.spring.boot.actuate.endpoint.metadata.DubboMetadata;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
 import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
-
-import java.util.Map;
 
 /**
  * Actuator {@link Endpoint} to expose Dubbo Meta Data
@@ -40,5 +40,4 @@ public class DubboMetadataEndpoint {
     public Map<String, Object> invoke() {
         return dubboMetadata.invoke();
     }
-
 }

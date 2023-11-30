@@ -16,13 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.request;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufInputStream;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpContent;
 import org.apache.dubbo.common.utils.IOUtils;
+import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,21 +28,29 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpContent;
+
 /**
  * netty request facade
  */
 public class NettyRequestFacade extends RequestFacade<FullHttpRequest> {
 
-
     private ChannelHandlerContext context;
-
 
     public NettyRequestFacade(Object request, ChannelHandlerContext context) {
         super((FullHttpRequest) request);
         this.context = context;
-
     }
 
+    public NettyRequestFacade(Object request, ChannelHandlerContext context, ServiceDeployer serviceDeployer) {
+        super((FullHttpRequest) request, serviceDeployer);
+        this.context = context;
+    }
 
     protected void initHeaders() {
         for (Map.Entry<String, String> header : request.headers()) {
@@ -70,12 +73,15 @@ public class NettyRequestFacade extends RequestFacade<FullHttpRequest> {
 
         List<String> values = headers.get(name);
 
+        if (values == null && name != null) {
+            values = headers.get(name.toLowerCase());
+        }
+
         if (values == null || values.isEmpty()) {
             return null;
         } else {
             return values.get(0);
         }
-
     }
 
     @Override
@@ -86,7 +92,6 @@ public class NettyRequestFacade extends RequestFacade<FullHttpRequest> {
         if (list == null) {
             list = new ArrayList<>();
         }
-
 
         ListIterator<String> stringListIterator = list.listIterator();
 
@@ -102,7 +107,6 @@ public class NettyRequestFacade extends RequestFacade<FullHttpRequest> {
             }
         };
     }
-
 
     @Override
     public Enumeration<String> getHeaderNames() {
@@ -138,12 +142,10 @@ public class NettyRequestFacade extends RequestFacade<FullHttpRequest> {
         return null;
     }
 
-
     @Override
     public String getRequestURI() {
         return request.uri();
     }
-
 
     @Override
     public String getParameter(String name) {
@@ -152,7 +154,6 @@ public class NettyRequestFacade extends RequestFacade<FullHttpRequest> {
         String value = null;
         if (strings != null && !strings.isEmpty()) {
             value = strings.get(0);
-
         }
         return value;
     }
@@ -173,7 +174,6 @@ public class NettyRequestFacade extends RequestFacade<FullHttpRequest> {
                 return iterator.next();
             }
         };
-
     }
 
     @Override
@@ -193,9 +193,7 @@ public class NettyRequestFacade extends RequestFacade<FullHttpRequest> {
             map.put(entry.getKey(), entry.getValue().toArray(new String[0]));
         });
         return map;
-
     }
-
 
     @Override
     public String getRemoteAddr() {
@@ -248,6 +246,9 @@ public class NettyRequestFacade extends RequestFacade<FullHttpRequest> {
 
             }
         }
+    }
 
+    public ChannelHandlerContext getNettyChannelContext() {
+        return context;
     }
 }

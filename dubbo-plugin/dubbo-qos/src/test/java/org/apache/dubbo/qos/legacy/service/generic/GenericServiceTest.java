@@ -31,10 +31,6 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.rpc.service.GenericException;
 import org.apache.dubbo.rpc.service.GenericService;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -42,6 +38,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_BEAN;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_NATIVE_JAVA;
@@ -58,8 +58,7 @@ class GenericServiceTest {
         service.setInterface(DemoService.class.getName());
         service.setRef(new GenericService() {
 
-            public Object $invoke(String method, String[] parameterTypes, Object[] args)
-                    throws GenericException {
+            public Object $invoke(String method, String[] parameterTypes, Object[] args) throws GenericException {
                 if ("sayName".equals(method)) {
                     return "Generic " + args[0];
                 }
@@ -136,7 +135,8 @@ class GenericServiceTest {
             user.put("class", "org.apache.dubbo.config.api.User");
             user.put("name", "actual.provider");
             users.add(user);
-            users = (List<Map<String, Object>>) genericService.$invoke("getUsers", new String[]{List.class.getName()}, new Object[]{users});
+            users = (List<Map<String, Object>>)
+                    genericService.$invoke("getUsers", new String[] {List.class.getName()}, new Object[] {users});
             Assertions.assertEquals(1, users.size());
             Assertions.assertEquals("actual.provider", users.get(0).get("name"));
 
@@ -171,13 +171,20 @@ class GenericServiceTest {
             String name = "kimi";
             ByteArrayOutputStream bos = new ByteArrayOutputStream(512);
             ExtensionLoader.getExtensionLoader(Serialization.class)
-                    .getExtension("nativejava").serialize(null, bos).writeObject(name);
+                    .getExtension("nativejava")
+                    .serialize(null, bos)
+                    .writeObject(name);
             byte[] arg = bos.toByteArray();
-            Object obj = genericService.$invoke("sayName", new String[]{String.class.getName()}, new Object[]{arg});
+            Object obj = genericService.$invoke("sayName", new String[] {String.class.getName()}, new Object[] {arg});
             Assertions.assertTrue(obj instanceof byte[]);
             byte[] result = (byte[]) obj;
-            Assertions.assertEquals(ref.sayName(name), ExtensionLoader.getExtensionLoader(Serialization.class)
-                    .getExtension("nativejava").deserialize(null, new ByteArrayInputStream(result)).readObject().toString());
+            Assertions.assertEquals(
+                    ref.sayName(name),
+                    ExtensionLoader.getExtensionLoader(Serialization.class)
+                            .getExtension("nativejava")
+                            .deserialize(null, new ByteArrayInputStream(result))
+                            .readObject()
+                            .toString());
 
             // getUsers
             List<User> users = new ArrayList<User>();
@@ -186,13 +193,15 @@ class GenericServiceTest {
             users.add(user);
             bos = new ByteArrayOutputStream(512);
             ExtensionLoader.getExtensionLoader(Serialization.class)
-                    .getExtension("nativejava").serialize(null, bos).writeObject(users);
-            obj = genericService.$invoke("getUsers",
-                    new String[]{List.class.getName()},
-                    new Object[]{bos.toByteArray()});
+                    .getExtension("nativejava")
+                    .serialize(null, bos)
+                    .writeObject(users);
+            obj = genericService.$invoke(
+                    "getUsers", new String[] {List.class.getName()}, new Object[] {bos.toByteArray()});
             Assertions.assertTrue(obj instanceof byte[]);
             result = (byte[]) obj;
-            Assertions.assertEquals(users,
+            Assertions.assertEquals(
+                    users,
                     ExtensionLoader.getExtensionLoader(Serialization.class)
                             .getExtension("nativejava")
                             .deserialize(null, new ByteArrayInputStream(result))
@@ -200,11 +209,14 @@ class GenericServiceTest {
 
             // echo(int)
             bos = new ByteArrayOutputStream(512);
-            ExtensionLoader.getExtensionLoader(Serialization.class).getExtension("nativejava")
-                    .serialize(null, bos).writeObject(Integer.MAX_VALUE);
-            obj = genericService.$invoke("echo", new String[]{int.class.getName()}, new Object[]{bos.toByteArray()});
+            ExtensionLoader.getExtensionLoader(Serialization.class)
+                    .getExtension("nativejava")
+                    .serialize(null, bos)
+                    .writeObject(Integer.MAX_VALUE);
+            obj = genericService.$invoke("echo", new String[] {int.class.getName()}, new Object[] {bos.toByteArray()});
             Assertions.assertTrue(obj instanceof byte[]);
-            Assertions.assertEquals(Integer.MAX_VALUE,
+            Assertions.assertEquals(
+                    Integer.MAX_VALUE,
                     ExtensionLoader.getExtensionLoader(Serialization.class)
                             .getExtension("nativejava")
                             .deserialize(null, new ByteArrayInputStream((byte[]) obj))
@@ -242,14 +254,18 @@ class GenericServiceTest {
             user.setName("zhangsan");
             List<User> users = new ArrayList<User>();
             users.add(user);
-            Object result = genericService.$invoke("getUsers", new String[]{ReflectUtils.getName(List.class)}, new Object[]{JavaBeanSerializeUtil.serialize(users, JavaBeanAccessor.METHOD)});
+            Object result =
+                    genericService.$invoke("getUsers", new String[] {ReflectUtils.getName(List.class)}, new Object[] {
+                        JavaBeanSerializeUtil.serialize(users, JavaBeanAccessor.METHOD)
+                    });
             Assertions.assertTrue(result instanceof JavaBeanDescriptor);
             JavaBeanDescriptor descriptor = (JavaBeanDescriptor) result;
             Assertions.assertTrue(descriptor.isCollectionType());
             Assertions.assertEquals(1, descriptor.propertySize());
             descriptor = (JavaBeanDescriptor) descriptor.getProperty(0);
             Assertions.assertTrue(descriptor.isBeanType());
-            Assertions.assertEquals(user.getName(), ((JavaBeanDescriptor) descriptor.getProperty("name")).getPrimitiveProperty());
+            Assertions.assertEquals(
+                    user.getName(), ((JavaBeanDescriptor) descriptor.getProperty("name")).getPrimitiveProperty());
         } finally {
             bootstrap.stop();
         }
@@ -316,7 +332,8 @@ class GenericServiceTest {
             descriptor = (JavaBeanDescriptor) descriptor.getProperty(0);
             Assertions.assertTrue(descriptor.isBeanType());
             Assertions.assertEquals(User.class.getName(), descriptor.getClassName());
-            Assertions.assertEquals(user.getName(), ((JavaBeanDescriptor) descriptor.getProperty("name")).getPrimitiveProperty());
+            Assertions.assertEquals(
+                    user.getName(), ((JavaBeanDescriptor) descriptor.getProperty("name")).getPrimitiveProperty());
             Assertions.assertNull(demoService.sayName("zhangsan"));
         } finally {
             bootstrap.stop();
@@ -331,5 +348,4 @@ class GenericServiceTest {
 
         Object[] arguments;
     }
-
 }

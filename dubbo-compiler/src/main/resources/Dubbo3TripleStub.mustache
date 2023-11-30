@@ -16,7 +16,7 @@
 */
 
 {{#packageName}}
-    package {{packageName}};
+package {{packageName}};
 {{/packageName}}
 
 import org.apache.dubbo.common.stream.StreamObserver;
@@ -125,7 +125,7 @@ public final class {{className}} {
 
     {{#unaryMethods}}
         {{#javaDoc}}
-            {{{javaDoc}}}
+        {{{javaDoc}}}
         {{/javaDoc}}
         @Override
         public {{outputType}} {{methodName}}({{inputType}} request){
@@ -137,9 +137,8 @@ public final class {{className}} {
         }
 
         {{#javaDoc}}
-            {{{javaDoc}}}
+        {{{javaDoc}}}
         {{/javaDoc}}
-        @Override
         public void {{methodName}}({{inputType}} request, StreamObserver<{{outputType}}> responseObserver){
             StubInvocationUtil.unaryCall(invoker, {{methodName}}Method , request, responseObserver);
         }
@@ -147,7 +146,7 @@ public final class {{className}} {
 
     {{#serverStreamingMethods}}
         {{#javaDoc}}
-            {{{javaDoc}}}
+        {{{javaDoc}}}
         {{/javaDoc}}
         @Override
         public void {{methodName}}({{inputType}} request, StreamObserver<{{outputType}}> responseObserver){
@@ -157,7 +156,7 @@ public final class {{className}} {
 
     {{#biStreamingWithoutClientStreamMethods}}
         {{#javaDoc}}
-            {{{javaDoc}}}
+        {{{javaDoc}}}
         {{/javaDoc}}
         @Override
         public StreamObserver<{{inputType}}> {{methodName}}(StreamObserver<{{outputType}}> responseObserver){
@@ -167,7 +166,7 @@ public final class {{className}} {
 
     {{#clientStreamingMethods}}
         {{#javaDoc}}
-            {{{javaDoc}}}
+        {{{javaDoc}}}
         {{/javaDoc}}
         @Override
         public StreamObserver<{{inputType}}> {{methodName}}(StreamObserver<{{outputType}}> responseObserver){
@@ -192,6 +191,30 @@ public final class {{className}} {
                 }
             };
         }
+
+        {{#unaryMethods}}
+        @Override
+        public CompletableFuture<{{outputType}}> {{methodName}}Async({{inputType}} request){
+                return CompletableFuture.completedFuture({{methodName}}(request));
+        }
+        {{/unaryMethods}}
+
+        /**
+        * This server stream type unary method is <b>only</b> used for generated stub to support async unary method.
+        * It will not be called if you are NOT using Dubbo3 generated triple stub and <b>DO NOT</b> implement this method.
+        */
+        {{#unaryMethods}}
+        public void {{methodName}}({{inputType}} request, StreamObserver<{{outputType}}> responseObserver){
+            {{methodName}}Async(request).whenComplete((r, t) -> {
+                if (t != null) {
+                    responseObserver.onError(t);
+                } else {
+                    responseObserver.onNext(r);
+                    responseObserver.onCompleted();
+                }
+            });
+        }
+        {{/unaryMethods}}
 
         @Override
         public final Invoker<{{interfaceClassName}}> getInvoker(URL url) {

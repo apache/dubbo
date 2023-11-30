@@ -14,17 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.spring.security.utils;
 
-final public class SecurityNames {
+public final class SecurityNames {
 
     public static final String SECURITY_AUTHENTICATION_CONTEXT_KEY = "security_authentication_context";
 
-    public static final String SECURITY_CONTEXT_HOLDER_CLASS_NAME = "org.springframework.security.core.context.SecurityContextHolder";
-    public static final String CORE_JACKSON_2_MODULE_CLASS_NAME = "org.springframework.security.jackson2.CoreJackson2Module";
+    public static final String SECURITY_CONTEXT_HOLDER_CLASS_NAME =
+            "org.springframework.security.core.context.SecurityContextHolder";
+    public static final String CORE_JACKSON_2_MODULE_CLASS_NAME =
+            "org.springframework.security.jackson2.CoreJackson2Module";
     public static final String OBJECT_MAPPER_CLASS_NAME = "com.fasterxml.jackson.databind.ObjectMapper";
+    public static final String JAVA_TIME_MODULE_CLASS_NAME = "com.fasterxml.jackson.datatype.jsr310.JavaTimeModule";
+    public static final String SIMPLE_MODULE_CLASS_NAME = "com.fasterxml.jackson.databind.module.SimpleModule";
 
     private SecurityNames() {}
-
 }

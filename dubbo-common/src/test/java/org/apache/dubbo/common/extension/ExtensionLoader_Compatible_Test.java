@@ -33,7 +33,11 @@ class ExtensionLoader_Compatible_Test {
 
         ModuleModel moduleModel = ApplicationModel.defaultModel().getDefaultModule();
 
-        assertTrue(moduleModel.getExtensionLoader(CompatibleExt.class).getExtension("impl1") instanceof CompatibleExtImpl1);
-        assertTrue(moduleModel.getExtensionLoader(CompatibleExt.class).getExtension("impl2") instanceof CompatibleExtImpl2);
+        assertTrue(
+                moduleModel.getExtensionLoader(CompatibleExt.class).getExtension("impl1")
+                        instanceof CompatibleExtImpl1);
+        assertTrue(
+                moduleModel.getExtensionLoader(CompatibleExt.class).getExtension("impl2")
+                        instanceof CompatibleExtImpl2);
     }
 }

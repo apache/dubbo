@@ -101,7 +101,7 @@ check 2.7.5 milestone for details.
 * In consumer side the app cannot catch the exception from provider that is configured serialization="kryo". #4238
 * fix StringUtils#isBlank #4725
 * when the interfaceName of the Reference annotation has duplicated,the exception is puzzled #4160
-* when anonymity  bean is defined in spirng context，dubbo throw npe #
+* when anonymity  bean is defined in spring context，dubbo throw npe #
 * add Thread ContextClassLoader #4712
 * Fix judgment ipv4 address #4729
 * The compilation of static methods should be excluded when generating the proxy. #4647
@@ -184,7 +184,7 @@ check 2.7.5 milestone for details.
 - Add a script to check dependencies license. [#3840](https://github.com/apache/dubbo/issues/3840)
 - Change DynamicConfiguration definition to better adapt to Apollo's namespace storage model.[#3266](https://github.com/apache/dubbo/issues/3266)
 - use equal explicit class to replace anonymous class [#4027](https://github.com/apache/dubbo/issues/4027)
-- Seperate Constants.java into some SubConstants Class [#3137](https://github.com/apache/dubbo/issues/3137)
+- Separate Constants.java into some SubConstants Class [#3137](https://github.com/apache/dubbo/issues/3137)
 - Need to enhance DecodeableRpcResult error message [#3994](https://github.com/apache/dubbo/issues/3994)
 - Provide more meaningful binary releases. [#2491](https://github.com/apache/dubbo/issues/2491)
 - remove useless module-dubbo-test-integration [#3573](https://github.com/apache/dubbo/issues/3573)
@@ -211,7 +211,7 @@ check 2.7.5 milestone for details.
 - Fix consumer will generate wrong stackTrace. [#4137](https://github.com/apache/dubbo/issues/4137)
 - nacos registry serviceName may conflict. [#4111](https://github.com/apache/dubbo/issues/4111)
 - The client loses the listener when the network is reconnected. [#4115](https://github.com/apache/dubbo/issues/4115)
-- fix registery urls increase forever when recreate reference proxy. [#4109](https://github.com/apache/dubbo/issues/4109)
+- fix registry urls increase forever when recreate reference proxy. [#4109](https://github.com/apache/dubbo/issues/4109)
 - In dubbo 2.7.1，the watcher processor of zookeeper client throw Nullpointexception. [#3866](https://github.com/apache/dubbo/issues/3866)
 - ReferenceConfig initialized not changed to false once subscribe throws exception [#4068](https://github.com/apache/dubbo/issues/4068)
 - dubbo registry extension compatibility with dubbo 2.6.x. [#3882](https://github.com/apache/dubbo/issues/3882)
@@ -400,7 +400,7 @@ Enhancement / New feature：
 * tag route.  #3065 
 * Use Netty4 as default Netty version. #3029 
 * upporting Java 8 Date/Time type when serializing with Kryo #3519 
-* supoort config telnet  #3511
+* support config telnet  #3511
 * add annotation driven in MethodConfig and ArgumentConfig #2603
 * add nacos-registry module #3296  
 * add `protocol` attribute in `@Rerefence` #3555 
@@ -416,7 +416,7 @@ BugFix：
 * SPI entires dup by 3 times #3315 
 * fix Consumer throws RpcException after RegistryDirectory notify in high QPS #2016 
 * fix NPE in @Reference when using Junit to test dubbo service #3429 
-* fix consuer always catch java.lang.reflect.UndeclaredThrowableException for any exception throws in provider  #3386 
+* fix consumer always catch java.lang.reflect.UndeclaredThrowableException for any exception throws in provider  #3386 
 * fix the priority of `DubboConfigConfigurationSelector ` #2897 
 * fix `@Rerefence#parameters()` not work #2301 
 

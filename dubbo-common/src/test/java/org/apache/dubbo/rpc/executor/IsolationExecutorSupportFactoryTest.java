@@ -24,11 +24,23 @@ import org.junit.jupiter.api.Test;
 class IsolationExecutorSupportFactoryTest {
     @Test
     void test() {
-        Assertions.assertInstanceOf(DefaultExecutorSupport.class, IsolationExecutorSupportFactory.getIsolationExecutorSupport(URL.valueOf("dubbo://")));
-        Assertions.assertInstanceOf(DefaultExecutorSupport.class, IsolationExecutorSupportFactory.getIsolationExecutorSupport(URL.valueOf("empty://")));
-        Assertions.assertInstanceOf(DefaultExecutorSupport.class, IsolationExecutorSupportFactory.getIsolationExecutorSupport(URL.valueOf("exchange://")));
-        Assertions.assertInstanceOf(Mock1ExecutorSupport.class, IsolationExecutorSupportFactory.getIsolationExecutorSupport(URL.valueOf("mock1://")));
-        Assertions.assertInstanceOf(Mock2ExecutorSupport.class, IsolationExecutorSupportFactory.getIsolationExecutorSupport(URL.valueOf("mock2://")));
-        Assertions.assertInstanceOf(DefaultExecutorSupport.class, IsolationExecutorSupportFactory.getIsolationExecutorSupport(URL.valueOf("mock3://")));
+        Assertions.assertInstanceOf(
+                DefaultExecutorSupport.class,
+                IsolationExecutorSupportFactory.getIsolationExecutorSupport(URL.valueOf("dubbo://")));
+        Assertions.assertInstanceOf(
+                DefaultExecutorSupport.class,
+                IsolationExecutorSupportFactory.getIsolationExecutorSupport(URL.valueOf("empty://")));
+        Assertions.assertInstanceOf(
+                DefaultExecutorSupport.class,
+                IsolationExecutorSupportFactory.getIsolationExecutorSupport(URL.valueOf("exchange://")));
+        Assertions.assertInstanceOf(
+                Mock1ExecutorSupport.class,
+                IsolationExecutorSupportFactory.getIsolationExecutorSupport(URL.valueOf("mock1://")));
+        Assertions.assertInstanceOf(
+                Mock2ExecutorSupport.class,
+                IsolationExecutorSupportFactory.getIsolationExecutorSupport(URL.valueOf("mock2://")));
+        Assertions.assertInstanceOf(
+                DefaultExecutorSupport.class,
+                IsolationExecutorSupportFactory.getIsolationExecutorSupport(URL.valueOf("mock3://")));
     }
 }

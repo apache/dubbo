@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
-
 
 import org.junit.jupiter.api.Test;
 
@@ -47,7 +45,6 @@ class DoubleMatchTest {
         assertFalse(doubleMatch.isMatch(9.0));
     }
 
-
     @Test
     void rangeEndMatch() {
         DoubleMatch doubleMatch = new DoubleMatch();
@@ -60,7 +57,6 @@ class DoubleMatchTest {
         assertFalse(doubleMatch.isMatch(10.0));
         assertTrue(doubleMatch.isMatch(9.0));
     }
-
 
     @Test
     void rangeStartEndMatch() {
@@ -79,7 +75,6 @@ class DoubleMatchTest {
         assertFalse(doubleMatch.isMatch(10.1));
 
         assertTrue(doubleMatch.isMatch(6.0));
-
     }
 
     @Test
@@ -97,5 +92,4 @@ class DoubleMatchTest {
         assertFalse(doubleMatch.isMatch(2.0));
         assertTrue(doubleMatch.isMatch(3.0));
     }
-
 }

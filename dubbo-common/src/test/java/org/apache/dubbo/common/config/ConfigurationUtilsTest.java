@@ -20,11 +20,11 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
+import java.util.Map;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 
@@ -72,16 +72,17 @@ class ConfigurationUtilsTest {
     }
 
     @Test
-    void testGetServerShutdownTimeout () {
+    void testGetServerShutdownTimeout() {
         System.setProperty(SHUTDOWN_WAIT_KEY, " 10000");
         Assertions.assertEquals(10000, ConfigurationUtils.getServerShutdownTimeout(ApplicationModel.defaultModel()));
         System.clearProperty(SHUTDOWN_WAIT_KEY);
     }
 
     @Test
-    void testGetProperty () {
+    void testGetProperty() {
         System.setProperty(SHUTDOWN_WAIT_KEY, " 10000");
-        Assertions.assertEquals("10000", ConfigurationUtils.getProperty(ApplicationModel.defaultModel(), SHUTDOWN_WAIT_KEY));
+        Assertions.assertEquals(
+                "10000", ConfigurationUtils.getProperty(ApplicationModel.defaultModel(), SHUTDOWN_WAIT_KEY));
         System.clearProperty(SHUTDOWN_WAIT_KEY);
     }
 
@@ -107,6 +108,7 @@ class ConfigurationUtilsTest {
         String p1 = "dubbo.registry.address=zookeeper://127.0.0.1:2181\\\\ndubbo.protocol.port=20880";
         Map<String, String> result = ConfigurationUtils.parseProperties(p1);
         Assertions.assertEquals(1, result.size());
-        Assertions.assertEquals("zookeeper://127.0.0.1:2181\\ndubbo.protocol.port=20880", result.get("dubbo.registry.address"));
+        Assertions.assertEquals(
+                "zookeeper://127.0.0.1:2181\\ndubbo.protocol.port=20880", result.get("dubbo.registry.address"));
     }
 }

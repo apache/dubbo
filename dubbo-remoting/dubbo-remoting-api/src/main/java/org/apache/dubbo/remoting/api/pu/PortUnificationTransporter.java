@@ -33,5 +33,4 @@ public interface PortUnificationTransporter {
 
     @Adaptive({Constants.CLIENT_KEY, Constants.TRANSPORTER_KEY})
     AbstractConnectionClient connect(URL url, ChannelHandler handler) throws RemotingException;
-
 }

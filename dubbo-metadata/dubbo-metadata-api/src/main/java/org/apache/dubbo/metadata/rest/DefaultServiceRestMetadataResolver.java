@@ -21,7 +21,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.lang.reflect.Method;
 import java.util.Set;
 
-
 /**
  * The default implementation {@link ServiceRestMetadataResolver}
  *
@@ -53,12 +52,10 @@ public class DefaultServiceRestMetadataResolver extends AbstractServiceRestMetad
     }
 
     @Override
-    protected void processProduces(Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass, Set<String> produces) {
-
-    }
+    protected void processProduces(
+            Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass, Set<String> produces) {}
 
     @Override
-    protected void processConsumes(Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass, Set<String> consumes) {
-
-    }
+    protected void processConsumes(
+            Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass, Set<String> consumes) {}
 }

@@ -52,11 +52,13 @@ public class ModuleServiceRepository {
      * providers
      */
     private final ConcurrentMap<String, ProviderModel> providers = new ConcurrentHashMap<>();
+
     private final FrameworkServiceRepository frameworkServiceRepository;
 
     public ModuleServiceRepository(ModuleModel moduleModel) {
         this.moduleModel = moduleModel;
-        frameworkServiceRepository = ScopeModelUtil.getFrameworkModel(moduleModel).getServiceRepository();
+        frameworkServiceRepository =
+                ScopeModelUtil.getFrameworkModel(moduleModel).getServiceRepository();
     }
 
     public ModuleModel getModuleModel() {
@@ -67,41 +69,45 @@ public class ModuleServiceRepository {
      * @deprecated Replaced to {@link ModuleServiceRepository#registerConsumer(ConsumerModel)}
      */
     @Deprecated
-    public void registerConsumer(String serviceKey,
-                                 ServiceDescriptor serviceDescriptor,
-                                 ReferenceConfigBase<?> rc,
-                                 Object proxy,
-                                 ServiceMetadata serviceMetadata) {
+    public void registerConsumer(
+            String serviceKey,
+            ServiceDescriptor serviceDescriptor,
+            ReferenceConfigBase<?> rc,
+            Object proxy,
+            ServiceMetadata serviceMetadata) {
         ClassLoader classLoader = null;
         if (rc != null) {
             classLoader = rc.getInterfaceClassLoader();
         }
-        ConsumerModel consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor,
-            serviceMetadata, null, classLoader);
+        ConsumerModel consumerModel = new ConsumerModel(
+                serviceMetadata.getServiceKey(), proxy, serviceDescriptor, serviceMetadata, null, classLoader);
         this.registerConsumer(consumerModel);
     }
 
     public void registerConsumer(ConsumerModel consumerModel) {
-        ConcurrentHashMapUtils.computeIfAbsent(consumers, consumerModel.getServiceKey(), (serviceKey) -> new CopyOnWriteArrayList<>()).add(consumerModel);
+        ConcurrentHashMapUtils.computeIfAbsent(
+                        consumers, consumerModel.getServiceKey(), (serviceKey) -> new CopyOnWriteArrayList<>())
+                .add(consumerModel);
     }
 
     /**
      * @deprecated Replaced to {@link ModuleServiceRepository#registerProvider(ProviderModel)}
      */
     @Deprecated
-    public void registerProvider(String serviceKey,
-                                 Object serviceInstance,
-                                 ServiceDescriptor serviceModel,
-                                 ServiceConfigBase<?> serviceConfig,
-                                 ServiceMetadata serviceMetadata) {
+    public void registerProvider(
+            String serviceKey,
+            Object serviceInstance,
+            ServiceDescriptor serviceModel,
+            ServiceConfigBase<?> serviceConfig,
+            ServiceMetadata serviceMetadata) {
         ClassLoader classLoader = null;
         Class<?> cla = null;
         if (serviceConfig != null) {
             classLoader = serviceConfig.getInterfaceClassLoader();
             cla = serviceConfig.getInterfaceClass();
         }
-        ProviderModel providerModel = new ProviderModel(serviceKey, serviceInstance, serviceModel,
-            serviceMetadata, classLoader);
+        ProviderModel providerModel =
+                new ProviderModel(serviceKey, serviceInstance, serviceModel, serviceMetadata, classLoader);
         this.registerProvider(providerModel);
     }
 
@@ -120,11 +126,12 @@ public class ModuleServiceRepository {
     }
 
     public ServiceDescriptor registerService(Class<?> interfaceClazz, ServiceDescriptor serviceDescriptor) {
-        List<ServiceDescriptor> serviceDescriptors = ConcurrentHashMapUtils.computeIfAbsent(services, interfaceClazz.getName(),
-            k -> new CopyOnWriteArrayList<>());
+        List<ServiceDescriptor> serviceDescriptors = ConcurrentHashMapUtils.computeIfAbsent(
+                services, interfaceClazz.getName(), k -> new CopyOnWriteArrayList<>());
         synchronized (serviceDescriptors) {
             Optional<ServiceDescriptor> previous = serviceDescriptors.stream()
-                .filter(s -> s.getServiceInterfaceClass().equals(interfaceClazz)).findFirst();
+                    .filter(s -> s.getServiceInterfaceClass().equals(interfaceClazz))
+                    .findFirst();
             if (previous.isPresent()) {
                 return previous.get();
             } else {
@@ -150,11 +157,12 @@ public class ModuleServiceRepository {
         ServiceDescriptor serviceDescriptor = registerService(interfaceClass);
         // if path is different with interface name, add extra path mapping
         if (!interfaceClass.getName().equals(path)) {
-            List<ServiceDescriptor> serviceDescriptors = ConcurrentHashMapUtils.computeIfAbsent(services, path,
-                _k -> new CopyOnWriteArrayList<>());
+            List<ServiceDescriptor> serviceDescriptors =
+                    ConcurrentHashMapUtils.computeIfAbsent(services, path, _k -> new CopyOnWriteArrayList<>());
             synchronized (serviceDescriptors) {
                 Optional<ServiceDescriptor> previous = serviceDescriptors.stream()
-                    .filter(s -> s.getServiceInterfaceClass().equals(serviceDescriptor.getServiceInterfaceClass())).findFirst();
+                        .filter(s -> s.getServiceInterfaceClass().equals(serviceDescriptor.getServiceInterfaceClass()))
+                        .findFirst();
                 if (previous.isPresent()) {
                     return previous.get();
                 } else {
@@ -180,7 +188,8 @@ public class ModuleServiceRepository {
     public void reRegisterConsumer(String newServiceKey, String serviceKey) {
         List<ConsumerModel> consumerModel = this.consumers.get(serviceKey);
         consumerModel.forEach(c -> c.setServiceKey(newServiceKey));
-        ConcurrentHashMapUtils.computeIfAbsent(this.consumers, newServiceKey, (k) -> new CopyOnWriteArrayList<>()).addAll(consumerModel);
+        ConcurrentHashMapUtils.computeIfAbsent(this.consumers, newServiceKey, (k) -> new CopyOnWriteArrayList<>())
+                .addAll(consumerModel);
         this.consumers.remove(serviceKey);
     }
 
@@ -203,7 +212,8 @@ public class ModuleServiceRepository {
     }
 
     public List<ServiceDescriptor> getAllServices() {
-        List<ServiceDescriptor> serviceDescriptors = services.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
+        List<ServiceDescriptor> serviceDescriptors =
+                services.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
         return Collections.unmodifiableList(serviceDescriptors);
     }
 
@@ -247,7 +257,8 @@ public class ModuleServiceRepository {
     }
 
     public List<ConsumerModel> getReferredServices() {
-        List<ConsumerModel> consumerModels = consumers.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
+        List<ConsumerModel> consumerModels =
+                consumers.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
         return Collections.unmodifiableList(consumerModels);
     }
 

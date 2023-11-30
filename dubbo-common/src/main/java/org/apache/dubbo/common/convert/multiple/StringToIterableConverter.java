@@ -39,7 +39,6 @@ public abstract class StringToIterableConverter<T extends Iterable> implements S
         converterUtil = frameworkModel.getBeanFactory().getBean(ConverterUtil.class);
     }
 
-
     public boolean accept(Class<String> type, Class<?> multiValueType) {
         return isAssignableFrom(getSupportedType(), multiValueType);
     }
@@ -49,22 +48,23 @@ public abstract class StringToIterableConverter<T extends Iterable> implements S
 
         Optional<StringConverter> stringConverter = getStringConverter(elementType);
 
-        return stringConverter.map(converter -> {
+        return stringConverter
+                .map(converter -> {
+                    T convertedObject = createMultiValue(size, multiValueType);
 
-            T convertedObject = createMultiValue(size, multiValueType);
+                    if (convertedObject instanceof Collection) {
+                        Collection collection = (Collection) convertedObject;
+                        for (int i = 0; i < size; i++) {
+                            String segment = segments[i];
+                            Object element = converter.convert(segment);
+                            collection.add(element);
+                        }
+                        return collection;
+                    }
 
-            if (convertedObject instanceof Collection) {
-                Collection collection = (Collection) convertedObject;
-                for (int i = 0; i < size; i++) {
-                    String segment = segments[i];
-                    Object element = converter.convert(segment);
-                    collection.add(element);
-                }
-                return collection;
-            }
-
-            return convertedObject;
-        }).orElse(null);
+                    return convertedObject;
+                })
+                .orElse(null);
     }
 
     protected abstract T createMultiValue(int size, Class<?> multiValueType);
@@ -80,8 +80,8 @@ public abstract class StringToIterableConverter<T extends Iterable> implements S
 
     @Override
     public final int getPriority() {
-        int level = getAllInterfaces(getSupportedType(), type ->
-            isAssignableFrom(Iterable.class, type)).size();
+        int level = getAllInterfaces(getSupportedType(), type -> isAssignableFrom(Iterable.class, type))
+                .size();
         return MIN_PRIORITY - level;
     }
 }

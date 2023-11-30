@@ -35,5 +35,4 @@ public @interface Help {
     String summary();
 
     String detail() default "";
-
 }

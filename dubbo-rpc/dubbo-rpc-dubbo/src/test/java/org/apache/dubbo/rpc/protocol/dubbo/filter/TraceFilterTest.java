@@ -24,16 +24,16 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -70,7 +70,8 @@ class TraceFilterTest {
 
         Field tracers = TraceFilter.class.getDeclaredField(TRACERS_FIELD_NAME);
         tracers.setAccessible(true);
-        ConcurrentHashMap<String, Set<Channel>> o = (ConcurrentHashMap<String, Set<Channel>>) tracers.get(new ConcurrentHashMap<String, Set<Channel>>());
+        ConcurrentHashMap<String, Set<Channel>> o =
+                (ConcurrentHashMap<String, Set<Channel>>) tracers.get(new ConcurrentHashMap<String, Set<Channel>>());
 
         Assertions.assertTrue(o.containsKey(key));
         Set<Channel> channels = o.get(key);
@@ -117,7 +118,8 @@ class TraceFilterTest {
         filter.invoke(mockInvoker, mockInvocation);
         Field tracers = TraceFilter.class.getDeclaredField(TRACERS_FIELD_NAME);
         tracers.setAccessible(true);
-        ConcurrentHashMap<String, Set<Channel>> o = (ConcurrentHashMap<String, Set<Channel>>) tracers.get(new ConcurrentHashMap<String, Set<Channel>>());
+        ConcurrentHashMap<String, Set<Channel>> o =
+                (ConcurrentHashMap<String, Set<Channel>>) tracers.get(new ConcurrentHashMap<String, Set<Channel>>());
         Assertions.assertTrue(o.containsKey(key));
         Set<Channel> channels = o.get(key);
         Assertions.assertNotNull(channels);

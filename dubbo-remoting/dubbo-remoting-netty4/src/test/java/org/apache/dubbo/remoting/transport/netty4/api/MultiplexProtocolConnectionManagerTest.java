@@ -14,30 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.remoting.transport.netty4.api;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.remoting.api.connection.ConnectionManager;
 import org.apache.dubbo.remoting.api.connection.MultiplexProtocolConnectionManager;
 import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
 import org.apache.dubbo.remoting.transport.netty4.NettyPortUnificationServer;
-
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.function.Consumer;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
 
@@ -48,11 +46,10 @@ public class MultiplexProtocolConnectionManagerTest {
 
     private static NettyPortUnificationServer server;
 
-
     private static ConnectionManager connectionManager;
 
     @BeforeAll
-    public static void init() throws RemotingException {
+    public static void init() throws Throwable {
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
         applicationConfig.setExecutorManagementMode(EXECUTOR_MANAGEMENT_MODE_DEFAULT);
@@ -71,7 +68,8 @@ public class MultiplexProtocolConnectionManagerTest {
         server = new NettyPortUnificationServer(url1, new DefaultPuHandler());
         server.bind();
         connectionManager = url1.getOrDefaultFrameworkModel()
-                .getExtensionLoader(ConnectionManager.class).getExtension(MultiplexProtocolConnectionManager.NAME);
+                .getExtensionLoader(ConnectionManager.class)
+                .getExtension(MultiplexProtocolConnectionManager.NAME);
     }
 
     @AfterAll
@@ -95,7 +93,7 @@ public class MultiplexProtocolConnectionManagerTest {
     }
 
     @Test
-    public void testForEachConnection() throws RemotingException {
+    public void testForEachConnection() throws Throwable {
         DefaultPuHandler handler = new DefaultPuHandler();
 
         NettyPortUnificationServer server2 = new NettyPortUnificationServer(url2, handler);
@@ -121,6 +119,4 @@ public class MultiplexProtocolConnectionManagerTest {
             // ignored
         }
     }
-
 }
-

@@ -68,8 +68,8 @@ public interface Router extends Comparable<Router> {
      * @return state with route result
      * @throws RpcException
      */
-    default <T> RouterResult<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation,
-                                                     boolean needToPrintMessage) throws RpcException {
+    default <T> RouterResult<Invoker<T>> route(
+            List<Invoker<T>> invokers, URL url, Invocation invocation, boolean needToPrintMessage) throws RpcException {
         return new RouterResult<>(route(invokers, url, invocation));
     }
 
@@ -80,9 +80,7 @@ public interface Router extends Comparable<Router> {
      * @param invokers invoker list
      * @param <T>      invoker's type
      */
-    default <T> void notify(List<Invoker<T>> invokers) {
-
-    }
+    default <T> void notify(List<Invoker<T>> invokers) {}
 
     /**
      * To decide whether this router need to execute every time an RPC comes or should only execute when addresses or
@@ -109,7 +107,7 @@ public interface Router extends Comparable<Router> {
     int getPriority();
 
     default void stop() {
-        //do nothing by default
+        // do nothing by default
     }
 
     @Override

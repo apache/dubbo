@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.report;
 
 import org.apache.dubbo.metrics.model.MetricsCategory;
@@ -33,4 +32,11 @@ public interface MetricsExport {
      */
     List<MetricSample> export(MetricsCategory category);
 
+    /**
+     * Check if samples have been changed.
+     * Note that this method will reset the changed flag to false using CAS.
+     *
+     * @return true if samples have been changed
+     */
+    boolean calSamplesChanged();
 }

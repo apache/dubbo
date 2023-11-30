@@ -20,9 +20,10 @@ import org.apache.dubbo.common.logger.Level;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerAdapter;
 
-import org.apache.logging.log4j.LogManager;
-
 import java.io.File;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.config.Configurator;
 
 public class Log4j2LoggerAdapter implements LoggerAdapter {
     public static final String NAME = "log4j2";
@@ -30,6 +31,12 @@ public class Log4j2LoggerAdapter implements LoggerAdapter {
     private Level level;
 
     public Log4j2LoggerAdapter() {
+        try {
+            org.apache.logging.log4j.Logger logger = LogManager.getRootLogger();
+            this.level = fromLog4j2Level(logger.getLevel());
+        } catch (Exception t) {
+            // ignore
+        }
     }
 
     private static org.apache.logging.log4j.Level toLog4j2Level(Level level) {
@@ -94,6 +101,7 @@ public class Log4j2LoggerAdapter implements LoggerAdapter {
     @Override
     public void setLevel(Level level) {
         this.level = level;
+        Configurator.setLevel(LogManager.getRootLogger(), toLog4j2Level(level));
     }
 
     @Override

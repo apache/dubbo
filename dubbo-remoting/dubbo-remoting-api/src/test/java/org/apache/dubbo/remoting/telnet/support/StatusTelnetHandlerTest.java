@@ -31,14 +31,14 @@ class StatusTelnetHandlerTest {
         Mockito.when(channel.getUrl()).thenReturn(URL.valueOf("dubbo://127.0.0.1:12345"));
 
         StatusTelnetHandler statusTelnetHandler = new StatusTelnetHandler();
-        Assertions.assertNotNull(statusTelnetHandler.telnet(channel,""));
-        Assertions.assertNotNull(statusTelnetHandler.telnet(channel,"-l"));
+        Assertions.assertNotNull(statusTelnetHandler.telnet(channel, ""));
+        Assertions.assertNotNull(statusTelnetHandler.telnet(channel, "-l"));
 
         String errorPrompt = "Unsupported parameter ";
-        Assertions.assertTrue(statusTelnetHandler.telnet(channel,"other").contains(errorPrompt));
+        Assertions.assertTrue(statusTelnetHandler.telnet(channel, "other").contains(errorPrompt));
 
         Mockito.when(channel.getUrl()).thenReturn(URL.valueOf("dubbo://127.0.0.1:12345?status=load,memory"));
-        Assertions.assertNotNull(statusTelnetHandler.telnet(channel,""));
-        Assertions.assertNotNull(statusTelnetHandler.telnet(channel,"-l"));
+        Assertions.assertNotNull(statusTelnetHandler.telnet(channel, ""));
+        Assertions.assertNotNull(statusTelnetHandler.telnet(channel, "-l"));
     }
 }

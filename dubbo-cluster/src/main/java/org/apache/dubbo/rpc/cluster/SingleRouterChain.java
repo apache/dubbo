@@ -16,13 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -39,6 +32,13 @@ import org.apache.dubbo.rpc.cluster.router.RouterSnapshotSwitcher;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.TailStateRouter;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_STOP;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_NO_VALID_PROVIDER;
@@ -79,7 +79,11 @@ public class SingleRouterChain<T> {
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    public SingleRouterChain(List<Router> routers, List<StateRouter<T>> stateRouters, boolean shouldFailFast, RouterSnapshotSwitcher routerSnapshotSwitcher) {
+    public SingleRouterChain(
+            List<Router> routers,
+            List<StateRouter<T>> stateRouters,
+            boolean shouldFailFast,
+            RouterSnapshotSwitcher routerSnapshotSwitcher) {
         initWithRouters(routers);
 
         initWithStateRouters(stateRouters);
@@ -134,9 +138,12 @@ public class SingleRouterChain<T> {
 
     public List<Invoker<T>> route(URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
         if (invokers.getOriginList() != availableInvokers.getOriginList()) {
-            logger.error(INTERNAL_ERROR, "", "Router's invoker size: " + invokers.getOriginList().size() +
-                    " Invocation's invoker size: " + availableInvokers.getOriginList().size(),
-                "Reject to route, because the invokers has changed.");
+            logger.error(
+                    INTERNAL_ERROR,
+                    "",
+                    "Router's invoker size: " + invokers.getOriginList().size() + " Invocation's invoker size: "
+                            + availableInvokers.getOriginList().size(),
+                    "Reject to route, because the invokers has changed.");
             throw new IllegalStateException("reject to route, because the invokers has changed.");
         }
         if (RpcContext.getServiceContext().isNeedPrintRouterSnapshot()) {
@@ -202,7 +209,8 @@ public class SingleRouterChain<T> {
     /**
      * Build each router's result
      */
-    public RouterSnapshotNode<T> buildRouterSnapshot(URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
+    public RouterSnapshotNode<T> buildRouterSnapshot(
+            URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
         BitList<Invoker<T>> resultInvokers = availableInvokers.clone();
         RouterSnapshotNode<T> parentNode = new RouterSnapshotNode<T>("Parent", resultInvokers.clone());
         parentNode.setNodeOutputInvokers(resultInvokers.clone());
@@ -228,7 +236,8 @@ public class SingleRouterChain<T> {
             // Copy resultInvokers to a arrayList. BitList not support
             List<Invoker<T>> inputInvokers = new ArrayList<>(commonRouterResult);
 
-            RouterSnapshotNode<T> currentNode = new RouterSnapshotNode<T>(router.getClass().getSimpleName(), inputInvokers);
+            RouterSnapshotNode<T> currentNode =
+                    new RouterSnapshotNode<T>(router.getClass().getSimpleName(), inputInvokers);
 
             // append to router node chain
             commonRouterNode.appendNode(currentNode);
@@ -268,24 +277,27 @@ public class SingleRouterChain<T> {
     }
 
     private void logRouterSnapshot(URL url, Invocation invocation, RouterSnapshotNode<T> snapshotNode) {
-        if (snapshotNode.getChainOutputInvokers() == null ||
-            snapshotNode.getChainOutputInvokers().isEmpty()) {
+        if (snapshotNode.getChainOutputInvokers() == null
+                || snapshotNode.getChainOutputInvokers().isEmpty()) {
             if (logger.isWarnEnabled()) {
                 String message = "No provider available after route for the service " + url.getServiceKey()
-                    + " from registry " + url.getAddress()
-                    + " on the consumer " + NetUtils.getLocalHost()
-                    + " using the dubbo version " + Version.getVersion() + ". Router snapshot is below: \n" + snapshotNode.toString();
+                        + " from registry " + url.getAddress()
+                        + " on the consumer " + NetUtils.getLocalHost()
+                        + " using the dubbo version " + Version.getVersion() + ". Router snapshot is below: \n"
+                        + snapshotNode.toString();
                 if (routerSnapshotSwitcher.isEnable()) {
                     routerSnapshotSwitcher.setSnapshot(message);
                 }
-                logger.warn(CLUSTER_NO_VALID_PROVIDER, "No provider available after route for the service", "", message);
+                logger.warn(
+                        CLUSTER_NO_VALID_PROVIDER, "No provider available after route for the service", "", message);
             }
         } else {
             if (logger.isInfoEnabled()) {
                 String message = "Router snapshot service " + url.getServiceKey()
-                    + " from registry " + url.getAddress()
-                    + " on the consumer " + NetUtils.getLocalHost()
-                    + " using the dubbo version " + Version.getVersion() + " is below: \n" + snapshotNode.toString();
+                        + " from registry " + url.getAddress()
+                        + " on the consumer " + NetUtils.getLocalHost()
+                        + " using the dubbo version " + Version.getVersion() + " is below: \n"
+                        + snapshotNode.toString();
                 if (routerSnapshotSwitcher.isEnable()) {
                     routerSnapshotSwitcher.setSnapshot(message);
                 }
@@ -330,7 +342,12 @@ public class SingleRouterChain<T> {
             try {
                 router.stop();
             } catch (Exception e) {
-                logger.error(CLUSTER_FAILED_STOP, "route stop failed", "", "Error trying to stop router " + router.getClass(), e);
+                logger.error(
+                        CLUSTER_FAILED_STOP,
+                        "route stop failed",
+                        "",
+                        "Error trying to stop router " + router.getClass(),
+                        e);
             }
         }
         routers = Collections.emptyList();
@@ -340,7 +357,12 @@ public class SingleRouterChain<T> {
             try {
                 router.stop();
             } catch (Exception e) {
-                logger.error(CLUSTER_FAILED_STOP, "StateRouter stop failed", "", "Error trying to stop StateRouter " + router.getClass(), e);
+                logger.error(
+                        CLUSTER_FAILED_STOP,
+                        "StateRouter stop failed",
+                        "",
+                        "Error trying to stop StateRouter " + router.getClass(),
+                        e);
             }
         }
         stateRouters = Collections.emptyList();

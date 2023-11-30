@@ -18,11 +18,11 @@ package org.apache.dubbo.rpc.cluster.router.tag.model;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 
+import java.util.Map;
+
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
-
-import java.util.Map;
 
 /**
  * Parse raw rule into structured tag rule

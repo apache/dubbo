@@ -137,7 +137,7 @@ public class ReferenceBeanBuilder {
         return this;
     }
 
-    //@Deprecated
+    // @Deprecated
     public ReferenceBeanBuilder setGeneric(Boolean generic) {
         attributes.put(ReferenceAttributes.GENERIC, generic);
         return this;
@@ -203,10 +203,10 @@ public class ReferenceBeanBuilder {
         return this;
     }
 
-//    public ReferenceBeanBuilder setRouter(String router) {
-//        attributes.put(ReferenceAttributes.ROUTER, router);
-//        return this;
-//    }
+    //    public ReferenceBeanBuilder setRouter(String router) {
+    //        attributes.put(ReferenceAttributes.ROUTER, router);
+    //        return this;
+    //    }
 
     public ReferenceBeanBuilder setStub(String stub) {
         attributes.put(ReferenceAttributes.STUB, stub);
@@ -238,17 +238,17 @@ public class ReferenceBeanBuilder {
         return this;
     }
 
-//    @Deprecated
-//    public ReferenceBeanBuilder setApplication(ApplicationConfig application) {
-//        attributes.put(ReferenceAttributes.APPLICATION, application);
-//        return this;
-//    }
+    //    @Deprecated
+    //    public ReferenceBeanBuilder setApplication(ApplicationConfig application) {
+    //        attributes.put(ReferenceAttributes.APPLICATION, application);
+    //        return this;
+    //    }
 
-//    @Deprecated
-//    public ReferenceBeanBuilder setModule(ModuleConfig module) {
-//        attributes.put(ReferenceAttributes.MODULE, module);
-//        return this;
-//    }
+    //    @Deprecated
+    //    public ReferenceBeanBuilder setModule(ModuleConfig module) {
+    //        attributes.put(ReferenceAttributes.MODULE, module);
+    //        return this;
+    //    }
 
     public ReferenceBeanBuilder setRegistry(String[] registryIds) {
         attributes.put(ReferenceAttributes.REGISTRY, registryIds);
@@ -357,32 +357,32 @@ public class ReferenceBeanBuilder {
         return this;
     }
 
-//    public ReferenceBeanBuilder setAuth(Boolean auth) {
-//        attributes.put(ReferenceAttributes.AUTH, auth);
-//        return this;
-//    }
-//
-//    public ReferenceBeanBuilder setForks(Integer forks) {
-//        attributes.put(ReferenceAttributes.FORKS, forks);
-//        return this;
-//    }
-//
-//    @Deprecated
-//    public ReferenceBeanBuilder setConfigCenter(ConfigCenterConfig configCenter) {
-//        attributes.put(ReferenceAttributes.CONFIG_CENTER, configCenter);
-//        return this;
-//    }
-//
-//    @Deprecated
-//    public ReferenceBeanBuilder setMetadataReportConfig(MetadataReportConfig metadataReportConfig) {
-//        attributes.put(ReferenceAttributes.METADATA_REPORT_CONFIG, metadataReportConfig);
-//        return this;
-//    }
-//
-//    @Deprecated
-//    public ReferenceBeanBuilder setMetrics(MetricsConfig metrics) {
-//        attributes.put(ReferenceAttributes.METRICS, metrics);
-//        return this;
-//    }
+    //    public ReferenceBeanBuilder setAuth(Boolean auth) {
+    //        attributes.put(ReferenceAttributes.AUTH, auth);
+    //        return this;
+    //    }
+    //
+    //    public ReferenceBeanBuilder setForks(Integer forks) {
+    //        attributes.put(ReferenceAttributes.FORKS, forks);
+    //        return this;
+    //    }
+    //
+    //    @Deprecated
+    //    public ReferenceBeanBuilder setConfigCenter(ConfigCenterConfig configCenter) {
+    //        attributes.put(ReferenceAttributes.CONFIG_CENTER, configCenter);
+    //        return this;
+    //    }
+    //
+    //    @Deprecated
+    //    public ReferenceBeanBuilder setMetadataReportConfig(MetadataReportConfig metadataReportConfig) {
+    //        attributes.put(ReferenceAttributes.METADATA_REPORT_CONFIG, metadataReportConfig);
+    //        return this;
+    //    }
+    //
+    //    @Deprecated
+    //    public ReferenceBeanBuilder setMetrics(MetricsConfig metrics) {
+    //        attributes.put(ReferenceAttributes.METRICS, metrics);
+    //        return this;
+    //    }
 
 }

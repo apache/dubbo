@@ -28,25 +28,25 @@ import org.apache.dubbo.rpc.cluster.router.xds.rule.LongRangeMatch;
 import org.apache.dubbo.rpc.cluster.router.xds.rule.PathMatcher;
 import org.apache.dubbo.rpc.cluster.router.xds.rule.XdsRouteRule;
 
-import io.envoyproxy.envoy.config.route.v3.Route;
-import io.envoyproxy.envoy.config.route.v3.RouteAction;
-import io.envoyproxy.envoy.config.route.v3.RouteMatch;
-import io.envoyproxy.envoy.config.route.v3.VirtualHost;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import io.envoyproxy.envoy.config.route.v3.Route;
+import io.envoyproxy.envoy.config.route.v3.RouteAction;
+import io.envoyproxy.envoy.config.route.v3.RouteMatch;
+import io.envoyproxy.envoy.config.route.v3.VirtualHost;
+
 public class RdsVirtualHostListener {
 
-    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(RdsVirtualHostListener.class);
+    private static final ErrorTypeAwareLogger LOGGER =
+            LoggerFactory.getErrorTypeAwareLogger(RdsVirtualHostListener.class);
 
     private final String domain;
 
     private final RdsRouteRuleManager routeRuleManager;
-
 
     public RdsVirtualHostListener(String domain, RdsRouteRuleManager routeRuleManager) {
         this.domain = domain;
@@ -60,20 +60,27 @@ public class RdsVirtualHostListener {
             return;
         }
         try {
-            List<XdsRouteRule> xdsRouteRules = virtualHost.getRoutesList().stream().map(route -> {
-                if (route.getMatch().getQueryParametersCount() != 0) {
-                    return null;
-                }
-                HttpRequestMatch match = parseMatch(route.getMatch());
-                HTTPRouteDestination action = parseAction(route);
-                return new XdsRouteRule(match, action);
-            }).filter(Objects::nonNull).collect(Collectors.toList());
+            List<XdsRouteRule> xdsRouteRules = virtualHost.getRoutesList().stream()
+                    .map(route -> {
+                        if (route.getMatch().getQueryParametersCount() != 0) {
+                            return null;
+                        }
+                        HttpRequestMatch match = parseMatch(route.getMatch());
+                        HTTPRouteDestination action = parseAction(route);
+                        return new XdsRouteRule(match, action);
+                    })
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
             // post rules
             routeRuleManager.notifyRuleChange(domain, xdsRouteRules);
         } catch (Exception e) {
-            LOGGER.error(LoggerCodeConstants.INTERNAL_ERROR, "", "", "parse domain: " + domain + " xds VirtualHost error", e);
+            LOGGER.error(
+                    LoggerCodeConstants.INTERNAL_ERROR,
+                    "",
+                    "",
+                    "parse domain: " + domain + " xds VirtualHost error",
+                    e);
         }
-
     }
 
     private HttpRequestMatch parseMatch(RouteMatch match) {
@@ -158,11 +165,11 @@ public class RdsVirtualHostListener {
                     httpRouteDestination.setCluster(routeAction.getCluster());
                     return httpRouteDestination;
                 } else if (clusterSpecifierCase == RouteAction.ClusterSpecifierCase.WEIGHTED_CLUSTERS) {
-                    List<ClusterWeight> clusterWeights = routeAction.getWeightedClusters().
-                        getClustersList().stream()
-                        .map(c -> new ClusterWeight(c.getName(), c.getWeight().getValue()))
-                        .sorted(Comparator.comparing(ClusterWeight::getWeight))
-                        .collect(Collectors.toList());
+                    List<ClusterWeight> clusterWeights = routeAction.getWeightedClusters().getClustersList().stream()
+                            .map(c ->
+                                    new ClusterWeight(c.getName(), c.getWeight().getValue()))
+                            .sorted(Comparator.comparing(ClusterWeight::getWeight))
+                            .collect(Collectors.toList());
                     httpRouteDestination.setWeightedClusters(clusterWeights);
                     return httpRouteDestination;
                 }
@@ -174,5 +181,4 @@ public class RdsVirtualHostListener {
                 throw new IllegalArgumentException("Cluster specifier is not expect");
         }
     }
-
 }

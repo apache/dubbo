@@ -16,11 +16,6 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.handler.codec.EncoderException;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -44,6 +39,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.handler.codec.EncoderException;
+
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_ENCODE_IN_IO_THREAD;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.ENCODE_IN_IO_THREAD_KEY;
@@ -60,7 +61,8 @@ final class NettyChannel extends AbstractChannel {
     /**
      * the cache for netty channel and dubbo channel
      */
-    private static final ConcurrentMap<Channel, NettyChannel> CHANNEL_MAP = new ConcurrentHashMap<Channel, NettyChannel>();
+    private static final ConcurrentMap<Channel, NettyChannel> CHANNEL_MAP =
+            new ConcurrentHashMap<Channel, NettyChannel>();
     /**
      * netty channel
      */
@@ -223,11 +225,17 @@ final class NettyChannel extends AbstractChannel {
             }
         } catch (Throwable e) {
             removeChannelIfDisconnected(channel);
-            throw new RemotingException(this, "Failed to send message " + PayloadDropper.getRequestWithoutData(message) + " to " + getRemoteAddress() + ", cause: " + e.getMessage(), e);
+            throw new RemotingException(
+                    this,
+                    "Failed to send message " + PayloadDropper.getRequestWithoutData(message) + " to "
+                            + getRemoteAddress() + ", cause: " + e.getMessage(),
+                    e);
         }
         if (!success) {
-            throw new RemotingException(this, "Failed to send message " + PayloadDropper.getRequestWithoutData(message) + " to " + getRemoteAddress()
-                + "in timeout(" + timeout + "ms) limit");
+            throw new RemotingException(
+                    this,
+                    "Failed to send message " + PayloadDropper.getRequestWithoutData(message) + " to "
+                            + getRemoteAddress() + "in timeout(" + timeout + "ms) limit");
         }
     }
 
@@ -282,7 +290,6 @@ final class NettyChannel extends AbstractChannel {
     public void removeAttribute(String key) {
         attributes.remove(key);
     }
-
 
     @Override
     public int hashCode() {
@@ -344,9 +351,9 @@ final class NettyChannel extends AbstractChannel {
      */
     private static Response buildErrorResponse(Request request, Throwable t) {
         Response response = new Response(request.getId(), request.getVersion());
-        if(t instanceof EncoderException){
+        if (t instanceof EncoderException) {
             response.setStatus(Response.SERIALIZATION_ERROR);
-        }else{
+        } else {
             response.setStatus(Response.BAD_REQUEST);
         }
         response.setErrorMessage(StringUtils.toString(t));
@@ -362,10 +369,10 @@ final class NettyChannel extends AbstractChannel {
         FrameworkModel frameworkModel = getFrameworkModel(url.getScopeModel());
         if (frameworkModel.getExtensionLoader(Codec2.class).hasExtension(codecName)) {
             return frameworkModel.getExtensionLoader(Codec2.class).getExtension(codecName);
-        } else if(frameworkModel.getExtensionLoader(Codec.class).hasExtension(codecName)){
-            return new CodecAdapter(frameworkModel.getExtensionLoader(Codec.class)
-                .getExtension(codecName));
-        }else {
+        } else if (frameworkModel.getExtensionLoader(Codec.class).hasExtension(codecName)) {
+            return new CodecAdapter(
+                    frameworkModel.getExtensionLoader(Codec.class).getExtension(codecName));
+        } else {
             return frameworkModel.getExtensionLoader(Codec2.class).getExtension("default");
         }
     }

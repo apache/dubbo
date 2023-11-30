@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.collector;
 
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
+import org.apache.dubbo.rpc.Invocation;
 
 /**
  * Service-level collector.
@@ -30,6 +30,7 @@ public interface ServiceMetricsCollector<E extends TimeCounterEvent> extends Met
 
     void setNum(MetricsKeyWrapper metricsKey, String serviceKey, int num);
 
-    void addRt(String serviceKey, String registryOpType, Long responseTime);
-}
+    void addServiceRt(String serviceKey, String registryOpType, Long responseTime);
 
+    void addServiceRt(Invocation invocation, String registryOpType, Long responseTime);
+}

@@ -16,15 +16,6 @@
  */
 package com.alibaba.dubbo.container.page.pages;
 
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.container.page.Menu;
-import com.alibaba.dubbo.container.page.Page;
-import com.alibaba.dubbo.container.page.PageHandler;
-import org.apache.log4j.Appender;
-import org.apache.log4j.FileAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -35,6 +26,15 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
+
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.container.page.Menu;
+import com.alibaba.dubbo.container.page.Page;
+import com.alibaba.dubbo.container.page.PageHandler;
+import org.apache.log4j.Appender;
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
 
 /**
  * LogPageHandler
@@ -88,10 +88,11 @@ public class LogPageHandler implements PageHandler {
                     channel.read(bb, pos);
                 }
                 bb.flip();
-                content = new String(bb.array()).replace("<", "&lt;")
-                        .replace(">", "&gt;").replace("\n", "<br/><br/>");
-                modified = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-                        .format(new Date(file.lastModified()));
+                content = new String(bb.array())
+                        .replace("<", "&lt;")
+                        .replace(">", "&gt;")
+                        .replace("\n", "<br/><br/>");
+                modified = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(file.lastModified()));
             } catch (IOException e) {
             }
         }
@@ -100,7 +101,11 @@ public class LogPageHandler implements PageHandler {
         List<String> row = new ArrayList<String>();
         row.add(content);
         rows.add(row);
-        return new Page("Log", "Log", new String[]{(file == null ? "" : file.getName()) + ", " + size + " bytes, " + modified + ", " + level}, rows);
+        return new Page(
+                "Log",
+                "Log",
+                new String[] {(file == null ? "" : file.getName()) + ", " + size + " bytes, " + modified + ", " + level
+                },
+                rows);
     }
-
 }

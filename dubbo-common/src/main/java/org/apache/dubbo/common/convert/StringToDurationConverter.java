@@ -56,13 +56,14 @@ public class StringToDurationConverter implements StringConverter<Duration> {
                     Matcher matcher = matcher(value);
                     Assert.assertTrue(matcher.matches(), "Does not match simple duration pattern");
                     String suffix = matcher.group(2);
-                    return (StringUtils.isNotBlank(suffix) ? TimeUnit.fromSuffix(suffix) : TimeUnit.fromChronoUnit(unit))
+                    return (StringUtils.isNotBlank(suffix)
+                                    ? TimeUnit.fromSuffix(suffix)
+                                    : TimeUnit.fromChronoUnit(unit))
                             .parse(matcher.group(1));
                 } catch (Exception ex) {
                     throw new IllegalArgumentException("'" + value + "' is not a valid simple duration", ex);
                 }
             }
-
         },
 
         /**
@@ -77,7 +78,6 @@ public class StringToDurationConverter implements StringConverter<Duration> {
                     throw new IllegalArgumentException("'" + value + "' is not a valid ISO-8601 duration", ex);
                 }
             }
-
         };
 
         private final Pattern pattern;
@@ -237,7 +237,6 @@ public class StringToDurationConverter implements StringConverter<Duration> {
                 }
                 throw new IllegalArgumentException("Unknown unit '" + suffix + "'");
             }
-
         }
     }
 }

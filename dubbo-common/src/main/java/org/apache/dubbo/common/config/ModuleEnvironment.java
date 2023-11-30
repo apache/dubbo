@@ -99,7 +99,11 @@ public class ModuleEnvironment extends Environment implements ModuleExt {
         if (dynamicGlobalConfiguration == null) {
             if (dynamicConfiguration == null) {
                 if (logger.isWarnEnabled()) {
-                    logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "dynamicConfiguration is null , return globalConfiguration.");
+                    logger.warn(
+                            COMMON_UNEXPECTED_EXCEPTION,
+                            "",
+                            "",
+                            "dynamicConfiguration is null , return globalConfiguration.");
                 }
                 return getConfiguration();
             }

@@ -33,6 +33,6 @@ class ConfigChangeTypeTest {
 
     @Test
     void testMembers() {
-        assertArrayEquals(new ConfigChangeType[]{ADDED, MODIFIED, DELETED}, ConfigChangeType.values());
+        assertArrayEquals(new ConfigChangeType[] {ADDED, MODIFIED, DELETED}, ConfigChangeType.values());
     }
 }

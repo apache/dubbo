@@ -34,8 +34,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAI
  * The {@link ServiceInstanceCustomizer} to customize the {@link ServiceInstance#getPort() port} of service instance.
  */
 public class ServiceInstanceHostPortCustomizer implements ServiceInstanceCustomizer {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ServiceInstanceHostPortCustomizer.class);
-    
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(ServiceInstanceHostPortCustomizer.class);
 
     @Override
     public void customize(ServiceInstance serviceInstance, ApplicationModel applicationModel) {
@@ -62,15 +62,18 @@ public class ServiceInstanceHostPortCustomizer implements ServiceInstanceCustomi
                         break;
                     }
                 }
-                
+
                 if (host == null || port == -1) {
 
                     // 4-2 - Can't find an instance URL using the default preferredProtocol.
 
-                    logger.warn(PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER, "typo in preferred protocol", "",
-                        "Can't find an instance URL using the default preferredProtocol \"" + preferredProtocol + "\", " +
-                        "falling back to the strategy that pick the first found protocol. " +
-                        "Please try modifying the config of dubbo.application.protocol");
+                    logger.warn(
+                            PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER,
+                            "typo in preferred protocol",
+                            "",
+                            "Can't find an instance URL using the default preferredProtocol \"" + preferredProtocol
+                                    + "\", " + "falling back to the strategy that pick the first found protocol. "
+                                    + "Please try modifying the config of dubbo.application.protocol");
 
                     URL url = urls.iterator().next();
                     host = url.getHost();
@@ -81,7 +84,7 @@ public class ServiceInstanceHostPortCustomizer implements ServiceInstanceCustomi
                 host = url.getHost();
                 port = url.getPort();
             }
-            
+
             if (serviceInstance instanceof DefaultServiceInstance) {
                 DefaultServiceInstance instance = (DefaultServiceInstance) serviceInstance;
                 instance.setHost(host);

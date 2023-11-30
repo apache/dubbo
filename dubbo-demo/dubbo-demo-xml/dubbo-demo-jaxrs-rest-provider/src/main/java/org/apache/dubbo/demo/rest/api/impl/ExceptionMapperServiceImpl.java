@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.demo.rest.api.impl;
 
-
 import org.apache.dubbo.demo.rest.api.ExceptionMapperService;
+
 import org.springframework.stereotype.Service;
 
 @Service("exceptionMapperService")
@@ -28,5 +28,4 @@ public class ExceptionMapperServiceImpl implements ExceptionMapperService {
 
         throw new RuntimeException(message);
     }
-
 }

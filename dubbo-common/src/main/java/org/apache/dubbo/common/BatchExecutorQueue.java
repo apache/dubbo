@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common;
 
 import java.util.LinkedList;
@@ -85,12 +84,7 @@ public class BatchExecutorQueue<T> {
         }
     }
 
-    protected void prepare(T item) {
+    protected void prepare(T item) {}
 
-    }
-
-    protected void flush(T item) {
-
-    }
-
+    protected void flush(T item) {}
 }

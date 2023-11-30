@@ -29,5 +29,4 @@ public interface StateListener {
     int NEW_SESSION_CREATED = 4;
 
     void stateChanged(int connected);
-
 }

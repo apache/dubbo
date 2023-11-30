@@ -22,6 +22,7 @@ import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
 
 import java.io.OutputStream;
+import java.lang.reflect.Type;
 
 /**
  *  body type is byte array
@@ -29,9 +30,8 @@ import java.io.OutputStream;
 @Activate("byteArray")
 public class ByteArrayCodec implements HttpMessageCodec<byte[], OutputStream> {
 
-
     @Override
-    public Object decode(byte[] body, Class<?> targetType) throws Exception {
+    public Object decode(byte[] body, Class<?> targetType, Type type) throws Exception {
         return body;
     }
 
@@ -49,7 +49,6 @@ public class ByteArrayCodec implements HttpMessageCodec<byte[], OutputStream> {
     public MediaType contentType() {
         return MediaType.OCTET_STREAM;
     }
-
 
     @Override
     public void encode(OutputStream outputStream, Object unSerializedBody, URL url) throws Exception {

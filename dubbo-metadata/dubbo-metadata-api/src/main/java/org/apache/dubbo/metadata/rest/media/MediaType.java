@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metadata.rest.media;
 
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -48,9 +47,7 @@ public enum MediaType {
     }
 
     public static List<MediaType> getSupportMediaTypes() {
-        return Arrays.asList(APPLICATION_JSON_VALUE,
-            APPLICATION_FORM_URLENCODED_VALUE,
-            TEXT_PLAIN,TEXT_XML,OCTET_STREAM);
+        return Arrays.asList(
+                APPLICATION_JSON_VALUE, APPLICATION_FORM_URLENCODED_VALUE, TEXT_PLAIN, TEXT_XML, OCTET_STREAM);
     }
-
 }

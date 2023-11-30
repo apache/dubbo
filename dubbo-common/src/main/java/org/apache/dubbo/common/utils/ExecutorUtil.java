@@ -32,18 +32,26 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXP
 
 public class ExecutorUtil {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ExecutorUtil.class);
-    private static final ThreadPoolExecutor SHUTDOWN_EXECUTOR = new ThreadPoolExecutor(0, 1,
-        0L, TimeUnit.MILLISECONDS,
-        new LinkedBlockingQueue<Runnable>(100),
-        new NamedThreadFactory("Close-ExecutorService-Timer", true));
+    private static final ThreadPoolExecutor SHUTDOWN_EXECUTOR = new ThreadPoolExecutor(
+            0,
+            1,
+            0L,
+            TimeUnit.MILLISECONDS,
+            new LinkedBlockingQueue<Runnable>(100),
+            new NamedThreadFactory("Close-ExecutorService-Timer", true));
 
     public static boolean isTerminated(Executor executor) {
-        if (executor instanceof ExecutorService) {
-            if (((ExecutorService) executor).isTerminated()) {
-                return true;
-            }
+        if (!(executor instanceof ExecutorService)) {
+            return false;
         }
-        return false;
+        return ((ExecutorService) executor).isTerminated();
+    }
+
+    public static boolean isShutdown(Executor executor) {
+        if (!(executor instanceof ExecutorService)) {
+            return false;
+        }
+        return ((ExecutorService) executor).isShutdown();
     }
 
     /**

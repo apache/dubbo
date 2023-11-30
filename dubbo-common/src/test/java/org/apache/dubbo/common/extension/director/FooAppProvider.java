@@ -26,5 +26,4 @@ public interface FooAppProvider {
 
     @Adaptive
     void process(URL url);
-
 }

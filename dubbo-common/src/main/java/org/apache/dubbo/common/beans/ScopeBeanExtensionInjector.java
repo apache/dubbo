@@ -25,7 +25,7 @@ import org.apache.dubbo.rpc.model.ScopeModelAware;
  * Inject scope bean to SPI extension instance
  */
 public class ScopeBeanExtensionInjector implements ExtensionInjector, ScopeModelAware {
-    
+
     private ScopeBeanFactory beanFactory;
 
     @Override

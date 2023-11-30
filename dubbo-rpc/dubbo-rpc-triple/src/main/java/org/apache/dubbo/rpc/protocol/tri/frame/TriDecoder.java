@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.frame;
 
 import org.apache.dubbo.rpc.RpcException;
@@ -152,9 +151,9 @@ public class TriDecoder implements Deframer {
     private byte[] getUncompressedBody() {
         byte[] data = new byte[requiredLength];
         accumulate.readBytes(data);
+        accumulate.discardReadComponents();
         return data;
     }
-
 
     private enum GrpcDecodeState {
         HEADER,
@@ -166,7 +165,5 @@ public class TriDecoder implements Deframer {
         void onRawMessage(byte[] data);
 
         void close();
-
     }
-
 }

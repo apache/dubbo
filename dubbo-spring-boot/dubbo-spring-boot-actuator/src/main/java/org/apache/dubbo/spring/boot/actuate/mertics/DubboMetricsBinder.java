@@ -14,33 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.spring.boot.actuate.mertics;
+
+import org.apache.dubbo.metrics.MetricsGlobalRegistry;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
-import org.apache.dubbo.metrics.MetricsGlobalRegistry;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationListener;
 
-
 public class DubboMetricsBinder implements ApplicationListener<ApplicationStartedEvent>, DisposableBean {
     private final MeterRegistry meterRegistry;
+
     public DubboMetricsBinder(MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;
     }
+
     @Override
     public void onApplicationEvent(ApplicationStartedEvent applicationStartedEvent) {
         if (meterRegistry instanceof CompositeMeterRegistry) {
             MetricsGlobalRegistry.setCompositeRegistry((CompositeMeterRegistry) meterRegistry);
-        }else{
+        } else {
             MetricsGlobalRegistry.getCompositeRegistry().add(meterRegistry);
         }
     }
 
     @Override
-    public void destroy() {
-
-    }
+    public void destroy() {}
 }

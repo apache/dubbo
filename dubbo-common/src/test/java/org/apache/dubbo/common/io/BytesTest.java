@@ -16,18 +16,20 @@
  */
 package org.apache.dubbo.common.io;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.io.File;
 import java.io.IOException;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 class BytesTest {
-    private final byte[] b1 = "adpfioha;eoh;aldfadl;kfadslkfdajfio123431241235123davas;odvwe;lmzcoqpwoewqogineopwqihwqetup\n\tejqf;lajsfd中文字符0da0gsaofdsf==adfasdfs".getBytes();
-    private final String C64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="; //default base64.
+    private final byte[] b1 =
+            "adpfioha;eoh;aldfadl;kfadslkfdajfio123431241235123davas;odvwe;lmzcoqpwoewqogineopwqihwqetup\n\tejqf;lajsfd中文字符0da0gsaofdsf==adfasdfs"
+                    .getBytes();
+    private final String C64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="; // default base64.
     private byte[] bytes1 = {3, 12, 14, 41, 12, 2, 3, 12, 4, 67, 23};
     private byte[] bytes2 = {3, 12, 14, 41, 12, 2, 3, 12, 4, 67};
 
@@ -67,7 +69,8 @@ class BytesTest {
 
     @Test
     void testWrongBase64Code() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> Bytes.bytes2base64("dubbo".getBytes(), 0, 1, new char[]{'a'}));
+        Assertions.assertThrows(
+                IllegalArgumentException.class, () -> Bytes.bytes2base64("dubbo".getBytes(), 0, 1, new char[] {'a'}));
     }
 
     @Test
@@ -77,7 +80,8 @@ class BytesTest {
 
     @Test
     void testLargeLength() {
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> Bytes.bytes2base64("dubbo".getBytes(), 0, 100000));
+        Assertions.assertThrows(
+                IndexOutOfBoundsException.class, () -> Bytes.bytes2base64("dubbo".getBytes(), 0, 100000));
     }
 
     @Test
@@ -118,7 +122,8 @@ class BytesTest {
 
     @Test
     void testMD5ForFile() throws IOException {
-        byte[] md5 = Bytes.getMD5(new File(getClass().getClassLoader().getResource("md5.testfile.txt").getFile()));
+        byte[] md5 = Bytes.getMD5(new File(
+                getClass().getClassLoader().getResource("md5.testfile.txt").getFile()));
         assertThat(md5, is(Bytes.base642bytes("iNZ+5qHafVNPLJxHwLKJ3w==")));
     }
 

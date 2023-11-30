@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.cluster.ProviderURLMergeProcessor;
 

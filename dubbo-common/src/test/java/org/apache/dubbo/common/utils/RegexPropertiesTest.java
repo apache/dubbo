@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 
 class RegexPropertiesTest {
     @Test
-    void testGetProperty(){
+    void testGetProperty() {
         RegexProperties regexProperties = new RegexProperties();
         regexProperties.setProperty("org.apache.dubbo.provider.*", "http://localhost:20880");
         regexProperties.setProperty("org.apache.dubbo.provider.config.*", "http://localhost:30880");
@@ -29,10 +29,14 @@ class RegexPropertiesTest {
         regexProperties.setProperty("org.apache.dubbo.consumer.*.demo", "http://localhost:50880");
         regexProperties.setProperty("*.service", "http://localhost:60880");
 
-        Assertions.assertEquals("http://localhost:20880", regexProperties.getProperty("org.apache.dubbo.provider.cluster"));
-        Assertions.assertEquals("http://localhost:30880", regexProperties.getProperty("org.apache.dubbo.provider.config.cluster"));
-        Assertions.assertEquals("http://localhost:40880", regexProperties.getProperty("org.apache.dubbo.provider.config.demo"));
-        Assertions.assertEquals("http://localhost:50880", regexProperties.getProperty("org.apache.dubbo.consumer.service.demo"));
+        Assertions.assertEquals(
+                "http://localhost:20880", regexProperties.getProperty("org.apache.dubbo.provider.cluster"));
+        Assertions.assertEquals(
+                "http://localhost:30880", regexProperties.getProperty("org.apache.dubbo.provider.config.cluster"));
+        Assertions.assertEquals(
+                "http://localhost:40880", regexProperties.getProperty("org.apache.dubbo.provider.config.demo"));
+        Assertions.assertEquals(
+                "http://localhost:50880", regexProperties.getProperty("org.apache.dubbo.consumer.service.demo"));
         Assertions.assertEquals("http://localhost:60880", regexProperties.getProperty("org.apache.dubbo.service"));
     }
 }

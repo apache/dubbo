@@ -22,11 +22,11 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.util.Map;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import java.util.Map;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTER_MODE_INSTANCE;
 import static org.apache.dubbo.common.status.reporter.FrameworkStatusReportService.ADDRESS_CONSUMPTION_STATUS;
@@ -44,7 +44,8 @@ class FrameworkStatusReportServiceTest {
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ApplicationConfig app = new ApplicationConfig("APP");
         applicationModel.getApplicationConfigManager().setApplication(app);
-        FrameworkStatusReportService reportService = applicationModel.getBeanFactory().getBean(FrameworkStatusReportService.class);
+        FrameworkStatusReportService reportService =
+                applicationModel.getBeanFactory().getBean(FrameworkStatusReportService.class);
 
         // 1. reportRegistrationStatus
         reportService.reportRegistrationStatus(reportService.createRegistrationReport(DEFAULT_REGISTER_MODE_INSTANCE));
@@ -56,20 +57,26 @@ class FrameworkStatusReportServiceTest {
         Mockito.when(consumerURL.getVersion()).thenReturn("0.0.0");
         Mockito.when(consumerURL.getServiceKey()).thenReturn("Group/Test:0.0.0");
         Mockito.when(consumerURL.getDisplayServiceKey()).thenReturn("Test:0.0.0");
-        reportService.reportConsumptionStatus(
-            reportService.createConsumptionReport(consumerURL.getServiceInterface(), consumerURL.getVersion(), consumerURL.getGroup(), "status")
-        );
+        reportService.reportConsumptionStatus(reportService.createConsumptionReport(
+                consumerURL.getServiceInterface(), consumerURL.getVersion(), consumerURL.getGroup(), "status"));
 
         // 3. reportMigrationStepStatus
-        reportService.reportMigrationStepStatus(
-            reportService.createMigrationStepReport(consumerURL.getServiceInterface(), consumerURL.getVersion(),
-                consumerURL.getGroup(), "FORCE_INTERFACE", "FORCE_APPLICATION", "ture"));
+        reportService.reportMigrationStepStatus(reportService.createMigrationStepReport(
+                consumerURL.getServiceInterface(),
+                consumerURL.getVersion(),
+                consumerURL.getGroup(),
+                "FORCE_INTERFACE",
+                "FORCE_APPLICATION",
+                "ture"));
 
-        MockFrameworkStatusReporter statusReporter = (MockFrameworkStatusReporter) applicationModel.getExtension(FrameworkStatusReporter.class, "mock");
+        MockFrameworkStatusReporter statusReporter =
+                (MockFrameworkStatusReporter) applicationModel.getExtension(FrameworkStatusReporter.class, "mock");
 
-        //"migrationStepStatus" -> "{"originStep":"FORCE_INTERFACE","application":"APP","service":"Test","success":"ture","newStep":"FORCE_APPLICATION","type":"migrationStepStatus","version":"0.0.0","group":"Group"}"
-        //"registration" -> "{"application":"APP","status":"instance"}"
-        //"consumption" -> "{"application":"APP","service":"Test","type":"consumption","version":"0.0.0","group":"Group","status":"status"}"
+        // "migrationStepStatus" ->
+        // "{"originStep":"FORCE_INTERFACE","application":"APP","service":"Test","success":"ture","newStep":"FORCE_APPLICATION","type":"migrationStepStatus","version":"0.0.0","group":"Group"}"
+        // "registration" -> "{"application":"APP","status":"instance"}"
+        // "consumption" ->
+        // "{"application":"APP","service":"Test","type":"consumption","version":"0.0.0","group":"Group","status":"status"}"
         Map<String, Object> reportContent = statusReporter.getReportContent();
         Assertions.assertEquals(reportContent.size(), 3);
 
@@ -81,7 +88,8 @@ class FrameworkStatusReportServiceTest {
 
         // verify addressConsumptionStatus
         Object addressConsumptionStatus = reportContent.get(ADDRESS_CONSUMPTION_STATUS);
-        Map<String, String> consumptionMap = JsonUtils.toJavaObject(String.valueOf(addressConsumptionStatus), Map.class);
+        Map<String, String> consumptionMap =
+                JsonUtils.toJavaObject(String.valueOf(addressConsumptionStatus), Map.class);
         Assertions.assertEquals(consumptionMap.get("application"), "APP");
         Assertions.assertEquals(consumptionMap.get("service"), "Test");
         Assertions.assertEquals(consumptionMap.get("status"), "status");
@@ -91,7 +99,8 @@ class FrameworkStatusReportServiceTest {
 
         // verify migrationStepStatus
         Object migrationStepStatus = reportContent.get(MIGRATION_STEP_STATUS);
-        Map<String, String> migrationStepStatusMap = JsonUtils.toJavaObject(String.valueOf(migrationStepStatus), Map.class);
+        Map<String, String> migrationStepStatusMap =
+                JsonUtils.toJavaObject(String.valueOf(migrationStepStatus), Map.class);
         Assertions.assertEquals(migrationStepStatusMap.get("originStep"), "FORCE_INTERFACE");
         Assertions.assertEquals(migrationStepStatusMap.get("application"), "APP");
         Assertions.assertEquals(migrationStepStatusMap.get("service"), "Test");

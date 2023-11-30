@@ -38,7 +38,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAIL
  */
 @Activate
 public class ArgumentConditionMatcher extends AbstractConditionMatcher {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ArgumentConditionMatcher.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(ArgumentConditionMatcher.class);
     private static final Pattern ARGUMENTS_PATTERN = Pattern.compile("arguments\\[([0-9]+)\\]");
 
     public ArgumentConditionMatcher(String key, ModuleModel model) {
@@ -56,16 +57,21 @@ public class ArgumentConditionMatcher extends AbstractConditionMatcher {
                 return DOES_NOT_FOUND_VALUE;
             }
 
-            //extract the argument index
+            // extract the argument index
             int index = Integer.parseInt(matcher.group(1));
             if (index < 0 || index > invocation.getArguments().length) {
                 return DOES_NOT_FOUND_VALUE;
             }
 
-            //extract the argument value
+            // extract the argument value
             return String.valueOf(invocation.getArguments()[index]);
         } catch (Exception e) {
-            logger.warn(CLUSTER_FAILED_EXEC_CONDITION_ROUTER, "Parse argument match condition failed", "", "Invalid , will ignore., ", e);
+            logger.warn(
+                    CLUSTER_FAILED_EXEC_CONDITION_ROUTER,
+                    "Parse argument match condition failed",
+                    "",
+                    "Invalid , will ignore., ",
+                    e);
         }
         return DOES_NOT_FOUND_VALUE;
     }

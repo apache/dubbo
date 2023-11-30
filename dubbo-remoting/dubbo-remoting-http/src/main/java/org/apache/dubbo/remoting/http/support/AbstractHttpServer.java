@@ -60,8 +60,7 @@ public abstract class AbstractHttpServer implements HttpServer {
     }
 
     @Override
-    public void reset(URL url) {
-    }
+    public void reset(URL url) {}
 
     @Override
     public boolean isBound() {
@@ -91,7 +90,6 @@ public abstract class AbstractHttpServer implements HttpServer {
     /**
      * Following methods are extended from RemotingServer, useless for http servers
      */
-
     @Override
     public boolean canHandleIdle() {
         return false;
@@ -108,9 +106,7 @@ public abstract class AbstractHttpServer implements HttpServer {
     }
 
     @Override
-    public void reset(Parameters parameters) {
-
-    }
+    public void reset(Parameters parameters) {}
 
     @Override
     public ChannelHandler getChannelHandler() {
@@ -118,17 +114,11 @@ public abstract class AbstractHttpServer implements HttpServer {
     }
 
     @Override
-    public void send(Object message) throws RemotingException {
-
-    }
+    public void send(Object message) throws RemotingException {}
 
     @Override
-    public void send(Object message, boolean sent) throws RemotingException {
-
-    }
+    public void send(Object message, boolean sent) throws RemotingException {}
 
     @Override
-    public void startClose() {
-
-    }
+    public void startClose() {}
 }

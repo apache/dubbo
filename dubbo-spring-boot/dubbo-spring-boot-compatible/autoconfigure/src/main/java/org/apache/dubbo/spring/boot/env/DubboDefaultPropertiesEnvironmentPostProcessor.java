@@ -16,6 +16,10 @@
  */
 package org.apache.dubbo.spring.boot.env;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -28,12 +32,7 @@ import org.springframework.core.env.PropertySource;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
 import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_APPLICATION_NAME_PROPERTY;
-import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_APPLICATION_QOS_ENABLE_PROPERTY;
 import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_CONFIG_MULTIPLE_PROPERTY;
 import static org.apache.dubbo.spring.boot.util.DubboUtils.SPRING_APPLICATION_NAME_PROPERTY;
 
@@ -53,7 +52,8 @@ public class DubboDefaultPropertiesEnvironmentPostProcessor implements Environme
      * The property name of "spring.main.allow-bean-definition-overriding".
      * Please refer to: https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-2.1-Release-Notes#bean-overriding
      */
-    public static final String ALLOW_BEAN_DEFINITION_OVERRIDING_PROPERTY = "spring.main.allow-bean-definition-overriding";
+    public static final String ALLOW_BEAN_DEFINITION_OVERRIDING_PROPERTY =
+            "spring.main.allow-bean-definition-overriding";
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
@@ -73,8 +73,6 @@ public class DubboDefaultPropertiesEnvironmentPostProcessor implements Environme
         Map<String, Object> defaultProperties = new HashMap<>();
         setDubboApplicationNameProperty(environment, defaultProperties);
         setDubboConfigMultipleProperty(defaultProperties);
-        setDubboApplicationQosEnableProperty(defaultProperties);
-        //setAllowBeanDefinitionOverriding(defaultProperties);
         return defaultProperties;
     }
 
@@ -88,10 +86,6 @@ public class DubboDefaultPropertiesEnvironmentPostProcessor implements Environme
 
     private void setDubboConfigMultipleProperty(Map<String, Object> defaultProperties) {
         defaultProperties.put(DUBBO_CONFIG_MULTIPLE_PROPERTY, Boolean.TRUE.toString());
-    }
-
-    private void setDubboApplicationQosEnableProperty(Map<String, Object> defaultProperties) {
-        defaultProperties.put(DUBBO_APPLICATION_QOS_ENABLE_PROPERTY, Boolean.TRUE.toString());
     }
 
     /**
@@ -112,14 +106,13 @@ public class DubboDefaultPropertiesEnvironmentPostProcessor implements Environme
      * @param propertySources {@link MutablePropertySources}
      * @param map             Default Dubbo Properties
      */
-    private void addOrReplace(MutablePropertySources propertySources,
-                              Map<String, Object> map) {
+    private void addOrReplace(MutablePropertySources propertySources, Map<String, Object> map) {
         MapPropertySource target = null;
         if (propertySources.contains(PROPERTY_SOURCE_NAME)) {
             PropertySource<?> source = propertySources.get(PROPERTY_SOURCE_NAME);
             if (source instanceof MapPropertySource) {
                 target = (MapPropertySource) source;
-                for (Map.Entry<String,Object> entry : map.entrySet()) {
+                for (Map.Entry<String, Object> entry : map.entrySet()) {
                     String key = entry.getKey();
                     if (!target.containsProperty(key)) {
                         target.getSource().put(key, entry.getValue());

@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.common.logger;
 
 @Deprecated
-public interface LoggerAdapter extends org.apache.dubbo.common.logger.LoggerAdapter {
-}
+public interface LoggerAdapter extends org.apache.dubbo.common.logger.LoggerAdapter {}

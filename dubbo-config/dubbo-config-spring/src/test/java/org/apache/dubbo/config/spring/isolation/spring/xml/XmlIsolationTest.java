@@ -18,21 +18,24 @@ package org.apache.dubbo.config.spring.isolation.spring.xml;
 
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.spring.isolation.spring.BaseTest;
-import org.junit.jupiter.api.Test;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.Map;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class XmlIsolationTest extends BaseTest {
 
     @Test
     public void test() throws Exception {
         // start provider app
-        ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext("META-INF/isolation/dubbo-provider.xml");
+        ClassPathXmlApplicationContext providerContext =
+                new ClassPathXmlApplicationContext("META-INF/isolation/dubbo-provider.xml");
         providerContext.start();
 
         // start consumer app
-        ClassPathXmlApplicationContext consumerContext = new ClassPathXmlApplicationContext("META-INF/isolation/dubbo-consumer.xml");
+        ClassPathXmlApplicationContext consumerContext =
+                new ClassPathXmlApplicationContext("META-INF/isolation/dubbo-consumer.xml");
         consumerContext.start();
 
         // getAndSet serviceConfig
@@ -52,5 +55,4 @@ public class XmlIsolationTest extends BaseTest {
         serviceConfig2 = serviceConfigMap.get("org.apache.dubbo.config.spring.ServiceBean#1");
         serviceConfig3 = serviceConfigMap.get("org.apache.dubbo.config.spring.ServiceBean#2");
     }
-
 }

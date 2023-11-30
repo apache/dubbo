@@ -18,19 +18,21 @@ package org.apache.dubbo.common.serialize.hessian2;
 
 import org.apache.dubbo.common.utils.DefaultSerializeClassChecker;
 
+import java.io.Serializable;
+
 import com.alibaba.com.caucho.hessian.io.Deserializer;
 import com.alibaba.com.caucho.hessian.io.JavaDeserializer;
 import com.alibaba.com.caucho.hessian.io.JavaSerializer;
 import com.alibaba.com.caucho.hessian.io.Serializer;
 import com.alibaba.com.caucho.hessian.io.SerializerFactory;
 
-import java.io.Serializable;
-
 public class Hessian2SerializerFactory extends SerializerFactory {
 
     private final DefaultSerializeClassChecker defaultSerializeClassChecker;
 
-    public Hessian2SerializerFactory(DefaultSerializeClassChecker defaultSerializeClassChecker) {
+    public Hessian2SerializerFactory(
+            ClassLoader classLoader, DefaultSerializeClassChecker defaultSerializeClassChecker) {
+        super(classLoader);
         this.defaultSerializeClassChecker = defaultSerializeClassChecker;
     }
 
@@ -41,8 +43,7 @@ public class Hessian2SerializerFactory extends SerializerFactory {
 
     @Override
     protected Serializer getDefaultSerializer(Class cl) {
-        if (_defaultSerializer != null)
-            return _defaultSerializer;
+        if (_defaultSerializer != null) return _defaultSerializer;
 
         try {
             // pre-check if class is allow
@@ -77,8 +78,9 @@ public class Hessian2SerializerFactory extends SerializerFactory {
         //      If dubbo class checker check serializable => fail
         //      If both hessian and dubbo class checker allow non-serializable => ok
         if (!Serializable.class.isAssignableFrom(cl)
-            && (!isAllowNonSerializable() || defaultSerializeClassChecker.isCheckSerializable())) {
-            throw new IllegalStateException("Serialized class " + cl.getName() + " must implement java.io.Serializable");
+                && (!isAllowNonSerializable() || defaultSerializeClassChecker.isCheckSerializable())) {
+            throw new IllegalStateException(
+                    "Serialized class " + cl.getName() + " must implement java.io.Serializable");
         }
     }
 }

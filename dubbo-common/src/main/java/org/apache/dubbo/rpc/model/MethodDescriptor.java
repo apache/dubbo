@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.model;
 
 import java.lang.reflect.Method;
@@ -53,6 +52,9 @@ public interface MethodDescriptor {
     Object getAttribute(String key);
 
     enum RpcType {
-        UNARY, CLIENT_STREAM, SERVER_STREAM, BI_STREAM
+        UNARY,
+        CLIENT_STREAM,
+        SERVER_STREAM,
+        BI_STREAM
     }
 }

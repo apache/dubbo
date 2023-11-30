@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metadata.rest;
 
-
 import org.apache.dubbo.common.utils.CollectionUtils;
 
 import java.io.Serializable;
@@ -56,12 +55,10 @@ public class RequestMetadata implements Serializable {
 
     private Set<String> produces = new LinkedHashSet<>();
 
-
     /**
      * Default Constructor
      */
-    public RequestMetadata() {
-    }
+    public RequestMetadata() {}
 
     public String getMethod() {
         return method;
@@ -81,7 +78,6 @@ public class RequestMetadata implements Serializable {
         if (!path.startsWith(SLASH)) {
             this.path = SLASH + path;
         }
-
     }
 
     public Map<String, List<String>> getParams() {
@@ -100,8 +96,8 @@ public class RequestMetadata implements Serializable {
         values.add(value);
     }
 
-    private static <T extends Collection<String>> void addAll(Map<String, List<String>> multiValueMap,
-                                                              Map<String, T> source) {
+    private static <T extends Collection<String>> void addAll(
+            Map<String, List<String>> multiValueMap, Map<String, T> source) {
         for (Map.Entry<String, T> entry : source.entrySet()) {
             String key = entry.getKey();
             for (String value : entry.getValue()) {
@@ -155,13 +151,13 @@ public class RequestMetadata implements Serializable {
         return new HashSet<>(headers.keySet());
     }
 
-//    public List<MediaType> getConsumeMediaTypes() {
-//        return toMediaTypes(consumes);
-//    }
-//
-//    public List<MediaType> getProduceMediaTypes() {
-//        return toMediaTypes(produces);
-//    }
+    //    public List<MediaType> getConsumeMediaTypes() {
+    //        return toMediaTypes(consumes);
+    //    }
+    //
+    //    public List<MediaType> getProduceMediaTypes() {
+    //        return toMediaTypes(produces);
+    //    }
 
     public String getParameter(String name) {
         return getFirst(params, name);
@@ -192,8 +188,8 @@ public class RequestMetadata implements Serializable {
             // Add all headers
             addAll(httpHeaders, headers);
             // Handles "Content-Type" and "Accept" headers if present
-//            mediaTypes(httpHeaders, HttpHeaders.CONTENT_TYPE, this.consumes);
-//            mediaTypes(httpHeaders, HttpHeaders.ACCEPT, this.produces);
+            //            mediaTypes(httpHeaders, HttpHeaders.CONTENT_TYPE, this.consumes);
+            //            mediaTypes(httpHeaders, HttpHeaders.ACCEPT, this.produces);
             this.headers.putAll(httpHeaders);
         }
         return this;
@@ -220,26 +216,25 @@ public class RequestMetadata implements Serializable {
         }
         RequestMetadata that = (RequestMetadata) o;
         return Objects.equals(method, that.method)
-            && Objects.equals(path, that.path)
-            && Objects.equals(consumes, that.consumes)
-            && Objects.equals(produces, that.produces) &&
-            // Metadata should not compare the values
-            Objects.equals(getParamNames(), that.getParamNames())
-            && Objects.equals(getHeaderNames(), that.getHeaderNames());
-
+                && Objects.equals(path, that.path)
+                && Objects.equals(consumes, that.consumes)
+                && Objects.equals(produces, that.produces)
+                &&
+                // Metadata should not compare the values
+                Objects.equals(getParamNames(), that.getParamNames())
+                && Objects.equals(getHeaderNames(), that.getHeaderNames());
     }
 
     @Override
     public int hashCode() {
         // The values of metadata should not use for the hashCode() method
-        return Objects.hash(method, path, consumes, produces, getParamNames(),
-            getHeaderNames());
+        return Objects.hash(method, path, consumes, produces, getParamNames(), getHeaderNames());
     }
 
     @Override
     public String toString() {
         return "RequestMetadata{" + "method='" + method + '\'' + ", path='" + path + '\''
-            + ", params=" + params + ", headers=" + headers + ", consumes=" + consumes
-            + ", produces=" + produces + '}';
+                + ", params=" + params + ", headers=" + headers + ", consumes=" + consumes
+                + ", produces=" + produces + '}';
     }
 }

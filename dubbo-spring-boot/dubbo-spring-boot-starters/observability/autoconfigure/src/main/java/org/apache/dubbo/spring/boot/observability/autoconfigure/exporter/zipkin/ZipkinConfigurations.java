@@ -14,13 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.spring.boot.observability.autoconfigure.exporter.zipkin;
 
 import org.apache.dubbo.config.nested.ExporterConfig;
 import org.apache.dubbo.spring.boot.autoconfigure.DubboConfigurationProperties;
 import org.apache.dubbo.spring.boot.observability.autoconfigure.exporter.zipkin.customizer.ZipkinRestTemplateBuilderCustomizer;
 import org.apache.dubbo.spring.boot.observability.autoconfigure.exporter.zipkin.customizer.ZipkinWebClientBuilderCustomizer;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import org.springframework.beans.factory.ObjectProvider;
@@ -43,8 +44,6 @@ import zipkin2.reporter.Sender;
 import zipkin2.reporter.brave.ZipkinSpanHandler;
 import zipkin2.reporter.urlconnection.URLConnectionSender;
 
-import java.util.concurrent.atomic.AtomicReference;
-
 import static org.apache.dubbo.spring.boot.observability.autoconfigure.ObservabilityUtils.DUBBO_TRACING_ZIPKIN_CONFIG_PREFIX;
 
 /**
@@ -54,10 +53,12 @@ class ZipkinConfigurations {
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(prefix = DUBBO_TRACING_ZIPKIN_CONFIG_PREFIX, name = "endpoint")
-    @Import({UrlConnectionSenderConfiguration.class, WebClientSenderConfiguration.class,
-            RestTemplateSenderConfiguration.class})
-    static class SenderConfiguration {
-    }
+    @Import({
+        UrlConnectionSenderConfiguration.class,
+        WebClientSenderConfiguration.class,
+        RestTemplateSenderConfiguration.class
+    })
+    static class SenderConfiguration {}
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(URLConnectionSender.class)
@@ -68,13 +69,13 @@ class ZipkinConfigurations {
         @ConditionalOnMissingBean(Sender.class)
         URLConnectionSender urlConnectionSender(DubboConfigurationProperties properties) {
             URLConnectionSender.Builder builder = URLConnectionSender.newBuilder();
-            ExporterConfig.ZipkinConfig zipkinConfig = properties.getTracing().getTracingExporter().getZipkinConfig();
+            ExporterConfig.ZipkinConfig zipkinConfig =
+                    properties.getTracing().getTracingExporter().getZipkinConfig();
             builder.connectTimeout((int) zipkinConfig.getConnectTimeout().toMillis());
             builder.readTimeout((int) zipkinConfig.getReadTimeout().toMillis());
             builder.endpoint(zipkinConfig.getEndpoint());
             return builder.build();
         }
-
     }
 
     @Configuration(proxyBeanMethods = false)
@@ -84,9 +85,11 @@ class ZipkinConfigurations {
 
         @Bean
         @ConditionalOnMissingBean(Sender.class)
-        ZipkinRestTemplateSender restTemplateSender(DubboConfigurationProperties properties,
-                                                    ObjectProvider<ZipkinRestTemplateBuilderCustomizer> customizers) {
-            ExporterConfig.ZipkinConfig zipkinConfig = properties.getTracing().getTracingExporter().getZipkinConfig();
+        ZipkinRestTemplateSender restTemplateSender(
+                DubboConfigurationProperties properties,
+                ObjectProvider<ZipkinRestTemplateBuilderCustomizer> customizers) {
+            ExporterConfig.ZipkinConfig zipkinConfig =
+                    properties.getTracing().getTracingExporter().getZipkinConfig();
             RestTemplateBuilder restTemplateBuilder = new RestTemplateBuilder()
                     .setConnectTimeout(zipkinConfig.getConnectTimeout())
                     .setReadTimeout(zipkinConfig.getReadTimeout());
@@ -94,17 +97,17 @@ class ZipkinConfigurations {
             return new ZipkinRestTemplateSender(zipkinConfig.getEndpoint(), restTemplateBuilder.build());
         }
 
-        private RestTemplateBuilder applyCustomizers(RestTemplateBuilder restTemplateBuilder,
-                                                     ObjectProvider<ZipkinRestTemplateBuilderCustomizer> customizers) {
-            Iterable<ZipkinRestTemplateBuilderCustomizer> orderedCustomizers = () -> customizers.orderedStream()
-                    .iterator();
+        private RestTemplateBuilder applyCustomizers(
+                RestTemplateBuilder restTemplateBuilder,
+                ObjectProvider<ZipkinRestTemplateBuilderCustomizer> customizers) {
+            Iterable<ZipkinRestTemplateBuilderCustomizer> orderedCustomizers =
+                    () -> customizers.orderedStream().iterator();
             RestTemplateBuilder currentBuilder = restTemplateBuilder;
             for (ZipkinRestTemplateBuilderCustomizer customizer : orderedCustomizers) {
                 currentBuilder = customizer.customize(currentBuilder);
             }
             return currentBuilder;
         }
-
     }
 
     @Configuration(proxyBeanMethods = false)
@@ -114,14 +117,14 @@ class ZipkinConfigurations {
 
         @Bean
         @ConditionalOnMissingBean(Sender.class)
-        ZipkinWebClientSender webClientSender(DubboConfigurationProperties properties,
-                                              ObjectProvider<ZipkinWebClientBuilderCustomizer> customizers) {
-            ExporterConfig.ZipkinConfig zipkinConfig = properties.getTracing().getTracingExporter().getZipkinConfig();
+        ZipkinWebClientSender webClientSender(
+                DubboConfigurationProperties properties, ObjectProvider<ZipkinWebClientBuilderCustomizer> customizers) {
+            ExporterConfig.ZipkinConfig zipkinConfig =
+                    properties.getTracing().getTracingExporter().getZipkinConfig();
             WebClient.Builder builder = WebClient.builder();
             customizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
             return new ZipkinWebClientSender(zipkinConfig.getEndpoint(), builder.build());
         }
-
     }
 
     @Configuration(proxyBeanMethods = false)
@@ -133,7 +136,6 @@ class ZipkinConfigurations {
         AsyncReporter<Span> spanReporter(Sender sender, BytesEncoder<Span> encoder) {
             return AsyncReporter.builder(sender).build(encoder);
         }
-
     }
 
     @Configuration(proxyBeanMethods = false)
@@ -144,9 +146,9 @@ class ZipkinConfigurations {
         @ConditionalOnMissingBean
         @ConditionalOnBean(Reporter.class)
         ZipkinSpanHandler zipkinSpanHandler(Reporter<Span> spanReporter) {
-            return (ZipkinSpanHandler) ZipkinSpanHandler.newBuilder(spanReporter).build();
+            return (ZipkinSpanHandler)
+                    ZipkinSpanHandler.newBuilder(spanReporter).build();
         }
-
     }
 
     @Configuration(proxyBeanMethods = false)
@@ -157,20 +159,24 @@ class ZipkinConfigurations {
 
         @Bean
         @ConditionalOnMissingBean
-        ZipkinSpanExporter zipkinSpanExporter(DubboConfigurationProperties properties, BytesEncoder<Span> encoder, ObjectProvider<Sender> senders) {
+        ZipkinSpanExporter zipkinSpanExporter(
+                DubboConfigurationProperties properties, BytesEncoder<Span> encoder, ObjectProvider<Sender> senders) {
             AtomicReference<Sender> senderRef = new AtomicReference<>();
             senders.orderedStream().findFirst().ifPresent(senderRef::set);
             Sender sender = senderRef.get();
             if (sender == null) {
-                ExporterConfig.ZipkinConfig zipkinConfig = properties.getTracing().getTracingExporter().getZipkinConfig();
+                ExporterConfig.ZipkinConfig zipkinConfig =
+                        properties.getTracing().getTracingExporter().getZipkinConfig();
                 return ZipkinSpanExporter.builder()
                         .setEncoder(encoder)
                         .setEndpoint(zipkinConfig.getEndpoint())
                         .setReadTimeout(zipkinConfig.getReadTimeout())
                         .build();
             }
-            return ZipkinSpanExporter.builder().setEncoder(encoder).setSender(sender).build();
+            return ZipkinSpanExporter.builder()
+                    .setEncoder(encoder)
+                    .setSender(sender)
+                    .build();
         }
-
     }
 }

@@ -14,15 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.serialization;
-
-import com.alibaba.dubbo.common.serialize.ObjectOutput;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+
+import com.alibaba.dubbo.common.serialize.ObjectOutput;
 
 public class MyObjectOutput implements ObjectOutput {
 
@@ -33,44 +32,28 @@ public class MyObjectOutput implements ObjectOutput {
     }
 
     @Override
-    public void writeObject(Object obj) throws IOException {
-
-    }
+    public void writeObject(Object obj) throws IOException {}
 
     @Override
-    public void writeBool(boolean v) throws IOException {
-
-    }
+    public void writeBool(boolean v) throws IOException {}
 
     @Override
-    public void writeByte(byte v) throws IOException {
-
-    }
+    public void writeByte(byte v) throws IOException {}
 
     @Override
-    public void writeShort(short v) throws IOException {
-
-    }
+    public void writeShort(short v) throws IOException {}
 
     @Override
-    public void writeInt(int v) throws IOException {
-
-    }
+    public void writeInt(int v) throws IOException {}
 
     @Override
-    public void writeLong(long v) throws IOException {
-
-    }
+    public void writeLong(long v) throws IOException {}
 
     @Override
-    public void writeFloat(float v) throws IOException {
-
-    }
+    public void writeFloat(float v) throws IOException {}
 
     @Override
-    public void writeDouble(double v) throws IOException {
-
-    }
+    public void writeDouble(double v) throws IOException {}
 
     @Override
     public void writeUTF(String v) throws IOException {
@@ -79,14 +62,10 @@ public class MyObjectOutput implements ObjectOutput {
     }
 
     @Override
-    public void writeBytes(byte[] v) throws IOException {
-
-    }
+    public void writeBytes(byte[] v) throws IOException {}
 
     @Override
-    public void writeBytes(byte[] v, int off, int len) throws IOException {
-
-    }
+    public void writeBytes(byte[] v, int off, int len) throws IOException {}
 
     @Override
     public void flushBuffer() throws IOException {

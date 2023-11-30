@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.monitor;
 
-
 import org.apache.dubbo.common.URL;
 
 import java.util.List;
@@ -49,5 +48,4 @@ public interface MonitorService {
      * @return statistics
      */
     List<URL> lookup(URL query);
-
 }

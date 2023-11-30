@@ -16,18 +16,18 @@
  */
 package org.apache.dubbo.rpc.proxy.bytebuddy;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
 class ByteBuddyInterceptorTest {
 
     @AfterEach
-    public void after(){
+    public void after() {
         Mockito.clearAllCaches();
     }
 
@@ -39,7 +39,7 @@ class ByteBuddyInterceptorTest {
         Proxy proxy = Mockito.mock(Proxy.class);
         Object[] args = new Object[0];
         interceptor.intercept(proxy, args, method);
-        //'intercept' method will call 'invoke' method directly
+        // 'intercept' method will call 'invoke' method directly
         Mockito.verify(handler, Mockito.times(1)).invoke(proxy, method, args);
     }
 }

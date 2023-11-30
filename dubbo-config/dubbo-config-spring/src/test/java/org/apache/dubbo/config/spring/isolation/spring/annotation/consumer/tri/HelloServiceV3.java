@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.isolation.spring.annotation.consumer.tri;
 
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.spring.api.HelloService;
+
 import org.springframework.stereotype.Component;
 
 @Component("tri-helloServiceV3")

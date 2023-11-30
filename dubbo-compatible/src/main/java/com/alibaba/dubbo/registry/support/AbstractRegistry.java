@@ -47,39 +47,49 @@ public abstract class AbstractRegistry implements Registry {
     }
 
     public Set<com.alibaba.dubbo.common.URL> getRegistered() {
-        return abstractRegistry.getRegistered().stream().map(url -> new com.alibaba.dubbo.common.DelegateURL(url)).collect(Collectors.toSet());
+        return abstractRegistry.getRegistered().stream()
+                .map(url -> new com.alibaba.dubbo.common.DelegateURL(url))
+                .collect(Collectors.toSet());
     }
 
     public Map<com.alibaba.dubbo.common.URL, Set<com.alibaba.dubbo.registry.NotifyListener>> getSubscribed() {
-        return abstractRegistry.getSubscribed().entrySet()
-                .stream()
-                .collect(Collectors.toMap(entry -> new com.alibaba.dubbo.common.DelegateURL(entry.getKey()),
+        return abstractRegistry.getSubscribed().entrySet().stream()
+                .collect(Collectors.toMap(
+                        entry -> new com.alibaba.dubbo.common.DelegateURL(entry.getKey()),
                         entry -> convertToNotifyListeners(entry.getValue())));
     }
 
     public Map<com.alibaba.dubbo.common.URL, Map<String, List<com.alibaba.dubbo.common.URL>>> getNotified() {
         return abstractRegistry.getNotified().entrySet().stream()
-                .collect(Collectors.toMap(entry -> new com.alibaba.dubbo.common.DelegateURL(entry.getKey()),
-                        entry -> {
-                            return entry.getValue().entrySet()
-                                    .stream()
-                                    .collect(Collectors.toMap(e -> e.getKey(), e -> {
-                                        return e.getValue().stream().map(url -> new com.alibaba.dubbo.common.DelegateURL(url)).collect(Collectors.toList());
-                                    }));
-                        }));
+                .collect(Collectors.toMap(entry -> new com.alibaba.dubbo.common.DelegateURL(entry.getKey()), entry -> {
+                    return entry.getValue().entrySet().stream().collect(Collectors.toMap(e -> e.getKey(), e -> {
+                        return e.getValue().stream()
+                                .map(url -> new com.alibaba.dubbo.common.DelegateURL(url))
+                                .collect(Collectors.toList());
+                    }));
+                }));
     }
 
-
     public List<com.alibaba.dubbo.common.URL> getCacheUrls(com.alibaba.dubbo.common.URL url) {
-        return abstractRegistry.lookup(url.getOriginalURL()).stream().map(tmpUrl -> new com.alibaba.dubbo.common.DelegateURL(tmpUrl)).collect(Collectors.toList());
+        return abstractRegistry.lookup(url.getOriginalURL()).stream()
+                .map(tmpUrl -> new com.alibaba.dubbo.common.DelegateURL(tmpUrl))
+                .collect(Collectors.toList());
     }
 
     public List<com.alibaba.dubbo.common.URL> lookup(com.alibaba.dubbo.common.URL url) {
-        return abstractRegistry.lookup(url.getOriginalURL()).stream().map(tmpUrl -> new com.alibaba.dubbo.common.DelegateURL(tmpUrl)).collect(Collectors.toList());
+        return abstractRegistry.lookup(url.getOriginalURL()).stream()
+                .map(tmpUrl -> new com.alibaba.dubbo.common.DelegateURL(tmpUrl))
+                .collect(Collectors.toList());
     }
 
-    protected void notify(com.alibaba.dubbo.common.URL url, com.alibaba.dubbo.registry.NotifyListener listener, List<com.alibaba.dubbo.common.URL> urls) {
-        abstractRegistry.notify(url.getOriginalURL(), new com.alibaba.dubbo.registry.NotifyListener.ReverseCompatibleNotifyListener(listener), urls.stream().map(tmpUrl -> tmpUrl.getOriginalURL()).collect(Collectors.toList()));
+    protected void notify(
+            com.alibaba.dubbo.common.URL url,
+            com.alibaba.dubbo.registry.NotifyListener listener,
+            List<com.alibaba.dubbo.common.URL> urls) {
+        abstractRegistry.notify(
+                url.getOriginalURL(),
+                new com.alibaba.dubbo.registry.NotifyListener.ReverseCompatibleNotifyListener(listener),
+                urls.stream().map(tmpUrl -> tmpUrl.getOriginalURL()).collect(Collectors.toList()));
     }
 
     public void register(com.alibaba.dubbo.common.URL url) {
@@ -91,13 +101,16 @@ public abstract class AbstractRegistry implements Registry {
     }
 
     public void subscribe(com.alibaba.dubbo.common.URL url, com.alibaba.dubbo.registry.NotifyListener listener) {
-        abstractRegistry.subscribe(url.getOriginalURL(), new com.alibaba.dubbo.registry.NotifyListener.ReverseCompatibleNotifyListener(listener));
+        abstractRegistry.subscribe(
+                url.getOriginalURL(),
+                new com.alibaba.dubbo.registry.NotifyListener.ReverseCompatibleNotifyListener(listener));
     }
 
     public void unsubscribe(com.alibaba.dubbo.common.URL url, com.alibaba.dubbo.registry.NotifyListener listener) {
-        abstractRegistry.unsubscribe(url.getOriginalURL(), new com.alibaba.dubbo.registry.NotifyListener.ReverseCompatibleNotifyListener(listener));
+        abstractRegistry.unsubscribe(
+                url.getOriginalURL(),
+                new com.alibaba.dubbo.registry.NotifyListener.ReverseCompatibleNotifyListener(listener));
     }
-
 
     @Override
     public void register(URL url) {
@@ -111,18 +124,23 @@ public abstract class AbstractRegistry implements Registry {
 
     @Override
     public void subscribe(URL url, NotifyListener listener) {
-        this.subscribe(new com.alibaba.dubbo.common.DelegateURL(url), new com.alibaba.dubbo.registry.NotifyListener.CompatibleNotifyListener(listener));
+        this.subscribe(
+                new com.alibaba.dubbo.common.DelegateURL(url),
+                new com.alibaba.dubbo.registry.NotifyListener.CompatibleNotifyListener(listener));
     }
 
     @Override
     public void unsubscribe(URL url, NotifyListener listener) {
-        this.unsubscribe(new com.alibaba.dubbo.common.DelegateURL(url), new com.alibaba.dubbo.registry.NotifyListener.CompatibleNotifyListener(listener));
+        this.unsubscribe(
+                new com.alibaba.dubbo.common.DelegateURL(url),
+                new com.alibaba.dubbo.registry.NotifyListener.CompatibleNotifyListener(listener));
     }
 
     final Set<com.alibaba.dubbo.registry.NotifyListener> convertToNotifyListeners(Set<NotifyListener> notifyListeners) {
-        return notifyListeners.stream().map(listener -> new com.alibaba.dubbo.registry.NotifyListener.CompatibleNotifyListener(listener)).collect(Collectors.toSet());
+        return notifyListeners.stream()
+                .map(listener -> new com.alibaba.dubbo.registry.NotifyListener.CompatibleNotifyListener(listener))
+                .collect(Collectors.toSet());
     }
-
 
     static class CompatibleAbstractRegistry extends org.apache.dubbo.registry.support.AbstractRegistry {
         public CompatibleAbstractRegistry(URL url) {

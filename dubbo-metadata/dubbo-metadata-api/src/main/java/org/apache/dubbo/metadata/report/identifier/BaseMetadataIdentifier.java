@@ -21,5 +21,4 @@ public interface BaseMetadataIdentifier {
     String getUniqueKey(KeyTypeEnum keyType);
 
     String getIdentifierKey();
-
 }

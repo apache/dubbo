@@ -22,6 +22,6 @@ package org.apache.dubbo.rpc.protocol.rest.exception;
 public class RemoteServerInternalException extends RestException {
 
     public RemoteServerInternalException(String message) {
-        super("dubbo http rest protocol remote error :"+message);
+        super("dubbo http rest protocol remote error :" + message);
     }
 }

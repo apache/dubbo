@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.serialize.nativejava;
 
 import org.apache.dubbo.common.serialize.ObjectInput;
@@ -108,7 +107,7 @@ public class NativeJavaObjectInput implements ObjectInput {
         if (len < 0) {
             return null;
         } else if (len == 0) {
-            return new byte[]{};
+            return new byte[] {};
         } else {
             byte[] result = new byte[len];
             inputStream.readFully(result);

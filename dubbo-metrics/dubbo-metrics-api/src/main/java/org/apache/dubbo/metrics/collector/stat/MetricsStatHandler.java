@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.collector.stat;
 
 import org.apache.dubbo.metrics.event.MetricsEvent;
@@ -32,5 +31,4 @@ public interface MetricsStatHandler {
     MetricsEvent decrease(String applicationName, Invocation invocation);
 
     MetricsEvent addApplication(String applicationName);
-
 }

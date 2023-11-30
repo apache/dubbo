@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.collector;
 
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
@@ -30,7 +29,5 @@ public interface ApplicationMetricsCollector<E extends TimeCounterEvent> extends
 
     void increment(MetricsKey metricsKey);
 
-    void addRt(String registryOpType, Long responseTime);
-
+    void addApplicationRt(String registryOpType, Long responseTime);
 }
-

@@ -28,6 +28,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -59,27 +60,29 @@ public class DefaultServiceRestMetadataResolver extends AbstractServiceRestMetad
             "application/*+json",
             "application/xml;charset=UTF-8",
             "text/xml;charset=UTF-8",
-            "application/*+xml;charset=UTF-8"
-    );
+            "application/*+xml;charset=UTF-8");
 
     private final Set<ExecutableElement> hasComplexParameterTypeMethods = new HashSet<>();
 
     @Override
     public boolean supports(ProcessingEnvironment processingEnvironment, TypeElement serviceType) {
-        return !JAXRSServiceRestMetadataResolver.supports(serviceType) &&
-                !SpringMvcServiceRestMetadataResolver.supports(serviceType);
+        return !JAXRSServiceRestMetadataResolver.supports(serviceType)
+                && !SpringMvcServiceRestMetadataResolver.supports(serviceType);
     }
 
     @Override
-    protected boolean supports(ProcessingEnvironment processingEnv, TypeElement serviceType,
-                               TypeElement serviceInterfaceType, ExecutableElement method) {
+    protected boolean supports(
+            ProcessingEnvironment processingEnv,
+            TypeElement serviceType,
+            TypeElement serviceInterfaceType,
+            ExecutableElement method) {
         // TODO add some criterion
         return true;
     }
 
     @Override
-    protected String resolveRequestPath(ProcessingEnvironment processingEnv, TypeElement serviceType,
-                                        ExecutableElement method) {
+    protected String resolveRequestPath(
+            ProcessingEnvironment processingEnv, TypeElement serviceType, ExecutableElement method) {
 
         AnnotationMirror serviceAnnotation = getAnnotation(serviceType);
 
@@ -105,15 +108,21 @@ public class DefaultServiceRestMetadataResolver extends AbstractServiceRestMetad
                     continue;
                 } else {
                     // The count of complex types must be only one, or return immediately
-                    warn("The method[%s] contains more than one complex parameter type, " +
-                            "thus it will not be chosen as the REST service", method.toString());
+                    warn(
+                            "The method[%s] contains more than one complex parameter type, "
+                                    + "thus it will not be chosen as the REST service",
+                            method.toString());
                 }
             }
             String parameterName = parameter.getSimpleName().toString();
             // If "-parameters" option is enabled, take the parameter name as the path variable name,
             // or use the index of parameter
             String pathVariableName = isEnabledParametersCompilerOption(parameterName) ? parameterName : valueOf(i);
-            requestPathBuilder.append(PATH_SEPARATOR).append('{').append(pathVariableName).append('}');
+            requestPathBuilder
+                    .append(PATH_SEPARATOR)
+                    .append('{')
+                    .append(pathVariableName)
+                    .append('}');
         }
 
         return requestPathBuilder.toString();
@@ -147,7 +156,11 @@ public class DefaultServiceRestMetadataResolver extends AbstractServiceRestMetad
         boolean supported;
         try {
             Class<?> targetType = forName(className, classLoader);
-            supported = FrameworkModel.defaultModel().getBeanFactory().getBean(ConverterUtil.class).getConverter(String.class, targetType) != null;
+            supported = FrameworkModel.defaultModel()
+                            .getBeanFactory()
+                            .getBean(ConverterUtil.class)
+                            .getConverter(String.class, targetType)
+                    != null;
         } catch (ClassNotFoundException e) {
             supported = false;
         }
@@ -155,14 +168,17 @@ public class DefaultServiceRestMetadataResolver extends AbstractServiceRestMetad
     }
 
     @Override
-    protected String resolveRequestMethod(ProcessingEnvironment processingEnv, TypeElement serviceType,
-                                          ExecutableElement method) {
+    protected String resolveRequestMethod(
+            ProcessingEnvironment processingEnv, TypeElement serviceType, ExecutableElement method) {
         return HTTP_REQUEST_METHOD;
     }
 
     @Override
-    protected void processProduces(ProcessingEnvironment processingEnv, TypeElement serviceType,
-                                   ExecutableElement method, Set<String> produces) {
+    protected void processProduces(
+            ProcessingEnvironment processingEnv,
+            TypeElement serviceType,
+            ExecutableElement method,
+            Set<String> produces) {
         TypeMirror returnType = method.getReturnType();
         if (isComplexType(returnType)) {
             produces.addAll(MEDIA_TYPES);
@@ -170,8 +186,11 @@ public class DefaultServiceRestMetadataResolver extends AbstractServiceRestMetad
     }
 
     @Override
-    protected void processConsumes(ProcessingEnvironment processingEnv, TypeElement serviceType,
-                                   ExecutableElement method, Set<String> consumes) {
+    protected void processConsumes(
+            ProcessingEnvironment processingEnv,
+            TypeElement serviceType,
+            ExecutableElement method,
+            Set<String> consumes) {
         if (hasComplexParameterType(method)) {
             consumes.addAll(MEDIA_TYPES);
         }

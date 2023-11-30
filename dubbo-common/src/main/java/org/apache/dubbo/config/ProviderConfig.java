@@ -171,8 +171,7 @@ public class ProviderConfig extends AbstractServiceConfig {
      */
     private Boolean exportBackground;
 
-    public ProviderConfig() {
-    }
+    public ProviderConfig() {}
 
     public ProviderConfig(ModuleModel moduleModel) {
         super(moduleModel);
@@ -443,5 +442,4 @@ public class ProviderConfig extends AbstractServiceConfig {
     public void setExportBackground(Boolean exportBackground) {
         this.exportBackground = exportBackground;
     }
-
 }

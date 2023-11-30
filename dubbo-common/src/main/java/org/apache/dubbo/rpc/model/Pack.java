@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.model;
 
 public interface Pack {
@@ -25,5 +24,4 @@ public interface Pack {
      * @throws Exception when error occurs
      */
     byte[] pack(Object obj) throws Exception;
-
 }

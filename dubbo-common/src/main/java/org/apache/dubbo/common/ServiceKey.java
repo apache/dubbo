@@ -53,7 +53,9 @@ public class ServiceKey {
             return false;
         }
         ServiceKey that = (ServiceKey) o;
-        return Objects.equals(interfaceName, that.interfaceName) && Objects.equals(group, that.group) && Objects.equals(version, that.version);
+        return Objects.equals(interfaceName, that.interfaceName)
+                && Objects.equals(group, that.group)
+                && Objects.equals(version, that.version);
     }
 
     @Override
@@ -65,7 +67,6 @@ public class ServiceKey {
     public String toString() {
         return BaseServiceMetadata.buildServiceKey(interfaceName, group, version);
     }
-
 
     public static class Matcher {
         public static boolean isMatch(ServiceKey rule, ServiceKey target) {
@@ -84,7 +85,7 @@ public class ServiceKey {
                 if (!StringUtils.isEmpty(rule.getVersion())) {
                     // 2.3. if rule version contains ',', split and match each
                     if (rule.getVersion().contains(CommonConstants.COMMA_SEPARATOR)) {
-                        String[] versions = rule.getVersion().split("\\" +CommonConstants.COMMA_SEPARATOR, -1);
+                        String[] versions = rule.getVersion().split("\\" + CommonConstants.COMMA_SEPARATOR, -1);
                         boolean match = false;
                         for (String version : versions) {
                             version = version.trim();
@@ -117,7 +118,7 @@ public class ServiceKey {
                 if (!StringUtils.isEmpty(rule.getGroup())) {
                     // 3.3. if rule group contains ',', split and match each
                     if (rule.getGroup().contains(CommonConstants.COMMA_SEPARATOR)) {
-                        String[] groups = rule.getGroup().split("\\" +CommonConstants.COMMA_SEPARATOR, -1);
+                        String[] groups = rule.getGroup().split("\\" + CommonConstants.COMMA_SEPARATOR, -1);
                         boolean match = false;
                         for (String group : groups) {
                             group = group.trim();

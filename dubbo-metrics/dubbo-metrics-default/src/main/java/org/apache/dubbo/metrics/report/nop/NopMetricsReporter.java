@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.report.nop;
 
 import org.apache.dubbo.common.URL;
@@ -25,19 +24,13 @@ import org.apache.dubbo.metrics.report.MetricsReporter;
  */
 public class NopMetricsReporter implements MetricsReporter {
 
-    public NopMetricsReporter(URL url) {
-
-    }
+    public NopMetricsReporter(URL url) {}
 
     @Override
-    public void init() {
-
-    }
+    public void init() {}
 
     @Override
-    public void refreshData() {
-
-    }
+    public void resetIfSamplesChanged() {}
 
     @Override
     public String getResponse() {

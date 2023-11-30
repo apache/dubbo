@@ -57,8 +57,6 @@ public interface ExecutorRepository {
 
     ExecutorService getExecutor(ServiceModel serviceModel, URL url);
 
-
-
     /**
      * Modify some of the threadpool's properties according to the url, for example, coreSize, maxSize, ...
      *
@@ -183,14 +181,17 @@ public interface ExecutorRepository {
     ExecutorSupport getExecutorSupport(URL url);
 
     static ExecutorRepository getInstance(ApplicationModel applicationModel) {
-        ExtensionLoader<ExecutorRepository> extensionLoader = applicationModel.getExtensionLoader(ExecutorRepository.class);
+        ExtensionLoader<ExecutorRepository> extensionLoader =
+                applicationModel.getExtensionLoader(ExecutorRepository.class);
         String mode = getMode(applicationModel);
-        return StringUtils.isNotEmpty(mode) ? extensionLoader.getExtension(mode) : extensionLoader.getDefaultExtension();
+        return StringUtils.isNotEmpty(mode)
+                ? extensionLoader.getExtension(mode)
+                : extensionLoader.getDefaultExtension();
     }
 
     static String getMode(ApplicationModel applicationModel) {
-        Optional<ApplicationConfig> optional = applicationModel.getApplicationConfigManager().getApplication();
+        Optional<ApplicationConfig> optional =
+                applicationModel.getApplicationConfigManager().getApplication();
         return optional.map(ApplicationConfig::getExecutorManagementMode).orElse(EXECUTOR_MANAGEMENT_MODE_ISOLATION);
     }
-
 }

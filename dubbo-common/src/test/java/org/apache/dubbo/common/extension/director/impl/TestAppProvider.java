@@ -21,7 +21,5 @@ import org.apache.dubbo.common.extension.director.FooAppProvider;
 
 public class TestAppProvider implements FooAppProvider {
     @Override
-    public void process(URL url) {
-
-    }
+    public void process(URL url) {}
 }

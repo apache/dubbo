@@ -27,6 +27,11 @@ import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY;
 public class ServiceDiscoveryRegistryFactory extends AbstractRegistryFactory {
 
     @Override
+    protected String createRegistryCacheKey(URL url) {
+        return url.toFullString();
+    }
+
+    @Override
     protected Registry createRegistry(URL url) {
         if (UrlUtils.hasServiceDiscoveryRegistryProtocol(url)) {
             String protocol = url.getParameter(REGISTRY_KEY, DEFAULT_REGISTRY);
@@ -34,5 +39,4 @@ public class ServiceDiscoveryRegistryFactory extends AbstractRegistryFactory {
         }
         return new ServiceDiscoveryRegistry(url, applicationModel);
     }
-
 }

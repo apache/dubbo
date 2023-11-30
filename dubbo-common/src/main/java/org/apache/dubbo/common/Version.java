@@ -58,6 +58,7 @@ public final class Version {
      * performance than string.
      */
     public static final int LOWEST_VERSION_FOR_RESPONSE_ATTACHMENT = 2000200; // 2.0.2
+
     public static final int HIGHEST_PROTOCOL_VERSION = 2009900; // 2.0.99
     private static final Map<String, Integer> VERSION2INT = new HashMap<String, Integer>();
 
@@ -67,7 +68,12 @@ public final class Version {
             tryLoadVersionFromResource();
             checkDuplicate();
         } catch (Throwable e) {
-            logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "continue the old logic, ignore exception " + e.getMessage(), e);
+            logger.warn(
+                    COMMON_UNEXPECTED_EXCEPTION,
+                    "",
+                    "",
+                    "continue the old logic, ignore exception " + e.getMessage(),
+                    e);
         }
         if (StringUtils.isEmpty(VERSION)) {
             VERSION = getVersion(Version.class, "");
@@ -81,7 +87,8 @@ public final class Version {
         Enumeration<URL> configLoader = Version.class.getClassLoader().getResources("META-INF/versions/dubbo-common");
         if (configLoader.hasMoreElements()) {
             URL url = configLoader.nextElement();
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
+            try (BufferedReader reader =
+                    new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     if (line.startsWith("revision=")) {
@@ -94,8 +101,7 @@ public final class Version {
         }
     }
 
-    private Version() {
-    }
+    private Version() {}
 
     public static String getProtocolVersion() {
         return DEFAULT_DUBBO_PROTOCOL_VERSION;
@@ -169,9 +175,13 @@ public final class Version {
                     v = v * 100;
                 }
             } catch (Exception e) {
-                logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "Please make sure your version value has the right format: " +
-                    "\n 1. only contains digital number: 2.0.0; \n 2. with string suffix: 2.6.7-stable. " +
-                    "\nIf you are using Dubbo before v2.6.2, the version value is the same with the jar version.");
+                logger.warn(
+                        COMMON_UNEXPECTED_EXCEPTION,
+                        "",
+                        "",
+                        "Please make sure your version value has the right format: "
+                                + "\n 1. only contains digital number: 2.0.0; \n 2. with string suffix: 2.6.7-stable. "
+                                + "\nIf you are using Dubbo before v2.6.2, the version value is the same with the jar version.");
                 v = LEGACY_DUBBO_PROTOCOL_VERSION;
             }
             VERSION2INT.put(version, v);
@@ -223,13 +233,15 @@ public final class Version {
             // guess version from jar file name if nothing's found from MANIFEST.MF
             CodeSource codeSource = cls.getProtectionDomain().getCodeSource();
             if (codeSource == null) {
-                logger.info("No codeSource for class " + cls.getName() + " when getVersion, use default version " + defaultVersion);
+                logger.info("No codeSource for class " + cls.getName() + " when getVersion, use default version "
+                        + defaultVersion);
                 return defaultVersion;
             }
 
             URL location = codeSource.getLocation();
             if (location == null) {
-                logger.info("No location for class " + cls.getName() + " when getVersion, use default version " + defaultVersion);
+                logger.info("No location for class " + cls.getName() + " when getVersion, use default version "
+                        + defaultVersion);
                 return defaultVersion;
             }
             String file = location.getFile();
@@ -241,7 +253,12 @@ public final class Version {
             return StringUtils.isEmpty(version) ? defaultVersion : version;
         } catch (Throwable e) {
             // return default version when any exception is thrown
-            logger.error(COMMON_UNEXPECTED_EXCEPTION, "", "", "return default version, ignore exception " + e.getMessage(), e);
+            logger.error(
+                    COMMON_UNEXPECTED_EXCEPTION,
+                    "",
+                    "",
+                    "return default version, ignore exception " + e.getMessage(),
+                    e);
             return defaultVersion;
         }
     }
@@ -294,10 +311,12 @@ public final class Version {
     }
 
     private static void checkArtifact(String artifactId) throws IOException {
-        Enumeration<URL> artifactEnumeration = Version.class.getClassLoader().getResources("META-INF/versions/" + artifactId);
+        Enumeration<URL> artifactEnumeration =
+                Version.class.getClassLoader().getResources("META-INF/versions/" + artifactId);
         while (artifactEnumeration.hasMoreElements()) {
             URL url = artifactEnumeration.nextElement();
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
+            try (BufferedReader reader =
+                    new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     if (line.startsWith("#")) {
@@ -316,23 +335,25 @@ public final class Version {
 
     private static void checkVersion(String artifactId, URL url, String key, String value) {
         if ("revision".equals(key) && !value.equals(VERSION)) {
-            String error = "Inconsistent version " + value + " found in " + artifactId + " from " + url.getPath() + ", " +
-                "expected dubbo-common version is " + VERSION;
+            String error = "Inconsistent version " + value + " found in " + artifactId + " from " + url.getPath() + ", "
+                    + "expected dubbo-common version is " + VERSION;
             logger.error(COMMON_UNEXPECTED_EXCEPTION, "", "", error);
         }
         if ("git.commit.id".equals(key) && !value.equals(LATEST_COMMIT_ID)) {
-            String error = "Inconsistent git build commit id " + value + " found in " + artifactId + " from " + url.getPath() + ", " +
-                "expected dubbo-common version is " + LATEST_COMMIT_ID;
+            String error = "Inconsistent git build commit id " + value + " found in " + artifactId + " from "
+                    + url.getPath() + ", " + "expected dubbo-common version is " + LATEST_COMMIT_ID;
             logger.error(COMMON_UNEXPECTED_EXCEPTION, "", "", error);
         }
     }
 
     private static Set<String> loadArtifactIds() throws IOException {
-        Enumeration<URL> artifactsEnumeration = Version.class.getClassLoader().getResources("META-INF/versions/.artifacts");
+        Enumeration<URL> artifactsEnumeration =
+                Version.class.getClassLoader().getResources("META-INF/versions/.artifacts");
         Set<String> artifactIds = new HashSet<>();
         while (artifactsEnumeration.hasMoreElements()) {
             URL url = artifactsEnumeration.nextElement();
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
+            try (BufferedReader reader =
+                    new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     if (line.startsWith("#")) {
@@ -347,5 +368,4 @@ public final class Version {
         }
         return artifactIds;
     }
-
 }

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.support;
 
 public class LocalException extends RuntimeException {
@@ -22,5 +21,4 @@ public class LocalException extends RuntimeException {
     public LocalException(String message) {
         super(message);
     }
-
 }

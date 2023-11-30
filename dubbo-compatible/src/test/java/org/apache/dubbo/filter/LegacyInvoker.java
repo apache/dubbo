@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.filter;
 
-
 import org.apache.dubbo.service.DemoService;
 
 import com.alibaba.dubbo.common.URL;
@@ -68,7 +67,5 @@ public class LegacyInvoker<T> implements Invoker<T> {
     }
 
     @Override
-    public void destroy() {
-    }
-
+    public void destroy() {}
 }

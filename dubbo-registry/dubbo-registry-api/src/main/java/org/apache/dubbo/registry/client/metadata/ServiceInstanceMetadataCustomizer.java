@@ -59,7 +59,8 @@ public class ServiceInstanceMetadataCustomizer implements ServiceInstanceCustomi
         // try to load instance params that do not appear in service urls
         // TODO, duplicate snippet in ApplicationConfig
         Map<String, String> extraParameters = Collections.emptyMap();
-        Set<InfraAdapter> adapters = applicationModel.getExtensionLoader(InfraAdapter.class).getSupportedExtensionInstances();
+        Set<InfraAdapter> adapters =
+                applicationModel.getExtensionLoader(InfraAdapter.class).getSupportedExtensionInstances();
         if (CollectionUtils.isNotEmpty(adapters)) {
             Map<String, String> inputParameters = new HashMap<>();
             inputParameters.put(APPLICATION_KEY, applicationModel.getApplicationName());

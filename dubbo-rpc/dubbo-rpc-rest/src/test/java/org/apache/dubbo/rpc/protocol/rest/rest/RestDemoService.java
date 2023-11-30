@@ -20,16 +20,15 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-
 @Path("/demoService")
 public interface RestDemoService {
     @GET
     @Path("/hello")
-    Integer hello(@QueryParam("a")Integer a,@QueryParam("b") Integer b);
+    Integer hello(@QueryParam("a") Integer a, @QueryParam("b") Integer b);
 
     @GET
     @Path("/findUserById")
-    Response findUserById(@QueryParam("id")Integer id);
+    Response findUserById(@QueryParam("id") Integer id);
 
     @GET
     @Path("/error")

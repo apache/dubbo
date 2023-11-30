@@ -18,12 +18,12 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.annotation.DirtiesContext;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * {@link DubboAnnotationUtils#convertParameters} Test
@@ -45,22 +45,21 @@ class ParameterConvertTest {
          */
         Map<String, String> parametersMap = new HashMap<>();
         parametersMap.put("a", "b");
-        Assertions.assertEquals(parametersMap, DubboAnnotationUtils.convertParameters(new String[]{"a", "b"}));
-        Assertions.assertEquals(parametersMap, DubboAnnotationUtils.convertParameters(new String[]{" a ", " b "}));
-        Assertions.assertEquals(parametersMap, DubboAnnotationUtils.convertParameters(new String[]{"a=b"}));
-        Assertions.assertEquals(parametersMap, DubboAnnotationUtils.convertParameters(new String[]{"a:b"}));
+        Assertions.assertEquals(parametersMap, DubboAnnotationUtils.convertParameters(new String[] {"a", "b"}));
+        Assertions.assertEquals(parametersMap, DubboAnnotationUtils.convertParameters(new String[] {" a ", " b "}));
+        Assertions.assertEquals(parametersMap, DubboAnnotationUtils.convertParameters(new String[] {"a=b"}));
+        Assertions.assertEquals(parametersMap, DubboAnnotationUtils.convertParameters(new String[] {"a:b"}));
 
         parametersMap.put("c", "d");
-        Assertions.assertEquals(parametersMap, DubboAnnotationUtils.convertParameters(new String[]{"a=b", "c", "d"}));
-        Assertions.assertEquals(parametersMap, DubboAnnotationUtils.convertParameters(new String[]{"a:b", "c=d"}));
+        Assertions.assertEquals(parametersMap, DubboAnnotationUtils.convertParameters(new String[] {"a=b", "c", "d"}));
+        Assertions.assertEquals(parametersMap, DubboAnnotationUtils.convertParameters(new String[] {"a:b", "c=d"}));
 
         parametersMap.clear();
         parametersMap.put("a", "a:b");
-        Assertions.assertEquals(parametersMap, DubboAnnotationUtils.convertParameters(new String[]{"a", "a:b"}));
+        Assertions.assertEquals(parametersMap, DubboAnnotationUtils.convertParameters(new String[] {"a", "a:b"}));
 
         parametersMap.clear();
         parametersMap.put("a", "0,100");
-        Assertions.assertEquals(parametersMap, DubboAnnotationUtils.convertParameters(new String[]{"a", "0,100"}));
-
+        Assertions.assertEquals(parametersMap, DubboAnnotationUtils.convertParameters(new String[] {"a", "0,100"}));
     }
 }

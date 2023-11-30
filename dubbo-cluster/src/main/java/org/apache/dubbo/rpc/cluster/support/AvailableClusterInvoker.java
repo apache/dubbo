@@ -36,7 +36,8 @@ public class AvailableClusterInvoker<T> extends AbstractClusterInvoker<T> {
     }
 
     @Override
-    public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
+    public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance)
+            throws RpcException {
         for (Invoker<T> invoker : invokers) {
             if (invoker.isAvailable()) {
                 return invokeWithContext(invoker, invocation);
@@ -44,5 +45,4 @@ public class AvailableClusterInvoker<T> extends AbstractClusterInvoker<T> {
         }
         throw new RpcException("No provider available in " + invokers);
     }
-
 }

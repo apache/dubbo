@@ -49,8 +49,7 @@ public class NativeConfigurationWriter {
             try (FileWriter out = new FileWriter(file)) {
                 writer.accept(createJsonWriter(out));
             }
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             throw new IllegalStateException("Failed to write native configuration for " + fileName, ex);
         }
     }
@@ -66,20 +65,15 @@ public class NativeConfigurationWriter {
         return file;
     }
 
-
     public void writeReflectionConfig(ReflectConfigMetadataRepository repository) {
-        writeTo("reflect-config.json", writer ->
-            ReflectionConfigWriter.INSTANCE.write(writer, repository));
+        writeTo("reflect-config.json", writer -> ReflectionConfigWriter.INSTANCE.write(writer, repository));
     }
 
     public void writeResourceConfig(ResourceConfigMetadataRepository repository) {
-        writeTo("resource-config.json", writer ->
-            ResourceConfigWriter.INSTANCE.write(writer, repository));
+        writeTo("resource-config.json", writer -> ResourceConfigWriter.INSTANCE.write(writer, repository));
     }
 
     private BasicJsonWriter createJsonWriter(Writer out) {
         return new BasicJsonWriter(out);
     }
-
-
 }

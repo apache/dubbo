@@ -35,27 +35,41 @@ public class ReflectConfigMetadataRepository {
     }
 
     public ReflectConfigMetadataRepository registerSpiExtensionType(List<Class<?>> classes) {
-        types.addAll(classes.stream().filter(Objects::nonNull).map(this::buildTypeDescriberWithConstructor).collect(Collectors.toList()));
+        types.addAll(classes.stream()
+                .filter(Objects::nonNull)
+                .map(this::buildTypeDescriberWithConstructor)
+                .collect(Collectors.toList()));
         return this;
     }
 
     public ReflectConfigMetadataRepository registerAdaptiveType(List<Class<?>> classes) {
-        types.addAll(classes.stream().filter(Objects::nonNull).map(this::buildTypeDescriberWithConstructor).collect(Collectors.toList()));
+        types.addAll(classes.stream()
+                .filter(Objects::nonNull)
+                .map(this::buildTypeDescriberWithConstructor)
+                .collect(Collectors.toList()));
         return this;
     }
 
     public ReflectConfigMetadataRepository registerBeanType(List<Class<?>> classes) {
-        types.addAll(classes.stream().filter(Objects::nonNull).map(this::buildTypeDescriberWithConstructor).collect(Collectors.toList()));
+        types.addAll(classes.stream()
+                .filter(Objects::nonNull)
+                .map(this::buildTypeDescriberWithConstructor)
+                .collect(Collectors.toList()));
         return this;
     }
 
     public ReflectConfigMetadataRepository registerConfigType(List<Class<?>> classes) {
-        types.addAll(classes.stream().filter(Objects::nonNull).map(this::buildTypeDescriberWithConstructor).collect(Collectors.toList()));
+        types.addAll(classes.stream()
+                .filter(Objects::nonNull)
+                .map(this::buildTypeDescriberWithConstructor)
+                .collect(Collectors.toList()));
         return this;
     }
 
     private TypeDescriber buildTypeDescriberWithConstructor(Class<?> c) {
-        Set<ExecutableDescriber> constructors = Arrays.stream(c.getConstructors()).map((constructor) -> new ExecutableDescriber(constructor, INVOKE)).collect(Collectors.toSet());
+        Set<ExecutableDescriber> constructors = Arrays.stream(c.getConstructors())
+                .map((constructor) -> new ExecutableDescriber(constructor, INVOKE))
+                .collect(Collectors.toSet());
         Set<MemberCategory> memberCategories = new HashSet<>();
         memberCategories.add(MemberCategory.INVOKE_PUBLIC_METHODS);
         return new TypeDescriber(c.getName(), null, new HashSet<>(), constructors, new HashSet<>(), memberCategories);

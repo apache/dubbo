@@ -44,6 +44,6 @@ public class ExcludedParamsFilter implements MetadataParamsFilter {
 
     @Override
     public String[] instanceParamsExcluded() {
-        return new String[]{SIDE_KEY};
+        return new String[] {SIDE_KEY};
     }
 }

@@ -57,7 +57,8 @@ public class MetadataReportInstance implements Disposable {
     private AtomicBoolean init = new AtomicBoolean(false);
     private String metadataType;
 
-    // mapping of registry id to metadata report instance, registry instances will use this mapping to find related metadata reports
+    // mapping of registry id to metadata report instance, registry instances will use this mapping to find related
+    // metadata reports
     private final Map<String, MetadataReport> metadataReports = new HashMap<>();
     private final ApplicationModel applicationModel;
     private final NopMetadataReport nopMetadataReport;
@@ -72,12 +73,16 @@ public class MetadataReportInstance implements Disposable {
             return;
         }
 
-        this.metadataType = applicationModel.getApplicationConfigManager().getApplicationOrElseThrow().getMetadataType();
+        this.metadataType = applicationModel
+                .getApplicationConfigManager()
+                .getApplicationOrElseThrow()
+                .getMetadataType();
         if (metadataType == null) {
             this.metadataType = DEFAULT_METADATA_STORAGE_TYPE;
         }
 
-        MetadataReportFactory metadataReportFactory = applicationModel.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
+        MetadataReportFactory metadataReportFactory =
+                applicationModel.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
         for (MetadataReportConfig metadataReportConfig : metadataReportConfigs) {
             init(metadataReportConfig, metadataReportFactory);
         }
@@ -94,10 +99,14 @@ public class MetadataReportInstance implements Disposable {
                     .removeParameter(METADATA_REPORT_KEY)
                     .build();
         }
-        url = url.addParameterIfAbsent(APPLICATION_KEY, applicationModel.getCurrentConfig().getName());
-        url = url.addParameterIfAbsent(REGISTRY_LOCAL_FILE_CACHE_ENABLED, String.valueOf(applicationModel.getCurrentConfig().getEnableFileCache()));
-//        RegistryConfig registryConfig = applicationModel.getConfigManager().getRegistry(relatedRegistryId)
-//                .orElseThrow(() -> new IllegalStateException("Registry id " + relatedRegistryId + " does not exist."));
+        url = url.addParameterIfAbsent(
+                APPLICATION_KEY, applicationModel.getCurrentConfig().getName());
+        url = url.addParameterIfAbsent(
+                REGISTRY_LOCAL_FILE_CACHE_ENABLED,
+                String.valueOf(applicationModel.getCurrentConfig().getEnableFileCache()));
+        //        RegistryConfig registryConfig = applicationModel.getConfigManager().getRegistry(relatedRegistryId)
+        //                .orElseThrow(() -> new IllegalStateException("Registry id " + relatedRegistryId + " does not
+        // exist."));
         MetadataReport metadataReport = metadataReportFactory.getMetadataReport(url);
         if (metadataReport != null) {
             metadataReports.put(getRelatedRegistryId(config, url), metadataReport);

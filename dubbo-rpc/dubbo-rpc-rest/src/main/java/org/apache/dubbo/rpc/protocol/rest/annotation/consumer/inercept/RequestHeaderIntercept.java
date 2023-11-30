@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept;
 
-
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.remoting.http.RequestTemplate;
@@ -29,9 +28,9 @@ import java.util.Collection;
 import java.util.Set;
 
 /**
- *  resolve method args from header
+ * resolve method args from header
  */
-@Activate(value = RestConstant.REQUEST_HEADER_INTERCEPT, order = 2)
+@Activate(value = RestConstant.REQUEST_HEADER_INTERCEPT, order = Integer.MAX_VALUE - 1)
 public class RequestHeaderIntercept implements HttpConnectionPreBuildIntercept {
 
     @Override
@@ -39,7 +38,6 @@ public class RequestHeaderIntercept implements HttpConnectionPreBuildIntercept {
 
         RestMethodMetadata restMethodMetadata = connectionCreateContext.getRestMethodMetadata();
         RequestTemplate requestTemplate = connectionCreateContext.getRequestTemplate();
-
 
         Set<String> consumes = restMethodMetadata.getRequest().getConsumes();
 
@@ -49,16 +47,13 @@ public class RequestHeaderIntercept implements HttpConnectionPreBuildIntercept {
         if (produces == null || produces.isEmpty()) {
             requestTemplate.addHeader(RestHeaderEnum.ACCEPT.getHeader(), RestConstant.DEFAULT_ACCEPT);
         } else {
-            requestTemplate.addHeader(RestHeaderEnum.ACCEPT.getHeader(), produces);
+            requestTemplate.addHeaders(RestHeaderEnum.ACCEPT.getHeader(), produces);
         }
 
-//        URL url = connectionCreateContext.getUrl();
+        //        URL url = connectionCreateContext.getUrl();
 
-
-//        requestTemplate.addKeepAliveHeader(url.getParameter(RestConstant.KEEP_ALIVE_TIMEOUT_PARAM,RestConstant.KEEP_ALIVE_TIMEOUT));
-
+        //
+        // requestTemplate.addKeepAliveHeader(url.getParameter(RestConstant.KEEP_ALIVE_TIMEOUT_PARAM,RestConstant.KEEP_ALIVE_TIMEOUT));
 
     }
-
-
 }

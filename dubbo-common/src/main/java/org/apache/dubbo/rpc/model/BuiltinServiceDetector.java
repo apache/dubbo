@@ -23,5 +23,4 @@ import org.apache.dubbo.common.extension.SPI;
 public interface BuiltinServiceDetector {
 
     Class<?> getService();
-
 }

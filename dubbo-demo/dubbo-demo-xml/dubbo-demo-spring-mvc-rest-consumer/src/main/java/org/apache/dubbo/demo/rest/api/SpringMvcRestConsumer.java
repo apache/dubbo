@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.demo.rest.api;
 
+import java.util.Arrays;
+
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import po.User;
-
-import java.util.Arrays;
 
 public class SpringMvcRestConsumer {
 
@@ -30,7 +30,8 @@ public class SpringMvcRestConsumer {
     }
 
     public static void consumerService() {
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"spring/rest-consumer.xml"});
+        ClassPathXmlApplicationContext context =
+                new ClassPathXmlApplicationContext(new String[] {"spring/rest-consumer.xml"});
         context.start();
         System.out.println("spring mvc rest consumer start");
         springMvcRestDemoServiceTest(context);
@@ -38,7 +39,8 @@ public class SpringMvcRestConsumer {
     }
 
     private static void springMvcRestDemoServiceTest(ClassPathXmlApplicationContext context) {
-        SpringRestDemoService springRestDemoService = context.getBean("springRestDemoService", SpringRestDemoService.class);
+        SpringRestDemoService springRestDemoService =
+                context.getBean("springRestDemoService", SpringRestDemoService.class);
         String hello = springRestDemoService.sayHello("hello");
         assertEquals("Hello, hello", hello);
         Integer result = springRestDemoService.primitiveInt(1, 2);
@@ -60,7 +62,6 @@ public class SpringMvcRestConsumer {
         assertEquals(User.getInstance(), springRestDemoService.testJavaBeanBody(User.getInstance()));
     }
 
-
     private static void assertEquals(Object returnStr, Object exception) {
         boolean equal = returnStr != null && returnStr.equals(exception);
 
@@ -70,5 +71,4 @@ public class SpringMvcRestConsumer {
             throw new RuntimeException();
         }
     }
-
 }

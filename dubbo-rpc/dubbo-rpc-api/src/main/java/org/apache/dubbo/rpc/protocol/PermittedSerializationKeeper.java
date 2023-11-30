@@ -38,7 +38,8 @@ public class PermittedSerializationKeeper {
     private final Set<Byte> globalPermittedSerializationIds = new ConcurrentHashSet<>();
 
     public void registerService(URL url) {
-        Set<Byte> set = ConcurrentHashMapUtils.computeIfAbsent(serviceToSerializationId, keyWithoutGroup(url.getServiceKey()), k -> new ConcurrentHashSet<>());
+        Set<Byte> set = ConcurrentHashMapUtils.computeIfAbsent(
+                serviceToSerializationId, keyWithoutGroup(url.getServiceKey()), k -> new ConcurrentHashSet<>());
         Collection<String> serializations = UrlUtils.allSerializations(url);
         for (String serialization : serializations) {
             Byte id = CodecSupport.getIDByName(serialization);

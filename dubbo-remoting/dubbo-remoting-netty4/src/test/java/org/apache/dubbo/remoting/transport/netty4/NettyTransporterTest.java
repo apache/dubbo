@@ -27,12 +27,12 @@ import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.transport.ChannelHandlerAdapter;
-
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
-import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CountDownLatch;
+
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
 import static org.hamcrest.CoreMatchers.is;
@@ -42,8 +42,8 @@ class NettyTransporterTest {
     @Test
     void shouldAbleToBindNetty4() throws Exception {
         int port = NetUtils.getAvailablePort();
-        URL url = new ServiceConfigURL("telnet", "localhost", port,
-                new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});
+        URL url = new ServiceConfigURL(
+                "telnet", "localhost", port, new String[] {Constants.BIND_PORT_KEY, String.valueOf(port)});
 
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
@@ -66,8 +66,8 @@ class NettyTransporterTest {
         final CountDownLatch lock = new CountDownLatch(1);
 
         int port = NetUtils.getAvailablePort();
-        URL url = new ServiceConfigURL("telnet", "localhost", port,
-                new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});
+        URL url = new ServiceConfigURL(
+                "telnet", "localhost", port, new String[] {Constants.BIND_PORT_KEY, String.valueOf(port)});
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
         applicationConfig.setExecutorManagementMode(EXECUTOR_MANAGEMENT_MODE_DEFAULT);

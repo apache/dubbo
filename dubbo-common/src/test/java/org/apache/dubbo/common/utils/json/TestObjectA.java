@@ -21,8 +21,7 @@ public class TestObjectA {
     private int age;
     private TestEnum testEnum;
 
-    public TestObjectA() {
-    }
+    public TestObjectA() {}
 
     public TestObjectA(String name, int age, TestEnum testEnum) {
         this.name = name;

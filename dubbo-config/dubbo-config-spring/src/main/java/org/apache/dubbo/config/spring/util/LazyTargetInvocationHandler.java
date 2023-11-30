@@ -47,11 +47,7 @@ public class LazyTargetInvocationHandler implements InvocationHandler {
         }
 
         if (target == null) {
-            synchronized (this) {
-                if (target == null) {
-                    target = lazyTargetSource.getTarget();
-                }
-            }
+            target = lazyTargetSource.getTarget();
         }
         if (method.getDeclaringClass().isInstance(target)) {
             try {
@@ -63,7 +59,7 @@ public class LazyTargetInvocationHandler implements InvocationHandler {
                 }
             }
         }
-        throw new IllegalStateException("The proxied interface [" + method.getDeclaringClass() +
-            "] contains a method [" + method + "] that is not implemented by the proxy class [" + target.getClass() + "]");
+        throw new IllegalStateException("The proxied interface [" + method.getDeclaringClass() + "] contains a method ["
+                + method + "] that is not implemented by the proxy class [" + target.getClass() + "]");
     }
 }

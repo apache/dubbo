@@ -85,5 +85,4 @@ public interface Endpoint {
      * @return closed
      */
     boolean isClosed();
-
 }

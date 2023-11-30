@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata.rest;
 
+import org.apache.dubbo.metadata.rest.jaxrs.JAXRSServiceRestMetadataResolver;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 
 import java.lang.reflect.Parameter;
@@ -39,8 +40,16 @@ public abstract class AbstractNoAnnotatedParameterProcessor implements NoAnnotat
     private boolean contentTypeSupport(RestMethodMetadata restMethodMetadata, MediaType mediaType, Class paramType) {
 
         // @RequestParam String,number param
-        if (mediaType.equals(MediaType.ALL_VALUE) && (String.class == paramType || paramType.isPrimitive() || Number.class.isAssignableFrom(paramType))) {
-            return true;
+        if (mediaType.equals(MediaType.ALL_VALUE)) {
+            // jaxrs no annotation param is from http body
+            if (JAXRSServiceRestMetadataResolver.class.equals(restMethodMetadata.getCodeStyle())) {
+                return true;
+            }
+
+            // spring mvc no annotation param only is used by text data(string,number)
+            if (String.class == paramType || paramType.isPrimitive() || Number.class.isAssignableFrom(paramType)) {
+                return true;
+            }
         }
 
         Set<String> consumes = restMethodMetadata.getRequest().getConsumes();
@@ -58,12 +67,12 @@ public abstract class AbstractNoAnnotatedParameterProcessor implements NoAnnotat
         return false;
     }
 
-
-    protected void addArgInfo(Parameter parameter, int parameterIndex,
-                              RestMethodMetadata restMethodMetadata, boolean isFormBody) {
+    protected void addArgInfo(
+            Parameter parameter, int parameterIndex, RestMethodMetadata restMethodMetadata, boolean isFormBody) {
         ArgInfo argInfo = ArgInfo.build(parameterIndex, parameter)
-            .setParamAnnotationType(resolveClass(defaultAnnotationClassName(restMethodMetadata), getClassLoader()))
-            .setAnnotationNameAttribute(parameter.getName()).setFormContentType(isFormBody);
+                .setParamAnnotationType(resolveClass(defaultAnnotationClassName(restMethodMetadata), getClassLoader()))
+                .setAnnotationNameAttribute(parameter.getName())
+                .setFormContentType(isFormBody);
         restMethodMetadata.addArgInfo(argInfo);
     }
 }

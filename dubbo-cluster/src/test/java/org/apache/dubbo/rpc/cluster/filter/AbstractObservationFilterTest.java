@@ -33,7 +33,7 @@ import static org.mockito.Mockito.mock;
 abstract class AbstractObservationFilterTest extends SampleTestRunner {
 
     ApplicationModel applicationModel;
-    RpcInvocation    invocation;
+    RpcInvocation invocation;
 
     BaseFilter filter;
 
@@ -80,5 +80,4 @@ abstract class AbstractObservationFilterTest extends SampleTestRunner {
         invocation.setMethodName(METHOD_NAME);
         invocation.setParameterTypes(new Class[] {String.class});
     }
-
 }

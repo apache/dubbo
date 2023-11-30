@@ -32,19 +32,13 @@ public class NopServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     @Override
-    public void doRegister(ServiceInstance serviceInstance) throws RuntimeException {
-
-    }
+    public void doRegister(ServiceInstance serviceInstance) throws RuntimeException {}
 
     @Override
-    public void doUnregister(ServiceInstance serviceInstance) {
-
-    }
+    public void doUnregister(ServiceInstance serviceInstance) {}
 
     @Override
-    public void doDestroy() throws Exception {
-
-    }
+    public void doDestroy() throws Exception {}
 
     @Override
     public Set<String> getServices() {
@@ -54,5 +48,11 @@ public class NopServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
         return null;
+    }
+
+    @Override
+    public boolean isAvailable() {
+        // NopServiceDiscovery is designed for compatibility, check availability is meaningless, just return true
+        return true;
     }
 }

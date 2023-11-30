@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.rest.message.codec;
 
 import org.apache.dubbo.common.URL;
@@ -26,15 +25,18 @@ import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
 
 import java.io.OutputStream;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 
-@Activate(onClass="javax.ws.rs.core.Response")
+@Activate(onClass = "javax.ws.rs.core.Response")
 public class ResteasyResponseCodec implements HttpMessageCodec<byte[], OutputStream> {
 
     private Class<?> responseClass;
-    public ResteasyResponseCodec(){
+
+    public ResteasyResponseCodec() {
         try {
             responseClass = ClassUtils.forName("javax.ws.rs.core.Response");
+            JsonCodec.addUnSupportClass(responseClass);
         } catch (Exception exception) {
             responseClass = null;
         }
@@ -56,7 +58,7 @@ public class ResteasyResponseCodec implements HttpMessageCodec<byte[], OutputStr
     }
 
     @Override
-    public Object decode(byte[] body, Class<?> targetType) throws Exception {
+    public Object decode(byte[] body, Class<?> targetType, Type type) throws Exception {
         if (null == body || body.length == 0) {
             return null;
         }

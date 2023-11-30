@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.filter.support;
-
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
-import org.apache.dubbo.metrics.event.RequestBeforeEvent;
+import org.apache.dubbo.metrics.event.RequestEvent;
+import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -32,17 +32,24 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 
 @Activate(group = CONSUMER, onClass = "org.apache.dubbo.metrics.collector.DefaultMetricsCollector")
 public class MetricsClusterFilter implements ClusterFilter, BaseFilter.Listener, ScopeModelAware {
 
     private ApplicationModel applicationModel;
     private DefaultMetricsCollector collector;
+    private String appName;
+    private MetricsDispatcher metricsDispatcher;
+    private boolean serviceLevel;
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
         this.collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
+        this.appName = applicationModel.tryGetApplicationName();
+        this.metricsDispatcher = applicationModel.getBeanFactory().getBean(MetricsDispatcher.class);
+        this.serviceLevel = MethodMetric.isServiceLevel(applicationModel);
     }
 
     @Override
@@ -67,9 +74,15 @@ public class MetricsClusterFilter implements ClusterFilter, BaseFilter.Listener,
         if (t instanceof RpcException) {
             RpcException e = (RpcException) t;
             if (e.isForbidden()) {
-                MetricsEventBus.publish(RequestBeforeEvent.toEvent(applicationModel, invocation));
+                MetricsEventBus.publish(RequestEvent.toRequestErrorEvent(
+                        applicationModel,
+                        appName,
+                        metricsDispatcher,
+                        invocation,
+                        CONSUMER_SIDE,
+                        e.getCode(),
+                        serviceLevel));
             }
         }
     }
-
 }

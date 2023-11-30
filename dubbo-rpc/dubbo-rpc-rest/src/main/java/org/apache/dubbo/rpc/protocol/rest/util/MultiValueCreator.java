@@ -16,21 +16,19 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.util;
 
-
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.util.Map;
 
-
 public class MultiValueCreator {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MultiValueCreator.class);
 
-    private final static String SPRING_MultiValueMapImpl = "org.springframework.util.LinkedMultiValueMap";
-    private final static String SPRING_MultiValueMap = "org.springframework.util.MultiValueMap";
-    private final static String JAVAX_MultiValueMapImpl = "org.jboss.resteasy.specimpl.MultivaluedMapImpl";
-    private final static String JAVAX_MultiValueMap = "javax.ws.rs.core.MultivaluedMap";
+    private static final String SPRING_MultiValueMapImpl = "org.springframework.util.LinkedMultiValueMap";
+    private static final String SPRING_MultiValueMap = "org.springframework.util.MultiValueMap";
+    private static final String JAVAX_MultiValueMapImpl = "org.jboss.resteasy.specimpl.MultivaluedMapImpl";
+    private static final String JAVAX_MultiValueMap = "javax.ws.rs.core.MultivaluedMap";
 
     private static Class springMultiValueMapImplClass = null;
     private static Class springMultiValueMapClass = null;
@@ -49,9 +47,7 @@ public class MultiValueCreator {
         jaxrsMultiValueMapClass = ReflectUtils.findClassTryException(JAVAX_MultiValueMap);
         jaxrsMultiValueMapImplClass = ReflectUtils.findClassTryException(JAVAX_MultiValueMapImpl);
         jaxrsMultiValueMapAdd = ReflectUtils.getMethodByName(jaxrsMultiValueMapImplClass, "add");
-
     }
-
 
     public static Object providerCreateMultiValueMap(Class<?> targetType) {
         try {
@@ -61,13 +57,17 @@ public class MultiValueCreator {
                 return jaxrsMultiValueMapImplClass.getDeclaredConstructor().newInstance();
             }
         } catch (Exception e) {
-            logger.error("", e.getMessage(), "current param type is: " + targetType + "and support type is : " + springMultiValueMapClass + "or" + jaxrsMultiValueMapClass,
-                "dubbo rest form content-type param construct error,un support  param type: ", e);
+            logger.error(
+                    "",
+                    e.getMessage(),
+                    "current param type is: " + targetType + "and support type is : " + springMultiValueMapClass + "or"
+                            + jaxrsMultiValueMapClass,
+                    "dubbo rest form content-type param construct error,un support  param type: ",
+                    e);
         }
 
         return null;
     }
-
 
     private static boolean typeJudge(Class<?> parent, Class<?> targetType) {
         if (parent == null) {
@@ -94,11 +94,9 @@ public class MultiValueCreator {
                 multiValueMapAdd = jaxrsMultiValueMapAdd;
             }
 
-            ReflectUtils.invokeAndTryCatch(multiValueMap, multiValueMapAdd, new Object[]{key, value});
+            ReflectUtils.invokeAndTryCatch(multiValueMap, multiValueMapAdd, new Object[] {key, value});
         } catch (Exception e) {
             logger.error("", e.getMessage(), "", "dubbo rest form content-type param add data  error: ", e);
         }
     }
-
-
 }

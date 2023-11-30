@@ -19,6 +19,8 @@ package org.apache.dubbo.spring.boot.actuate.endpoint;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.spring.boot.util.DubboUtils;
 
+import java.util.Map;
+
 import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,8 +30,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-import java.util.Map;
 
 import static org.apache.dubbo.common.Version.getVersion;
 
@@ -41,16 +41,10 @@ import static org.apache.dubbo.common.Version.getVersion;
  */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(
-        classes = {
-                DubboMetadataEndpoint.class
-        },
-        properties = {
-                "dubbo.application.name = dubbo-demo-application"
-        }
-)
+        classes = {DubboMetadataEndpoint.class},
+        properties = {"dubbo.application.name = dubbo-demo-application"})
 @EnableAutoConfiguration
 class DubboEndpointTest {
-
 
     @Autowired
     private DubboMetadataEndpoint dubboEndpoint;
@@ -86,8 +80,5 @@ class DubboEndpointTest {
         Assert.assertEquals("https://github.com/apache/dubbo-spring-boot-project", urls.get("github"));
         Assert.assertEquals("https://github.com/apache/dubbo-spring-boot-project/issues", urls.get("issues"));
         Assert.assertEquals("https://github.com/apache/dubbo-spring-boot-project.git", urls.get("git"));
-
     }
-
-
 }

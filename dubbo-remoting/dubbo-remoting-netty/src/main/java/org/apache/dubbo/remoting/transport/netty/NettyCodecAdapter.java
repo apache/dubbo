@@ -20,6 +20,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.Codec2;
 import org.apache.dubbo.remoting.buffer.DynamicChannelBuffer;
 
+import java.io.IOException;
+
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
@@ -31,8 +33,6 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
-
-import java.io.IOException;
 
 import static org.apache.dubbo.remoting.Constants.BUFFER_KEY;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_BUFFER_SIZE;
@@ -121,8 +121,7 @@ final class NettyCodecAdapter {
                     message.writeBytes(input.toByteBuffer());
                 }
             } else {
-                message = org.apache.dubbo.remoting.buffer.ChannelBuffers.wrappedBuffer(
-                        input.toByteBuffer());
+                message = org.apache.dubbo.remoting.buffer.ChannelBuffers.wrappedBuffer(input.toByteBuffer());
             }
 
             NettyChannel channel = NettyChannel.getOrAddChannel(ctx.getChannel(), url, handler);

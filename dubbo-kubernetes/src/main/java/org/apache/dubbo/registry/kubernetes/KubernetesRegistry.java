@@ -37,22 +37,14 @@ public class KubernetesRegistry extends FailbackRegistry {
     }
 
     @Override
-    public void doRegister(URL url) {
-
-    }
+    public void doRegister(URL url) {}
 
     @Override
-    public void doUnregister(URL url) {
-
-    }
+    public void doUnregister(URL url) {}
 
     @Override
-    public void doSubscribe(URL url, NotifyListener listener) {
-
-    }
+    public void doSubscribe(URL url, NotifyListener listener) {}
 
     @Override
-    public void doUnsubscribe(URL url, NotifyListener listener) {
-
-    }
+    public void doUnsubscribe(URL url, NotifyListener listener) {}
 }

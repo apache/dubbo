@@ -34,5 +34,4 @@ public class ClusterWeight {
     public int getWeight() {
         return weight;
     }
-
 }

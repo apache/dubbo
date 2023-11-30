@@ -28,5 +28,4 @@ public class CacheServiceImpl implements CacheService {
     public String findCache(String id) {
         return "request: " + id + ", response: " + i.getAndIncrement();
     }
-
 }

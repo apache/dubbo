@@ -18,9 +18,9 @@ package org.apache.dubbo.common.logger;
 
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import org.junit.jupiter.api.Test;
-
 import java.io.File;
+
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -71,8 +71,10 @@ class LoggerFactoryTest {
 
     @Test
     void shouldReturnSameErrorTypeAwareLogger() {
-        ErrorTypeAwareLogger logger1 = LoggerFactory.getErrorTypeAwareLogger(this.getClass().getName());
-        ErrorTypeAwareLogger logger2 = LoggerFactory.getErrorTypeAwareLogger(this.getClass().getName());
+        ErrorTypeAwareLogger logger1 =
+                LoggerFactory.getErrorTypeAwareLogger(this.getClass().getName());
+        ErrorTypeAwareLogger logger2 =
+                LoggerFactory.getErrorTypeAwareLogger(this.getClass().getName());
 
         assertThat(logger1, is(logger2));
     }

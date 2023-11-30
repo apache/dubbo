@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.collector;
 
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
@@ -25,13 +24,14 @@ import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import java.util.List;
+import java.util.Map;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-import java.util.Map;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
 import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
@@ -83,11 +83,11 @@ class ConfigCenterMetricsCollectorTest {
 
         ConfigChangedEvent event = new ConfigChangedEvent("key", "group", null, ConfigChangeType.ADDED);
 
-        collector.increase(event.getKey(), event.getGroup(),
-            "apollo", ConfigChangeType.ADDED.name(), SELF_INCREMENT_SIZE);
+        collector.increase(
+                event.getKey(), event.getGroup(), "apollo", ConfigChangeType.ADDED.name(), SELF_INCREMENT_SIZE);
 
-        collector.increase(event.getKey(), event.getGroup(),
-            "apollo", ConfigChangeType.ADDED.name(), SELF_INCREMENT_SIZE);
+        collector.increase(
+                event.getKey(), event.getGroup(), "apollo", ConfigChangeType.ADDED.name(), SELF_INCREMENT_SIZE);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {

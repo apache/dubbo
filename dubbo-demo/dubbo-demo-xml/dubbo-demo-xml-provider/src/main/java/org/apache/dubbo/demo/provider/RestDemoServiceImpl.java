@@ -16,13 +16,14 @@
  */
 package org.apache.dubbo.demo.provider;
 
-
 import org.apache.dubbo.demo.RestDemoService;
 import org.apache.dubbo.rpc.RpcContext;
-import po.TestPO;
 
 import javax.ws.rs.core.MultivaluedMap;
+
 import java.util.Map;
+
+import po.TestPO;
 
 public class RestDemoServiceImpl implements RestDemoService {
     private static Map<String, Object> context;
@@ -32,7 +33,6 @@ public class RestDemoServiceImpl implements RestDemoService {
         called = true;
         return "Hello, " + name;
     }
-
 
     public boolean isCalled() {
         return called;
@@ -83,11 +83,9 @@ public class RestDemoServiceImpl implements RestDemoService {
         return testPO;
     }
 
-
     public String testForm1(String test) {
         return test;
     }
-
 
     public MultivaluedMap testForm2(MultivaluedMap map) {
         return map;

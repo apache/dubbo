@@ -18,6 +18,7 @@ package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.cache.FileCacheStore;
 import org.apache.dubbo.common.cache.FileCacheStoreFactory;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.Disposable;
@@ -32,7 +33,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_LOAD_MAPPING_CACHE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 
 public abstract class AbstractCacheManager<V> implements Disposable {
     protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
@@ -42,13 +45,23 @@ public abstract class AbstractCacheManager<V> implements Disposable {
     protected FileCacheStore cacheStore;
     protected LRUCache<String, V> cache;
 
-    protected void init(boolean enableFileCache, String filePath, String fileName, int entrySize, long fileSize, int interval, ScheduledExecutorService executorService) {
+    protected void init(
+            boolean enableFileCache,
+            String filePath,
+            String fileName,
+            int entrySize,
+            long fileSize,
+            int interval,
+            ScheduledExecutorService executorService) {
         this.cache = new LRUCache<>(entrySize);
 
         try {
             cacheStore = FileCacheStoreFactory.getInstance(filePath, fileName, enableFileCache);
             Map<String, String> properties = cacheStore.loadCache(entrySize);
-            logger.info("Successfully loaded " + getName() + " cache from file " + fileName + ", entries " + properties.size());
+            if (logger.isDebugEnabled()) {
+                logger.debug("Successfully loaded " + getName() + " cache from file " + fileName + ", entries "
+                        + properties.size());
+            }
             for (Map.Entry<String, String> entry : properties.entrySet()) {
                 String key = entry.getKey();
                 String value = entry.getValue();
@@ -56,12 +69,17 @@ public abstract class AbstractCacheManager<V> implements Disposable {
             }
             // executorService can be empty if FileCacheStore fails
             if (executorService == null) {
-                this.executorService = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-cache-refreshing-scheduler", true));
+                this.executorService = Executors.newSingleThreadScheduledExecutor(
+                        new NamedThreadFactory("Dubbo-cache-refreshing-scheduler", true));
             } else {
                 this.executorService = executorService;
             }
 
-            this.executorService.scheduleWithFixedDelay(new CacheRefreshTask<>(this.cacheStore, this.cache, this, fileSize), 10, interval, TimeUnit.MINUTES);
+            this.executorService.scheduleWithFixedDelay(
+                    new CacheRefreshTask<>(this.cacheStore, this.cache, this, fileSize),
+                    10,
+                    interval,
+                    TimeUnit.MINUTES);
         } catch (Exception e) {
             logger.error(COMMON_FAILED_LOAD_MAPPING_CACHE, "", "", "Load mapping from local cache file error ", e);
         }
@@ -109,6 +127,15 @@ public abstract class AbstractCacheManager<V> implements Disposable {
     public void destroy() {
         if (executorService != null) {
             executorService.shutdownNow();
+            try {
+                if (!executorService.awaitTermination(
+                        ConfigurationUtils.reCalShutdownTime(DEFAULT_SERVER_SHUTDOWN_TIMEOUT), TimeUnit.MILLISECONDS)) {
+                    logger.warn(
+                            COMMON_UNEXPECTED_EXCEPTION, "", "", "Wait global executor service terminated timeout.");
+                }
+            } catch (InterruptedException e) {
+                logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "destroy resources failed: " + e.getMessage(), e);
+            }
         }
         if (cacheStore != null) {
             cacheStore.destroy();
@@ -126,7 +153,11 @@ public abstract class AbstractCacheManager<V> implements Disposable {
         private final AbstractCacheManager<V> cacheManager;
         private final long maxFileSize;
 
-        public CacheRefreshTask(FileCacheStore cacheStore, LRUCache<String, V> cache, AbstractCacheManager<V> cacheManager, long maxFileSize) {
+        public CacheRefreshTask(
+                FileCacheStore cacheStore,
+                LRUCache<String, V> cache,
+                AbstractCacheManager<V> cacheManager,
+                long maxFileSize) {
             this.cacheStore = cacheStore;
             this.cache = cache;
             this.cacheManager = cacheManager;
@@ -146,7 +177,9 @@ public abstract class AbstractCacheManager<V> implements Disposable {
                 cache.releaseLock();
             }
 
-            logger.info("Dumping " + cacheManager.getName() + " caches, latest entries " + properties.size());
+            if (logger.isDebugEnabled()) {
+                logger.debug("Dumping " + cacheManager.getName() + " caches, latest entries " + properties.size());
+            }
             cacheStore.refreshCache(properties, DEFAULT_COMMENT, maxFileSize);
         }
     }

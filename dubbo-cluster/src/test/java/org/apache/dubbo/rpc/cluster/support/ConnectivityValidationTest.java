@@ -28,15 +28,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
-
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -44,6 +36,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.mockito.Mockito.when;
 
@@ -143,7 +143,8 @@ class ConnectivityValidationTest {
 
         Assertions.assertEquals(5, directory.list(invocation).size());
 
-        Assertions.assertNotNull(clusterInvoker.select(loadBalance, invocation, directory.list(invocation), Collections.emptyList()));
+        Assertions.assertNotNull(
+                clusterInvoker.select(loadBalance, invocation, directory.list(invocation), Collections.emptyList()));
 
         when(invoker1.isAvailable()).thenReturn(false);
         when(invoker2.isAvailable()).thenReturn(false);
@@ -159,20 +160,23 @@ class ConnectivityValidationTest {
         invokerSet.add(invoker1);
         waitRefresh(invokerSet);
         Assertions.assertEquals(1, directory.list(invocation).size());
-        Assertions.assertNotNull(clusterInvoker.select(loadBalance, invocation, directory.list(invocation), Collections.emptyList()));
+        Assertions.assertNotNull(
+                clusterInvoker.select(loadBalance, invocation, directory.list(invocation), Collections.emptyList()));
 
         when(invoker2.isAvailable()).thenReturn(true);
         invokerSet.add(invoker2);
         waitRefresh(invokerSet);
         Assertions.assertEquals(2, directory.list(invocation).size());
-        Assertions.assertNotNull(clusterInvoker.select(loadBalance, invocation, directory.list(invocation), Collections.emptyList()));
+        Assertions.assertNotNull(
+                clusterInvoker.select(loadBalance, invocation, directory.list(invocation), Collections.emptyList()));
 
         invokerList.remove(invoker5);
         directory.notify(invokerList);
         when(invoker2.isAvailable()).thenReturn(true);
         waitRefresh(invokerSet);
         Assertions.assertEquals(2, directory.list(invocation).size());
-        Assertions.assertNotNull(clusterInvoker.select(loadBalance, invocation, directory.list(invocation), Collections.emptyList()));
+        Assertions.assertNotNull(
+                clusterInvoker.select(loadBalance, invocation, directory.list(invocation), Collections.emptyList()));
 
         when(invoker3.isAvailable()).thenReturn(true);
         when(invoker4.isAvailable()).thenReturn(true);
@@ -180,7 +184,8 @@ class ConnectivityValidationTest {
         invokerSet.add(invoker4);
         waitRefresh(invokerSet);
         Assertions.assertEquals(4, directory.list(invocation).size());
-        Assertions.assertNotNull(clusterInvoker.select(loadBalance, invocation, directory.list(invocation), Collections.emptyList()));
+        Assertions.assertNotNull(
+                clusterInvoker.select(loadBalance, invocation, directory.list(invocation), Collections.emptyList()));
     }
 
     @Test
@@ -196,7 +201,10 @@ class ConnectivityValidationTest {
         Assertions.assertEquals(2, directory.list(invocation).size());
 
         when(invoker1.isAvailable()).thenReturn(false);
-        Assertions.assertEquals(invoker2, clusterInvoker.select(loadBalance, invocation, directory.list(invocation), Collections.singletonList(invoker2)));
+        Assertions.assertEquals(
+                invoker2,
+                clusterInvoker.select(
+                        loadBalance, invocation, directory.list(invocation), Collections.singletonList(invoker2)));
         Assertions.assertEquals(1, directory.list(invocation).size());
 
         when(invoker1.isAvailable()).thenReturn(true);
@@ -244,7 +252,10 @@ class ConnectivityValidationTest {
             clusterInvoker.select(loadBalance, invocation, directory.list(invocation), Collections.emptyList());
         }
         for (int i = 0; i < 5; i++) {
-            Assertions.assertEquals(invoker1, clusterInvoker.select(loadBalance, invocation, directory.list(invocation), Collections.emptyList()));
+            Assertions.assertEquals(
+                    invoker1,
+                    clusterInvoker.select(
+                            loadBalance, invocation, directory.list(invocation), Collections.emptyList()));
         }
 
         when(invoker1.isAvailable()).thenReturn(false);
@@ -293,12 +304,15 @@ class ConnectivityValidationTest {
         }
 
         @Override
-        public Invoker<T> select(LoadBalance loadbalance, Invocation invocation, List<Invoker<T>> invokers, List<Invoker<T>> selected) throws RpcException {
+        public Invoker<T> select(
+                LoadBalance loadbalance, Invocation invocation, List<Invoker<T>> invokers, List<Invoker<T>> selected)
+                throws RpcException {
             return super.select(loadbalance, invocation, invokers, selected);
         }
 
         @Override
-        protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
+        protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance)
+                throws RpcException {
             return null;
         }
     }
@@ -318,7 +332,9 @@ class ConnectivityValidationTest {
     private static class RandomLoadBalance implements LoadBalance {
         @Override
         public <T> Invoker<T> select(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
-            return CollectionUtils.isNotEmpty(invokers) ? invokers.get(ThreadLocalRandom.current().nextInt(invokers.size())) : null;
+            return CollectionUtils.isNotEmpty(invokers)
+                    ? invokers.get(ThreadLocalRandom.current().nextInt(invokers.size()))
+                    : null;
         }
     }
 }

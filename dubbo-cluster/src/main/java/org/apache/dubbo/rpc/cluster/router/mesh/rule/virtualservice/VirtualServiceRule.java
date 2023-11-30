@@ -14,11 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice;
 
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.BaseRule;
-
 
 public class VirtualServiceRule extends BaseRule {
     private VirtualServiceSpec spec;
@@ -33,9 +31,6 @@ public class VirtualServiceRule extends BaseRule {
 
     @Override
     public String toString() {
-        return "VirtualServiceRule{" +
-                "base=" + super.toString() +
-                ", spec=" + spec +
-                '}';
+        return "VirtualServiceRule{" + "base=" + super.toString() + ", spec=" + spec + '}';
     }
 }

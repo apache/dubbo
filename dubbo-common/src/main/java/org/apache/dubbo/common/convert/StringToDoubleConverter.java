@@ -31,7 +31,6 @@ public class StringToDoubleConverter implements StringConverter<Double> {
         return isNotEmpty(source) ? valueOf(source) : null;
     }
 
-
     @Override
     public int getPriority() {
         return NORMAL_PRIORITY + 3;

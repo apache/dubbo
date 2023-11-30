@@ -38,12 +38,12 @@ public class Application {
         service.setRef(new DemoServiceImpl());
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
-        bootstrap.application(new ApplicationConfig("dubbo-demo-api-provider"))
-            .registry(new RegistryConfig(REGISTRY_URL))
-            .protocol(new ProtocolConfig(CommonConstants.DUBBO, -1))
-            .service(service)
-            .start()
-            .await();
+        bootstrap
+                .application(new ApplicationConfig("dubbo-demo-api-provider"))
+                .registry(new RegistryConfig(REGISTRY_URL))
+                .protocol(new ProtocolConfig(CommonConstants.DUBBO, -1))
+                .service(service)
+                .start()
+                .await();
     }
-
 }

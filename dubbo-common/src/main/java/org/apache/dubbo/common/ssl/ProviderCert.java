@@ -24,7 +24,8 @@ public class ProviderCert extends Cert {
         this.authPolicy = authPolicy;
     }
 
-    public ProviderCert(byte[] keyCertChain, byte[] privateKey, byte[] trustCert, String password, AuthPolicy authPolicy) {
+    public ProviderCert(
+            byte[] keyCertChain, byte[] privateKey, byte[] trustCert, String password, AuthPolicy authPolicy) {
         super(keyCertChain, privateKey, trustCert, password);
         this.authPolicy = authPolicy;
     }
