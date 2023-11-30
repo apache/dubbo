@@ -29,7 +29,8 @@ public class Hessian2ScopeModelInitializer implements ScopeModelInitializer {
         Class<?> aClass = null;
         try {
             aClass = ClassUtils.forName("com.alibaba.com.caucho.hessian.io.Hessian2Output");
-        } catch (Throwable ignored) { }
+        } catch (Throwable ignored) {
+        }
 
         if (aClass != null) {
             ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();

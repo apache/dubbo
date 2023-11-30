@@ -40,13 +40,14 @@ import static org.apache.dubbo.common.serialize.Constants.FASTJSON2_SERIALIZATIO
  * </pre>
  */
 public class FastJson2Serialization implements Serialization {
-    private final static Logger logger = LoggerFactory.getLogger(FastJson2Serialization.class);
+    private static final Logger logger = LoggerFactory.getLogger(FastJson2Serialization.class);
 
     static {
         Class<?> aClass = null;
         try {
             aClass = ClassUtils.forName("com.alibaba.fastjson2.JSONB");
-        } catch (Throwable ignored) { }
+        } catch (Throwable ignored) {
+        }
         if (aClass == null) {
             logger.info("Failed to load com.alibaba.fastjson2.JSONB, fastjson2 serialization will be disabled.");
             throw new IllegalStateException("The fastjson2 is not in classpath.");

@@ -40,15 +40,17 @@ import static org.apache.dubbo.common.serialize.Constants.HESSIAN2_SERIALIZATION
  * </pre>
  */
 public class Hessian2Serialization implements Serialization {
-    private final static Logger logger = LoggerFactory.getLogger(Hessian2Serialization.class);
+    private static final Logger logger = LoggerFactory.getLogger(Hessian2Serialization.class);
 
     static {
         Class<?> aClass = null;
         try {
             aClass = ClassUtils.forName("com.alibaba.com.caucho.hessian.io.Hessian2Output");
-        } catch (Throwable ignored) { }
+        } catch (Throwable ignored) {
+        }
         if (aClass == null) {
-            logger.info("Failed to load com.alibaba.com.caucho.hessian.io.Hessian2Output, hessian2 serialization will be disabled.");
+            logger.info(
+                    "Failed to load com.alibaba.com.caucho.hessian.io.Hessian2Output, hessian2 serialization will be disabled.");
             throw new IllegalStateException("The hessian2 is not in classpath.");
         }
     }
