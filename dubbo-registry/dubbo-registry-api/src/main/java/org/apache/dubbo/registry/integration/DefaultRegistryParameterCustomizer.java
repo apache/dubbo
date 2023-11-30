@@ -75,34 +75,68 @@ public class DefaultRegistryParameterCustomizer implements RegistryParameterCust
 
     @Override
     public String[] parametersIncluded() {
-        return new String[]{
-            APPLICATION_KEY, CODEC_KEY, EXCHANGER_KEY, SERIALIZATION_KEY, PREFER_SERIALIZATION_KEY, CLUSTER_KEY, CONNECTIONS_KEY, DEPRECATED_KEY,
-            GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY, TIMESTAMP_KEY,
-            WEIGHT_KEY, DUBBO_VERSION_KEY, RELEASE_KEY, SIDE_KEY, IPV6_KEY, PACKABLE_METHOD_FACTORY_KEY, GENERIC_KEY
+        return new String[] {
+            APPLICATION_KEY,
+            CODEC_KEY,
+            EXCHANGER_KEY,
+            SERIALIZATION_KEY,
+            PREFER_SERIALIZATION_KEY,
+            CLUSTER_KEY,
+            CONNECTIONS_KEY,
+            DEPRECATED_KEY,
+            GROUP_KEY,
+            LOADBALANCE_KEY,
+            MOCK_KEY,
+            PATH_KEY,
+            TIMEOUT_KEY,
+            TOKEN_KEY,
+            VERSION_KEY,
+            WARMUP_KEY,
+            TIMESTAMP_KEY,
+            WEIGHT_KEY,
+            DUBBO_VERSION_KEY,
+            RELEASE_KEY,
+            SIDE_KEY,
+            IPV6_KEY,
+            PACKABLE_METHOD_FACTORY_KEY,
+            GENERIC_KEY
         };
     }
 
     @Override
     public String[] parametersExcluded() {
-        return new String[]{
-            MONITOR_KEY, BIND_IP_KEY, BIND_PORT_KEY, QOS_ENABLE, QOS_HOST, QOS_PORT, ACCEPT_FOREIGN_IP, VALIDATION_KEY,
-            INTERFACES, REGISTER_MODE_KEY, PID_KEY, REGISTRY_LOCAL_FILE_CACHE_ENABLED, EXECUTOR_MANAGEMENT_MODE, BACKGROUND_KEY, ANYHOST_KEY,
-            THREAD_NAME_KEY, THREADPOOL_KEY, ALIVE_KEY, QUEUES_KEY, CORE_THREADS_KEY, THREADS_KEY
+        return new String[] {
+            MONITOR_KEY,
+            BIND_IP_KEY,
+            BIND_PORT_KEY,
+            QOS_ENABLE,
+            QOS_HOST,
+            QOS_PORT,
+            ACCEPT_FOREIGN_IP,
+            VALIDATION_KEY,
+            INTERFACES,
+            REGISTER_MODE_KEY,
+            PID_KEY,
+            REGISTRY_LOCAL_FILE_CACHE_ENABLED,
+            EXECUTOR_MANAGEMENT_MODE,
+            BACKGROUND_KEY,
+            ANYHOST_KEY,
+            THREAD_NAME_KEY,
+            THREADPOOL_KEY,
+            ALIVE_KEY,
+            QUEUES_KEY,
+            CORE_THREADS_KEY,
+            THREADS_KEY
         };
     }
 
     @Override
     public String[] prefixesIncluded() {
-        return new String[]{
-            METHODS_KEY
-        };
+        return new String[] {METHODS_KEY};
     }
 
     @Override
     public String[] prefixesExcluded() {
-        return new String[]{
-            HIDE_KEY_PREFIX
-        };
+        return new String[] {HIDE_KEY_PREFIX};
     }
-
 }

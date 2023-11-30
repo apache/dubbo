@@ -31,7 +31,7 @@ public interface RegistryParameterCustomizer {
     /**
      * Customize register extra metadata.
      * The key needs to be excluded from the parametersExcluded list or prefixesExcluded list.
-     * Check the parametersExcluded list and prefixesExcluded list of other {@link RegistryParameterCustomizer} implementations。
+     * Check the parametersExcluded list and prefixesExcluded list of other {@link RegistryParameterCustomizer} implementations.
      *
      * @return map of extra parameter
      */
@@ -64,5 +64,4 @@ public interface RegistryParameterCustomizer {
      * @return arrays of prefixes
      */
     String[] prefixesExcluded();
-
 }
