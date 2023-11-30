@@ -17,6 +17,7 @@
 package org.apache.dubbo.spring.boot.observability.autoconfigure.otel;
 
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.spring.boot.autoconfigure.DubboConfigurationProperties;
@@ -28,6 +29,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import io.opentelemetry.api.common.AttributeKey;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -37,9 +39,12 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_PREFIX;
+
 /**
  * provider OpenTelemetry when you are using Boot <3.0 or you are not using spring-boot-starter-actuator
  */
+@ConditionalOnProperty(prefix = DUBBO_PREFIX, name = "enabled", matchIfMissing = true)
 @AutoConfiguration(
         before = DubboMicrometerTracingAutoConfiguration.class,
         afterName = "org.springframework.boot.actuate.autoconfigure.tracing.OpenTelemetryAutoConfiguration")
@@ -90,13 +95,29 @@ public class OpenTelemetryAutoConfiguration {
                 .getApplication()
                 .map(ApplicationConfig::getName)
                 .orElse(DEFAULT_APPLICATION_NAME);
+        // Due to https://github.com/micrometer-metrics/tracing/issues/343
+        String RESOURCE_ATTRIBUTES_CLASS_NAME = "io.opentelemetry.semconv.ResourceAttributes";
+        boolean isLowVersion = !ClassUtils.isPresent(
+                RESOURCE_ATTRIBUTES_CLASS_NAME, Thread.currentThread().getContextClassLoader());
+        AttributeKey<String> serviceNameAttributeKey = AttributeKey.stringKey("service.name");
+        String SERVICE_NAME = "SERVICE_NAME";
+
+        if (isLowVersion) {
+            RESOURCE_ATTRIBUTES_CLASS_NAME = "io.opentelemetry.semconv.resource.attributes.ResourceAttributes";
+        }
+        try {
+            serviceNameAttributeKey = (AttributeKey<String>) ClassUtils.resolveClass(
+                            RESOURCE_ATTRIBUTES_CLASS_NAME,
+                            Thread.currentThread().getContextClassLoader())
+                    .getDeclaredField(SERVICE_NAME)
+                    .get(null);
+        } catch (Throwable ignored) {
+        }
         io.opentelemetry.sdk.trace.SdkTracerProviderBuilder builder =
                 io.opentelemetry.sdk.trace.SdkTracerProvider.builder()
                         .setSampler(sampler)
                         .setResource(io.opentelemetry.sdk.resources.Resource.create(
-                                io.opentelemetry.api.common.Attributes.of(
-                                        io.opentelemetry.semconv.resource.attributes.ResourceAttributes.SERVICE_NAME,
-                                        applicationName)));
+                                io.opentelemetry.api.common.Attributes.of(serviceNameAttributeKey, applicationName)));
         spanProcessors.orderedStream().forEach(builder::addSpanProcessor);
         return builder.build();
     }
