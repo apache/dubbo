@@ -894,6 +894,12 @@
                   <exclude>src/main/java/org/apache/dubbo/aot/generate/MemberCategory.java</exclude>
                   <exclude>src/main/java/org/apache/dubbo/metrics/aggregate/DubboMergingDigest.java</exclude>
                   <exclude>src/main/java/org/apache/dubbo/metrics/aggregate/DubboAbstractTDigest.java</exclude>
+                  <exclude>**/TripleWrapper.java</exclude>
+                  <exclude>**/com/google/rpc/**</exclude>
+                  <exclude>**/io/grpc/**</exclude>
+                  <exclude>**/istio/**</exclude>
+                  <exclude>**/org/apache/dubbo/auth/v1alpha1/**</exclude>
+                  <exclude>**/demo/hello/**</exclude>
                 </excludes>
                 <palantirJavaFormat>
                   <version>${palantirJavaFormat.version}</version>
