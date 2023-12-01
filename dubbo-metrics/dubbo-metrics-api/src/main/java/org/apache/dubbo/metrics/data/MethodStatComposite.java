@@ -41,13 +41,11 @@ import java.util.concurrent.atomic.AtomicLong;
  * the key will not be displayed when exporting (to be optimized)
  */
 public class MethodStatComposite extends AbstractMetricsExport {
-    private boolean serviceLevel;
 
     private final AtomicBoolean samplesChanged = new AtomicBoolean(true);
 
     public MethodStatComposite(ApplicationModel applicationModel) {
         super(applicationModel);
-        this.serviceLevel = MethodMetric.isServiceLevel(getApplicationModel());
     }
 
     private final Map<MetricsKeyWrapper, Map<MethodMetric, AtomicLong>> methodNumStats = new ConcurrentHashMap<>();
@@ -68,9 +66,9 @@ public class MethodStatComposite extends AbstractMetricsExport {
         }
 
         methodNumStats
-                .get(wrapper)
-                .computeIfAbsent(
-                        new MethodMetric(getApplicationModel(), invocation, serviceLevel), k -> new AtomicLong(0L));
+            .get(wrapper)
+            .computeIfAbsent(
+                new MethodMetric(getApplicationModel(), invocation, getServiceLevel()), k -> new AtomicLong(0L));
         samplesChanged.set(true);
     }
 
@@ -95,12 +93,12 @@ public class MethodStatComposite extends AbstractMetricsExport {
             for (MethodMetric methodMetric : stringAtomicLongMap.keySet()) {
                 if (wrapper.getSampleType() == MetricSample.Type.COUNTER) {
                     list.add(new CounterMetricSample<>(
-                            wrapper, methodMetric.getTags(), category, stringAtomicLongMap.get(methodMetric)));
+                        wrapper, methodMetric.getTags(), category, stringAtomicLongMap.get(methodMetric)));
                 } else if (wrapper.getSampleType() == MetricSample.Type.GAUGE) {
                     list.add(new GaugeMetricSample<>(
-                            wrapper, methodMetric.getTags(), category, stringAtomicLongMap, value -> value.get(
-                                            methodMetric)
-                                    .get()));
+                        wrapper, methodMetric.getTags(), category, stringAtomicLongMap, value -> value.get(
+                            methodMetric)
+                        .get()));
                 } else {
                     throw new MetricsNeverHappenException("Unsupported metricSample type: " + wrapper.getSampleType());
                 }

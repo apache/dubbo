@@ -50,7 +50,6 @@ import java.util.stream.Collectors;
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class RtStatComposite extends AbstractMetricsExport {
-    private Boolean serviceLevel;
 
     private final AtomicBoolean samplesChanged = new AtomicBoolean(true);
 
@@ -186,11 +185,10 @@ public class RtStatComposite extends AbstractMetricsExport {
     }
 
     private List<Action> calMethodRtActions(Invocation invocation, String registryOpType) {
-        initServiceLevelConfig();
         List<Action> actions;
         actions = new LinkedList<>();
         for (LongContainer container : rtStats.get(registryOpType)) {
-            MethodMetric key = new MethodMetric(getApplicationModel(), invocation, serviceLevel);
+            MethodMetric key = new MethodMetric(getApplicationModel(), invocation, getServiceLevel());
             Number current = (Number) container.get(key);
             if (current == null) {
                 container.putIfAbsent(key, container.getInitFunc().apply(key));
@@ -202,15 +200,6 @@ public class RtStatComposite extends AbstractMetricsExport {
         return actions;
     }
 
-    private void initServiceLevelConfig() {
-        if(serviceLevel == null){
-            synchronized (RtStatComposite.class){
-                if(serviceLevel == null){
-                    this.serviceLevel = MethodMetric.isServiceLevel(getApplicationModel());
-                }
-            }
-        }
-    }
 
     public List<MetricSample> export(MetricsCategory category) {
         List<MetricSample> list = new ArrayList<>();
