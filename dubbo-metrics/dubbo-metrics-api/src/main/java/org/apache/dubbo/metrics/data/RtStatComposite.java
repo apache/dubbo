@@ -200,7 +200,6 @@ public class RtStatComposite extends AbstractMetricsExport {
         return actions;
     }
 
-
     public List<MetricSample> export(MetricsCategory category) {
         List<MetricSample> list = new ArrayList<>();
         for (List<LongContainer<? extends Number>> containers : rtStats.values()) {

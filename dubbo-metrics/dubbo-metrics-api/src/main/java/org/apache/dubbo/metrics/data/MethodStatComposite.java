@@ -66,9 +66,10 @@ public class MethodStatComposite extends AbstractMetricsExport {
         }
 
         methodNumStats
-            .get(wrapper)
-            .computeIfAbsent(
-                new MethodMetric(getApplicationModel(), invocation, getServiceLevel()), k -> new AtomicLong(0L));
+                .get(wrapper)
+                .computeIfAbsent(
+                        new MethodMetric(getApplicationModel(), invocation, getServiceLevel()),
+                        k -> new AtomicLong(0L));
         samplesChanged.set(true);
     }
 
@@ -93,12 +94,12 @@ public class MethodStatComposite extends AbstractMetricsExport {
             for (MethodMetric methodMetric : stringAtomicLongMap.keySet()) {
                 if (wrapper.getSampleType() == MetricSample.Type.COUNTER) {
                     list.add(new CounterMetricSample<>(
-                        wrapper, methodMetric.getTags(), category, stringAtomicLongMap.get(methodMetric)));
+                            wrapper, methodMetric.getTags(), category, stringAtomicLongMap.get(methodMetric)));
                 } else if (wrapper.getSampleType() == MetricSample.Type.GAUGE) {
                     list.add(new GaugeMetricSample<>(
-                        wrapper, methodMetric.getTags(), category, stringAtomicLongMap, value -> value.get(
-                            methodMetric)
-                        .get()));
+                            wrapper, methodMetric.getTags(), category, stringAtomicLongMap, value -> value.get(
+                                            methodMetric)
+                                    .get()));
                 } else {
                     throw new MetricsNeverHappenException("Unsupported metricSample type: " + wrapper.getSampleType());
                 }
