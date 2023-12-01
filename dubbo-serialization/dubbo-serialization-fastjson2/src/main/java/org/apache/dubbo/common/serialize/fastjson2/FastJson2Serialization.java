@@ -22,7 +22,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
-import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.IOException;
@@ -45,7 +44,7 @@ public class FastJson2Serialization implements Serialization {
     static {
         Class<?> aClass = null;
         try {
-            aClass = ClassUtils.forName("com.alibaba.fastjson2.JSONB");
+            aClass = com.alibaba.fastjson2.JSONB.class;
         } catch (Throwable ignored) {
         }
         if (aClass == null) {

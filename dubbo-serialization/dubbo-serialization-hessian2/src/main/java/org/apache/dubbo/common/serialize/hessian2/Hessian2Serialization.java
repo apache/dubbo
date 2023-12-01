@@ -45,7 +45,7 @@ public class Hessian2Serialization implements Serialization {
     static {
         Class<?> aClass = null;
         try {
-            aClass = ClassUtils.forName("com.alibaba.com.caucho.hessian.io.Hessian2Output");
+            aClass = com.alibaba.com.caucho.hessian.io.Hessian2Output.class;
         } catch (Throwable ignored) {
         }
         if (aClass == null) {
