@@ -19,7 +19,6 @@ package org.apache.dubbo.remoting.http12.message;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 /**

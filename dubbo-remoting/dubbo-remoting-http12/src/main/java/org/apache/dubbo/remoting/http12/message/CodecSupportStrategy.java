@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.http12.message;
 
-import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 
 public interface CodecSupportStrategy {
@@ -26,5 +25,4 @@ public interface CodecSupportStrategy {
     boolean supportEncode(String acceptEncoding);
 
     MediaType contentType();
-
 }

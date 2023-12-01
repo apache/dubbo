@@ -36,5 +36,4 @@ public class XmlCodecFactory implements HttpMessageCodecFactory {
     public CodecSupportStrategy codecSupport() {
         return new DefaultSupportStrategy(MediaType.APPLICATION_XML);
     }
-
 }

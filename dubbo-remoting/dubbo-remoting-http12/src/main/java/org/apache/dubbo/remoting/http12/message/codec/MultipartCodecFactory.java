@@ -36,5 +36,4 @@ public class MultipartCodecFactory implements HttpMessageCodecFactory {
     public CodecSupportStrategy codecSupport() {
         return new OnlyDecodeStrategy(MediaType.MULTIPART_FORM_DATA);
     }
-
 }
