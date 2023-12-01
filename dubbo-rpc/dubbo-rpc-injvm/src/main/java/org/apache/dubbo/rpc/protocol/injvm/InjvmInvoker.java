@@ -152,7 +152,7 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
                                 appResponse.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
                                 return appResponse;
                             } else {
-                                rebuildValue(invocation, desc, result);
+                                rebuildValue(invocation, invoker, result);
                                 AppResponse appResponse = new AppResponse(result.getValue());
                                 appResponse.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
                                 return appResponse;
@@ -190,7 +190,7 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
                         if (r.hasException()) {
                             rpcResult.setException(r.getException());
                         } else {
-                            Object rebuildValue = rebuildValue(invocation, desc, r.getValue());
+                            Object rebuildValue = rebuildValue(invocation, invoker, r.getValue());
                             rpcResult.setValue(rebuildValue);
                         }
                     }
@@ -201,7 +201,7 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
                 if (result.hasException()) {
                     rpcResult.setException(result.getException());
                 } else {
-                    Object rebuildValue = rebuildValue(invocation, desc, result.getValue());
+                    Object rebuildValue = rebuildValue(invocation, invoker, result.getValue());
                     rpcResult.setValue(rebuildValue);
                 }
                 rpcResult.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
@@ -232,11 +232,7 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
         }
         String methodName = invocation.getMethodName();
 
-        ServiceModel consumerServiceModel = invocation.getServiceModel();
-        boolean shouldSkip = shouldIgnoreSameModule
-                && consumerServiceModel != null
-                && Objects.equals(providerServiceModel.getModuleModel(), consumerServiceModel.getModuleModel());
-        if (CommonConstants.$INVOKE.equals(methodName) || shouldSkip) {
+        if (isSkipCopy(invocation, invoker)) {
             // generic invoke, skip copy arguments
             RpcInvocation copiedInvocation = new RpcInvocation(
                     invocation.getTargetServiceUniqueName(),
@@ -297,16 +293,43 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
         }
     }
 
-    private Object rebuildValue(Invocation invocation, String desc, Object originValue) {
+    private boolean isSkipCopy(Invocation invocation, Invoker<?> invoker) {
+        ServiceModel providerServiceModel = invoker.getUrl().getServiceModel();
+
+        if (providerServiceModel == null) {
+            return true;
+        }
+        String methodName = invocation.getMethodName();
+
+        ServiceModel consumerServiceModel = invocation.getServiceModel();
+        boolean shouldSkip = shouldIgnoreSameModule
+                && consumerServiceModel != null
+                && Objects.equals(providerServiceModel.getModuleModel(), consumerServiceModel.getModuleModel());
+
+        return CommonConstants.$INVOKE.equals(methodName)
+                || CommonConstants.$INVOKE_ASYNC.equals(methodName)
+                || shouldSkip;
+    }
+
+    private Object rebuildValue(Invocation invocation, Invoker<?> invoker, Object originValue) {
+        if (isSkipCopy(invocation, invoker)) {
+            return originValue;
+        }
+
         Object value = originValue;
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         try {
             ServiceModel consumerServiceModel = getUrl().getServiceModel();
             if (consumerServiceModel != null) {
-                Class<?> returnType = getReturnType(consumerServiceModel, invocation.getMethodName(), desc);
-                if (returnType != null) {
-                    Thread.currentThread().setContextClassLoader(consumerServiceModel.getClassLoader());
-                    value = paramDeepCopyUtil.copy(consumerUrl, originValue, returnType);
+                Thread.currentThread().setContextClassLoader(consumerServiceModel.getClassLoader());
+                Type[] returnTypes = RpcUtils.getReturnTypes(invocation);
+                if (returnTypes == null) {
+                    return originValue;
+                }
+                if (returnTypes.length == 1) {
+                    value = paramDeepCopyUtil.copy(consumerUrl, originValue, (Class<?>) returnTypes[0]);
+                } else if (returnTypes.length == 2) {
+                    value = paramDeepCopyUtil.copy(consumerUrl, originValue, (Class<?>) returnTypes[0], returnTypes[1]);
                 }
             }
             return value;
