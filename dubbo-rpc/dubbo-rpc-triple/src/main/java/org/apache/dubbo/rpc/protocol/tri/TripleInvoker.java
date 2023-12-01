@@ -24,7 +24,6 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
-import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
@@ -143,12 +142,12 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         ConsumerModel consumerModel = (ConsumerModel)
                 (invocation.getServiceModel() != null ? invocation.getServiceModel() : getUrl().getServiceModel());
         ServiceDescriptor serviceDescriptor = consumerModel.getServiceModel();
-        final MethodDescriptor methodDescriptor;
-        boolean genericCall = RpcUtils.isGenericCall(
-                ReflectUtils.getDesc(invocation.getParameterTypes()), invocation.getMethodName());
-        if (!genericCall) {
-            methodDescriptor = serviceDescriptor.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
-        } else {
+        MethodDescriptor methodDescriptor =
+                serviceDescriptor.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
+        if (methodDescriptor == null
+                && RpcUtils.isGenericCall(
+                        ((RpcInvocation) invocation).getParameterTypesDesc(), invocation.getMethodName())) {
+            // Only reach when server generic
             methodDescriptor = ServiceDescriptorInternalCache.genericService()
                     .getMethod(invocation.getMethodName(), invocation.getParameterTypes());
         }
@@ -261,17 +260,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         if (methodDescriptor instanceof StubMethodDescriptor) {
             pureArgument = invocation.getArguments()[0];
         } else {
-            if (methodDescriptor.isGeneric()) {
-                Object[] args = new Object[3];
-                args[0] = RpcUtils.getMethodName(invocation);
-                args[1] = Arrays.stream(RpcUtils.getParameterTypes(invocation))
-                        .map(Class::getName)
-                        .toArray(String[]::new);
-                args[2] = RpcUtils.getArguments(invocation);
-                pureArgument = args;
-            } else {
-                pureArgument = invocation.getArguments();
-            }
+            pureArgument = invocation.getArguments();
         }
         result = new AsyncRpcResult(future, invocation);
         if (setFutureWhenSync || ((RpcInvocation) invocation).getInvokeMode() != InvokeMode.SYNC) {
