@@ -124,6 +124,16 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
         processGrpcHeaders(metadata);
     }
 
+    @Override
+    protected String getEncodeIdentifier(Http2Header metadata) {
+        String acceptEncoding = metadata.headers().getAcceptEncoding();
+        String grpcAcceptEncoding = metadata.headers().getFirst(GrpcHeaderNames.GRPC_ACCEPT_ENCODING.getName());
+        if (acceptEncoding == null && grpcAcceptEncoding != null) {
+            acceptEncoding = GrpcHeaderNames.GRPC_ACCEPT_ENCODING.getName() + grpcAcceptEncoding;
+        }
+        return acceptEncoding;
+    }
+
     private void processGrpcHeaders(Http2Header metadata) {
         String messageEncoding = metadata.headers().getFirst(GrpcHeaderNames.GRPC_ENCODING.getName());
         if (null != messageEncoding) {

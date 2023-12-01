@@ -42,6 +42,14 @@ public class GrpcCompositeCodecFactory implements HttpMessageCodecFactory {
 
     @Override
     public CodecSupportStrategy codecSupport() {
-        return new DefaultSupportStrategy(MEDIA_TYPE);
+        return new DefaultSupportStrategy(MEDIA_TYPE) {
+            @Override
+            public boolean supportEncode(String grpcAcceptEncoding) {
+                return grpcAcceptEncoding.startsWith(GrpcHeaderNames.GRPC_ACCEPT_ENCODING.getName())
+                        && (grpcAcceptEncoding.contains("bzip2")
+                                || grpcAcceptEncoding.contains("gzip")
+                                || grpcAcceptEncoding.contains("snappy"));
+            }
+        };
     }
 }
