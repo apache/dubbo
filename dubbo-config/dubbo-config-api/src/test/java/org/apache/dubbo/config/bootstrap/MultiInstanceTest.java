@@ -25,6 +25,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ConfigKeys;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
@@ -32,6 +33,7 @@ import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.SysProps;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.api.Greeting;
+import org.apache.dubbo.config.context.ConfigMode;
 import org.apache.dubbo.config.mock.GreetingLocal2;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.registry.client.migration.MigrationInvoker;
@@ -475,10 +477,10 @@ class MultiInstanceTest {
 
             ModuleDeployer moduleDeployer1 = serviceConfig1.getScopeModel().getDeployer();
             moduleDeployer1.start().get();
-            Assertions.assertTrue(moduleDeployer1.isStarted());
+            Assertions.assertTrue(moduleDeployer1.isCompletion());
             ModuleDeployer internalModuleDeployer =
                     applicationModel.getInternalModule().getDeployer();
-            Assertions.assertTrue(internalModuleDeployer.isStarted());
+            Assertions.assertTrue(internalModuleDeployer.isCompletion());
 
             FrameworkServiceRepository frameworkServiceRepository =
                     applicationModel.getFrameworkModel().getServiceRepository();
@@ -606,7 +608,7 @@ class MultiInstanceTest {
             // 1. start module1 and wait
             ModuleDeployer moduleDeployer1 = serviceConfig1.getScopeModel().getDeployer();
             moduleDeployer1.start().get();
-            Assertions.assertEquals(DeployState.STARTED, moduleDeployer1.getState());
+            Assertions.assertEquals(DeployState.COMPLETION, moduleDeployer1.getState());
 
             ApplicationModel applicationModel = providerBootstrap.getApplicationModel();
             ApplicationDeployer applicationDeployer = applicationModel.getDeployer();
@@ -617,9 +619,9 @@ class MultiInstanceTest {
 
             // 2. start application after module1 is started
             providerBootstrap.start();
-            Assertions.assertEquals(DeployState.STARTED, applicationDeployer.getState());
+            Assertions.assertEquals(DeployState.COMPLETION, applicationDeployer.getState());
             Assertions.assertEquals(
-                    DeployState.STARTED, defaultModule.getDeployer().getState());
+                    DeployState.COMPLETION, defaultModule.getDeployer().getState());
 
             // 3. add module2 and re-start application
             ServiceConfig serviceConfig2 = new ServiceConfig();
@@ -629,9 +631,9 @@ class MultiInstanceTest {
             ModuleModel moduleModel2 =
                     providerBootstrap.newModule().service(serviceConfig2).getModuleModel();
             providerBootstrap.start();
-            Assertions.assertEquals(DeployState.STARTED, applicationDeployer.getState());
+            Assertions.assertEquals(DeployState.COMPLETION, applicationDeployer.getState());
             Assertions.assertEquals(
-                    DeployState.STARTED, moduleModel2.getDeployer().getState());
+                    DeployState.COMPLETION, moduleModel2.getDeployer().getState());
 
             // 4. add module3 and start module3
             ServiceConfig serviceConfig3 = new ServiceConfig();
@@ -641,9 +643,9 @@ class MultiInstanceTest {
             ModuleModel moduleModel3 =
                     providerBootstrap.newModule().service(serviceConfig3).getModuleModel();
             moduleModel3.getDeployer().start().get();
-            Assertions.assertEquals(DeployState.STARTED, applicationDeployer.getState());
+            Assertions.assertEquals(DeployState.COMPLETION, applicationDeployer.getState());
             Assertions.assertEquals(
-                    DeployState.STARTED, moduleModel3.getDeployer().getState());
+                    DeployState.COMPLETION, moduleModel3.getDeployer().getState());
 
         } finally {
             if (providerBootstrap != null) {
@@ -697,10 +699,10 @@ class MultiInstanceTest {
 
             // 2. start application after module1 is starting
             providerBootstrap.start();
-            Assertions.assertEquals(DeployState.STARTED, applicationDeployer.getState());
-            Assertions.assertEquals(DeployState.STARTED, moduleDeployer1.getState());
+            Assertions.assertEquals(DeployState.COMPLETION, applicationDeployer.getState());
+            Assertions.assertEquals(DeployState.COMPLETION, moduleDeployer1.getState());
             Assertions.assertEquals(
-                    DeployState.STARTED, defaultModule.getDeployer().getState());
+                    DeployState.COMPLETION, defaultModule.getDeployer().getState());
 
         } finally {
             if (providerBootstrap != null) {
@@ -713,6 +715,7 @@ class MultiInstanceTest {
     void testOldApiDeploy() throws Exception {
 
         try {
+            SysProps.setProperty(ConfigKeys.DUBBO_CONFIG_MODE, ConfigMode.OVERRIDE.name());
             // provider app
             ApplicationModel providerApplicationModel = ApplicationModel.defaultModel();
             ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
@@ -731,17 +734,19 @@ class MultiInstanceTest {
             Map<DeployState, Long> serviceDeployEventMap = serviceDeployEventHandler.deployEventMap;
             Assertions.assertFalse(serviceDeployEventMap.containsKey(DeployState.STARTING));
             Assertions.assertFalse(serviceDeployEventMap.containsKey(DeployState.STARTED));
+            Assertions.assertFalse(serviceDeployEventMap.containsKey(DeployState.COMPLETION));
 
             // export service and start module
             serviceConfig.export();
             // expect internal module is started
             Assertions.assertTrue(
-                    providerApplicationModel.getInternalModule().getDeployer().isStarted());
+                    providerApplicationModel.getInternalModule().getDeployer().isCompletion());
             // expect service module is starting
             Assertions.assertTrue(serviceDeployEventMap.containsKey(DeployState.STARTING));
             // wait for service module started
             serviceConfig.getScopeModel().getDeployer().getStartFuture().get();
             Assertions.assertTrue(serviceDeployEventMap.containsKey(DeployState.STARTED));
+            Assertions.assertTrue(serviceDeployEventMap.containsKey(DeployState.COMPLETION));
 
             // consumer app
             ApplicationModel consumerApplicationModel = ApplicationModel.defaultModel();
@@ -760,16 +765,18 @@ class MultiInstanceTest {
             Map<DeployState, Long> deployEventMap = referDeployEventHandler.deployEventMap;
             Assertions.assertFalse(deployEventMap.containsKey(DeployState.STARTING));
             Assertions.assertFalse(deployEventMap.containsKey(DeployState.STARTED));
+            Assertions.assertFalse(deployEventMap.containsKey(DeployState.COMPLETION));
 
             // get ref proxy and start module
             DemoService demoService = referenceConfig.get();
             // expect internal module is started
             Assertions.assertTrue(
-                    consumerApplicationModel.getInternalModule().getDeployer().isStarted());
+                    consumerApplicationModel.getInternalModule().getDeployer().isCompletion());
             Assertions.assertTrue(deployEventMap.containsKey(DeployState.STARTING));
             // wait for reference module started
             referenceConfig.getScopeModel().getDeployer().getStartFuture().get();
             Assertions.assertTrue(deployEventMap.containsKey(DeployState.STARTED));
+            Assertions.assertTrue(deployEventMap.containsKey(DeployState.COMPLETION));
 
             // stop consumer app
             consumerApplicationModel.destroy();
@@ -917,6 +924,12 @@ class MultiInstanceTest {
         public void onStarted(ModuleModel scopeModel) {
             Assertions.assertEquals(moduleModel, scopeModel);
             deployEventMap.put(DeployState.STARTED, System.currentTimeMillis());
+        }
+
+        @Override
+        public void onCompletion(ModuleModel scopeModel) {
+            Assertions.assertEquals(moduleModel, scopeModel);
+            deployEventMap.put(DeployState.COMPLETION, System.currentTimeMillis());
         }
 
         @Override

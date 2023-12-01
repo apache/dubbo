@@ -29,6 +29,9 @@ public class DeployListenerAdapter<E extends ScopeModel> implements DeployListen
     public void onStarted(E scopeModel) {}
 
     @Override
+    public void onCompletion(E scopeModel) {}
+
+    @Override
     public void onStopping(E scopeModel) {}
 
     @Override

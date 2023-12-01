@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.lang.Nullable;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.TracingConfig;
@@ -46,6 +47,7 @@ import io.micrometer.tracing.otel.bridge.OtelTracer;
 import io.micrometer.tracing.otel.bridge.Slf4JBaggageEventListener;
 import io.micrometer.tracing.otel.bridge.Slf4JEventListener;
 import io.micrometer.tracing.otel.propagation.BaggageTextMapPropagator;
+import io.opentelemetry.api.common.AttributeKey;
 
 import static org.apache.dubbo.tracing.utils.ObservationConstants.DEFAULT_APPLICATION_NAME;
 
@@ -81,14 +83,30 @@ public class OpenTelemetryProvider implements TracerProvider {
         // [Micrometer Tracing component] A Micrometer Tracing wrapper for OTel
         this.otelCurrentTraceContext = createCurrentTraceContext();
 
+        // Due to https://github.com/micrometer-metrics/tracing/issues/343
+        String RESOURCE_ATTRIBUTES_CLASS_NAME = "io.opentelemetry.semconv.ResourceAttributes";
+        boolean isLowVersion = !ClassUtils.isPresent(
+                RESOURCE_ATTRIBUTES_CLASS_NAME, Thread.currentThread().getContextClassLoader());
+        AttributeKey<String> serviceNameAttributeKey = AttributeKey.stringKey("service.name");
+        String SERVICE_NAME = "SERVICE_NAME";
+
+        if (isLowVersion) {
+            RESOURCE_ATTRIBUTES_CLASS_NAME = "io.opentelemetry.semconv.resource.attributes.ResourceAttributes";
+        }
+        try {
+            serviceNameAttributeKey = (AttributeKey<String>) ClassUtils.resolveClass(
+                            RESOURCE_ATTRIBUTES_CLASS_NAME,
+                            Thread.currentThread().getContextClassLoader())
+                    .getDeclaredField(SERVICE_NAME)
+                    .get(null);
+        } catch (Throwable ignored) {
+        }
         // [OTel component] SdkTracerProvider is an SDK implementation for TracerProvider
         io.opentelemetry.sdk.trace.SdkTracerProvider sdkTracerProvider =
                 io.opentelemetry.sdk.trace.SdkTracerProvider.builder()
                         .setSampler(getSampler())
                         .setResource(io.opentelemetry.sdk.resources.Resource.create(
-                                io.opentelemetry.api.common.Attributes.of(
-                                        io.opentelemetry.semconv.resource.attributes.ResourceAttributes.SERVICE_NAME,
-                                        applicationName)))
+                                io.opentelemetry.api.common.Attributes.of(serviceNameAttributeKey, applicationName)))
                         .addSpanProcessor(io.opentelemetry.sdk.trace.export.BatchSpanProcessor.builder(
                                         new CompositeSpanExporter(spanExporters, null, null, null))
                                 .build())

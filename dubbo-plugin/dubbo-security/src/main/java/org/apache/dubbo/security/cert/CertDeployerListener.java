@@ -50,6 +50,9 @@ public class CertDeployerListener implements ApplicationDeployListener {
     public void onStarted(ApplicationModel scopeModel) {}
 
     @Override
+    public void onCompletion(ApplicationModel scopeModel) {}
+
+    @Override
     public void onStopping(ApplicationModel scopeModel) {
         if (dubboCertManager != null) {
             dubboCertManager.disConnect();
