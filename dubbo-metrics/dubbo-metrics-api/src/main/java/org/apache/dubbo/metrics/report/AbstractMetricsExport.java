@@ -24,7 +24,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
  */
 public abstract class AbstractMetricsExport implements MetricsExport {
 
-    private Boolean serviceLevel;
+    private volatile Boolean serviceLevel;
 
     private final ApplicationModel applicationModel;
 
@@ -47,7 +47,7 @@ public abstract class AbstractMetricsExport implements MetricsExport {
 
     private void initServiceLevelConfig() {
         if (serviceLevel == null) {
-            synchronized (AbstractMetricsExport.class) {
+            synchronized (this) {
                 if (serviceLevel == null) {
                     this.serviceLevel = MethodMetric.isServiceLevel(getApplicationModel());
                 }
