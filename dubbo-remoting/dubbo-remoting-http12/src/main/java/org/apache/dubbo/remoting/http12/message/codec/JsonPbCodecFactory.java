@@ -44,8 +44,8 @@ public class JsonPbCodecFactory implements HttpMessageCodecFactory {
     public CodecSupportStrategy codecSupport() {
         return new DefaultSupportStrategy(MediaType.APPLICATION_JSON_VALUE) {
             @Override
-            public boolean supportDecode(HttpHeaders headers) {
-                return super.supportDecode(headers)
+            public boolean supportDecode(String contentType) {
+                return super.supportDecode(contentType)
                         && ClassUtils.isPresent(
                         "com.google.protobuf.Message", getClass().getClassLoader());
             }

@@ -81,11 +81,9 @@ public class MultipartCodec implements HttpMessageCodec {
                     res[i] = part.get();
                     continue;
                 }
-                HttpHeaders subHeader = new HttpHeaders();
-                subHeader.put(HttpHeaderNames.CONTENT_TYPE.getName(), Collections.singletonList(part.getContentType()));
                 boolean decoded = false;
                 for (HttpMessageCodecFactory factory : codecFactories) {
-                    if (factory.codecSupport().supportDecode(subHeader)) {
+                    if (factory.codecSupport().supportDecode(part.getContentType())) {
                         res[i] = factory.createCodec(url, frameworkModel, part.getContentType())
                                 .decode(part.getInputStream(), targetTypes[i]);
                         decoded = true;

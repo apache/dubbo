@@ -28,15 +28,13 @@ public class DefaultSupportStrategy implements CodecSupportStrategy {
         this.mediaType = mediaType;
     }
 
-    public boolean supportDecode(HttpHeaders headers) {
-        String contentType = headers.getFirst(HttpHeaderNames.CONTENT_TYPE.getName());
+    public boolean supportDecode(String contentType) {
         return contentType.startsWith(mediaType.getName());
     }
 
-    public boolean supportEncode(HttpHeaders headers) {
-        String acceptEncoding = headers.getFirst(HttpHeaderNames.ACCEPT.getName());
-        return acceptEncoding != null
-                && acceptEncoding.contains(mediaType.getName());
+    public boolean supportEncode(String accept) {
+        return accept != null
+                && accept.contains(mediaType.getName());
     }
 
     @Override

@@ -162,7 +162,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     @Override
     protected void onMetadataCompletion(Http2Header metadata) {
         super.onMetadataCompletion(metadata);
-        this.serverChannelObserver.findAndSetEncoder(getUrl(), metadata.headers(), getFrameworkModel());
+        this.serverChannelObserver.findAndSetEncoder(getUrl(), metadata.headers().getAcceptEncoding(), getFrameworkModel());
         this.serverChannelObserver.request(1);
     }
 

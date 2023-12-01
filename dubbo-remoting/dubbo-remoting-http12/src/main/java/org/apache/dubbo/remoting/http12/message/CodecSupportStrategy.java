@@ -21,9 +21,9 @@ import org.apache.dubbo.remoting.http12.HttpHeaders;
 
 public interface CodecSupportStrategy {
 
-    boolean supportDecode(HttpHeaders headers);
+    boolean supportDecode(String contentType);
 
-    boolean supportEncode(HttpHeaders headers);
+    boolean supportEncode(String acceptEncoding);
 
     MediaType contentType();
 

@@ -161,19 +161,19 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
         getHttpChannel().writeHeader(httpMetadata);
     }
 
-    public void findAndSetEncoder(URL url, HttpHeaders headers, FrameworkModel frameworkModel) {
+    public void findAndSetEncoder(URL url, String acceptEncoding, FrameworkModel frameworkModel) {
         List<HttpMessageCodecFactory> factories =
                 frameworkModel.getExtensionLoader(HttpMessageCodecFactory.class).getActivateExtensions();
-        this.responseEncoder = findCodecFactoryForEncode(headers, factories).createCodec(url, frameworkModel, headers.getContentType());
+        this.responseEncoder = findCodecFactoryForEncode(acceptEncoding, factories).createCodec(url, frameworkModel, acceptEncoding);
     }
 
     public HttpMessageCodecFactory findCodecFactoryForEncode(
-            HttpHeaders headers, List<HttpMessageCodecFactory> candidates) {
+            String acceptEncoding, List<HttpMessageCodecFactory> candidates) {
         for (HttpMessageCodecFactory factory : candidates) {
-            if (factory.codecSupport().supportEncode(headers)) {
+            if (factory.codecSupport().supportEncode(acceptEncoding)) {
                 return factory;
             }
         }
-        throw new DecodeException("Can not recognize accept header:" + headers.toString());
+        throw new DecodeException("Can not find encoder for:" + acceptEncoding);
     }
 }
