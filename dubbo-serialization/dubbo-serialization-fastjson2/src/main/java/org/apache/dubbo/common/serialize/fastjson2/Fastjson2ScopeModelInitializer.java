@@ -29,7 +29,7 @@ public class Fastjson2ScopeModelInitializer implements ScopeModelInitializer {
     public void initializeFrameworkModel(FrameworkModel frameworkModel) {
         Class<?> aClass = null;
         try {
-            aClass = ClassUtils.forName("com.alibaba.fastjson2.JSONB");
+            aClass = com.alibaba.fastjson2.JSONB.class;
         } catch (Throwable ignored) {
         }
 
