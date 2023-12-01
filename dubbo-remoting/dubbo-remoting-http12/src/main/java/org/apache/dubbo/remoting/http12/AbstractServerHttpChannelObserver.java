@@ -164,7 +164,8 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
     public void findAndSetEncoder(URL url, String acceptEncoding, FrameworkModel frameworkModel) {
         List<HttpMessageCodecFactory> factories =
                 frameworkModel.getExtensionLoader(HttpMessageCodecFactory.class).getActivateExtensions();
-        this.responseEncoder = findCodecFactoryForEncode(acceptEncoding, factories).createCodec(url, frameworkModel, acceptEncoding);
+        this.responseEncoder =
+                findCodecFactoryForEncode(acceptEncoding, factories).createCodec(url, frameworkModel, acceptEncoding);
     }
 
     public HttpMessageCodecFactory findCodecFactoryForEncode(

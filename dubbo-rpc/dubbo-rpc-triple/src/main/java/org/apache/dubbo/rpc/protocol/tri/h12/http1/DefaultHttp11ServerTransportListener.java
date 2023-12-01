@@ -60,7 +60,8 @@ public class DefaultHttp11ServerTransportListener
         switch (methodDescriptor.getRpcType()) {
             case UNARY:
                 Http1ServerChannelObserver http1ChannelObserver = new Http1ServerChannelObserver(httpChannel);
-                http1ChannelObserver.findAndSetEncoder(url, getHttpMetadata().headers().getAcceptEncoding(), getFrameworkModel());
+                http1ChannelObserver.findAndSetEncoder(
+                        url, getHttpMetadata().headers().getAcceptEncoding(), getFrameworkModel());
                 return new AutoCompleteUnaryServerCallListener(invocation, invoker, http1ChannelObserver);
             case SERVER_STREAM:
                 Http1ServerChannelObserver serverStreamChannelObserver =

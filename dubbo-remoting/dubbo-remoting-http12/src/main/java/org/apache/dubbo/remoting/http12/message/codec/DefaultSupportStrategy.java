@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.remoting.http12.message.codec;
 
-import org.apache.dubbo.remoting.http12.HttpHeaderNames;
-import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.message.CodecSupportStrategy;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 
@@ -33,8 +31,7 @@ public class DefaultSupportStrategy implements CodecSupportStrategy {
     }
 
     public boolean supportEncode(String accept) {
-        return accept != null
-                && accept.contains(mediaType.getName());
+        return accept != null && accept.contains(mediaType.getName());
     }
 
     @Override

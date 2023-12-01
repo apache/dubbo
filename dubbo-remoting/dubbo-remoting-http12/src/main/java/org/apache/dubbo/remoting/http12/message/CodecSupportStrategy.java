@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.remoting.http12.message;
 
-import org.apache.dubbo.remoting.http12.HttpHeaders;
-
 public interface CodecSupportStrategy {
 
     boolean supportDecode(String contentType);
