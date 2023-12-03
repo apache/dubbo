@@ -62,8 +62,8 @@ public class XmlCodec implements HttpMessageCodec {
             // Do unmarshall operation
             Source xmlSource = new SAXSource(
                     spf.newSAXParser().getXMLReader(),
-                    new InputSource(
-                            new StringReader(CodecUtils.toByteArrayStream(inputStream).toString())));
+                    new InputSource(new StringReader(
+                            CodecUtils.toByteArrayStream(inputStream).toString())));
             JAXBContext context = JAXBContext.newInstance(targetType);
             Unmarshaller unmarshaller = context.createUnmarshaller();
             return unmarshaller.unmarshal(xmlSource);

@@ -31,8 +31,7 @@ public class DefaultSupportStrategy implements CodecSupportStrategy {
     }
 
     public boolean supportEncode(String mediaType) {
-        return mediaType != null
-                && (mediaType.contains(this.mediaType.getName()));
+        return mediaType != null && (mediaType.contains(this.mediaType.getName()));
     }
 
     @Override
