@@ -37,6 +37,7 @@ import org.apache.dubbo.remoting.http12.exception.UnsupportedMediaTypeException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
+import org.apache.dubbo.remoting.http12.message.codec.CodecUtils;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.PathResolver;
@@ -167,7 +168,8 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         if (invoker == null) {
             throw new UnimplementedException(serviceName);
         }
-        HttpMessageCodec httpMessageCodec = determineHttpMessageCodec(contentType);
+        HttpMessageCodec httpMessageCodec =
+                CodecUtils.determineHttpMessageCodec(getFrameworkModel(), headers, getUrl(), true);
         if (httpMessageCodec == null) {
             throw new UnsupportedMediaTypeException(contentType);
         }
@@ -250,11 +252,23 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         return invoker;
     }
 
-    protected HttpMessageCodec determineHttpMessageCodec(String contentType) {
+    protected HttpMessageCodec determineHttpMessageCodec(HttpHeaders headers, boolean decode) {
+        String contentType = headers.getContentType();
+        String accept = headers.getAccept();
+        if (accept == null) {
+            accept = contentType;
+        }
         for (HttpMessageCodecFactory httpMessageCodecFactory :
                 frameworkModel.getExtensionLoader(HttpMessageCodecFactory.class).getActivateExtensions()) {
-            if (httpMessageCodecFactory.codecSupport().supportDecode(contentType)) {
-                return httpMessageCodecFactory.createCodec(invoker.getUrl(), frameworkModel, contentType);
+            if (decode) {
+                if (httpMessageCodecFactory.codecSupport().supportDecode(contentType)) {
+                    return httpMessageCodecFactory.createCodec(invoker.getUrl(), frameworkModel, contentType);
+                }
+            } else {
+                // encode
+                if (httpMessageCodecFactory.codecSupport().supportEncode(accept)) {
+                    return httpMessageCodecFactory.createCodec(invoker.getUrl(), frameworkModel, accept);
+                }
             }
         }
         return null;

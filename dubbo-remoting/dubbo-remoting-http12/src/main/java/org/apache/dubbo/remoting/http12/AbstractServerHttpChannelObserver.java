@@ -16,15 +16,9 @@
  */
 package org.apache.dubbo.remoting.http12;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory;
-import org.apache.dubbo.rpc.model.FrameworkModel;
-
-import java.util.List;
 
 public abstract class AbstractServerHttpChannelObserver implements CustomizableHttpChannelObserver<Object> {
 
@@ -159,22 +153,5 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
         }
         this.trailersCustomizer.accept(httpMetadata.headers(), throwable);
         getHttpChannel().writeHeader(httpMetadata);
-    }
-
-    public void findAndSetEncoder(URL url, String acceptEncoding, FrameworkModel frameworkModel) {
-        List<HttpMessageCodecFactory> factories =
-                frameworkModel.getExtensionLoader(HttpMessageCodecFactory.class).getActivateExtensions();
-        this.responseEncoder =
-                findCodecFactoryForEncode(acceptEncoding, factories).createCodec(url, frameworkModel, acceptEncoding);
-    }
-
-    public HttpMessageCodecFactory findCodecFactoryForEncode(
-            String acceptEncoding, List<HttpMessageCodecFactory> candidates) {
-        for (HttpMessageCodecFactory factory : candidates) {
-            if (factory.codecSupport().supportEncode(acceptEncoding)) {
-                return factory;
-            }
-        }
-        throw new DecodeException("Can not find encoder for:" + acceptEncoding);
     }
 }

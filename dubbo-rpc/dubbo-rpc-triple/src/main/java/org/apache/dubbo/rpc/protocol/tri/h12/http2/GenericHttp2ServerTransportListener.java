@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.h12.http2;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
+import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.RequestMetadata;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
@@ -31,6 +32,7 @@ import org.apache.dubbo.remoting.http12.message.ListeningDecoder;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.remoting.http12.message.NoOpStreamingDecoder;
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
+import org.apache.dubbo.remoting.http12.message.codec.CodecUtils;
 import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
@@ -162,13 +164,13 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     @Override
     protected void onMetadataCompletion(Http2Header metadata) {
         super.onMetadataCompletion(metadata);
-        String acceptEncoding = getEncodeIdentifier(metadata);
-        this.serverChannelObserver.findAndSetEncoder(getUrl(), acceptEncoding, getFrameworkModel());
+        configChannelObserverEncoder(serverChannelObserver, metadata.headers());
         this.serverChannelObserver.request(1);
     }
 
-    protected String getEncodeIdentifier(Http2Header header) {
-        return header.headers().getAcceptEncoding();
+    protected void configChannelObserverEncoder(Http2ServerChannelObserver observer, HttpHeaders headers) {
+        this.serverChannelObserver.setResponseEncoder(
+                CodecUtils.determineHttpMessageCodec(getFrameworkModel(), headers, getUrl(), false));
     }
 
     @Override

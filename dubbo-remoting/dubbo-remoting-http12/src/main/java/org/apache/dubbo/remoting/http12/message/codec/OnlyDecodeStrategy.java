@@ -25,7 +25,7 @@ public class OnlyDecodeStrategy extends DefaultSupportStrategy {
     }
 
     @Override
-    public boolean supportEncode(String accept) {
+    public boolean supportEncode(String acceptOrContentType) {
         return false;
     }
 }

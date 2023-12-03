@@ -24,6 +24,7 @@ import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.UnimplementedException;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
+import org.apache.dubbo.remoting.http12.h2.Http2ServerChannelObserver;
 import org.apache.dubbo.remoting.http12.h2.Http2TransportListener;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
@@ -125,13 +126,9 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
     }
 
     @Override
-    protected String getEncodeIdentifier(Http2Header metadata) {
-        String acceptEncoding = metadata.headers().getAcceptEncoding();
-        String grpcAcceptEncoding = metadata.headers().getFirst(GrpcHeaderNames.GRPC_ACCEPT_ENCODING.getName());
-        if (acceptEncoding == null && grpcAcceptEncoding != null) {
-            acceptEncoding = GrpcHeaderNames.GRPC_ACCEPT_ENCODING.getName() + grpcAcceptEncoding;
-        }
-        return acceptEncoding;
+    protected void configChannelObserverEncoder(Http2ServerChannelObserver observer, HttpHeaders headers) {
+        // for gRPC request, use same codec for encode
+        observer.setResponseEncoder(getHttpMessageCodec());
     }
 
     private void processGrpcHeaders(Http2Header metadata) {

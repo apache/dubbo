@@ -28,6 +28,7 @@ import org.apache.dubbo.remoting.http12.h1.Http1ServerChannelObserver;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerTransportListener;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerTransportListenerFactory;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory;
+import org.apache.dubbo.remoting.http12.message.codec.CodecUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.List;
@@ -103,9 +104,8 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
         if (!StringUtils.hasText(contentType)) {
             throw new UnsupportedMediaTypeException(contentType);
         }
-        HttpMessageCodecFactory codecFactory = findSuitableCodec(
-                headers.getContentType(),
-                frameworkModel.getExtensionLoader(HttpMessageCodecFactory.class).getActivateExtensions());
+        HttpMessageCodecFactory codecFactory =
+                CodecUtils.determineHttpMessageCodecFactory(frameworkModel, headers.getContentType(), true);
         if (codecFactory == null) {
             throw new UnsupportedMediaTypeException(contentType);
         }
@@ -114,7 +114,8 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
 
     private void initErrorResponseObserver(ChannelHandlerContext ctx, Http1Request request) {
         this.errorResponseObserver = new Http1ServerChannelObserver(new NettyHttp1Channel(ctx.channel()));
-        this.errorResponseObserver.findAndSetEncoder(url, request.headers().getAcceptEncoding(), frameworkModel);
+        this.errorResponseObserver.setResponseEncoder(
+                CodecUtils.determineHttpMessageCodec(frameworkModel, request.headers(), url, false));
     }
 
     private static HttpMessageCodecFactory findSuitableCodec(

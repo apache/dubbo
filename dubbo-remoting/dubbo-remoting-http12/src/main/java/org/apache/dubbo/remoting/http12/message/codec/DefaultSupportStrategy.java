@@ -27,11 +27,12 @@ public class DefaultSupportStrategy implements CodecSupportStrategy {
     }
 
     public boolean supportDecode(String contentType) {
-        return contentType.startsWith(mediaType.getName());
+        return contentType != null && contentType.startsWith(mediaType.getName());
     }
 
-    public boolean supportEncode(String accept) {
-        return accept != null && accept.contains(mediaType.getName());
+    public boolean supportEncode(String acceptOrContentType) {
+        return acceptOrContentType != null
+                && (acceptOrContentType.contains(mediaType.getName()) || supportDecode(acceptOrContentType));
     }
 
     @Override

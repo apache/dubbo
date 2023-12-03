@@ -20,7 +20,10 @@ public interface CodecSupportStrategy {
 
     boolean supportDecode(String contentType);
 
-    boolean supportEncode(String acceptEncoding);
+    /**
+     * @param acceptOrContentType If Accept header doesn't exist, use Content-Type instead
+     */
+    boolean supportEncode(String acceptOrContentType);
 
     MediaType contentType();
 }

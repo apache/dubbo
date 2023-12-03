@@ -30,6 +30,7 @@ import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.ListeningDecoder;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
+import org.apache.dubbo.remoting.http12.message.codec.CodecUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -60,14 +61,14 @@ public class DefaultHttp11ServerTransportListener
         switch (methodDescriptor.getRpcType()) {
             case UNARY:
                 Http1ServerChannelObserver http1ChannelObserver = new Http1ServerChannelObserver(httpChannel);
-                http1ChannelObserver.findAndSetEncoder(
-                        url, getHttpMetadata().headers().getAcceptEncoding(), getFrameworkModel());
+                http1ChannelObserver.setResponseEncoder(CodecUtils.determineHttpMessageCodec(
+                        getFrameworkModel(), getHttpMetadata().headers(), getUrl(), false));
                 return new AutoCompleteUnaryServerCallListener(invocation, invoker, http1ChannelObserver);
             case SERVER_STREAM:
                 Http1ServerChannelObserver serverStreamChannelObserver =
                         new Http1ServerStreamChannelObserver(httpChannel);
-                serverStreamChannelObserver.findAndSetEncoder(
-                        url, getHttpMetadata().headers().getAcceptEncoding(), getFrameworkModel());
+                serverStreamChannelObserver.setResponseEncoder(CodecUtils.determineHttpMessageCodec(
+                        getFrameworkModel(), getHttpMetadata().headers(), getUrl(), false));
                 serverStreamChannelObserver.setHeadersCustomizer((headers) -> headers.set(
                         HttpHeaderNames.CONTENT_TYPE.getName(), MediaType.TEXT_EVENT_STREAM_VALUE.getName()));
                 return new AutoCompleteServerStreamServerCallListener(invocation, invoker, serverStreamChannelObserver);

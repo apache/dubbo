@@ -216,7 +216,7 @@ public class HttpHeaders implements Map<String, List<String>>, Serializable, Clo
         return getFirst(HttpHeaderNames.CONTENT_TYPE.getName());
     }
 
-    public String getAcceptEncoding() {
+    public String getAccept() {
         return getFirst(HttpHeaderNames.ACCEPT.getName());
     }
 
