@@ -18,12 +18,9 @@ package org.apache.dubbo.remoting.http12.message;
 
 public interface CodecSupportStrategy {
 
-    boolean supportDecode(String contentType);
+    boolean supportDecode(String mediaType);
 
-    /**
-     * @param acceptOrContentType If Accept header doesn't exist, use Content-Type instead
-     */
-    boolean supportEncode(String acceptOrContentType);
+    boolean supportEncode(String mediaType);
 
     MediaType contentType();
 }

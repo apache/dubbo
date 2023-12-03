@@ -22,6 +22,10 @@ import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 public class CodecUtils {
 
     public static HttpMessageCodec determineHttpMessageCodec(
@@ -54,5 +58,16 @@ public class CodecUtils {
             }
         }
         return null;
+    }
+
+
+    public static ByteArrayOutputStream toByteArrayStream(InputStream in) throws IOException {
+        ByteArrayOutputStream result = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int length;
+        while ((length = in.read(buffer)) != -1) {
+            result.write(buffer, 0, length);
+        }
+        return result;
     }
 }
