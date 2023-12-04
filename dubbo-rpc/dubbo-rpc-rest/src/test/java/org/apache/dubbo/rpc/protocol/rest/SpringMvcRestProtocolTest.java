@@ -411,7 +411,7 @@ public class SpringMvcRestProtocolTest {
         Object proxy = aopProxy.getProxy();
         SpringRestDemoService server = (SpringRestDemoService) proxy;
 
-        URL nettyUrl = this.registerProvider(exportUrl, server, SpringRestDemoService.class);
+        URL nettyUrl = this.registerProvider(getUrl(), server, SpringRestDemoService.class);
 
         Exporter<SpringRestDemoService> exporter = getExport(nettyUrl, server);
 
