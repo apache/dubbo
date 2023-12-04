@@ -32,6 +32,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.HIDE_KEY_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.IPV6_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PACKABLE_METHOD_FACTORY_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
@@ -133,7 +134,7 @@ public class DefaultRegistryParameterCustomizer implements RegistryParameterCust
 
     @Override
     public String[] prefixesIncluded(URL providerUrl, URL registryUrl) {
-        return new String[0];
+        return new String[] {METHODS_KEY};
     }
 
     @Override

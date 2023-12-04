@@ -26,7 +26,6 @@ import java.util.stream.Stream;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.EXTRA_KEYS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.registry.Constants.SIMPLIFIED_KEY;
 import static org.apache.dubbo.registry.integration.RegistryProtocol.DEFAULT_REGISTER_PROVIDER_KEYS;
 
@@ -65,10 +64,7 @@ public class SimplifiedRegistryParameterCustomizer implements RegistryParameterC
 
     @Override
     public String[] prefixesIncluded(URL providerUrl, URL registryUrl) {
-        if (!registryUrl.getParameter(SIMPLIFIED_KEY, false)) {
-            return new String[0];
-        }
-        return new String[] {METHODS_KEY};
+        return new String[0];
     }
 
     @Override
