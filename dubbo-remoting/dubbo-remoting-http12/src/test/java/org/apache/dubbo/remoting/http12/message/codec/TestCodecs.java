@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
 public class TestCodecs {
 
     @Test
-    void testMultipartForm() {
+    void testMultipartForm1() {
         InputStream in = new ByteArrayInputStream(
                 ("--example-part-boundary\r\n" + "Content-Disposition: form-data; name=\"username\"\r\n"
                                 + "Content-Type: text/plain\r\n"
@@ -59,6 +59,9 @@ public class TestCodecs {
         Assertions.assertEquals("beijing", ((User) result[1]).getLocation());
         Assertions.assertEquals("<binary-image data>", new String((byte[]) result[2], Charsets.UTF_8));
     }
+
+    @Test
+    void testMultipartForm2() {}
 
     @Test
     void testUrlForm() {

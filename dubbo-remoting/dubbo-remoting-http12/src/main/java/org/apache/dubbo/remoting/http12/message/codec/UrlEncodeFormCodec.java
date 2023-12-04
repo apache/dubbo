@@ -83,17 +83,23 @@ public class UrlEncodeFormCodec implements HttpMessageCodec {
 
     private Map<String, Object> toMap(String formString, Class<?>[] targetTypes, boolean toMap) {
         Map<String, Object> res = new HashMap<>(1);
-        String[] parts = formString.split("[=&]");
-        if (parts.length % 2 != 0 && parts.length / 2 == targetTypes.length) {
-            throw new DecodeException("Broken request:" + formString);
-        }
-        for (int i = 0; i < parts.length - 1; i += 2) {
+        // key1=val1&key2=&key3=&key4=val4
+        String[] parts = formString.split("&");
+        for (int i = 0; i < parts.length; i++) {
+            String pair = parts[i];
+            int index = pair.indexOf("=");
+            if (index < 1) {
+                throw new DecodeException("Broken request:" + formString);
+            }
+            String key = pair.substring(0, index);
+            String val = (index == pair.length() - 1) ? "" : pair.substring(index + 1);
             res.put(
-                    parts[i],
-                    // If method param is Map or String...
-                    toMap || targetTypes[i / 2].equals(String.class)
-                            ? parts[i + 1]
-                            : converterUtil.convertIfPossible(parts[i + 1], targetTypes[i / 2]));
+                    key,
+                    toMap || targetTypes[i].equals(String.class)
+                            // method params are Map or String, use plain text as value
+                            ? val
+                            // try convert to target types
+                            : converterUtil.convertIfPossible(val, targetTypes[i]));
         }
         return res;
     }
