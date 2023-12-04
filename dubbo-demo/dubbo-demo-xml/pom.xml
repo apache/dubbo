@@ -40,7 +40,7 @@
 
   <properties>
     <skip_maven_deploy>true</skip_maven_deploy>
-    <spring-boot-maven-plugin.version>2.7.17</spring-boot-maven-plugin.version>
+    <spring-boot-maven-plugin.version>2.7.18</spring-boot-maven-plugin.version>
   </properties>
 
   <build>

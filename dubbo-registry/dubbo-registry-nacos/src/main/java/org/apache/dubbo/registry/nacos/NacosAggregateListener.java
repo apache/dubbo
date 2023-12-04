@@ -98,6 +98,6 @@ public class NacosAggregateListener {
 
     @Override
     public int hashCode() {
-        return Objects.hash(notifyListener, serviceNames, serviceInstances);
+        return Objects.hash(notifyListener);
     }
 }
