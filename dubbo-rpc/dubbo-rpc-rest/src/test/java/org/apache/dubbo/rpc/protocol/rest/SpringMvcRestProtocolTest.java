@@ -47,6 +47,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.aop.framework.AdvisedSupport;
+import org.springframework.aop.framework.AopProxy;
+import org.springframework.aop.framework.ProxyCreatorSupport;
 import org.springframework.util.LinkedMultiValueMap;
 
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
@@ -380,6 +383,35 @@ public class SpringMvcRestProtocolTest {
         SpringRestDemoService server = getServerImpl();
 
         URL nettyUrl = this.registerProvider(getUrl(), server, SpringRestDemoService.class);
+
+        Exporter<SpringRestDemoService> exporter = getExport(nettyUrl, server);
+
+        SpringRestDemoService demoService = this.proxy.getProxy(protocol.refer(SpringRestDemoService.class, nettyUrl));
+
+        Integer result = demoService.primitiveInt(1, 2);
+        Long resultLong = demoService.primitiveLong(1, 2l);
+        long resultByte = demoService.primitiveByte((byte) 1, 2l);
+        long resultShort = demoService.primitiveShort((short) 1, 2l, 1);
+
+        assertThat(result, is(3));
+        assertThat(resultShort, is(3l));
+        assertThat(resultLong, is(3l));
+        assertThat(resultByte, is(3l));
+
+        exporter.unexport();
+    }
+
+    @Test
+    void testProxyDoubleCheck() {
+
+        ProxyCreatorSupport proxyCreatorSupport = new ProxyCreatorSupport();
+        AdvisedSupport advisedSupport = new AdvisedSupport();
+        advisedSupport.setTarget(getServerImpl());
+        AopProxy aopProxy = proxyCreatorSupport.getAopProxyFactory().createAopProxy(advisedSupport);
+        Object proxy = aopProxy.getProxy();
+        SpringRestDemoService server = (SpringRestDemoService) proxy;
+
+        URL nettyUrl = this.registerProvider(exportUrl, server, SpringRestDemoService.class);
 
         Exporter<SpringRestDemoService> exporter = getExport(nettyUrl, server);
 

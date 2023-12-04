@@ -19,6 +19,7 @@ package org.apache.dubbo.metadata.report;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.resource.Disposable;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.metadata.report.support.NopMetadataReport;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -35,6 +36,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_FILE_CACHE_ENABLED;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
+import static org.apache.dubbo.metadata.MetadataConstants.NAMESPACE_KEY;
 import static org.apache.dubbo.metadata.report.support.Constants.METADATA_REPORT_KEY;
 
 /**
@@ -102,16 +104,24 @@ public class MetadataReportInstance implements Disposable {
         url = url.addParameterIfAbsent(
                 REGISTRY_LOCAL_FILE_CACHE_ENABLED,
                 String.valueOf(applicationModel.getCurrentConfig().getEnableFileCache()));
-        String relatedRegistryId = isEmpty(config.getRegistry())
-                ? (isEmpty(config.getId()) ? DEFAULT_KEY : config.getId())
-                : config.getRegistry();
         //        RegistryConfig registryConfig = applicationModel.getConfigManager().getRegistry(relatedRegistryId)
         //                .orElseThrow(() -> new IllegalStateException("Registry id " + relatedRegistryId + " does not
         // exist."));
         MetadataReport metadataReport = metadataReportFactory.getMetadataReport(url);
         if (metadataReport != null) {
-            metadataReports.put(relatedRegistryId, metadataReport);
+            metadataReports.put(getRelatedRegistryId(config, url), metadataReport);
         }
+    }
+
+    private String getRelatedRegistryId(MetadataReportConfig config, URL url) {
+        String relatedRegistryId = isEmpty(config.getRegistry())
+                ? (isEmpty(config.getId()) ? DEFAULT_KEY : config.getId())
+                : config.getRegistry();
+        String namespace = url.getParameter(NAMESPACE_KEY);
+        if (!StringUtils.isEmpty(namespace)) {
+            relatedRegistryId += ":" + namespace;
+        }
+        return relatedRegistryId;
     }
 
     public Map<String, MetadataReport> getMetadataReports(boolean checked) {
