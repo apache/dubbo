@@ -23,6 +23,8 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.QueryStringEncoder;
 
+import java.io.Serializable;
+
 import static org.apache.dubbo.rpc.RpcException.FORBIDDEN_EXCEPTION;
 import static org.apache.dubbo.rpc.RpcException.LIMIT_EXCEEDED_EXCEPTION;
 import static org.apache.dubbo.rpc.RpcException.METHOD_NOT_FOUND;
@@ -35,7 +37,7 @@ import static org.apache.dubbo.rpc.RpcException.UNKNOWN_EXCEPTION;
 /**
  * See https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
  */
-public class TriRpcStatus {
+public class TriRpcStatus implements Serializable {
 
     public static final TriRpcStatus OK = fromCode(Code.OK);
     public static final TriRpcStatus UNKNOWN = fromCode(Code.UNKNOWN);

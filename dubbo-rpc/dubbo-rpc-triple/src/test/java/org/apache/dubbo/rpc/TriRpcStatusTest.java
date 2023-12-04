@@ -23,6 +23,8 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.io.Serializable;
+
 import static org.apache.dubbo.rpc.RpcException.FORBIDDEN_EXCEPTION;
 import static org.apache.dubbo.rpc.RpcException.METHOD_NOT_FOUND;
 import static org.apache.dubbo.rpc.RpcException.TIMEOUT_EXCEPTION;
@@ -213,5 +215,12 @@ class TriRpcStatusTest {
         Assertions.assertEquals(FORBIDDEN_EXCEPTION, TriRpcStatus.triCodeToDubboCode(Code.PERMISSION_DENIED));
         Assertions.assertEquals(METHOD_NOT_FOUND, TriRpcStatus.triCodeToDubboCode(Code.UNIMPLEMENTED));
         Assertions.assertEquals(UNKNOWN_EXCEPTION, TriRpcStatus.triCodeToDubboCode(Code.UNKNOWN));
+    }
+
+    @Test
+    void testSerializable() {
+        TriRpcStatus status = TriRpcStatus.INTERNAL.withDescription("test");
+        Assertions.assertInstanceOf(Serializable.class, status.asException());
+        Assertions.assertInstanceOf(Serializable.class, status.asException().getStatus());
     }
 }
