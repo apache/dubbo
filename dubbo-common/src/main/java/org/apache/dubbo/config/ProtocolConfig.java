@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.serialization.PreferSerializationProvider;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
@@ -29,7 +30,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_POOL_EXHAUSTED_LISTENERS_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
-import static org.apache.dubbo.common.constants.ProviderConstants.DEFAULT_PREFER_SERIALIZATION;
 
 /**
  * ProtocolConfig
@@ -262,7 +262,12 @@ public class ProtocolConfig extends AbstractConfig {
         }
 
         if (StringUtils.isBlank(preferSerialization)) {
-            preferSerialization = serialization != null ? serialization : DEFAULT_PREFER_SERIALIZATION;
+            preferSerialization = serialization != null
+                    ? serialization
+                    : getScopeModel()
+                            .getBeanFactory()
+                            .getBean(PreferSerializationProvider.class)
+                            .getPreferSerialization();
         }
     }
 

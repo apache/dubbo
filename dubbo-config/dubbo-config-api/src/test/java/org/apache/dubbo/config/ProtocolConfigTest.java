@@ -31,7 +31,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.apache.dubbo.common.constants.ProviderConstants.DEFAULT_PREFER_SERIALIZATION;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -43,6 +42,7 @@ class ProtocolConfigTest {
     @BeforeEach
     public void setUp() {
         DubboBootstrap.reset();
+        //        FrameworkModel.defaultModel().getBeanFactory().registerBean(TestPreferSerializationProvider.class);
     }
 
     @AfterEach
@@ -389,7 +389,7 @@ class ProtocolConfigTest {
         assertNull(protocolConfig.getPreferSerialization());
 
         protocolConfig.checkDefault();
-        assertThat(protocolConfig.getPreferSerialization(), equalTo(DEFAULT_PREFER_SERIALIZATION));
+        assertThat(protocolConfig.getPreferSerialization(), equalTo("fastjson2,hessian2"));
 
         protocolConfig = new ProtocolConfig();
         protocolConfig.setSerialization("x-serialization");
@@ -405,7 +405,7 @@ class ProtocolConfigTest {
         assertNull(protocolConfig.getPreferSerialization());
 
         protocolConfig.refresh();
-        assertThat(protocolConfig.getPreferSerialization(), equalTo(DEFAULT_PREFER_SERIALIZATION));
+        assertThat(protocolConfig.getPreferSerialization(), equalTo("fastjson2,hessian2"));
 
         protocolConfig = new ProtocolConfig();
         protocolConfig.setSerialization("x-serialization");

@@ -14,15 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.constants;
+package org.apache.dubbo.common.serialize;
 
-/**
- * Provider Constants
- */
-public interface ProviderConstants {
+import org.apache.dubbo.common.serialize.support.PreferSerializationProviderImpl;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 
-    /**
-     * Default prefer serialization,multiple separated by commas
-     */
-    String DEFAULT_PREFER_SERIALIZATION = "fastjson2,hessian2";
+public class SerializationScopeModelInitializer implements ScopeModelInitializer {
+    @Override
+    public void initializeFrameworkModel(FrameworkModel frameworkModel) {
+        frameworkModel.getBeanFactory().registerBean(PreferSerializationProviderImpl.class);
+    }
+
+    @Override
+    public void initializeApplicationModel(ApplicationModel applicationModel) {}
+
+    @Override
+    public void initializeModuleModel(ModuleModel moduleModel) {}
 }
