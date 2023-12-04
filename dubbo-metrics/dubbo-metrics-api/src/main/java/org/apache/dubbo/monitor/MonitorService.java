@@ -23,6 +23,7 @@ import java.util.List;
 /**
  * MonitorService. (SPI, Prototype, ThreadSafe)
  */
+@Deprecated
 public interface MonitorService {
 
     /**

@@ -16,11 +16,24 @@
  */
 package org.apache.dubbo.monitor;
 
-import org.apache.dubbo.common.Node;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.extension.Adaptive;
+import org.apache.dubbo.common.extension.SPI;
 
 /**
- * Monitor. (SPI, Prototype, ThreadSafe)
- *
- * @see org.apache.dubbo.monitor.MonitorFactory#getMonitor(org.apache.dubbo.common.URL)
+ * MonitorFactory. (SPI, Singleton, ThreadSafe)
  */
-public interface Monitor extends Node, MonitorService {}
+@Deprecated
+@SPI
+public interface MonitorFactory {
+
+    /**
+     * Create monitor.
+     *
+     * @param url
+     * @return monitor
+     */
+    @Adaptive(CommonConstants.PROTOCOL_KEY)
+    Monitor getMonitor(URL url);
+}
