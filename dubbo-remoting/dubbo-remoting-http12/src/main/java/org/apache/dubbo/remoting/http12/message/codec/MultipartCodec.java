@@ -121,7 +121,6 @@ public class MultipartCodec implements HttpMessageCodec {
             ByteArrayOutputStream partData = new ByteArrayOutputStream();
             HttpHeaders headers = new HttpHeaders();
 
-            // 读到下一个boundary之前
             endOfStream = readPart(inputStream, delimiter, headers, partData);
 
             if (partData.size() > 0) {
@@ -143,7 +142,6 @@ public class MultipartCodec implements HttpMessageCodec {
         throw new DecodeException("Boundary not found in Content-Type, contentType=" + contentType);
     }
 
-    // 读完保证stream到达下一个part的开头
     private boolean readPart(
             InputStream inputStream, String delimiter, HttpHeaders headers, ByteArrayOutputStream partData)
             throws IOException {
