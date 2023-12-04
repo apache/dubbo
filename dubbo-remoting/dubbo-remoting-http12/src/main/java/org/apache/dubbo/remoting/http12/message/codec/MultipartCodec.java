@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
@@ -197,6 +198,10 @@ public class MultipartCodec implements HttpMessageCodec {
             throw new DecodeException("Broken request: cannot found multipart body header end");
         }
         parseHeaderLine(httpHeaders, fullHeader.split(CRLF));
+        if (httpHeaders.getContentType() == null) {
+            httpHeaders.put(HttpHeaderNames.CONTENT_TYPE.getName(), Collections.singletonList("text/plain"));
+        }
+
         return streamEnd;
     }
 
@@ -226,9 +231,11 @@ public class MultipartCodec implements HttpMessageCodec {
             if (currentString.contains(delimiter)) {
                 int indexOfDelimiter = currentString.indexOf(delimiter);
                 // indexOfDelimiter contains CRLF of data tail
-                partData.write(buffer, 0, indexOfDelimiter - 2);
+                byte[] toWrite =
+                        currentString.substring(0, indexOfDelimiter - 2).getBytes(StandardCharsets.UTF_8);
+                partData.write(toWrite);
                 inputStream.reset();
-                inputStream.skip(indexOfDelimiter);
+                inputStream.skip(toWrite.length + 2);
                 // is end delimiter (--example-part-boundary--\r\n)
                 if (currentString.length() > indexOfDelimiter + delimiter.length() + 1
                         && currentString.charAt(indexOfDelimiter + delimiter.length()) == '-'
