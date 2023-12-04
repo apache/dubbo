@@ -150,7 +150,7 @@
 
     <protobuf-protoc_version>3.22.3</protobuf-protoc_version>
     <grpc_version>1.54.0</grpc_version>
-    <spotless-maven-plugin.version>2.40.0</spotless-maven-plugin.version>
+    <spotless-maven-plugin.version>2.41.0</spotless-maven-plugin.version>
     <spotless.action>check</spotless.action>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
@@ -869,6 +869,12 @@
                   <exclude>src/main/java/org/apache/dubbo/common/logger/helpers/MessageFormatter.java</exclude>
                   <exclude>src/main/java/org/apache/dubbo/maven/plugin/protoc/DubboProtocCompilerMojo.java</exclude>
                   <exclude>src/main/java/org/apache/dubbo/gen/utils/ProtoTypeMap.java</exclude>
+                  <exclude>**/TripleWrapper.java</exclude>
+                  <exclude>**/com/google/rpc/**</exclude>
+                  <exclude>**/io/grpc/**</exclude>
+                  <exclude>**/istio/**</exclude>
+                  <exclude>**/org/apache/dubbo/auth/v1alpha1/**</exclude>
+                  <exclude>**/demo/hello/**</exclude>
                 </excludes>
                 <palantirJavaFormat>
                   <version>${palantirJavaFormat.version}</version>
