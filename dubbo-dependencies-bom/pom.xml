@@ -207,7 +207,6 @@
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
     <revision>3.3.0-beta.2-SNAPSHOT</revision>
     <open_feign_version>3.1.5</open_feign_version>
-    <commons_fileupload.version>1.4</commons_fileupload.version>
   </properties>
 
   <dependencyManagement>
@@ -636,11 +635,6 @@
         <groupId>org.apache.tomcat.embed</groupId>
         <artifactId>tomcat-embed-core</artifactId>
         <version>${tomcat_embed_version}</version>
-      </dependency>
-      <dependency>
-        <groupId>commons-fileupload</groupId>
-        <artifactId>commons-fileupload</artifactId>
-        <version>${commons_fileupload.version}</version>
       </dependency>
       <dependency>
         <groupId>io.etcd</groupId>
