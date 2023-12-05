@@ -24,10 +24,11 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Random;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Function;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -138,6 +139,54 @@ public class TestCodecs {
     }
 
     @Test
+    void testMultipartFormBodyBoundary() {
+        // check if codec can handle boundary correctly when the end delimiter just beyond the buffer.
+        // header buffer size: 128; body buffer size: 256
+        // --example-boundary\r\n   [20bytes]
+        // Content-Type: plain/text [paddings]\r\n\r\n [108bytes]
+        // body1r\n [238bytes]
+        // --example-boundary--\r\n [22bytes] , last --\r\n [4bytes] beyond buffer
+        byte[] boundary = "--example-boundary\r\n".getBytes();
+        byte[] header = "Content-Type: plain/text".getBytes();
+        byte[] headerPadding = new byte[128 - header.length - boundary.length - "\r\n\r\n".length()];
+        byte[] headerBytes = new byte[128];
+        byte[] body1 = new byte[238];
+        byte[] end = "--example-boundary--\r\n".getBytes();
+        byte[] bodyWithEnd = new byte[260];
+
+        Random random = new Random();
+        random.nextBytes(body1);
+        body1[236] = '\r';
+        body1[237] = '\n';
+        Arrays.fill(headerPadding, (byte) 0);
+
+        System.arraycopy(boundary, 0, headerBytes, 0, boundary.length);
+        System.arraycopy(header, 0, headerBytes, boundary.length, header.length);
+
+        System.arraycopy(headerPadding, 0, headerBytes, boundary.length + header.length, headerPadding.length);
+        System.arraycopy(
+                "\r\n\r\n".getBytes(),
+                0,
+                headerBytes,
+                boundary.length + header.length + headerPadding.length,
+                "\r\n\r\n".length());
+        System.arraycopy(body1, 0, bodyWithEnd, 0, body1.length);
+        System.arraycopy(end, 0, bodyWithEnd, body1.length, end.length);
+
+        byte[] fullRequestBody = new byte[256 + 128 + 4];
+        System.arraycopy(headerBytes, 0, fullRequestBody, 0, headerBytes.length);
+        System.arraycopy(bodyWithEnd, 0, fullRequestBody, headerBytes.length, bodyWithEnd.length);
+
+        HttpMessageCodec codec = new MultipartCodec(
+                null, FrameworkModel.defaultModel(), "multipart/form-data; boundary=example-boundary");
+        byte[] res = (byte[]) codec.decode(new ByteArrayInputStream(fullRequestBody), byte[].class);
+
+        for (int k = 0; k < body1.length - 2; k++) {
+            Assertions.assertEquals(body1[k], res[k]);
+        }
+    }
+
+    @Test
     void testUrlForm() {
         InputStream in = new ByteArrayInputStream("Hello=World&Apache=Dubbo&id=10086".getBytes());
         HttpMessageCodec codec = new UrlEncodeFormCodec(
@@ -243,19 +292,5 @@ public class TestCodecs {
         codec = new PlainTextCodec("text/plain; charset=UTF-16");
         res = (String) codec.decode(in, String.class);
         Assertions.assertEquals("你好，世界", res);
-    }
-
-    static class MultipartTestCase {
-        String body;
-
-        Class<?>[] targetTypes;
-
-        Function<Object[], Boolean> verification;
-
-        public MultipartTestCase(String body, Class<?>[] targetTypes, Function<Object[], Boolean> verification) {
-            this.body = body;
-            this.targetTypes = targetTypes;
-            this.verification = verification;
-        }
     }
 }

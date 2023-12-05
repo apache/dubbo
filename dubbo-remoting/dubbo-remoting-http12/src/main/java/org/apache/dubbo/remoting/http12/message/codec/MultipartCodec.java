@@ -167,21 +167,25 @@ public class MultipartCodec implements HttpMessageCodec {
         if (inputStream.read(delimiterBuffer) == -1) {
             return true;
         }
-        String readDelimiter = new String(delimiterBuffer, StandardCharsets.UTF_8);
+        String readDelimiter = new String(delimiterBuffer, StandardCharsets.US_ASCII);
         if (!Objects.equals(readDelimiter, delimiter)) {
             throw new DecodeException("Multipart body boundary are different from header");
         }
         while (!headerEnd) {
+
             inputStream.mark(Integer.MAX_VALUE);
+
             len = inputStream.read(buffer);
             if (len == -1) {
                 break;
             }
+
             // read to 2*CRLF (end of header)
             String currentString = new String(buffer, 0, len, StandardCharsets.UTF_8);
             fullHeaderBuilder.append(currentString);
-            int endIndex;
+
             // check if currentString contains CRLF
+            int endIndex;
             if ((endIndex = fullHeaderBuilder.indexOf(endOfHeaderSign)) != -1) {
                 // make stream reset to body start of current part
                 inputStream.reset();
@@ -195,7 +199,9 @@ public class MultipartCodec implements HttpMessageCodec {
         if (streamEnd && !headerEnd) {
             throw new DecodeException("Broken request: cannot found multipart body header end");
         }
+
         parseHeaderLine(httpHeaders, fullHeader.split(CRLF));
+
         if (httpHeaders.getContentType() == null) {
             httpHeaders.put(HttpHeaderNames.CONTENT_TYPE.getName(), Collections.singletonList("text/plain"));
         }
@@ -225,22 +231,38 @@ public class MultipartCodec implements HttpMessageCodec {
             if (len == -1) {
                 return true;
             }
-            String currentString = new String(buffer, 0, len, StandardCharsets.UTF_8);
+            String currentString = new String(buffer, 0, len, StandardCharsets.US_ASCII);
             if (currentString.contains(delimiter)) {
                 int indexOfDelimiter = currentString.indexOf(delimiter);
-                // indexOfDelimiter contains CRLF of data tail
-                byte[] toWrite =
-                        currentString.substring(0, indexOfDelimiter - 2).getBytes(StandardCharsets.UTF_8);
+
+                // skip the CRLF of data tail
+                byte[] toWrite = new byte[indexOfDelimiter - 2];
+                System.arraycopy(buffer, 0, toWrite, 0, indexOfDelimiter - 2);
                 partData.write(toWrite);
-                inputStream.reset();
-                inputStream.skip(toWrite.length + 2);
-                // is end delimiter (--example-part-boundary--\r\n)
+
+                // check end delimiter (--\r\n) to determine if this part is the last body part
+                // for compatibility with non-standard clients, we won't check the last CRLF
                 if (currentString.length() > indexOfDelimiter + delimiter.length() + 1
                         && currentString.charAt(indexOfDelimiter + delimiter.length()) == '-'
                         && currentString.charAt(indexOfDelimiter + delimiter.length() + 1) == '-') {
-                    // skip: --\r\n
-                    inputStream.skip(4);
                     return true;
+                }
+
+                // read from stream to check end delimiter
+                else if (currentString.length() < indexOfDelimiter + delimiter.length() + 1) {
+                    inputStream.mark(2);
+                    byte[] endDelimiter = new byte[2];
+                    if (inputStream.read(endDelimiter) != 2) {
+                        throw new DecodeException("Boundary end is incomplete");
+                    }
+                    if (endDelimiter[0] == '-' && endDelimiter[1] == '-') {
+                        return true;
+                    } else {
+                        inputStream.reset();
+                    }
+                } else {
+                    inputStream.reset();
+                    inputStream.skip(toWrite.length + 2);
                 }
                 return false;
             }
