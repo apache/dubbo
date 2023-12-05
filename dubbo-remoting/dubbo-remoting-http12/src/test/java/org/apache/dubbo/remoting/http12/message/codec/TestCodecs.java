@@ -187,6 +187,78 @@ public class TestCodecs {
     }
 
     @Test
+    void testMultipartFormBodyBoundary2() {
+        // check if codec can handle boundary correctly when the end delimiter just beyond the buffer.
+        // header buffer size: 128; body buffer size: 256
+        // --example-boundary-\r\n   [21bytes]
+        // Content-Type: plain/text [paddings]\r\n\r\n [107bytes]
+        // body1r\n [237bytes]
+        // --example-boundary-\r\n [21bytes] , \r\n [2bytes] beyond buffer
+        // body2\r\n [7bytes]
+        // --example-boundary--- [23bytes]
+        byte[] boundary = "--example-boundary-\r\n".getBytes();
+        byte[] subHeader = "Content-Type: plain/text".getBytes();
+        byte[] subHeaderWithCRLF = "Content-Type: plain/text\r\n\r\n".getBytes();
+        byte[] headerPadding = new byte[128 - subHeader.length - boundary.length - "\r\n\r\n".length()];
+        byte[] headerBytes = new byte[128];
+        byte[] body1 = new byte[237];
+        byte[] body1WithEnd = new byte[body1.length + boundary.length];
+        byte[] body2 = "body2\r\n".getBytes();
+        byte[] end = "--example-boundary---\r\n".getBytes();
+
+        Random random = new Random();
+        random.nextBytes(body1);
+        body1[body1.length - 1] = '\n';
+        body1[body1.length - 2] = '\r';
+        Arrays.fill(headerPadding, (byte) 0);
+
+        System.arraycopy(boundary, 0, headerBytes, 0, boundary.length);
+        System.arraycopy(subHeader, 0, headerBytes, boundary.length, subHeader.length);
+        System.arraycopy(headerPadding, 0, headerBytes, boundary.length + subHeader.length, headerPadding.length);
+        System.arraycopy(
+                "\r\n\r\n".getBytes(),
+                0,
+                headerBytes,
+                boundary.length + subHeader.length + headerPadding.length,
+                "\r\n\r\n".length());
+        System.arraycopy(body1, 0, body1WithEnd, 0, body1.length);
+        System.arraycopy(boundary, 0, body1WithEnd, body1.length, boundary.length);
+
+        byte[] fullRequestBody = new byte
+                [headerBytes.length + body1WithEnd.length + subHeaderWithCRLF.length + body2.length + end.length];
+        System.arraycopy(headerBytes, 0, fullRequestBody, 0, headerBytes.length);
+        System.arraycopy(body1WithEnd, 0, fullRequestBody, headerBytes.length, body1WithEnd.length);
+        System.arraycopy(
+                subHeaderWithCRLF,
+                0,
+                fullRequestBody,
+                headerBytes.length + body1WithEnd.length,
+                subHeaderWithCRLF.length);
+        System.arraycopy(
+                body2,
+                0,
+                fullRequestBody,
+                headerBytes.length + body1WithEnd.length + subHeaderWithCRLF.length,
+                body2.length);
+        System.arraycopy(
+                end,
+                0,
+                fullRequestBody,
+                headerBytes.length + body1WithEnd.length + subHeaderWithCRLF.length + body2.length,
+                end.length);
+
+        HttpMessageCodec codec = new MultipartCodec(
+                null, FrameworkModel.defaultModel(), "multipart/form-data; boundary=example-boundary");
+        Object[] r = codec.decode(new ByteArrayInputStream(fullRequestBody), new Class[] {byte[].class, String.class});
+        byte[] res = (byte[]) r[0];
+        for (int k = 0; k < body1.length - 2; k++) {
+            Assertions.assertEquals(body1[k], res[k]);
+        }
+        String res2 = (String) r[1];
+        Assertions.assertEquals("body2", res2);
+    }
+
+    @Test
     void testUrlForm() {
         InputStream in = new ByteArrayInputStream("Hello=World&Apache=Dubbo&id=10086".getBytes());
         HttpMessageCodec codec = new UrlEncodeFormCodec(

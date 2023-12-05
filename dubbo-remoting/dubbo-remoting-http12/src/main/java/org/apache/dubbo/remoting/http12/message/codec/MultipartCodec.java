@@ -250,7 +250,6 @@ public class MultipartCodec implements HttpMessageCodec {
 
                 // read from stream to check end delimiter
                 else if (currentString.length() <= indexOfDelimiter + delimiter.length() + 1) {
-                    inputStream.mark(2);
                     byte[] endDelimiter = new byte[2];
                     if (inputStream.read(endDelimiter) != 2) {
                         throw new DecodeException("Boundary end is incomplete");
@@ -259,6 +258,7 @@ public class MultipartCodec implements HttpMessageCodec {
                         return true;
                     } else {
                         inputStream.reset();
+                        inputStream.skip(toWrite.length + 2);
                     }
                 } else {
                     inputStream.reset();
