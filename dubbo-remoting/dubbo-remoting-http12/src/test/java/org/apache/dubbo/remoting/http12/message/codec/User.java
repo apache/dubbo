@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.remoting.http12.message.codec;
 
-import java.io.Serializable;
+import javax.xml.bind.annotation.XmlRootElement;
 
-import jakarta.xml.bind.annotation.XmlRootElement;
+import java.io.Serializable;
 
 @XmlRootElement
 public class User implements Serializable {
