@@ -136,7 +136,7 @@ public class ApplicationModel extends ScopeModel {
 
     // already synchronized in constructor
     private void initApplicationExts() {
-        // 这个货站实现一共有两个 ConfigManager 和 Environment
+        // 这个扩展实现一共有两个 ConfigManager 和 Environment
         Set<ApplicationExt> exts = this.getExtensionLoader(ApplicationExt.class).getSupportedExtensionInstances();
         for (ApplicationExt ext : exts) {
             ext.initialize();

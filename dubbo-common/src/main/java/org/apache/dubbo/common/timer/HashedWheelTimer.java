@@ -555,6 +555,9 @@ public class HashedWheelTimer implements Timer {
         }
     }
 
+    /**
+     * 时间轮双链表结构-
+     */
     private static final class HashedWheelTimeout implements Timeout {
 
         private static final int ST_INIT = 0;

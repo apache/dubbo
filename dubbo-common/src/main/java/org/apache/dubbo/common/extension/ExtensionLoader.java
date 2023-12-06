@@ -115,7 +115,9 @@ public class ExtensionLoader<T> {
     private static final String  SPECIAL_SPI_PROPERTIES = "special_spi.properties";
 
     private final ConcurrentMap<Class<?>, Object> extensionInstances = new ConcurrentHashMap<>(64);
-
+    /**
+     * 当前ExtensionLoader实例负责加载扩展接口
+     */
     private final Class<?> type;
 
     private final ExtensionInjector injector;
@@ -133,6 +135,9 @@ public class ExtensionLoader<T> {
     private final    ConcurrentMap<String, Holder<Object>> cachedInstances        = new ConcurrentHashMap<>();
     private final    Holder<Object>                        cachedAdaptiveInstance = new Holder<>();
     private volatile Class<?>                              cachedAdaptiveClass    = null;
+    /**
+     * 记录这个type的扩展接口上的spi注解的value的值,也就是默认扩展名
+     */
     private          String                                cachedDefaultName;
     private volatile Throwable                             createAdaptiveInstanceError;
 

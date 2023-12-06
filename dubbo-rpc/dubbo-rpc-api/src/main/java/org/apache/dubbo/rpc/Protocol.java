@@ -54,6 +54,9 @@ import java.util.List;
  * </li>
  *
  * (API/SPI, Singleton, ThreadSafe)
+ * 加载 dubbo 这个扩展名对应的 org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol 这个扩展实现类，
+ * 相关的 SPI 配置文件在 dubbo-rpc-dubbo 模块
+ * dubbo=org.apache.dubbo.rpc.protocol.dubbo
  */
 @SPI(value = "dubbo", scope = ExtensionScope.FRAMEWORK)
 public interface Protocol {

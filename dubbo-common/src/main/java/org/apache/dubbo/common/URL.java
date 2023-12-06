@@ -180,11 +180,11 @@ class URL implements Serializable {
         this(protocol, username, password, host, port, path, CollectionUtils.toStringMap(pairs));
     }
 
-    public URL(String protocol,
-               String username,
-               String password,
-               String host,
-               int port,
+    public URL(String protocol, //协议
+               String username,//用户名
+               String password,//密码
+               String host,    //
+               int port,       //端口号
                String path,
                Map<String, String> parameters) {
         if (StringUtils.isEmpty(username)
