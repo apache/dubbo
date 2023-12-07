@@ -68,6 +68,17 @@ public interface DescriptorService {
 
     void sayHelloServerStream2(Object request, StreamObserver<Object> reply);
 
+    /**
+     * obtain actual type in streamObserver
+     */
+    void serverStream1(Object request, StreamObserver<String> streamObserver);
+
+    void serverStream2(Object request, StreamObserver<DataWrapper<String>> streamObserver);
+
+    StreamObserver<String> biStream1(StreamObserver<String> streamObserver);
+
+    StreamObserver<DataWrapper<String>> biStream2(StreamObserver<DataWrapper<String>> streamObserver);
+
     /***********************grpc******************************/
     java.util.Iterator<HelloReply> iteratorServerStream(HelloReply request);
 

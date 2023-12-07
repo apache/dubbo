@@ -14,15 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.constants;
+package org.apache.dubbo.rpc.protocol.tri;
 
-/**
- * Provider Constants
- */
-public interface ProviderConstants {
-
-    /**
-     * Default prefer serialization,multiple separated by commas
-     */
-    String DEFAULT_PREFER_SERIALIZATION = "fastjson2,hessian2";
+public class DataWrapper<T> {
+    public T data;
 }

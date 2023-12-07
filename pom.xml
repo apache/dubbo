@@ -167,7 +167,7 @@
     <jprotoc_version>1.2.2</jprotoc_version>
     <protobuf-java_version>3.22.3</protobuf-java_version>
     <grpc_version>1.54.0</grpc_version>
-    <spotless-maven-plugin.version>2.41.0</spotless-maven-plugin.version>
+    <spotless-maven-plugin.version>2.41.1</spotless-maven-plugin.version>
     <spotless.action>check</spotless.action>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
@@ -894,12 +894,7 @@
                   <exclude>src/main/java/org/apache/dubbo/aot/generate/MemberCategory.java</exclude>
                   <exclude>src/main/java/org/apache/dubbo/metrics/aggregate/DubboMergingDigest.java</exclude>
                   <exclude>src/main/java/org/apache/dubbo/metrics/aggregate/DubboAbstractTDigest.java</exclude>
-                  <exclude>**/TripleWrapper.java</exclude>
-                  <exclude>**/com/google/rpc/**</exclude>
-                  <exclude>**/io/grpc/**</exclude>
-                  <exclude>**/istio/**</exclude>
-                  <exclude>**/org/apache/dubbo/auth/v1alpha1/**</exclude>
-                  <exclude>**/demo/hello/**</exclude>
+                  <exclude>**/generated-sources/**</exclude>
                 </excludes>
                 <palantirJavaFormat>
                   <version>${palantirJavaFormat.version}</version>
