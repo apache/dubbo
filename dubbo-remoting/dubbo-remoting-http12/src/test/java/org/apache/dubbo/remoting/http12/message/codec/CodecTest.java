@@ -17,10 +17,13 @@
 package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.convert.ConverterUtil;
+import org.apache.dubbo.remoting.http12.exception.DecodeException;
+import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -87,21 +90,24 @@ public class CodecTest {
     @Test
     void testMultipartForm1() {
         InputStream in = new ByteArrayInputStream(MULTIPART_SAMPLE_1.getBytes());
-        HttpMessageCodec codec = new MultipartCodec(
-                null, FrameworkModel.defaultModel(), "multipart/form-data; boundary=example-part-boundary");
+        HttpMessageCodec codec = new MultipartCodecFactory()
+                .createCodec(
+                        null, FrameworkModel.defaultModel(), "multipart/form-data; boundary=example-part-boundary");
         Object[] result = codec.decode(in, new Class[] {String.class, User.class, byte[].class});
         Assertions.assertEquals("LuYue", result[0]);
         Assertions.assertTrue(result[1] instanceof User);
         Assertions.assertEquals("LuYue", ((User) result[1]).getUsername());
         Assertions.assertEquals("beijing", ((User) result[1]).getLocation());
         Assertions.assertEquals("<binary-image data>", new String((byte[]) result[2], Charsets.UTF_8));
+
+        Assertions.assertThrows(EncodeException.class, () -> codec.encode(new ByteArrayOutputStream(), result[0]));
     }
 
     @Test
     void testMultipartForm2() {
         InputStream in = new ByteArrayInputStream(MULTIPART_SAMPLE_2.getBytes());
-        HttpMessageCodec codec =
-                new MultipartCodec(null, FrameworkModel.defaultModel(), "multipart/form-data; boundary=boundary123");
+        HttpMessageCodec codec = new MultipartCodecFactory()
+                .createCodec(null, FrameworkModel.defaultModel(), "multipart/form-data; boundary=boundary123");
         Object[] result = codec.decode(in, new Class[] {String.class, byte[].class});
         Assertions.assertEquals("simple text", result[0]);
         Assertions.assertEquals(
@@ -111,8 +117,8 @@ public class CodecTest {
     @Test
     void testMultipartForm3() {
         InputStream in = new ByteArrayInputStream(MULTIPART_SAMPLE_3.getBytes());
-        HttpMessageCodec codec =
-                new MultipartCodec(null, FrameworkModel.defaultModel(), "multipart/form-data; boundary=boundaryABC");
+        HttpMessageCodec codec = new MultipartCodecFactory()
+                .createCodec(null, FrameworkModel.defaultModel(), "multipart/form-data; boundary=boundaryABC");
         Object[] result = codec.decode(in, new Class[] {String.class, String.class});
         Assertions.assertEquals("这是一些中文内容", result[0]);
         Assertions.assertEquals("😊", result[1]);
@@ -121,8 +127,8 @@ public class CodecTest {
     @Test
     void testMultipartForm4() {
         InputStream in = new ByteArrayInputStream(MULTIPART_SAMPLE_4.getBytes());
-        HttpMessageCodec codec =
-                new MultipartCodec(null, FrameworkModel.defaultModel(), "multipart/form-data; boundary=longValue");
+        HttpMessageCodec codec = new MultipartCodecFactory()
+                .createCodec(null, FrameworkModel.defaultModel(), "multipart/form-data; boundary=longValue");
         Object[] result = codec.decode(in, new Class[] {String.class});
         Assertions.assertEquals(
                 "This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.This is a really long value that continues for many lines.",
@@ -132,8 +138,8 @@ public class CodecTest {
     @Test
     void testMultipartForm5() {
         InputStream in = new ByteArrayInputStream(MULTIPART_SAMPLE_5.getBytes());
-        HttpMessageCodec codec =
-                new MultipartCodec(null, FrameworkModel.defaultModel(), "multipart/form-data; boundary=specialChar");
+        HttpMessageCodec codec = new MultipartCodecFactory()
+                .createCodec(null, FrameworkModel.defaultModel(), "multipart/form-data; boundary=specialChar");
         Object[] result = codec.decode(in, new Class[] {String.class});
         Assertions.assertEquals("Line 1\n" + "Line 2\r\n" + "--Line 3--\n" + "Line 4\n", result[0]);
     }
@@ -177,8 +183,8 @@ public class CodecTest {
         System.arraycopy(headerBytes, 0, fullRequestBody, 0, headerBytes.length);
         System.arraycopy(bodyWithEnd, 0, fullRequestBody, headerBytes.length, bodyWithEnd.length);
 
-        HttpMessageCodec codec = new MultipartCodec(
-                null, FrameworkModel.defaultModel(), "multipart/form-data; boundary=example-boundary");
+        HttpMessageCodec codec = new MultipartCodecFactory()
+                .createCodec(null, FrameworkModel.defaultModel(), "multipart/form-data; boundary=example-boundary");
         byte[] res = (byte[]) codec.decode(new ByteArrayInputStream(fullRequestBody), byte[].class);
 
         for (int k = 0; k < body1.length - 2; k++) {
@@ -261,8 +267,9 @@ public class CodecTest {
     @Test
     void testUrlForm() {
         InputStream in = new ByteArrayInputStream("Hello=World&Apache=Dubbo&id=10086".getBytes());
-        HttpMessageCodec codec = new UrlEncodeFormCodec(
-                FrameworkModel.defaultModel().getBeanFactory().getBean(ConverterUtil.class));
+        UrlEncodeFormCodecFactory factory = new UrlEncodeFormCodecFactory();
+        factory.setConverterUtil(FrameworkModel.defaultModel().getBeanFactory().getBean(ConverterUtil.class));
+        HttpMessageCodec codec = factory.createCodec(null, FrameworkModel.defaultModel(), null);
         Object res = codec.decode(in, Map.class);
         Assertions.assertTrue(res instanceof Map);
         Map<String, String> r = (Map<String, String>) res;
@@ -277,13 +284,14 @@ public class CodecTest {
         Assertions.assertEquals("World", res2[0]);
         Assertions.assertEquals("Dubbo", res2[1]);
         Assertions.assertEquals(10086L, res2[2]);
+
+        Assertions.assertThrows(EncodeException.class, () -> codec.encode(new ByteArrayOutputStream(), res2[0]));
     }
 
     @Test
     void testUrlForm2() {
         InputStream in = new ByteArrayInputStream("Hello=World&Apache=Dubbo&empty1=&empty2=".getBytes());
-        HttpMessageCodec codec = new UrlEncodeFormCodec(
-                FrameworkModel.defaultModel().getBeanFactory().getBean(ConverterUtil.class));
+        HttpMessageCodec codec = new UrlEncodeFormCodecFactory().createCodec(null, FrameworkModel.defaultModel(), null);
         Object res = codec.decode(in, Map.class);
         Assertions.assertTrue(res instanceof Map);
         Map<String, String> r = (Map<String, String>) res;
@@ -296,8 +304,7 @@ public class CodecTest {
     @Test
     void testUrlForm3() {
         InputStream in = new ByteArrayInputStream("empty1=&empty2=&Hello=world&empty3=&Apache=dubbo&".getBytes());
-        HttpMessageCodec codec = new UrlEncodeFormCodec(
-                FrameworkModel.defaultModel().getBeanFactory().getBean(ConverterUtil.class));
+        HttpMessageCodec codec = new UrlEncodeFormCodecFactory().createCodec(null, FrameworkModel.defaultModel(), null);
         Object res = codec.decode(in, Map.class);
         Assertions.assertTrue(res instanceof Map);
         Map<String, String> r = (Map<String, String>) res;
@@ -311,8 +318,7 @@ public class CodecTest {
     @Test
     void testUrlForm4() {
         InputStream in = new ByteArrayInputStream("empty1=&empty2=&Hello=world&你好=世界&empty3=&Apache=dubbo&".getBytes());
-        HttpMessageCodec codec = new UrlEncodeFormCodec(
-                FrameworkModel.defaultModel().getBeanFactory().getBean(ConverterUtil.class));
+        HttpMessageCodec codec = new UrlEncodeFormCodecFactory().createCodec(null, FrameworkModel.defaultModel(), null);
         Object res = codec.decode(in, Map.class);
         Assertions.assertTrue(res instanceof Map);
         Map<String, String> r = (Map<String, String>) res;
@@ -326,13 +332,18 @@ public class CodecTest {
 
     @Test
     void testXml() {
-        InputStream in = new ByteArrayInputStream(("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-                        + "<user><location>New York</location><username>JohnDoe</username></user>")
-                .getBytes());
-        HttpMessageCodec codec = new XmlCodec();
+        String content = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                + "<user><location>New York</location><username>JohnDoe</username></user>";
+        InputStream in = new ByteArrayInputStream(content.getBytes());
+        HttpMessageCodec codec = new XmlCodecFactory().createCodec(null, FrameworkModel.defaultModel(), null);
         User user = (User) codec.decode(in, User.class);
         Assertions.assertEquals("JohnDoe", user.getUsername());
         Assertions.assertEquals("New York", user.getLocation());
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        codec.encode(outputStream, user);
+        String res = outputStream.toString();
+        Assertions.assertEquals(content, res);
     }
 
     @Test
@@ -351,7 +362,8 @@ public class CodecTest {
         };
         byte[] utf16Bytes = new byte[] {0x4F, 0x60, 0x59, 0x7D, (byte) 0xFF, 0x0C, 0x4E, 0x16, 0x75, 0x4C};
         InputStream in = new ByteArrayInputStream(asciiBytes);
-        HttpMessageCodec codec = new PlainTextCodec("text/plain; charset=ASCII");
+        HttpMessageCodec codec = new PlainTextCodecFactory()
+                .createCodec(null, FrameworkModel.defaultModel(), "text/plain; charset=ASCII");
         String res = (String) codec.decode(in, String.class);
         Assertions.assertEquals("Hello, world", res);
 
@@ -364,5 +376,15 @@ public class CodecTest {
         codec = new PlainTextCodec("text/plain; charset=UTF-16");
         res = (String) codec.decode(in, String.class);
         Assertions.assertEquals("你好，世界", res);
+        String finalRes = res;
+        HttpMessageCodec finalCodec = codec;
+        Assertions.assertThrows(EncodeException.class, () -> finalCodec.encode(new ByteArrayOutputStream(), finalRes));
+    }
+
+    @Test
+    void testUnsupportedCharset() {
+        HttpMessageCodec codec = new PlainTextCodec("text/plain; charset=unsupported");
+        Assertions.assertThrows(
+                DecodeException.class, () -> codec.decode(new ByteArrayInputStream(new byte[] {}), String.class));
     }
 }
