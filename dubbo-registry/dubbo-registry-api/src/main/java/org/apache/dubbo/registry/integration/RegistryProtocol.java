@@ -81,6 +81,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
@@ -88,10 +89,12 @@ import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATT
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.EXTRA_KEYS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.IPV6_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PACKABLE_METHOD_FACTORY_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
@@ -119,6 +122,7 @@ import static org.apache.dubbo.registry.Constants.PROVIDER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
 import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
+import static org.apache.dubbo.registry.Constants.SIMPLIFIED_KEY;
 import static org.apache.dubbo.remoting.Constants.CHECK_KEY;
 import static org.apache.dubbo.remoting.Constants.CODEC_KEY;
 import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
@@ -475,32 +479,43 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     /**
      * Return the url that is registered to the registry and filter the url parameter once
      *
-     * @param providerUrl
+     * @param providerUrl provider service url
+     * @param registryUrl registry center url
      * @return url to registry.
      */
     private URL getUrlToRegistry(final URL providerUrl, final URL registryUrl) {
+        if (registryUrl.getParameter(SIMPLIFIED_KEY, false)) {
+            String extraKeys = registryUrl.getParameter(EXTRA_KEYS_KEY, "");
+            // if path is not the same as interface name then we should keep INTERFACE_KEY,
+            // otherwise, the registry structure of zookeeper would be '/dubbo/path/providers',
+            // but what we expect is '/dubbo/interface/providers'
+            if (!providerUrl.getPath().equals(providerUrl.getParameter(INTERFACE_KEY))) {
+                if (StringUtils.isNotEmpty(extraKeys)) {
+                    extraKeys += ",";
+                }
+                extraKeys += INTERFACE_KEY;
+            }
+            String[] paramsToRegistry = Stream.concat(
+                            Arrays.stream(DEFAULT_REGISTER_PROVIDER_KEYS),
+                            Arrays.stream(COMMA_SPLIT_PATTERN.split(extraKeys)))
+                    .toArray(String[]::new);
+            return URL.valueOf(providerUrl, paramsToRegistry, providerUrl.getParameter(METHODS_KEY, (String[]) null));
+        }
+        return getCustomizeURL(providerUrl, registryUrl);
+    }
+
+    private URL getCustomizeURL(final URL providerUrl, final URL registryUrl) {
         ExtensionLoader<RegistryParameterCustomizer> loader =
                 providerUrl.getOrDefaultApplicationModel().getExtensionLoader(RegistryParameterCustomizer.class);
         Map<String, String> extraParameter = new HashMap<>(providerUrl.getParameters());
-        Set<String> parametersIncludedList = new HashSet<>();
         Set<String> parametersExcludedList = new HashSet<>();
-        Set<String> prefixIncludedList = new HashSet<>();
         Set<String> prefixExcludedList = new HashSet<>();
         for (RegistryParameterCustomizer customizer : loader.getSupportedExtensionInstances()) {
             if (CollectionUtils.isNotEmptyMap(customizer.getExtraParameter(providerUrl, registryUrl))) {
                 extraParameter.putAll(customizer.getExtraParameter(providerUrl, registryUrl));
-                // default include extra keys
-                parametersIncludedList.addAll(
-                        customizer.getExtraParameter(providerUrl, registryUrl).keySet());
-            }
-            if (ArrayUtils.isNotEmpty(customizer.parametersIncluded(providerUrl, registryUrl))) {
-                parametersIncludedList.addAll(Arrays.asList(customizer.parametersIncluded(providerUrl, registryUrl)));
             }
             if (ArrayUtils.isNotEmpty(customizer.parametersExcluded(providerUrl, registryUrl))) {
                 parametersExcludedList.addAll(Arrays.asList(customizer.parametersExcluded(providerUrl, registryUrl)));
-            }
-            if (ArrayUtils.isNotEmpty(customizer.prefixesIncluded(providerUrl, registryUrl))) {
-                prefixIncludedList.addAll(Arrays.asList(customizer.prefixesIncluded(providerUrl, registryUrl)));
             }
             if (ArrayUtils.isNotEmpty(customizer.prefixesExcluded(providerUrl, registryUrl))) {
                 prefixExcludedList.addAll(Arrays.asList(customizer.prefixesExcluded(providerUrl, registryUrl)));
@@ -509,19 +524,11 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         Iterator<Map.Entry<String, String>> iterator = extraParameter.entrySet().iterator();
         while (iterator.hasNext()) {
             String key = iterator.next().getKey();
-            // Remove exclude key first
+            // Remove exclude key
             if (parametersExcludedList.contains(key)
                     || prefixExcludedList.stream().anyMatch(key::startsWith)) {
                 iterator.remove();
-                continue;
             }
-            // Keep include key second
-            if (parametersIncludedList.contains(key)
-                    || prefixIncludedList.stream().anyMatch(key::startsWith)) {
-                continue;
-            }
-            // Remove other unused key
-            iterator.remove();
         }
         return providerUrl.clearParameters().addParameters(extraParameter);
     }

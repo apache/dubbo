@@ -39,25 +39,11 @@ public interface RegistryParameterCustomizer {
     Map<String, String> getExtraParameter(URL providerUrl, URL registryUrl);
 
     /**
-     * params that need to be sent to registry center.
-     *
-     * @return arrays of keys
-     */
-    String[] parametersIncluded(URL providerUrl, URL registryUrl);
-
-    /**
      * params that need to be excluded before sending to registry center.
      *
      * @return arrays of keys
      */
     String[] parametersExcluded(URL providerUrl, URL registryUrl);
-
-    /**
-     * params start with include prefix that need to be sent to registry center.
-     *
-     * @return arrays of prefixes
-     */
-    String[] prefixesIncluded(URL providerUrl, URL registryUrl);
 
     /**
      * params start with exclude prefix that need to be excluded before sending to registry center.
