@@ -16,10 +16,7 @@
  */
 package org.apache.dubbo.remoting.http12.message.codec;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -53,7 +50,8 @@ public class XmlSafetyTest {
                             + "    <handler class=\"java.beans.EventHandler\">\n"
                             + "      <target class=\"java.lang.ProcessBuilder\">\n"
                             + "        <command>\n"
-                            + "          <string>" + "sleep 60" + "</string>\n"
+                            + "          <string>" + "sleep" + "</string>\n"
+                            + "          <string>" + "60" + "</string>\n"
                             + "        </command>\n"
                             + "      </target>\n"
                             + "      <action>start</action>\n"
@@ -63,9 +61,7 @@ public class XmlSafetyTest {
                     .getBytes());
             new XmlCodec().decode(in, Object.class);
         } catch (Exception e) {
-            e.printStackTrace();
         }
-        ;
     }
 
     @Test
@@ -73,14 +69,14 @@ public class XmlSafetyTest {
         try {
             InputStream in = new ByteArrayInputStream(("<java>\n" + "  <object class=\"java.lang.Runtime\">\n"
                             + "    <void method=\"exec\">\n"
-                            + "      <string>" + "sleep 60" + "</string>\n"
+                            + "      <string>" + "sleep" + "</string>\n"
+                            + "      <string>" + "60" + "</string>\n"
                             + "    </void>\n"
                             + "  </object>\n"
                             + "</java>")
                     .getBytes());
             new XmlCodec().decode(in, Object.class);
         } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
