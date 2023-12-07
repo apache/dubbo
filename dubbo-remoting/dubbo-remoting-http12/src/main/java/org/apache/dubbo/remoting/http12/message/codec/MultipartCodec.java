@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
@@ -108,7 +109,7 @@ public class MultipartCodec implements HttpMessageCodec {
 
     private List<Part> transferToParts(InputStream inputStream, String contentType) throws IOException {
         String boundary = getBoundaryFromContentType(contentType);
-        if (boundary.isEmpty()) {
+        if (StringUtils.isEmpty(boundary)) {
             throw new DecodeException("Invalid boundary in Content-Type: " + contentType);
         }
 

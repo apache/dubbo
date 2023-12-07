@@ -31,7 +31,8 @@ public class CodecUtils {
     public static HttpMessageCodec determineHttpMessageCodec(
             FrameworkModel frameworkModel, HttpHeaders headers, URL url, boolean decode) {
         String mediaType = headers.getContentType();
-        if (decode && headers.getAccept() != null) {
+        //encode
+        if (!decode && headers.getAccept() != null) {
             mediaType = headers.getAccept();
         }
         HttpMessageCodecFactory factory = determineHttpMessageCodecFactory(frameworkModel, mediaType, decode);

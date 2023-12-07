@@ -32,7 +32,7 @@ import com.google.common.base.Charsets;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class TestCodecs {
+public class CodecTest {
 
     final String MULTIPART_SAMPLE_1 = "--example-part-boundary\r\n"
             + "Content-Disposition: form-data; name=\"username\"\r\n"
@@ -144,7 +144,7 @@ public class TestCodecs {
         // header buffer size: 128; body buffer size: 256
         // --example-boundary\r\n   [20bytes]
         // Content-Type: plain/text [paddings]\r\n\r\n [108bytes]
-        // body1r\n [238bytes]
+        // body1r\n [238bytes, binary data]
         // --example-boundary--\r\n [22bytes] , last --\r\n [4bytes] beyond buffer
         byte[] boundary = "--example-boundary\r\n".getBytes();
         byte[] header = "Content-Type: plain/text".getBytes();
@@ -192,9 +192,9 @@ public class TestCodecs {
         // header buffer size: 128; body buffer size: 256
         // --example-boundary-\r\n   [21bytes]
         // Content-Type: plain/text [paddings]\r\n\r\n [107bytes]
-        // body1r\n [237bytes]
+        // body1r\n  [237bytes, binary data]
         // --example-boundary-\r\n [21bytes] , \r\n [2bytes] beyond buffer
-        // body2\r\n [7bytes]
+        // body2\r\n [7bytes, text data]
         // --example-boundary--- [23bytes]
         byte[] boundary = "--example-boundary-\r\n".getBytes();
         byte[] subHeader = "Content-Type: plain/text".getBytes();
