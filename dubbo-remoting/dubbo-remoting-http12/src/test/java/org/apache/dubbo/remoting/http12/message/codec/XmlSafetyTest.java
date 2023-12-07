@@ -53,8 +53,7 @@ public class XmlSafetyTest {
                             + "    <handler class=\"java.beans.EventHandler\">\n"
                             + "      <target class=\"java.lang.ProcessBuilder\">\n"
                             + "        <command>\n"
-                            + "          <string>echo</string>\n"
-                            + "          <string>test</string>\n"
+                            + "          <string>" + "sleep 60" + "</string>\n"
                             + "        </command>\n"
                             + "      </target>\n"
                             + "      <action>start</action>\n"
@@ -64,6 +63,7 @@ public class XmlSafetyTest {
                     .getBytes());
             new XmlCodec().decode(in, Object.class);
         } catch (Exception e) {
+            e.printStackTrace();
         }
         ;
     }
@@ -73,15 +73,15 @@ public class XmlSafetyTest {
         try {
             InputStream in = new ByteArrayInputStream(("<java>\n" + "  <object class=\"java.lang.Runtime\">\n"
                             + "    <void method=\"exec\">\n"
-                            + "      <string>echo test</string>\n"
+                            + "      <string>" + "sleep 60" + "</string>\n"
                             + "    </void>\n"
                             + "  </object>\n"
                             + "</java>")
                     .getBytes());
             new XmlCodec().decode(in, Object.class);
         } catch (Exception e) {
+            e.printStackTrace();
         }
-        ;
     }
 
     static class ProcessChecker {
@@ -103,14 +103,16 @@ public class XmlSafetyTest {
             return Collections.emptySet();
         }
 
-        public void prepare() throws Exception {
+        public void prepare() {
             processesBefore = getProcesses();
         }
 
         public void check() throws Exception {
             Set<String> processesAfter = getProcesses();
-            if (!processesBefore.equals(processesAfter)) {
-                throw new Exception("New process was created when XML deserialization.");
+            for (String msg : processesAfter) {
+                if (msg.contains("sleep")) {
+                    throw new Exception("Command executed when XML deserialization.");
+                }
             }
         }
     }
