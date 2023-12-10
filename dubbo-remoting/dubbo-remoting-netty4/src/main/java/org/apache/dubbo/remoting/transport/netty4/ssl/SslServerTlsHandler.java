@@ -90,8 +90,7 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
         ProviderCert providerConnectionConfig = certManager.getProviderConnectionConfig(url, channelHandlerContext.channel().remoteAddress());
 
         if (providerConnectionConfig == null) {
-            ChannelPipeline p = channelHandlerContext.pipeline();
-            p.remove(this);
+            channelHandlerContext.pipeline().remove(this);
             return;
         }
 
@@ -102,8 +101,7 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
         }
 
         if (providerConnectionConfig.getAuthPolicy() == AuthPolicy.NONE) {
-            ChannelPipeline p = channelHandlerContext.pipeline();
-            p.remove(this);
+            channelHandlerContext.pipeline().remove(this);
             return;
         }
 
