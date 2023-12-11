@@ -478,11 +478,10 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
      * @return url to registry.
      */
     private URL customizeURL(final URL providerUrl, final URL registryUrl) {
-        providerUrl.putAttribute(SIMPLIFIED_KEY, registryUrl.getParameter(SIMPLIFIED_KEY, false));
-        providerUrl.putAttribute(EXTRA_KEYS_KEY, registryUrl.getParameter(EXTRA_KEYS_KEY, ""));
+        URL newProviderURL = providerUrl.putAttribute(SIMPLIFIED_KEY, registryUrl.getParameter(SIMPLIFIED_KEY, false));
+        newProviderURL = newProviderURL.putAttribute(EXTRA_KEYS_KEY, registryUrl.getParameter(EXTRA_KEYS_KEY, ""));
         ApplicationModel applicationModel = providerUrl.getOrDefaultApplicationModel();
         ExtensionLoader<ServiceURLCustomizer> loader = applicationModel.getExtensionLoader(ServiceURLCustomizer.class);
-        URL newProviderURL = providerUrl;
         for (ServiceURLCustomizer customizer : loader.getSupportedExtensionInstances()) {
             newProviderURL = customizer.customize(newProviderURL, applicationModel);
         }
