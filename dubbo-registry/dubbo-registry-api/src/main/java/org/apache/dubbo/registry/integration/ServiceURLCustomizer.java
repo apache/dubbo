@@ -18,8 +18,8 @@ package org.apache.dubbo.registry.integration;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
-
-import java.util.Map;
+import org.apache.dubbo.common.lang.Prioritized;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
 
@@ -27,28 +27,13 @@ import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
  * Customize parameters for interface-level registration
  */
 @SPI(scope = APPLICATION)
-public interface RegistryParameterCustomizer {
+public interface ServiceURLCustomizer extends Prioritized {
 
     /**
-     * Customize register extra metadata.
-     * The key needs to be excluded from the parametersExcluded list or prefixesExcluded list.
-     * Check the parametersExcluded list and prefixesExcluded list of other {@link RegistryParameterCustomizer} implementations.
+     * Customizes {@link URL the service url}
      *
-     * @return map of extra parameter
+     * @param serviceURL {@link URL the service url}
+     * @return new service url
      */
-    Map<String, String> getExtraParameter(URL providerUrl, URL registryUrl);
-
-    /**
-     * params that need to be excluded before sending to registry center.
-     *
-     * @return arrays of keys
-     */
-    String[] parametersExcluded(URL providerUrl, URL registryUrl);
-
-    /**
-     * params start with exclude prefix that need to be excluded before sending to registry center.
-     *
-     * @return arrays of prefixes
-     */
-    String[] prefixesExcluded(URL providerUrl, URL registryUrl);
+    URL customize(URL serviceURL, ApplicationModel applicationModel);
 }

@@ -270,7 +270,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
         // url to registry
         final Registry registry = getRegistry(registryUrl);
-        final URL registeredProviderUrl = getUrlToRegistry(providerUrl, registryUrl);
+        final URL registeredProviderUrl = customizeURL(providerUrl, registryUrl);
 
         // decide if we need to delay publish (provider itself and registry should both need to register)
         boolean register = providerUrl.getParameter(REGISTER_KEY, true) && registryUrl.getParameter(REGISTER_KEY, true);
@@ -380,7 +380,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         URL registeredUrl = exporter.getRegisterUrl();
 
         URL registryUrl = getRegistryUrl(originInvoker);
-        URL newProviderUrl = getUrlToRegistry(newInvokerUrl, registryUrl);
+        URL newProviderUrl = customizeURL(newInvokerUrl, registryUrl);
 
         // update local exporter
         Invoker<T> invokerDelegate = new InvokerDelegate<>(originInvoker, newInvokerUrl);
@@ -483,54 +483,16 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
      * @param registryUrl registry center url
      * @return url to registry.
      */
-    private URL getUrlToRegistry(final URL providerUrl, final URL registryUrl) {
-        if (registryUrl.getParameter(SIMPLIFIED_KEY, false)) {
-            String extraKeys = registryUrl.getParameter(EXTRA_KEYS_KEY, "");
-            // if path is not the same as interface name then we should keep INTERFACE_KEY,
-            // otherwise, the registry structure of zookeeper would be '/dubbo/path/providers',
-            // but what we expect is '/dubbo/interface/providers'
-            if (!providerUrl.getPath().equals(providerUrl.getParameter(INTERFACE_KEY))) {
-                if (StringUtils.isNotEmpty(extraKeys)) {
-                    extraKeys += ",";
-                }
-                extraKeys += INTERFACE_KEY;
-            }
-            String[] paramsToRegistry = Stream.concat(
-                            Arrays.stream(DEFAULT_REGISTER_PROVIDER_KEYS),
-                            Arrays.stream(COMMA_SPLIT_PATTERN.split(extraKeys)))
-                    .toArray(String[]::new);
-            return URL.valueOf(providerUrl, paramsToRegistry, providerUrl.getParameter(METHODS_KEY, (String[]) null));
+    private URL customizeURL(final URL providerUrl, final URL registryUrl) {
+        providerUrl.putAttribute(SIMPLIFIED_KEY, registryUrl.getParameter(SIMPLIFIED_KEY, false));
+        providerUrl.putAttribute(EXTRA_KEYS_KEY, registryUrl.getParameter(EXTRA_KEYS_KEY, ""));
+        ApplicationModel applicationModel = providerUrl.getOrDefaultApplicationModel();
+        ExtensionLoader<ServiceURLCustomizer> loader = applicationModel.getExtensionLoader(ServiceURLCustomizer.class);
+        URL newProviderURL = providerUrl;
+        for (ServiceURLCustomizer customizer : loader.getSupportedExtensionInstances()) {
+            newProviderURL = customizer.customize(newProviderURL, applicationModel);
         }
-        return getCustomizeURL(providerUrl, registryUrl);
-    }
-
-    private URL getCustomizeURL(final URL providerUrl, final URL registryUrl) {
-        ExtensionLoader<RegistryParameterCustomizer> loader =
-                providerUrl.getOrDefaultApplicationModel().getExtensionLoader(RegistryParameterCustomizer.class);
-        Map<String, String> extraParameter = new HashMap<>(providerUrl.getParameters());
-        Set<String> parametersExcludedList = new HashSet<>();
-        Set<String> prefixExcludedList = new HashSet<>();
-        for (RegistryParameterCustomizer customizer : loader.getSupportedExtensionInstances()) {
-            if (CollectionUtils.isNotEmptyMap(customizer.getExtraParameter(providerUrl, registryUrl))) {
-                extraParameter.putAll(customizer.getExtraParameter(providerUrl, registryUrl));
-            }
-            if (ArrayUtils.isNotEmpty(customizer.parametersExcluded(providerUrl, registryUrl))) {
-                parametersExcludedList.addAll(Arrays.asList(customizer.parametersExcluded(providerUrl, registryUrl)));
-            }
-            if (ArrayUtils.isNotEmpty(customizer.prefixesExcluded(providerUrl, registryUrl))) {
-                prefixExcludedList.addAll(Arrays.asList(customizer.prefixesExcluded(providerUrl, registryUrl)));
-            }
-        }
-        Iterator<Map.Entry<String, String>> iterator = extraParameter.entrySet().iterator();
-        while (iterator.hasNext()) {
-            String key = iterator.next().getKey();
-            // Remove exclude key
-            if (parametersExcludedList.contains(key)
-                    || prefixExcludedList.stream().anyMatch(key::startsWith)) {
-                iterator.remove();
-            }
-        }
-        return providerUrl.clearParameters().addParameters(extraParameter);
+        return newProviderURL;
     }
 
     private URL getSubscribedOverrideUrl(URL registeredProviderUrl) {
