@@ -165,18 +165,6 @@ public class ReferenceBean<T>
         this.referenceProps = referenceProps;
     }
 
-    /**
-     * It is only used in native scenarios to get referenceProps
-     * because attribute is not passed by BeanDefinition by default.
-     * Passing a json string through a constructor is by far a simpler way.
-     * @param referencePropsJson
-     */
-    public ReferenceBean(String referencePropsJson) {
-        if (StringUtils.isNotEmpty(referencePropsJson)) {
-            this.referenceProps = JsonUtils.toJavaObject(referencePropsJson, Map.class);
-        }
-    }
-
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
@@ -482,7 +470,14 @@ public class ReferenceBean<T>
         this.interfaceName = interfaceName;
     }
 
-    public void setReferenceProps(Map<String, Object> referenceProps) {
-        this.referenceProps = referenceProps;
+    /**
+     * It is only used in native scenarios to get referenceProps
+     * because attribute is not passed by BeanDefinition by default.
+     * @param referencePropsJson
+     */
+    public void setReferencePropsJson(String referencePropsJson) {
+        if (StringUtils.isNotEmpty(referencePropsJson)) {
+            this.referenceProps = JsonUtils.toJavaObject(referencePropsJson, Map.class);
+        }
     }
 }

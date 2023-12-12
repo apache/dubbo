@@ -28,6 +28,7 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.Constants;
 import org.apache.dubbo.config.spring.ReferenceBean;
+import org.apache.dubbo.config.spring.aot.AotWithSpringDetector;
 import org.apache.dubbo.config.spring.context.event.DubboConfigInitEvent;
 import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
@@ -59,7 +60,6 @@ import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.support.AbstractBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
@@ -547,9 +547,9 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         beanDefinition.getPropertyValues().add(ReferenceAttributes.INTERFACE_CLASS, interfaceClass);
         beanDefinition.getPropertyValues().add(ReferenceAttributes.INTERFACE_NAME, interfaceName);
 
-        ConstructorArgumentValues constructorArgumentValues = new ConstructorArgumentValues();
-        constructorArgumentValues.addIndexedArgumentValue(0, JsonUtils.toJson(attributes));
-        beanDefinition.setConstructorArgumentValues(constructorArgumentValues);
+        if (AotWithSpringDetector.isAotProcessing()) {
+            beanDefinition.getPropertyValues().add("referencePropsJson", JsonUtils.toJson(attributes));
+        }
         // create decorated definition for reference bean, Avoid being instantiated when getting the beanType of
         // ReferenceBean
         // see org.springframework.beans.factory.support.AbstractBeanFactory#getTypeForFactoryBean()
