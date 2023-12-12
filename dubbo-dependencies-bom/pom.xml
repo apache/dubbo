@@ -101,7 +101,7 @@
     <httpclient_version>4.5.14</httpclient_version>
     <httpcore_version>4.4.16</httpcore_version>
     <fastjson_version>1.2.83</fastjson_version>
-    <fastjson2_version>2.0.42</fastjson2_version>
+    <fastjson2_version>2.0.43</fastjson2_version>
     <zookeeper_version>3.7.0</zookeeper_version>
     <curator_version>5.1.0</curator_version>
     <curator_test_version>2.12.0</curator_test_version>
@@ -110,7 +110,7 @@
     <consul_process_version>2.2.1</consul_process_version>
     <consul_client_version>1.5.3</consul_client_version>
     <xmemcached_version>1.4.3</xmemcached_version>
-    <cxf_version>3.5.5</cxf_version>
+    <cxf_version>3.6.2</cxf_version>
     <thrift_version>0.19.0</thrift_version>
     <hessian_version>4.0.66</hessian_version>
     <protobuf-java_version>3.25.1</protobuf-java_version>
@@ -126,10 +126,10 @@
     <kryo_version>4.0.3</kryo_version>
     <kryo_serializers_version>0.45</kryo_serializers_version>
     <fst_version>2.57</fst_version>
-    <avro_version>1.11.1</avro_version>
+    <avro_version>1.11.3</avro_version>
     <apollo_client_version>2.1.0</apollo_client_version>
     <snakeyaml_version>2.2</snakeyaml_version>
-    <commons_lang3_version>3.12.0</commons_lang3_version>
+    <commons_lang3_version>3.14.0</commons_lang3_version>
     <protostuff_version>1.8.0</protostuff_version>
     <envoy_api_version>0.1.35</envoy_api_version>
     <micrometer.version>1.12.0</micrometer.version>
@@ -148,7 +148,7 @@
     <tomcat_embed_version>8.5.87</tomcat_embed_version>
     <jetcd_version>0.7.6</jetcd_version>
     <nacos_version>2.2.4</nacos_version>
-    <grpc.version>1.59.0</grpc.version>
+    <grpc.version>1.60.0</grpc.version>
     <grpc_contrib_verdion>0.8.1</grpc_contrib_verdion>
     <jprotoc_version>1.2.2</jprotoc_version>
     <!-- Log libs -->
@@ -187,8 +187,8 @@
     <mortbay_jetty_version>6.1.26</mortbay_jetty_version>
     <portlet_version>2.0</portlet_version>
     <maven_flatten_version>1.5.0</maven_flatten_version>
-    <commons_compress_version>1.23.0</commons_compress_version>
-    <spotless-maven-plugin.version>2.41.0</spotless-maven-plugin.version>
+    <commons_compress_version>1.25.0</commons_compress_version>
+    <spotless-maven-plugin.version>2.41.1</spotless-maven-plugin.version>
     <spotless.action>check</spotless.action>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
