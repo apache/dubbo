@@ -129,7 +129,7 @@
     <avro_version>1.11.3</avro_version>
     <apollo_client_version>2.1.0</apollo_client_version>
     <snakeyaml_version>2.2</snakeyaml_version>
-    <commons_lang3_version>3.12.0</commons_lang3_version>
+    <commons_lang3_version>3.14.0</commons_lang3_version>
     <protostuff_version>1.8.0</protostuff_version>
     <envoy_api_version>0.1.35</envoy_api_version>
     <micrometer.version>1.12.0</micrometer.version>
