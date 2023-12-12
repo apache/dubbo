@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.AnnotationUtils;
 import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.Constants;
@@ -486,7 +487,13 @@ public class ServiceAnnotationPostProcessor
         // Add methods parameters
         List<MethodConfig> methodConfigs = convertMethodConfigs(serviceAnnotationAttributes.get("methods"));
         if (!methodConfigs.isEmpty()) {
-            builder.addPropertyValue("methods", methodConfigs);
+            if (AotWithSpringDetector.isAotProcessing()) {
+                List<String> methodsJson = new ArrayList<>();
+                methodConfigs.forEach(methodConfig -> methodsJson.add(JsonUtils.toJson(methodConfig)));
+                builder.addPropertyValue("methodsJson", methodsJson);
+            } else {
+                builder.addPropertyValue("methods", methodConfigs);
+            }
         }
 
         // convert provider to providerIds

@@ -30,6 +30,8 @@ public abstract class AotWithSpringDetector {
      */
     public static final String AOT_ENABLED = "spring.aot.enabled";
 
+    private static final String AOT_PROCESSING = "spring.aot.processing";
+
     /**
      * Determine whether AOT optimizations must be considered at runtime. This
      * is mandatory in a native image but can be triggered on the JVM using
@@ -39,5 +41,9 @@ public abstract class AotWithSpringDetector {
      */
     public static boolean useGeneratedArtifacts() {
         return (NativeDetector.inNativeImage() || SpringProperties.getFlag(AOT_ENABLED));
+    }
+
+    public static boolean isAotProcessing() {
+        return (NativeDetector.inNativeImage() || SpringProperties.getFlag(AOT_PROCESSING));
     }
 }
