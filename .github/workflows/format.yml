@@ -1,0 +1,53 @@
+name: Format Files
+
+on:
+  issue_comment:
+    types:
+      - created
+      - edited
+
+jobs:
+  check-comment:
+    name: Check if comment is a format command
+    if: ${{ github.event.issue.pull_request }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if comment is a command
+        id: check
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const body = context.payload.comment.body;
+            const command = body.match(/\/format/);
+            return { command: command !== null };
+
+  format:
+    name: Format
+    needs: check-comment
+    if: ${{ needs.check-comment.outputs.command == true }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        run: gh pr checkout ${{ github.event.issue.number }}
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup Maven
+        uses: actions/setup-java@v3
+        with:
+          java-version: 21
+          distribution: zulu
+      - name: Format
+        run: mvn spotless:apply
+      - name: Commit changes
+        run: |
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git add .
+          if [[ $(git status --porcelain) ]]; then
+             git commit -m "style: Formatted Java files"
+          fi
+      - name: Push changes
+        run: |
+          git push
+          gh pr comment ${{ github.event.issue.number }} -b "Formatted Java files"
