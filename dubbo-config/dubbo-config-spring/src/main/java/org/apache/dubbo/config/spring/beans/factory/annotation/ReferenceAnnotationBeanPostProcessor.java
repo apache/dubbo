@@ -22,11 +22,13 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.Constants;
 import org.apache.dubbo.config.spring.ReferenceBean;
+import org.apache.dubbo.config.spring.aot.AotWithSpringDetector;
 import org.apache.dubbo.config.spring.context.event.DubboConfigInitEvent;
 import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
@@ -545,6 +547,9 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         beanDefinition.getPropertyValues().add(ReferenceAttributes.INTERFACE_CLASS, interfaceClass);
         beanDefinition.getPropertyValues().add(ReferenceAttributes.INTERFACE_NAME, interfaceName);
 
+        if (AotWithSpringDetector.isAotProcessing()) {
+            beanDefinition.getPropertyValues().add("referencePropsJson", JsonUtils.toJson(attributes));
+        }
         // create decorated definition for reference bean, Avoid being instantiated when getting the beanType of
         // ReferenceBean
         // see org.springframework.beans.factory.support.AbstractBeanFactory#getTypeForFactoryBean()
