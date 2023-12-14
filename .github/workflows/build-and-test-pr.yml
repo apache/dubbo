@@ -419,7 +419,7 @@ jobs:
 
   jacoco-result-merge:
     runs-on: ubuntu-latest
-    needs: [integration-test-result, unit-test]
+    needs: [integration-test-result, samples-test-result, unit-test]
     steps:
       - uses: actions/checkout@v3
         with:
