@@ -229,7 +229,7 @@ jobs:
           name: samples-test-list
           path: test/jobs
   samples-test-job:
-    needs: [build-source, integration-test-prepare]
+    needs: [build-source, samples-test-prepare]
     name: "Samples Test on ubuntu-latest (JobId: ${{matrix.job_id}})"
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -296,7 +296,7 @@ jobs:
           name: samples-test-result
           path: test/jobs/*-result*
   samples-test-result:
-    needs: [integration-test-job]
+    needs: [samples-test-job]
     if: always()
     runs-on: ubuntu-latest
     env:
