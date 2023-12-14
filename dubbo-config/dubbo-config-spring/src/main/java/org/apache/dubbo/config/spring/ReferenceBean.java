@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.spring.aot.AotWithSpringDetector;
@@ -467,5 +468,16 @@ public class ReferenceBean<T>
 
     public void setInterfaceName(String interfaceName) {
         this.interfaceName = interfaceName;
+    }
+
+    /**
+     * It is only used in native scenarios to get referenceProps
+     * because attribute is not passed by BeanDefinition by default.
+     * @param referencePropsJson
+     */
+    public void setReferencePropsJson(String referencePropsJson) {
+        if (StringUtils.isNotEmpty(referencePropsJson)) {
+            this.referenceProps = JsonUtils.toJavaObject(referencePropsJson, Map.class);
+        }
     }
 }

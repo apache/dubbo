@@ -27,6 +27,7 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
@@ -756,6 +757,20 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     public void setMethods(List<? extends MethodConfig> methods) {
         this.methods = (methods != null) ? new ArrayList<>(methods) : null;
+    }
+
+    /**
+     * It is only used in native scenarios to get methodConfigs.
+     * @param methodsJson
+     */
+    public void setMethodsJson(List<String> methodsJson) {
+        if (methodsJson != null) {
+            this.methods = new ArrayList<>();
+            methodsJson.forEach(
+                    (methodConfigJson) -> methods.add(JsonUtils.toJavaObject(methodConfigJson, MethodConfig.class)));
+        } else {
+            this.methods = null;
+        }
     }
 
     public void addMethod(MethodConfig methodConfig) {
