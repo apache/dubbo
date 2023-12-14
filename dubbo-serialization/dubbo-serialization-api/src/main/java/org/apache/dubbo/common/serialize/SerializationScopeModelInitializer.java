@@ -14,10 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.xds.util;
+package org.apache.dubbo.common.serialize;
 
-import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
+import org.apache.dubbo.common.serialize.support.PreferSerializationProviderImpl;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 
-public interface XdsListener {
-    void process(DiscoveryResponse discoveryResponse);
+public class SerializationScopeModelInitializer implements ScopeModelInitializer {
+    @Override
+    public void initializeFrameworkModel(FrameworkModel frameworkModel) {
+        frameworkModel.getBeanFactory().registerBean(PreferSerializationProviderImpl.class);
+    }
+
+    @Override
+    public void initializeApplicationModel(ApplicationModel applicationModel) {}
+
+    @Override
+    public void initializeModuleModel(ModuleModel moduleModel) {}
 }
