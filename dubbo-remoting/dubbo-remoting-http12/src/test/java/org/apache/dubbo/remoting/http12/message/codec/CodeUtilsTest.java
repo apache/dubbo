@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
+import org.apache.dubbo.remoting.http12.exception.UnsupportedMediaTypeException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
 import org.apache.dubbo.remoting.http12.message.MediaType;
@@ -56,8 +57,9 @@ public class CodeUtilsTest {
                 codecUtils.determineHttpMessageDecoder(FrameworkModel.defaultModel(), headers1.getContentType(), null);
         Assertions.assertNotNull(decoder);
         Assertions.assertEquals(MultipartDecoder.class, decoder.getClass());
-        encoder = codecUtils.determineHttpMessageEncoder(FrameworkModel.defaultModel(), headers1, null);
-        Assertions.assertNull(encoder);
+        Assertions.assertThrows(
+                UnsupportedMediaTypeException.class,
+                () -> codecUtils.determineHttpMessageEncoder(FrameworkModel.defaultModel(), headers1, null));
 
         headers1.put(
                 HttpHeaderNames.ACCEPT.getName(),
