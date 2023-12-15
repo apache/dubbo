@@ -217,9 +217,8 @@ public class MethodConfig extends AbstractMethodConfig {
             List<String> prefixes = new ArrayList<>();
             prefixes.add(parentPrefix + "." + this.getName());
             return prefixes;
-        } else {
-            throw new IllegalStateException("The parent prefix of MethodConfig is null");
         }
+        return null;
     }
 
     @Override
