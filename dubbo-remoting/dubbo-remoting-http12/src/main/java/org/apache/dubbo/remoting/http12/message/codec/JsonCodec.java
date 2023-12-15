@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.http12.message.codec;
 
-import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
@@ -31,10 +30,6 @@ import java.util.List;
 
 import com.alibaba.fastjson2.JSONObject;
 
-/**
- * body is json
- */
-@Activate
 public class JsonCodec implements HttpMessageCodec {
 
     @Override
@@ -42,7 +37,6 @@ public class JsonCodec implements HttpMessageCodec {
         return MediaType.APPLICATION_JSON_VALUE;
     }
 
-    @Override
     public void encode(OutputStream outputStream, Object unSerializedBody) throws EncodeException {
         try {
             try {
@@ -56,7 +50,6 @@ public class JsonCodec implements HttpMessageCodec {
         }
     }
 
-    @Override
     public void encode(OutputStream outputStream, Object[] data) throws EncodeException {
         try {
             try {

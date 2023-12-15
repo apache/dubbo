@@ -16,18 +16,17 @@
  */
 package org.apache.dubbo.remoting.http12.message.codec;
 
-import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-@Activate
 public class PlainTextCodec implements HttpMessageCodec {
 
     private final String contentType;
@@ -38,7 +37,19 @@ public class PlainTextCodec implements HttpMessageCodec {
 
     @Override
     public void encode(OutputStream outputStream, Object data) throws EncodeException {
-        throw new EncodeException("PlainTextCodec does not support encode.");
+        if (!(data instanceof String)) {
+            throw new EncodeException("PlainText media-type only supports String as return type.");
+        }
+        try {
+            outputStream.write(((String) data).getBytes());
+        } catch (IOException e) {
+            throw new EncodeException(e);
+        }
+    }
+
+    @Override
+    public MediaType mediaType() {
+        return MediaType.TEXT_PLAIN;
     }
 
     @Override
@@ -63,10 +74,5 @@ public class PlainTextCodec implements HttpMessageCodec {
         } catch (Exception e) {
             throw new DecodeException(e);
         }
-    }
-
-    @Override
-    public MediaType mediaType() {
-        return MediaType.TEXT_PLAIN;
     }
 }

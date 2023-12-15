@@ -18,7 +18,8 @@ package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
+import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
+import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -31,35 +32,38 @@ public class CodeUtilsTest {
 
     @Test
     void testDetermineHttpCodec() {
+        CodecUtils codecUtils = new CodecUtils(FrameworkModel.defaultModel());
         HttpHeaders headers = new HttpHeaders();
         headers.put(
                 HttpHeaderNames.CONTENT_TYPE.getName(),
                 Collections.singletonList(MediaType.APPLICATION_JSON_VALUE.getName()));
-        HttpMessageCodec codec =
-                CodecUtils.determineHttpMessageCodec(FrameworkModel.defaultModel(), headers, null, true);
-        Assertions.assertNotNull(codec);
-        Assertions.assertEquals(JsonPbCodec.class, codec.getClass());
+        HttpMessageDecoder decoder =
+                codecUtils.determineHttpMessageDecoder(FrameworkModel.defaultModel(), headers.getContentType(), null);
+        Assertions.assertNotNull(decoder);
+        Assertions.assertEquals(JsonPbCodec.class, decoder.getClass());
 
+        HttpMessageEncoder encoder;
         // If no Accept header provided, use Content-Type to find encoder
-        codec = CodecUtils.determineHttpMessageCodec(FrameworkModel.defaultModel(), headers, null, false);
-        Assertions.assertNotNull(codec);
-        Assertions.assertEquals(JsonPbCodec.class, codec.getClass());
+        encoder = codecUtils.determineHttpMessageEncoder(FrameworkModel.defaultModel(), headers, null);
+        Assertions.assertNotNull(encoder);
+        Assertions.assertEquals(JsonPbCodec.class, encoder.getClass());
 
         HttpHeaders headers1 = new HttpHeaders();
         headers1.put(
                 HttpHeaderNames.CONTENT_TYPE.getName(),
                 Collections.singletonList(MediaType.MULTIPART_FORM_DATA.getName()));
-        codec = CodecUtils.determineHttpMessageCodec(FrameworkModel.defaultModel(), headers1, null, true);
-        Assertions.assertNotNull(codec);
-        Assertions.assertEquals(MultipartCodec.class, codec.getClass());
-        codec = CodecUtils.determineHttpMessageCodec(FrameworkModel.defaultModel(), headers1, null, false);
-        Assertions.assertNull(codec);
+        decoder =
+                codecUtils.determineHttpMessageDecoder(FrameworkModel.defaultModel(), headers1.getContentType(), null);
+        Assertions.assertNotNull(decoder);
+        Assertions.assertEquals(MultipartDecoder.class, decoder.getClass());
+        encoder = codecUtils.determineHttpMessageEncoder(FrameworkModel.defaultModel(), headers1, null);
+        Assertions.assertNull(encoder);
 
         headers1.put(
                 HttpHeaderNames.ACCEPT.getName(),
                 Collections.singletonList(MediaType.APPLICATION_JSON_VALUE.getName()));
-        codec = CodecUtils.determineHttpMessageCodec(FrameworkModel.defaultModel(), headers1, null, false);
-        Assertions.assertNotNull(codec);
-        Assertions.assertEquals(JsonPbCodec.class, codec.getClass());
+        encoder = codecUtils.determineHttpMessageEncoder(FrameworkModel.defaultModel(), headers1, null);
+        Assertions.assertNotNull(encoder);
+        Assertions.assertEquals(JsonPbCodec.class, encoder.getClass());
     }
 }

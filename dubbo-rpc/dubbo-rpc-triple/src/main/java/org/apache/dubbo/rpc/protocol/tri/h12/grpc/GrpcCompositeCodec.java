@@ -30,13 +30,7 @@ import com.google.protobuf.Message;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOBUF_MESSAGE_CLASS_NAME;
 
-/**
- * compatible low version.
- * version < 3.3
- *
- * @since 3.3
- */
-@Activate
+
 public class GrpcCompositeCodec implements HttpMessageCodec {
 
     private static final MediaType MEDIA_TYPE = new MediaType("application", "grpc");

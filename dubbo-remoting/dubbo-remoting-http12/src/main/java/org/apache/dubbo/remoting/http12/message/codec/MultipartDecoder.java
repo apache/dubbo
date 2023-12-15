@@ -21,9 +21,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
-import org.apache.dubbo.remoting.http12.exception.EncodeException;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory;
+import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -31,14 +29,13 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public class MultipartCodec implements HttpMessageCodec {
+public class MultipartDecoder implements HttpMessageDecoder {
 
     private final URL url;
 
@@ -46,17 +43,15 @@ public class MultipartCodec implements HttpMessageCodec {
 
     private final String headerContentType;
 
+    private final CodecUtils codecUtils;
+
     private static final String CRLF = "\r\n";
 
-    public MultipartCodec(URL url, FrameworkModel frameworkModel, String contentType) {
+    public MultipartDecoder(URL url, FrameworkModel frameworkModel, String contentType, CodecUtils codecUtils) {
         this.url = url;
         this.frameworkModel = frameworkModel;
         this.headerContentType = contentType;
-    }
-
-    @Override
-    public void encode(OutputStream outputStream, Object data) throws EncodeException {
-        throw new EncodeException("MultipartCodec does not support encode .");
+        this.codecUtils = codecUtils;
     }
 
     @Override
@@ -74,10 +69,6 @@ public class MultipartCodec implements HttpMessageCodec {
             }
             Object[] res = new Object[parts.size()];
 
-            List<HttpMessageCodecFactory> codecFactories = frameworkModel
-                    .getExtensionLoader(HttpMessageCodecFactory.class)
-                    .getActivateExtensions();
-
             for (int i = 0; i < parts.size(); i++) {
                 Part part = parts.get(i);
 
@@ -85,21 +76,9 @@ public class MultipartCodec implements HttpMessageCodec {
                     res[i] = part.content;
                     continue;
                 }
-                boolean decoded = false;
-
-                for (HttpMessageCodecFactory factory : codecFactories) {
-                    String contentType = part.headers.getContentType();
-                    if (factory.codecSupport().supportDecode(contentType)) {
-                        res[i] = factory.createCodec(url, frameworkModel, contentType)
-                                .decode(new ByteArrayInputStream(part.content), targetTypes[i]);
-                        decoded = true;
-                    }
-                }
-
-                if (!decoded) {
-                    throw new DecodeException("No available codec found for content type:"
-                            + part.headers.getContentType() + ",body part index:" + i);
-                }
+                res[i] = codecUtils
+                        .determineHttpMessageDecoder(frameworkModel, part.headers.getContentType(), url)
+                        .decode(new ByteArrayInputStream(part.content), targetTypes[i]);
             }
             return res;
         } catch (IOException ioException) {

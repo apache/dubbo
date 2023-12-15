@@ -14,18 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.message.codec;
+package org.apache.dubbo.remoting.http12.message;
 
-import org.apache.dubbo.remoting.http12.message.MediaType;
+public interface MessageMediaType {
 
-public class OnlyDecodeStrategy extends DefaultSupportStrategy {
-
-    public OnlyDecodeStrategy(MediaType mediaType) {
-        super(mediaType);
-    }
-
-    @Override
-    public boolean supportEncode(String mediaType) {
-        return false;
-    }
+    MediaType mediaType();
 }

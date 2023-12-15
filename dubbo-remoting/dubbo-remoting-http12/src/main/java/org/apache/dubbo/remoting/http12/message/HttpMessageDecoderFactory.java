@@ -14,26 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.message.codec;
+package org.apache.dubbo.remoting.http12.message;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
-import org.apache.dubbo.remoting.http12.message.HttpMessageDecoderFactory;
-import org.apache.dubbo.remoting.http12.message.HttpMessageEncoderFactory;
-import org.apache.dubbo.remoting.http12.message.MediaType;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-public class XmlCodecFactory implements HttpMessageEncoderFactory, HttpMessageDecoderFactory {
+@SPI(scope = ExtensionScope.FRAMEWORK)
+public interface HttpMessageDecoderFactory extends MessageMediaType {
 
-    private final HttpMessageCodec instance = new XmlCodec();
-
-    @Override
-    public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String mediaType) {
-        return instance;
-    }
-
-    @Override
-    public MediaType mediaType() {
-        return MediaType.APPLICATION_XML;
-    }
+    HttpMessageDecoder createCodec(URL url, FrameworkModel frameworkModel, String mediaType);
 }

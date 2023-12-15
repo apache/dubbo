@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.http12.message.codec;
 
-import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
@@ -35,10 +34,6 @@ import java.io.StringReader;
 
 import org.xml.sax.InputSource;
 
-/**
- * Copy from {@link org.apache.dubbo.rpc.protocol.rest.message.codec}
- */
-@Activate
 public class XmlCodec implements HttpMessageCodec {
 
     @Override

@@ -21,13 +21,8 @@ import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-/**
- * for http body codec
- */
 @SPI(scope = ExtensionScope.FRAMEWORK)
-public interface HttpMessageCodecFactory {
+public interface HttpMessageEncoderFactory extends MessageMediaType {
 
-    HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String mediaType);
-
-    CodecSupportStrategy codecSupport();
+    HttpMessageEncoder createCodec(URL url, FrameworkModel frameworkModel, String mediaType);
 }

@@ -16,11 +16,9 @@
  */
 package org.apache.dubbo.remoting.http12.message.codec;
 
-import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 
 import java.io.IOException;
@@ -31,18 +29,11 @@ import java.nio.charset.StandardCharsets;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 
-@Activate
-public class JsonPbCodec implements HttpMessageCodec {
-
-    private HttpMessageCodec jsonCodec;
-
-    public void setJsonCodec(HttpMessageCodec jsonCodec) {
-        this.jsonCodec = jsonCodec;
-    }
+public class JsonPbCodec extends JsonCodec {
 
     @Override
     public MediaType mediaType() {
-        return jsonCodec.mediaType();
+        return MediaType.APPLICATION_JSON_VALUE;
     }
 
     @Override
@@ -56,12 +47,12 @@ public class JsonPbCodec implements HttpMessageCodec {
         } catch (IOException e) {
             throw new EncodeException(e);
         }
-        jsonCodec.encode(outputStream, unSerializedBody);
+        super.encode(outputStream, unSerializedBody);
     }
 
     @Override
     public void encode(OutputStream outputStream, Object[] data) throws EncodeException {
-        jsonCodec.encode(outputStream, data);
+        super.encode(outputStream, data);
     }
 
     @Override
@@ -82,7 +73,7 @@ public class JsonPbCodec implements HttpMessageCodec {
         } catch (Throwable e) {
             throw new DecodeException(e);
         }
-        return jsonCodec.decode(body, targetType);
+        return super.decode(body, targetType);
     }
 
     @Override
@@ -95,7 +86,7 @@ public class JsonPbCodec implements HttpMessageCodec {
         } catch (Throwable e) {
             throw new DecodeException(e);
         }
-        return jsonCodec.decode(dataInputStream, targetTypes);
+        return super.decode(dataInputStream, targetTypes);
     }
 
     private static boolean isProtobuf(Class<?> targetType) {

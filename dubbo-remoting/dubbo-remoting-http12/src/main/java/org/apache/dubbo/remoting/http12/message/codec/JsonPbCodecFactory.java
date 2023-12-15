@@ -18,36 +18,24 @@ package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.utils.ClassUtils;
-import org.apache.dubbo.remoting.http12.message.CodecSupportStrategy;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory;
+import org.apache.dubbo.remoting.http12.message.HttpMessageDecoderFactory;
+import org.apache.dubbo.remoting.http12.message.HttpMessageEncoderFactory;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-@Activate(order = -100)
-public class JsonPbCodecFactory implements HttpMessageCodecFactory {
+@Activate(order = -100, onClass = "com.google.protobuf.Message")
+public class JsonPbCodecFactory implements HttpMessageEncoderFactory, HttpMessageDecoderFactory {
+
+    private final JsonPbCodec instance = new JsonPbCodec();
 
     @Override
     public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String mediaType) {
-        HttpMessageCodec codec = frameworkModel
-                .getExtensionLoader(HttpMessageCodecFactory.class)
-                .getExtension(JsonCodecFactory.NAME)
-                .createCodec(url, frameworkModel, mediaType);
-        JsonPbCodec jsonPbCodec = new JsonPbCodec();
-        jsonPbCodec.setJsonCodec(codec);
-        return jsonPbCodec;
+        return instance;
     }
 
     @Override
-    public CodecSupportStrategy codecSupport() {
-        return new DefaultSupportStrategy(MediaType.APPLICATION_JSON_VALUE) {
-            @Override
-            public boolean supportDecode(String mediaType) {
-                return super.supportDecode(mediaType)
-                        && ClassUtils.isPresent(
-                                "com.google.protobuf.Message", getClass().getClassLoader());
-            }
-        };
+    public MediaType mediaType() {
+        return MediaType.APPLICATION_JSON_VALUE;
     }
 }

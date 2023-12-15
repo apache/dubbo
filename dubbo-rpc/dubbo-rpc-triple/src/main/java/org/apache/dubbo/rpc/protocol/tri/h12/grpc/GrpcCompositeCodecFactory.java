@@ -18,16 +18,15 @@ package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.remoting.http12.message.CodecSupportStrategy;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory;
+import org.apache.dubbo.remoting.http12.message.HttpMessageDecoderFactory;
+import org.apache.dubbo.remoting.http12.message.HttpMessageEncoderFactory;
 import org.apache.dubbo.remoting.http12.message.MediaType;
-import org.apache.dubbo.remoting.http12.message.codec.DefaultSupportStrategy;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 @Activate
-public class GrpcCompositeCodecFactory implements HttpMessageCodecFactory {
+public class GrpcCompositeCodecFactory implements HttpMessageEncoderFactory, HttpMessageDecoderFactory {
 
     private static final MediaType MEDIA_TYPE = new MediaType("application", "grpc");
 
@@ -41,7 +40,7 @@ public class GrpcCompositeCodecFactory implements HttpMessageCodecFactory {
     }
 
     @Override
-    public CodecSupportStrategy codecSupport() {
-        return new DefaultSupportStrategy(MEDIA_TYPE);
+    public MediaType mediaType() {
+        return MEDIA_TYPE;
     }
 }

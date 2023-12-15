@@ -20,13 +20,13 @@ import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2ServerChannelObserver;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
+import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.ServerStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.h12.AttachmentHolder;
-import org.apache.dubbo.rpc.protocol.tri.h12.CompressibleCodec;
+import org.apache.dubbo.rpc.protocol.tri.h12.CompressibleEncoder;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 
 import java.util.Map;
@@ -35,8 +35,6 @@ public class Http2ServerStreamObserver extends Http2ServerChannelObserver
         implements ServerStreamObserver<Object>, AttachmentHolder {
 
     private final FrameworkModel frameworkModel;
-
-    private HttpMessageCodec httpMessageCodec;
 
     private Map<String, Object> attachments;
 
@@ -47,15 +45,9 @@ public class Http2ServerStreamObserver extends Http2ServerChannelObserver
 
     @Override
     public void setCompression(String compression) {
-        CompressibleCodec compressibleCodec = new CompressibleCodec(httpMessageCodec);
-        compressibleCodec.setCompressor(Compressor.getCompressor(frameworkModel, compression));
-        super.setResponseEncoder(compressibleCodec);
-    }
-
-    @Override
-    public void setResponseEncoder(HttpMessageCodec responseEncoder) {
-        super.setResponseEncoder(responseEncoder);
-        this.httpMessageCodec = responseEncoder;
+        CompressibleEncoder compressibleEncoder = new CompressibleEncoder(getResponseEncoder());
+        compressibleEncoder.setCompressor(Compressor.getCompressor(frameworkModel, compression));
+        super.setResponseEncoder(compressibleEncoder);
     }
 
     @Override

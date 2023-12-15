@@ -18,14 +18,14 @@ package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.remoting.http12.message.CodecSupportStrategy;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory;
+import org.apache.dubbo.remoting.http12.message.HttpMessageDecoderFactory;
+import org.apache.dubbo.remoting.http12.message.HttpMessageEncoderFactory;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 @Activate
-public class PlainTextCodecFactory implements HttpMessageCodecFactory {
+public class PlainTextCodecFactory implements HttpMessageEncoderFactory, HttpMessageDecoderFactory {
 
     @Override
     public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String mediaType) {
@@ -33,7 +33,7 @@ public class PlainTextCodecFactory implements HttpMessageCodecFactory {
     }
 
     @Override
-    public CodecSupportStrategy codecSupport() {
-        return new OnlyDecodeStrategy(MediaType.TEXT_PLAIN);
+    public MediaType mediaType() {
+        return MediaType.TEXT_PLAIN;
     }
 }

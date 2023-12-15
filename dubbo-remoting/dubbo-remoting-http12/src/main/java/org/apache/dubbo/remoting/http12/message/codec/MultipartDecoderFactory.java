@@ -18,22 +18,27 @@ package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.remoting.http12.message.CodecSupportStrategy;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory;
+import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
+import org.apache.dubbo.remoting.http12.message.HttpMessageDecoderFactory;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 @Activate
-public class MultipartCodecFactory implements HttpMessageCodecFactory {
+public class MultipartDecoderFactory implements HttpMessageDecoderFactory {
 
-    @Override
-    public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String mediaType) {
-        return new MultipartCodec(url, frameworkModel, mediaType);
+    private CodecUtils codecUtils;
+
+    public void setCodecUtils(CodecUtils codecUtils) {
+        this.codecUtils = codecUtils;
     }
 
     @Override
-    public CodecSupportStrategy codecSupport() {
-        return new OnlyDecodeStrategy(MediaType.MULTIPART_FORM_DATA);
+    public HttpMessageDecoder createCodec(URL url, FrameworkModel frameworkModel, String mediaType) {
+        return new MultipartDecoder(url, frameworkModel, mediaType, codecUtils);
+    }
+
+    @Override
+    public MediaType mediaType() {
+        return MediaType.MULTIPART_FORM_DATA;
     }
 }

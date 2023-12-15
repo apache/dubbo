@@ -17,7 +17,6 @@
 package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.convert.ConverterUtil;
-import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
@@ -31,7 +30,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-@Activate
 public class UrlEncodeFormCodec implements HttpMessageCodec {
 
     private final ConverterUtil converterUtil;
@@ -42,7 +40,26 @@ public class UrlEncodeFormCodec implements HttpMessageCodec {
 
     @Override
     public void encode(OutputStream outputStream, Object data) throws EncodeException {
-        throw new EncodeException("UrlEncodeFormCodec does not support encode.");
+        try {
+            if (data instanceof String) {
+                outputStream.write(((String) data).getBytes());
+            } else if (data instanceof Map) {
+                StringBuilder toWrite = new StringBuilder();
+                for (Map.Entry<?, ?> e : ((Map<?, ?>) data).entrySet()) {
+                    String k = e.getKey().toString();
+                    String v = e.getValue().toString();
+                    toWrite.append(k).append("=").append(v).append("&");
+                }
+                if (toWrite.length() > 1) {
+                    outputStream.write(
+                            toWrite.substring(0, toWrite.length() - 1).getBytes());
+                }
+            } else {
+                throw new EncodeException("UrlEncodeFrom media-type only supports String or Map as return type.");
+            }
+        } catch (Exception e) {
+            throw new EncodeException(e);
+        }
     }
 
     @Override

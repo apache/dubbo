@@ -18,47 +18,78 @@ package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory;
+import org.apache.dubbo.remoting.http12.exception.UnsupportedMediaTypeException;
+import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
+import org.apache.dubbo.remoting.http12.message.HttpMessageDecoderFactory;
+import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
+import org.apache.dubbo.remoting.http12.message.HttpMessageEncoderFactory;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 public class CodecUtils {
 
-    public static HttpMessageCodec determineHttpMessageCodec(
-            FrameworkModel frameworkModel, HttpHeaders headers, URL url, boolean decode) {
-        String mediaType = headers.getContentType();
-        // encode
-        if (!decode && headers.getAccept() != null) {
-            mediaType = headers.getAccept();
-        }
-        HttpMessageCodecFactory factory = determineHttpMessageCodecFactory(frameworkModel, mediaType, decode);
-        if (factory != null) {
-            return factory.createCodec(url, frameworkModel, mediaType);
-        }
-        return null;
+    private FrameworkModel frameworkModel;
+
+    private final List<HttpMessageDecoderFactory> decoders;
+
+    private final List<HttpMessageEncoderFactory> encoders;
+
+    public CodecUtils(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
+        this.decoders = frameworkModel
+                .getExtensionLoader(HttpMessageDecoderFactory.class)
+                .getActivateExtensions();
+        this.encoders = frameworkModel
+                .getExtensionLoader(HttpMessageEncoderFactory.class)
+                .getActivateExtensions();
     }
 
-    public static HttpMessageCodecFactory determineHttpMessageCodecFactory(
-            FrameworkModel frameworkModel, String mediaType, boolean decode) {
-        frameworkModel.getExtensionLoader(HttpMessageCodecFactory.class).getSupportedExtensions();
-        for (HttpMessageCodecFactory httpMessageCodecFactory :
-                frameworkModel.getExtensionLoader(HttpMessageCodecFactory.class).getActivateExtensions()) {
-            if (decode) {
-                if (httpMessageCodecFactory.codecSupport().supportDecode(mediaType)) {
-                    return httpMessageCodecFactory;
-                }
-            } else {
-                // encode
-                if (httpMessageCodecFactory.codecSupport().supportEncode(mediaType)) {
-                    return httpMessageCodecFactory;
-                }
+    public HttpMessageDecoder determineHttpMessageDecoder(FrameworkModel frameworkModel, String contentType, URL url) {
+        return determineHttpMessageDecoderFactory(contentType).createCodec(url, frameworkModel, contentType);
+    }
+
+    public HttpMessageEncoder determineHttpMessageEncoder(FrameworkModel frameworkModel, HttpHeaders headers, URL url) {
+        String mediaType = getEncodeMediaType(headers);
+        return determineHttpMessageEncoderFactory(mediaType).createCodec(url, frameworkModel, mediaType);
+    }
+
+    public HttpMessageDecoderFactory determineHttpMessageDecoderFactory(String mediaType) {
+        ;
+        for (HttpMessageDecoderFactory decoderFactory : decoders) {
+            if (mediaType.startsWith(decoderFactory.mediaType().getName())) {
+                return decoderFactory;
             }
         }
-        return null;
+        throw new UnsupportedMediaTypeException(mediaType);
+    }
+
+    public HttpMessageEncoderFactory determineHttpMessageEncoderFactory(String mediaType) {
+        for (HttpMessageEncoderFactory encoderFactory : encoders) {
+            if (mediaType.startsWith(encoderFactory.mediaType().getName())) {
+                return encoderFactory;
+            }
+        }
+        throw new UnsupportedMediaTypeException(mediaType);
+    }
+
+    public List<HttpMessageDecoderFactory> getDecoders() {
+        return decoders;
+    }
+
+    public List<HttpMessageEncoderFactory> getEncoders() {
+        return encoders;
+    }
+
+    public static String getEncodeMediaType(HttpHeaders headers) {
+        String mediaType = headers.getAccept();
+        if (mediaType == null) {
+            mediaType = headers.getContentType();
+        }
+        return mediaType;
     }
 
     public static ByteArrayOutputStream toByteArrayStream(InputStream in) throws IOException {

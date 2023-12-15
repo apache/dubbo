@@ -18,7 +18,7 @@ package org.apache.dubbo.remoting.http12;
 
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
+import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
 
 public abstract class AbstractServerHttpChannelObserver implements CustomizableHttpChannelObserver<Object> {
 
@@ -32,17 +32,17 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
 
     private boolean headerSent;
 
-    private HttpMessageCodec responseEncoder;
+    private HttpMessageEncoder responseEncoder;
 
     public AbstractServerHttpChannelObserver(HttpChannel httpChannel) {
         this.httpChannel = httpChannel;
     }
 
-    public void setResponseEncoder(HttpMessageCodec responseEncoder) {
+    public void setResponseEncoder(HttpMessageEncoder responseEncoder) {
         this.responseEncoder = responseEncoder;
     }
 
-    public HttpMessageCodec getResponseEncoder() {
+    public HttpMessageEncoder getResponseEncoder() {
         return responseEncoder;
     }
 

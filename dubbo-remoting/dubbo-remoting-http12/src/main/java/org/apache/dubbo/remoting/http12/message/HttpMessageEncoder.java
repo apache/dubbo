@@ -14,28 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.message.codec;
+package org.apache.dubbo.remoting.http12.message;
 
-import org.apache.dubbo.remoting.http12.message.CodecSupportStrategy;
-import org.apache.dubbo.remoting.http12.message.MediaType;
+import org.apache.dubbo.remoting.http12.exception.EncodeException;
 
-public class DefaultSupportStrategy implements CodecSupportStrategy {
-    private final MediaType mediaType;
+import java.io.OutputStream;
 
-    public DefaultSupportStrategy(MediaType mediaType) {
-        this.mediaType = mediaType;
-    }
+public interface HttpMessageEncoder extends MessageMediaType {
 
-    public boolean supportDecode(String mediaType) {
-        return mediaType != null && mediaType.startsWith(this.mediaType.getName());
-    }
+    void encode(OutputStream outputStream, Object data) throws EncodeException;
 
-    public boolean supportEncode(String mediaType) {
-        return mediaType != null && (mediaType.contains(this.mediaType.getName()));
-    }
-
-    @Override
-    public MediaType contentType() {
-        return mediaType;
+    default void encode(OutputStream outputStream, Object[] data) throws EncodeException {
+        // default encode first data
+        this.encode(outputStream, data == null || data.length == 0 ? null : data[0]);
     }
 }

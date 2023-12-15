@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol.tri.h12.http2;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
-import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.RequestMetadata;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
@@ -32,7 +31,6 @@ import org.apache.dubbo.remoting.http12.message.ListeningDecoder;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.remoting.http12.message.NoOpStreamingDecoder;
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
-import org.apache.dubbo.remoting.http12.message.codec.CodecUtils;
 import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
@@ -154,7 +152,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
         }
         initializeServerCallListener();
         DefaultListeningDecoder defaultListeningDecoder = new DefaultListeningDecoder(
-                getHttpMessageCodec(), getMethodMetadata().getActualRequestTypes());
+                getHttpMessageDecoder(), getMethodMetadata().getActualRequestTypes());
         defaultListeningDecoder.setListener(new Http2StreamingDecodeListener(serverCallListener));
         streamingDecoder.setFragmentListener(new StreamingDecoder.DefaultFragmentListener(defaultListeningDecoder));
         getServerChannelObserver().setStreamingDecoder(streamingDecoder);
@@ -164,13 +162,9 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     @Override
     protected void onMetadataCompletion(Http2Header metadata) {
         super.onMetadataCompletion(metadata);
-        configChannelObserverEncoder(serverChannelObserver, metadata.headers());
-        this.serverChannelObserver.request(1);
-    }
-
-    protected void configChannelObserverEncoder(Http2ServerChannelObserver observer, HttpHeaders headers) {
         this.serverChannelObserver.setResponseEncoder(
-                CodecUtils.determineHttpMessageCodec(getFrameworkModel(), headers, getUrl(), false));
+                getCodecUtils().determineHttpMessageEncoder(getFrameworkModel(), metadata.headers(), getUrl()));
+        this.serverChannelObserver.request(1);
     }
 
     @Override

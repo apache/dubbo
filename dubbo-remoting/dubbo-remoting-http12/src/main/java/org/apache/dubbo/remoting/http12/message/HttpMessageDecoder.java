@@ -16,11 +16,20 @@
  */
 package org.apache.dubbo.remoting.http12.message;
 
-public interface CodecSupportStrategy {
+import org.apache.dubbo.remoting.http12.exception.DecodeException;
 
-    boolean supportDecode(String mediaType);
+import java.io.InputStream;
 
-    boolean supportEncode(String mediaType);
+public interface HttpMessageDecoder extends MessageMediaType {
 
-    MediaType contentType();
+    Object decode(InputStream inputStream, Class<?> targetType) throws DecodeException;
+
+    default Object[] decode(InputStream inputStream, Class<?>[] targetTypes) throws DecodeException {
+        // default decode first target type
+        return new Object[] {
+            this.decode(inputStream, targetTypes == null || targetTypes.length == 0 ? null : targetTypes[0])
+        };
+    }
+
+    MediaType mediaType();
 }

@@ -27,11 +27,9 @@ import org.apache.dubbo.remoting.http12.h1.Http1Request;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerChannelObserver;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerTransportListener;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerTransportListenerFactory;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory;
 import org.apache.dubbo.remoting.http12.message.codec.CodecUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import java.util.List;
 import java.util.concurrent.Executor;
 
 import io.netty.channel.ChannelHandlerContext;
@@ -47,6 +45,8 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
 
     private final Executor executor;
 
+    private final CodecUtils codecUtils;
+
     private Http1ServerChannelObserver errorResponseObserver;
 
     public NettyHttp1ConnectionHandler(URL url, FrameworkModel frameworkModel) {
@@ -56,6 +56,7 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
                 .getExtensionLoader(ThreadPool.class)
                 .getAdaptiveExtension()
                 .getExecutor(url);
+        this.codecUtils = frameworkModel.getBeanFactory().getBean(CodecUtils.class);
     }
 
     public NettyHttp1ConnectionHandler(
@@ -68,6 +69,7 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
                 .getExtensionLoader(ThreadPool.class)
                 .getAdaptiveExtension()
                 .getExecutor(url);
+        this.codecUtils = frameworkModel.getBeanFactory().getBean(CodecUtils.class);
         this.http1ServerTransportListenerFactory = http1ServerTransportListenerFactory;
     }
 
@@ -104,27 +106,14 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
         if (!StringUtils.hasText(contentType)) {
             throw new UnsupportedMediaTypeException(contentType);
         }
-        HttpMessageCodecFactory codecFactory =
-                CodecUtils.determineHttpMessageCodecFactory(frameworkModel, headers.getContentType(), true);
-        if (codecFactory == null) {
-            throw new UnsupportedMediaTypeException(contentType);
-        }
+        // check ContentType
+        codecUtils.determineHttpMessageDecoder(frameworkModel, headers.getContentType(), url);
         return http1TransportListener;
     }
 
     private void initErrorResponseObserver(ChannelHandlerContext ctx, Http1Request request) {
         this.errorResponseObserver = new Http1ServerChannelObserver(new NettyHttp1Channel(ctx.channel()));
         this.errorResponseObserver.setResponseEncoder(
-                CodecUtils.determineHttpMessageCodec(frameworkModel, request.headers(), url, false));
-    }
-
-    private static HttpMessageCodecFactory findSuitableCodec(
-            String contentType, List<HttpMessageCodecFactory> candidates) {
-        for (HttpMessageCodecFactory factory : candidates) {
-            if (factory.codecSupport().supportDecode(contentType)) {
-                return factory;
-            }
-        }
-        return null;
+                codecUtils.determineHttpMessageEncoder(frameworkModel, request.headers(), url));
     }
 }
