@@ -42,13 +42,13 @@ import java.util.Map;
 
 import com.alibaba.dubbo.config.ReferenceConfig;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class GenericServiceTest {
 
-    @BeforeEach
-    public void beforeEach() {
+    @BeforeAll
+    public static void beforeAll() {
         DubboBootstrap.reset();
     }
 

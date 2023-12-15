@@ -14,15 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.xds;
+package org.apache.dubbo.config.utils;
 
-import org.apache.dubbo.rpc.cluster.router.xds.rule.XdsRouteRule;
+import org.apache.dubbo.common.serialization.PreferSerializationProvider;
 
-import java.util.List;
-
-public interface XdsRouteRuleListener {
-
-    void onRuleChange(String appName, List<XdsRouteRule> xdsRouteRules);
-
-    void clearRule(String appName);
+public class TestPreferSerializationProvider implements PreferSerializationProvider {
+    @Override
+    public String getPreferSerialization() {
+        return "fastjson2,hessian2";
+    }
 }

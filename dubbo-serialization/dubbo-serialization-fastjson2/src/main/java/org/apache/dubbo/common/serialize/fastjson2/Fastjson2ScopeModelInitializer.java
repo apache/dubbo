@@ -26,9 +26,17 @@ public class Fastjson2ScopeModelInitializer implements ScopeModelInitializer {
 
     @Override
     public void initializeFrameworkModel(FrameworkModel frameworkModel) {
-        ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
-        beanFactory.registerBean(Fastjson2CreatorManager.class);
-        beanFactory.registerBean(Fastjson2SecurityManager.class);
+        Class<?> aClass = null;
+        try {
+            aClass = com.alibaba.fastjson2.JSONB.class;
+        } catch (Throwable ignored) {
+        }
+
+        if (aClass != null) {
+            ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
+            beanFactory.registerBean(Fastjson2CreatorManager.class);
+            beanFactory.registerBean(Fastjson2SecurityManager.class);
+        }
     }
 
     @Override

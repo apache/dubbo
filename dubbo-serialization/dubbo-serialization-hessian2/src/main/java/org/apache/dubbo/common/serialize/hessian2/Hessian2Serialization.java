@@ -17,6 +17,8 @@
 package org.apache.dubbo.common.serialize.hessian2;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
@@ -37,6 +39,20 @@ import static org.apache.dubbo.common.serialize.Constants.HESSIAN2_SERIALIZATION
  * </pre>
  */
 public class Hessian2Serialization implements Serialization {
+    private static final Logger logger = LoggerFactory.getLogger(Hessian2Serialization.class);
+
+    static {
+        Class<?> aClass = null;
+        try {
+            aClass = com.alibaba.com.caucho.hessian.io.Hessian2Output.class;
+        } catch (Throwable ignored) {
+        }
+        if (aClass == null) {
+            logger.info(
+                    "Failed to load com.alibaba.com.caucho.hessian.io.Hessian2Output, hessian2 serialization will be disabled.");
+            throw new IllegalStateException("The hessian2 is not in classpath.");
+        }
+    }
 
     @Override
     public byte getContentTypeId() {
