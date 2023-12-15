@@ -20,7 +20,7 @@ import org.apache.dubbo.remoting.http12.exception.EncodeException;
 
 import java.io.OutputStream;
 
-public interface HttpMessageEncoder extends MessageMediaType {
+public interface HttpMessageEncoder extends CodecMediaType {
 
     void encode(OutputStream outputStream, Object data) throws EncodeException;
 

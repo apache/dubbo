@@ -22,7 +22,7 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 @SPI(scope = ExtensionScope.FRAMEWORK)
-public interface HttpMessageEncoderFactory extends MessageMediaType {
+public interface HttpMessageEncoderFactory extends CodecMediaType {
 
     HttpMessageEncoder createCodec(URL url, FrameworkModel frameworkModel, String mediaType);
 }

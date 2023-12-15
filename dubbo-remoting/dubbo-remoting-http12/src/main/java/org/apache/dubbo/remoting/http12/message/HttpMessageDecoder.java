@@ -20,7 +20,7 @@ import org.apache.dubbo.remoting.http12.exception.DecodeException;
 
 import java.io.InputStream;
 
-public interface HttpMessageDecoder extends MessageMediaType {
+public interface HttpMessageDecoder extends CodecMediaType {
 
     Object decode(InputStream inputStream, Class<?> targetType) throws DecodeException;
 

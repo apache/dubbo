@@ -16,7 +16,11 @@
  */
 package org.apache.dubbo.remoting.http12.message;
 
-public interface MessageMediaType {
+public interface CodecMediaType {
 
     MediaType mediaType();
+
+    default boolean supports(String mediaType) {
+        return mediaType.startsWith(mediaType().getName());
+    }
 }
