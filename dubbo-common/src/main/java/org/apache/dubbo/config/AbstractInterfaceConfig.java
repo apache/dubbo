@@ -759,6 +759,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         this.methods = (methods != null) ? new ArrayList<>(methods) : null;
     }
 
+    /**
+     * It is only used in native scenarios to get methodConfigs.
+     * @param methodsJson
+     */
     public void setMethodsJson(List<String> methodsJson) {
         if (methodsJson != null) {
             this.methods = new ArrayList<>();

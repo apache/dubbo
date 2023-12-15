@@ -16,12 +16,14 @@
  */
 package org.apache.dubbo.config.spring;
 
+import org.apache.dubbo.common.aot.NativeDetector;
 import org.apache.dubbo.common.bytecode.Proxy;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.spring.aot.AotWithSpringDetector;
@@ -363,7 +365,12 @@ public class ReferenceBean<T>
             }
         }
 
-        if (StringUtils.isEmpty(this.proxy) || CommonConstants.DEFAULT_PROXY.equalsIgnoreCase(this.proxy)) {
+        if (NativeDetector.inNativeImage()) {
+            generateFromJdk(interfaces);
+        }
+
+        if (this.lazyProxy == null
+                && (StringUtils.isEmpty(this.proxy) || CommonConstants.DEFAULT_PROXY.equalsIgnoreCase(this.proxy))) {
             generateFromJavassistFirst(interfaces);
         }
 
@@ -467,5 +474,16 @@ public class ReferenceBean<T>
 
     public void setInterfaceName(String interfaceName) {
         this.interfaceName = interfaceName;
+    }
+
+    /**
+     * It is only used in native scenarios to get referenceProps
+     * because attribute is not passed by BeanDefinition by default.
+     * @param referencePropsJson
+     */
+    public void setReferencePropsJson(String referencePropsJson) {
+        if (StringUtils.isNotEmpty(referencePropsJson)) {
+            this.referenceProps = JsonUtils.toJavaObject(referencePropsJson, Map.class);
+        }
     }
 }
