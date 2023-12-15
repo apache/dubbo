@@ -14,13 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.xds;
+package org.apache.dubbo.common.serialization;
 
-import org.apache.dubbo.registry.xds.util.protocol.message.Endpoint;
-
-import java.util.Set;
-
-public interface EdsEndpointListener {
-
-    void onEndPointChange(String cluster, Set<Endpoint> endpoints);
+public interface PreferSerializationProvider {
+    String getPreferSerialization();
 }
