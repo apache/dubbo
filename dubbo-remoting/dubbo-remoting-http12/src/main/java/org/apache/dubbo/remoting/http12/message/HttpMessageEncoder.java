@@ -14,28 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12;
+package org.apache.dubbo.remoting.http12.message;
 
-public enum HttpHeaderNames {
-    STATUS(":status"),
+import org.apache.dubbo.remoting.http12.exception.EncodeException;
 
-    CONTENT_TYPE("content-type"),
+import java.io.OutputStream;
 
-    CONTENT_LENGTH("content-length"),
+public interface HttpMessageEncoder extends CodecMediaType {
 
-    TRANSFER_ENCODING("transfer-encoding"),
+    void encode(OutputStream outputStream, Object data) throws EncodeException;
 
-    TE("te"),
-
-    ACCEPT("accept");
-
-    private final String name;
-
-    HttpHeaderNames(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
+    default void encode(OutputStream outputStream, Object[] data) throws EncodeException {
+        // default encode first data
+        this.encode(outputStream, data == null || data.length == 0 ? null : data[0]);
     }
 }

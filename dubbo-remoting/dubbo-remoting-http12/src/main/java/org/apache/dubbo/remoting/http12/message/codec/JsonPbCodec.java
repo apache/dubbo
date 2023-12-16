@@ -14,111 +14,94 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.message;
+package org.apache.dubbo.remoting.http12.message.codec;
 
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.utils.JsonUtils;
+import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
+import org.apache.dubbo.remoting.http12.message.MediaType;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
-import com.alibaba.fastjson2.JSONObject;
+import com.google.protobuf.Message;
+import com.google.protobuf.util.JsonFormat;
 
-/**
- * body is json
- */
-@Activate
-public class JsonCodec implements HttpMessageCodec {
-
-    public static final HttpMessageCodec INSTANCE = new JsonCodec();
+public class JsonPbCodec extends JsonCodec {
 
     @Override
-    public MediaType contentType() {
+    public MediaType mediaType() {
         return MediaType.APPLICATION_JSON_VALUE;
     }
 
     @Override
     public void encode(OutputStream outputStream, Object unSerializedBody) throws EncodeException {
         try {
-            try {
-                String jsonString = JsonUtils.toJson(unSerializedBody);
+            if (unSerializedBody instanceof Message) {
+                String jsonString = JsonFormat.printer().print((Message) unSerializedBody);
                 outputStream.write(jsonString.getBytes(StandardCharsets.UTF_8));
-            } finally {
-                outputStream.flush();
+                return;
             }
-        } catch (Throwable e) {
+        } catch (IOException e) {
             throw new EncodeException(e);
         }
+        super.encode(outputStream, unSerializedBody);
     }
 
     @Override
     public void encode(OutputStream outputStream, Object[] data) throws EncodeException {
-        try {
-            try {
-                String jsonString = JsonUtils.toJson(data);
-                outputStream.write(jsonString.getBytes(StandardCharsets.UTF_8));
-            } finally {
-                outputStream.flush();
-            }
-        } catch (Throwable e) {
-            throw new EncodeException(e);
-        }
+        super.encode(outputStream, data);
     }
 
     @Override
     public Object decode(InputStream body, Class<?> targetType) throws DecodeException {
         try {
-            try {
+            if (isProtobuf(targetType)) {
                 int len;
                 byte[] data = new byte[4096];
                 StringBuilder builder = new StringBuilder(4096);
                 while ((len = body.read(data)) != -1) {
                     builder.append(new String(data, 0, len));
                 }
-                return JsonUtils.toJavaObject(builder.toString(), targetType);
-            } finally {
-                body.close();
+                Message.Builder newBuilder = (Message.Builder)
+                        MethodUtils.findMethod(targetType, "newBuilder").invoke(null);
+                JsonFormat.parser().ignoringUnknownFields().merge(builder.toString(), newBuilder);
+                return newBuilder.build();
             }
         } catch (Throwable e) {
             throw new DecodeException(e);
         }
+        return super.decode(body, targetType);
     }
 
     @Override
     public Object[] decode(InputStream dataInputStream, Class<?>[] targetTypes) throws DecodeException {
-        List<Object> result = new ArrayList<>();
         try {
-            try {
-                int len;
-                byte[] data = new byte[4096];
-                StringBuilder builder = new StringBuilder(4096);
-                while ((len = dataInputStream.read(data)) != -1) {
-                    builder.append(new String(data, 0, len));
-                }
-                String jsonString = builder.toString();
-                List<Object> jsonObjects = JsonUtils.toJavaList(jsonString, Object.class);
-
-                for (int i = 0; i < targetTypes.length; i++) {
-                    Object jsonObject = jsonObjects.get(i);
-                    Class<?> type = targetTypes[i];
-                    if (jsonObject instanceof JSONObject) {
-                        Object o = ((JSONObject) jsonObject).toJavaObject(type);
-                        result.add(o);
-                    } else {
-                        result.add(jsonObject);
-                    }
-                }
-                return result.toArray();
-            } finally {
-                dataInputStream.close();
+            if (hasProtobuf(targetTypes)) {
+                // protobuf only support one parameter
+                return new Object[] {decode(dataInputStream, targetTypes[0])};
             }
         } catch (Throwable e) {
             throw new DecodeException(e);
         }
+        return super.decode(dataInputStream, targetTypes);
+    }
+
+    private static boolean isProtobuf(Class<?> targetType) {
+        if (targetType == null) {
+            return false;
+        }
+        return Message.class.isAssignableFrom(targetType);
+    }
+
+    private static boolean hasProtobuf(Class<?>[] classes) {
+        for (Class<?> clazz : classes) {
+            if (isProtobuf(clazz)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

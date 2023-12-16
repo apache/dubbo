@@ -16,22 +16,11 @@
  */
 package org.apache.dubbo.remoting.http12.message;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.model.FrameworkModel;
+public interface CodecMediaType {
 
-@Activate
-public class JsonCodecFactory implements HttpMessageCodecFactory {
+    MediaType mediaType();
 
-    public static final String NAME = "json";
-
-    @Override
-    public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel) {
-        return new JsonCodec();
-    }
-
-    @Override
-    public MediaType contentType() {
-        return MediaType.APPLICATION_JSON_VALUE;
+    default boolean supports(String mediaType) {
+        return mediaType.startsWith(mediaType().getName());
     }
 }

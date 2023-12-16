@@ -14,36 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.message;
+package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
+import org.apache.dubbo.remoting.http12.message.HttpMessageDecoderFactory;
+import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-@Activate(order = -100)
-public class JsonPbCodecFactory implements HttpMessageCodecFactory {
+@Activate
+public class MultipartDecoderFactory implements HttpMessageDecoderFactory {
 
-    @Override
-    public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel) {
-        HttpMessageCodec codec = frameworkModel
-                .getExtensionLoader(HttpMessageCodecFactory.class)
-                .getExtension(JsonCodecFactory.NAME)
-                .createCodec(url, frameworkModel);
-        JsonPbCodec jsonPbCodec = new JsonPbCodec();
-        jsonPbCodec.setJsonCodec(codec);
-        return jsonPbCodec;
+    private CodecUtils codecUtils;
+
+    public void setCodecUtils(CodecUtils codecUtils) {
+        this.codecUtils = codecUtils;
     }
 
     @Override
-    public MediaType contentType() {
-        return MediaType.APPLICATION_JSON_VALUE;
+    public HttpMessageDecoder createCodec(URL url, FrameworkModel frameworkModel, String mediaType) {
+        return new MultipartDecoder(url, frameworkModel, mediaType, codecUtils);
     }
 
     @Override
-    public boolean support(String contentType) {
-        return HttpMessageCodecFactory.super.support(contentType)
-                && ClassUtils.isPresent(
-                        "com.google.protobuf.Message", getClass().getClassLoader());
+    public MediaType mediaType() {
+        return MediaType.MULTIPART_FORM_DATA;
     }
 }

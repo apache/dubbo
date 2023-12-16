@@ -1,2 +1,0 @@
-json=org.apache.dubbo.remoting.http12.message.JsonCodecFactory
-jsonpb=org.apache.dubbo.remoting.http12.message.JsonPbCodecFactory

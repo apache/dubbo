@@ -14,25 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.message;
+package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
+import org.apache.dubbo.remoting.http12.message.HttpMessageDecoderFactory;
+import org.apache.dubbo.remoting.http12.message.HttpMessageEncoderFactory;
+import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-/**
- * for http body codec
- */
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface HttpMessageCodecFactory {
+public class JsonCodecFactory implements HttpMessageEncoderFactory, HttpMessageDecoderFactory {
 
-    HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel);
+    private final JsonCodec instance = new JsonCodec();
 
-    MediaType contentType();
+    @Override
+    public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String mediaType) {
+        return instance;
+    }
 
-    default boolean support(String contentType) {
-        MediaType mediaType = this.contentType();
-        return mediaType.getName().startsWith(contentType);
+    @Override
+    public MediaType mediaType() {
+        return MediaType.APPLICATION_JSON_VALUE;
     }
 }
