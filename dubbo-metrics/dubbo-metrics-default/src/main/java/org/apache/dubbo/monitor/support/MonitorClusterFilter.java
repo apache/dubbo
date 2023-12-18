@@ -14,25 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.monitor;
+package org.apache.dubbo.monitor.support;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.extension.Adaptive;
-import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 
-/**
- * MonitorFactory. (SPI, Singleton, ThreadSafe)
- */
-@SPI("dubbo")
-public interface MonitorFactory {
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 
-    /**
-     * Create monitor.
-     *
-     * @param url
-     * @return monitor
-     */
-    @Adaptive(CommonConstants.PROTOCOL_KEY)
-    Monitor getMonitor(URL url);
-}
+@Deprecated
+@Activate(group = {CONSUMER})
+public class MonitorClusterFilter extends MonitorFilter implements ClusterFilter {}

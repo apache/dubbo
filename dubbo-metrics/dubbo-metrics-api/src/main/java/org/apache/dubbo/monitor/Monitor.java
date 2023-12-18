@@ -14,15 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.monitor.support;
+package org.apache.dubbo.monitor;
 
-import org.apache.dubbo.monitor.MonitorService;
-import org.apache.dubbo.rpc.model.BuiltinServiceDetector;
+import org.apache.dubbo.common.Node;
 
-public class MonitorServiceDetector implements BuiltinServiceDetector {
-
-    @Override
-    public Class<?> getService() {
-        return MonitorService.class;
-    }
-}
+/**
+ * Monitor. (SPI, Prototype, ThreadSafe)
+ *
+ * @see org.apache.dubbo.monitor.MonitorFactory#getMonitor(org.apache.dubbo.common.URL)
+ */
+@Deprecated
+public interface Monitor extends Node, MonitorService {}

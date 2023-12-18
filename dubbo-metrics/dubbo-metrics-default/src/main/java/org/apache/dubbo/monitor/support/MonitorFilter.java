@@ -61,6 +61,7 @@ import static org.apache.dubbo.rpc.Constants.OUTPUT_KEY;
 /**
  * MonitorFilter. (SPI, Singleton, ThreadSafe)
  */
+@Deprecated
 @Activate(group = {PROVIDER})
 public class MonitorFilter implements Filter, Filter.Listener {
 

@@ -193,7 +193,6 @@
 
     <snappy_java_version>1.1.10.5</snappy_java_version>
     <bouncycastle-bcprov_version>1.70</bouncycastle-bcprov_version>
-    <metrics_version>2.0.6</metrics_version>
     <sofa_registry_version>5.4.3</sofa_registry_version>
     <gson_version>2.10.1</gson_version>
     <jackson_version>2.16.0</jackson_version>
@@ -773,28 +772,6 @@
         <groupId>io.swagger</groupId>
         <artifactId>swagger-jaxrs</artifactId>
         <version>${swagger_version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.alibaba.middleware</groupId>
-        <artifactId>metrics-core-api</artifactId>
-        <version>${metrics_version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.alibaba.middleware</groupId>
-        <artifactId>metrics-core-impl</artifactId>
-        <version>${metrics_version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.alibaba.middleware</groupId>
-        <artifactId>metrics-common</artifactId>
-        <version>${metrics_version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.alibaba.middleware</groupId>
-        <artifactId>metrics-rest</artifactId>
-        <version>${metrics_version}</version>
       </dependency>
 
       <!-- for dubbo-registry-sofa -->

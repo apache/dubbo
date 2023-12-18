@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.monitor;
 
+@Deprecated
 public interface Constants {
     String DUBBO_PROVIDER = "dubbo.provider";
 
