@@ -206,6 +206,8 @@
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
     <revision>3.3.0-beta.2-SNAPSHOT</revision>
     <open_feign_version>3.1.5</open_feign_version>
+    <jakarta.xml.bind-api.version>4.0.1</jakarta.xml.bind-api.version>
+    <jaxb-runtime.version>2.3.3-b02</jaxb-runtime.version>
   </properties>
 
   <dependencyManagement>
@@ -1049,6 +1051,16 @@
         <groupId>org.springframework.cloud</groupId>
         <artifactId>spring-cloud-openfeign-core</artifactId>
         <version>${open_feign_version}</version>
+      </dependency>
+      <dependency>
+        <groupId>jakarta.xml.bind</groupId>
+        <artifactId>jakarta.xml.bind-api</artifactId>
+        <version>${jakarta.xml.bind-api.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.glassfish.jaxb</groupId>
+        <artifactId>jaxb-runtime</artifactId>
+        <version>${jaxb-runtime.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

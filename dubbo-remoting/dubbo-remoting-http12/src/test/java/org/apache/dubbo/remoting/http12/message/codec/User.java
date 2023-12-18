@@ -14,36 +14,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.message;
+package org.apache.dubbo.remoting.http12.message.codec;
 
-import java.io.InputStream;
+import javax.xml.bind.annotation.XmlRootElement;
 
-public class DefaultListeningDecoder implements ListeningDecoder {
+import java.io.Serializable;
 
-    private final HttpMessageDecoder httpMessageDecoder;
+@XmlRootElement
+public class User implements Serializable {
 
-    private final Class<?>[] targetTypes;
+    private String username;
 
-    private Listener listener;
+    private String location;
 
-    public DefaultListeningDecoder(HttpMessageDecoder httpMessageDecoder, Class<?>[] targetTypes) {
-        this.httpMessageDecoder = httpMessageDecoder;
-        this.targetTypes = targetTypes;
+    public User() {}
+
+    public User(String username, String location) {
+        this.username = username;
+        this.location = location;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
     }
 
     @Override
-    public void setListener(Listener listener) {
-        this.listener = listener;
-    }
-
-    @Override
-    public void decode(InputStream inputStream) {
-        Object[] decode = this.httpMessageDecoder.decode(inputStream, targetTypes);
-        this.listener.onMessage(decode);
-    }
-
-    @Override
-    public void close() {
-        this.listener.onClose();
+    public String toString() {
+        return "User{" + "username='" + username + '\'' + ", location='" + location + '\'' + '}';
     }
 }

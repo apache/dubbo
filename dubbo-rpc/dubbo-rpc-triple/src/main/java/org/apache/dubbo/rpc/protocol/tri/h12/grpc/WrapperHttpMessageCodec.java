@@ -129,7 +129,7 @@ public class WrapperHttpMessageCodec implements HttpMessageCodec {
     }
 
     @Override
-    public MediaType contentType() {
+    public MediaType mediaType() {
         return MEDIA_TYPE;
     }
 

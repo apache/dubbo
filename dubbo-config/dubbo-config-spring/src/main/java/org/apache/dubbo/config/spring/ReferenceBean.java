@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring;
 
+import org.apache.dubbo.common.aot.NativeDetector;
 import org.apache.dubbo.common.bytecode.Proxy;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -364,7 +365,12 @@ public class ReferenceBean<T>
             }
         }
 
-        if (StringUtils.isEmpty(this.proxy) || CommonConstants.DEFAULT_PROXY.equalsIgnoreCase(this.proxy)) {
+        if (NativeDetector.inNativeImage()) {
+            generateFromJdk(interfaces);
+        }
+
+        if (this.lazyProxy == null
+                && (StringUtils.isEmpty(this.proxy) || CommonConstants.DEFAULT_PROXY.equalsIgnoreCase(this.proxy))) {
             generateFromJavassistFirst(interfaces);
         }
 

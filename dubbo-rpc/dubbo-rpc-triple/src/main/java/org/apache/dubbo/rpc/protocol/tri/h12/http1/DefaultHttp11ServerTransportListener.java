@@ -26,7 +26,7 @@ import org.apache.dubbo.remoting.http12.h1.Http1ServerChannelObserver;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerStreamChannelObserver;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerTransportListener;
 import org.apache.dubbo.remoting.http12.message.DefaultListeningDecoder;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
+import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
 import org.apache.dubbo.remoting.http12.message.ListeningDecoder;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
@@ -60,12 +60,16 @@ public class DefaultHttp11ServerTransportListener
         switch (methodDescriptor.getRpcType()) {
             case UNARY:
                 Http1ServerChannelObserver http1ChannelObserver = new Http1ServerChannelObserver(httpChannel);
-                http1ChannelObserver.setHttpMessageCodec(getHttpMessageCodec());
+                http1ChannelObserver.setResponseEncoder(getCodecUtils()
+                        .determineHttpMessageEncoder(
+                                getFrameworkModel(), getHttpMetadata().headers(), getUrl()));
                 return new AutoCompleteUnaryServerCallListener(invocation, invoker, http1ChannelObserver);
             case SERVER_STREAM:
                 Http1ServerChannelObserver serverStreamChannelObserver =
                         new Http1ServerStreamChannelObserver(httpChannel);
-                serverStreamChannelObserver.setHttpMessageCodec(getHttpMessageCodec());
+                serverStreamChannelObserver.setResponseEncoder(getCodecUtils()
+                        .determineHttpMessageEncoder(
+                                getFrameworkModel(), getHttpMetadata().headers(), getUrl()));
                 serverStreamChannelObserver.setHeadersCustomizer((headers) -> headers.set(
                         HttpHeaderNames.CONTENT_TYPE.getName(), MediaType.TEXT_EVENT_STREAM_VALUE.getName()));
                 return new AutoCompleteServerStreamServerCallListener(invocation, invoker, serverStreamChannelObserver);
@@ -87,14 +91,13 @@ public class DefaultHttp11ServerTransportListener
         setMethodDescriptor(methodDescriptor);
         setMethodMetadata(methodMetadata);
         setRpcInvocation(rpcInvocation);
-        HttpMessageCodec httpMessageCodec = getHttpMessageCodec();
         ListeningDecoder listeningDecoder =
-                newListeningDecoder(httpMessageCodec, methodMetadata.getActualRequestTypes());
+                newListeningDecoder(getHttpMessageDecoder(), methodMetadata.getActualRequestTypes());
         return new DefaultHttpMessageListener(listeningDecoder);
     }
 
-    private ListeningDecoder newListeningDecoder(HttpMessageCodec codec, Class<?>[] actualRequestTypes) {
-        DefaultListeningDecoder defaultListeningDecoder = new DefaultListeningDecoder(codec, actualRequestTypes);
+    private ListeningDecoder newListeningDecoder(HttpMessageDecoder decoder, Class<?>[] actualRequestTypes) {
+        DefaultListeningDecoder defaultListeningDecoder = new DefaultListeningDecoder(decoder, actualRequestTypes);
         ServerCallListener serverCallListener = startListener(getRpcInvocation(), getMethodDescriptor(), getInvoker());
         defaultListeningDecoder.setListener(serverCallListener::onMessage);
         return defaultListeningDecoder;

@@ -14,33 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
+package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.convert.ConverterUtil;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.HttpMessageDecoderFactory;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoderFactory;
 import org.apache.dubbo.remoting.http12.message.MediaType;
-import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-@Activate
-public class GrpcCompositeCodecFactory implements HttpMessageEncoderFactory, HttpMessageDecoderFactory {
+public class UrlEncodeFormCodecFactory implements HttpMessageEncoderFactory, HttpMessageDecoderFactory {
 
-    private static final MediaType MEDIA_TYPE = new MediaType("application", "grpc");
+    private final ConverterUtil converterUtil;
+
+    private final UrlEncodeFormCodec instance;
+
+    public UrlEncodeFormCodecFactory(FrameworkModel frameworkModel) {
+        this.converterUtil = frameworkModel.getBeanFactory().getBean(ConverterUtil.class);
+        this.instance = new UrlEncodeFormCodec(this.converterUtil);
+    }
 
     @Override
     public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String mediaType) {
-        final String serializeName = UrlUtils.serializationOrDefault(url);
-        WrapperHttpMessageCodec wrapperHttpMessageCodec = new WrapperHttpMessageCodec(url, frameworkModel);
-        wrapperHttpMessageCodec.setSerializeType(serializeName);
-        ProtobufHttpMessageCodec protobufHttpMessageCodec = new ProtobufHttpMessageCodec();
-        return new GrpcCompositeCodec(protobufHttpMessageCodec, wrapperHttpMessageCodec);
+        return instance;
     }
 
     @Override
     public MediaType mediaType() {
-        return MEDIA_TYPE;
+        return MediaType.APPLICATION_X_WWW_FROM_URLENCODED;
     }
 }

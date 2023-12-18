@@ -14,28 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12;
+package org.apache.dubbo.remoting.http12.message;
 
-public enum HttpHeaderNames {
-    STATUS(":status"),
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
-    CONTENT_TYPE("content-type"),
+@SPI(scope = ExtensionScope.FRAMEWORK)
+public interface HttpMessageEncoderFactory extends CodecMediaType {
 
-    CONTENT_LENGTH("content-length"),
-
-    TRANSFER_ENCODING("transfer-encoding"),
-
-    TE("te"),
-
-    ACCEPT("accept");
-
-    private final String name;
-
-    HttpHeaderNames(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
+    HttpMessageEncoder createCodec(URL url, FrameworkModel frameworkModel, String mediaType);
 }

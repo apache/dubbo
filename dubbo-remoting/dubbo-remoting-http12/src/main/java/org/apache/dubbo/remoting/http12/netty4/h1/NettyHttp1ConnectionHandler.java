@@ -27,10 +27,9 @@ import org.apache.dubbo.remoting.http12.h1.Http1Request;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerChannelObserver;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerTransportListener;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerTransportListenerFactory;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory;
+import org.apache.dubbo.remoting.http12.message.codec.CodecUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import java.util.List;
 import java.util.concurrent.Executor;
 
 import io.netty.channel.ChannelHandlerContext;
@@ -46,6 +45,8 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
 
     private final Executor executor;
 
+    private final CodecUtils codecUtils;
+
     private Http1ServerChannelObserver errorResponseObserver;
 
     public NettyHttp1ConnectionHandler(URL url, FrameworkModel frameworkModel) {
@@ -55,6 +56,7 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
                 .getExtensionLoader(ThreadPool.class)
                 .getAdaptiveExtension()
                 .getExecutor(url);
+        this.codecUtils = frameworkModel.getBeanFactory().getBean(CodecUtils.class);
     }
 
     public NettyHttp1ConnectionHandler(
@@ -67,6 +69,7 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
                 .getExtensionLoader(ThreadPool.class)
                 .getAdaptiveExtension()
                 .getExecutor(url);
+        this.codecUtils = frameworkModel.getBeanFactory().getBean(CodecUtils.class);
         this.http1ServerTransportListenerFactory = http1ServerTransportListenerFactory;
     }
 
@@ -78,6 +81,7 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
     protected void channelRead0(ChannelHandlerContext ctx, Http1Request http1Request) {
         // process h1 request
         Http1ServerTransportListener http1TransportListener = initTransportListenerIfNecessary(ctx, http1Request);
+        initErrorResponseObserver(ctx, http1Request);
         executor.execute(() -> {
             try {
                 http1TransportListener.onMetadata(http1Request);
@@ -102,24 +106,14 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
         if (!StringUtils.hasText(contentType)) {
             throw new UnsupportedMediaTypeException(contentType);
         }
-        HttpMessageCodecFactory codecFactory = findSuitableCodec(
-                contentType,
-                frameworkModel.getExtensionLoader(HttpMessageCodecFactory.class).getActivateExtensions());
-        if (codecFactory == null) {
-            throw new UnsupportedMediaTypeException(contentType);
-        }
-        this.errorResponseObserver = new Http1ServerChannelObserver(new NettyHttp1Channel(ctx.channel()));
-        this.errorResponseObserver.setHttpMessageCodec(codecFactory.createCodec(url, frameworkModel));
+        // check ContentType
+        codecUtils.determineHttpMessageDecoder(frameworkModel, headers.getContentType(), url);
         return http1TransportListener;
     }
 
-    private static HttpMessageCodecFactory findSuitableCodec(
-            String contentType, List<HttpMessageCodecFactory> candidates) {
-        for (HttpMessageCodecFactory factory : candidates) {
-            if (factory.support(contentType)) {
-                return factory;
-            }
-        }
-        return null;
+    private void initErrorResponseObserver(ChannelHandlerContext ctx, Http1Request request) {
+        this.errorResponseObserver = new Http1ServerChannelObserver(new NettyHttp1Channel(ctx.channel()));
+        this.errorResponseObserver.setResponseEncoder(
+                codecUtils.determineHttpMessageEncoder(frameworkModel, request.headers(), url));
     }
 }

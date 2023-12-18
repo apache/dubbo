@@ -14,27 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
+package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.MediaType;
-import org.apache.dubbo.rpc.protocol.tri.SingleProtobufUtils;
 
-import java.io.IOException;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.Source;
+import javax.xml.transform.sax.SAXSource;
+
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringReader;
 
-public class ProtobufHttpMessageCodec implements HttpMessageCodec {
+import org.xml.sax.InputSource;
 
-    private static final MediaType MEDIA_TYPE = new MediaType("application", "x-protobuf");
+public class XmlCodec implements HttpMessageCodec {
 
     @Override
     public void encode(OutputStream outputStream, Object data) throws EncodeException {
         try {
-            SingleProtobufUtils.serialize(data, outputStream);
-        } catch (IOException e) {
+            Marshaller marshaller = JAXBContext.newInstance(data.getClass()).createMarshaller();
+            marshaller.marshal(data, outputStream);
+        } catch (Exception e) {
             throw new EncodeException(e);
         }
     }
@@ -42,14 +49,26 @@ public class ProtobufHttpMessageCodec implements HttpMessageCodec {
     @Override
     public Object decode(InputStream inputStream, Class<?> targetType) throws DecodeException {
         try {
-            return SingleProtobufUtils.deserialize(inputStream, targetType);
-        } catch (IOException e) {
+            SAXParserFactory spf = SAXParserFactory.newInstance();
+            spf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            spf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            spf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+
+            // Do unmarshall operation
+            Source xmlSource = new SAXSource(
+                    spf.newSAXParser().getXMLReader(),
+                    new InputSource(new StringReader(
+                            CodecUtils.toByteArrayStream(inputStream).toString())));
+            JAXBContext context = JAXBContext.newInstance(targetType);
+            Unmarshaller unmarshaller = context.createUnmarshaller();
+            return unmarshaller.unmarshal(xmlSource);
+        } catch (Exception e) {
             throw new DecodeException(e);
         }
     }
 
     @Override
     public MediaType mediaType() {
-        return MEDIA_TYPE;
+        return MediaType.APPLICATION_XML;
     }
 }

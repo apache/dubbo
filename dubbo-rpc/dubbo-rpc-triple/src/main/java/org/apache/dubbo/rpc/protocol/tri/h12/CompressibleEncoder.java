@@ -16,22 +16,20 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.h12;
 
-import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
+import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 
-import java.io.InputStream;
 import java.io.OutputStream;
 
-public class CompressibleCodec implements HttpMessageCodec {
+public class CompressibleEncoder implements HttpMessageEncoder {
 
-    private final HttpMessageCodec delegate;
+    private final HttpMessageEncoder delegate;
 
     private Compressor compressor = Compressor.NONE;
 
-    public CompressibleCodec(HttpMessageCodec delegate) {
+    public CompressibleEncoder(HttpMessageEncoder delegate) {
         this.delegate = delegate;
     }
 
@@ -39,33 +37,16 @@ public class CompressibleCodec implements HttpMessageCodec {
         this.compressor = compressor;
     }
 
-    @Override
     public void encode(OutputStream outputStream, Object data) throws EncodeException {
         delegate.encode(compressor.decorate(outputStream), data);
     }
 
-    @Override
-    public Object decode(InputStream inputStream, Class<?> targetType) throws DecodeException {
-        return delegate.decode(inputStream, targetType);
-    }
-
-    @Override
     public void encode(OutputStream outputStream, Object[] data) throws EncodeException {
         delegate.encode(outputStream, data);
     }
 
     @Override
-    public Object[] decode(InputStream inputStream, Class<?>[] targetTypes) throws DecodeException {
-        return delegate.decode(inputStream, targetTypes);
-    }
-
-    @Override
-    public boolean support(String contentType) {
-        return delegate.support(contentType);
-    }
-
-    @Override
-    public MediaType contentType() {
-        return delegate.contentType();
+    public MediaType mediaType() {
+        return delegate.mediaType();
     }
 }
