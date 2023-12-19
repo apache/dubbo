@@ -146,7 +146,7 @@ public class MeshRuleCache<T> {
                 Collections.emptyList(), Collections.emptyMap(), Collections.emptyMap(), BitList.emptyList());
     }
 
-    public static boolean isLabelMatch(URL url, String protocolServiceKey, Map<String, String> inputMap) {
+    protected static boolean isLabelMatch(URL url, String protocolServiceKey, Map<String, String> inputMap) {
         if (inputMap == null || inputMap.size() == 0) {
             return true;
         }
