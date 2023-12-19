@@ -1,1 +1,0 @@
-script-app=org.apache.dubbo.rpc.cluster.router.script.config.AppScriptRouterFactory

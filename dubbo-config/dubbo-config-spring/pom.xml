@@ -120,36 +120,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-context</artifactId>
-      <version>${project.parent.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-generic-invoke</artifactId>
-      <version>${project.parent.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-classloader-filter</artifactId>
-      <version>${project.parent.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-access-log</artifactId>
-      <version>${project.parent.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-qos-trace</artifactId>
-      <version>${project.parent.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>javax.validation</groupId>
       <artifactId>validation-api</artifactId>
       <scope>test</scope>

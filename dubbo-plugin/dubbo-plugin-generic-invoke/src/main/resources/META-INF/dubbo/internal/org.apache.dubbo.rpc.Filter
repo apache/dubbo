@@ -1,2 +1,0 @@
-generic=org.apache.dubbo.rpc.filter.GenericFilter
-genericimpl=org.apache.dubbo.rpc.filter.GenericImplFilter

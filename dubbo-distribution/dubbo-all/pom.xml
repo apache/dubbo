@@ -278,119 +278,7 @@
 
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-cluster-mergeable</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-mock</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-router-script</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-router-mesh</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-router-condition</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-router-tag</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-loadbalance-adaptive</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-access-log</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-tps</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-token</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-generic-invoke</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-context</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-classloader-filter</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-plugin-proxy-bytebuddy</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-qos-trace</artifactId>
       <version>${project.version}</version>
       <scope>compile</scope>
       <optional>true</optional>
@@ -637,21 +525,7 @@
                   <include>org.apache.dubbo:dubbo-security</include>
                   <include>org.apache.dubbo:dubbo-reactive</include>
                   <include>org.apache.dubbo:dubbo-spring-security</include>
-                  <include>org.apache.dubbo:dubbo-plugin-cluster-mergeable</include>
-                  <include>org.apache.dubbo:dubbo-plugin-mock</include>
-                  <include>org.apache.dubbo:dubbo-plugin-router-script</include>
-                  <include>org.apache.dubbo:dubbo-plugin-router-mesh</include>
-                  <include>org.apache.dubbo:dubbo-plugin-router-condition</include>
-                  <include>org.apache.dubbo:dubbo-plugin-router-tag</include>
-                  <include>org.apache.dubbo:dubbo-plugin-loadbalance-adaptive</include>
-                  <include>org.apache.dubbo:dubbo-plugin-access-log</include>
-                  <include>org.apache.dubbo:dubbo-plugin-tps</include>
-                  <include>org.apache.dubbo:dubbo-plugin-token</include>
-                  <include>org.apache.dubbo:dubbo-plugin-generic-invoke</include>
-                  <include>org.apache.dubbo:dubbo-plugin-context</include>
-                  <include>org.apache.dubbo:dubbo-plugin-classloader-filter</include>
                   <include>org.apache.dubbo:dubbo-plugin-proxy-bytebuddy</include>
-                  <include>org.apache.dubbo:dubbo-plugin-qos-trace</include>
                   <include>org.apache.dubbo:dubbo-registry-api</include>
                   <include>org.apache.dubbo:dubbo-registry-multicast</include>
                   <include>org.apache.dubbo:dubbo-registry-multiple</include>

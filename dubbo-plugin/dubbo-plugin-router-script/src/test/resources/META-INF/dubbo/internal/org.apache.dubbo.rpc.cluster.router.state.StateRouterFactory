@@ -1,2 +1,0 @@
-script=org.apache.dubbo.rpc.cluster.router.script.ScriptStateRouterFactory
-file=org.apache.dubbo.rpc.cluster.router.file.FileStateRouterFactory
