@@ -36,29 +36,27 @@ class MockInvokerTest {
 
     @Test
     void testParseMockValue() throws Exception {
-        Assertions.assertNull(org.apache.dubbo.rpc.support.MockInvoker.parseMockValue("null"));
-        Assertions.assertNull(org.apache.dubbo.rpc.support.MockInvoker.parseMockValue("empty"));
+        Assertions.assertNull(MockInvoker.parseMockValue("null"));
+        Assertions.assertNull(MockInvoker.parseMockValue("empty"));
 
-        Assertions.assertTrue((Boolean) org.apache.dubbo.rpc.support.MockInvoker.parseMockValue("true"));
-        Assertions.assertFalse((Boolean) org.apache.dubbo.rpc.support.MockInvoker.parseMockValue("false"));
+        Assertions.assertTrue((Boolean) MockInvoker.parseMockValue("true"));
+        Assertions.assertFalse((Boolean) MockInvoker.parseMockValue("false"));
 
-        Assertions.assertEquals(123, org.apache.dubbo.rpc.support.MockInvoker.parseMockValue("123"));
-        Assertions.assertEquals("foo", org.apache.dubbo.rpc.support.MockInvoker.parseMockValue("foo"));
-        Assertions.assertEquals("foo", org.apache.dubbo.rpc.support.MockInvoker.parseMockValue("\"foo\""));
-        Assertions.assertEquals("foo", org.apache.dubbo.rpc.support.MockInvoker.parseMockValue("\'foo\'"));
+        Assertions.assertEquals(123, MockInvoker.parseMockValue("123"));
+        Assertions.assertEquals("foo", MockInvoker.parseMockValue("foo"));
+        Assertions.assertEquals("foo", MockInvoker.parseMockValue("\"foo\""));
+        Assertions.assertEquals("foo", MockInvoker.parseMockValue("\'foo\'"));
 
-        Assertions.assertEquals(new HashMap<>(), org.apache.dubbo.rpc.support.MockInvoker.parseMockValue("{}"));
-        Assertions.assertEquals(new ArrayList<>(), org.apache.dubbo.rpc.support.MockInvoker.parseMockValue("[]"));
-        Assertions.assertEquals(
-                "foo", org.apache.dubbo.rpc.support.MockInvoker.parseMockValue("foo", new Type[] {String.class}));
+        Assertions.assertEquals(new HashMap<>(), MockInvoker.parseMockValue("{}"));
+        Assertions.assertEquals(new ArrayList<>(), MockInvoker.parseMockValue("[]"));
+        Assertions.assertEquals("foo", MockInvoker.parseMockValue("foo", new Type[] {String.class}));
     }
 
     @Test
     void testInvoke() {
         URL url = URL.valueOf("remote://1.2.3.4/" + String.class.getName());
         url = url.addParameter(MOCK_KEY, "return ");
-        org.apache.dubbo.rpc.support.MockInvoker mockInvoker =
-                new org.apache.dubbo.rpc.support.MockInvoker(url, String.class);
+        MockInvoker mockInvoker = new MockInvoker(url, String.class);
 
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
@@ -71,8 +69,7 @@ class MockInvokerTest {
         final Class<DemoServiceA> demoServiceAClass = DemoServiceA.class;
         URL url = URL.valueOf("remote://1.2.3.4/" + demoServiceAClass.getName());
         url = url.addParameter(MOCK_KEY, "force:true");
-        org.apache.dubbo.rpc.support.MockInvoker mockInvoker =
-                new org.apache.dubbo.rpc.support.MockInvoker(url, demoServiceAClass);
+        MockInvoker mockInvoker = new MockInvoker(url, demoServiceAClass);
 
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("methodA");
@@ -82,7 +79,7 @@ class MockInvokerTest {
         final Class<DemoServiceB> demoServiceBClass = DemoServiceB.class;
         url = URL.valueOf("remote://1.2.3.4/" + demoServiceBClass.getName());
         url = url.addParameter(MOCK_KEY, "force:true");
-        mockInvoker = new org.apache.dubbo.rpc.support.MockInvoker(url, demoServiceBClass);
+        mockInvoker = new MockInvoker(url, demoServiceBClass);
         invocation = new RpcInvocation();
         invocation.setMethodName("methodB");
         Assertions.assertEquals(new HashMap<>(), mockInvoker.invoke(invocation).getObjectAttachments());
@@ -91,7 +88,7 @@ class MockInvokerTest {
     @Test
     void testInvokeThrowsRpcException1() {
         URL url = URL.valueOf("remote://1.2.3.4/" + String.class.getName());
-        org.apache.dubbo.rpc.support.MockInvoker mockInvoker = new org.apache.dubbo.rpc.support.MockInvoker(url, null);
+        MockInvoker mockInvoker = new MockInvoker(url, null);
 
         Assertions.assertThrows(RpcException.class, () -> mockInvoker.invoke(new RpcInvocation()));
     }
@@ -100,8 +97,7 @@ class MockInvokerTest {
     void testInvokeThrowsRpcException2() {
         URL url = URL.valueOf("remote://1.2.3.4/" + String.class.getName());
         url = url.addParameter(MOCK_KEY, "fail");
-        org.apache.dubbo.rpc.support.MockInvoker mockInvoker =
-                new org.apache.dubbo.rpc.support.MockInvoker(url, String.class);
+        MockInvoker mockInvoker = new MockInvoker(url, String.class);
 
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
@@ -112,8 +108,7 @@ class MockInvokerTest {
     void testInvokeThrowsRpcException3() {
         URL url = URL.valueOf("remote://1.2.3.4/" + String.class.getName());
         url = url.addParameter(MOCK_KEY, "throw");
-        org.apache.dubbo.rpc.support.MockInvoker mockInvoker =
-                new org.apache.dubbo.rpc.support.MockInvoker(url, String.class);
+        MockInvoker mockInvoker = new MockInvoker(url, String.class);
 
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
@@ -130,24 +125,24 @@ class MockInvokerTest {
     void testGetMockObject() {
         Assertions.assertEquals(
                 "",
-                org.apache.dubbo.rpc.support.MockInvoker.getMockObject(
+                MockInvoker.getMockObject(
                         ApplicationModel.defaultModel().getExtensionDirector(), "java.lang.String", String.class));
 
         Assertions.assertThrows(
                 IllegalStateException.class,
-                () -> org.apache.dubbo.rpc.support.MockInvoker.getMockObject(
+                () -> MockInvoker.getMockObject(
                         ApplicationModel.defaultModel().getExtensionDirector(), "true", String.class));
         Assertions.assertThrows(
                 IllegalStateException.class,
-                () -> org.apache.dubbo.rpc.support.MockInvoker.getMockObject(
+                () -> MockInvoker.getMockObject(
                         ApplicationModel.defaultModel().getExtensionDirector(), "default", String.class));
         Assertions.assertThrows(
                 IllegalStateException.class,
-                () -> org.apache.dubbo.rpc.support.MockInvoker.getMockObject(
+                () -> MockInvoker.getMockObject(
                         ApplicationModel.defaultModel().getExtensionDirector(), "java.lang.String", Integer.class));
         Assertions.assertThrows(
                 IllegalStateException.class,
-                () -> org.apache.dubbo.rpc.support.MockInvoker.getMockObject(
+                () -> MockInvoker.getMockObject(
                         ApplicationModel.defaultModel().getExtensionDirector(),
                         "java.io.Serializable",
                         Serializable.class));
@@ -155,17 +150,17 @@ class MockInvokerTest {
 
     @Test
     void testNormalizeMock() {
-        Assertions.assertNull(org.apache.dubbo.rpc.support.MockInvoker.normalizeMock(null));
+        Assertions.assertNull(MockInvoker.normalizeMock(null));
 
-        Assertions.assertEquals("", org.apache.dubbo.rpc.support.MockInvoker.normalizeMock(""));
-        Assertions.assertEquals("", org.apache.dubbo.rpc.support.MockInvoker.normalizeMock("fail:"));
-        Assertions.assertEquals("", org.apache.dubbo.rpc.support.MockInvoker.normalizeMock("force:"));
-        Assertions.assertEquals("throw", org.apache.dubbo.rpc.support.MockInvoker.normalizeMock("throw"));
-        Assertions.assertEquals("default", org.apache.dubbo.rpc.support.MockInvoker.normalizeMock("fail"));
-        Assertions.assertEquals("default", org.apache.dubbo.rpc.support.MockInvoker.normalizeMock("force"));
-        Assertions.assertEquals("default", org.apache.dubbo.rpc.support.MockInvoker.normalizeMock("true"));
-        Assertions.assertEquals("default", org.apache.dubbo.rpc.support.MockInvoker.normalizeMock("default"));
-        Assertions.assertEquals("return null", org.apache.dubbo.rpc.support.MockInvoker.normalizeMock("return"));
+        Assertions.assertEquals("", MockInvoker.normalizeMock(""));
+        Assertions.assertEquals("", MockInvoker.normalizeMock("fail:"));
+        Assertions.assertEquals("", MockInvoker.normalizeMock("force:"));
+        Assertions.assertEquals("throw", MockInvoker.normalizeMock("throw"));
+        Assertions.assertEquals("default", MockInvoker.normalizeMock("fail"));
+        Assertions.assertEquals("default", MockInvoker.normalizeMock("force"));
+        Assertions.assertEquals("default", MockInvoker.normalizeMock("true"));
+        Assertions.assertEquals("default", MockInvoker.normalizeMock("default"));
+        Assertions.assertEquals("return null", MockInvoker.normalizeMock("return"));
         Assertions.assertEquals("return null", MockInvoker.normalizeMock("return null"));
     }
 }

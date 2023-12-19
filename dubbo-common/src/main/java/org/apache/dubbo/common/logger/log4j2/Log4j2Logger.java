@@ -150,4 +150,9 @@ public class Log4j2Logger implements Logger {
     public boolean isErrorEnabled() {
         return logger.isErrorEnabled();
     }
+
+    // test purpose only
+    public org.apache.logging.log4j.Logger getLogger() {
+        return logger;
+    }
 }

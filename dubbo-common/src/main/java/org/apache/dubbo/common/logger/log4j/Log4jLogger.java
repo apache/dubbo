@@ -162,9 +162,4 @@ public class Log4jLogger implements Logger {
     public boolean isErrorEnabled() {
         return logger.isEnabledFor(Level.ERROR);
     }
-
-    // test purpose only
-    public org.apache.log4j.Logger getLogger() {
-        return logger;
-    }
 }
