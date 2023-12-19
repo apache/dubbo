@@ -81,7 +81,6 @@
     <module>dubbo-rpc</module>
     <module>dubbo-cluster</module>
     <module>dubbo-registry</module>
-    <module>dubbo-monitor</module>
     <module>dubbo-config</module>
     <module>dubbo-demo</module>
     <module>dubbo-plugin</module>
@@ -138,7 +137,7 @@
     <maven_source_version>3.3.0</maven_source_version>
     <maven_javadoc_version>3.6.3</maven_javadoc_version>
     <maven_jetty_version>9.4.53.v20231009</maven_jetty_version>
-    <maven_checkstyle_version>3.2.1</maven_checkstyle_version>
+    <maven_checkstyle_version>3.3.1</maven_checkstyle_version>
     <maven_jacoco_version>0.8.11</maven_jacoco_version>
     <maven_flatten_version>1.5.0</maven_flatten_version>
     <maven_enforce_version>3.4.1</maven_enforce_version>
@@ -281,7 +280,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-shade-plugin</artifactId>
-          <version>3.4.1</version>
+          <version>3.5.1</version>
           <configuration>
             <createDependencyReducedPom>false</createDependencyReducedPom>
           </configuration>
@@ -411,7 +410,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>
-        <version>3.0.0</version>
+        <version>3.0.1</version>
         <configuration>
           <autoVersionSubmodules>true</autoVersionSubmodules>
           <useReleaseProfile>false</useReleaseProfile>

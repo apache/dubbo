@@ -231,29 +231,6 @@
       <optional>true</optional>
     </dependency>
 
-    <!-- monitor -->
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-monitor-api</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-monitor-common</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-monitor-default</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
     <!-- plugin -->
     <dependency>
       <groupId>org.apache.dubbo</groupId>
@@ -655,9 +632,6 @@
                   <include>org.apache.dubbo:dubbo-metrics-netty</include>
                   <include>org.apache.dubbo:dubbo-metrics-prometheus</include>
                   <include>org.apache.dubbo:dubbo-tracing</include>
-                  <include>org.apache.dubbo:dubbo-monitor-api</include>
-                  <include>org.apache.dubbo:dubbo-monitor-common</include>
-                  <include>org.apache.dubbo:dubbo-monitor-default</include>
                   <include>org.apache.dubbo:dubbo-qos</include>
                   <include>org.apache.dubbo:dubbo-qos-api</include>
                   <include>org.apache.dubbo:dubbo-security</include>
@@ -949,10 +923,10 @@
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.remoting.http.HttpBinder</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                  <resource>META-INF/dubbo/internal/org.apache.dubbo.remoting.http12.message.HttpMessageCodec</resource>
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.remoting.http12.message.HttpMessageEncoderFactory</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                  <resource>META-INF/dubbo/internal/org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory</resource>
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.remoting.http12.message.HttpMessageDecoderFactory</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.remoting.http12.h2.Http2ServerTransportListenerFactory</resource>

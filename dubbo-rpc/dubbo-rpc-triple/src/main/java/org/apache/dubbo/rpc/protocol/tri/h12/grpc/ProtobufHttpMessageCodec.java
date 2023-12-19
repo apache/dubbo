@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
 
-import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
@@ -27,7 +26,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-@Activate(onClass = "com.google.protobuf.Message")
 public class ProtobufHttpMessageCodec implements HttpMessageCodec {
 
     private static final MediaType MEDIA_TYPE = new MediaType("application", "x-protobuf");
@@ -51,7 +49,7 @@ public class ProtobufHttpMessageCodec implements HttpMessageCodec {
     }
 
     @Override
-    public MediaType contentType() {
+    public MediaType mediaType() {
         return MEDIA_TYPE;
     }
 }

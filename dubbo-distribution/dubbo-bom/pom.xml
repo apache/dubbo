@@ -278,29 +278,6 @@
         <version>${project.version}</version>
       </dependency>
 
-      <!-- monitor -->
-      <dependency>
-        <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-monitor</artifactId>
-        <version>${project.version}</version>
-        <type>pom</type>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-monitor-api</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-monitor-common</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-monitor-default</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
       <!-- native -->
       <dependency>
         <groupId>org.apache.dubbo</groupId>

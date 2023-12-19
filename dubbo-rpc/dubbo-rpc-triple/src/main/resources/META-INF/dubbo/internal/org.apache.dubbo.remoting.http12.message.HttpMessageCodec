@@ -1,2 +1,0 @@
-grpc=org.apache.dubbo.rpc.protocol.tri.h12.grpc.GrpcCompositeCodec
-protobuf=org.apache.dubbo.rpc.protocol.tri.h12.grpc.ProtobufHttpMessageCodec

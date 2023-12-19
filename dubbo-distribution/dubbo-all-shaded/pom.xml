@@ -203,22 +203,6 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- monitor -->
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-monitor-api</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-monitor-default</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-
         <!-- plugin -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>
@@ -493,8 +477,6 @@
                                     <include>org.apache.dubbo:dubbo-metrics-metadata</include>
                                     <include>org.apache.dubbo:dubbo-metrics-config-center</include>
                                     <include>org.apache.dubbo:dubbo-metrics-prometheus</include>
-                                    <include>org.apache.dubbo:dubbo-monitor-api</include>
-                                    <include>org.apache.dubbo:dubbo-monitor-default</include>
                                     <include>org.apache.dubbo:dubbo-qos</include>
                                     <include>org.apache.dubbo:dubbo-qos-api</include>
                                     <include>org.apache.dubbo:dubbo-security</include>

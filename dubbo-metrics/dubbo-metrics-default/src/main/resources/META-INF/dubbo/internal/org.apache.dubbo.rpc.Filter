@@ -1,1 +1,2 @@
 metrics-provider=org.apache.dubbo.metrics.filter.MetricsProviderFilter
+monitor=org.apache.dubbo.monitor.support.MonitorFilter
