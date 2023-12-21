@@ -71,6 +71,17 @@ class AbstractConfigTest {
     }
 
     @Test
+    void testValidateProtocolConfigSerialization() {
+        ProtocolConfig protocolConfig = new ProtocolConfig();
+        protocolConfig.setCodec("exchange");
+        protocolConfig.setName("dubbo");
+        protocolConfig.setHost("host");
+        protocolConfig.setSerialization("fastjson2");
+        protocolConfig.setPreferSerialization("hessian2,java,compactedjava,nativejava");
+        ConfigValidationUtils.validateProtocolConfig(protocolConfig);
+    }
+
+    @Test
     void testAppendParameters1() {
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("num", "ONE");

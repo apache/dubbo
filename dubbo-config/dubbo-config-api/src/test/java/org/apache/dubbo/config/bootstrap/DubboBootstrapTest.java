@@ -327,6 +327,7 @@ class DubboBootstrapTest {
         } catch (Exception e) {
             exception = e;
             DubboBootstrap.reset();
+            ApplicationModel.reset();
         }
 
         Assertions.assertNotNull(exception);
