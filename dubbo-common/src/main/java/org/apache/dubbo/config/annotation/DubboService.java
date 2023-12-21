@@ -257,7 +257,17 @@ public @interface DubboService {
     String[] listener() default {};
 
     /**
-     * Customized parameter key-value pair, for example: {key1, value1, key2, value2}
+     * Customized parameter key-value pair, for example:
+     * <pre>
+     *  ["a","b"] ==> {a=b}
+     *  [" a "," b "] ==> {a=b}
+     *  ["a=b"] ==>{a=b}
+     *  ["a:b"] ==>{a=b}
+     *  ["a=b","c","d"] ==>{a=b,c=d}
+     *  ["a","a:b"] ==>{a="a:b"}
+     *  ["a","a,b"] ==>{a="a,b"}
+     * </pre>
+     * @see org.apache.dubbo.config.spring.util.DubboAnnotationUtils#convertParameters(java.lang.String[])
      */
     String[] parameters() default {};
 
@@ -327,4 +337,8 @@ public @interface DubboService {
      * Payload max length.
      */
     String payload() default "";
+
+    String serialization() default "";
+
+    String preferSerialization() default "";
 }
