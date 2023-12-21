@@ -1,1 +1,3 @@
 dubbo-cluster=org.apache.dubbo.rpc.cluster.ClusterScopeModelInitializer
+dubbo-cluster-mergeable=org.apache.dubbo.rpc.cluster.MergeableClusterScopeModelInitializer
+mesh=org.apache.dubbo.rpc.cluster.router.mesh.MeshScopeModelInitializer
