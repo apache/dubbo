@@ -38,6 +38,10 @@ public class ArgumentBuilder {
      */
     private Boolean callback;
 
+    public static ArgumentBuilder newBuilder() {
+        return new ArgumentBuilder();
+    }
+
     public ArgumentBuilder index(Integer index) {
         this.index = index;
         return this;
