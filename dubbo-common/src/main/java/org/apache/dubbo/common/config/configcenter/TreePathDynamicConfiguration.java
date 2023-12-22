@@ -32,7 +32,6 @@ import static org.apache.dubbo.common.utils.PathUtils.normalize;
  * <ul>
  *     <li>{@link FileSystemDynamicConfiguration "file"}</li>
  *     <li>{@link org.apache.dubbo.configcenter.support.zookeeper.ZookeeperDynamicConfiguration "zookeeper"}</li>
- *     <li>{@link org.apache.dubbo.configcenter.consul.ConsulDynamicConfiguration "consul"}</li>
  * </ul>
  *
  * @see DynamicConfiguration
