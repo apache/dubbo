@@ -20,6 +20,7 @@ import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.config.nested.HistogramConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
