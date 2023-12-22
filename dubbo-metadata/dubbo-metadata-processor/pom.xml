@@ -88,18 +88,6 @@
           <artifactId>hessian-lite</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>com.esotericsoftware</groupId>
-          <artifactId>kryo</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>de.javakaffee</groupId>
-          <artifactId>kryo-serializers</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>de.ruedigermoeller</groupId>
-          <artifactId>fst</artifactId>
-        </exclusion>
-        <exclusion>
           <groupId>commons-io</groupId>
           <artifactId>commons-io</artifactId>
         </exclusion>

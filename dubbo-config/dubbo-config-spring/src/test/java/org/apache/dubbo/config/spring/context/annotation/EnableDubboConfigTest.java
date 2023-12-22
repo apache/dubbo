@@ -115,7 +115,6 @@ class EnableDubboConfigTest {
 
         configManager.getProtocol("dubbo").get();
         configManager.getProtocol("rest").get();
-        configManager.getProtocol("thrift").get();
 
         // asserts aliases
         //        assertTrue(hasAlias(context, "applicationBean2", "dubbo-demo-application2"));

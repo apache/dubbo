@@ -130,7 +130,6 @@ org.apache.commons.fileupload
 org.apache.commons.jelly.
 org.apache.commons.logging.
 org.apache.commons.proxy.
-org.apache.cxf.jaxrs.provider.
 org.apache.hadoop.shaded.com.zaxxer.hikari.
 org.apache.http.auth.
 org.apache.http.conn.
