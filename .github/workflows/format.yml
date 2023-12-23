@@ -22,6 +22,6 @@ jobs:
       - name: Comment on PR
         if: ${{ steps.spotless.outcome == 'failure' }}
         run: |
-          gh pr review ${{ github.event.number }} --body "Code does not align with code style. Please run \`mvn spotless:apply\` and commit the changes."
+          gh pr review ${{ github.event.number }} --body "Code does not align with code style. Please run \`mvn spotless:apply\` and commit the changes." --request-changes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
