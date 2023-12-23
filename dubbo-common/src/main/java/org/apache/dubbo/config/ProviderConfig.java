@@ -166,10 +166,8 @@ public class ProviderConfig extends AbstractServiceConfig {
     /**
      * Whether to use java_package in IDL as path. Default use package.
      * This param only available when service using native stub.
-     *
-     * @see ProviderConfig#contextpath
      */
-    private Boolean useJavaPackageAsPath;
+    private Boolean useJavaPackageAsPath = false;
 
     /**
      * Whether export should run in background or not.
