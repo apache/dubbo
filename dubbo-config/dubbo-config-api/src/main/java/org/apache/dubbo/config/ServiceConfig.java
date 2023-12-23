@@ -550,7 +550,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             serviceDescriptor = ((ServerService) ref).getServiceDescriptor();
             ProviderConfig providerConfig = getScopeModel()
                     .getConfigManager()
-                    .getProvider(getId())
+                    .getProvider(getId() == null ? "" : getId())
                     .orElse((ProviderConfig)
                             getScopeModel().getConfigManager().getProviders().toArray()[0]);
             if (!providerConfig.getUseJavaPackageAsPath()) {
