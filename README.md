@@ -197,7 +197,7 @@ To avoid intermittent test failures (i.e., flaky tests), it is recommended to ha
 
 ## Contributing
 
-See [CONTRIBUTING](https://github.com/apache/dubbo/blob/master/CONTRIBUTING.md) for details on submitting patches and the contribution workflow.
+See [CONTRIBUTING](https://github.com/apache/dubbo/blob/master/CONTRIBUTING.md) for details on submitting patches and the contribution workflow.
 
 ### How can I contribute?
 
@@ -217,7 +217,7 @@ See [CONTRIBUTING](https://github.com/apache/dubbo/blob/master/CONTRIBUTING.md)
 
 ## Reporting bugs
 
-Please follow the [template](https://github.com/apache/dubbo/issues/new?template=dubbo-issue-report-template.md) for reporting any issues.
+Please follow the [template](https://github.com/apache/dubbo/issues/new?template=dubbo-issue-report-template.md) for reporting any issues.
 
 ## Reporting a security vulnerability
 
@@ -234,7 +234,8 @@ Please report security vulnerabilities to [us](mailto:security@dubbo.apache.org)
 
 #### Language
 
-* [Go](https://github.com/dubbo/dubbo-go) (recommended)
+* [Go](https://github.com/apache/dubbo-go) (recommended)
+* [Rust](https://github.com/apache/dubbo-rust)
 * [Node.js](https://github.com/apache/dubbo-js)
 * [Python](https://github.com/dubbo/py-client-for-apache-dubbo)
 * [PHP](https://github.com/apache/dubbo-php-framework)
@@ -242,4 +243,4 @@ Please report security vulnerabilities to [us](mailto:security@dubbo.apache.org)
 
 ## License
 
-Apache Dubbo software is licensed under the Apache License Version 2.0. See the [LICENSE](https://github.com/apache/dubbo/blob/master/LICENSE) file for details.
+Apache Dubbo software is licensed under the Apache License Version 2.0. See the [LICENSE](https://github.com/apache/dubbo/blob/master/LICENSE) file for details.
