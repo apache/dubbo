@@ -20,14 +20,8 @@ jobs:
         run: mvn spotless:check
         continue-on-error: true
       - name: Comment on PR
-        uses: actions/github-script@v6
         if: ${{ steps.spotless.outcome == 'failure' }}
+        run: |
+          gh pr review ${{ github.event.number }} --body "Code does not align with code style. Please run \`mvn spotless:apply\` and commit the changes."
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: 'Code does not align with code style. Please run `mvn spotless:apply` and commit the changes.'
-            })
