@@ -554,7 +554,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                     .orElse((ProviderConfig)
                             getScopeModel().getConfigManager().getProviders().toArray()[0]);
             if (!providerConfig.getUseJavaPackageAsPath()) {
-                //for stub service, path always interface name or IDL package name
+                // for stub service, path always interface name or IDL package name
                 this.path = serviceDescriptor.getInterfaceName();
             }
             repository.registerService(serviceDescriptor);
