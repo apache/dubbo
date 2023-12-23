@@ -1,53 +1,32 @@
 name: Format Files
 
 on:
-  issue_comment:
-    types:
-      - created
-      - edited
+  pull_request:
 
 jobs:
-  check-comment:
-    name: Check if comment is a format command
-    if: ${{ github.event.issue.pull_request }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check if comment is a command
-        id: check
-        uses: actions/github-script@v3
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const body = context.payload.comment.body;
-            const command = body.match(/\/format/);
-            return { command: command !== null };
-
   format:
-    name: Format
-    needs: check-comment
-    if: ${{ needs.check-comment.outputs.command == true }}
+    name: Check if files need formatting
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        run: gh pr checkout ${{ github.event.issue.number }}
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/checkout@v4
       - name: Setup Maven
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: 21
           distribution: zulu
-      - name: Format
-        run: mvn spotless:apply
-      - name: Commit changes
-        run: |
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-          git add .
-          if [[ $(git status --porcelain) ]]; then
-             git commit -m "style: Formatted Java files"
-          fi
-      - name: Push changes
-        run: |
-          git push
-          gh pr comment ${{ github.event.issue.number }} -b "Formatted Java files"
+      - name: Check if code aligns with code style
+        id: spotless
+        run: mvn spotless:check
+      - name: Comment on PR
+        uses: actions/github-script@v3
+        if: ${{ steps.spotless.outcome == 'failure' }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'Code does not align with code style. Please run `mvn spotless:apply` and commit the changes.'
+            })
