@@ -163,11 +163,6 @@ public class ProviderConfig extends AbstractServiceConfig {
      */
     private Integer exportThreadNum;
 
-    /**
-     * Whether to use java_package in IDL as path. Default use package.
-     * This param only available when service using native stub.
-     */
-    private Boolean useJavaPackageAsPath = false;
 
     /**
      * Whether export should run in background or not.
@@ -415,15 +410,6 @@ public class ProviderConfig extends AbstractServiceConfig {
 
     public void setWait(Integer wait) {
         this.wait = wait;
-    }
-
-    public Boolean getUseJavaPackageAsPath() {
-        return useJavaPackageAsPath;
-    }
-
-    @Parameter(excluded = true)
-    public void setUseJavaPackageAsPath(Boolean useJavaPackageAsPath) {
-        this.useJavaPackageAsPath = useJavaPackageAsPath;
     }
 
     @Deprecated
