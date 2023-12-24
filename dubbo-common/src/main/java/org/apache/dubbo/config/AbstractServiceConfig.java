@@ -176,7 +176,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
         if (dynamic == null) {
             dynamic = true;
         }
-        if(useJavaPackageAsPath == null){
+        if (useJavaPackageAsPath == null) {
             useJavaPackageAsPath = false;
         }
         if (StringUtils.isBlank(preferSerialization)) {

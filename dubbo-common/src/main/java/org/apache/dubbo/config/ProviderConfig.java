@@ -163,7 +163,6 @@ public class ProviderConfig extends AbstractServiceConfig {
      */
     private Integer exportThreadNum;
 
-
     /**
      * Whether export should run in background or not.
      *
