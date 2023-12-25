@@ -858,8 +858,8 @@
                   <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/RunArguments.java</exclude>
                   <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/RunProcess.java</exclude>
                   <exclude>src/main/java/org/apache/dubbo/aot/generate/BasicJsonWriter.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/aot/generate/ExecutableMode.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/aot/generate/MemberCategory.java</exclude>
+                  <exclude>src/main/java/org/apache/dubbo/aot/api/ExecutableMode.java</exclude>
+                  <exclude>src/main/java/org/apache/dubbo/aot/api/MemberCategory.java</exclude>
                   <exclude>src/main/java/org/apache/dubbo/metrics/aggregate/DubboMergingDigest.java</exclude>
                   <exclude>src/main/java/org/apache/dubbo/metrics/aggregate/DubboAbstractTDigest.java</exclude>
                   <exclude>src/main/java/org/apache/dubbo/common/logger/helpers/FormattingTuple.java</exclude>
