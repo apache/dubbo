@@ -67,25 +67,25 @@ public class ReflectionPackableMethod implements PackableMethod {
     }
 
     public ReflectionPackableMethod(
-        MethodDescriptor method, URL url, String serializeName, Collection<String> allSerialize) {
+            MethodDescriptor method, URL url, String serializeName, Collection<String> allSerialize) {
         Class<?>[] actualRequestTypes;
         Class<?> actualResponseType;
         switch (method.getRpcType()) {
             case CLIENT_STREAM:
             case BI_STREAM:
-                actualRequestTypes = new Class<?>[]{
+                actualRequestTypes = new Class<?>[] {
                     obtainActualTypeInStreamObserver(
-                        ((ParameterizedType) method.getMethod().getGenericReturnType()).getActualTypeArguments()[0])
+                            ((ParameterizedType) method.getMethod().getGenericReturnType()).getActualTypeArguments()[0])
                 };
                 actualResponseType = obtainActualTypeInStreamObserver(
-                    ((ParameterizedType) method.getMethod().getGenericParameterTypes()[0])
-                        .getActualTypeArguments()[0]);
+                        ((ParameterizedType) method.getMethod().getGenericParameterTypes()[0])
+                                .getActualTypeArguments()[0]);
                 break;
             case SERVER_STREAM:
                 actualRequestTypes = method.getMethod().getParameterTypes();
                 actualResponseType = obtainActualTypeInStreamObserver(
-                    ((ParameterizedType) method.getMethod().getGenericParameterTypes()[1])
-                        .getActualTypeArguments()[0]);
+                        ((ParameterizedType) method.getMethod().getGenericParameterTypes()[1])
+                                .getActualTypeArguments()[0]);
                 break;
             case UNARY:
                 actualRequestTypes = method.getParameterClasses();
@@ -104,12 +104,12 @@ public class ReflectionPackableMethod implements PackableMethod {
             responseUnpack = new PbUnpack<>(actualResponseType);
         } else {
             final MultipleSerialization serialization = url.getOrDefaultFrameworkModel()
-                .getExtensionLoader(MultipleSerialization.class)
-                .getExtension(url.getParameter(Constants.MULTI_SERIALIZATION_KEY, CommonConstants.DEFAULT_KEY));
+                    .getExtensionLoader(MultipleSerialization.class)
+                    .getExtension(url.getParameter(Constants.MULTI_SERIALIZATION_KEY, CommonConstants.DEFAULT_KEY));
 
             // client
             this.requestPack =
-                new WrapRequestPack(serialization, url, serializeName, actualRequestTypes, singleArgument);
+                    new WrapRequestPack(serialization, url, serializeName, actualRequestTypes, singleArgument);
             this.responseUnpack = new WrapResponseUnpack(serialization, url, allSerialize, actualResponseType);
 
             // server
@@ -181,29 +181,29 @@ public class ReflectionPackableMethod implements PackableMethod {
         if (streamParameterCount == 1) {
             if (javaParameterCount + protobufParameterCount > 1) {
                 throw new IllegalStateException(
-                    "method params error: server stream does not support more than one normal param." + " method="
-                        + methodName);
+                        "method params error: server stream does not support more than one normal param." + " method="
+                                + methodName);
             }
             // server stream: void foo(Request, StreamObserver<Response>)
             if (!secondParameterStream) {
                 throw new IllegalStateException(
-                    "method params error: server stream's second param must be StreamObserver." + " method="
-                        + methodName);
+                        "method params error: server stream's second param must be StreamObserver." + " method="
+                                + methodName);
             }
         }
         if (methodDescriptor.getRpcType() != MethodDescriptor.RpcType.UNARY) {
             if (MethodDescriptor.RpcType.SERVER_STREAM == methodDescriptor.getRpcType()) {
                 if (!secondParameterStream) {
                     throw new IllegalStateException(
-                        "method params error:server stream's second param must be StreamObserver." + " method="
-                            + methodName);
+                            "method params error:server stream's second param must be StreamObserver." + " method="
+                                    + methodName);
                 }
             }
             // param type must be consistent
             if (returnClassProtobuf) {
                 if (javaParameterCount > 0) {
                     throw new IllegalStateException(
-                        "method params error: both normal and protobuf param found. method=" + methodName);
+                            "method params error: both normal and protobuf param found. method=" + methodName);
                 }
             } else {
                 if (protobufParameterCount > 0) {
@@ -213,8 +213,8 @@ public class ReflectionPackableMethod implements PackableMethod {
         } else {
             if (streamParameterCount > 0) {
                 throw new IllegalStateException(
-                    "method params error: unary method should not contain any StreamObserver." + " method="
-                        + methodName);
+                        "method params error: unary method should not contain any StreamObserver." + " method="
+                                + methodName);
             }
             if (protobufParameterCount > 0 && returnClassProtobuf) {
                 return false;
@@ -233,8 +233,8 @@ public class ReflectionPackableMethod implements PackableMethod {
             // handle dubbo generated method
             if (TRI_ASYNC_RETURN_CLASS.equalsIgnoreCase(returnClass.getName())) {
                 Class<?> actualReturnClass = (Class<?>)
-                    ((ParameterizedType) methodDescriptor.getMethod().getGenericReturnType())
-                        .getActualTypeArguments()[0];
+                        ((ParameterizedType) methodDescriptor.getMethod().getGenericReturnType())
+                                .getActualTypeArguments()[0];
                 boolean actualReturnClassProtobuf = isProtobufClass(actualReturnClass);
                 if (actualReturnClassProtobuf && protobufParameterCount == 1) {
                     return false;
@@ -278,9 +278,9 @@ public class ReflectionPackableMethod implements PackableMethod {
 
     static Class<?> obtainActualTypeInStreamObserver(Type typeInStreamObserver) {
         return (Class<?>)
-            (typeInStreamObserver instanceof ParameterizedType
-                ? ((ParameterizedType) typeInStreamObserver).getRawType()
-                : typeInStreamObserver);
+                (typeInStreamObserver instanceof ParameterizedType
+                        ? ((ParameterizedType) typeInStreamObserver).getRawType()
+                        : typeInStreamObserver);
     }
 
     @Override
@@ -313,10 +313,10 @@ public class ReflectionPackableMethod implements PackableMethod {
         String requestSerialize;
 
         private WrapResponsePack(
-            MultipleSerialization multipleSerialization,
-            URL url,
-            String defaultSerialize,
-            Class<?> actualResponseType) {
+                MultipleSerialization multipleSerialization,
+                URL url,
+                String defaultSerialize,
+                Class<?> actualResponseType) {
             this.multipleSerialization = multipleSerialization;
             this.url = url;
             this.actualResponseType = actualResponseType;
@@ -328,11 +328,11 @@ public class ReflectionPackableMethod implements PackableMethod {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             multipleSerialization.serialize(url, requestSerialize, actualResponseType, obj, bos);
             return TripleCustomerProtocolWapper.TripleResponseWrapper.Builder.newBuilder()
-                .setSerializeType(requestSerialize)
-                .setType(actualResponseType.getName())
-                .setData(bos.toByteArray())
-                .build()
-                .toByteArray();
+                    .setSerializeType(requestSerialize)
+                    .setType(actualResponseType.getName())
+                    .setData(bos.toByteArray())
+                    .build()
+                    .toByteArray();
         }
     }
 
@@ -345,7 +345,7 @@ public class ReflectionPackableMethod implements PackableMethod {
         private final Collection<String> allSerialize;
 
         private WrapResponseUnpack(
-            MultipleSerialization serialization, URL url, Collection<String> allSerialize, Class<?> returnClass) {
+                MultipleSerialization serialization, URL url, Collection<String> allSerialize, Class<?> returnClass) {
             this.serialization = serialization;
             this.url = url;
             this.returnClass = returnClass;
@@ -359,7 +359,7 @@ public class ReflectionPackableMethod implements PackableMethod {
 
         public Object unpack(byte[] data, boolean isReturnTriException) throws IOException, ClassNotFoundException {
             TripleCustomerProtocolWapper.TripleResponseWrapper wrapper =
-                TripleCustomerProtocolWapper.TripleResponseWrapper.parseFrom(data);
+                    TripleCustomerProtocolWapper.TripleResponseWrapper.parseFrom(data);
             final String serializeType = convertHessianFromWrapper(wrapper.getSerializeType());
 
             CodecSupport.checkSerialization(serializeType, allSerialize);
@@ -382,17 +382,17 @@ public class ReflectionPackableMethod implements PackableMethod {
         private final boolean singleArgument;
 
         private WrapRequestPack(
-            MultipleSerialization multipleSerialization,
-            URL url,
-            String serialize,
-            Class<?>[] actualRequestTypes,
-            boolean singleArgument) {
+                MultipleSerialization multipleSerialization,
+                URL url,
+                String serialize,
+                Class<?>[] actualRequestTypes,
+                boolean singleArgument) {
             this.url = url;
             this.serialize = convertHessianToWrapper(serialize);
             this.multipleSerialization = multipleSerialization;
             this.actualRequestTypes = actualRequestTypes;
             this.argumentsType =
-                Stream.of(actualRequestTypes).map(Class::getName).toArray(String[]::new);
+                    Stream.of(actualRequestTypes).map(Class::getName).toArray(String[]::new);
             this.singleArgument = singleArgument;
         }
 
@@ -400,12 +400,12 @@ public class ReflectionPackableMethod implements PackableMethod {
         public byte[] pack(Object obj) throws IOException {
             Object[] arguments;
             if (singleArgument) {
-                arguments = new Object[]{obj};
+                arguments = new Object[] {obj};
             } else {
                 arguments = (Object[]) obj;
             }
             final TripleCustomerProtocolWapper.TripleRequestWrapper.Builder builder =
-                TripleCustomerProtocolWapper.TripleRequestWrapper.Builder.newBuilder();
+                    TripleCustomerProtocolWapper.TripleRequestWrapper.Builder.newBuilder();
             builder.setSerializeType(serialize);
             for (String type : argumentsType) {
                 builder.addArgTypes(type);
@@ -445,10 +445,10 @@ public class ReflectionPackableMethod implements PackableMethod {
         private final Collection<String> allSerialize;
 
         private WrapRequestUnpack(
-            MultipleSerialization serialization,
-            URL url,
-            Collection<String> allSerialize,
-            Class<?>[] actualRequestTypes) {
+                MultipleSerialization serialization,
+                URL url,
+                Collection<String> allSerialize,
+                Class<?>[] actualRequestTypes) {
             this.serialization = serialization;
             this.url = url;
             this.actualRequestTypes = actualRequestTypes;
@@ -457,7 +457,7 @@ public class ReflectionPackableMethod implements PackableMethod {
 
         public Object unpack(byte[] data, boolean isReturnTriException) throws IOException, ClassNotFoundException {
             TripleCustomerProtocolWapper.TripleRequestWrapper wrapper =
-                TripleCustomerProtocolWapper.TripleRequestWrapper.parseFrom(data);
+                    TripleCustomerProtocolWapper.TripleRequestWrapper.parseFrom(data);
 
             String wrapperSerializeType = convertHessianFromWrapper(wrapper.getSerializeType());
             CodecSupport.checkSerialization(wrapperSerializeType, allSerialize);
@@ -466,7 +466,7 @@ public class ReflectionPackableMethod implements PackableMethod {
             ((WrapResponsePack) responsePack).requestSerialize = wrapper.getSerializeType();
             for (int i = 0; i < wrapper.getArgs().size(); i++) {
                 ByteArrayInputStream bais =
-                    new ByteArrayInputStream(wrapper.getArgs().get(i));
+                        new ByteArrayInputStream(wrapper.getArgs().get(i));
                 ret[i] = serialization.deserialize(url, wrapper.getSerializeType(), actualRequestTypes[i], bais);
             }
             return ret;

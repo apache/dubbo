@@ -27,8 +27,7 @@ public class ProtobufUtils {
 
     private static Class<?> protobufClss;
 
-    private ProtobufUtils() {
-    }
+    private ProtobufUtils() {}
 
     static {
         try {
