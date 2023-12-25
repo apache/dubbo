@@ -548,12 +548,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         final boolean serverService = ref instanceof ServerService;
         if (serverService) {
             serviceDescriptor = ((ServerService) ref).getServiceDescriptor();
-            ProviderConfig providerConfig = getScopeModel()
-                    .getConfigManager()
-                    .getProvider(getId() == null ? "" : getId())
-                    .orElse((ProviderConfig)
-                            getScopeModel().getConfigManager().getProviders().toArray()[0]);
-            if (providerConfig.getUseJavaPackageAsPath() == null || !providerConfig.getUseJavaPackageAsPath()) {
+            if (this.provider.getUseJavaPackageAsPath()) {
                 // for stub service, path always interface name or IDL package name
                 this.path = serviceDescriptor.getInterfaceName();
             }
