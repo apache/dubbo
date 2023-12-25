@@ -17,17 +17,20 @@
 package org.apache.dubbo.rpc.protocol.injvm;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
 import java.lang.reflect.Type;
 
 @SPI(scope = ExtensionScope.FRAMEWORK)
+@Adaptive
 public interface ParamDeepCopyUtil {
 
     default <T> T copy(URL url, Object src, Class<T> targetClass) {
         return copy(url, src, targetClass, null);
     }
 
+    @Adaptive
     <T> T copy(URL url, Object src, Class<T> targetClass, Type type);
 }
