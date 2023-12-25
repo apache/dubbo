@@ -397,6 +397,7 @@ public class ProtocolBuilder extends AbstractBuilder<ProtocolConfig, ProtocolBui
         return getThis();
     }
 
+    @Override
     public ProtocolConfig build() {
         ProtocolConfig protocolConfig = new ProtocolConfig();
         super.build(protocolConfig);
