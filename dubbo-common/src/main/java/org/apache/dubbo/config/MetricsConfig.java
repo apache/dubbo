@@ -107,6 +107,9 @@ public class MetricsConfig extends AbstractConfig {
      */
     private Boolean useGlobalRegistry;
 
+    /**
+     * Enable rpc metrics.
+     */
     private Boolean enableRpc;
 
     /**
