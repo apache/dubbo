@@ -14,10 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.aot.generate;
-
-import org.apache.dubbo.aot.api.ExecutableMode;
-import org.apache.dubbo.aot.api.MemberDescriber;
+package org.apache.dubbo.aot.api;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
