@@ -82,10 +82,6 @@ public final class {{className}} {
     {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.UNARY,
     obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
     {{outputType}}::parseFrom);
-    static {
-        serviceDescriptor.addMethod({{methodName}}Method);
-        serviceDescriptor.addMethod({{methodName}}ProxyAsyncMethod);
-    }
 {{/unaryMethods}}
 
 {{#serverStreamingMethods}}
@@ -96,7 +92,6 @@ public final class {{className}} {
     {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.SERVER_STREAM,
     obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
     {{outputType}}::parseFrom);
-    static {serviceDescriptor.addMethod({{methodName}}Method);}
 {{/serverStreamingMethods}}
 
 {{#clientStreamingMethods}}
@@ -107,7 +102,6 @@ public final class {{className}} {
     {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.CLIENT_STREAM,
     obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
     {{outputType}}::parseFrom);
-    static {serviceDescriptor.addMethod({{methodName}}Method);}
 {{/clientStreamingMethods}}
 
 {{#biStreamingWithoutClientStreamMethods}}
@@ -118,8 +112,23 @@ public final class {{className}} {
     {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.BI_STREAM,
     obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
     {{outputType}}::parseFrom);
-    static {serviceDescriptor.addMethod({{methodName}}Method);}
 {{/biStreamingWithoutClientStreamMethods}}
+
+    static{
+    {{#unaryMethods}}
+        serviceDescriptor.addMethod({{methodName}}Method);
+        serviceDescriptor.addMethod({{methodName}}ProxyAsyncMethod);
+    {{/unaryMethods}}
+    {{#serverStreamingMethods}}
+        serviceDescriptor.addMethod({{methodName}}Method);
+    {{/serverStreamingMethods}}
+    {{#clientStreamingMethods}}
+        serviceDescriptor.addMethod({{methodName}}Method);
+    {{/clientStreamingMethods}}
+    {{#biStreamingWithoutClientStreamMethods}}
+        serviceDescriptor.addMethod({{methodName}}Method);
+    {{/biStreamingWithoutClientStreamMethods}}
+    }
 
     public static class {{interfaceClassName}}Stub implements {{interfaceClassName}}{
         private final Invoker<{{interfaceClassName}}> invoker;
