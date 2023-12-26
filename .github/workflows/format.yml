@@ -1,4 +1,4 @@
-name: Check if codebase aligns with code style
+name: Check for formatting
 
 on:
   schedule:
