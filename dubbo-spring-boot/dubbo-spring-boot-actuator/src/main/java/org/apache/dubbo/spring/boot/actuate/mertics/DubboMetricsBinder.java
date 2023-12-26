@@ -25,7 +25,7 @@ import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationListener;
 
 public class DubboMetricsBinder implements ApplicationListener<ApplicationStartedEvent>, DisposableBean {
-        private final MeterRegistry meterRegistry;
+    private final MeterRegistry meterRegistry;
 
     public DubboMetricsBinder(MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;

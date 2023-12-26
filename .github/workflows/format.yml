@@ -1,11 +1,12 @@
-name: Format Files
+name: Check if codebase aligns with code style
 
 on:
-  pull_request:
+  schedule:
+    - cron: '*/20 * * * *' # Every 20 minutes
 
 jobs:
   format:
-    name: Check if files need formatting
+    name: Check if code needs formatting
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -16,12 +17,4 @@ jobs:
           java-version: 21
           distribution: zulu
       - name: Check if code aligns with code style
-        id: spotless
         run: mvn spotless:check
-        continue-on-error: true
-      - name: Comment on PR
-        if: ${{ steps.spotless.outcome == 'failure' }}
-        run: |
-          gh pr review ${{ github.event.number }} --body "Code does not align with code style. Please run \`mvn spotless:apply\` and commit the changes." --request-changes
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
