@@ -136,7 +136,9 @@ public final class {{className}} {
             Map<String,StubMethodHandler<?, ?>> handlers = new HashMap<>();
 
             {{#methods}}
-                pathResolver.addNativeStub( "/" + SERVICE_NAME + "/{{originMethodName}}" );
+                pathResolver.addNativeStub( "/" + SERVICE_NAME + "/{{originMethodName}}");
+                // for compatibility
+                pathResolver.addNativeStub( "/" + JAVA_SERVICE_NAME + "/{{originMethodName}}");
             {{/methods}}
 
             {{#unaryMethods}}
