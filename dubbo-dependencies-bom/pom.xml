@@ -91,15 +91,15 @@
     <!-- Common libs -->
     <!-- <spring_version>4.3.30.RELEASE</spring_version> -->
     <spring_version>5.3.25</spring_version>
-    <spring_security_version>5.8.8</spring_security_version>
-    <javassist_version>3.29.2-GA</javassist_version>
-    <bytebuddy.version>1.14.10</bytebuddy.version>
+    <spring_security_version>5.8.9</spring_security_version>
+    <javassist_version>3.30.2-GA</javassist_version>
+    <bytebuddy.version>1.14.11</bytebuddy.version>
     <netty_version>3.2.10.Final</netty_version>
     <netty4_version>4.1.104.Final</netty4_version>
     <httpclient_version>4.5.14</httpclient_version>
     <httpcore_version>4.4.16</httpcore_version>
     <fastjson_version>1.2.83</fastjson_version>
-    <fastjson2_version>2.0.43</fastjson2_version>
+    <fastjson2_version>2.0.44</fastjson2_version>
     <zookeeper_version>3.7.0</zookeeper_version>
     <curator_version>5.1.0</curator_version>
     <curator_test_version>2.12.0</curator_test_version>
@@ -125,16 +125,16 @@
     <t_digest.version>3.3</t_digest.version>
     <prometheus_client.version>0.16.0</prometheus_client.version>
     <reactive.version>1.0.4</reactive.version>
-    <reactor.version>3.6.0</reactor.version>
+    <reactor.version>3.6.1</reactor.version>
     <rxjava.version>2.2.21</rxjava.version>
     <okhttp_version>3.14.9</okhttp_version>
 
     <rs_api_version>2.1.1</rs_api_version>
     <resteasy_version>3.15.6.Final</resteasy_version>
     <codehaus-jackson_version>1.9.13</codehaus-jackson_version>
-    <tomcat_embed_version>8.5.96</tomcat_embed_version>
+    <tomcat_embed_version>8.5.97</tomcat_embed_version>
     <nacos_version>2.2.4</nacos_version>
-    <grpc.version>1.60.0</grpc.version>
+    <grpc.version>1.60.1</grpc.version>
     <grpc_contrib_verdion>0.8.1</grpc_contrib_verdion>
     <jprotoc_version>1.2.2</jprotoc_version>
     <!-- Log libs -->
@@ -161,7 +161,7 @@
     <bouncycastle-bcprov_version>1.70</bouncycastle-bcprov_version>
     <metrics_version>2.0.6</metrics_version>
     <gson_version>2.10.1</gson_version>
-    <jackson_version>2.16.0</jackson_version>
+    <jackson_version>2.16.1</jackson_version>
     <mortbay_jetty_version>6.1.26</mortbay_jetty_version>
     <portlet_version>2.0</portlet_version>
     <maven_flatten_version>1.5.0</maven_flatten_version>
