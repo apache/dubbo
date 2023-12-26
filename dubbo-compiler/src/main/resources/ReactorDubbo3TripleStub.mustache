@@ -113,7 +113,7 @@ public final class {{className}} {
         serviceDescriptor.addMethod({{methodName}}Method);
     {{/serverStreamingMethods}}
     {{#clientStreamingMethods}}
-        serviceDescriptor.addMethod({{methodName}}Method)
+        serviceDescriptor.addMethod({{methodName}}Method);
     {{/clientStreamingMethods}}
     {{#biStreamingWithoutClientStreamMethods}}
         serviceDescriptor.addMethod({{methodName}}Method);
