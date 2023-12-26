@@ -29,10 +29,15 @@ import java.lang.reflect.Type;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOBUF_MESSAGE_CLASS_NAME;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_DESERIALIZE;
 
+/**
+ * Provides protobuf class deep copy capacity
+ */
 @Activate(order = -100)
-public class CompositeParamDeepCopyUtil extends DefaultParamDeepCopyUtil {
+public class CompositeParamDeepCopyUtil implements ParamDeepCopyUtil {
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(CompositeParamDeepCopyUtil.class);
+
+    private final ParamDeepCopyUtil defaultParamDeepCopyUtil = new DefaultParamDeepCopyUtil();
 
     @Override
     public <T> T copy(URL url, Object src, Class<T> targetClass, Type type) {
@@ -53,7 +58,7 @@ public class CompositeParamDeepCopyUtil extends DefaultParamDeepCopyUtil {
                 return null;
             }
         } else {
-            return super.copy(url, src, targetClass, type);
+            return defaultParamDeepCopyUtil.copy(url, src, targetClass, type);
         }
     }
 
