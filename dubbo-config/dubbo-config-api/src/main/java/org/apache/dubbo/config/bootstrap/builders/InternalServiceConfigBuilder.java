@@ -165,15 +165,15 @@ public class InternalServiceConfigBuilder<T> {
         // <dubbo:consumer/>
         if (StringUtils.isEmpty(protocol)) {
             protocol = moduleModels.stream()
-                .map(ModuleModel::getConfigManager)
-                .map(ModuleConfigManager::getConsumers)
-                .filter(CollectionUtils::isNotEmpty)
-                .flatMap(Collection::stream)
-                .map(ConsumerConfig::getProtocol)
-                .filter(StringUtils::isNotEmpty)
-                .filter(p -> ACCEPTABLE_PROTOCOL.contains(p))
-                .findFirst()
-                .orElse("");
+                    .map(ModuleModel::getConfigManager)
+                    .map(ModuleConfigManager::getConsumers)
+                    .filter(CollectionUtils::isNotEmpty)
+                    .flatMap(Collection::stream)
+                    .map(ConsumerConfig::getProtocol)
+                    .filter(StringUtils::isNotEmpty)
+                    .filter(p -> ACCEPTABLE_PROTOCOL.contains(p))
+                    .findFirst()
+                    .orElse("");
         }
         return StringUtils.isNotEmpty(protocol) && ACCEPTABLE_PROTOCOL.contains(protocol) ? protocol : DUBBO_PROTOCOL;
     }
