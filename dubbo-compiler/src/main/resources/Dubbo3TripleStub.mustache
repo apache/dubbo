@@ -69,20 +69,23 @@ public final class {{className}} {
     {{{javaDoc}}}
     {{/javaDoc}}
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
-    {{inputType}}.class, {{outputType}}.class, serviceDescriptor, MethodDescriptor.RpcType.UNARY,
+    {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.UNARY,
     obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
     {{outputType}}::parseFrom);
 
     private static final StubMethodDescriptor {{methodName}}AsyncMethod = new StubMethodDescriptor("{{originMethodName}}",
-    {{inputType}}.class, java.util.concurrent.CompletableFuture.class, serviceDescriptor, MethodDescriptor.RpcType.UNARY,
+    {{inputType}}.class, java.util.concurrent.CompletableFuture.class, MethodDescriptor.RpcType.UNARY,
     obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
     {{outputType}}::parseFrom);
 
     private static final StubMethodDescriptor {{methodName}}ProxyAsyncMethod = new StubMethodDescriptor("{{originMethodName}}Async",
-    {{inputType}}.class, {{outputType}}.class, serviceDescriptor, MethodDescriptor.RpcType.UNARY,
+    {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.UNARY,
     obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
     {{outputType}}::parseFrom);
-
+    static {
+        serviceDescriptor.addMethod({{methodName}}Method);
+        serviceDescriptor.addMethod({{methodName}}ProxyAsyncMethod);
+    }
 {{/unaryMethods}}
 
 {{#serverStreamingMethods}}
@@ -90,10 +93,10 @@ public final class {{className}} {
     {{{javaDoc}}}
     {{/javaDoc}}
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
-    {{inputType}}.class, {{outputType}}.class, serviceDescriptor, MethodDescriptor.RpcType.SERVER_STREAM,
+    {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.SERVER_STREAM,
     obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
     {{outputType}}::parseFrom);
-
+    static {serviceDescriptor.addMethod({{methodName}}Method);}
 {{/serverStreamingMethods}}
 
 {{#clientStreamingMethods}}
@@ -101,9 +104,10 @@ public final class {{className}} {
     {{{javaDoc}}}
     {{/javaDoc}}
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
-    {{inputType}}.class, {{outputType}}.class, serviceDescriptor, MethodDescriptor.RpcType.CLIENT_STREAM,
+    {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.CLIENT_STREAM,
     obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
     {{outputType}}::parseFrom);
+    static {serviceDescriptor.addMethod({{methodName}}Method);}
 {{/clientStreamingMethods}}
 
 {{#biStreamingWithoutClientStreamMethods}}
@@ -111,9 +115,10 @@ public final class {{className}} {
     {{{javaDoc}}}
     {{/javaDoc}}
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
-    {{inputType}}.class, {{outputType}}.class, serviceDescriptor, MethodDescriptor.RpcType.BI_STREAM,
+    {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.BI_STREAM,
     obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
     {{outputType}}::parseFrom);
+    static {serviceDescriptor.addMethod({{methodName}}Method);}
 {{/biStreamingWithoutClientStreamMethods}}
 
     public static class {{interfaceClassName}}Stub implements {{interfaceClassName}}{

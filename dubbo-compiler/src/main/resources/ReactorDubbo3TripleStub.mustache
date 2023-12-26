@@ -72,7 +72,7 @@ public final class {{className}} {
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
         {{inputType}}.class, {{outputType}}.class, serviceDescriptor, MethodDescriptor.RpcType.UNARY,
         obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
-        {{outputType}}::parseFrom);
+        {{outputType}}::parseFrom,true);
 {{/unaryMethods}}
 
 {{#serverStreamingMethods}}
@@ -82,7 +82,7 @@ public final class {{className}} {
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
         {{inputType}}.class, {{outputType}}.class, serviceDescriptor, MethodDescriptor.RpcType.SERVER_STREAM,
         obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
-        {{outputType}}::parseFrom);
+        {{outputType}}::parseFrom,true);
 {{/serverStreamingMethods}}
 
 {{#clientStreamingMethods}}
@@ -92,7 +92,7 @@ public final class {{className}} {
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
         {{inputType}}.class, {{outputType}}.class, serviceDescriptor, MethodDescriptor.RpcType.CLIENT_STREAM,
         obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
-        {{outputType}}::parseFrom);
+        {{outputType}}::parseFrom,true);
 {{/clientStreamingMethods}}
 
 {{#biStreamingWithoutClientStreamMethods}}
@@ -102,7 +102,7 @@ public final class {{className}} {
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
         {{inputType}}.class, {{outputType}}.class, serviceDescriptor, MethodDescriptor.RpcType.BI_STREAM,
         obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
-        {{outputType}}::parseFrom);
+        {{outputType}}::parseFrom,true);
 {{/biStreamingWithoutClientStreamMethods}}
 
     public static class {{interfaceClassName}}Stub implements {{interfaceClassName}}{
