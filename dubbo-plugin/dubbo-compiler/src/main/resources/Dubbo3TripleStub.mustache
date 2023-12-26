@@ -229,6 +229,7 @@ public final class {{className}} {
             // for compatibility
             pathResolver.addNativeStub( "/" + JAVA_SERVICE_NAME + "/{{originMethodName}}");
             pathResolver.addNativeStub( "/" + JAVA_SERVICE_NAME + "/{{originMethodName}}Async");
+
         {{/methods}}
 
         {{#unaryMethods}}
