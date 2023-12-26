@@ -36,14 +36,14 @@ import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
 public class ResteasyResponseTest {
 
     private Protocol protocol =
-        ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("rest");
+            ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("rest");
     private ProxyFactory proxy =
-        ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+            ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
     private final int availablePort = NetUtils.getAvailablePort();
     private final URL exportUrl = URL.valueOf("rest://127.0.0.1:" + availablePort
-        + "/rest?interface=org.apache.dubbo.rpc.protocol.rest.rest.RestDemoService");
+            + "/rest?interface=org.apache.dubbo.rpc.protocol.rest.rest.RestDemoService");
     private final ModuleServiceRepository repository =
-        ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
+            ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
 
     @AfterEach
     public void tearDown() {
@@ -80,10 +80,8 @@ public class ResteasyResponseTest {
 
         Response response = demoService.deleteUserById("uid");
 
-
         Assertions.assertEquals(response.getStatus(), 200);
     }
-
 
     private URL registerProvider(URL url, Object impl, Class<?> interfaceClass) {
         ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);

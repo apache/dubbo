@@ -20,18 +20,19 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.protocol.rest.extension.resteasy.ResteasyContext;
 import org.apache.dubbo.rpc.protocol.rest.filter.RestResponseInterceptor;
 import org.apache.dubbo.rpc.protocol.rest.filter.context.RestInterceptContext;
+
 import org.jboss.resteasy.specimpl.AbstractBuiltResponse;
 
 @Activate(
-    value = "resteasy-resStatus",
-    onClass = {
-        "javax.ws.rs.ext.WriterInterceptorContext",
-        "org.jboss.resteasy.specimpl.BuiltResponse",
-        "org.jboss.resteasy.plugins.server.netty.NettyHttpRequest",
-        "org.jboss.resteasy.plugins.server.netty.NettyHttpResponse"
-    }, order = Integer.MAX_VALUE)
+        value = "resteasy-resStatus",
+        onClass = {
+            "javax.ws.rs.ext.WriterInterceptorContext",
+            "org.jboss.resteasy.specimpl.BuiltResponse",
+            "org.jboss.resteasy.plugins.server.netty.NettyHttpRequest",
+            "org.jboss.resteasy.plugins.server.netty.NettyHttpResponse"
+        },
+        order = Integer.MAX_VALUE)
 public class ResteasyStatusCodeInterceptor implements RestResponseInterceptor, ResteasyContext {
-
 
     @Override
     public void intercept(RestInterceptContext restResponseInterceptor) throws Exception {
@@ -45,5 +46,4 @@ public class ResteasyStatusCodeInterceptor implements RestResponseInterceptor, R
 
         restResponseInterceptor.getResponse().setStatus(abstractBuiltResponse.getStatus());
     }
-
 }

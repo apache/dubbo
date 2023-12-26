@@ -62,6 +62,4 @@ public interface RestDemoService {
     @DELETE
     @Path("/deleteUserById/{uid}")
     public Response deleteUserById(@PathParam("uid") String uid);
-
-
 }
