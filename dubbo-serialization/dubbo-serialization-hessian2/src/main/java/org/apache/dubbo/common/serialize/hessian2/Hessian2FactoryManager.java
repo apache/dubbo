@@ -24,6 +24,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.com.caucho.hessian.io.SerializerFactory;
@@ -49,7 +50,7 @@ public class Hessian2FactoryManager {
 
     public SerializerFactory getSerializerFactory(ClassLoader classLoader) {
         SerializerFactory sticky = stickySerializerFactory;
-        if (sticky != null && sticky.getClassLoader().equals(classLoader)) {
+        if (sticky != null && Objects.equals(sticky.getClassLoader(), classLoader)) {
             return sticky;
         }
 

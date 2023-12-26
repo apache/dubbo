@@ -74,13 +74,7 @@
     <dependency>
       <groupId>org.aspectj</groupId>
       <artifactId>aspectjweaver</artifactId>
-      <version>1.9.20.1</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-monitor-default</artifactId>
-      <version>${project.parent.version}</version>
+      <version>1.9.21</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -146,12 +140,6 @@
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-plugin-access-log</artifactId>
-      <version>${project.parent.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-monitor-common</artifactId>
       <version>${project.parent.version}</version>
       <scope>test</scope>
     </dependency>

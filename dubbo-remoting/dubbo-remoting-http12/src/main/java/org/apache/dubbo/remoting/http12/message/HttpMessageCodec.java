@@ -16,40 +16,7 @@
  */
 package org.apache.dubbo.remoting.http12.message;
 
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.remoting.http12.exception.DecodeException;
-import org.apache.dubbo.remoting.http12.exception.EncodeException;
-
-import java.io.InputStream;
-import java.io.OutputStream;
-
 /**
  * for http body codec
  */
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface HttpMessageCodec {
-
-    void encode(OutputStream outputStream, Object data) throws EncodeException;
-
-    default void encode(OutputStream outputStream, Object[] data) throws EncodeException {
-        // default encode first data
-        this.encode(outputStream, data == null || data.length == 0 ? null : data[0]);
-    }
-
-    Object decode(InputStream inputStream, Class<?> targetType) throws DecodeException;
-
-    default Object[] decode(InputStream inputStream, Class<?>[] targetTypes) throws DecodeException {
-        // default decode first target type
-        return new Object[] {
-            this.decode(inputStream, targetTypes == null || targetTypes.length == 0 ? null : targetTypes[0])
-        };
-    }
-
-    MediaType contentType();
-
-    default boolean support(String contentType) {
-        MediaType mediaType = this.contentType();
-        return mediaType.getName().startsWith(contentType);
-    }
-}
+public interface HttpMessageCodec extends HttpMessageEncoder, HttpMessageDecoder {}

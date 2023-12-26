@@ -83,10 +83,6 @@
         </exclusion>
         <exclusion>
           <groupId>org.apache.dubbo</groupId>
-          <artifactId>dubbo-monitor-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.dubbo</groupId>
           <artifactId>dubbo-remoting-api</artifactId>
         </exclusion>
         <exclusion>

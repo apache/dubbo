@@ -26,6 +26,7 @@ import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpInputMessage;
+import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpStatus;
 import org.apache.dubbo.remoting.http12.HttpTransportListener;
 import org.apache.dubbo.remoting.http12.RequestMetadata;
@@ -33,9 +34,9 @@ import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.exception.IllegalPathException;
 import org.apache.dubbo.remoting.http12.exception.UnimplementedException;
 import org.apache.dubbo.remoting.http12.exception.UnsupportedMediaTypeException;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory;
+import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
+import org.apache.dubbo.remoting.http12.message.codec.CodecUtils;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.PathResolver;
@@ -83,7 +84,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
 
     private final List<HeaderFilter> headerFilters;
 
-    private HttpMessageCodec httpMessageCodec;
+    private HttpMessageDecoder httpMessageDecoder;
 
     private Invoker<?> invoker;
 
@@ -103,6 +104,8 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
 
     private HttpMessageListener httpMessageListener;
 
+    protected CodecUtils codecUtils;
+
     public AbstractServerTransportListener(FrameworkModel frameworkModel, URL url, HttpChannel httpChannel) {
         this.frameworkModel = frameworkModel;
         this.url = url;
@@ -111,6 +114,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
                 frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
         this.headerFilters =
                 frameworkModel.getExtensionLoader(HeaderFilter.class).getActivateExtension(url, HEADER_FILTER_KEY);
+        this.codecUtils = frameworkModel.getBeanFactory().getOrRegisterBean(CodecUtils.class);
     }
 
     protected Executor initializeExecutor(HEADER metadata) {
@@ -120,6 +124,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
 
     @Override
     public void onMetadata(HEADER metadata) {
+
         try {
             this.executor = initializeExecutor(metadata);
         } catch (Throwable throwable) {
@@ -165,11 +170,8 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         if (invoker == null) {
             throw new UnimplementedException(serviceName);
         }
-        HttpMessageCodec httpMessageCodec = determineHttpMessageCodec(contentType);
-        if (httpMessageCodec == null) {
-            throw new UnsupportedMediaTypeException(contentType);
-        }
-        this.httpMessageCodec = httpMessageCodec;
+        this.httpMessageDecoder =
+                codecUtils.determineHttpMessageDecoder(getFrameworkModel(), headers.getContentType(), getUrl());
         setServiceDescriptor(findServiceDescriptor(invoker, serviceName, hasStub));
         setHttpMessageListener(newHttpMessageListener());
         onMetadataCompletion(metadata);
@@ -246,16 +248,6 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
             invoker = pathResolver.resolve(serviceName);
         }
         return invoker;
-    }
-
-    protected HttpMessageCodec determineHttpMessageCodec(String contentType) {
-        for (HttpMessageCodecFactory httpMessageCodecFactory :
-                frameworkModel.getExtensionLoader(HttpMessageCodecFactory.class).getActivateExtensions()) {
-            if (httpMessageCodecFactory.support(contentType)) {
-                return httpMessageCodecFactory.createCodec(invoker.getUrl(), frameworkModel);
-            }
-        }
-        return null;
     }
 
     private static ServiceDescriptor findServiceDescriptor(Invoker<?> invoker, String serviceName, boolean hasStub)
@@ -421,8 +413,12 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         return methodMetadata;
     }
 
-    protected HttpMessageCodec getHttpMessageCodec() {
-        return httpMessageCodec;
+    protected HttpMessageDecoder getHttpMessageDecoder() {
+        return this.httpMessageDecoder;
+    }
+
+    protected CodecUtils getCodecUtils() {
+        return this.codecUtils;
     }
 
     protected void setHttpMessageListener(HttpMessageListener httpMessageListener) {
@@ -439,6 +435,10 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
 
     protected final URL getUrl() {
         return url;
+    }
+
+    protected HttpMetadata getMetadata() {
+        return httpMetadata;
     }
 
     public boolean isHasStub() {

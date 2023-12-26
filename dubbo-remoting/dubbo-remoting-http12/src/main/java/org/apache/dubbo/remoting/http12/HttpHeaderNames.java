@@ -25,7 +25,9 @@ public enum HttpHeaderNames {
 
     TRANSFER_ENCODING("transfer-encoding"),
 
-    TE("te");
+    TE("te"),
+
+    ACCEPT("accept");
 
     private final String name;
 

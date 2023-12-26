@@ -18,7 +18,7 @@ package org.apache.dubbo.remoting.http12;
 
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
+import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
 
 public abstract class AbstractServerHttpChannelObserver implements CustomizableHttpChannelObserver<Object> {
 
@@ -32,18 +32,18 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
 
     private boolean headerSent;
 
-    private HttpMessageCodec httpMessageCodec;
+    private HttpMessageEncoder responseEncoder;
 
     public AbstractServerHttpChannelObserver(HttpChannel httpChannel) {
         this.httpChannel = httpChannel;
     }
 
-    public void setHttpMessageCodec(HttpMessageCodec httpMessageCodec) {
-        this.httpMessageCodec = httpMessageCodec;
+    public void setResponseEncoder(HttpMessageEncoder responseEncoder) {
+        this.responseEncoder = responseEncoder;
     }
 
-    protected HttpMessageCodec getHttpMessageCodec() {
-        return httpMessageCodec;
+    public HttpMessageEncoder getResponseEncoder() {
+        return responseEncoder;
     }
 
     @Override
@@ -77,7 +77,7 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
             }
             HttpOutputMessage outputMessage = encodeHttpOutputMessage(data);
             preOutputMessage(outputMessage);
-            this.httpMessageCodec.encode(outputMessage.getBody(), data);
+            this.responseEncoder.encode(outputMessage.getBody(), data);
             getHttpChannel().writeMessage(outputMessage);
             postOutputMessage(outputMessage);
         } catch (Throwable e) {
@@ -114,7 +114,7 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
             errorResponse.setMessage(throwable.getMessage());
             this.errorResponseCustomizer.accept(errorResponse, throwable);
             HttpOutputMessage httpOutputMessage = encodeHttpOutputMessage(errorResponse);
-            this.httpMessageCodec.encode(httpOutputMessage.getBody(), errorResponse);
+            this.responseEncoder.encode(httpOutputMessage.getBody(), errorResponse);
             getHttpChannel().writeMessage(httpOutputMessage);
         } catch (Throwable ex) {
             throwable = new EncodeException(ex);
@@ -140,7 +140,7 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
                 .headers()
                 .set(
                         HttpHeaderNames.CONTENT_TYPE.getName(),
-                        httpMessageCodec.contentType().getName());
+                        responseEncoder.mediaType().getName());
         this.headersCustomizer.accept(httpMetadata.headers());
         getHttpChannel().writeHeader(httpMetadata);
         this.headerSent = true;
