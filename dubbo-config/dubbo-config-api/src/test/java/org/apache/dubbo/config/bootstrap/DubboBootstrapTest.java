@@ -49,7 +49,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.channels.AcceptPendingException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -347,11 +346,11 @@ class DubboBootstrapTest {
             registryConfig.setUseAsConfigCenter(false);
 
             DubboBootstrap.getInstance()
-                .application(applicationConfig)
-                .registry(registryConfig)
-                .protocol(new ProtocolConfig(CommonConstants.DUBBO_PROTOCOL, -1))
-                .service(service)
-                .start();
+                    .application(applicationConfig)
+                    .registry(registryConfig)
+                    .protocol(new ProtocolConfig(CommonConstants.DUBBO_PROTOCOL, -1))
+                    .service(service)
+                    .start();
         });
     }
 
