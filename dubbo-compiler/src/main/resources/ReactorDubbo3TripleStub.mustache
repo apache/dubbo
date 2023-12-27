@@ -70,7 +70,7 @@ public final class {{className}} {
         {{{javaDoc}}}
     {{/javaDoc}}
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
-        {{inputType}}.class, {{outputType}}.class, serviceDescriptor, MethodDescriptor.RpcType.UNARY,
+        {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.UNARY,
         obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
         {{outputType}}::parseFrom);
 {{/unaryMethods}}
@@ -80,7 +80,7 @@ public final class {{className}} {
         {{{javaDoc}}}
     {{/javaDoc}}
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
-        {{inputType}}.class, {{outputType}}.class, serviceDescriptor, MethodDescriptor.RpcType.SERVER_STREAM,
+        {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.SERVER_STREAM,
         obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
         {{outputType}}::parseFrom);
 {{/serverStreamingMethods}}
@@ -90,7 +90,7 @@ public final class {{className}} {
         {{{javaDoc}}}
     {{/javaDoc}}
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
-        {{inputType}}.class, {{outputType}}.class, serviceDescriptor, MethodDescriptor.RpcType.CLIENT_STREAM,
+        {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.CLIENT_STREAM,
         obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
         {{outputType}}::parseFrom);
 {{/clientStreamingMethods}}
@@ -100,10 +100,25 @@ public final class {{className}} {
         {{{javaDoc}}}
     {{/javaDoc}}
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
-        {{inputType}}.class, {{outputType}}.class, serviceDescriptor, MethodDescriptor.RpcType.BI_STREAM,
+        {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.BI_STREAM,
         obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
         {{outputType}}::parseFrom);
 {{/biStreamingWithoutClientStreamMethods}}
+
+    static{
+    {{#unaryMethods}}
+        serviceDescriptor.addMethod({{methodName}}Method);
+    {{/unaryMethods}}
+    {{#serverStreamingMethods}}
+        serviceDescriptor.addMethod({{methodName}}Method);
+    {{/serverStreamingMethods}}
+    {{#clientStreamingMethods}}
+        serviceDescriptor.addMethod({{methodName}}Method);
+    {{/clientStreamingMethods}}
+    {{#biStreamingWithoutClientStreamMethods}}
+        serviceDescriptor.addMethod({{methodName}}Method);
+    {{/biStreamingWithoutClientStreamMethods}}
+    }
 
     public static class {{interfaceClassName}}Stub implements {{interfaceClassName}}{
 
