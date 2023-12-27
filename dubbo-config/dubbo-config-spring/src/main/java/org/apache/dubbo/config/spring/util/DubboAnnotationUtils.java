@@ -138,7 +138,7 @@ public class DubboAnnotationUtils {
      * be split in anytime.It will throw IllegalArgumentException If converted array length isn't
      * even number.
      * The convert cases below work in right way,which are best practice.
-     * <p>
+     * <pre>
      * (array->map)
      * ["a","b"] ==> {a=b}
      * [" a "," b "] ==> {a=b}
@@ -147,7 +147,7 @@ public class DubboAnnotationUtils {
      * ["a=b","c","d"] ==>{a=b,c=d}
      * ["a","a:b"] ==>{a="a:b"}
      * ["a","a,b"] ==>{a="a,b"}
-     * </p>
+     * </pre>
      *
      * @param parameters
      * @return
