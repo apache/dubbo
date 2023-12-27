@@ -61,7 +61,7 @@ public class SingleProtobufUtils {
         marshaller(ListValue.getDefaultInstance());
     }
 
-    static boolean isSupported(Class<?> clazz) {
+    public static boolean isSupported(Class<?> clazz) {
         if (clazz == null) {
             return false;
         }

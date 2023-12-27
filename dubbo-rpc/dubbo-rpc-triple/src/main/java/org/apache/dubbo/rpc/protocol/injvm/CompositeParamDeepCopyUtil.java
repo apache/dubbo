@@ -26,7 +26,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Type;
 
-import static org.apache.dubbo.common.constants.CommonConstants.PROTOBUF_MESSAGE_CLASS_NAME;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_DESERIALIZE;
 
 /**
@@ -41,7 +40,7 @@ public class CompositeParamDeepCopyUtil implements ParamDeepCopyUtil {
 
     @Override
     public <T> T copy(URL url, Object src, Class<T> targetClass, Type type) {
-        if (isProtobuf(src)) {
+        if (SingleProtobufUtils.isSupported(src.getClass())) {
             try {
                 // encode
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -60,27 +59,5 @@ public class CompositeParamDeepCopyUtil implements ParamDeepCopyUtil {
         } else {
             return defaultParamDeepCopyUtil.copy(url, src, targetClass, type);
         }
-    }
-
-    private static boolean isProtobuf(Object data) {
-        if (data == null) {
-            return false;
-        }
-        return isProtoClass(data.getClass());
-    }
-
-    private static boolean isProtoClass(Class<?> clazz) {
-        while (clazz != Object.class && clazz != null) {
-            Class<?>[] interfaces = clazz.getInterfaces();
-            if (interfaces.length > 0) {
-                for (Class<?> clazzInterface : interfaces) {
-                    if (PROTOBUF_MESSAGE_CLASS_NAME.equalsIgnoreCase(clazzInterface.getName())) {
-                        return true;
-                    }
-                }
-            }
-            clazz = clazz.getSuperclass();
-        }
-        return false;
     }
 }
