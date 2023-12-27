@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ProtobufUtils;
 import org.apache.dubbo.rpc.protocol.tri.SingleProtobufUtils;
 
 import java.io.ByteArrayInputStream;
@@ -40,7 +41,7 @@ public class CompositeParamDeepCopyUtil implements ParamDeepCopyUtil {
 
     @Override
     public <T> T copy(URL url, Object src, Class<T> targetClass, Type type) {
-        if (SingleProtobufUtils.isSupported(src.getClass())) {
+        if (src != null && ProtobufUtils.isProtobufClass(src.getClass())) {
             try {
                 // encode
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
