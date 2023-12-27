@@ -329,7 +329,7 @@ class DubboBootstrapTest {
     }
 
     @Test
-    void testRemoteMetadataServiceExporter_CheckMetadataType() {
+    void testRemoteMetadataServiceExporterCheckMetadataType() {
 
         Assertions.assertThrowsExactly(IllegalStateException.class, () -> {
             ServiceConfig<DemoService> service = new ServiceConfig<>();
