@@ -105,8 +105,7 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
                 url, channelHandlerContext.channel().remoteAddress());
 
         if (providerConnectionConfig == null) {
-            ChannelPipeline p = channelHandlerContext.pipeline();
-            p.remove(this);
+            channelHandlerContext.pipeline().remove(this);
             return;
         }
 
@@ -117,8 +116,8 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
         }
 
         if (providerConnectionConfig.getAuthPolicy() == AuthPolicy.NONE) {
-            ChannelPipeline p = channelHandlerContext.pipeline();
-            p.remove(this);
+            channelHandlerContext.pipeline().remove(this);
+            return;
         }
 
         logger.error(INTERNAL_ERROR, "", "", "TLS negotiation failed when trying to accept new connection.");

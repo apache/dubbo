@@ -150,7 +150,9 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                 current.close();
             }
             this.channel.set(null);
-            closePromise.setSuccess(null);
+            if (!closePromise.isDone()) {
+                closePromise.setSuccess(null);
+            }
         }
     }
 

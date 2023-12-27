@@ -74,5 +74,51 @@ See [CONTRIBUTING](https://github.com/apache/dubbo/blob/master/CONTRIBUTING.md) 
 * Twitter: [@ApacheDubbo](https://twitter.com/ApacheDubbo)
 * Security issues: please mail to [us](mailto:security@dubbo.apache.org) privately.
 
+## Contributing
+
+See [CONTRIBUTING](https://github.com/apache/dubbo/blob/master/CONTRIBUTING.md) for details on submitting patches and the contribution workflow.
+
+### How can I contribute?
+
+* Take a look at issues with tags marked [`Good first issue`](https://github.com/apache/dubbo/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22) or [`Help wanted`](https://github.com/apache/dubbo/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22).
+* Join the discussion on the mailing list, subscription [guide](https://github.com/apache/dubbo/wiki/Mailing-list-subscription-guide).
+* Answer questions on [issues](https://github.com/apache/dubbo/issues).
+* Fix bugs reported on [issues](https://github.com/apache/dubbo/issues), and send us a pull request.
+* Review the existing [pull request](https://github.com/apache/dubbo/pulls).
+* Improve the [website](https://github.com/apache/dubbo-website), typically we need
+  * blog post
+  * translation on documentation
+  * use cases around the integration of Dubbo in enterprise systems.
+* Improve the [dubbo-admin/dubbo-monitor](https://github.com/apache/dubbo-admin).
+* Contribute to the projects listed in [ecosystem](https://github.com/dubbo).
+* Other forms of contribution not explicitly enumerated above.
+* If you would like to contribute, please send an email to dev@dubbo.apache.org to let us know!
+
+## Reporting bugs
+
+Please follow the [template](https://github.com/apache/dubbo/issues/new?template=dubbo-issue-report-template.md) for reporting any issues.
+
+## Reporting a security vulnerability
+
+Please report security vulnerabilities to [us](mailto:security@dubbo.apache.org) privately.
+
+## Dubbo ecosystem
+
+* [Dubbo Ecosystem Entry](https://github.com/apache?utf8=%E2%9C%93&q=dubbo&type=&language=) - A GitHub group `dubbo` to gather all Dubbo relevant projects not appropriate in [apache](https://github.com/apache) group yet
+* [Dubbo Website](https://github.com/apache/dubbo-website) - Apache Dubbo official website
+* [Dubbo Samples](https://github.com/apache/dubbo-samples) - samples for Apache Dubbo
+* [Dubbo Spring Boot](https://github.com/apache/dubbo-spring-boot-project) - Spring Boot Project for Dubbo
+* [Dubbo Admin](https://github.com/apache/dubbo-admin) - The reference implementation for Dubbo admin
+* [Dubbo Awesome](https://github.com/apache/dubbo-awesome) - Dubbo's slides and video links in Meetup
+
+#### Language
+
+* [Go](https://github.com/apache/dubbo-go) (recommended)
+* [Rust](https://github.com/apache/dubbo-rust)
+* [Node.js](https://github.com/apache/dubbo-js)
+* [Python](https://github.com/dubbo/py-client-for-apache-dubbo)
+* [PHP](https://github.com/apache/dubbo-php-framework)
+* [Erlang](https://github.com/apache/dubbo-erlang)
+
 ## License
 Apache Dubbo is licensed under the Apache License Version 2.0. See the [LICENSE](https://github.com/apache/dubbo/blob/master/LICENSE) file for details.

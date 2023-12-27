@@ -2,7 +2,7 @@
 name: Bug Report
 about: Report a bug in Dubbo
 title: ''
-labels: type/bug
+labels: status/need-triage
 assignees: ''
 
 ---
