@@ -488,6 +488,9 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         if (!sc.isExported()) {
             return;
         }
+        if (sc.shouldDelay()) {
+            return;
+        }
         sc.register(true);
     }
 
