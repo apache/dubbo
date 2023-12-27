@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package dubbo.metadata;
+
+import "google/protobuf/empty.proto";
+
+// MetadataService is used to expose the metadata information inside a Dubbo process.
+service MetadataService {
+  // Gets the current Dubbo Service name
+  rpc serviceName (google.protobuf.Empty) returns (ServiceNameResponse);
+
+  // Gets the version of MetadataService that always equals 1.0.0
+  rpc version (google.protobuf.Empty) returns (VersionResponse);
+
+  rpc getMetadataURL (google.protobuf.Empty) returns (UrlResponse);
+
+  //the list of String that presents all Dubbo subscribed urls
+  rpc getSubscribedURLs (google.protobuf.Empty) returns (UrlListResponse);
+
+  //Get the sorted set of String that presents all Dubbo exported urls
+//  rpc getExportedURLs (google.protobuf.Empty) returns (UrlListResponse);
+  //有几个参数更少的重载
+  rpc getExportedURLs (GetExportedURLsRequest) returns(UrlListResponse);
+
+  rpc getExportedServiceURLs (google.protobuf.Empty) returns(UrlListResponse);
+
+  rpc getServiceDefinition (ServiceKeyRequest) returns(ServiceDefinitionResponse);
+
+  rpc getMetadataInfo(RevisionRequest) returns();
+  // Other methods like getMetadataURL, getSubscribedURLs, getExportedURLs, etc.
+}
+
+message UrlListResponse {
+  repeated string url = 1;
+}
+
+message UrlResponse {
+  string url = 1;
+}
+
+message GetExportedURLsRequest{
+  string serviceInterface = 1;
+  string group = 2;
+  string version = 3;
+  string protocol = 4;
+}
+
+// Response for serviceName
+message ServiceNameResponse {
+  string name = 1; // non-null
+}
+
+// Response for version
+message VersionResponse {
+  string version = 1; // non-null, always "1.0.0"
+}
+
+message ServiceKeyRequest{
+  string serviceKey = 1;
+}
+
+message ServiceDefinitionResponse{
+  string serviceDefinition = 1;
+}
+
+message RevisionRequest{
+  string revision = 1;
+}
+
+message MetadataInfo{
+
+}
+
+// Additional message types and rpc methods would need to be defined for the other methods in the Java interface.
