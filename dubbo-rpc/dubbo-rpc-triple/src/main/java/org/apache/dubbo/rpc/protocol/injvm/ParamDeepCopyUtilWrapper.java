@@ -17,7 +17,7 @@
 package org.apache.dubbo.rpc.protocol.injvm;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.extension.Wrapper;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ProtobufUtils;
@@ -32,12 +32,16 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERR
 /**
  * Provides protobuf class deep copy capacity
  */
-@Activate(order = -100)
-public class CompositeParamDeepCopyUtil implements ParamDeepCopyUtil {
+@Wrapper
+public class ParamDeepCopyUtilWrapper implements ParamDeepCopyUtil {
 
-    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(CompositeParamDeepCopyUtil.class);
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ParamDeepCopyUtilWrapper.class);
 
-    private final ParamDeepCopyUtil defaultParamDeepCopyUtil = new DefaultParamDeepCopyUtil();
+    private final ParamDeepCopyUtil paramDeepCopyUtil;
+
+    public ParamDeepCopyUtilWrapper(ParamDeepCopyUtil paramDeepCopyUtil) {
+        this.paramDeepCopyUtil = paramDeepCopyUtil;
+    }
 
     @Override
     public <T> T copy(URL url, Object src, Class<T> targetClass, Type type) {
@@ -58,7 +62,7 @@ public class CompositeParamDeepCopyUtil implements ParamDeepCopyUtil {
                 return null;
             }
         } else {
-            return defaultParamDeepCopyUtil.copy(url, src, targetClass, type);
+            return paramDeepCopyUtil.copy(url, src, targetClass, type);
         }
     }
 }
