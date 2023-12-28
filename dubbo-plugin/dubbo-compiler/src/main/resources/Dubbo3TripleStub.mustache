@@ -238,8 +238,12 @@ public final class {{className}} {
             Map<String,StubMethodHandler<?, ?>> handlers = new HashMap<>();
 
         {{#methods}}
-            pathResolver.addNativeStub( "/" + SERVICE_NAME + "/{{originMethodName}}" );
-            pathResolver.addNativeStub( "/" + SERVICE_NAME + "/{{originMethodName}}Async" );
+            pathResolver.addNativeStub( "/" + SERVICE_NAME + "/{{originMethodName}}");
+            pathResolver.addNativeStub( "/" + SERVICE_NAME + "/{{originMethodName}}Async");
+            // for compatibility
+            pathResolver.addNativeStub( "/" + JAVA_SERVICE_NAME + "/{{originMethodName}}");
+            pathResolver.addNativeStub( "/" + JAVA_SERVICE_NAME + "/{{originMethodName}}Async");
+
         {{/methods}}
 
         {{#unaryMethods}}
