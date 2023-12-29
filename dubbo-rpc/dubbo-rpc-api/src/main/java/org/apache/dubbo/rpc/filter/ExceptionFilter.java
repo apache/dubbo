@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.extension.DisableInject;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -108,7 +109,8 @@ public class ExceptionFilter implements Filter, Filter.Listener {
     }
 
     // For test purpose
-    public void setLogger(Logger logger) {
+    @DisableInject
+    public void mockLogger(Logger logger) {
         this.logger = logger;
     }
 }
