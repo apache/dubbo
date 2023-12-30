@@ -59,7 +59,7 @@ public class DefaultParamDeepCopyUtil implements ParamDeepCopyUtil {
     @Override
     @SuppressWarnings({"unchecked"})
     public <T> T copy(URL url, Object src, Class<T> targetClass, Type type) {
-        Serialization serialization = findSerialization(url,src);
+        Serialization serialization = findSerialization(url, src);
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             ObjectOutput objectOutput = serialization.serialize(url, outputStream);
             objectOutput.writeObject(src);
@@ -87,15 +87,15 @@ public class DefaultParamDeepCopyUtil implements ParamDeepCopyUtil {
         }
     }
 
-    private Serialization findSerialization(URL url,Object src){
-        ExtensionLoader<Serialization> extensionLoader = url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class);
+    private Serialization findSerialization(URL url, Object src) {
+        ExtensionLoader<Serialization> extensionLoader =
+                url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class);
         if (src != null && ProtobufUtils.isProtobufClass(src.getClass()) && protobufDeepCopyUtil != null) {
             try {
                 return extensionLoader.getExtension(CommonConstants.PROTOBUF_SERIALIZATION_NAME);
-            }catch (IllegalStateException ignored){}
+            } catch (IllegalStateException ignored) {
+            }
         }
-        return url.getOrDefaultFrameworkModel()
-                .getExtensionLoader(Serialization.class)
-                .getExtension(UrlUtils.serializationOrDefault(url));
+        return extensionLoader.getExtension(UrlUtils.serializationOrDefault(url));
     }
 }
