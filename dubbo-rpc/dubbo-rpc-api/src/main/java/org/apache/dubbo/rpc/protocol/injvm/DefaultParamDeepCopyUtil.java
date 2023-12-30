@@ -17,6 +17,8 @@
 package org.apache.dubbo.rpc.protocol.injvm;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.ObjectInput;
@@ -57,14 +59,7 @@ public class DefaultParamDeepCopyUtil implements ParamDeepCopyUtil {
     @Override
     @SuppressWarnings({"unchecked"})
     public <T> T copy(URL url, Object src, Class<T> targetClass, Type type) {
-        if (src != null && ProtobufUtils.isProtobufClass(src.getClass()) && protobufDeepCopyUtil != null) {
-            return protobufDeepCopyUtil.copy(url, src, targetClass);
-        }
-
-        Serialization serialization = url.getOrDefaultFrameworkModel()
-                .getExtensionLoader(Serialization.class)
-                .getExtension(UrlUtils.serializationOrDefault(url));
-
+        Serialization serialization = findSerialization(url,src);
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             ObjectOutput objectOutput = serialization.serialize(url, outputStream);
             objectOutput.writeObject(src);
@@ -90,5 +85,17 @@ public class DefaultParamDeepCopyUtil implements ParamDeepCopyUtil {
         } else {
             return null;
         }
+    }
+
+    private Serialization findSerialization(URL url,Object src){
+        ExtensionLoader<Serialization> extensionLoader = url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class);
+        if (src != null && ProtobufUtils.isProtobufClass(src.getClass()) && protobufDeepCopyUtil != null) {
+            try {
+                return extensionLoader.getExtension(CommonConstants.PROTOBUF_SERIALIZATION_NAME);
+            }catch (IllegalStateException ignored){}
+        }
+        return url.getOrDefaultFrameworkModel()
+                .getExtensionLoader(Serialization.class)
+                .getExtension(UrlUtils.serializationOrDefault(url));
     }
 }
