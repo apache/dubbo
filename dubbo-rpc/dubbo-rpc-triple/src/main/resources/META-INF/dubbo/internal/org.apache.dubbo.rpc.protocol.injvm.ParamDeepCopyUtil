@@ -1,1 +1,1 @@
-composite=org.apache.dubbo.rpc.protocol.injvm.ParamDeepCopyUtilWrapper
+protobuf=org.apache.dubbo.rpc.protocol.injvm.DefaultPbParamDeepCopyUtil

@@ -22,7 +22,9 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
+import org.apache.dubbo.common.utils.ProtobufUtils;
 import org.apache.dubbo.remoting.utils.UrlUtils;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -37,9 +39,28 @@ public class DefaultParamDeepCopyUtil implements ParamDeepCopyUtil {
 
     public static final String NAME = "default";
 
+    private static final String PB_UTIL_NAME = "protobuf";
+
+    private ParamDeepCopyUtil protobufDeepCopyUtil;
+
+    public DefaultParamDeepCopyUtil() {}
+
+    public void setFrameworkModel(FrameworkModel frameworkModel) {
+        try {
+            this.protobufDeepCopyUtil =
+                    frameworkModel.getExtensionLoader(ParamDeepCopyUtil.class).getExtension(PB_UTIL_NAME);
+        } catch (IllegalStateException illegalStateException) {
+            this.protobufDeepCopyUtil = null;
+        }
+    }
+
     @Override
     @SuppressWarnings({"unchecked"})
     public <T> T copy(URL url, Object src, Class<T> targetClass, Type type) {
+        if (src != null && ProtobufUtils.isProtobufClass(src.getClass()) && protobufDeepCopyUtil != null) {
+            return protobufDeepCopyUtil.copy(url, src, targetClass);
+        }
+
         Serialization serialization = url.getOrDefaultFrameworkModel()
                 .getExtensionLoader(Serialization.class)
                 .getExtension(UrlUtils.serializationOrDefault(url));

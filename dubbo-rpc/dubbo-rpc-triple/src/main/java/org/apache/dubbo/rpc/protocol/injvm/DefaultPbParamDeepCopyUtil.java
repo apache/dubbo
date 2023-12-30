@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.injvm;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Wrapper;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ProtobufUtils;
@@ -32,16 +31,11 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERR
 /**
  * Provides protobuf class deep copy capacity
  */
-@Wrapper
-public class ParamDeepCopyUtilWrapper implements ParamDeepCopyUtil {
+public class DefaultPbParamDeepCopyUtil extends DefaultParamDeepCopyUtil {
 
-    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ParamDeepCopyUtilWrapper.class);
+    private static final String NAME = "protobuf";
 
-    private final ParamDeepCopyUtil paramDeepCopyUtil;
-
-    public ParamDeepCopyUtilWrapper(ParamDeepCopyUtil paramDeepCopyUtil) {
-        this.paramDeepCopyUtil = paramDeepCopyUtil;
-    }
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DefaultPbParamDeepCopyUtil.class);
 
     @Override
     public <T> T copy(URL url, Object src, Class<T> targetClass, Type type) {
@@ -56,13 +50,11 @@ public class ParamDeepCopyUtilWrapper implements ParamDeepCopyUtil {
             } catch (Exception e) {
                 logger.error(PROTOCOL_ERROR_DESERIALIZE, "", "", "Unable to deep copy parameter to target class.", e);
             }
-            if (src.getClass().equals(targetClass)) {
-                return (T) src;
-            } else {
-                return null;
-            }
+        }
+        if (src != null && src.getClass().equals(targetClass)) {
+            return (T) src;
         } else {
-            return paramDeepCopyUtil.copy(url, src, targetClass, type);
+            return null;
         }
     }
 }
