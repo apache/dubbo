@@ -28,7 +28,6 @@ import java.util.stream.Stream;
 
 public class StubMethodDescriptor implements MethodDescriptor, PackableMethod {
     private static final Logger logger = LoggerFactory.getLogger(StubMethodDescriptor.class);
-    private final ServiceDescriptor serviceDescriptor;
     private final ConcurrentMap<String, Object> attributeMap = new ConcurrentHashMap<>();
     private final String methodName;
     private final String[] compatibleParamSignatures;
@@ -46,14 +45,12 @@ public class StubMethodDescriptor implements MethodDescriptor, PackableMethod {
             String methodName,
             Class<?> requestClass,
             Class<?> responseClass,
-            StubServiceDescriptor serviceDescriptor,
             RpcType rpcType,
             Pack requestPack,
             Pack responsePack,
             UnPack requestUnpack,
             UnPack responseUnpack) {
         this.methodName = methodName;
-        this.serviceDescriptor = serviceDescriptor;
         this.rpcType = rpcType;
         this.requestPack = requestPack;
         this.responsePack = responsePack;
@@ -65,7 +62,6 @@ public class StubMethodDescriptor implements MethodDescriptor, PackableMethod {
         this.compatibleParamSignatures =
                 Stream.of(parameterClasses).map(Class::getName).toArray(String[]::new);
         this.returnTypes = new Type[] {responseClass, responseClass};
-        serviceDescriptor.addMethod(this);
     }
 
     @Override

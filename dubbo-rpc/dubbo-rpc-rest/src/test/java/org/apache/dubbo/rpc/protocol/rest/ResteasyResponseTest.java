@@ -67,6 +67,22 @@ public class ResteasyResponseTest {
         Assertions.assertNotNull(response);
     }
 
+    @Test
+    void testResponseCustomStatusCode() {
+        RestDemoService server = new RestDemoServiceImpl();
+        URL url = this.registerProvider(exportUrl, server, RestDemoService.class);
+
+        URL nettyUrl = url.addParameter(SERVER_KEY, "netty").addParameter("timeout", 3000000);
+
+        protocol.export(proxy.getInvoker(new RestDemoServiceImpl(), RestDemoService.class, nettyUrl));
+
+        RestDemoService demoService = this.proxy.getProxy(protocol.refer(RestDemoService.class, nettyUrl));
+
+        Response response = demoService.deleteUserById("uid");
+
+        Assertions.assertEquals(response.getStatus(), 200);
+    }
+
     private URL registerProvider(URL url, Object impl, Class<?> interfaceClass) {
         ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
         ProviderModel providerModel = new ProviderModel(url.getServiceKey(), impl, serviceDescriptor, null, null);

@@ -69,6 +69,11 @@ public class RestDemoServiceImpl implements RestDemoService {
         throw new RuntimeException();
     }
 
+    @Override
+    public Response deleteUserById(String uid) {
+        return Response.status(300).entity("deleted").build();
+    }
+
     public static Map<String, Object> getAttachments() {
         return context;
     }

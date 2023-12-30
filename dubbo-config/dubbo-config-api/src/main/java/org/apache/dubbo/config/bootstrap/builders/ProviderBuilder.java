@@ -46,6 +46,11 @@ public class ProviderBuilder extends AbstractServiceBuilder<ProviderConfig, Prov
     private String threadpool;
 
     /**
+     * Thread pool name
+     */
+    private String threadname;
+
+    /**
      * Thread pool size (fixed size)
      */
     private Integer threads;
@@ -54,6 +59,11 @@ public class ProviderBuilder extends AbstractServiceBuilder<ProviderConfig, Prov
      * IO thread pool size (fixed size)
      */
     private Integer iothreads;
+
+    /**
+     * Thread pool keepAliveTime, default unit TimeUnit.MILLISECONDS
+     */
+    private Integer alive;
 
     /**
      * Thread pool queue length
@@ -140,6 +150,10 @@ public class ProviderBuilder extends AbstractServiceBuilder<ProviderConfig, Prov
      */
     private Boolean isDefault;
 
+    public static ProviderBuilder newBuilder() {
+        return new ProviderBuilder();
+    }
+
     public ProviderBuilder host(String host) {
         this.host = host;
         return getThis();
@@ -160,6 +174,11 @@ public class ProviderBuilder extends AbstractServiceBuilder<ProviderConfig, Prov
         return getThis();
     }
 
+    public ProviderBuilder threadName(String threadName) {
+        this.threadname = threadName;
+        return getThis();
+    }
+
     public ProviderBuilder threads(Integer threads) {
         this.threads = threads;
         return getThis();
@@ -167,6 +186,11 @@ public class ProviderBuilder extends AbstractServiceBuilder<ProviderConfig, Prov
 
     public ProviderBuilder ioThreads(Integer ioThreads) {
         this.iothreads = ioThreads;
+        return getThis();
+    }
+
+    public ProviderBuilder alive(Integer alive) {
+        this.alive = alive;
         return getThis();
     }
 
@@ -263,8 +287,10 @@ public class ProviderBuilder extends AbstractServiceBuilder<ProviderConfig, Prov
         provider.setPort(port);
         provider.setContextpath(contextpath);
         provider.setThreadpool(threadpool);
+        provider.setThreadname(threadname);
         provider.setThreads(threads);
         provider.setIothreads(iothreads);
+        provider.setAlive(alive);
         provider.setQueues(queues);
         provider.setAccepts(accepts);
         provider.setCodec(codec);

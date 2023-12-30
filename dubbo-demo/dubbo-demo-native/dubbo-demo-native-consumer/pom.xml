@@ -184,7 +184,7 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-core</artifactId>
-      <version>1.2.13</version>
+      <version>1.4.14</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>
@@ -216,7 +216,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.11.0</version>
+            <version>3.12.1</version>
             <configuration>
               <source>1.8</source>
               <target>1.8</target>
