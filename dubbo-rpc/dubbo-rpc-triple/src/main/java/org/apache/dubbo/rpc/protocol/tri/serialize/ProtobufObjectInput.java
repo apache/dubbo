@@ -41,7 +41,7 @@ public class ProtobufObjectInput implements ObjectInput {
 
     @Override
     public Object readObject() {
-        return null;
+        throw new UnsupportedOperationException("Protobuf serialization does not support readObject()");
     }
 
     @Override
