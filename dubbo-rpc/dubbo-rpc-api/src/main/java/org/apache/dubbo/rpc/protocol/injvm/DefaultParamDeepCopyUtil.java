@@ -90,7 +90,7 @@ public class DefaultParamDeepCopyUtil implements ParamDeepCopyUtil {
     private Serialization findSerialization(URL url, Object src) {
         ExtensionLoader<Serialization> extensionLoader =
                 url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class);
-        if (src != null && ProtobufUtils.isProtobufClass(src.getClass()) && protobufDeepCopyUtil != null) {
+        if (src != null && ProtobufUtils.isProtobufClass(src.getClass())) {
             try {
                 return extensionLoader.getExtension(CommonConstants.PROTOBUF_SERIALIZATION_NAME);
             } catch (IllegalStateException ignored) {
