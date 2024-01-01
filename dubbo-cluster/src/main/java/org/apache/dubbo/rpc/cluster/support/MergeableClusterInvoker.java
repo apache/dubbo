@@ -68,12 +68,7 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
                     try {
                         return invokeWithContext(invoker, invocation);
                     } catch (RpcException e) {
-                        if (e.isNoInvokerAvailableAfterFilter()) {
-                            log.debug("No available provider for service" + getUrl().getServiceKey() + " on group "
-                                    + invoker.getUrl().getGroup() + ", will continue to try another group.");
-                        } else {
-                            throw e;
-                        }
+                        checkNoProvider(e,invoker.getUrl().getGroup());
                     }
                 }
             }
@@ -93,7 +88,11 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
         for (final Invoker<T> invoker : invokers) {
             RpcInvocation subInvocation = new RpcInvocation(invocation, invoker);
             subInvocation.setAttachment(ASYNC_KEY, "true");
-            results.put(invoker.getUrl().getServiceKey(), invokeWithContext(invoker, subInvocation));
+            try {
+                results.put(invoker.getUrl().getServiceKey(), invokeWithContext(invoker, subInvocation));
+            }catch (RpcException rpcException){
+                checkNoProvider(rpcException,invoker.getUrl().getGroup());
+            }
         }
 
         Object result;
@@ -180,6 +179,15 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
             }
         }
         return AsyncRpcResult.newDefaultAsyncResult(result, invocation);
+    }
+
+    private void checkNoProvider(RpcException e,String invokerGroup) throws RpcException{
+        if (e.isNoInvokerAvailableAfterFilter()) {
+            log.debug("No available provider for service" + getUrl().getServiceKey() + " on group "
+                    + invokerGroup + ", will continue to try another group.");
+        } else {
+            throw e;
+        }
     }
 
     @Override
