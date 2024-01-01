@@ -340,6 +340,7 @@ public class RegistryBuilder extends AbstractBuilder<RegistryConfig, RegistryBui
         return getThis();
     }
 
+    @Override
     public RegistryConfig build() {
         RegistryConfig registry = new RegistryConfig();
         super.build(registry);

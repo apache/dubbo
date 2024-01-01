@@ -67,6 +67,10 @@ public class ConsumerBuilder extends AbstractReferenceBuilder<ConsumerConfig, Co
      */
     private String urlMergeProcessor;
 
+    public static ConsumerBuilder newBuilder() {
+        return new ConsumerBuilder();
+    }
+
     public ConsumerBuilder isDefault(Boolean isDefault) {
         this.isDefault = isDefault;
         return getThis();

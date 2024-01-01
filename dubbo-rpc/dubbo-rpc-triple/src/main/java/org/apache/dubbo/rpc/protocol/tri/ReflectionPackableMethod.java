@@ -41,7 +41,7 @@ import java.util.stream.Stream;
 import com.google.protobuf.Message;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$ECHO;
-import static org.apache.dubbo.common.constants.CommonConstants.PROTOBUF_MESSAGE_CLASS_NAME;
+import static org.apache.dubbo.common.utils.ProtobufUtils.isProtobufClass;
 
 public class ReflectionPackableMethod implements PackableMethod {
 
@@ -267,21 +267,6 @@ public class ReflectionPackableMethod implements PackableMethod {
 
     static boolean isRx(Class<?> clz) {
         return RX_RETURN_CLASS.equalsIgnoreCase(clz.getName());
-    }
-
-    static boolean isProtobufClass(Class<?> clazz) {
-        while (clazz != Object.class && clazz != null) {
-            Class<?>[] interfaces = clazz.getInterfaces();
-            if (interfaces.length > 0) {
-                for (Class<?> clazzInterface : interfaces) {
-                    if (PROTOBUF_MESSAGE_CLASS_NAME.equalsIgnoreCase(clazzInterface.getName())) {
-                        return true;
-                    }
-                }
-            }
-            clazz = clazz.getSuperclass();
-        }
-        return false;
     }
 
     private static String convertHessianFromWrapper(String serializeType) {
