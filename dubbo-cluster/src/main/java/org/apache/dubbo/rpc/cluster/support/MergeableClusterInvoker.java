@@ -68,7 +68,7 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
                     try {
                         return invokeWithContext(invoker, invocation);
                     } catch (RpcException e) {
-                        checkNoProvider(e,invoker.getUrl().getGroup());
+                        checkNoProvider(e, invoker.getUrl().getGroup());
                     }
                 }
             }
@@ -90,8 +90,8 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
             subInvocation.setAttachment(ASYNC_KEY, "true");
             try {
                 results.put(invoker.getUrl().getServiceKey(), invokeWithContext(invoker, subInvocation));
-            }catch (RpcException rpcException){
-                checkNoProvider(rpcException,invoker.getUrl().getGroup());
+            } catch (RpcException rpcException) {
+                checkNoProvider(rpcException, invoker.getUrl().getGroup());
             }
         }
 
@@ -181,10 +181,10 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
         return AsyncRpcResult.newDefaultAsyncResult(result, invocation);
     }
 
-    private void checkNoProvider(RpcException e,String invokerGroup) throws RpcException{
+    private void checkNoProvider(RpcException e, String invokerGroup) throws RpcException {
         if (e.isNoInvokerAvailableAfterFilter()) {
-            log.debug("No available provider for service" + getUrl().getServiceKey() + " on group "
-                    + invokerGroup + ", will continue to try another group.");
+            log.debug("No available provider for service" + getUrl().getServiceKey() + " on group " + invokerGroup
+                    + ", will continue to try another group.");
         } else {
             throw e;
         }
