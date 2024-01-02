@@ -196,15 +196,6 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
         return AsyncRpcResult.newDefaultAsyncResult(result, invocation);
     }
 
-    private void checkNoProvider(RpcException e, String invokerGroup) throws RpcException {
-        if (e.isNoInvokerAvailableAfterFilter()) {
-            log.warn("No available provider for service" + getUrl().getServiceKey() + " on group " + invokerGroup
-                    + ", will continue to try another group.");
-        } else {
-            throw e;
-        }
-    }
-
     @Override
     public Class<T> getInterface() {
         return directory.getInterface();
