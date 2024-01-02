@@ -183,7 +183,7 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
     private void checkNoProvider(RpcException e, String invokerGroup) throws RpcException {
         if (e.isNoInvokerAvailableAfterFilter()) {
-            log.debug("No available provider for service" + getUrl().getServiceKey() + " on group " + invokerGroup
+            log.warn("No available provider for service" + getUrl().getServiceKey() + " on group " + invokerGroup
                     + ", will continue to try another group.");
         } else {
             throw e;
