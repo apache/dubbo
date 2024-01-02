@@ -32,7 +32,6 @@ import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
-import org.apache.dubbo.registry.ProviderFirstParams;
 import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.util.ArrayList;
@@ -41,7 +40,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
@@ -317,20 +315,6 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
 
     protected ServiceAddressURL createServiceURL(URLAddress address, URLParam param, URL consumerURL) {
         return new DubboServiceAddressURL(address, param, consumerURL, null);
-    }
-
-    protected URL removeParamsFromConsumer(URL consumer) {
-        Set<ProviderFirstParams> providerFirstParams = consumer.getOrDefaultApplicationModel()
-                .getExtensionLoader(ProviderFirstParams.class)
-                .getSupportedExtensionInstances();
-        if (CollectionUtils.isEmpty(providerFirstParams)) {
-            return consumer;
-        }
-
-        for (ProviderFirstParams paramsFilter : providerFirstParams) {
-            consumer = consumer.removeParameters(paramsFilter.params());
-        }
-        return consumer;
     }
 
     private String stripOffVariableKeys(String rawProvider) {
