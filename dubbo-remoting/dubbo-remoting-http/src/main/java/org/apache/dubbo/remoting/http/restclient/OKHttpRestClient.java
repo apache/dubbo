@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.http.restclient;
 
-import okhttp3.*;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ExecutorUtil;
@@ -32,6 +31,14 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Dispatcher;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import okhttp3.internal.http.HttpMethod;
 
 import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_NAME;
@@ -136,8 +143,7 @@ public class OKHttpRestClient implements RestClient {
     }
 
     @Override
-    public void close(int timeout) {
-    }
+    public void close(int timeout) {}
 
     @Override
     public boolean isClosed() {
@@ -153,16 +159,15 @@ public class OKHttpRestClient implements RestClient {
         Dispatcher dispatcher = new Dispatcher();
         if (url != null) {
             dispatcher = new Dispatcher(ExecutorRepository.getInstance(url.getOrDefaultApplicationModel())
-                .createExecutorIfAbsent(ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME)));
+                    .createExecutorIfAbsent(ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME)));
         }
 
-
         OkHttpClient client = new OkHttpClient.Builder()
-            .dispatcher(dispatcher)
-            .readTimeout(httpClientConfig.getReadTimeout(), TimeUnit.SECONDS)
-            .writeTimeout(httpClientConfig.getWriteTimeout(), TimeUnit.SECONDS)
-            .connectTimeout(httpClientConfig.getConnectTimeout(), TimeUnit.SECONDS)
-            .build();
+                .dispatcher(dispatcher)
+                .readTimeout(httpClientConfig.getReadTimeout(), TimeUnit.SECONDS)
+                .writeTimeout(httpClientConfig.getWriteTimeout(), TimeUnit.SECONDS)
+                .connectTimeout(httpClientConfig.getConnectTimeout(), TimeUnit.SECONDS)
+                .build();
         return client;
     }
 }
