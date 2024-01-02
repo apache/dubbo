@@ -16,6 +16,10 @@
  */
 package org.apache.dubbo.remoting.http.restclient;
 
+import okhttp3.*;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.remoting.http.RequestTemplate;
 import org.apache.dubbo.remoting.http.RestClient;
 import org.apache.dubbo.remoting.http.RestResult;
@@ -28,22 +32,22 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
 import okhttp3.internal.http.HttpMethod;
+
+import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_NAME;
 
 // TODO add version 4.0 implements ,and default version is < 4.0,for dependency conflict
 public class OKHttpRestClient implements RestClient {
     private final OkHttpClient okHttpClient;
     private final HttpClientConfig httpClientConfig;
 
+    public OKHttpRestClient(HttpClientConfig clientConfig, URL url) {
+        this.okHttpClient = createHttpClient(clientConfig, url);
+        this.httpClientConfig = clientConfig;
+    }
+
     public OKHttpRestClient(HttpClientConfig clientConfig) {
-        this.okHttpClient = createHttpClient(clientConfig);
+        this.okHttpClient = createHttpClient(clientConfig, null);
         this.httpClientConfig = clientConfig;
     }
 
@@ -132,19 +136,33 @@ public class OKHttpRestClient implements RestClient {
     }
 
     @Override
-    public void close(int timeout) {}
+    public void close(int timeout) {
+    }
 
     @Override
     public boolean isClosed() {
-        return okHttpClient.retryOnConnectionFailure();
+        return false;
     }
 
-    public OkHttpClient createHttpClient(HttpClientConfig httpClientConfig) {
+    public OkHttpClient createHttpClient(HttpClientConfig httpClientConfig, URL url) {
+        // reuse  okHttpClient
+        if (this.okHttpClient != null) {
+            return okHttpClient;
+        }
+
+        Dispatcher dispatcher = new Dispatcher();
+        if (url != null) {
+            dispatcher = new Dispatcher(ExecutorRepository.getInstance(url.getOrDefaultApplicationModel())
+                .createExecutorIfAbsent(ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME)));
+        }
+
+
         OkHttpClient client = new OkHttpClient.Builder()
-                .readTimeout(httpClientConfig.getReadTimeout(), TimeUnit.SECONDS)
-                .writeTimeout(httpClientConfig.getWriteTimeout(), TimeUnit.SECONDS)
-                .connectTimeout(httpClientConfig.getConnectTimeout(), TimeUnit.SECONDS)
-                .build();
+            .dispatcher(dispatcher)
+            .readTimeout(httpClientConfig.getReadTimeout(), TimeUnit.SECONDS)
+            .writeTimeout(httpClientConfig.getWriteTimeout(), TimeUnit.SECONDS)
+            .connectTimeout(httpClientConfig.getConnectTimeout(), TimeUnit.SECONDS)
+            .build();
         return client;
     }
 }
