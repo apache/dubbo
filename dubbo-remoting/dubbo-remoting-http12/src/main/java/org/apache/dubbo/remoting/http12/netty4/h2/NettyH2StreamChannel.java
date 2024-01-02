@@ -67,6 +67,11 @@ public class NettyH2StreamChannel implements H2StreamChannel {
     }
 
     @Override
+    public SocketAddress localAddress() {
+        return this.http2StreamChannel.localAddress();
+    }
+
+    @Override
     public void flush() {
         this.http2StreamChannel.flush();
     }

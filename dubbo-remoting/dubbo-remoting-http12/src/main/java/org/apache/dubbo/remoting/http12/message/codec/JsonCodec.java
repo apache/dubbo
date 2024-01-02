@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.http12.message.codec;
 
+import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
@@ -31,6 +32,8 @@ import java.util.List;
 import com.alibaba.fastjson2.JSONObject;
 
 public class JsonCodec implements HttpMessageCodec {
+
+    public static final HttpMessageCodec INSTANCE = new JsonCodec();
 
     @Override
     public MediaType mediaType() {
@@ -67,13 +70,7 @@ public class JsonCodec implements HttpMessageCodec {
     public Object decode(InputStream body, Class<?> targetType) throws DecodeException {
         try {
             try {
-                int len;
-                byte[] data = new byte[4096];
-                StringBuilder builder = new StringBuilder(4096);
-                while ((len = body.read(data)) != -1) {
-                    builder.append(new String(data, 0, len));
-                }
-                return JsonUtils.toJavaObject(builder.toString(), targetType);
+                return JsonUtils.toJavaObject(StreamUtils.toString(body), targetType);
             } finally {
                 body.close();
             }
@@ -87,14 +84,7 @@ public class JsonCodec implements HttpMessageCodec {
         List<Object> result = new ArrayList<>();
         try {
             try {
-                int len;
-                byte[] data = new byte[4096];
-                StringBuilder builder = new StringBuilder(4096);
-                while ((len = dataInputStream.read(data)) != -1) {
-                    builder.append(new String(data, 0, len));
-                }
-                String jsonString = builder.toString();
-                List<Object> jsonObjects = JsonUtils.toJavaList(jsonString, Object.class);
+                List<Object> jsonObjects = JsonUtils.toJavaList(StreamUtils.toString(dataInputStream), Object.class);
 
                 for (int i = 0; i < targetTypes.length; i++) {
                     Object jsonObject = jsonObjects.get(i);

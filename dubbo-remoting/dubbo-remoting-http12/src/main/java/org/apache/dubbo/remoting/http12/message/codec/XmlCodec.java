@@ -30,7 +30,6 @@ import javax.xml.transform.sax.SAXSource;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.StringReader;
 
 import org.xml.sax.InputSource;
 
@@ -55,10 +54,7 @@ public class XmlCodec implements HttpMessageCodec {
             spf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
 
             // Do unmarshall operation
-            Source xmlSource = new SAXSource(
-                    spf.newSAXParser().getXMLReader(),
-                    new InputSource(new StringReader(
-                            CodecUtils.toByteArrayStream(inputStream).toString())));
+            Source xmlSource = new SAXSource(spf.newSAXParser().getXMLReader(), new InputSource(inputStream));
             JAXBContext context = JAXBContext.newInstance(targetType);
             Unmarshaller unmarshaller = context.createUnmarshaller();
             return unmarshaller.unmarshal(xmlSource);

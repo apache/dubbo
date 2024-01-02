@@ -18,6 +18,11 @@ package org.apache.dubbo.remoting.http12;
 
 public enum HttpStatus {
     OK(200),
+    FOUND(302),
+    BAD_REQUEST(400),
+    NOT_FOUND(404),
+    METHOD_NOT_ALLOWED(405),
+    PRECONDITION_FAILED(412),
     REQUEST_TIMEOUT(408),
     UNSUPPORTED_MEDIA_TYPE(415),
     INTERNAL_SERVER_ERROR(500);

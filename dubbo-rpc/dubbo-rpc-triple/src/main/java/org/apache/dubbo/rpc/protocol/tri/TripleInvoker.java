@@ -289,7 +289,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             meta.packableMethod = (PackableMethod) methodDescriptor;
         } else {
             meta.packableMethod = packableMethodCache.computeIfAbsent(
-                    methodDescriptor, (md) -> packableMethodFactory.create(md, url, TripleConstant.CONTENT_PROTO));
+                    methodDescriptor, (md) -> packableMethodFactory.create(md, url, TripleConstant.CONTENT_TYPE_PROTO));
         }
         meta.convertNoLowerHeader = TripleProtocol.CONVERT_NO_LOWER_HEADER;
         meta.ignoreDefaultVersion = TripleProtocol.IGNORE_1_0_0_VERSION;

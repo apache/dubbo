@@ -20,6 +20,10 @@ import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
 
+import java.io.ByteArrayOutputStream;
+import java.util.List;
+import java.util.Map;
+
 public abstract class AbstractServerHttpChannelObserver implements CustomizableHttpChannelObserver<Object> {
 
     private HeadersCustomizer headersCustomizer = HeadersCustomizer.NO_OP;
@@ -72,12 +76,22 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
     @Override
     public void onNext(Object data) {
         try {
-            if (!headerSent) {
-                doSendHeaders(HttpStatus.OK.getStatusString());
+            if (data instanceof HttpResult) {
+                HttpResult<?> result = (HttpResult<?>) data;
+                if (!headerSent) {
+                    doSendHeaders(String.valueOf(result.getStatus()), result.getHeaders());
+                }
+                data = result.getBody();
+            } else if (!headerSent) {
+                doSendHeaders(HttpStatus.OK.getStatusString(), null);
             }
             HttpOutputMessage outputMessage = encodeHttpOutputMessage(data);
             preOutputMessage(outputMessage);
-            this.responseEncoder.encode(outputMessage.getBody(), data);
+            if (data instanceof ByteArrayOutputStream) {
+                ((ByteArrayOutputStream) data).writeTo(outputMessage.getBody());
+            } else {
+                responseEncoder.encode(outputMessage.getBody(), data);
+            }
             getHttpChannel().writeMessage(outputMessage);
             postOutputMessage(outputMessage);
         } catch (Throwable e) {
@@ -106,15 +120,15 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
             httpStatusCode = ((HttpStatusException) throwable).getStatusCode();
         }
         if (!headerSent) {
-            doSendHeaders(String.valueOf(httpStatusCode));
+            doSendHeaders(String.valueOf(httpStatusCode), null);
         }
         try {
             ErrorResponse errorResponse = new ErrorResponse();
             errorResponse.setStatus(String.valueOf(httpStatusCode));
             errorResponse.setMessage(throwable.getMessage());
-            this.errorResponseCustomizer.accept(errorResponse, throwable);
+            errorResponseCustomizer.accept(errorResponse, throwable);
             HttpOutputMessage httpOutputMessage = encodeHttpOutputMessage(errorResponse);
-            this.responseEncoder.encode(httpOutputMessage.getBody(), errorResponse);
+            responseEncoder.encode(httpOutputMessage.getBody(), errorResponse);
             getHttpChannel().writeMessage(httpOutputMessage);
         } catch (Throwable ex) {
             throwable = new EncodeException(ex);
@@ -133,17 +147,19 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
         return httpChannel;
     }
 
-    private void doSendHeaders(String statusCode) {
+    private void doSendHeaders(String statusCode, Map<String, List<String>> additionalHeaders) {
         HttpMetadata httpMetadata = encodeHttpMetadata();
-        httpMetadata.headers().set(HttpHeaderNames.STATUS.getName(), statusCode);
-        httpMetadata
-                .headers()
-                .set(
-                        HttpHeaderNames.CONTENT_TYPE.getName(),
-                        responseEncoder.mediaType().getName());
-        this.headersCustomizer.accept(httpMetadata.headers());
+        HttpHeaders headers = httpMetadata.headers();
+        headers.set(HttpHeaderNames.STATUS.getName(), statusCode);
+        headers.set(
+                HttpHeaderNames.CONTENT_TYPE.getName(),
+                responseEncoder.mediaType().getName());
+        headersCustomizer.accept(headers);
+        if (additionalHeaders != null) {
+            headers.putAll(additionalHeaders);
+        }
         getHttpChannel().writeHeader(httpMetadata);
-        this.headerSent = true;
+        headerSent = true;
     }
 
     protected void doOnCompleted(Throwable throwable) {
@@ -151,7 +167,7 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
         if (httpMetadata == null) {
             return;
         }
-        this.trailersCustomizer.accept(httpMetadata.headers(), throwable);
+        trailersCustomizer.accept(httpMetadata.headers(), throwable);
         getHttpChannel().writeHeader(httpMetadata);
     }
 }

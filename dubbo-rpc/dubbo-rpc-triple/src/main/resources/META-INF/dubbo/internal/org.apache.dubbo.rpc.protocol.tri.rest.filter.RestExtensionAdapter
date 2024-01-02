@@ -1,0 +1,1 @@
+jaxrs-writer=org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.WriterInterceptorAdapterFactory

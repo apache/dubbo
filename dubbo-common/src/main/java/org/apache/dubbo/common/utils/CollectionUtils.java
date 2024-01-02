@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -404,11 +405,17 @@ public class CollectionUtils {
             return null;
         }
         if (values instanceof List) {
-            List<T> list = (List<T>) values;
-            return list.get(0);
+            return ((List<T>) values).get(0);
         } else {
             return values.iterator().next();
         }
+    }
+
+    public static <T> T first(List<T> values) {
+        if (isEmpty(values)) {
+            return null;
+        }
+        return values.get(0);
     }
 
     public static <T> Set<T> toTreeSet(Set<T> set) {
@@ -419,5 +426,34 @@ public class CollectionUtils {
             set = new TreeSet<>(set);
         }
         return set;
+    }
+
+    public static <T> Set<T> newHashSet(int expectedSize) {
+        return new HashSet<>(capacity(expectedSize));
+    }
+
+    public static <T> Set<T> newLinkedHashSet(int expectedSize) {
+        return new LinkedHashSet<>(capacity(expectedSize));
+    }
+
+    public static <T, K> Map<K, T> newHashMap(int expectedSize) {
+        return new HashMap<>(capacity(expectedSize));
+    }
+
+    public static <T, K> Map<K, T> newLinkedHashMap(int expectedSize) {
+        return new LinkedHashMap<>(capacity(expectedSize));
+    }
+
+    public static int capacity(int expectedSize) {
+        if (expectedSize < 3) {
+            if (expectedSize < 0) {
+                throw new IllegalArgumentException("expectedSize cannot be negative but was: " + expectedSize);
+            }
+            return expectedSize + 1;
+        }
+        if (expectedSize < 1 << (Integer.SIZE - 2)) {
+            return (int) (expectedSize / 0.75F + 1.0F);
+        }
+        return Integer.MAX_VALUE;
     }
 }

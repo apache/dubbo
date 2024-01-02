@@ -26,10 +26,8 @@ import org.apache.dubbo.remoting.http12.h1.Http1ServerChannelObserver;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerStreamChannelObserver;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerTransportListener;
 import org.apache.dubbo.remoting.http12.message.DefaultListeningDecoder;
-import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
-import org.apache.dubbo.remoting.http12.message.ListeningDecoder;
 import org.apache.dubbo.remoting.http12.message.MediaType;
-import org.apache.dubbo.remoting.http12.message.MethodMetadata;
+import org.apache.dubbo.remoting.http12.message.codec.JsonCodec;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -40,67 +38,60 @@ import org.apache.dubbo.rpc.protocol.tri.h12.HttpMessageListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.ServerCallListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.ServerStreamServerCallListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.UnaryServerCallListener;
+import org.apache.dubbo.rpc.protocol.tri.route.RpcInvocationBuildContext;
 
 public class DefaultHttp11ServerTransportListener
         extends AbstractServerTransportListener<RequestMetadata, HttpInputMessage>
         implements Http1ServerTransportListener {
 
     private final HttpChannel httpChannel;
-
-    private final URL url;
+    private Http1ServerChannelObserver serverChannelObserver;
 
     public DefaultHttp11ServerTransportListener(HttpChannel httpChannel, URL url, FrameworkModel frameworkModel) {
         super(frameworkModel, url, httpChannel);
-        this.url = url;
         this.httpChannel = httpChannel;
+        serverChannelObserver = new Http1ServerChannelObserver(httpChannel);
+        serverChannelObserver.setResponseEncoder(JsonCodec.INSTANCE);
+    }
+
+    @Override
+    protected HttpMessageListener buildHttpMessageListener() {
+        RpcInvocationBuildContext context = getContext();
+        RpcInvocation rpcInvocation = buildRpcInvocation(context);
+
+        ServerCallListener serverCallListener =
+                startListener(rpcInvocation, context.getMethodDescriptor(), context.getInvoker());
+
+        DefaultListeningDecoder listeningDecoder = new DefaultListeningDecoder(
+                context.getHttpMessageDecoder(), context.getMethodMetadata().getActualRequestTypes());
+        listeningDecoder.setListener(serverCallListener::onMessage);
+        return new DefaultHttpMessageListener(listeningDecoder);
     }
 
     private ServerCallListener startListener(
             RpcInvocation invocation, MethodDescriptor methodDescriptor, Invoker<?> invoker) {
         switch (methodDescriptor.getRpcType()) {
             case UNARY:
-                Http1ServerChannelObserver http1ChannelObserver = new Http1ServerChannelObserver(httpChannel);
-                http1ChannelObserver.setResponseEncoder(getCodecUtils()
-                        .determineHttpMessageEncoder(
-                                getFrameworkModel(), getHttpMetadata().headers(), getUrl()));
-                return new AutoCompleteUnaryServerCallListener(invocation, invoker, http1ChannelObserver);
+                return new AutoCompleteUnaryServerCallListener(invocation, invoker, serverChannelObserver);
             case SERVER_STREAM:
-                Http1ServerChannelObserver serverStreamChannelObserver =
-                        new Http1ServerStreamChannelObserver(httpChannel);
-                serverStreamChannelObserver.setResponseEncoder(getCodecUtils()
-                        .determineHttpMessageEncoder(
-                                getFrameworkModel(), getHttpMetadata().headers(), getUrl()));
-                serverStreamChannelObserver.setHeadersCustomizer((headers) -> headers.set(
+                serverChannelObserver = new Http1ServerStreamChannelObserver(httpChannel);
+                serverChannelObserver.setHeadersCustomizer((headers) -> headers.set(
                         HttpHeaderNames.CONTENT_TYPE.getName(), MediaType.TEXT_EVENT_STREAM_VALUE.getName()));
-                return new AutoCompleteServerStreamServerCallListener(invocation, invoker, serverStreamChannelObserver);
+                return new AutoCompleteServerStreamServerCallListener(invocation, invoker, serverChannelObserver);
             default:
                 throw new UnsupportedOperationException("HTTP1.x only support unary and server-stream");
         }
     }
 
     @Override
-    protected HttpMessageListener newHttpMessageListener() {
-        RequestMetadata httpMetadata = getHttpMetadata();
-        String path = httpMetadata.path();
-        String[] parts = path.split("/");
-        String originalMethodName = parts[2];
-        boolean hasStub = getPathResolver().hasNativeStub(path);
-        MethodDescriptor methodDescriptor = findMethodDescriptor(getServiceDescriptor(), originalMethodName, hasStub);
-        MethodMetadata methodMetadata = MethodMetadata.fromMethodDescriptor(methodDescriptor);
-        RpcInvocation rpcInvocation = buildRpcInvocation(getInvoker(), getServiceDescriptor(), methodDescriptor);
-        setMethodDescriptor(methodDescriptor);
-        setMethodMetadata(methodMetadata);
-        setRpcInvocation(rpcInvocation);
-        ListeningDecoder listeningDecoder =
-                newListeningDecoder(getHttpMessageDecoder(), methodMetadata.getActualRequestTypes());
-        return new DefaultHttpMessageListener(listeningDecoder);
+    protected void onMetadataCompletion(RequestMetadata metadata) {
+        serverChannelObserver.setResponseEncoder(getContext().getHttpMessageEncoder());
+        super.onMetadataCompletion(metadata);
     }
 
-    private ListeningDecoder newListeningDecoder(HttpMessageDecoder decoder, Class<?>[] actualRequestTypes) {
-        DefaultListeningDecoder defaultListeningDecoder = new DefaultListeningDecoder(decoder, actualRequestTypes);
-        ServerCallListener serverCallListener = startListener(getRpcInvocation(), getMethodDescriptor(), getInvoker());
-        defaultListeningDecoder.setListener(serverCallListener::onMessage);
-        return defaultListeningDecoder;
+    @Override
+    protected void onError(Throwable throwable) {
+        serverChannelObserver.onError(throwable);
     }
 
     private static class AutoCompleteUnaryServerCallListener extends UnaryServerCallListener {
@@ -113,7 +104,7 @@ public class DefaultHttp11ServerTransportListener
         @Override
         public void onMessage(Object message) {
             super.onMessage(message);
-            super.onComplete();
+            onComplete();
         }
     }
 
@@ -127,7 +118,7 @@ public class DefaultHttp11ServerTransportListener
         @Override
         public void onMessage(Object message) {
             super.onMessage(message);
-            super.onComplete();
+            onComplete();
         }
     }
 }

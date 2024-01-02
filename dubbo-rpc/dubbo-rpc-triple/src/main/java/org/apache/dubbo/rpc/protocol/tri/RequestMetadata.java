@@ -55,7 +55,7 @@ public class RequestMetadata {
                 .authority(address)
                 .method(HttpMethod.POST.asciiName())
                 .path("/" + service + "/" + method.getMethodName())
-                .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.CONTENT_PROTO)
+                .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.CONTENT_TYPE_PROTO)
                 .set(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
         setIfNotNull(header, TripleHeaderEnum.TIMEOUT.getHeader(), timeout);
         if (!ignoreDefaultVersion || !"1.0.0".equals(version)) {
@@ -67,7 +67,7 @@ public class RequestMetadata {
         if (!Identity.MESSAGE_ENCODING.equals(compressor.getMessageEncoding())) {
             setIfNotNull(header, TripleHeaderEnum.GRPC_ENCODING.getHeader(), compressor.getMessageEncoding());
         }
-        StreamUtils.convertAttachment(header, attachments, convertNoLowerHeader);
+        StreamUtils.putHeaders(header, attachments, convertNoLowerHeader);
         return header;
     }
 

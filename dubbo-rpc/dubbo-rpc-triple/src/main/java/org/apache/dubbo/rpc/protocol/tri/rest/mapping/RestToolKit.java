@@ -14,17 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.exception;
+package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 
-public class IllegalPathException extends RuntimeException {
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 
-    public IllegalPathException() {}
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Method;
+import java.util.Map;
 
-    public IllegalPathException(String message) {
-        super(message);
-    }
+@SPI(scope = ExtensionScope.FRAMEWORK)
+public interface RestToolKit {
 
-    public String getPath() {
-        return super.getMessage();
-    }
+    String resolvePlaceholders(String text);
+
+    Object convert(Object value, ParameterMeta parameter);
+
+    String[] getParameterNames(Method method);
+
+    Map<String, Object> getAttributes(AnnotatedElement element, Annotation annotation);
 }

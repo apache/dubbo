@@ -1,0 +1,2 @@
+default=org.apache.dubbo.rpc.protocol.tri.rest.mapping.DefaultRestToolKit
+spring-reflection=org.apache.dubbo.rpc.protocol.tri.rest.support.spring.SpringReflectionRestToolKit

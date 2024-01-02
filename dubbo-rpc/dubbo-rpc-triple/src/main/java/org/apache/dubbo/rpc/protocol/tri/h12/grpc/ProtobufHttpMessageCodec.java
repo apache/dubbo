@@ -21,14 +21,13 @@ import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.protocol.tri.SingleProtobufUtils;
+import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 public class ProtobufHttpMessageCodec implements HttpMessageCodec {
-
-    private static final MediaType MEDIA_TYPE = new MediaType("application", "x-protobuf");
 
     @Override
     public void encode(OutputStream outputStream, Object data) throws EncodeException {
@@ -50,6 +49,6 @@ public class ProtobufHttpMessageCodec implements HttpMessageCodec {
 
     @Override
     public MediaType mediaType() {
-        return MEDIA_TYPE;
+        return TripleConstant.MEDIA_TYPE_GRPC;
     }
 }

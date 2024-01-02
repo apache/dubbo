@@ -73,4 +73,29 @@ public final class TimeUtils {
             isTickerAlive = true;
         }
     }
+
+    public static Long parseTimeoutToMills(String timeoutVal) {
+        if (StringUtils.isEmpty(timeoutVal) || StringUtils.isContains(timeoutVal, "null")) {
+            return null;
+        }
+        long value = Long.parseLong(timeoutVal.substring(0, timeoutVal.length() - 1));
+        char unit = timeoutVal.charAt(timeoutVal.length() - 1);
+        switch (unit) {
+            case 'n':
+                return TimeUnit.NANOSECONDS.toMillis(value);
+            case 'u':
+                return TimeUnit.MICROSECONDS.toMillis(value);
+            case 'm':
+                return value;
+            case 'S':
+                return TimeUnit.SECONDS.toMillis(value);
+            case 'M':
+                return TimeUnit.MINUTES.toMillis(value);
+            case 'H':
+                return TimeUnit.HOURS.toMillis(value);
+            default:
+                // invalid timeout config
+                return null;
+        }
+    }
 }

@@ -1,0 +1,2 @@
+resolver-spring=org.apache.dubbo.rpc.protocol.tri.rest.support.spring.SpringMvcRequestMappingResolver
+resolver-jaxrs=org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.JAXRSRequestMappingResolver

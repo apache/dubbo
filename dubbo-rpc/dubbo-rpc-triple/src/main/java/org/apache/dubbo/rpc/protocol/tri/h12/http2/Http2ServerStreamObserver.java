@@ -63,7 +63,7 @@ public class Http2ServerStreamObserver extends Http2ServerChannelObserver
     protected HttpMetadata encodeTrailers(Throwable throwable) {
         HttpMetadata httpMetadata = super.encodeTrailers(throwable);
         HttpHeaders headers = httpMetadata.headers();
-        StreamUtils.convertAttachment(headers, attachments, TripleProtocol.CONVERT_NO_LOWER_HEADER);
+        StreamUtils.putHeaders(headers, attachments, TripleProtocol.CONVERT_NO_LOWER_HEADER);
         return httpMetadata;
     }
 }

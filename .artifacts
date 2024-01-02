@@ -119,4 +119,5 @@ dubbo-spring-security
 dubbo-tracing
 dubbo-xds
 dubbo-plugin-proxy-bytebuddy
+dubbo-plugin-rest-spring
 dubbo-plugin-loom

@@ -29,4 +29,8 @@ public class DecodeException extends HttpStatusException {
     public DecodeException(Throwable cause) {
         super(500, cause);
     }
+
+    public DecodeException(String message, Throwable cause) {
+        super(500, message, cause);
+    }
 }

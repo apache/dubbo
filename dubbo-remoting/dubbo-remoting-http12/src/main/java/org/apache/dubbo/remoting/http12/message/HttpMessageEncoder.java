@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.http12.message;
 
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 
 import java.io.OutputStream;
@@ -26,6 +27,6 @@ public interface HttpMessageEncoder extends CodecMediaType {
 
     default void encode(OutputStream outputStream, Object[] data) throws EncodeException {
         // default encode first data
-        this.encode(outputStream, data == null || data.length == 0 ? null : data[0]);
+        encode(outputStream, ArrayUtils.isEmpty(data) ? null : data[0]);
     }
 }

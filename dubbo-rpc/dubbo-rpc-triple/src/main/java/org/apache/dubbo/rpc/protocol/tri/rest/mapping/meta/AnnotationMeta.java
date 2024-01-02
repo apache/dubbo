@@ -1,0 +1,205 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
+
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RestToolKit;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Array;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+
+@SuppressWarnings("unchecked")
+public final class AnnotationMeta<A extends Annotation> {
+
+    private final Map<String, Optional<Object>> cache = new ConcurrentHashMap<>();
+    private final AnnotatedElement element;
+    private final A annotation;
+    private final RestToolKit toolKit;
+
+    private Map<String, Object> attributes;
+
+    public AnnotationMeta(AnnotatedElement element, A annotation, RestToolKit toolKit) {
+        this.element = element;
+        this.annotation = annotation;
+        this.toolKit = toolKit;
+    }
+
+    public A getAnnotation() {
+        return annotation;
+    }
+
+    public Class<? extends Annotation> getAnnotationType() {
+        return annotation.annotationType();
+    }
+
+    public Map<String, Object> getAttributes() {
+        if (attributes == null) {
+            attributes = toolKit.getAttributes(element, annotation);
+        }
+        return attributes;
+    }
+
+    public boolean hasAttribute(String attributeName) {
+        return getAttributes().containsKey(attributeName);
+    }
+
+    public String getValue() {
+        return getString("value");
+    }
+
+    public String[] getValueArray() {
+        return getStringArray("value");
+    }
+
+    public String getString(String attributeName) {
+        return getRequiredAttribute(attributeName, String.class);
+    }
+
+    public String[] getStringArray(String attributeName) {
+        return getRequiredAttribute(attributeName, String[].class);
+    }
+
+    public boolean getBoolean(String attributeName) {
+        return getRequiredAttribute(attributeName, Boolean.class);
+    }
+
+    public <N extends Number> N getNumber(String attributeName) {
+        return (N) getRequiredAttribute(attributeName, Number.class);
+    }
+
+    public <E extends Enum<?>> E getEnum(String attributeName) {
+        return (E) getRequiredAttribute(attributeName, Enum.class);
+    }
+
+    public <E extends Enum<?>> E[] getEnumArray(String attributeName) {
+        return (E[]) getRequiredAttribute(attributeName, Enum[].class);
+    }
+
+    public <T> Class<? extends T> getClass(String attributeName) {
+        return getRequiredAttribute(attributeName, Class.class);
+    }
+
+    public Class<?>[] getClassArray(String attributeName) {
+        return getRequiredAttribute(attributeName, Class[].class);
+    }
+
+    public <A1 extends Annotation> AnnotationMeta<A1> getAnnotation(String attributeName) {
+        return (AnnotationMeta<A1>) cache.computeIfAbsent(attributeName, k -> {
+                    if (getAttributes().get(attributeName) == null) {
+                        return Optional.empty();
+                    }
+                    Annotation annotation = getRequiredAttribute(attributeName, Annotation.class);
+                    return Optional.of(new AnnotationMeta<>(getAnnotationType(), annotation, toolKit));
+                })
+                .orElseThrow(() -> attributeNotFound(attributeName));
+    }
+
+    public <A1 extends Annotation> AnnotationMeta<A1>[] getAnnotationArray(String attributeName) {
+        return (AnnotationMeta<A1>[]) cache.computeIfAbsent(attributeName, k -> {
+                    if (getAttributes().get(attributeName) == null) {
+                        return Optional.empty();
+                    }
+                    Annotation[] annotation = getRequiredAttribute(attributeName, Annotation[].class);
+                    int len = annotation.length;
+                    AnnotationMeta<A1>[] metas = new AnnotationMeta[len];
+                    for (int i = 0; i < len; i++) {
+                        metas[i] = new AnnotationMeta<>(getAnnotationType(), (A1) annotation[i], toolKit);
+                    }
+                    return Optional.of(metas);
+                })
+                .orElseThrow(() -> attributeNotFound(attributeName));
+    }
+
+    public <A1 extends Annotation> A1 getAnnotation(String attributeName, Class<A1> annotationType) {
+        return getRequiredAttribute(attributeName, annotationType);
+    }
+
+    public <A1 extends Annotation> A1[] getAnnotationArray(String attributeName, Class<A1> annotationType) {
+        Class<?> arrayType = Array.newInstance(annotationType, 0).getClass();
+        return (A1[]) getRequiredAttribute(attributeName, arrayType);
+    }
+
+    public <T> T getRequiredAttribute(String attributeName, Class<T> expectedType) {
+        Object value = getAttributes().get(attributeName);
+        if (value == null) {
+            throw attributeNotFound(attributeName);
+        }
+        if (value instanceof Throwable) {
+            throw new IllegalArgumentException(
+                    String.format(
+                            "Attribute '%s' for annotation [%s] was not resolvable due to exception [%s]",
+                            attributeName, getAnnotationType().getName(), value),
+                    (Throwable) value);
+        }
+        Class<?> type = value.getClass();
+        if (type == String.class) {
+            value = toolKit.resolvePlaceholders((String) value);
+        } else if (type.isArray()) {
+            Class<?> componentType = type.getComponentType();
+            if (componentType == String.class) {
+                int len = Array.getLength(value);
+                String[] array = new String[len];
+                for (int i = 0; i < len; i++) {
+                    array[i] = toolKit.resolvePlaceholders((String) Array.get(value, i));
+                }
+                value = array;
+            }
+        }
+        if (expectedType.isInstance(value)) {
+            return (T) value;
+        }
+        if (expectedType == String.class) {
+            return (T) value.toString();
+        }
+        if (expectedType.isArray()) {
+            Class<?> expectedComponentType = expectedType.getComponentType();
+            if (expectedComponentType.isInstance(value)) {
+                Object array = Array.newInstance(expectedComponentType, 1);
+                Array.set(array, 0, value);
+                return (T) array;
+            }
+            if (expectedComponentType == String.class) {
+                String[] array;
+                if (type.isArray()) {
+                    int len = Array.getLength(value);
+                    array = new String[len];
+                    for (int i = 0; i < len; i++) {
+                        array[i] = Array.get(value, i).toString();
+                    }
+                } else {
+                    array = new String[] {value.toString()};
+                }
+                return (T) array;
+            }
+        }
+        throw new IllegalArgumentException(String.format(
+                "Attribute '%s' is of type %s, but %s was expected in attributes for annotation [%s]",
+                attributeName,
+                type.getSimpleName(),
+                expectedType.getSimpleName(),
+                getAnnotationType().getName()));
+    }
+
+    private IllegalArgumentException attributeNotFound(String attributeName) {
+        return new IllegalArgumentException(String.format(
+                "Attribute '%s' not found in attributes for annotation [%s]",
+                attributeName, getAnnotationType().getName()));
+    }
+}

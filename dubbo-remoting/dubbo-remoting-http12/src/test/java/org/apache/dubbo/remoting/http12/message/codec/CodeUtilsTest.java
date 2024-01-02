@@ -39,13 +39,14 @@ public class CodeUtilsTest {
                 HttpHeaderNames.CONTENT_TYPE.getName(),
                 Collections.singletonList(MediaType.APPLICATION_JSON_VALUE.getName()));
         HttpMessageDecoder decoder =
-                codecUtils.determineHttpMessageDecoder(FrameworkModel.defaultModel(), headers.getContentType(), null);
+                codecUtils.determineHttpMessageDecoder(null, FrameworkModel.defaultModel(), headers.getContentType());
         Assertions.assertNotNull(decoder);
         Assertions.assertEquals(JsonPbCodec.class, decoder.getClass());
 
         HttpMessageEncoder encoder;
         // If no Accept header provided, use Content-Type to find encoder
-        encoder = codecUtils.determineHttpMessageEncoder(FrameworkModel.defaultModel(), headers, null);
+        encoder = codecUtils.determineHttpMessageEncoder(
+                null, FrameworkModel.defaultModel(), MediaType.APPLICATION_JSON_VALUE.getName());
         Assertions.assertNotNull(encoder);
         Assertions.assertEquals(JsonPbCodec.class, encoder.getClass());
 
@@ -54,17 +55,19 @@ public class CodeUtilsTest {
                 HttpHeaderNames.CONTENT_TYPE.getName(),
                 Collections.singletonList(MediaType.MULTIPART_FORM_DATA.getName()));
         decoder =
-                codecUtils.determineHttpMessageDecoder(FrameworkModel.defaultModel(), headers1.getContentType(), null);
+                codecUtils.determineHttpMessageDecoder(null, FrameworkModel.defaultModel(), headers1.getContentType());
         Assertions.assertNotNull(decoder);
         Assertions.assertEquals(MultipartDecoder.class, decoder.getClass());
         Assertions.assertThrows(
                 UnsupportedMediaTypeException.class,
-                () -> codecUtils.determineHttpMessageEncoder(FrameworkModel.defaultModel(), headers1, null));
+                () -> codecUtils.determineHttpMessageEncoder(
+                        null, FrameworkModel.defaultModel(), headers1.getContentType()));
 
         headers1.put(
                 HttpHeaderNames.ACCEPT.getName(),
                 Collections.singletonList(MediaType.APPLICATION_JSON_VALUE.getName()));
-        encoder = codecUtils.determineHttpMessageEncoder(FrameworkModel.defaultModel(), headers1, null);
+        encoder = codecUtils.determineHttpMessageEncoder(
+                null, FrameworkModel.defaultModel(), MediaType.APPLICATION_JSON_VALUE.getName());
         Assertions.assertNotNull(encoder);
         Assertions.assertEquals(JsonPbCodec.class, encoder.getClass());
     }

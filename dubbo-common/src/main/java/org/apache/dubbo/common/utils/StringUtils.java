@@ -1256,10 +1256,6 @@ public final class StringUtils {
 
     /**
      * Test str whether starts with the prefix ignore case.
-     *
-     * @param str
-     * @param prefix
-     * @return
      */
     public static boolean startsWithIgnoreCase(String str, String prefix) {
         if (str == null || prefix == null || str.length() < prefix.length()) {
@@ -1267,5 +1263,92 @@ public final class StringUtils {
         }
         // return str.substring(0, prefix.length()).equalsIgnoreCase(prefix);
         return str.regionMatches(true, 0, prefix, 0, prefix.length());
+    }
+
+    /**
+     * Returns a substring from 'str' between 'start' and 'end', or to the end if 'end' is -1
+     */
+    public static String substring(String str, int start, int end) {
+        if (str == null) {
+            return null;
+        }
+        return end == -1 ? str.substring(start) : str.substring(start, end);
+    }
+
+    /**
+     * Extracts a substring from the given string that precedes the first occurrence of the specified character separator.
+     * If the character is not found, the entire string is returned.
+     */
+    public static String substringBefore(String str, int separator) {
+        if (isEmpty(str)) {
+            return str;
+        }
+        int pos = str.indexOf(separator);
+        return pos == INDEX_NOT_FOUND ? str : str.substring(0, pos);
+    }
+
+    /**
+     * Extracts a substring from the given string that precedes the first occurrence of the specified string separator.
+     * If the separator is not found or is null, the entire string is returned.
+     */
+    public static String substringBefore(String str, String separator) {
+        if (isEmpty(str) || separator == null) {
+            return str;
+        }
+        if (separator.isEmpty()) {
+            return EMPTY_STRING;
+        }
+        int pos = str.indexOf(separator);
+        return pos == INDEX_NOT_FOUND ? str : str.substring(0, pos);
+    }
+
+    /**
+     * Tokenize the given String into a String array.
+     * Trims tokens and omits empty tokens.
+     */
+    public static String[] tokenize(String str, char... separators) {
+        if (isEmpty(str)) {
+            return EMPTY_STRING_ARRAY;
+        }
+        if (separators == null) {
+            separators = new char[] {','};
+        }
+        List<String> tokens = new ArrayList<>();
+        int start = -1, end = 0;
+        int i = 0;
+        out:
+        for (int len = str.length(), sLen = separators.length; i < len; i++) {
+            char c = str.charAt(i);
+            for (int j = 0; j < sLen; j++) {
+                if (c == separators[j]) {
+                    if (start > -1) {
+                        tokens.add(str.substring(start, end + 1));
+                        start = -1;
+                    }
+                    continue out;
+                }
+            }
+            switch (c) {
+                case ' ':
+                case '\t':
+                case '\n':
+                case '\r':
+                    break;
+                default:
+                    if (start == -1) {
+                        start = i;
+                    }
+                    end = i;
+                    break;
+            }
+        }
+        if (start > -1) {
+            String part = str.substring(start, end + 1);
+            if (tokens.isEmpty()) {
+                return new String[] {part};
+            }
+            tokens.add(part);
+        }
+        return tokens.toArray(EMPTY_STRING_ARRAY);
     }
 }

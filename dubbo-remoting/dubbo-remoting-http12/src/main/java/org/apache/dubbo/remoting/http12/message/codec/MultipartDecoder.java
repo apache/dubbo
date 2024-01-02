@@ -77,7 +77,7 @@ public class MultipartDecoder implements HttpMessageDecoder {
                     continue;
                 }
                 res[i] = codecUtils
-                        .determineHttpMessageDecoder(frameworkModel, part.headers.getContentType(), url)
+                        .determineHttpMessageDecoder(url, frameworkModel, part.headers.getContentType())
                         .decode(new ByteArrayInputStream(part.content), targetTypes[i]);
             }
             return res;

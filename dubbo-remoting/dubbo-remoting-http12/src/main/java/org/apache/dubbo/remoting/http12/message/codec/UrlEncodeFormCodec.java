@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.convert.ConverterUtil;
+import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
@@ -25,6 +26,7 @@ import org.apache.dubbo.remoting.http12.message.MediaType;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -48,11 +50,14 @@ public class UrlEncodeFormCodec implements HttpMessageCodec {
                 for (Map.Entry<?, ?> e : ((Map<?, ?>) data).entrySet()) {
                     String k = e.getKey().toString();
                     String v = e.getValue().toString();
-                    toWrite.append(k).append("=").append(v).append("&");
+                    toWrite.append(k)
+                            .append("=")
+                            .append(URLEncoder.encode(v, StandardCharsets.UTF_8.name()))
+                            .append("&");
                 }
                 if (toWrite.length() > 1) {
                     outputStream.write(
-                            toWrite.substring(0, toWrite.length() - 1).getBytes());
+                            toWrite.substring(0, toWrite.length() - 1).getBytes(StandardCharsets.UTF_8));
                 }
             } else {
                 throw new EncodeException("UrlEncodeFrom media-type only supports String or Map as return type.");
@@ -84,8 +89,7 @@ public class UrlEncodeFormCodec implements HttpMessageCodec {
                 throw new DecodeException(
                         "For x-www-form-urlencoded MIME type, please use Map/String/base-types as method param.");
             }
-            String decoded = URLDecoder.decode(
-                            CodecUtils.toByteArrayStream(inputStream).toString(), StandardCharsets.UTF_8.name())
+            String decoded = URLDecoder.decode(StreamUtils.toString(inputStream), StandardCharsets.UTF_8.name())
                     .trim();
             Map<String, Object> res = toMap(decoded, targetTypes, toMap);
             if (toMap) {

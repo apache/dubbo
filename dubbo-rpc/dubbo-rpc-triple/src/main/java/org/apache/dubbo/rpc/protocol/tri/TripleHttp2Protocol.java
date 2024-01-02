@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.api.AbstractWireProtocol;
 import org.apache.dubbo.remoting.api.pu.ChannelHandlerPretender;
@@ -32,7 +31,6 @@ import org.apache.dubbo.remoting.http12.netty4.h1.NettyHttp1ConnectionHandler;
 import org.apache.dubbo.remoting.http12.netty4.h2.NettyHttp2FrameCodec;
 import org.apache.dubbo.remoting.http12.netty4.h2.NettyHttp2ProtocolSelectorHandler;
 import org.apache.dubbo.remoting.utils.UrlUtils;
-import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 import org.apache.dubbo.rpc.protocol.tri.h12.TripleProtocolDetector;
@@ -43,7 +41,6 @@ import org.apache.dubbo.rpc.protocol.tri.transport.TripleServerConnectionHandler
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleTailHandler;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import io.netty.channel.ChannelDuplexHandler;
@@ -60,7 +57,6 @@ import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.flush.FlushConsolidationHandler;
 import io.netty.handler.logging.LogLevel;
 
-import static org.apache.dubbo.common.constants.CommonConstants.HEADER_FILTER_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_ENABLE_PUSH_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_HEADER_TABLE_SIZE_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY;
@@ -84,7 +80,6 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
 
     public static final Http2FrameLogger SERVER_LOGGER = new Http2FrameLogger(LogLevel.DEBUG, "H2_SERVER");
 
-    private ExtensionLoader<HeaderFilter> filtersLoader;
     private FrameworkModel frameworkModel;
 
     public TripleHttp2Protocol() {
@@ -94,7 +89,6 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     @Override
     public void setFrameworkModel(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
-        this.filtersLoader = frameworkModel.getExtensionLoader(HeaderFilter.class);
     }
 
     @Override
@@ -158,12 +152,6 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
 
     private void configurerHttp2Handlers(URL url, List<ChannelHandler> handlers) {
         Configuration config = ConfigurationUtils.getGlobalConfiguration(url.getOrDefaultApplicationModel());
-        final List<HeaderFilter> headFilters;
-        if (filtersLoader != null) {
-            headFilters = filtersLoader.getActivateExtension(url, HEADER_FILTER_KEY);
-        } else {
-            headFilters = Collections.emptyList();
-        }
         final Http2FrameCodec codec = TripleHttp2FrameCodecBuilder.forServer()
                 .customizeConnection((connection) -> connection
                         .remote()

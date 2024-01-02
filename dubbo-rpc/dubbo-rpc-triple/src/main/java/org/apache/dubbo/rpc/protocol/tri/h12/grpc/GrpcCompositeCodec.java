@@ -20,6 +20,7 @@ import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.MediaType;
+import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,8 +31,6 @@ import com.google.protobuf.Message;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOBUF_MESSAGE_CLASS_NAME;
 
 public class GrpcCompositeCodec implements HttpMessageCodec {
-
-    private static final MediaType MEDIA_TYPE = new MediaType("application", "grpc");
 
     private final ProtobufHttpMessageCodec protobufHttpMessageCodec;
 
@@ -99,7 +98,7 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
 
     @Override
     public MediaType mediaType() {
-        return MEDIA_TYPE;
+        return TripleConstant.MEDIA_TYPE_GRPC;
     }
 
     private static boolean isProtobuf(Object data) {

@@ -41,6 +41,7 @@ public enum TripleHeaderEnum {
     CONSUMER_APP_NAME_KEY("tri-consumer-appname"),
     SERVICE_VERSION("tri-service-version"),
     SERVICE_GROUP("tri-service-group"),
+    SERVICE_TIMEOUT("tri-service-timeout"),
 
     TRI_HEADER_CONVERT("tri-header-convert"),
 

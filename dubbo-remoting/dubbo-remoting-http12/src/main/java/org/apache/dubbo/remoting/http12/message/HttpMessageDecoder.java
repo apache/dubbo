@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.http12.message;
 
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 
 import java.io.InputStream;
@@ -26,9 +27,7 @@ public interface HttpMessageDecoder extends CodecMediaType {
 
     default Object[] decode(InputStream inputStream, Class<?>[] targetTypes) throws DecodeException {
         // default decode first target type
-        return new Object[] {
-            this.decode(inputStream, targetTypes == null || targetTypes.length == 0 ? null : targetTypes[0])
-        };
+        return new Object[] {decode(inputStream, ArrayUtils.isEmpty(targetTypes) ? null : targetTypes[0])};
     }
 
     MediaType mediaType();

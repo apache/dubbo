@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.AbstractExporter;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMappingRegistry;
 import org.apache.dubbo.rpc.protocol.tri.service.TriBuiltinService;
 
 import java.util.Objects;
@@ -55,7 +56,9 @@ import static org.apache.dubbo.rpc.Constants.H2_SUPPORT_NO_LOWER_HEADER_KEY;
 public class TripleProtocol extends AbstractProtocol {
 
     private static final Logger logger = LoggerFactory.getLogger(TripleProtocol.class);
+
     private final PathResolver pathResolver;
+    private final RequestMappingRegistry requestMappingRegistry;
     private final TriBuiltinService triBuiltinService;
     private final String acceptEncodings;
 
@@ -70,9 +73,9 @@ public class TripleProtocol extends AbstractProtocol {
 
     public TripleProtocol(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
-        this.triBuiltinService = new TriBuiltinService(frameworkModel);
-        this.pathResolver =
-                frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
+        triBuiltinService = new TriBuiltinService(frameworkModel);
+        pathResolver = frameworkModel.getDefaultExtension(PathResolver.class);
+        requestMappingRegistry = frameworkModel.getDefaultExtension(RequestMappingRegistry.class);
         CONVERT_NO_LOWER_HEADER = ConfigurationUtils.getEnvConfiguration(ApplicationModel.defaultModel())
                 .getBoolean(H2_SUPPORT_NO_LOWER_HEADER_KEY, true);
         IGNORE_1_0_0_VERSION = ConfigurationUtils.getEnvConfiguration(ApplicationModel.defaultModel())
@@ -81,7 +84,7 @@ public class TripleProtocol extends AbstractProtocol {
                 .getBoolean(H2_RESOLVE_FALLBACK_TO_DEFAULT_KEY, true);
         Set<String> supported =
                 frameworkModel.getExtensionLoader(DeCompressor.class).getSupportedExtensions();
-        this.acceptEncodings = String.join(",", supported);
+        acceptEncodings = String.join(",", supported);
     }
 
     @Override
@@ -93,11 +96,13 @@ public class TripleProtocol extends AbstractProtocol {
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
         URL url = invoker.getUrl();
         String key = serviceKey(url);
-        final AbstractExporter<T> exporter = new AbstractExporter<T>(invoker) {
+        AbstractExporter<T> exporter = new AbstractExporter<T>(invoker) {
             @Override
             public void afterUnExport() {
                 pathResolver.remove(url.getServiceKey());
                 pathResolver.remove(url.getServiceModel().getServiceModel().getInterfaceName());
+                // unregister rest request mapping
+                requestMappingRegistry.unregister(invoker);
                 // set service status
                 if (triBuiltinService.enable()) {
                     triBuiltinService
@@ -133,13 +138,15 @@ public class TripleProtocol extends AbstractProtocol {
             if (previous != null) {
                 logger.info("Already exists an invoker[" + previous.getUrl() + "] on path["
                         + url.getServiceModel().getServiceModel().getInterfaceName()
-                        + "], dubbo will skip override with invoker["
-                        + url + "]");
+                        + "], dubbo will skip override with invoker[" + url + "]");
             } else {
                 logger.info("Add fallback triple invoker[" + url + "] to path["
                         + url.getServiceModel().getServiceModel().getInterfaceName() + "] with invoker[" + url + "]");
             }
         }
+
+        // register rest request mapping
+        requestMappingRegistry.register(invoker);
 
         // set service status
         if (triBuiltinService.enable()) {
@@ -187,10 +194,11 @@ public class TripleProtocol extends AbstractProtocol {
     @Override
     public void destroy() {
         if (logger.isInfoEnabled()) {
-            logger.info("Destroying protocol [" + this.getClass().getSimpleName() + "] ...");
+            logger.info("Destroying protocol [" + getClass().getSimpleName() + "] ...");
         }
         PortUnificationExchanger.close();
         pathResolver.destroy();
+        requestMappingRegistry.destroy();
         super.destroy();
     }
 }

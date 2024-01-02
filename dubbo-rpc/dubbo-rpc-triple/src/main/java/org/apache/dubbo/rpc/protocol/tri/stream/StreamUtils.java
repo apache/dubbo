@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.LRU2Cache;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
@@ -28,17 +29,22 @@ import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
+import io.netty.handler.codec.DateFormatter;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_PARSE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNSUPPORTED;
 
-public class StreamUtils {
+public final class StreamUtils {
 
-    protected static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(StreamUtils.class);
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(StreamUtils.class);
 
     private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
     private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder().withoutPadding();
@@ -47,163 +53,188 @@ public class StreamUtils {
 
     private static final Map<String, String> lruHeaderMap = new LRU2Cache<>(MAX_LRU_HEADER_MAP_SIZE);
 
+    private StreamUtils() {}
+
     public static String encodeBase64ASCII(byte[] in) {
-        byte[] bytes = encodeBase64(in);
-        return new String(bytes, StandardCharsets.US_ASCII);
+        return new String(encodeBase64(in), StandardCharsets.US_ASCII);
     }
 
     public static byte[] encodeBase64(byte[] in) {
         return BASE64_ENCODER.encode(in);
     }
 
-    public static byte[] decodeASCIIByte(CharSequence value) {
-        return BASE64_DECODER.decode(value.toString().getBytes(StandardCharsets.US_ASCII));
+    public static byte[] decodeASCIIByte(String value) {
+        return BASE64_DECODER.decode(value.getBytes(StandardCharsets.US_ASCII));
     }
 
-    public static Map<String, Object> toAttachments(Map<String, Object> origin) {
-        if (origin == null || origin.isEmpty()) {
+    /**
+     * Parse and put attachments into headers.
+     * Ignore Http2 PseudoHeaderName and internal name.
+     * Only strings, dates, and byte arrays are allowed.
+     *
+     * @param headers              the headers
+     * @param attachments          the attachments
+     * @param needConvertHeaderKey whether need to convert the header key to lower-case
+     */
+    public static void putHeaders(
+            DefaultHttp2Headers headers, Map<String, Object> attachments, boolean needConvertHeaderKey) {
+        putHeaders(attachments, needConvertHeaderKey, headers::set);
+    }
+
+    /**
+     * Parse and put attachments into headers.
+     * Ignore Http2 PseudoHeaderName and internal name.
+     * Only strings, dates, and byte arrays are allowed.
+     *
+     * @param headers              the headers
+     * @param attachments          the attachments
+     * @param needConvertHeaderKey whether need to convert the header key to lower-case
+     */
+    public static void putHeaders(HttpHeaders headers, Map<String, Object> attachments, boolean needConvertHeaderKey) {
+        putHeaders(attachments, needConvertHeaderKey, headers::set);
+    }
+
+    private static void putHeaders(
+            Map<String, Object> attachments, boolean needConvertHeaderKey, BiConsumer<String, String> consumer) {
+        if (CollectionUtils.isEmptyMap(attachments)) {
+            return;
+        }
+        Map<String, String> needConvertKeys = new HashMap<>();
+        for (Map.Entry<String, Object> entry : attachments.entrySet()) {
+            Object value = entry.getValue();
+            if (value == null) {
+                continue;
+            }
+
+            String key = entry.getKey();
+            String lowerCaseKey = lruHeaderMap.computeIfAbsent(key, k -> k.toLowerCase(Locale.ROOT));
+            if (TripleHeaderEnum.containsExcludeAttachments(lowerCaseKey)) {
+                continue;
+            }
+            if (needConvertHeaderKey && !lowerCaseKey.equals(key)) {
+                needConvertKeys.put(lowerCaseKey, key);
+            }
+            putHeader(consumer, lowerCaseKey, value);
+        }
+        if (needConvertKeys.isEmpty()) {
+            return;
+        }
+        consumer.accept(
+                TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader(),
+                TriRpcStatus.encodeMessage(JsonUtils.toJson(needConvertKeys)));
+    }
+
+    /**
+     * Put a KV pairs into headers.
+     *
+     * @param consumer outbound headers consumer
+     * @param key      the key of the attachment
+     * @param value    the value of the attachment (Only strings, dates, and byte arrays are allowed in the attachment value.)
+     */
+    private static void putHeader(BiConsumer<String, String> consumer, String key, Object value) {
+        try {
+            if (value instanceof CharSequence || value instanceof Number || value instanceof Boolean) {
+                String str = value.toString();
+                consumer.accept(key, str);
+            } else if (value instanceof Date) {
+                consumer.accept(key, DateFormatter.format((Date) value));
+            } else if (value instanceof byte[]) {
+                String str = encodeBase64ASCII((byte[]) value);
+                consumer.accept(key + TripleConstant.HEADER_BIN_SUFFIX, str);
+            } else {
+                LOGGER.warn(
+                        PROTOCOL_UNSUPPORTED,
+                        "",
+                        "",
+                        "Unsupported attachment k: " + key + " class: "
+                                + value.getClass().getName());
+            }
+        } catch (Throwable t) {
+            LOGGER.warn(
+                    PROTOCOL_UNSUPPORTED,
+                    "",
+                    "",
+                    "Meet exception when convert single attachment key:" + key + " value=" + value,
+                    t);
+        }
+    }
+
+    /**
+     * Convert the given map to attachments. Ignore Http2 PseudoHeaderName and internal name.
+     *
+     * @param map The map
+     * @return the attachments
+     */
+    public static Map<String, Object> toAttachments(Map<String, Object> map) {
+        if (CollectionUtils.isEmptyMap(map)) {
             return Collections.emptyMap();
         }
-        Map<String, Object> res = new HashMap<>(origin.size());
-        origin.forEach((k, v) -> {
-            if (TripleHeaderEnum.containsExcludeAttachments(k)) {
-                return;
+        Map<String, Object> res = CollectionUtils.newHashMap(map.size());
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            String key = entry.getKey();
+            if (TripleHeaderEnum.containsExcludeAttachments(key)) {
+                continue;
             }
-            res.put(k, v);
-        });
+            res.put(key, entry.getValue());
+        }
         return res;
     }
 
     /**
-     * Parse and put the KV pairs into metadata. Ignore Http2 PseudoHeaderName and internal name.
-     * Only raw byte array or string value will be put.
+     * Parse and convert headers to attachments. Ignore Http2 PseudoHeaderName and internal name.
      *
-     * @param headers              the metadata holder
-     * @param attachments          KV pairs
-     * @param needConvertHeaderKey convert flag
+     * @param headers the headers
+     * @return the attachments
      */
-    public static void convertAttachment(
-            DefaultHttp2Headers headers, Map<String, Object> attachments, boolean needConvertHeaderKey) {
-        if (attachments == null) {
-            return;
+    public static Map<String, Object> toAttachments(HttpHeaders headers) {
+        if (headers == null) {
+            return Collections.emptyMap();
         }
-        Map<String, String> needConvertKey = new HashMap<>();
-        for (Map.Entry<String, Object> entry : attachments.entrySet()) {
-            String key = lruHeaderMap.get(entry.getKey());
-            if (key == null) {
-                final String lowerCaseKey = entry.getKey().toLowerCase(Locale.ROOT);
-                lruHeaderMap.put(entry.getKey(), lowerCaseKey);
-                key = lowerCaseKey;
-            }
-            if (TripleHeaderEnum.containsExcludeAttachments(key)) {
-                continue;
-            }
-            final Object v = entry.getValue();
-            if (v == null) {
-                continue;
-            }
-            if (needConvertHeaderKey && !key.equals(entry.getKey())) {
-                needConvertKey.put(key, entry.getKey());
-            }
-            convertSingleAttachment(headers, key, v);
-        }
-        if (!needConvertKey.isEmpty()) {
-            String needConvertJson = JsonUtils.toJson(needConvertKey);
-            headers.add(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader(), TriRpcStatus.encodeMessage(needConvertJson));
-        }
-    }
 
-    public static void convertAttachment(
-            HttpHeaders headers, Map<String, Object> attachments, boolean needConvertHeaderKey) {
-        if (attachments == null) {
-            return;
+        Map<String, Object> attachments = CollectionUtils.newHashMap(headers.size());
+        for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+            String key = entry.getKey();
+            String value = CollectionUtils.first(entry.getValue());
+            int len = key.length() - TripleConstant.HEADER_BIN_SUFFIX.length();
+            if (len > 0 && TripleConstant.HEADER_BIN_SUFFIX.equals(key.substring(len))) {
+                try {
+                    putAttachment(attachments, key.substring(0, len), value == null ? null : decodeASCIIByte(value));
+                } catch (Exception e) {
+                    LOGGER.error(PROTOCOL_FAILED_PARSE, "", "", "Failed to parse response attachment key=" + key, e);
+                }
+            } else {
+                putAttachment(attachments, key, value);
+            }
         }
-        Map<String, String> needConvertKey = new HashMap<>();
-        for (Map.Entry<String, Object> entry : attachments.entrySet()) {
-            String key = lruHeaderMap.get(entry.getKey());
-            if (key == null) {
-                final String lowerCaseKey = entry.getKey().toLowerCase(Locale.ROOT);
-                lruHeaderMap.put(entry.getKey(), lowerCaseKey);
-                key = lowerCaseKey;
-            }
-            if (TripleHeaderEnum.containsExcludeAttachments(key)) {
-                continue;
-            }
-            final Object v = entry.getValue();
-            if (v == null) {
-                continue;
-            }
-            if (needConvertHeaderKey && !key.equals(entry.getKey())) {
-                needConvertKey.put(key, entry.getKey());
-            }
-            convertSingleAttachment(headers, key, v);
-        }
-        if (!needConvertKey.isEmpty()) {
-            String needConvertJson = JsonUtils.toJson(needConvertKey);
-            headers.set(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader(), TriRpcStatus.encodeMessage(needConvertJson));
-        }
-    }
 
-    public static void convertAttachment(DefaultHttp2Headers headers, Map<String, Object> attachments) {
-        convertAttachment(headers, attachments, false);
+        // try converting upper key
+        String converted = headers.getFirst(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader());
+        if (converted == null) {
+            return attachments;
+        }
+        String json = TriRpcStatus.decodeMessage(converted);
+        Map<String, String> map = JsonUtils.toJavaObject(json, Map.class);
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            String key = entry.getKey();
+            Object value = attachments.remove(key);
+            if (value != null) {
+                putAttachment(attachments, key, value);
+            }
+        }
+        return attachments;
     }
 
     /**
-     * Convert each user's attach value to metadata
+     * Put a KV pairs into attachments.
      *
-     * @param headers outbound headers
-     * @param key     metadata key
-     * @param v       metadata value (Metadata Only string and byte arrays are allowed)
+     * @param attachments the map to which the attachment will be added
+     * @param key         the key of the header
+     * @param value       the value of the header
      */
-    private static void convertSingleAttachment(DefaultHttp2Headers headers, String key, Object v) {
-        try {
-            if (v instanceof String || v instanceof Number || v instanceof Boolean) {
-                String str = v.toString();
-                headers.set(key, str);
-            } else if (v instanceof byte[]) {
-                String str = encodeBase64ASCII((byte[]) v);
-                headers.set(key + TripleConstant.HEADER_BIN_SUFFIX, str);
-            } else {
-                LOGGER.warn(
-                        PROTOCOL_UNSUPPORTED,
-                        "",
-                        "",
-                        "Unsupported attachment k: " + key + " class: "
-                                + v.getClass().getName());
-            }
-        } catch (Throwable t) {
-            LOGGER.warn(
-                    PROTOCOL_UNSUPPORTED,
-                    "",
-                    "",
-                    "Meet exception when convert single attachment key:" + key + " value=" + v,
-                    t);
+    private static void putAttachment(Map<String, Object> attachments, String key, Object value) {
+        if (TripleHeaderEnum.containsExcludeAttachments(key)) {
+            return;
         }
-    }
-
-    private static void convertSingleAttachment(HttpHeaders headers, String key, Object v) {
-        try {
-            if (v instanceof String || v instanceof Number || v instanceof Boolean) {
-                String str = v.toString();
-                headers.set(key, str);
-            } else if (v instanceof byte[]) {
-                String str = encodeBase64ASCII((byte[]) v);
-                headers.set(key + TripleConstant.HEADER_BIN_SUFFIX, str);
-            } else {
-                LOGGER.warn(
-                        PROTOCOL_UNSUPPORTED,
-                        "",
-                        "",
-                        "Unsupported attachment k: " + key + " class: "
-                                + v.getClass().getName());
-            }
-        } catch (Throwable t) {
-            LOGGER.warn(
-                    PROTOCOL_UNSUPPORTED,
-                    "",
-                    "",
-                    "Meet exception when convert single attachment key:" + key + " value=" + v,
-                    t);
-        }
+        attachments.put(key, value);
     }
 }

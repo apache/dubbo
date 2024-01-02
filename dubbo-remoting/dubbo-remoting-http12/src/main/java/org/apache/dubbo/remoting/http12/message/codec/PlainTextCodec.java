@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.http12.message.codec;
 
+import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
@@ -37,14 +38,14 @@ public class PlainTextCodec implements HttpMessageCodec {
 
     @Override
     public void encode(OutputStream outputStream, Object data) throws EncodeException {
-        if (!(data instanceof String)) {
-            throw new EncodeException("PlainText media-type only supports String as return type.");
-        }
         try {
-            outputStream.write(((String) data).getBytes());
+            if (data instanceof String) {
+                outputStream.write(((String) data).getBytes(StandardCharsets.UTF_8));
+            }
         } catch (IOException e) {
             throw new EncodeException(e);
         }
+        throw new EncodeException("PlainText media-type only supports String as return type.");
     }
 
     @Override
@@ -58,19 +59,16 @@ public class PlainTextCodec implements HttpMessageCodec {
             if (!String.class.equals(targetType)) {
                 throw new DecodeException("Plain text content only supports String as method param.");
             }
-            Charset charset;
-            if (contentType.contains("charset=")) {
+            int pos = contentType.indexOf("charset=");
+            if (pos > 0) {
                 try {
-                    charset = Charset.forName(contentType.substring(contentType.indexOf("charset=") + 8));
+                    Charset charset = Charset.forName(contentType.substring(pos + 8));
+                    return StreamUtils.toString(inputStream, charset);
                 } catch (Exception e) {
                     throw new DecodeException("Unsupported charset:" + e.getMessage());
                 }
-                if (!charset.equals(StandardCharsets.UTF_8) && !charset.equals(StandardCharsets.US_ASCII)) {
-                    String origin = CodecUtils.toByteArrayStream(inputStream).toString(charset.name());
-                    return new String(origin.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
-                }
             }
-            return CodecUtils.toByteArrayStream(inputStream).toString(StandardCharsets.UTF_8.name());
+            return StreamUtils.toString(inputStream);
         } catch (Exception e) {
             throw new DecodeException(e);
         }
