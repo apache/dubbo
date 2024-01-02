@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
@@ -68,7 +69,12 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
                     try {
                         return invokeWithContext(invoker, invocation);
                     } catch (RpcException e) {
-                        checkNoProvider(e, invoker.getUrl().getGroup());
+                        if (e.isNoInvokerAvailableAfterFilter()) {
+                            log.debug("No available provider for service" + getUrl().getServiceKey() + " on group "
+                                    + invoker.getUrl().getGroup() + ", will continue to try another group.");
+                        } else {
+                            throw e;
+                        }
                     }
                 }
             }
@@ -90,8 +96,17 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
             subInvocation.setAttachment(ASYNC_KEY, "true");
             try {
                 results.put(invoker.getUrl().getServiceKey(), invokeWithContext(invoker, subInvocation));
-            } catch (RpcException rpcException) {
-                checkNoProvider(rpcException, invoker.getUrl().getGroup());
+            } catch (RpcException e) {
+                if (e.isNoInvokerAvailableAfterFilter()) {
+                    log.warn(
+                            LoggerCodeConstants.CLUSTER_NO_VALID_PROVIDER,
+                            "",
+                            "",
+                            "No available provider for service" + getUrl().getServiceKey() + " on group "
+                                    + invoker.getUrl().getGroup() + ", will continue to try another group.");
+                } else {
+                    throw e;
+                }
             }
         }
 
