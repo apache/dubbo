@@ -279,9 +279,6 @@ public interface CommonConstants {
     String RELEASE_KEY = "release";
 
     String PROTOBUF_MESSAGE_CLASS_NAME = "com.google.protobuf.Message";
-
-    String PROTOBUF_SERIALIZATION_NAME = "protobuf";
-
     int MAX_PROXY_COUNT = 65535;
 
     String MONITOR_KEY = "monitor";

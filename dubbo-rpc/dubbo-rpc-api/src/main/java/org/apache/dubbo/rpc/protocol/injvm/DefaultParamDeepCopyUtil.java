@@ -17,14 +17,11 @@
 package org.apache.dubbo.rpc.protocol.injvm;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
-import org.apache.dubbo.common.utils.ProtobufUtils;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -59,7 +56,9 @@ public class DefaultParamDeepCopyUtil implements ParamDeepCopyUtil {
     @Override
     @SuppressWarnings({"unchecked"})
     public <T> T copy(URL url, Object src, Class<T> targetClass, Type type) {
-        Serialization serialization = findSerialization(url, src);
+        Serialization serialization = url.getOrDefaultFrameworkModel()
+                .getExtensionLoader(Serialization.class)
+                .getExtension(UrlUtils.serializationOrDefault(url));
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             ObjectOutput objectOutput = serialization.serialize(url, outputStream);
             objectOutput.writeObject(src);
@@ -85,17 +84,5 @@ public class DefaultParamDeepCopyUtil implements ParamDeepCopyUtil {
         } else {
             return null;
         }
-    }
-
-    private Serialization findSerialization(URL url, Object src) {
-        ExtensionLoader<Serialization> extensionLoader =
-                url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class);
-        if (src != null && ProtobufUtils.isProtobufClass(src.getClass())) {
-            try {
-                return extensionLoader.getExtension(CommonConstants.PROTOBUF_SERIALIZATION_NAME);
-            } catch (IllegalStateException ignored) {
-            }
-        }
-        return extensionLoader.getExtension(UrlUtils.serializationOrDefault(url));
     }
 }

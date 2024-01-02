@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.utils;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.serialize.support.DefaultSerializationSelector;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Constants;
@@ -111,9 +112,16 @@ public class UrlUtils {
      * @return {@link String}
      */
     public static String serializationOrDefault(URL url) {
+        if (useNativeStubSerialization(url)) {
+            return CommonConstants.NATIVE_STUB;
+        }
         //noinspection OptionalGetWithoutIsPresent
         Optional<String> serializations = allSerializations(url).stream().findFirst();
         return serializations.orElseGet(DefaultSerializationSelector::getDefaultRemotingSerialization);
+    }
+
+    public static boolean useNativeStubSerialization(URL url) {
+        return CommonConstants.NATIVE_STUB.equals(url.getParameter("proxy", CommonConstants.DEFAULT_PROXY));
     }
 
     /**
