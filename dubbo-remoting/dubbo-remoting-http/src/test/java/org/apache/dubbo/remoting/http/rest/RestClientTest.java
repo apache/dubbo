@@ -190,4 +190,31 @@ public class RestClientTest {
                 strings.toArray(new String[0]),
                 requestTemplate.getParam("param").toArray(new String[0]));
     }
+    
+    @Test
+    public void testBuildURL() throws Exception {
+        int port = NetUtils.getAvailablePort();
+        URL url = new ServiceConfigURL(
+            "http", "localhost", port, new String[] {Constants.BIND_PORT_KEY, String.valueOf(port)});
+        HttpServer httpServer = new JettyHttpServer(url, new HttpHandler<HttpServletRequest, HttpServletResponse>() {
+            @Override
+            public void handle(HttpServletRequest request, HttpServletResponse response) throws IOException {
+                response.getWriter().write(request.getQueryString());
+            }
+        });
+        
+        RequestTemplate requestTemplate = new RequestTemplate(null, "POST", "localhost:" + port);
+        
+        requestTemplate.addParam("name", "李强");
+        requestTemplate.addParam("age", "18");
+        requestTemplate.path("/hello/world");
+        
+        RestClient restClient = new OKHttpRestClient(new HttpClientConfig());
+        
+        CompletableFuture<RestResult> send = restClient.send(requestTemplate);
+        
+        RestResult restResult = send.get();
+        
+        assertThat(new String(restResult.getBody()), is("name=%E6%9D%8E%E5%BC%BA&age=18"));
+    }
 }

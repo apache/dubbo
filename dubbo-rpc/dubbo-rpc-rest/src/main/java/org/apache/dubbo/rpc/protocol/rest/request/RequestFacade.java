@@ -20,6 +20,8 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -55,7 +57,21 @@ public abstract class RequestFacade<T> {
 
     protected void initParameters() {
         String requestURI = getRequestURI();
-
+        
+        String decodedRequestURI  = requestURI;
+        try {
+            decodedRequestURI  = URLDecoder.decode(decodedRequestURI , "UTF-8");
+            if (StringUtils.isNotEmpty(decodedRequestURI )) {
+                requestURI = decodedRequestURI ;
+            }
+        } catch (UnsupportedEncodingException e) {
+            // do nothing
+        }
+        
+        if (StringUtils.isNotEmpty(decodedRequestURI )) {
+            requestURI = decodedRequestURI ;
+        }
+        
         if (requestURI != null && requestURI.contains("?")) {
 
             String queryString = requestURI.substring(requestURI.indexOf("?") + 1);

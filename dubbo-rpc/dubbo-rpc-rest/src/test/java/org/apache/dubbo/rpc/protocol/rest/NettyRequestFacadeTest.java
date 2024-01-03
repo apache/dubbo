@@ -30,6 +30,9 @@ import io.netty.handler.codec.http.HttpVersion;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+
 public class NettyRequestFacadeTest {
 
     @Test
@@ -94,5 +97,16 @@ public class NettyRequestFacadeTest {
         Assertions.assertArrayEquals(new String[] {"d"}, parameterMap.get("d"));
 
         Assertions.assertEquals("GET", nettyRequestFacade.getMethod());
+    }
+    
+    @Test
+    void testChineseDecoding() {
+        String uri = "/hello/world?name=%E6%9D%8E%E5%BC%BA&age=18";
+        DefaultFullHttpRequest defaultFullHttpRequest =
+            new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri);
+        
+        NettyRequestFacade nettyRequestFacade = new NettyRequestFacade(defaultFullHttpRequest, null);
+        assertThat(nettyRequestFacade.getParameter("name"), is("李强"));
+        assertThat(nettyRequestFacade.getParameter("age"), is("18"));
     }
 }
