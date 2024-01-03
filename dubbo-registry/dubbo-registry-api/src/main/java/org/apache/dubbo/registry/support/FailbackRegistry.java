@@ -21,6 +21,7 @@ import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.registry.NotifyListener;
+import org.apache.dubbo.registry.ProviderFirstParams;
 import org.apache.dubbo.registry.retry.FailedRegisteredTask;
 import org.apache.dubbo.registry.retry.FailedSubscribedTask;
 import org.apache.dubbo.registry.retry.FailedUnregisteredTask;
@@ -175,6 +176,20 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         if (f != null) {
             f.cancel();
         }
+    }
+
+    protected URL removeParamsFromConsumer(URL consumer) {
+        Set<ProviderFirstParams> providerFirstParams = consumer.getOrDefaultApplicationModel()
+                .getExtensionLoader(ProviderFirstParams.class)
+                .getSupportedExtensionInstances();
+        if (CollectionUtils.isEmpty(providerFirstParams)) {
+            return consumer;
+        }
+
+        for (ProviderFirstParams paramsFilter : providerFirstParams) {
+            consumer = consumer.removeParameters(paramsFilter.params());
+        }
+        return consumer;
     }
 
     ConcurrentMap<URL, FailedRegisteredTask> getFailedRegistered() {

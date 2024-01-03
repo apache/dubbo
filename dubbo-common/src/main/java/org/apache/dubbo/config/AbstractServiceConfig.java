@@ -397,11 +397,11 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
         this.payload = payload;
     }
 
+    @Parameter(excluded = true, attribute = false)
     public Boolean getUseJavaPackageAsPath() {
         return useJavaPackageAsPath;
     }
 
-    @Parameter(excluded = true)
     public void setUseJavaPackageAsPath(Boolean useJavaPackageAsPath) {
         this.useJavaPackageAsPath = useJavaPackageAsPath;
     }
