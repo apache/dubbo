@@ -1,11 +1,11 @@
 name: Check for formatting
 
 on:
-  schedule:
-    - cron: '*/20 * * * *' # Every 20 minutes
+  push:
+    branches: [ "**" ]
 
 jobs:
-  format:
+  check-format:
     name: Check if code needs formatting
     runs-on: ubuntu-latest
     steps:
