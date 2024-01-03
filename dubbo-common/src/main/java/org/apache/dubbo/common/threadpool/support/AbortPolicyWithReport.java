@@ -32,8 +32,6 @@ import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -156,14 +154,12 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
         if (!guard.tryAcquire()) {
             return;
         }
-        // To avoid multiple dump, check again
-        if (System.currentTimeMillis() - lastPrintTime < TEN_MINUTES_MILLS) {
-            return;
-        }
-
-        ExecutorService pool = Executors.newSingleThreadExecutor();
         try {
-            pool.execute(() -> {
+            // To avoid multiple dump, check again
+            if (System.currentTimeMillis() - lastPrintTime < TEN_MINUTES_MILLS) {
+                return;
+            }
+            new Thread(() -> {
                 String dumpPath = getDumpPath();
 
                 SimpleDateFormat sdf;
@@ -180,18 +176,16 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
                 String dateStr = sdf.format(new Date());
                 // try-with-resources
                 try (FileOutputStream jStackStream =
-                        new FileOutputStream(new File(dumpPath, "Dubbo_JStack.log" + "." + dateStr))) {
+                         new FileOutputStream(new File(dumpPath, "Dubbo_JStack.log" + "." + dateStr))) {
                     jstack(jStackStream);
                 } catch (Exception t) {
                     logger.error(COMMON_UNEXPECTED_CREATE_DUMP, "", "", "dump jStack error", t);
                 } finally {
                     lastPrintTime = System.currentTimeMillis();
-                    guard.release();
                 }
-            });
+            }).start();
         } finally {
-            // must shutdown thread pool ,if not will lead to OOM
-            pool.shutdown();
+            guard.release();
         }
     }
 
