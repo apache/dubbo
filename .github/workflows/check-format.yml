@@ -27,7 +27,6 @@ jobs:
       - name: Generate Summary for failed run
         if: ${{ steps.check.outcome }} != 'success'
         run: |
-          echo ":negative_squared_cross_mark: Formatting issues found!" >> $GITHUB_STEP_SUMMARY
-          echo "```" >> $GITHUB_STEP_SUMMARY
           gh run view ${{ github.run_id }} --log | grep "ERROR" | sed 's/Check if code needs formatting    Check if code aligns with code style   [0-9A-Z:.-]\+//' | sed 's/\[ERROR] //' >> $GITHUB_STEP_SUMMARY
-          echo "```" >> $GITHUB_STEP_SUMMARY
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
