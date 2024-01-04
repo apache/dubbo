@@ -2,6 +2,7 @@ name: Check for formatting
 
 on:
   push:
+  pull_request:
 
 jobs:
   check-format:
