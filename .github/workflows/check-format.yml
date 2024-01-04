@@ -22,7 +22,7 @@ jobs:
         continue-on-error: true
       - name: Generate Summary
         run: |
-          if [ ${{ jobs.check.result }} == 'success' ]; then
+          if [ ${{ steps.check.outcome }} == 'success' ]; then
             echo ":ballot_box_with_check: No formatting issues found." >> $GITHUB_STEP_SUMMARY
             exit 0
           else
