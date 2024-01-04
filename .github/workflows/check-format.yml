@@ -17,4 +17,18 @@ jobs:
           java-version: 21
           distribution: zulu
       - name: Check if code aligns with code style
+        id: check
         run: mvn spotless:check
+        continue-on-error: true
+      - name: Generate Summary
+        run: |
+          if [ ${{ jobs.check.result }} == 'success' ]; then
+            echo ":ballot_box_with_check: No formatting issues found." >> $GITHUB_STEP_SUMMARY
+            exit 0
+          else
+            echo ":negative_squared_cross_mark: Formatting issues found!" >> $GITHUB_STEP_SUMMARY
+            echo "```" >> $GITHUB_STEP_SUMMARY
+            gh run view ${{ github.run_id }} --log | grep "ERROR" | sed 's/Check if code needs formatting    Check if code aligns with code style   [0-9A-Z:.-]\+//' | sed 's/\[ERROR] //' >> $GITHUB_STEP_SUMMARY
+            echo "```" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
