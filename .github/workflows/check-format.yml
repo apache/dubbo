@@ -20,13 +20,23 @@ jobs:
         id: check
         run: mvn spotless:check
         continue-on-error: true
+
+  generate-summary:
+    name: Generate summary
+    needs: check-format
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    steps:
       - name: Generate Summary for successful run
         if: ${{ steps.check.outcome }} == 'success'
         run: |
           echo ":ballot_box_with_check: No formatting issues found." >> $GITHUB_STEP_SUMMARY
       - name: Generate Summary for failed run
-        if: ${{ steps.check.outcome }} != 'success'
+        if: ${{ steps.check.outcome }} == 'failure'
         run: |
+          echo ":x: Formatting issues found." >> $GITHUB_STEP_SUMMARY
+          echo "```" >> $GITHUB_STEP_SUMMARY
           gh run view ${{ github.run_id }} --log | grep "ERROR" | sed 's/Check if code needs formatting    Check if code aligns with code style   [0-9A-Z:.-]\+//' | sed 's/\[ERROR] //' >> $GITHUB_STEP_SUMMARY
+          echo "```" >> $GITHUB_STEP_SUMMARY
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
