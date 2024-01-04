@@ -106,6 +106,27 @@ public class NettyRequestFacadeTest {
             new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri);
         
         NettyRequestFacade nettyRequestFacade = new NettyRequestFacade(defaultFullHttpRequest, null);
+        assertThat(nettyRequestFacade.getPath(), is("/hello/world"));
+        assertThat(nettyRequestFacade.getParameter("name"), is("李强"));
+        assertThat(nettyRequestFacade.getParameter("age"), is("18"));
+        
+        // Applying the decode method to the URI is acceptable, even if the URI is not encoded.
+        uri = "/hello/world?name=lily&age=18";
+        defaultFullHttpRequest =
+            new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri);
+        
+        nettyRequestFacade = new NettyRequestFacade(defaultFullHttpRequest, null);
+        assertThat(nettyRequestFacade.getPath(), is("/hello/world"));
+        assertThat(nettyRequestFacade.getParameter("name"), is("lily"));
+        assertThat(nettyRequestFacade.getParameter("age"), is("18"));
+        
+        // When using URLConnectionRestClient, the URI won't be encoded, but it's still acceptable.
+        uri = "/hello/world?name=李强&age=18";
+        defaultFullHttpRequest =
+            new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri);
+        
+        nettyRequestFacade = new NettyRequestFacade(defaultFullHttpRequest, null);
+        assertThat(nettyRequestFacade.getPath(), is("/hello/world"));
         assertThat(nettyRequestFacade.getParameter("name"), is("李强"));
         assertThat(nettyRequestFacade.getParameter("age"), is("18"));
     }

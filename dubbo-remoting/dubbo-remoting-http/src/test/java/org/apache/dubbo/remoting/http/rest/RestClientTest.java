@@ -199,6 +199,7 @@ public class RestClientTest {
         HttpServer httpServer = new JettyHttpServer(url, new HttpHandler<HttpServletRequest, HttpServletResponse>() {
             @Override
             public void handle(HttpServletRequest request, HttpServletResponse response) throws IOException {
+                response.setCharacterEncoding("UTF-8");
                 response.getWriter().write(request.getQueryString());
             }
         });
@@ -209,6 +210,7 @@ public class RestClientTest {
         requestTemplate.addParam("age", "18");
         requestTemplate.path("/hello/world");
         
+        // When using the OKHttpRestClient, parameters will be encoded with UTF-8 and appended to the URL
         RestClient restClient = new OKHttpRestClient(new HttpClientConfig());
         
         CompletableFuture<RestResult> send = restClient.send(requestTemplate);
@@ -216,5 +218,23 @@ public class RestClientTest {
         RestResult restResult = send.get();
         
         assertThat(new String(restResult.getBody()), is("name=%E6%9D%8E%E5%BC%BA&age=18"));
+        
+        // When using the HttpClientRestClient, parameters will be encoded with UTF-8 and appended to the URL
+        restClient = new HttpClientRestClient(new HttpClientConfig());
+        
+        send = restClient.send(requestTemplate);
+        
+        restResult = send.get();
+        
+        assertThat(new String(restResult.getBody()), is("name=%E6%9D%8E%E5%BC%BA&age=18"));
+        
+        // When using the URLConnectionRestClient, parameters won't be encoded and still appended to the URL
+        restClient = new URLConnectionRestClient(new HttpClientConfig());
+        
+        send = restClient.send(requestTemplate);
+        
+        restResult = send.get();
+        
+        assertThat(new String(restResult.getBody(), StandardCharsets.UTF_8), is("name=李强&age=18"));
     }
 }
