@@ -26,6 +26,11 @@ end_of_line = lf
 insert_final_newline = true
 
 # 4 space indentation
-[*.{java,xml}]
+[*.java]
 indent_style = space
 indent_size = 4
+
+# 2 space indentation for xml files
+[*.xml]
+indent_style = space
+indent_size = 2

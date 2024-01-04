@@ -795,7 +795,7 @@
       </build>
     </profile>
     <profile>
-      <id>java11+</id>
+      <id>spotless</id>
       <activation>
         <jdk>[11,)</jdk>
       </activation>
