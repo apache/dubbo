@@ -27,6 +27,8 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ always() }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Generate Summary for successful run
         if: ${{ steps.check.outcome == 'success' }}
         run: |
