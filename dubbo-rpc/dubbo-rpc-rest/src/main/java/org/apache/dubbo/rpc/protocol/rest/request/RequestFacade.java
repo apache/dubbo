@@ -57,21 +57,21 @@ public abstract class RequestFacade<T> {
 
     protected void initParameters() {
         String requestURI = getRequestURI();
-        
-        String decodedRequestURI  = requestURI;
+
+        String decodedRequestURI = requestURI;
         try {
-            decodedRequestURI  = URLDecoder.decode(decodedRequestURI , "UTF-8");
-            if (StringUtils.isNotEmpty(decodedRequestURI )) {
-                requestURI = decodedRequestURI ;
+            decodedRequestURI = URLDecoder.decode(decodedRequestURI, "UTF-8");
+            if (StringUtils.isNotEmpty(decodedRequestURI)) {
+                requestURI = decodedRequestURI;
             }
         } catch (UnsupportedEncodingException e) {
             // do nothing
         }
-        
-        if (StringUtils.isNotEmpty(decodedRequestURI )) {
-            requestURI = decodedRequestURI ;
+
+        if (StringUtils.isNotEmpty(decodedRequestURI)) {
+            requestURI = decodedRequestURI;
         }
-        
+
         if (requestURI != null && requestURI.contains("?")) {
 
             String queryString = requestURI.substring(requestURI.indexOf("?") + 1);
