@@ -192,7 +192,7 @@ public class RestClientTest {
     }
 
     @Test
-    public void testBuildURL() throws Exception {
+    void testBuildURL() throws Exception {
         int port = NetUtils.getAvailablePort();
         URL url = new ServiceConfigURL(
                 "http", "localhost", port, new String[] {Constants.BIND_PORT_KEY, String.valueOf(port)});

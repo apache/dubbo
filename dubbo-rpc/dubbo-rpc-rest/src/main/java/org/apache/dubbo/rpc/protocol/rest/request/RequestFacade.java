@@ -61,9 +61,6 @@ public abstract class RequestFacade<T> {
         String decodedRequestURI = requestURI;
         try {
             decodedRequestURI = URLDecoder.decode(decodedRequestURI, "UTF-8");
-            if (StringUtils.isNotEmpty(decodedRequestURI)) {
-                requestURI = decodedRequestURI;
-            }
         } catch (UnsupportedEncodingException e) {
             // do nothing
         }
