@@ -34,7 +34,6 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.TripleCustomerProtocolWapper;
-import org.apache.dubbo.rpc.protocol.tri.call.AbstractServerCall;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.h12.HttpMessageListener;
@@ -54,7 +53,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAI
 public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTransportListener
         implements Http2TransportListener {
 
-    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(AbstractServerCall.class);
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(GrpcHttp2ServerTransportListener.class);
 
     public GrpcHttp2ServerTransportListener(H2StreamChannel h2StreamChannel, URL url, FrameworkModel frameworkModel) {
         super(h2StreamChannel, url, frameworkModel);
