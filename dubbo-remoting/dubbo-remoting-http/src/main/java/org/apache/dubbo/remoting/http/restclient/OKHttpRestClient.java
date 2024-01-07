@@ -18,7 +18,6 @@ package org.apache.dubbo.remoting.http.restclient;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
-import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.remoting.http.RequestTemplate;
 import org.apache.dubbo.remoting.http.RestClient;
 import org.apache.dubbo.remoting.http.RestResult;
@@ -29,6 +28,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
@@ -41,7 +41,8 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okhttp3.internal.http.HttpMethod;
 
-import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_NAME;
+import static org.apache.dubbo.common.constants.CommonConstants.*;
+import static org.apache.dubbo.config.Constants.CLIENT_THREAD_POOL_NAME;
 
 // TODO add version 4.0 implements ,and default version is < 4.0,for dependency conflict
 public class OKHttpRestClient implements RestClient {
@@ -158,8 +159,8 @@ public class OKHttpRestClient implements RestClient {
 
         Dispatcher dispatcher = new Dispatcher();
         if (url != null) {
-            dispatcher = new Dispatcher(ExecutorRepository.getInstance(url.getOrDefaultApplicationModel())
-                    .createExecutorIfAbsent(ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME)));
+            // use dubbo client thread pool to replace okhttp self thread pool
+            dispatcher = new Dispatcher(initRestClientExecutor(url));
         }
 
         OkHttpClient client = new OkHttpClient.Builder()
@@ -169,5 +170,13 @@ public class OKHttpRestClient implements RestClient {
                 .connectTimeout(httpClientConfig.getConnectTimeout(), TimeUnit.SECONDS)
                 .build();
         return client;
+    }
+
+    private ExecutorService initRestClientExecutor(URL url) {
+        ExecutorRepository executorRepository = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel());
+
+        url = url.addParameter(THREAD_NAME_KEY, CLIENT_THREAD_POOL_NAME)
+                .addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
+        return executorRepository.createExecutorIfAbsent(url);
     }
 }
