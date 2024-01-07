@@ -27,6 +27,7 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.RestConfig;
 import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.config.TripleConfig;
@@ -373,12 +374,26 @@ public class DubboConfigurationProperties {
         @NestedConfigurationProperty
         private TripleConfig tri;
 
+        /**
+         * The rest config.
+         */
+        @NestedConfigurationProperty
+        private RestConfig rest;
+
         public TripleConfig getTri() {
             return tri;
         }
 
         public void setTri(TripleConfig tri) {
             this.tri = tri;
+        }
+
+        public RestConfig getRest() {
+            return rest;
+        }
+
+        public void setRest(RestConfig rest) {
+            this.rest = rest;
         }
     }
 }

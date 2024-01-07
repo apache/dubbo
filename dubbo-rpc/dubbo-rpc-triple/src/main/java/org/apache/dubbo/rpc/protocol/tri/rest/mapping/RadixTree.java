@@ -20,11 +20,13 @@ import org.apache.dubbo.common.utils.Pair;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathExpression;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathSegment;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathSegment.Type;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.PathUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -160,7 +162,7 @@ public final class RadixTree<T> {
         if (current.fuzzyChildren.isEmpty()) {
             return;
         }
-        Map<String, String> workVariableMap = new HashMap<>();
+        Map<String, String> workVariableMap = new LinkedHashMap<>();
         for (Map.Entry<PathSegment, Node<T>> entry : current.fuzzyChildren.entrySet()) {
             PathSegment segment = entry.getKey();
             if (segment.match(path, start, end, workVariableMap)) {

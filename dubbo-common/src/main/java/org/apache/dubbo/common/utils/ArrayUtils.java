@@ -76,4 +76,8 @@ public final class ArrayUtils {
     public static <T> T[] of(T... values) {
         return values;
     }
+
+    public static Object first(Object[] data) {
+        return isEmpty(data) ? null : data[0];
+    }
 }

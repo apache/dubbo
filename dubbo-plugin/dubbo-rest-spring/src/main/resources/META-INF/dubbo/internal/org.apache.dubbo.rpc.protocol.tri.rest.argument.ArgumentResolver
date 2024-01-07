@@ -1,0 +1,10 @@
+spring-path-variable=org.apache.dubbo.rpc.protocol.tri.rest.support.spring.PathVariableArgumentResolver,
+spring-matrix-variable=org.apache.dubbo.rpc.protocol.tri.rest.support.spring.MatrixVariableArgumentResolver,
+spring-request-param=org.apache.dubbo.rpc.protocol.tri.rest.support.spring.RequestParamArgumentResolver,
+spring-request-header=org.apache.dubbo.rpc.protocol.tri.rest.support.spring.RequestHeaderArgumentResolver,
+spring-cookie-value=org.apache.dubbo.rpc.protocol.tri.rest.support.spring.CookieValueArgumentResolver,
+spring-request-attribute=org.apache.dubbo.rpc.protocol.tri.rest.support.spring.RequestAttributeArgumentResolver,
+spring-request-part=org.apache.dubbo.rpc.protocol.tri.rest.support.spring.RequestPartArgumentResolver,
+spring-request-body=org.apache.dubbo.rpc.protocol.tri.rest.support.spring.RequestBodyArgumentResolver,
+spring-model-attribute=org.apache.dubbo.rpc.protocol.tri.rest.support.spring.ModelAttributeArgumentResolver
+spring-misc=org.apache.dubbo.rpc.protocol.tri.rest.support.spring.SpringMiscArgumentResolver

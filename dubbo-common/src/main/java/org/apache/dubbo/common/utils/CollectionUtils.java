@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptySet;
@@ -444,6 +446,20 @@ public class CollectionUtils {
         return new LinkedHashMap<>(capacity(expectedSize));
     }
 
+    public static <T, K> Map<K, T> newConcurrentHashMap(int expectedSize) {
+        if (JRE.JAVA_8.isCurrentVersion()) {
+            return new SafeConcurrentHashMap<>(capacity(expectedSize));
+        }
+        return new ConcurrentHashMap<>(capacity(expectedSize));
+    }
+
+    public static <T, K> Map<K, T> newConcurrentHashMap() {
+        if (JRE.JAVA_8.isCurrentVersion()) {
+            return new SafeConcurrentHashMap<>();
+        }
+        return new ConcurrentHashMap<>();
+    }
+
     public static int capacity(int expectedSize) {
         if (expectedSize < 3) {
             if (expectedSize < 0) {
@@ -455,5 +471,36 @@ public class CollectionUtils {
             return (int) (expectedSize / 0.75F + 1.0F);
         }
         return Integer.MAX_VALUE;
+    }
+
+    public static class SafeConcurrentHashMap<K, V> extends ConcurrentHashMap<K, V> {
+        private static final long serialVersionUID = 1L;
+
+        public SafeConcurrentHashMap() {}
+
+        public SafeConcurrentHashMap(int initialCapacity) {
+            super(initialCapacity);
+        }
+
+        public SafeConcurrentHashMap(Map<? extends K, ? extends V> m) {
+            super(m);
+        }
+
+        @Override
+        public V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
+            V value = get(key);
+            if (value != null) {
+                return value;
+            }
+            value = mappingFunction.apply(key);
+            if (value == null) {
+                return null;
+            }
+            V exists = putIfAbsent(key, value);
+            if (exists != null) {
+                return exists;
+            }
+            return value;
+        }
     }
 }

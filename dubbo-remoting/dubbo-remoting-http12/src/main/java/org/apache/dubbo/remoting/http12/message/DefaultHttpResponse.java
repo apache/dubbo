@@ -26,7 +26,6 @@ import org.apache.dubbo.remoting.http12.HttpUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -43,6 +42,7 @@ public class DefaultHttpResponse implements HttpResponse {
 
     private int status;
     private String contentType;
+    private String charset;
     private List<HttpCookie> cookies;
     private Object body;
     private OutputStream outputStream;
@@ -64,14 +64,14 @@ public class DefaultHttpResponse implements HttpResponse {
     }
 
     @Override
-    public List<String> headerValues(String name) {
-        return headers.get(name);
-    }
-
-    @Override
     public Date dateHeader(String name) {
         String value = headers.getFirst(name);
         return StringUtils.isEmpty(value) ? null : DateFormatter.parseHttpDate(value);
+    }
+
+    @Override
+    public List<String> headerValues(String name) {
+        return headers.get(name);
     }
 
     @Override
@@ -96,6 +96,11 @@ public class DefaultHttpResponse implements HttpResponse {
     }
 
     @Override
+    public void addHeader(String name, Date value) {
+        addHeader(name, DateFormatter.format(value));
+    }
+
+    @Override
     public void setHeader(String name, String value) {
         check();
         headers.set(name, value);
@@ -103,8 +108,7 @@ public class DefaultHttpResponse implements HttpResponse {
 
     @Override
     public void setHeader(String name, Date value) {
-        check();
-        headers.set(name, DateFormatter.format(value));
+        setHeader(name, DateFormatter.format(value));
     }
 
     @Override
@@ -124,13 +128,11 @@ public class DefaultHttpResponse implements HttpResponse {
 
     @Override
     public String contentType() {
-        return getContentType0();
-    }
-
-    private String getContentType0() {
+        String contentType = this.contentType;
         if (contentType == null) {
-            String value = headers.getFirst(HttpHeaderNames.CONTENT_TYPE.getName());
-            contentType = value == null ? StringUtils.EMPTY_STRING : value.trim();
+            contentType = headers.getFirst(HttpHeaderNames.CONTENT_TYPE.getName());
+            contentType = contentType == null ? StringUtils.EMPTY_STRING : contentType.trim();
+            this.contentType = contentType;
         }
         return contentType.isEmpty() ? null : contentType;
     }
@@ -138,33 +140,51 @@ public class DefaultHttpResponse implements HttpResponse {
     @Override
     public void setContentType(String contentType) {
         check();
-        this.contentType = contentType == null ? StringUtils.EMPTY_STRING : contentType.trim();
-        headers.set(HttpHeaderNames.CONTENT_TYPE.getName(), getContentType0());
+        setContentType0(contentType == null ? StringUtils.EMPTY_STRING : contentType.trim());
+        charset = null;
+    }
+
+    private void setContentType0(String contentType) {
+        this.contentType = contentType;
+        headers.set(HttpHeaderNames.CONTENT_TYPE.getName(), contentType());
     }
 
     @Override
     public String mediaType() {
-        String contentType = getContentType0();
+        String contentType = contentType();
         if (contentType == null) {
             return null;
         }
-        int pos = contentType.indexOf(';');
-        return pos == -1 ? contentType : contentType.substring(0, pos).trim();
+        int index = contentType.indexOf(';');
+        return index == -1 ? contentType : contentType.substring(0, index);
     }
 
     @Override
     public String charset() {
-        String charset = getCharset0();
-        return charset == null ? StandardCharsets.UTF_8.name() : charset;
+        String charset = this.charset;
+        if (charset == null) {
+            String contentType = contentType();
+            if (contentType == null) {
+                charset = StringUtils.EMPTY_STRING;
+            } else {
+                int index = contentType.lastIndexOf("charset=");
+                charset = index == -1
+                        ? StringUtils.EMPTY_STRING
+                        : contentType.substring(index + 8).trim();
+            }
+            this.charset = charset;
+        }
+        return charset.isEmpty() ? null : charset;
     }
 
-    private String getCharset0() {
-        String contentType = getContentType0();
-        if (contentType == null) {
-            return null;
+    @Override
+    public void setCharset(String charset) {
+        check();
+        String contentType = contentType();
+        if (contentType != null) {
+            setContentType0(contentType + "; charset=" + charset);
         }
-        int pos = contentType.lastIndexOf("charset=");
-        return pos == -1 ? null : contentType.substring(pos + 8);
+        this.charset = charset;
     }
 
     @Override
@@ -228,12 +248,20 @@ public class DefaultHttpResponse implements HttpResponse {
 
     @Override
     public boolean noContent() {
-        return body == null && outputStream == null;
+        if (body == null) {
+            if (outputStream == null) {
+                return true;
+            }
+            if (outputStream instanceof ByteArrayOutputStream) {
+                return ((ByteArrayOutputStream) outputStream).size() == 0;
+            }
+        }
+        return false;
     }
 
     @Override
     public boolean isEmpty() {
-        return status == 0 && headers.isEmpty() && cookies == null && body == null && outputStream == null;
+        return status == 0 && headers.isEmpty() && cookies == null && noContent();
     }
 
     @Override

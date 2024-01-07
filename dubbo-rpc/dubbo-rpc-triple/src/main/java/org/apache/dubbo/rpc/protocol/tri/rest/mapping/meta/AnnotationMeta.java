@@ -16,19 +16,20 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RestToolKit;
+import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Array;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressWarnings("unchecked")
 public final class AnnotationMeta<A extends Annotation> {
 
-    private final Map<String, Optional<Object>> cache = new ConcurrentHashMap<>();
+    private final Map<String, Optional<Object>> cache = CollectionUtils.newConcurrentHashMap();
     private final AnnotatedElement element;
     private final A annotation;
     private final RestToolKit toolKit;
@@ -51,7 +52,26 @@ public final class AnnotationMeta<A extends Annotation> {
 
     public Map<String, Object> getAttributes() {
         if (attributes == null) {
-            attributes = toolKit.getAttributes(element, annotation);
+            Map<String, Object> map = toolKit.getAttributes(element, annotation);
+            Map<String, Object> result;
+            if (CollectionUtils.isEmptyMap(map)) {
+                result = Collections.emptyMap();
+            } else {
+                result = CollectionUtils.newHashMap(map.size());
+                for (Map.Entry<String, Object> entry : map.entrySet()) {
+                    Object value = entry.getValue();
+                    if (value instanceof String) {
+                        value = toolKit.resolvePlaceholders((String) value);
+                    } else if (value instanceof String[]) {
+                        String[] array = (String[]) value;
+                        for (int i = 0, len = array.length; i < len; i++) {
+                            array[i] = toolKit.resolvePlaceholders(array[i]);
+                        }
+                    }
+                    result.put(entry.getKey(), value);
+                }
+            }
+            attributes = result;
         }
         return attributes;
     }
@@ -148,20 +168,6 @@ public final class AnnotationMeta<A extends Annotation> {
                             attributeName, getAnnotationType().getName(), value),
                     (Throwable) value);
         }
-        Class<?> type = value.getClass();
-        if (type == String.class) {
-            value = toolKit.resolvePlaceholders((String) value);
-        } else if (type.isArray()) {
-            Class<?> componentType = type.getComponentType();
-            if (componentType == String.class) {
-                int len = Array.getLength(value);
-                String[] array = new String[len];
-                for (int i = 0; i < len; i++) {
-                    array[i] = toolKit.resolvePlaceholders((String) Array.get(value, i));
-                }
-                value = array;
-            }
-        }
         if (expectedType.isInstance(value)) {
             return (T) value;
         }
@@ -177,7 +183,7 @@ public final class AnnotationMeta<A extends Annotation> {
             }
             if (expectedComponentType == String.class) {
                 String[] array;
-                if (type.isArray()) {
+                if (value.getClass().isArray()) {
                     int len = Array.getLength(value);
                     array = new String[len];
                     for (int i = 0; i < len; i++) {
@@ -192,7 +198,7 @@ public final class AnnotationMeta<A extends Annotation> {
         throw new IllegalArgumentException(String.format(
                 "Attribute '%s' is of type %s, but %s was expected in attributes for annotation [%s]",
                 attributeName,
-                type.getSimpleName(),
+                value.getClass().getSimpleName(),
                 expectedType.getSimpleName(),
                 getAnnotationType().getName()));
     }
@@ -201,5 +207,27 @@ public final class AnnotationMeta<A extends Annotation> {
         return new IllegalArgumentException(String.format(
                 "Attribute '%s' not found in attributes for annotation [%s]",
                 attributeName, getAnnotationType().getName()));
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * element.hashCode() + annotation.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof AnnotationMeta) {
+            AnnotationMeta<?> other = (AnnotationMeta<?>) obj;
+            return element.equals(other.element) && annotation.equals(other.annotation);
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return "AnnotationMeta{" + "element=" + element + ", annotation=" + annotation + '}';
     }
 }

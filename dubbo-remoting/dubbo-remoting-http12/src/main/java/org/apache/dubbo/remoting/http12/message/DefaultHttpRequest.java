@@ -32,7 +32,6 @@ import org.apache.dubbo.remoting.http12.h2.Http2Header;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -58,9 +57,9 @@ public class DefaultHttpRequest implements HttpRequest {
 
     private String method;
     private String uri;
-    private List<HttpCookie> cookies;
     private String contentType;
-    private List<String> accept;
+    private String charset;
+    private List<HttpCookie> cookies;
     private List<Locale> locales;
     private QueryStringDecoder decoder;
     private HttpPostRequestDecoder postDecoder;
@@ -105,8 +104,6 @@ public class DefaultHttpRequest implements HttpRequest {
     public void setUri(String uri) {
         this.uri = uri;
         decoder = null;
-        postDecoder = null;
-        postParsed = false;
     }
 
     @Override
@@ -197,53 +194,68 @@ public class DefaultHttpRequest implements HttpRequest {
     }
 
     @Override
-    public String contentType() {
-        return getContentType0();
-    }
-
-    private String getContentType0() {
-        if (contentType == null) {
-            String value = headers.getFirst(HttpHeaderNames.CONTENT_TYPE.getName());
-            contentType = value == null ? StringUtils.EMPTY_STRING : value.trim();
-        }
-        return contentType.isEmpty() ? null : contentType;
-    }
-
-    @Override
-    public void setContentType(String contentType) {
-        this.contentType = contentType == null ? StringUtils.EMPTY_STRING : contentType.trim();
-        headers.set(HttpHeaderNames.CONTENT_TYPE.getName(), getContentType0());
-    }
-
-    @Override
     public int contentLength() {
         String value = headers.getFirst(HttpHeaderNames.CONTENT_LENGTH.getName());
         return value == null ? 0 : Integer.parseInt(value);
     }
 
     @Override
+    public String contentType() {
+        String contentType = this.contentType;
+        if (contentType == null) {
+            contentType = headers.getFirst(HttpHeaderNames.CONTENT_TYPE.getName());
+            contentType = contentType == null ? StringUtils.EMPTY_STRING : contentType.trim();
+            this.contentType = contentType;
+        }
+        return contentType.isEmpty() ? null : contentType;
+    }
+
+    @Override
+    public void setContentType(String contentType) {
+        setContentType0(contentType == null ? StringUtils.EMPTY_STRING : contentType.trim());
+        charset = null;
+    }
+
+    private void setContentType0(String contentType) {
+        this.contentType = contentType;
+        headers.set(HttpHeaderNames.CONTENT_TYPE.getName(), contentType());
+    }
+
+    @Override
     public String mediaType() {
-        String contentType = getContentType0();
+        String contentType = contentType();
         if (contentType == null) {
             return null;
         }
-        int pos = contentType.indexOf(';');
-        return pos == -1 ? contentType : contentType.substring(0, pos).trim();
+        int index = contentType.indexOf(';');
+        return index == -1 ? contentType : contentType.substring(0, index);
     }
 
     @Override
     public String charset() {
-        String charset = getCharset0();
-        return charset == null ? StandardCharsets.UTF_8.name() : charset;
+        String charset = this.charset;
+        if (charset == null) {
+            String contentType = contentType();
+            if (contentType == null) {
+                charset = StringUtils.EMPTY_STRING;
+            } else {
+                int index = contentType.lastIndexOf("charset=");
+                charset = index == -1
+                        ? StringUtils.EMPTY_STRING
+                        : contentType.substring(index + 8).trim();
+            }
+            this.charset = charset;
+        }
+        return charset.isEmpty() ? null : charset;
     }
 
-    private String getCharset0() {
-        String contentType = getContentType0();
-        if (contentType == null) {
-            return null;
+    @Override
+    public void setCharset(String charset) {
+        String contentType = contentType();
+        if (contentType != null) {
+            setContentType0(contentType + "; charset=" + charset);
         }
-        int pos = contentType.lastIndexOf("charset=");
-        return pos == -1 ? null : contentType.substring(pos + 8);
+        this.charset = charset;
     }
 
     @Override
@@ -286,8 +298,8 @@ public class DefaultHttpRequest implements HttpRequest {
     public String serverName() {
         String host = getHost0();
         if (host != null) {
-            int pos = host.lastIndexOf(':');
-            return pos == -1 ? host : host.substring(0, pos);
+            int index = host.lastIndexOf(':');
+            return index == -1 ? host : host.substring(0, index);
         }
         return localHost();
     }
@@ -300,8 +312,8 @@ public class DefaultHttpRequest implements HttpRequest {
         }
         String host = getHost0();
         if (host != null) {
-            int pos = host.lastIndexOf(':');
-            return pos == -1 ? -1 : Integer.parseInt(host.substring(0, pos));
+            int index = host.lastIndexOf(':');
+            return index == -1 ? -1 : Integer.parseInt(host.substring(0, index));
         }
         return localPort();
     }
@@ -368,35 +380,13 @@ public class DefaultHttpRequest implements HttpRequest {
                 return HttpUtils.readPostValue(item);
             }
         }
-        return null;
+        return postParameter(name);
     }
 
     @Override
     public String parameter(String name, String defaultValue) {
         String value = parameter(name);
         return value == null ? defaultValue : value;
-    }
-
-    @Override
-    public boolean hasParameter(String name) {
-        if (getDecoder().parameters().containsKey(name)) {
-            return true;
-        }
-        HttpPostRequestDecoder postDecoder = getPostDecoder();
-        if (postDecoder == null) {
-            return false;
-        }
-        List<InterfaceHttpData> items = postDecoder.getBodyHttpDatas(name);
-        if (items == null) {
-            return false;
-        }
-        for (int i = 0, size = items.size(); i < size; i++) {
-            InterfaceHttpData item = items.get(i);
-            if (item.getHttpDataType() == HttpDataType.Attribute) {
-                return true;
-            }
-        }
-        return false;
     }
 
     @Override
@@ -420,6 +410,80 @@ public class DefaultHttpRequest implements HttpRequest {
             }
         }
         return values;
+    }
+
+    @Override
+    public String queryParameter(String name) {
+        return CollectionUtils.first(queryParameterValues(name));
+    }
+
+    @Override
+    public List<String> queryParameterValues(String name) {
+        return getDecoder().parameters().get(name);
+    }
+
+    @Override
+    public String postParameter(String name) {
+        HttpPostRequestDecoder postDecoder = getPostDecoder();
+        if (postDecoder == null) {
+            return null;
+        }
+        List<InterfaceHttpData> items = postDecoder.getBodyHttpDatas(name);
+        if (items == null) {
+            return null;
+        }
+        for (int i = 0, size = items.size(); i < size; i++) {
+            InterfaceHttpData item = items.get(i);
+            if (item.getHttpDataType() == HttpDataType.Attribute) {
+                return HttpUtils.readPostValue(item);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public List<String> postParameterValues(String name) {
+        HttpPostRequestDecoder postDecoder = getPostDecoder();
+        if (postDecoder == null) {
+            return null;
+        }
+        List<InterfaceHttpData> items = postDecoder.getBodyHttpDatas(name);
+        if (items == null) {
+            return null;
+        }
+        List<String> values = null;
+        for (int i = 0, size = items.size(); i < size; i++) {
+            InterfaceHttpData item = items.get(i);
+            if (item.getHttpDataType() == HttpDataType.Attribute) {
+                if (values == null) {
+                    values = new ArrayList<>();
+                }
+                values.add(HttpUtils.readPostValue(item));
+            }
+        }
+        return values;
+    }
+
+    @Override
+    public boolean hasParameter(String name) {
+        if (getDecoder().parameters().containsKey(name)) {
+            return true;
+        }
+        HttpPostRequestDecoder postDecoder = getPostDecoder();
+        if (postDecoder == null) {
+            return false;
+        }
+        List<InterfaceHttpData> items = postDecoder.getBodyHttpDatas(name);
+        if (items == null) {
+            return false;
+        }
+        for (int i = 0, size = items.size(); i < size; i++) {
+            InterfaceHttpData item = items.get(i);
+            if (item.getHttpDataType() == HttpDataType.Attribute) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -488,7 +552,7 @@ public class DefaultHttpRequest implements HttpRequest {
 
     private QueryStringDecoder getDecoder() {
         if (decoder == null) {
-            String charset = getCharset0();
+            String charset = charset();
             if (charset == null) {
                 decoder = new QueryStringDecoder(uri);
             } else {
@@ -499,15 +563,12 @@ public class DefaultHttpRequest implements HttpRequest {
     }
 
     private HttpPostRequestDecoder getPostDecoder() {
-        if (inputStream == null) {
-            return null;
-        }
         if (postDecoder == null) {
             if (postParsed) {
                 return null;
             }
-            if (HttpMethods.isPost(method)) {
-                postDecoder = HttpUtils.createPostRequestDecoder(this, inputStream, getCharset0());
+            if (inputStream != null && HttpMethods.supportBody(method)) {
+                postDecoder = HttpUtils.createPostRequestDecoder(this, inputStream, charset());
             }
             postParsed = true;
         }
@@ -518,6 +579,11 @@ public class DefaultHttpRequest implements HttpRequest {
     @SuppressWarnings("unchecked")
     public <T> T attribute(String name) {
         return (T) getAttributes().get(name);
+    }
+
+    @Override
+    public void removeAttribute(String name) {
+        getAttributes().remove(name);
     }
 
     @Override

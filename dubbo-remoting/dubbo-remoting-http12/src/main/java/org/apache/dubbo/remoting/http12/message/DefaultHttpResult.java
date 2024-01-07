@@ -16,8 +16,14 @@
  */
 package org.apache.dubbo.remoting.http12.message;
 
+import org.apache.dubbo.common.utils.DateUtils;
 import org.apache.dubbo.remoting.http12.HttpResult;
+import org.apache.dubbo.remoting.http12.HttpStatus;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -52,5 +58,71 @@ public class DefaultHttpResult<T> implements HttpResult<T> {
 
     public void setBody(T body) {
         this.body = body;
+    }
+
+    public static final class Builder<T> {
+        private int status = HttpStatus.OK.getCode();
+        private Map<String, List<String>> headers = new LinkedHashMap<>();
+        private T body;
+
+        public Builder<T> status(int status) {
+            this.status = status;
+            return this;
+        }
+
+        public Builder<T> status(HttpStatus status) {
+            this.status = status.getCode();
+            return this;
+        }
+
+        public Builder<T> ok() {
+            return status(HttpStatus.OK.getCode());
+        }
+
+        public Builder<T> found(String url) {
+            return status(HttpStatus.FOUND).header("location", url);
+        }
+
+        public Builder<T> error() {
+            return status(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        public Builder<T> headers(Map<String, List<String>> headers) {
+            this.headers = headers;
+            return this;
+        }
+
+        public Builder<T> header(String key, List<String> values) {
+            headers.put(key, values);
+            return this;
+        }
+
+        public Builder<T> header(String key, String... values) {
+            headers.put(key, Arrays.asList(values));
+            return this;
+        }
+
+        public Builder<T> header(String key, String value) {
+            headers.put(key, Collections.singletonList(value));
+            return this;
+        }
+
+        public Builder<T> header(String key, Date value) {
+            headers.put(key, Collections.singletonList(DateUtils.formatHeader(value)));
+            return this;
+        }
+
+        public Builder<T> body(T body) {
+            this.body = body;
+            return this;
+        }
+
+        public DefaultHttpResult<T> build() {
+            DefaultHttpResult<T> result = new DefaultHttpResult<>();
+            result.setStatus(status);
+            result.setHeaders(headers);
+            result.setBody(body);
+            return result;
+        }
     }
 }

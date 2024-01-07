@@ -20,11 +20,11 @@ import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.MediaType;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 
 import com.google.protobuf.Message;
 
@@ -51,7 +51,7 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
     }
 
     @Override
-    public void encode(OutputStream outputStream, Object data) throws EncodeException {
+    public void encode(OutputStream outputStream, Object data, Charset charset) throws EncodeException {
         // protobuf
         // TODO int compressed = Identity.MESSAGE_ENCODING.equals(requestMetadata.compressor.getMessageEncoding()) ? 0 :
         // 1;
@@ -70,19 +70,19 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
     }
 
     @Override
-    public Object decode(InputStream inputStream, Class<?> targetType) throws DecodeException {
+    public Object decode(InputStream inputStream, Class<?> targetType, Charset charset) throws DecodeException {
         if (isProtoClass(targetType)) {
-            return protobufHttpMessageCodec.decode(inputStream, targetType);
+            return protobufHttpMessageCodec.decode(inputStream, targetType, charset);
         }
-        return wrapperHttpMessageCodec.decode(inputStream, targetType);
+        return wrapperHttpMessageCodec.decode(inputStream, targetType, charset);
     }
 
     @Override
-    public Object[] decode(InputStream inputStream, Class<?>[] targetTypes) throws DecodeException {
+    public Object[] decode(InputStream inputStream, Class<?>[] targetTypes, Charset charset) throws DecodeException {
         if (targetTypes.length > 1) {
-            return wrapperHttpMessageCodec.decode(inputStream, targetTypes);
+            return wrapperHttpMessageCodec.decode(inputStream, targetTypes, charset);
         }
-        return HttpMessageCodec.super.decode(inputStream, targetTypes);
+        return HttpMessageCodec.super.decode(inputStream, targetTypes, charset);
     }
 
     private static void writeLength(OutputStream outputStream, int length) {
@@ -98,7 +98,7 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
 
     @Override
     public MediaType mediaType() {
-        return TripleConstant.MEDIA_TYPE_GRPC;
+        return MediaType.APPLICATION_GRPC;
     }
 
     private static boolean isProtobuf(Object data) {

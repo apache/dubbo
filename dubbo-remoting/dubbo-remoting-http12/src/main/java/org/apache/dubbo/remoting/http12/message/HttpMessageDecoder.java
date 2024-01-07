@@ -20,15 +20,23 @@ import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 
 import java.io.InputStream;
+import java.nio.charset.Charset;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public interface HttpMessageDecoder extends CodecMediaType {
 
-    Object decode(InputStream inputStream, Class<?> targetType) throws DecodeException;
+    Object decode(InputStream inputStream, Class<?> targetType, Charset charset) throws DecodeException;
 
-    default Object[] decode(InputStream inputStream, Class<?>[] targetTypes) throws DecodeException {
-        // default decode first target type
-        return new Object[] {decode(inputStream, ArrayUtils.isEmpty(targetTypes) ? null : targetTypes[0])};
+    default Object[] decode(InputStream inputStream, Class<?>[] targetTypes, Charset charset) throws DecodeException {
+        return new Object[] {decode(inputStream, ArrayUtils.isEmpty(targetTypes) ? null : targetTypes[0], charset)};
     }
 
-    MediaType mediaType();
+    default Object decode(InputStream inputStream, Class<?> targetType) throws DecodeException {
+        return decode(inputStream, targetType, UTF_8);
+    }
+
+    default Object[] decode(InputStream inputStream, Class<?>[] targetTypes) throws DecodeException {
+        return decode(inputStream, targetTypes, UTF_8);
+    }
 }

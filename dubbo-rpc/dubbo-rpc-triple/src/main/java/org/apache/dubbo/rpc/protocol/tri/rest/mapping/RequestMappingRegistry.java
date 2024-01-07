@@ -16,17 +16,13 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.HandlerMeta;
 
 /**
  * RequestMappingRegistry used for registering and unregistering rest request mappings.
  */
-@SPI(value = TripleConstant.TRIPLE_HANDLER_TYPE_REST, scope = ExtensionScope.FRAMEWORK)
 public interface RequestMappingRegistry {
 
     void register(Invoker<?> invoker);

@@ -17,13 +17,10 @@
 package org.apache.dubbo.rpc.protocol.tri.route;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.RequestMetadata;
+import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext;
 
-@SPI(value = CommonConstants.TRIPLE, scope = ExtensionScope.FRAMEWORK)
 public interface RequestRouter {
 
     RpcInvocationBuildContext route(URL url, RequestMetadata metadata, HttpChannel httpChannel);

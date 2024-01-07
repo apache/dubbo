@@ -32,13 +32,13 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext;
 import org.apache.dubbo.rpc.protocol.tri.h12.AbstractServerTransportListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.DefaultHttpMessageListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.HttpMessageListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.ServerCallListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.ServerStreamServerCallListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.UnaryServerCallListener;
-import org.apache.dubbo.rpc.protocol.tri.route.RpcInvocationBuildContext;
 
 public class DefaultHttp11ServerTransportListener
         extends AbstractServerTransportListener<RequestMetadata, HttpInputMessage>
@@ -75,8 +75,8 @@ public class DefaultHttp11ServerTransportListener
                 return new AutoCompleteUnaryServerCallListener(invocation, invoker, serverChannelObserver);
             case SERVER_STREAM:
                 serverChannelObserver = new Http1ServerStreamChannelObserver(httpChannel);
-                serverChannelObserver.setHeadersCustomizer((headers) -> headers.set(
-                        HttpHeaderNames.CONTENT_TYPE.getName(), MediaType.TEXT_EVENT_STREAM_VALUE.getName()));
+                serverChannelObserver.setHeadersCustomizer((headers) ->
+                        headers.set(HttpHeaderNames.CONTENT_TYPE.getName(), MediaType.TEXT_EVENT_STREAM.getName()));
                 return new AutoCompleteServerStreamServerCallListener(invocation, invoker, serverChannelObserver);
             default:
                 throw new UnsupportedOperationException("HTTP1.x only support unary and server-stream");

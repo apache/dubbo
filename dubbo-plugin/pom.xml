@@ -28,7 +28,7 @@
   <packaging>pom</packaging>
 
   <name>dubbo-plugin</name>
-  <description>The registry module of dubbo project</description>
+  <description>The plugins of dubbo project</description>
   <modules>
     <module>dubbo-qos</module>
     <module>dubbo-auth</module>
@@ -38,10 +38,12 @@
     <module>dubbo-qos-api</module>
     <module>dubbo-native</module>
     <module>dubbo-compiler</module>
-    <module>dubbo-plugin-proxy-bytebuddy</module>
     <module>dubbo-filter-cache</module>
     <module>dubbo-filter-validation</module>
-    <module>dubbo-plugin-rest-spring</module>
+    <module>dubbo-plugin-proxy-bytebuddy</module>
+    <module>dubbo-rest-jaxrs</module>
+    <module>dubbo-rest-servlet</module>
+    <module>dubbo-rest-spring</module>
   </modules>
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>

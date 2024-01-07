@@ -20,7 +20,6 @@ import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
 
-import java.io.ByteArrayOutputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -87,11 +86,7 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
             }
             HttpOutputMessage outputMessage = encodeHttpOutputMessage(data);
             preOutputMessage(outputMessage);
-            if (data instanceof ByteArrayOutputStream) {
-                ((ByteArrayOutputStream) data).writeTo(outputMessage.getBody());
-            } else {
-                responseEncoder.encode(outputMessage.getBody(), data);
-            }
+            responseEncoder.encode(outputMessage.getBody(), data);
             getHttpChannel().writeMessage(outputMessage);
             postOutputMessage(outputMessage);
         } catch (Throwable e) {
@@ -151,9 +146,7 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
         HttpMetadata httpMetadata = encodeHttpMetadata();
         HttpHeaders headers = httpMetadata.headers();
         headers.set(HttpHeaderNames.STATUS.getName(), statusCode);
-        headers.set(
-                HttpHeaderNames.CONTENT_TYPE.getName(),
-                responseEncoder.mediaType().getName());
+        headers.set(HttpHeaderNames.CONTENT_TYPE.getName(), responseEncoder.contentType());
         headersCustomizer.accept(headers);
         if (additionalHeaders != null) {
             headers.putAll(additionalHeaders);

@@ -63,15 +63,17 @@ public interface HttpRequest extends RequestMetadata {
 
     HttpCookie cookie(String name);
 
+    int contentLength();
+
     String contentType();
 
     void setContentType(String contentType);
 
-    int contentLength();
-
     String mediaType();
 
     String charset();
+
+    void setCharset(String charset);
 
     String accept();
 
@@ -105,6 +107,14 @@ public interface HttpRequest extends RequestMetadata {
 
     List<String> parameterValues(String name);
 
+    String queryParameter(String name);
+
+    List<String> queryParameterValues(String name);
+
+    String postParameter(String name);
+
+    List<String> postParameterValues(String name);
+
     boolean hasParameter(String name);
 
     Collection<String> parameterNames();
@@ -114,6 +124,8 @@ public interface HttpRequest extends RequestMetadata {
     FileUpload part(String name);
 
     <T> T attribute(String name);
+
+    void removeAttribute(String name);
 
     void setAttribute(String name, Object value);
 

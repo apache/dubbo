@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition;
 import javax.annotation.Nonnull;
 
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public final class PathExpression implements Comparable<PathExpression> {
@@ -33,7 +33,7 @@ public final class PathExpression implements Comparable<PathExpression> {
     }
 
     public static PathExpression parse(@Nonnull String path) {
-        return new PathExpression(path, PathParser.parse(path).toArray(new PathSegment[0]));
+        return new PathExpression(path, PathParser.parse(path));
     }
 
     public String getPath() {
@@ -52,7 +52,7 @@ public final class PathExpression implements Comparable<PathExpression> {
         if (isDirect()) {
             return this.path.equals(path) ? Collections.emptyMap() : null;
         }
-        Map<String, String> variableMap = new HashMap<>();
+        Map<String, String> variableMap = new LinkedHashMap<>();
         int start, end = 0;
         for (PathSegment segment : segments) {
             if (end != -1) {

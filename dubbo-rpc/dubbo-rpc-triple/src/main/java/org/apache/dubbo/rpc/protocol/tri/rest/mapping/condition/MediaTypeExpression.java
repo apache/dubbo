@@ -17,17 +17,16 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition;
 
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.http12.message.MediaType;
 
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
-import static org.apache.dubbo.remoting.http12.HttpUtils.WILDCARD_TYPE;
-
 public final class MediaTypeExpression implements Comparable<MediaTypeExpression> {
 
-    public static final MediaTypeExpression ALL = new MediaTypeExpression(WILDCARD_TYPE, WILDCARD_TYPE);
+    public static final MediaTypeExpression ALL = new MediaTypeExpression(MediaType.WILDCARD, MediaType.WILDCARD);
     public static final List<MediaTypeExpression> ALL_LIST = Collections.singletonList(ALL);
 
     public static final Comparator<MediaTypeExpression> COMPARATOR = (m1, m2) -> {
@@ -41,27 +40,27 @@ public final class MediaTypeExpression implements Comparable<MediaTypeExpression
             return comparison;
         }
 
-        comparison = compareType(m1.subtype, m2.subtype);
+        comparison = compareType(m1.subType, m2.subType);
         return comparison == Integer.MIN_VALUE ? 0 : comparison;
     };
 
     public static final Comparator<MediaTypeExpression> QUALITY_COMPARATOR = MediaTypeExpression::compareQuality;
 
     private final String type;
-    private final String subtype;
+    private final String subType;
     private final boolean negated;
     private final float quality;
 
-    private MediaTypeExpression(String type, String subtype, float quality, boolean negated) {
+    private MediaTypeExpression(String type, String subType, float quality, boolean negated) {
         this.type = type;
-        this.subtype = subtype;
+        this.subType = subType;
         this.quality = quality;
         this.negated = negated;
     }
 
-    public MediaTypeExpression(String type, String subtype) {
+    public MediaTypeExpression(String type, String subType) {
         this.type = type;
-        this.subtype = subtype;
+        this.subType = subType;
         quality = 1.0F;
         negated = false;
     }
@@ -80,7 +79,7 @@ public final class MediaTypeExpression implements Comparable<MediaTypeExpression
 
         int index = expr.indexOf(';');
         String mimeType = (index == -1 ? expr : expr.substring(0, index)).trim();
-        if (WILDCARD_TYPE.equals(mimeType)) {
+        if (MediaType.WILDCARD.equals(mimeType)) {
             mimeType = "*/*";
         }
         int subIndex = mimeType.indexOf('/');
@@ -92,7 +91,7 @@ public final class MediaTypeExpression implements Comparable<MediaTypeExpression
         }
         String type = mimeType.substring(0, subIndex);
         String subType = mimeType.substring(subIndex + 1);
-        if (WILDCARD_TYPE.equals(type) && !WILDCARD_TYPE.equals(subType)) {
+        if (MediaType.WILDCARD.equals(type) && !MediaType.WILDCARD.equals(subType)) {
             return null;
         }
 
@@ -119,8 +118,8 @@ public final class MediaTypeExpression implements Comparable<MediaTypeExpression
     }
 
     private static int compareType(String type1, String type2) {
-        boolean type1IsWildcard = WILDCARD_TYPE.equals(type1);
-        boolean type2IsWildcard = WILDCARD_TYPE.equals(type2);
+        boolean type1IsWildcard = MediaType.WILDCARD.equals(type1);
+        boolean type2IsWildcard = MediaType.WILDCARD.equals(type2);
         if (type1IsWildcard && !type2IsWildcard) {
             return 1;
         }
@@ -137,8 +136,8 @@ public final class MediaTypeExpression implements Comparable<MediaTypeExpression
         return type;
     }
 
-    public String getSubtype() {
-        return subtype;
+    public String getSubType() {
+        return subType;
     }
 
     public float getQuality() {
@@ -150,7 +149,7 @@ public final class MediaTypeExpression implements Comparable<MediaTypeExpression
     }
 
     public boolean typesEquals(MediaTypeExpression other) {
-        return type.equalsIgnoreCase(other.type) && subtype.equalsIgnoreCase(other.subtype);
+        return type.equalsIgnoreCase(other.type) && subType.equalsIgnoreCase(other.subType);
     }
 
     public boolean match(MediaTypeExpression other) {
@@ -165,20 +164,20 @@ public final class MediaTypeExpression implements Comparable<MediaTypeExpression
             return true;
         }
         if (type.equals(other.type)) {
-            if (subtype.equals(other.subtype)) {
+            if (subType.equals(other.subType)) {
                 return true;
             }
             if (isWildcardSubtype()) {
-                int plusIdx = subtype.lastIndexOf('+');
+                int plusIdx = subType.lastIndexOf('+');
                 if (plusIdx == -1) {
                     return true;
                 }
-                int otherPlusIdx = other.subtype.indexOf('+');
+                int otherPlusIdx = other.subType.indexOf('+');
                 if (otherPlusIdx != -1) {
-                    String subtypeNoSuffix = subtype.substring(0, plusIdx);
-                    String subtypeSuffix = subtype.substring(plusIdx + 1);
-                    String otherSubtypeSuffix = other.subtype.substring(otherPlusIdx + 1);
-                    return subtypeSuffix.equals(otherSubtypeSuffix) && WILDCARD_TYPE.equals(subtypeNoSuffix);
+                    String subTypeNoSuffix = subType.substring(0, plusIdx);
+                    String subTypeSuffix = subType.substring(plusIdx + 1);
+                    String otherSubtypeSuffix = other.subType.substring(otherPlusIdx + 1);
+                    return subTypeSuffix.equals(otherSubtypeSuffix) && MediaType.WILDCARD.equals(subTypeNoSuffix);
                 }
             }
         }
@@ -197,20 +196,20 @@ public final class MediaTypeExpression implements Comparable<MediaTypeExpression
             return true;
         }
         if (type.equals(other.type)) {
-            if (subtype.equalsIgnoreCase(other.subtype)) {
+            if (subType.equalsIgnoreCase(other.subType)) {
                 return true;
             }
             if (isWildcardSubtype() || other.isWildcardSubtype()) {
-                if (subtype.equals(WILDCARD_TYPE) || other.subtype.equals(WILDCARD_TYPE)) {
+                if (subType.equals(MediaType.WILDCARD) || other.subType.equals(MediaType.WILDCARD)) {
                     return true;
                 }
                 String thisSuffix = getSubtypeSuffix();
                 String otherSuffix = other.getSubtypeSuffix();
                 if (isWildcardSubtype() && thisSuffix != null) {
-                    return (thisSuffix.equals(other.subtype) || thisSuffix.equals(otherSuffix));
+                    return (thisSuffix.equals(other.subType) || thisSuffix.equals(otherSuffix));
                 }
                 if (other.isWildcardSubtype() && otherSuffix != null) {
-                    return (subtype.equals(otherSuffix) || otherSuffix.equals(thisSuffix));
+                    return (subType.equals(otherSuffix) || otherSuffix.equals(thisSuffix));
                 }
             }
         }
@@ -218,17 +217,17 @@ public final class MediaTypeExpression implements Comparable<MediaTypeExpression
     }
 
     private boolean isWildcardType() {
-        return WILDCARD_TYPE.equals(type);
+        return MediaType.WILDCARD.equals(type);
     }
 
     private boolean isWildcardSubtype() {
-        return WILDCARD_TYPE.equals(subtype) || subtype.startsWith("*+");
+        return MediaType.WILDCARD.equals(subType) || subType.startsWith("*+");
     }
 
     private String getSubtypeSuffix() {
-        int suffixIndex = subtype.lastIndexOf('+');
+        int suffixIndex = subType.lastIndexOf('+');
         if (suffixIndex != -1) {
-            return subtype.substring(suffixIndex + 1);
+            return subType.substring(suffixIndex + 1);
         }
         return null;
     }
@@ -240,7 +239,7 @@ public final class MediaTypeExpression implements Comparable<MediaTypeExpression
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, subtype, negated, quality);
+        return Objects.hash(type, subType, negated, quality);
     }
 
     @Override
@@ -253,7 +252,7 @@ public final class MediaTypeExpression implements Comparable<MediaTypeExpression
             return negated == that.negated
                     && Float.compare(quality, that.quality) == 0
                     && Objects.equals(type, that.type)
-                    && Objects.equals(subtype, that.subtype);
+                    && Objects.equals(subType, that.subType);
         }
         return false;
     }
@@ -264,7 +263,7 @@ public final class MediaTypeExpression implements Comparable<MediaTypeExpression
         if (negated) {
             sb.append('!');
         }
-        sb.append(type).append('/').append(subtype);
+        sb.append(type).append('/').append(subType);
         if (quality != 1.0F) {
             sb.append(";q=").append(quality);
         }

@@ -75,7 +75,7 @@ public class TripleProtocol extends AbstractProtocol {
         this.frameworkModel = frameworkModel;
         triBuiltinService = new TriBuiltinService(frameworkModel);
         pathResolver = frameworkModel.getDefaultExtension(PathResolver.class);
-        requestMappingRegistry = frameworkModel.getDefaultExtension(RequestMappingRegistry.class);
+        requestMappingRegistry = frameworkModel.getBeanFactory().getBean(RequestMappingRegistry.class);
         CONVERT_NO_LOWER_HEADER = ConfigurationUtils.getEnvConfiguration(ApplicationModel.defaultModel())
                 .getBoolean(H2_SUPPORT_NO_LOWER_HEADER_KEY, true);
         IGNORE_1_0_0_VERSION = ConfigurationUtils.getEnvConfiguration(ApplicationModel.defaultModel())

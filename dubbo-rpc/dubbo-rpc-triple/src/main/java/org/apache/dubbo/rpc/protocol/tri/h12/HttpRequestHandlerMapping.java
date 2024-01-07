@@ -20,6 +20,9 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
+import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
+import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.remoting.http12.message.codec.CodecUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.PathResolver;
@@ -31,7 +34,10 @@ import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 import org.apache.dubbo.rpc.protocol.tri.route.RequestHandler;
 import org.apache.dubbo.rpc.protocol.tri.route.RequestHandlerMapping;
 
-@Activate(order = -2000)
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
+@Activate(order = -1000)
 public class HttpRequestHandlerMapping implements RequestHandlerMapping {
 
     private final FrameworkModel frameworkModel;
@@ -90,8 +96,21 @@ public class HttpRequestHandlerMapping implements RequestHandlerMapping {
 
     protected void determineHttpMessageCodec(RequestHandler handler, URL url, HttpRequest request) {
         String mediaType = request.mediaType();
-        handler.setHttpMessageDecoder(codecUtils.determineHttpMessageDecoder(url, frameworkModel, mediaType));
-        handler.setHttpMessageEncoder(codecUtils.determineHttpMessageEncoder(url, frameworkModel, mediaType));
+        if (mediaType == null) {
+            mediaType = MediaType.APPLICATION_JSON.getName();
+            request.setContentType(mediaType);
+        }
+
+        String charset = request.charset();
+        HttpMessageDecoder decoder = codecUtils.determineHttpMessageDecoder(url, frameworkModel, mediaType);
+        HttpMessageEncoder encoder = codecUtils.determineHttpMessageEncoder(url, frameworkModel, mediaType);
+        if (!StandardCharsets.UTF_8.name().equals(charset)) {
+            Charset cs = Charset.forName(charset);
+            decoder = new HttpMessageDecoderWrapper(cs, decoder);
+            encoder = new HttpMessageEncoderWrapper(cs, encoder);
+        }
+        handler.setHttpMessageDecoder(decoder);
+        handler.setHttpMessageEncoder(encoder);
     }
 
     protected final FrameworkModel getFrameworkModel() {

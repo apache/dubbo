@@ -20,6 +20,7 @@ import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface RequestMappingResolver {

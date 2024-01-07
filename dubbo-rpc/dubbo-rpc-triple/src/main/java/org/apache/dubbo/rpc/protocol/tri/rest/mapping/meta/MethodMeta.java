@@ -59,7 +59,7 @@ public final class MethodMeta extends AnnotationSupport {
         String[] parameterNames = getToolKit().getParameterNames(method);
         ParameterMeta[] parameters = new ParameterMeta[count];
         for (int i = 0; i < count; i++) {
-            parameters[i] = new ParameterMeta(parameterHierarchies.get(i), parameterNames[i], i, this);
+            parameters[i] = new MethodParameterMeta(parameterHierarchies.get(i), parameterNames[i], i, this);
         }
         return parameters;
     }
@@ -96,6 +96,16 @@ public final class MethodMeta extends AnnotationSupport {
     @Override
     protected AnnotatedElement getAnnotatedElement() {
         return method;
+    }
+
+    @Override
+    public int hashCode() {
+        return method.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj == this || obj instanceof MethodMeta && method.equals(((MethodMeta) obj).method);
     }
 
     @Override

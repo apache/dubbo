@@ -25,19 +25,36 @@ import java.util.List;
 public final class CompositeArgumentConverter implements ArgumentConverter {
 
     private final List<ArgumentConverter> converters;
+    private final TypeConverter typeConverter;
 
     public CompositeArgumentConverter(FrameworkModel frameworkModel) {
         converters = frameworkModel.getActivateExtensions(ArgumentConverter.class);
+        typeConverter = frameworkModel.getBeanFactory().getBean(TypeConverter.class);
     }
 
     @Override
     public Object convert(Object value, Class targetType, ParameterMeta parameter) {
+        if (value == null) {
+            return typeConverter.convert(null, targetType);
+        }
+        if (targetType.isInstance(value)) {
+            if (parameter.getGenericType() instanceof Class) {
+                return value;
+            }
+            return typeConverter.convert(value, parameter.getGenericType());
+        }
+
+        Object target;
         for (ArgumentConverter converter : converters) {
-            Object result = converter.convert(value, targetType, parameter);
-            if (result != null) {
-                return result;
+            target = converter.convert(value, targetType, parameter);
+            if (target != null) {
+                return target;
             }
         }
-        return value;
+        target = parameter.getToolKit().convert(value, parameter);
+        if (target != null) {
+            return target;
+        }
+        return typeConverter.convert(value, parameter.getGenericType());
     }
 }

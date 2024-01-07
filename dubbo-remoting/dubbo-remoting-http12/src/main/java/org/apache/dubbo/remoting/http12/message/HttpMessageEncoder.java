@@ -20,13 +20,27 @@ import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 
 import java.io.OutputStream;
+import java.nio.charset.Charset;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public interface HttpMessageEncoder extends CodecMediaType {
 
-    void encode(OutputStream outputStream, Object data) throws EncodeException;
+    void encode(OutputStream outputStream, Object data, Charset charset) throws EncodeException;
+
+    default void encode(OutputStream outputStream, Object[] data, Charset charset) throws EncodeException {
+        encode(outputStream, ArrayUtils.first(data), charset);
+    }
+
+    default void encode(OutputStream outputStream, Object data) throws EncodeException {
+        encode(outputStream, data, UTF_8);
+    }
 
     default void encode(OutputStream outputStream, Object[] data) throws EncodeException {
-        // default encode first data
-        encode(outputStream, ArrayUtils.isEmpty(data) ? null : data[0]);
+        encode(outputStream, ArrayUtils.first(data), UTF_8);
+    }
+
+    default String contentType() {
+        return mediaType().getName();
     }
 }

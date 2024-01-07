@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.Pair;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpRequest;
+import org.apache.dubbo.remoting.http12.message.MediaType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -165,6 +166,17 @@ public class ProducesCondition implements Condition<ProducesCondition, HttpReque
             }
         }
         return 0;
+    }
+
+    public List<MediaType> getMediaTypes() {
+        List<MediaTypeExpression> expressions = this.expressions;
+        int size = expressions.size();
+        List<MediaType> mediaTypes = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            MediaTypeExpression expr = expressions.get(i);
+            mediaTypes.add(new MediaType(expr.getType(), expr.getSubType()));
+        }
+        return mediaTypes;
     }
 
     private Pair<Integer, MediaTypeExpression> findMediaType(

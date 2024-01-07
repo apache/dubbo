@@ -32,7 +32,8 @@ public enum Messages {
     CANNOT_COMBINE_PATHS("Cannot combine paths: ''{0}'' vs ''{1}''"),
     DUPLICATE_MAPPING("Duplicate mapping: {0}, exists: {1}"),
     EXTENSION_INIT_FAILED("Rest extension: ''{0}'' initialization failed for invoker: ''{1}''"),
-    ;
+    PARAMETER_COULD_NOT_RESOLVED("Could not resolve {0}, no suitable resolver"),
+    PARAMETER_VALUE_MISSING("Missing argument ''{0}'' for method parameter of type {1}");
 
     private final String message;
     private final int statusCode;

@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathExpression;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.PathUtils;
 
 import java.util.List;
 
@@ -32,6 +33,14 @@ class RadixTreeTest {
         tree.addPath(PathExpression.parse("/a/{x}/d/e"), "acd");
         tree.addPath(PathExpression.parse("/a/{v:.*}/e"), "acd");
         List<RadixTree.Match<String>> match = tree.match("/a/b/d/e");
+        Assertions.assertFalse(match.isEmpty());
+    }
+
+    @Test
+    void match1() {
+        RadixTree<String> tree = new RadixTree<>();
+        tree.addPath(PathExpression.parse(PathUtils.normalize("")), "abc");
+        List<RadixTree.Match<String>> match = tree.match(PathUtils.normalize(""));
         Assertions.assertFalse(match.isEmpty());
     }
 

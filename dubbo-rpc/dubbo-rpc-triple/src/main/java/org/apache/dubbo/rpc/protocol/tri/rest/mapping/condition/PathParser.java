@@ -16,10 +16,12 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition;
 
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
+import org.apache.dubbo.rpc.protocol.tri.rest.PathParserException;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.PathUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathSegment.Type;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.PathUtils;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -44,14 +46,15 @@ final class PathParser {
     /**
      * Ensure that the path is normalized using {@link PathUtils#normalize(String)} before parsing.
      */
-    static List<PathSegment> parse(String path) {
-        if (PathUtils.isDirectPath(path)) {
-            if (RestConstants.SLASH.equals(path)) {
-                return Collections.emptyList();
-            }
-            return Collections.singletonList(PathSegment.literal(path));
+    static PathSegment[] parse(String path) {
+        if (path == null || path.isEmpty() || RestConstants.SLASH.equals(path)) {
+            return new PathSegment[] {PathSegment.literal(RestConstants.SLASH)};
         }
-        return new PathParser().doParse(path);
+        if (PathUtils.isDirectPath(path)) {
+            return new PathSegment[] {PathSegment.literal(path)};
+        }
+        List<PathSegment> segments = new PathParser().doParse(path);
+        return segments.toArray(new PathSegment[0]);
     }
 
     private List<PathSegment> doParse(String path) {
@@ -269,11 +272,11 @@ final class PathParser {
                 case WILDCARD:
                     if ("*".equals(value)) {
                         type = Type.VARIABLE;
-                        value = "";
+                        value = StringUtils.EMPTY_STRING;
                     } else if ("**".equals(value)) {
                         if (!iterator.hasNext()) {
                             type = Type.WILDCARD_TAIL;
-                            value = "";
+                            value = StringUtils.EMPTY_STRING;
                         } else {
                             type = Type.PATTERN_MULTI;
                             value = ".*";

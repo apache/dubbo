@@ -26,6 +26,7 @@ import org.apache.dubbo.remoting.http12.RequestMetadata;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageAdapterFactory;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 
 import java.util.List;
@@ -37,9 +38,7 @@ public final class DefaultRequestRouter implements RequestRouter {
 
     @SuppressWarnings("unchecked")
     public DefaultRequestRouter(FrameworkModel frameworkModel) {
-        httpMessageAdapterFactory = frameworkModel
-                .getActivateExtensions(HttpMessageAdapterFactory.class)
-                .get(0);
+        httpMessageAdapterFactory = frameworkModel.getFirstActivateExtension(HttpMessageAdapterFactory.class);
         requestHandlerMappings = frameworkModel.getActivateExtensions(RequestHandlerMapping.class);
     }
 

@@ -52,7 +52,6 @@ import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 
 public final class HttpUtils {
 
-    public static final String WILDCARD_TYPE = "*";
     public static final HttpDataFactory DATA_FACTORY = new DefaultHttpDataFactory(DefaultHttpDataFactory.MINSIZE);
 
     private HttpUtils() {}
@@ -81,15 +80,15 @@ public final class HttpUtils {
     }
 
     public static List<String> parseAccept(String header) {
-        Map<Float, String> locales = new TreeMap<>();
+        Map<Float, String> mediaTypes = new TreeMap<>();
         if (header == null) {
             return Collections.emptyList();
         }
         for (String item : StringUtils.tokenize(header, ',')) {
             String[] pair = StringUtils.tokenize(item, ';');
-            locales.put(pair.length > 1 ? Float.parseFloat(pair[1]) : 1.0F, pair[0]);
+            mediaTypes.put(pair.length > 1 ? Float.parseFloat(pair[1]) : 1.0F, pair[0]);
         }
-        return new ArrayList<>(locales.values());
+        return new ArrayList<>(mediaTypes.values());
     }
 
     public static List<Locale> parseAcceptLanguage(String header) {
@@ -99,24 +98,35 @@ public final class HttpUtils {
         }
         for (String item : StringUtils.tokenize(header, ',')) {
             String[] pair = StringUtils.tokenize(item, ';');
-            Locale locale;
-            String[] parts = StringUtils.tokenize(pair[0], '-', '_');
-            switch (parts.length) {
-                case 2:
-                    locale = new Locale(parts[0], parts[1]);
-                    break;
-                case 3:
-                    locale = new Locale(parts[0], parts[1], parts[2]);
-                    break;
-                default:
-                    locale = new Locale(parts[0]);
-                    break;
-            }
-            locales.put(pair.length > 1 ? Float.parseFloat(pair[1]) : 1.0F, locale);
+            locales.put(pair.length > 1 ? Float.parseFloat(pair[1]) : 1.0F, parseLocale(pair[0]));
         }
         return new ArrayList<>(locales.values());
     }
 
+    public static List<Locale> parseContentLanguage(String header) {
+        List<Locale> locales = new ArrayList<>();
+        if (header == null) {
+            return Collections.emptyList();
+        }
+        for (String item : StringUtils.tokenize(header, ',')) {
+            locales.add(parseLocale(item));
+        }
+        return locales;
+    }
+
+    public static Locale parseLocale(String locale) {
+        String[] parts = StringUtils.tokenize(locale, '-', '_');
+        switch (parts.length) {
+            case 2:
+                return new Locale(parts[0], parts[1]);
+            case 3:
+                return new Locale(parts[0], parts[1], parts[2]);
+            default:
+                return new Locale(parts[0]);
+        }
+    }
+
+    @SuppressWarnings("deprecation")
     public static HttpPostRequestDecoder createPostRequestDecoder(
             HttpRequest request, InputStream inputStream, String charset) {
         ByteBuf data;

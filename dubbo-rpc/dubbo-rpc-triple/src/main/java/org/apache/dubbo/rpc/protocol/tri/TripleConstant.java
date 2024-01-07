@@ -16,15 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.remoting.http12.message.MediaType;
-
 import io.netty.util.AsciiString;
 
 public class TripleConstant {
-
-    public static final String CONTENT_TYPE_PROTO = "application/grpc+proto";
-    public static final String TEXT_PLAIN_UTF8 = "text/plain; encoding=utf-8";
-    public static final MediaType MEDIA_TYPE_GRPC = new MediaType("application", "grpc");
 
     public static final String DEFAULT_VERSION = "1.0.0";
 

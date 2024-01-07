@@ -31,8 +31,9 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
-import org.apache.dubbo.rpc.protocol.tri.rest.RestUtils;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RestInitializeException;
+import org.apache.dubbo.rpc.protocol.tri.rest.RestInitializeException;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.RestUtils;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -109,7 +110,7 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
         InstantiationStrategy strategy = new InstantiationStrategy(() -> frameworkModel);
         for (String className : StringUtils.tokenize(extensionConfig)) {
             try {
-                Object extension = strategy.instantiate(RestUtils.loadClass(className));
+                Object extension = strategy.instantiate(TypeUtils.loadClass(className));
                 if (extension instanceof ExtensionAccessorAware) {
                     ((ExtensionAccessorAware) extension).setExtensionAccessor(frameworkModel);
                 }
@@ -145,10 +146,9 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
         if (extension instanceof RestFilter) {
             return (RestFilter) extension;
         }
-        for (RestExtensionAdapter<Object> factory : extensionAdapters) {
-            RestFilter filter = factory.adapt(extension);
-            if (filter != null) {
-                return filter;
+        for (RestExtensionAdapter<Object> adapter : extensionAdapters) {
+            if (adapter.accept(extension)) {
+                return adapter.adapt(extension);
             }
         }
         return null;

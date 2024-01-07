@@ -24,7 +24,6 @@ import org.apache.dubbo.remoting.http12.message.HttpMessageEncoderFactory;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 
 @Activate
 public class GrpcCompositeCodecFactory implements HttpMessageEncoderFactory, HttpMessageDecoderFactory {
@@ -40,6 +39,6 @@ public class GrpcCompositeCodecFactory implements HttpMessageEncoderFactory, Htt
 
     @Override
     public MediaType mediaType() {
-        return TripleConstant.MEDIA_TYPE_GRPC;
+        return MediaType.APPLICATION_GRPC;
     }
 }

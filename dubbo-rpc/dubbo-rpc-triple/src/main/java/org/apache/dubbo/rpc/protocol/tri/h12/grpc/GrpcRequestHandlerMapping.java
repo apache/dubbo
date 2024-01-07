@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
+import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.h12.HttpRequestHandlerMapping;
@@ -36,7 +37,7 @@ public final class GrpcRequestHandlerMapping extends HttpRequestHandlerMapping {
 
     @Override
     protected boolean supportContentType(String contentType) {
-        return contentType != null && contentType.startsWith(TripleConstant.MEDIA_TYPE_GRPC.getName());
+        return contentType != null && contentType.startsWith(MediaType.APPLICATION_GRPC.getName());
     }
 
     @Override

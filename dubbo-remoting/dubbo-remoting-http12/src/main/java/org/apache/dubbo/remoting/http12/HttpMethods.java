@@ -57,4 +57,8 @@ public enum HttpMethods {
     public static boolean isPost(String name) {
         return POST.name().equals(name);
     }
+
+    public static boolean supportBody(String name) {
+        return name.charAt(0) == 'P';
+    }
 }

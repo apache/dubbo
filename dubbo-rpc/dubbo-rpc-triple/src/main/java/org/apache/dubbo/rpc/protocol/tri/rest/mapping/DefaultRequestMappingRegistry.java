@@ -26,11 +26,16 @@ import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
+import org.apache.dubbo.rpc.protocol.tri.rest.RestInitializeException;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RadixTree.Match;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathExpression;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.ProducesCondition;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.HandlerMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.MethodWalker;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.PathUtils;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -71,13 +76,13 @@ public class DefaultRequestMappingRegistry implements RequestMappingRegistry {
                     if (classMapping != null) {
                         methodMapping = classMapping.combine(methodMapping);
                     }
-                    register(methodMapping, buildHandlerMeta(invoker, methodMeta));
+                    register0(methodMapping, buildHandlerMeta(invoker, methodMeta));
                 });
             }
         });
     }
 
-    private void register(RequestMapping mapping, HandlerMeta handler) {
+    private void register0(RequestMapping mapping, HandlerMeta handler) {
         lock.writeLock().lock();
         try {
             Registration registration = new Registration();
@@ -175,15 +180,34 @@ public class DefaultRequestMappingRegistry implements RequestMappingRegistry {
         }
 
         Candidate winner = candidates.get(0);
+        RequestMapping mapping = winner.mapping;
+        request.setAttribute(RestConstants.MAPPING_ATTRIBUTE, mapping);
+
         if (!winner.variableMap.isEmpty()) {
             request.setAttribute(RestConstants.URI_TEMPLATE_VARIABLES_ATTRIBUTE, winner.variableMap);
         }
+
+        ProducesCondition producesCondition = mapping.getProducesCondition();
+        if (producesCondition != null) {
+            request.setAttribute(RestConstants.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE, producesCondition.getMediaTypes());
+        }
+
         return winner.meta;
     }
 
     private static final class Registration {
         RequestMapping mapping;
         HandlerMeta meta;
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof Registration && mapping.equals(((Registration) obj).mapping);
+        }
+
+        @Override
+        public int hashCode() {
+            return mapping.hashCode();
+        }
     }
 
     private static final class Candidate {

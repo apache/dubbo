@@ -1265,6 +1265,10 @@ public final class StringUtils {
         return str.regionMatches(true, 0, prefix, 0, prefix.length());
     }
 
+    public static String defaultIf(String str, String defaultStr) {
+        return isEmpty(str) ? defaultStr : str;
+    }
+
     /**
      * Returns a substring from 'str' between 'start' and 'end', or to the end if 'end' is -1
      */
@@ -1272,7 +1276,7 @@ public final class StringUtils {
         if (str == null) {
             return null;
         }
-        return end == -1 ? str.substring(start) : str.substring(start, end);
+        return end == INDEX_NOT_FOUND ? str.substring(start) : str.substring(start, end);
     }
 
     /**
@@ -1283,8 +1287,8 @@ public final class StringUtils {
         if (isEmpty(str)) {
             return str;
         }
-        int pos = str.indexOf(separator);
-        return pos == INDEX_NOT_FOUND ? str : str.substring(0, pos);
+        int index = str.indexOf(separator);
+        return index == INDEX_NOT_FOUND ? str : str.substring(0, index);
     }
 
     /**
@@ -1298,8 +1302,8 @@ public final class StringUtils {
         if (separator.isEmpty()) {
             return EMPTY_STRING;
         }
-        int pos = str.indexOf(separator);
-        return pos == INDEX_NOT_FOUND ? str : str.substring(0, pos);
+        int index = str.indexOf(separator);
+        return index == INDEX_NOT_FOUND ? str : str.substring(0, index);
     }
 
     /**
@@ -1310,7 +1314,14 @@ public final class StringUtils {
         if (isEmpty(str)) {
             return EMPTY_STRING_ARRAY;
         }
-        if (separators == null) {
+        return tokenizeToList(str, separators).toArray(EMPTY_STRING_ARRAY);
+    }
+
+    public static List<String> tokenizeToList(String str, char... separators) {
+        if (isEmpty(str)) {
+            return Collections.emptyList();
+        }
+        if (separators == null || separators.length == 0) {
             separators = new char[] {','};
         }
         List<String> tokens = new ArrayList<>();
@@ -1345,10 +1356,10 @@ public final class StringUtils {
         if (start > -1) {
             String part = str.substring(start, end + 1);
             if (tokens.isEmpty()) {
-                return new String[] {part};
+                return Collections.singletonList(part);
             }
             tokens.add(part);
         }
-        return tokens.toArray(EMPTY_STRING_ARRAY);
+        return tokens;
     }
 }

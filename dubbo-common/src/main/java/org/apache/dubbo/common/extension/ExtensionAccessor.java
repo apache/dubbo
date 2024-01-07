@@ -49,4 +49,16 @@ public interface ExtensionAccessor {
         ExtensionLoader<T> extensionLoader = getExtensionLoader(type);
         return extensionLoader != null ? extensionLoader.getActivateExtensions() : Collections.emptyList();
     }
+
+    default <T> T getFirstActivateExtension(Class<T> type) {
+        ExtensionLoader<T> extensionLoader = getExtensionLoader(type);
+        if (extensionLoader == null) {
+            throw new IllegalArgumentException("ExtensionLoader for [" + type + "] is not found");
+        }
+        List<T> extensions = extensionLoader.getActivateExtensions();
+        if (extensions.isEmpty()) {
+            throw new IllegalArgumentException("No activate extensions for [" + type + "] found");
+        }
+        return extensions.get(0);
+    }
 }

@@ -16,29 +16,27 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
-import org.apache.dubbo.rpc.protocol.tri.rest.RestUtils;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
 import java.lang.annotation.Annotation;
 
-public interface AnnotationEnum<T extends Enum<T>> {
+@SuppressWarnings({"unchecked", "rawtypes"})
+public interface AnnotationEnum {
 
     String className();
 
-    Class<? extends Annotation> type();
+    Class<Annotation> type();
 
-    T value();
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
     default Class<Annotation> loadType() {
         try {
-            return (Class) RestUtils.loadClass(className());
+            return (Class) TypeUtils.loadClass(className());
         } catch (Throwable t) {
             return (Class) NotFound.class;
         }
     }
 
     default boolean isPresent() {
-        return type() != NotFound.class;
+        return type() != (Class) NotFound.class;
     }
 
     @interface NotFound {}

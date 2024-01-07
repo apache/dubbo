@@ -17,23 +17,23 @@
 package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.HttpMessageDecoderFactory;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoderFactory;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-public class JsonCodecFactory implements HttpMessageEncoderFactory, HttpMessageDecoderFactory {
-
-    private final JsonCodec instance = new JsonCodec();
+@Activate
+public final class JsonCodecFactory implements HttpMessageEncoderFactory, HttpMessageDecoderFactory {
 
     @Override
     public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String mediaType) {
-        return instance;
+        return JsonCodec.INSTANCE;
     }
 
     @Override
     public MediaType mediaType() {
-        return MediaType.APPLICATION_JSON_VALUE;
+        return MediaType.APPLICATION_JSON;
     }
 }

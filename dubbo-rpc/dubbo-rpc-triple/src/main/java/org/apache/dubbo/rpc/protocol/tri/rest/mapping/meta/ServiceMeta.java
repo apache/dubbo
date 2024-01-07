@@ -17,7 +17,8 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RestToolKit;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.PathUtils;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 
 import java.lang.reflect.AnnotatedElement;
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ public final class ServiceMeta extends AnnotationSupport {
     private final Class<?> type;
     private final Object service;
     private final URL url;
+    private final String contextPath;
 
     public ServiceMeta(Collection<Class<?>> hierarchy, Object service, URL url, RestToolKit toolKit) {
         super(toolKit);
@@ -37,6 +39,7 @@ public final class ServiceMeta extends AnnotationSupport {
         type = this.hierarchy.get(0);
         this.service = service;
         this.url = url;
+        contextPath = PathUtils.getContextPath(url);
     }
 
     public List<Class<?>> getHierarchy() {
@@ -61,6 +64,10 @@ public final class ServiceMeta extends AnnotationSupport {
 
     public String getServiceGroup() {
         return url.getGroup();
+    }
+
+    public String getContextPath() {
+        return contextPath;
     }
 
     @Override

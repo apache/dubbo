@@ -16,8 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.Pair;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RestToolKit;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
@@ -26,7 +27,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class AnnotationSupport {
@@ -37,8 +37,8 @@ public abstract class AnnotationSupport {
     private static final Integer FIND_KEY = 3;
     private static final Integer FIND_MERGED_KEY = 4;
 
-    private final Map<Pair<Class, Integer>, Optional<AnnotationMeta>> cache = new ConcurrentHashMap<>();
-    private final Map<Integer, AnnotationMeta[]> arrayCache = new ConcurrentHashMap<>();
+    private final Map<Pair<Class, Integer>, Optional<AnnotationMeta>> cache = CollectionUtils.newConcurrentHashMap();
+    private final Map<Integer, AnnotationMeta[]> arrayCache = CollectionUtils.newConcurrentHashMap();
     private final RestToolKit toolKit;
 
     protected AnnotationSupport(RestToolKit toolKit) {
@@ -194,7 +194,7 @@ public abstract class AnnotationSupport {
         return findMergedAnnotation(annotationEnum) != null;
     }
 
-    protected final RestToolKit getToolKit() {
+    public final RestToolKit getToolKit() {
         return toolKit;
     }
 

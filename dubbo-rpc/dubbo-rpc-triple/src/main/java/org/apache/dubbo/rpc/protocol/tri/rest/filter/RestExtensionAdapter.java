@@ -22,5 +22,7 @@ import org.apache.dubbo.common.extension.SPI;
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface RestExtensionAdapter<T> {
 
+    boolean accept(Object extension);
+
     RestFilter adapt(T extension);
 }

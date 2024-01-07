@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.argument;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 
@@ -28,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
-public class CompositeArgumentResolver implements ArgumentResolver {
+public final class CompositeArgumentResolver implements ArgumentResolver {
 
     private final Map<Class, AnnotationBaseArgumentResolver> resolverMap = new HashMap<>();
     private final ArgumentResolver[] resolvers;
@@ -67,6 +68,6 @@ public class CompositeArgumentResolver implements ArgumentResolver {
             }
         }
 
-        return request.parameter(parameter.getName());
+        throw new IllegalStateException(Messages.PARAMETER_COULD_NOT_RESOLVED.format(parameter.getDescription()));
     }
 }

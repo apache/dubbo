@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition;
 
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
+import org.apache.dubbo.rpc.protocol.tri.rest.PathParserException;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -29,6 +29,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,13 +56,13 @@ public class MultipartDecoder implements HttpMessageDecoder {
     }
 
     @Override
-    public Object decode(InputStream inputStream, Class<?> targetType) throws DecodeException {
-        Object[] res = decode(inputStream, new Class[] {targetType});
+    public Object decode(InputStream inputStream, Class<?> targetType, Charset charset) throws DecodeException {
+        Object[] res = decode(inputStream, new Class[] {targetType}, charset);
         return res.length > 1 ? res : res[0];
     }
 
     @Override
-    public Object[] decode(InputStream inputStream, Class<?>[] targetTypes) throws DecodeException {
+    public Object[] decode(InputStream inputStream, Class<?>[] targetTypes, Charset charset) throws DecodeException {
         try {
             List<Part> parts = transferToParts(inputStream, headerContentType);
             if (parts.size() != targetTypes.length) {
@@ -78,7 +79,7 @@ public class MultipartDecoder implements HttpMessageDecoder {
                 }
                 res[i] = codecUtils
                         .determineHttpMessageDecoder(url, frameworkModel, part.headers.getContentType())
-                        .decode(new ByteArrayInputStream(part.content), targetTypes[i]);
+                        .decode(new ByteArrayInputStream(part.content), targetTypes[i], charset);
             }
             return res;
         } catch (IOException ioException) {

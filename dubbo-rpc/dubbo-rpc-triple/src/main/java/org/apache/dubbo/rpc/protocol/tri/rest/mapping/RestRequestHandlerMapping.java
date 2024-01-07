@@ -17,36 +17,41 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.remoting.http12.message.codec.CodecUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
+import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestHttpMessageCodec;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentResolver;
-import org.apache.dubbo.rpc.protocol.tri.rest.argument.CompositeArgumentConverter;
-import org.apache.dubbo.rpc.protocol.tri.rest.argument.CompositeArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.HandlerMeta;
 import org.apache.dubbo.rpc.protocol.tri.route.RequestHandler;
 import org.apache.dubbo.rpc.protocol.tri.route.RequestHandlerMapping;
 
-@Activate(order = -1000)
+@Activate(order = -2000)
 public final class RestRequestHandlerMapping implements RequestHandlerMapping {
 
     private final FrameworkModel frameworkModel;
     private final RequestMappingRegistry requestMappingRegistry;
     private final ArgumentResolver argumentResolver;
     private final ArgumentConverter<?> argumentConverter;
+    private final ContentNegotiator contentNegotiator;
     private final CodecUtils codecUtils;
 
     public RestRequestHandlerMapping(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
-        requestMappingRegistry = frameworkModel.getDefaultExtension(RequestMappingRegistry.class);
-        argumentResolver = new CompositeArgumentResolver(frameworkModel);
-        argumentConverter = new CompositeArgumentConverter(frameworkModel);
-        codecUtils = frameworkModel.getBeanFactory().getOrRegisterBean(CodecUtils.class);
+        ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
+        requestMappingRegistry = beanFactory.getBean(RequestMappingRegistry.class);
+        argumentResolver = beanFactory.getBean(ArgumentResolver.class);
+        argumentConverter = beanFactory.getBean(ArgumentConverter.class);
+        contentNegotiator = beanFactory.getOrRegisterBean(ContentNegotiator.class);
+        codecUtils = beanFactory.getOrRegisterBean(CodecUtils.class);
     }
 
     @Override
@@ -56,14 +61,30 @@ public final class RestRequestHandlerMapping implements RequestHandlerMapping {
             return null;
         }
 
+        String responseMediaType = contentNegotiator.negotiate(request);
+        response.setContentType(responseMediaType);
+        RestHttpMessageCodec codec = new RestHttpMessageCodec(
+                request,
+                response,
+                meta.getParameters(),
+                argumentResolver,
+                argumentConverter,
+                codecUtils.determineHttpMessageEncoder(url, frameworkModel, responseMediaType));
+
+        String requestMediaType = StringUtils.defaultIf(request.mediaType(), responseMediaType);
+        if (HttpMethods.supportBody(request.method())) {
+            request.setAttribute(
+                    RestConstants.BODY_DECODER_ATTRIBUTE,
+                    codecUtils.determineHttpMessageDecoder(url, frameworkModel, requestMediaType));
+        }
+
         RequestHandler handler = new RequestHandler(meta.getInvoker());
         handler.setHasStub(false);
         handler.setMethodDescriptor(meta.getMethodDescriptor());
         handler.setMethodMetadata(meta.getMethodMetadata());
         handler.setServiceDescriptor(meta.getServiceDescriptor());
-        handler.setHttpMessageDecoder(
-                new RestHttpMessageCodec(request, response, meta.getParameters(), argumentResolver, argumentConverter));
-        handler.setHttpMessageEncoder(codecUtils.determineHttpMessageEncoder(url, frameworkModel, request.mediaType()));
+        handler.setHttpMessageDecoder(codec);
+        handler.setHttpMessageEncoder(codec);
         return handler;
     }
 

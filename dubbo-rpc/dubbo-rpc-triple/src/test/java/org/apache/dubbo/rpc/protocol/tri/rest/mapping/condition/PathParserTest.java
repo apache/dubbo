@@ -16,9 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition;
 
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.PathUtils;
-
-import java.util.List;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.PathUtils;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -27,8 +25,8 @@ class PathParserTest {
 
     @Test
     void parse1() {
-        List<PathSegment> parse = PathParser.parse("/{asd}/b/{vv}/v");
-        Assertions.assertEquals(parse.size(), 4);
+        PathSegment[] parse = PathParser.parse("/{first}-{last}/b/{vv}/v");
+        Assertions.assertEquals(parse.length, 4);
     }
 
     @Test

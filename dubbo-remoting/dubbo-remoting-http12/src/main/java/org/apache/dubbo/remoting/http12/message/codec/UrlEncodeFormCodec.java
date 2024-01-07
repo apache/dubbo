@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -41,7 +42,7 @@ public class UrlEncodeFormCodec implements HttpMessageCodec {
     }
 
     @Override
-    public void encode(OutputStream outputStream, Object data) throws EncodeException {
+    public void encode(OutputStream outputStream, Object data, Charset charset) throws EncodeException {
         try {
             if (data instanceof String) {
                 outputStream.write(((String) data).getBytes());
@@ -57,7 +58,7 @@ public class UrlEncodeFormCodec implements HttpMessageCodec {
                 }
                 if (toWrite.length() > 1) {
                     outputStream.write(
-                            toWrite.substring(0, toWrite.length() - 1).getBytes(StandardCharsets.UTF_8));
+                            toWrite.substring(0, toWrite.length() - 1).getBytes(charset));
                 }
             } else {
                 throw new EncodeException("UrlEncodeFrom media-type only supports String or Map as return type.");
@@ -68,13 +69,13 @@ public class UrlEncodeFormCodec implements HttpMessageCodec {
     }
 
     @Override
-    public Object decode(InputStream inputStream, Class<?> targetType) throws DecodeException {
-        Object[] res = decode(inputStream, new Class[] {targetType});
+    public Object decode(InputStream inputStream, Class<?> targetType, Charset charset) throws DecodeException {
+        Object[] res = decode(inputStream, new Class[] {targetType}, charset);
         return res.length > 1 ? res : res[0];
     }
 
     @Override
-    public Object[] decode(InputStream inputStream, Class<?>[] targetTypes) throws DecodeException {
+    public Object[] decode(InputStream inputStream, Class<?>[] targetTypes, Charset charset) throws DecodeException {
         try {
             boolean toMap;
             // key=value&key2=value2 -> method(map<keys,values>)
@@ -89,7 +90,8 @@ public class UrlEncodeFormCodec implements HttpMessageCodec {
                 throw new DecodeException(
                         "For x-www-form-urlencoded MIME type, please use Map/String/base-types as method param.");
             }
-            String decoded = URLDecoder.decode(StreamUtils.toString(inputStream), StandardCharsets.UTF_8.name())
+            String decoded = URLDecoder.decode(
+                            StreamUtils.toString(inputStream, charset), StandardCharsets.UTF_8.name())
                     .trim();
             Map<String, Object> res = toMap(decoded, targetTypes, toMap);
             if (toMap) {
@@ -127,6 +129,6 @@ public class UrlEncodeFormCodec implements HttpMessageCodec {
 
     @Override
     public MediaType mediaType() {
-        return MediaType.APPLICATION_X_WWW_FROM_URLENCODED;
+        return MediaType.APPLICATION_FROM_URLENCODED;
     }
 }

@@ -22,6 +22,7 @@ import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext;
 
 import java.util.HashMap;
 import java.util.Map;

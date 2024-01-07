@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.remoting.http12.exception.UnsupportedMediaTypeException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
 import org.apache.dubbo.remoting.http12.message.HttpMessageDecoderFactory;
@@ -56,9 +57,10 @@ public final class CodecUtils {
     }
 
     public Optional<HttpMessageDecoderFactory> determineHttpMessageDecoderFactory(String mediaType) {
+        Assert.notNull(mediaType, "mediaType must not be null");
         return decoderCache.computeIfAbsent(mediaType, k -> {
             for (HttpMessageDecoderFactory decoderFactory : decoderFactories) {
-                if (decoderFactory.supports(mediaType)) {
+                if (decoderFactory.supports(k)) {
                     return Optional.of(decoderFactory);
                 }
             }
@@ -67,9 +69,10 @@ public final class CodecUtils {
     }
 
     public Optional<HttpMessageEncoderFactory> determineHttpMessageEncoderFactory(String mediaType) {
+        Assert.notNull(mediaType, "mediaType must not be null");
         return encoderCache.computeIfAbsent(mediaType, k -> {
             for (HttpMessageEncoderFactory encoderFactory : encoderFactories) {
-                if (encoderFactory.supports(mediaType)) {
+                if (encoderFactory.supports(k)) {
                     return Optional.of(encoderFactory);
                 }
             }

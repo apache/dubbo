@@ -17,8 +17,9 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.PathUtils;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.PathUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,14 +31,17 @@ import java.util.Set;
 
 public class PathCondition implements Condition<PathCondition, HttpRequest> {
 
+    private final String contextPath;
     private final Set<String> paths;
     private List<PathExpression> expressions;
 
-    public PathCondition(String... paths) {
+    public PathCondition(String contextPath, String... paths) {
+        this.contextPath = contextPath;
         this.paths = new LinkedHashSet<>(Arrays.asList(paths));
     }
 
-    private PathCondition(Set<String> paths) {
+    private PathCondition(String contextPath, Set<String> paths) {
+        this.contextPath = contextPath;
         this.paths = paths;
     }
 
@@ -45,7 +49,7 @@ public class PathCondition implements Condition<PathCondition, HttpRequest> {
         if (expressions == null) {
             expressions = new ArrayList<>();
             for (String path : paths) {
-                expressions.add(PathExpression.parse(PathUtils.normalize(path)));
+                expressions.add(PathExpression.parse(PathUtils.normalize(contextPath, path)));
             }
         }
         return expressions;
@@ -56,7 +60,7 @@ public class PathCondition implements Condition<PathCondition, HttpRequest> {
         Set<String> result = new LinkedHashSet<>();
         if (paths.isEmpty()) {
             if (other.paths.isEmpty()) {
-                result.add("");
+                result.add(StringUtils.EMPTY_STRING);
             } else {
                 result.addAll(other.paths);
             }
@@ -71,17 +75,17 @@ public class PathCondition implements Condition<PathCondition, HttpRequest> {
                 }
             }
         }
-        return new PathCondition(result);
+        return new PathCondition(contextPath, result);
     }
 
     @Override
     public PathCondition match(HttpRequest request) {
         List<PathExpression> matches = null;
-        String lookupPath = request.rawPath();
+        String path = request.rawPath();
         List<PathExpression> expressions = getExpressions();
         for (int i = 0, size = expressions.size(); i < size; i++) {
             PathExpression expression = expressions.get(i);
-            Map<String, String> variables = expression.match(lookupPath);
+            Map<String, String> variables = expression.match(path);
             if (variables != null) {
                 if (matches == null) {
                     matches = new ArrayList<>();
@@ -95,7 +99,7 @@ public class PathCondition implements Condition<PathCondition, HttpRequest> {
             for (int i = 0, size = matches.size(); i < size; i++) {
                 result.add(matches.get(i).getPath());
             }
-            return new PathCondition(result);
+            return new PathCondition(contextPath, result);
         }
         return null;
     }

@@ -16,82 +16,86 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.http12.HttpRequest;
+import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
+
 import java.lang.reflect.Type;
-import java.util.List;
+import java.util.Optional;
 
-public final class ParameterMeta extends AnnotationSupport {
+public abstract class ParameterMeta extends AnnotationSupport {
 
-    private final List<Parameter> hierarchy;
-    private final Parameter parameter;
+    private final String prefix;
     private final String name;
-    private final int index;
-    private final MethodMeta methodMeta;
+    private Boolean simple;
+    private Class<?> actualType;
     private Object typeDescriptor;
 
-    public ParameterMeta(List<Parameter> hierarchy, String name, int index, MethodMeta methodMeta) {
-        super(methodMeta.getToolKit());
-        this.hierarchy = hierarchy;
-        parameter = hierarchy.get(0);
+    protected ParameterMeta(RestToolKit toolKit, String prefix, String name) {
+        super(toolKit);
+        this.prefix = StringUtils.isEmpty(prefix) ? null : prefix;
         this.name = name;
-        this.index = index;
-        this.methodMeta = methodMeta;
     }
 
-    public List<Parameter> getHierarchy() {
-        return hierarchy;
+    protected ParameterMeta(RestToolKit toolKit, String name) {
+        super(toolKit);
+        prefix = null;
+        this.name = name;
     }
 
-    public Parameter getParameter() {
-        return parameter;
+    public String getPrefix() {
+        return prefix;
     }
 
-    public String getName() {
+    public final String getName() {
         return name;
     }
 
-    public int getIndex() {
-        return index;
+    public final boolean isSimple() {
+        if (simple == null) {
+            simple = TypeUtils.isSimpleProperty(getActualType());
+        }
+        return simple;
     }
 
-    public MethodMeta getMethodMeta() {
-        return methodMeta;
+    public final Class<?> getActualType() {
+        if (actualType == null) {
+            Class<?> type = getType();
+            if (type == Optional.class) {
+                type = TypeUtils.getNestedType(getGenericType(), 0);
+                if (type == null) {
+                    type = Object.class;
+                }
+            }
+            actualType = type;
+        }
+        return actualType;
     }
 
-    public Object getTypeDescriptor() {
+    public final Object getTypeDescriptor() {
         return typeDescriptor;
     }
 
-    public void setTypeDescriptor(Object typeDescriptor) {
+    public final void setTypeDescriptor(Object typeDescriptor) {
         this.typeDescriptor = typeDescriptor;
     }
 
-    public Class<?> getType() {
-        return parameter.getType();
+    public final Object bind(HttpRequest request, HttpResponse response) {
+        return getToolKit().bind(this, request, response);
     }
 
-    public Type getGenericType() {
-        return parameter.getParameterizedType();
+    public String getDescription() {
+        return name;
     }
 
-    public Method getMethod() {
-        return methodMeta.getMethod();
-    }
+    public abstract Class<?> getType();
 
-    @Override
-    protected List<? extends AnnotatedElement> getAnnotatedElements() {
-        return hierarchy;
-    }
-
-    @Override
-    protected AnnotatedElement getAnnotatedElement() {
-        return parameter;
-    }
+    public abstract Type getGenericType();
 
     @Override
     public String toString() {
-        return "ParameterMeta{parameter=" + parameter + '}';
+        return "ParameterMeta{name='" + name + "', type=" + getType() + '}';
     }
 }

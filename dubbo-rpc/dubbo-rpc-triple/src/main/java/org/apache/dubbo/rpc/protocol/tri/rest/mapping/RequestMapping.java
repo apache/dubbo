@@ -157,13 +157,29 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
                 name, paths, methods, params, headers, consumes, produces, custom, exceptionHandlers, response);
     }
 
-    @Override
-    public int compareTo(RequestMapping other, HttpRequest request) {
-        return 0;
+    public String getName() {
+        return name;
     }
 
     public PathCondition getPathCondition() {
         return pathCondition;
+    }
+
+    public ProducesCondition getProducesCondition() {
+        return producesCondition;
+    }
+
+    public List<MethodMeta> getExceptionHandlers() {
+        return exceptionHandlers;
+    }
+
+    public ResponseMeta getResponse() {
+        return response;
+    }
+
+    @Override
+    public int compareTo(RequestMapping other, HttpRequest request) {
+        return 0;
     }
 
     @Override
@@ -203,6 +219,7 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
 
     public static final class Builder {
         private String name;
+        private String contextPath;
         private String[] paths;
         private String[] methods;
         private String[] params;
@@ -217,6 +234,11 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
 
         public Builder name(String name) {
             this.name = name;
+            return this;
+        }
+
+        public Builder contextPath(String contextPath) {
+            this.contextPath = contextPath;
             return this;
         }
 
@@ -291,7 +313,7 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         }
 
         public RequestMapping build() {
-            PathCondition pathCondition = isEmpty(paths) ? null : new PathCondition(paths);
+            PathCondition pathCondition = isEmpty(paths) ? null : new PathCondition(contextPath, paths);
             MethodsCondition methodsCondition = isEmpty(methods) ? null : new MethodsCondition(methods);
             ParamsCondition paramsCondition = isEmpty(params) ? null : new ParamsCondition(params);
             HeadersCondition headersCondition = isEmpty(headers) ? null : new HeadersCondition(headers);

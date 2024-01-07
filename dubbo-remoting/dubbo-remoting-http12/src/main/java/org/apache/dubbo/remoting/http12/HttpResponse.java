@@ -29,9 +29,9 @@ public interface HttpResponse extends HttpResult<Object> {
 
     String header(String name);
 
-    List<String> headerValues(String name);
-
     Date dateHeader(String name);
+
+    List<String> headerValues(String name);
 
     boolean hasHeader(String name);
 
@@ -41,11 +41,13 @@ public interface HttpResponse extends HttpResult<Object> {
 
     void addHeader(String name, String value);
 
+    void addHeader(String name, Date value);
+
     void setHeader(String name, String value);
 
-    void setHeader(String name, List<String> value);
-
     void setHeader(String name, Date value);
+
+    void setHeader(String name, List<String> value);
 
     void addCookie(HttpCookie cookie);
 
@@ -56,6 +58,8 @@ public interface HttpResponse extends HttpResult<Object> {
     String mediaType();
 
     String charset();
+
+    void setCharset(String charset);
 
     String locale();
 
