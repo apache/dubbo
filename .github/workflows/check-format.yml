@@ -31,11 +31,11 @@ jobs:
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           cat mvn.log | grep "ERROR" | sed 's/Check if code needs formatting    Check if code aligns with code style   [0-9A-Z:.-]\+//' | sed 's/\[ERROR] //' | head -n -11 >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          echo "## Please run \`mvn spotless:apply\` to fix the formatting issues." >> $GITHUB_STEP_SUMMARY
+          echo "### Please run \`mvn spotless:apply\` to fix the formatting issues." >> $GITHUB_STEP_SUMMARY
       - name: Fail if code needs formatting
         if: ${{ steps.check.outcome == 'failure' }}
         uses: actions/github-script@v7.0.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            core.setFailed("Formatting issues found. Please run `mvn spotless:apply` to fix the formatting issues.")
+            core.setFailed("Formatting issues found!")
