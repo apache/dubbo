@@ -156,13 +156,13 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
         if (!guard.tryAcquire()) {
             return;
         }
-        // To avoid multiple dump, check again
-        if (System.currentTimeMillis() - lastPrintTime < TEN_MINUTES_MILLS) {
-            return;
-        }
-
-        ExecutorService pool = Executors.newSingleThreadExecutor();
+        ExecutorService pool = null;
         try {
+            // To avoid multiple dump, check again
+            if (System.currentTimeMillis() - lastPrintTime < TEN_MINUTES_MILLS) {
+                return;
+            }
+            pool = Executors.newSingleThreadExecutor();
             pool.execute(() -> {
                 String dumpPath = getDumpPath();
 
@@ -186,12 +186,14 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
                     logger.error(COMMON_UNEXPECTED_CREATE_DUMP, "", "", "dump jStack error", t);
                 } finally {
                     lastPrintTime = System.currentTimeMillis();
-                    guard.release();
                 }
             });
         } finally {
+            guard.release();
             // must shutdown thread pool ,if not will lead to OOM
-            pool.shutdown();
+            if (pool != null) {
+                pool.shutdown();
+            }
         }
     }
 
