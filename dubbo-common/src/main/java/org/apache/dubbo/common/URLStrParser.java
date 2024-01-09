@@ -42,8 +42,8 @@ public final class URLStrParser {
     }
 
     /**
-     * @param decodedURLStr : after {@link URL#decode} string
-     *                      decodedURLStr format: protocol://username:password@host:port/path?k1=v1&k2=v2
+     * @param decodedURLStr : after {@link URL#decode} string decodedURLStr format:
+     *                      protocol://username:password@host:port/path?k1=v1&k2=v2
      *                      [protocol://][username:password@][host:port]/[path][?k1=v1&k2=v2]
      */
     public static URL parseDecodedStr(String decodedURLStr) {
@@ -103,7 +103,9 @@ public final class URLStrParser {
         int starIdx = 0, endIdx = decodedBody.length();
         // ignore the url content following '#'
         int poundIndex = decodedBody.indexOf('#');
-        if (poundIndex != -1) {
+        int pwdEndIdx = lastIndexOf(decodedBody, '@', starIdx, endIdx);
+
+        if (poundIndex != -1 && poundIndex > pwdEndIdx) {
             endIdx = poundIndex;
         }
 
@@ -136,7 +138,7 @@ public final class URLStrParser {
 
         String username = null;
         String password = null;
-        int pwdEndIdx = lastIndexOf(decodedBody, '@', starIdx, endIdx);
+        pwdEndIdx = lastIndexOf(decodedBody, '@', starIdx, endIdx);
         if (pwdEndIdx > 0) {
             int passwordStartIdx = indexOf(decodedBody, ':', starIdx, pwdEndIdx);
             if (passwordStartIdx != -1) { // tolerate incomplete user pwd input, like '1234@'
@@ -203,8 +205,8 @@ public final class URLStrParser {
     }
 
     /**
-     * @param encodedURLStr : after {@link URL#encode(String)} string
-     *                      encodedURLStr after decode format: protocol://username:password@host:port/path?k1=v1&k2=v2
+     * @param encodedURLStr : after {@link URL#encode(String)} string encodedURLStr after decode format:
+     *                      protocol://username:password@host:port/path?k1=v1&k2=v2
      *                      [protocol://][username:password@][host:port]/[path][?k1=v1&k2=v2]
      */
     public static URL parseEncodedStr(String encodedURLStr) {
