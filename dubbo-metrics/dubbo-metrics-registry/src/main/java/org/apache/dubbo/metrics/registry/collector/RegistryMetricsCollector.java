@@ -54,7 +54,7 @@ import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE
 @Activate
 public class RegistryMetricsCollector extends CombMetricsCollector<RegistryEvent> {
 
-    private Boolean collectEnabled = null;
+    private Boolean collectEnabled = false;
     private final ApplicationModel applicationModel;
     private final RegistryStatComposite internalStat;
 
