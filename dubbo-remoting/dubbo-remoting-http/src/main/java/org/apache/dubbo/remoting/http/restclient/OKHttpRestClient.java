@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -179,6 +180,8 @@ public class OKHttpRestClient implements RestClient {
 
         url = url.addParameter(THREAD_NAME_KEY, CLIENT_THREAD_POOL_NAME)
                 .addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
-        return executorRepository.createExecutorIfAbsent(url);
+
+        Executor executor = executorRepository.getExecutorSupport(url).getExecutor(null);
+        return executor != null ? (ExecutorService) executor : executorRepository.createExecutorIfAbsent(url);
     }
 }
