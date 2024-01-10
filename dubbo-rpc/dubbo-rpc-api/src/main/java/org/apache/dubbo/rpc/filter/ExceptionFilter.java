@@ -146,4 +146,3 @@ public class ExceptionFilter implements Filter, Filter.Listener {
         this.logger = logger;
     }
 }
-
