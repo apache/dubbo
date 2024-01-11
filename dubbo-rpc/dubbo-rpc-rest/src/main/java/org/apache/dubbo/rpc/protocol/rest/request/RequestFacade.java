@@ -59,7 +59,7 @@ public abstract class RequestFacade<T> {
 
     protected void initParameters() {
         String requestURI = getRequestURI();
-        
+
         String enc = "UTF-8";
         ArrayList<String> charset = headers.get(RestConstant.ACCEPT_CHARSET);
         if (CollectionUtils.isNotEmpty(charset) && StringUtils.isNotEmpty(charset.get(0))) {

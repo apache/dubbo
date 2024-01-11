@@ -105,7 +105,7 @@ public class NettyRequestFacadeTest {
         DefaultFullHttpRequest defaultFullHttpRequest =
                 new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri);
         defaultFullHttpRequest.headers().add("Accept-Charset", "UTF-8");
-        
+
         NettyRequestFacade nettyRequestFacade = new NettyRequestFacade(defaultFullHttpRequest, null);
         assertThat(nettyRequestFacade.getPath(), is("/hello/world"));
         assertThat(nettyRequestFacade.getParameter("name"), is("李强"));
@@ -123,7 +123,6 @@ public class NettyRequestFacadeTest {
         // When using URLConnectionRestClient, the URI won't be encoded, but it's still acceptable.
         uri = "/hello/world?name=李强&age=18";
         defaultFullHttpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri);
-        
 
         nettyRequestFacade = new NettyRequestFacade(defaultFullHttpRequest, null);
         assertThat(nettyRequestFacade.getPath(), is("/hello/world"));
