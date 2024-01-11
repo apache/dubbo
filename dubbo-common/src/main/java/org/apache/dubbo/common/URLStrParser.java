@@ -153,10 +153,12 @@ public final class URLStrParser {
         }
         if (username == null && parameters != null && StringUtils.isNotEmpty(parameters.get(USERNAME_KEY))) {
             username = parameters.get(USERNAME_KEY);
+            parameters.remove(USERNAME_KEY);
         }
 
         if (password == null && parameters != null && StringUtils.isNotEmpty(parameters.get(PASSWORD_KEY))) {
             password = parameters.get(PASSWORD_KEY);
+            parameters.remove(PASSWORD_KEY);
         }
 
         String host = null;
