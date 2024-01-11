@@ -151,11 +151,11 @@ public final class URLStrParser {
             }
             starIdx = pwdEndIdx + 1;
         }
-        if (username == null && StringUtils.isNotEmpty(parameters.get(USERNAME_KEY))) {
+        if (username == null && parameters != null && StringUtils.isNotEmpty(parameters.get(USERNAME_KEY))) {
             username = parameters.get(USERNAME_KEY);
         }
 
-        if (password == null && StringUtils.isNotEmpty(parameters.get(PASSWORD_KEY))) {
+        if (password == null && parameters != null && StringUtils.isNotEmpty(parameters.get(PASSWORD_KEY))) {
             password = parameters.get(PASSWORD_KEY);
         }
 
