@@ -18,12 +18,15 @@ package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.url.component.URLItemCache;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
+import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.EMPTY_STRING;
 import static org.apache.dubbo.common.utils.StringUtils.decodeHexByte;
 import static org.apache.dubbo.common.utils.Utf8Utils.decodeUtf8;
@@ -103,9 +106,8 @@ public final class URLStrParser {
         int starIdx = 0, endIdx = decodedBody.length();
         // ignore the url content following '#'
         int poundIndex = decodedBody.indexOf('#');
-        int pwdEndIdx = lastIndexOf(decodedBody, '@', starIdx, endIdx);
 
-        if (poundIndex != -1 && poundIndex > pwdEndIdx) {
+        if (poundIndex != -1) {
             endIdx = poundIndex;
         }
 
@@ -138,7 +140,7 @@ public final class URLStrParser {
 
         String username = null;
         String password = null;
-        pwdEndIdx = lastIndexOf(decodedBody, '@', starIdx, endIdx);
+        int pwdEndIdx = lastIndexOf(decodedBody, '@', starIdx, endIdx);
         if (pwdEndIdx > 0) {
             int passwordStartIdx = indexOf(decodedBody, ':', starIdx, pwdEndIdx);
             if (passwordStartIdx != -1) { // tolerate incomplete user pwd input, like '1234@'
@@ -148,6 +150,13 @@ public final class URLStrParser {
                 username = decodedBody.substring(starIdx, pwdEndIdx);
             }
             starIdx = pwdEndIdx + 1;
+        }
+        if (username == null && StringUtils.isNotEmpty(parameters.get(USERNAME_KEY))) {
+            username = parameters.get(USERNAME_KEY);
+        }
+
+        if (password == null && StringUtils.isNotEmpty(parameters.get(PASSWORD_KEY))) {
+            password = parameters.get(PASSWORD_KEY);
         }
 
         String host = null;
