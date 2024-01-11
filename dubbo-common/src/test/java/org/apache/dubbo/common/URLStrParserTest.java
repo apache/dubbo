@@ -48,7 +48,7 @@ class URLStrParserTest {
         testCases.add("nacos://192.168.1.1:8848?username=&password=");
         testCases.add("dubbo://127.0.0.1?timeout=1234&default.timeout=5678");
         testCases.add("dubbo://127.0.0.1?default.timeout=5678");
-        testCases.add("zookeeper://test10.301.216.302:2181?username=t1&password=t2");
+        testCases.add("zookeeper://test10.301.216.302:2181?username=t1#&password=t2#");
 
         errorDecodedCases.add("dubbo:192.168.1.1");
         errorDecodedCases.add("://192.168.1.1");
