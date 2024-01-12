@@ -19,6 +19,7 @@ package org.apache.dubbo.config.metadata;
 import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.metadata.MetadataConstants;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
@@ -60,7 +61,9 @@ public class MetadataServiceURLParamsMetadataCustomizer implements ServiceInstan
         ModuleServiceRepository serviceRepository =
                 applicationModel.getInternalModule().getServiceRepository();
         String key = BaseServiceMetadata.buildServiceKey(
-                MetadataService.class.getName(), applicationModel.getApplicationName(), MetadataService.VERSION);
+                MetadataService.class.getName(),
+                applicationModel.getApplicationName(),
+                MetadataConstants.SERVICE_VERSION);
         ProviderModel providerModel = serviceRepository.lookupExportedService(key);
         String metadataValue = "";
         if (providerModel != null) {

@@ -192,6 +192,8 @@ public interface LoggerCodeConstants {
 
     String REGISTRY_NACOS_SUB_LEGACY = "1-42";
 
+    String INSTANCE_METADATA_LISTEN = "1-43";
+
     // Cluster module 2-x
     String CLUSTER_FAILED_SITE_SELECTION = "2-1";
 

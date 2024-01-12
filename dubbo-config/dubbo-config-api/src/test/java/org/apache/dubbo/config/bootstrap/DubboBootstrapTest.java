@@ -36,6 +36,7 @@ import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
 import org.apache.dubbo.config.metadata.ExporterDeployListener;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
+import org.apache.dubbo.metadata.MetadataConstants;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.registry.RegistryService;
@@ -361,7 +362,7 @@ class DubboBootstrapTest {
             serviceConfig.setInterface(MetadataService.class);
             serviceConfig.setGroup(
                     ApplicationModel.defaultModel().getCurrentConfig().getName());
-            serviceConfig.setVersion(MetadataService.VERSION);
+            serviceConfig.setVersion(MetadataConstants.SERVICE_VERSION);
             assertThat(exporters, hasEntry(is(serviceConfig.getUniqueServiceName() + ":" + availablePort), anything()));
         } else {
             Assertions.assertEquals(1, exporters.size());

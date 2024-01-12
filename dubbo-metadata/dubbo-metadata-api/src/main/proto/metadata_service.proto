@@ -1,74 +1,46 @@
 syntax = "proto3";
+package org.apache.dubbo.metadata;
 
-package dubbo.metadata;
+option go_package = "dubbo.apache.org/dubbo-go/v3/metadata/triple_api";
+option java_package = "org.apache.dubbo.metadata";
+option java_multiple_files = true;
 
-import "google/protobuf/empty.proto";
+service MetadataService{
+  rpc GetMetadataInfo(Revision) returns (MetadataMessage);
 
-// MetadataService is used to expose the metadata information inside a Dubbo process.
-service MetadataService {
-  // Gets the current Dubbo Service name
-  rpc serviceName (google.protobuf.Empty) returns (ServiceNameResponse);
+  rpc GetAndListenInstanceMetadata(ConsumerId) returns (stream InstanceMetadata);
 
-  // Gets the version of MetadataService that always equals 1.0.0
-  rpc version (google.protobuf.Empty) returns (VersionResponse);
-
-  rpc getMetadataURL (google.protobuf.Empty) returns (UrlResponse);
-
-  //the list of String that presents all Dubbo subscribed urls
-  rpc getSubscribedURLs (google.protobuf.Empty) returns (UrlListResponse);
-
-  //Get the sorted set of String that presents all Dubbo exported urls
-//  rpc getExportedURLs (google.protobuf.Empty) returns (UrlListResponse);
-  //有几个参数更少的重载
-  rpc getExportedURLs (GetExportedURLsRequest) returns(UrlListResponse);
-
-  rpc getExportedServiceURLs (google.protobuf.Empty) returns(UrlListResponse);
-
-  rpc getServiceDefinition (ServiceKeyRequest) returns(ServiceDefinitionResponse);
-
-  rpc getMetadataInfo(RevisionRequest) returns();
-  // Other methods like getMetadataURL, getSubscribedURLs, getExportedURLs, etc.
+  rpc ListenHeartbeat(ConsumerId) returns (stream HeartbeatMessage);
 }
 
-message UrlListResponse {
-  repeated string url = 1;
+message Revision{
+  string value = 1;
 }
 
-message UrlResponse {
-  string url = 1;
+message MetadataMessage{
+  string app = 1;
+  string version = 2;
+  map<string,ServiceMessage> services = 3;
 }
 
-message GetExportedURLsRequest{
-  string serviceInterface = 1;
+message ServiceMessage{
+  string name = 1;
   string group = 2;
   string version = 3;
   string protocol = 4;
+  int32 port = 5;
+  string path = 6;
+  map<string,string> params = 7;
 }
 
-// Response for serviceName
-message ServiceNameResponse {
-  string name = 1; // non-null
+message ConsumerId{
+  string id = 1;
 }
 
-// Response for version
-message VersionResponse {
-  string version = 1; // non-null, always "1.0.0"
+message InstanceMetadata{
+  string data = 1;
 }
 
-message ServiceKeyRequest{
-  string serviceKey = 1;
+message HeartbeatMessage{
+  string beat = 1;
 }
-
-message ServiceDefinitionResponse{
-  string serviceDefinition = 1;
-}
-
-message RevisionRequest{
-  string revision = 1;
-}
-
-message MetadataInfo{
-
-}
-
-// Additional message types and rpc methods would need to be defined for the other methods in the Java interface.

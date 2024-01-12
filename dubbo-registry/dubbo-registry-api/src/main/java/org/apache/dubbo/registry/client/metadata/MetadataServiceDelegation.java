@@ -20,10 +20,18 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.Disposable;
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.metadata.InstanceMetadataChangedListener;
+import org.apache.dubbo.metadata.ConsumerId;
+import org.apache.dubbo.metadata.DubboMetadataServiceTriple;
+import org.apache.dubbo.metadata.HeartbeatMessage;
+import org.apache.dubbo.metadata.InstanceMetadata;
+import org.apache.dubbo.metadata.MetadataConstants;
 import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.metadata.MetadataMessage;
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.MetadataServiceUtils;
+import org.apache.dubbo.metadata.Revision;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -43,20 +51,26 @@ import java.util.concurrent.ConcurrentMap;
 import static java.util.Collections.emptySortedSet;
 import static java.util.Collections.unmodifiableSortedSet;
 import static org.apache.dubbo.common.URL.buildKey;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_LOAD_METADATA;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
+import static org.apache.dubbo.metadata.MetadataConstants.ALL_SERVICE_INTERFACES;
 
 /**
  * Implementation providing remote RPC service to facilitate the query of metadata information.
  */
-public class MetadataServiceDelegation implements MetadataService, Disposable {
+public class MetadataServiceDelegation extends DubboMetadataServiceTriple.MetadataServiceImplBase
+        implements Disposable {
     ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     private final ApplicationModel applicationModel;
     private final RegistryManager registryManager;
-    private ConcurrentMap<String, InstanceMetadataChangedListener> instanceMetadataChangedListenerMap =
+    private ConcurrentMap<String, StreamObserver<InstanceMetadata>> instanceMetadataChangedListenerMap =
             new ConcurrentHashMap<>();
+
+    private ConcurrentMap<String, StreamObserver<HeartbeatMessage>> heartbeatListenerMap = new ConcurrentHashMap<>();
+
     private URL url;
     // works only for DNS service discovery
     private String instanceMetadata;
@@ -71,12 +85,10 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
      *
      * @return non-null
      */
-    @Override
     public String serviceName() {
         return ApplicationModel.ofNullable(applicationModel).getApplicationName();
     }
 
-    @Override
     public URL getMetadataURL() {
         return url;
     }
@@ -85,7 +97,6 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
         this.url = url;
     }
 
-    @Override
     public SortedSet<String> getSubscribedURLs() {
         return getAllUnmodifiableSubscribedURLs();
     }
@@ -110,7 +121,7 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
                 }
             }
         }
-        return MetadataService.toSortedStrings(bizURLs);
+        return MetadataServiceUtils.toSortedStrings(bizURLs);
     }
 
     private SortedSet<String> getAllUnmodifiableSubscribedURLs() {
@@ -133,16 +144,31 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
                 }
             }
         }
-        return MetadataService.toSortedStrings(bizURLs);
+        return MetadataServiceUtils.toSortedStrings(bizURLs);
     }
 
-    @Override
     public SortedSet<String> getExportedURLs(String serviceInterface, String group, String version, String protocol) {
         if (ALL_SERVICE_INTERFACES.equals(serviceInterface)) {
             return getAllUnmodifiableServiceURLs();
         }
         String serviceKey = buildKey(serviceInterface, group, version);
         return unmodifiableSortedSet(getServiceURLs(getAllServiceURLs(), serviceKey, protocol));
+    }
+
+    public SortedSet<String> getExportedURLs(String serviceInterface) {
+        return getExportedURLs(serviceInterface, null);
+    }
+
+    public SortedSet<String> getExportedURLs() {
+        return getExportedURLs(MetadataConstants.ALL_SERVICE_INTERFACES);
+    }
+
+    public SortedSet<String> getExportedURLs(String serviceInterface, String group) {
+        return getExportedURLs(serviceInterface, group, null);
+    }
+
+    public SortedSet<String> getExportedURLs(String serviceInterface, String group, String version) {
+        return getExportedURLs(serviceInterface, group, version, null);
     }
 
     private Map<String, SortedSet<URL>> getAllServiceURLs() {
@@ -156,7 +182,6 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
         return allServiceURLs;
     }
 
-    @Override
     public Set<URL> getExportedServiceURLs() {
         Set<URL> set = new HashSet<>();
         registryManager.getRegistries();
@@ -166,17 +191,20 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
         return set;
     }
 
-    @Override
     public String getServiceDefinition(String interfaceName, String version, String group) {
         return "";
     }
 
-    @Override
     public String getServiceDefinition(String serviceKey) {
         return "";
     }
 
     @Override
+    public MetadataMessage getMetadataInfo(Revision revision) {
+        MetadataInfo wrapper = getMetadataInfo(revision.getValue());
+        return wrapper == null ? MetadataMessage.newBuilder().build() : wrapper.toMetadataInfo();
+    }
+
     public MetadataInfo getMetadataInfo(String revision) {
         if (StringUtils.isEmpty(revision)) {
             return null;
@@ -195,7 +223,6 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
         return null;
     }
 
-    @Override
     public List<MetadataInfo> getMetadataInfos() {
         List<MetadataInfo> metadataInfos = new ArrayList<>();
         for (ServiceDiscovery sd : registryManager.getServiceDiscoveries()) {
@@ -204,21 +231,36 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
         return metadataInfos;
     }
 
-    @Override
     public void exportInstanceMetadata(String instanceMetadata) {
         this.instanceMetadata = instanceMetadata;
     }
 
-    @Override
-    public Map<String, InstanceMetadataChangedListener> getInstanceMetadataChangedListenerMap() {
+    public Map<String, StreamObserver<InstanceMetadata>> getInstanceMetadataChangedListenerMap() {
         return instanceMetadataChangedListenerMap;
     }
 
-    @Override
-    public String getAndListenInstanceMetadata(String consumerId, InstanceMetadataChangedListener listener) {
-        instanceMetadataChangedListenerMap.put(consumerId, listener);
-        return instanceMetadata;
+    public ConcurrentMap<String, StreamObserver<HeartbeatMessage>> getHeartbeatListenerMap() {
+        return heartbeatListenerMap;
     }
+
+    @Override
+    public void getAndListenInstanceMetadata(ConsumerId consumerId, StreamObserver<InstanceMetadata> responseObserver) {
+        instanceMetadataChangedListenerMap.put(consumerId.getId(), responseObserver);
+        responseObserver.onNext(
+                InstanceMetadata.newBuilder().setData(instanceMetadata).build());
+    }
+
+    @Override
+    public void listenHeartbeat(ConsumerId consumerId, StreamObserver<HeartbeatMessage> responseObserver) {
+        heartbeatListenerMap.put(consumerId.getId(), responseObserver);
+        responseObserver.onNext(HeartbeatMessage.newBuilder().setBeat(DUBBO).build());
+    }
+
+    //    @Deprecated
+    //    public String getAndListenInstanceMetadata(String consumerId, StreamObserver<InstanceMetadata> listener) {
+    //        instanceMetadataChangedListenerMap.put(consumerId, listener);
+    //        return instanceMetadata;
+    //    }
 
     private SortedSet<String> getServiceURLs(
             Map<String, SortedSet<URL>> exportedServiceURLs, String serviceKey, String protocol) {
@@ -229,7 +271,8 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
             return emptySortedSet();
         }
 
-        return MetadataService.toSortedStrings(serviceURLs.stream().filter(url -> isAcceptableProtocol(protocol, url)));
+        return MetadataServiceUtils.toSortedStrings(
+                serviceURLs.stream().filter(url -> isAcceptableProtocol(protocol, url)));
     }
 
     private boolean isAcceptableProtocol(String protocol, URL url) {

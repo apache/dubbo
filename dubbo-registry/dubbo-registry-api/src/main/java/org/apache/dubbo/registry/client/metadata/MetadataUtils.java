@@ -24,6 +24,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.Revision;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
@@ -38,6 +39,7 @@ import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.service.Destroyable;
+import org.apache.dubbo.rpc.stub.StubSuppliers;
 
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +47,7 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.NATIVE_STUB;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROXY_CLASS_REF;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
@@ -52,6 +55,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAI
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_LOAD_METADATA;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URLS_PROPERTY_NAME;
+import static org.apache.dubbo.rpc.Constants.PROXY_KEY;
 
 public class MetadataUtils {
     public static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetadataUtils.class);
@@ -135,12 +139,18 @@ public class MetadataUtils {
         }
 
         URL url = urls.get(0);
+        url = url.addParameter(PROXY_KEY, NATIVE_STUB);
 
         // Simply rely on the first metadata url, as stated in MetadataServiceURLBuilder.
         ApplicationModel applicationModel = instance.getApplicationModel();
         ModuleModel internalModel = applicationModel.getInternalModule();
-        ConsumerModel consumerModel =
-                applicationModel.getInternalModule().registerInternalConsumer(MetadataService.class, url);
+
+        ConsumerModel consumerModel = applicationModel
+                .getInternalModule()
+                .registerInternalConsumer(
+                        MetadataService.class,
+                        url,
+                        StubSuppliers.getServiceDescriptor(MetadataService.class.getName()));
 
         Protocol protocol = applicationModel.getExtensionLoader(Protocol.class).getExtension(url.getProtocol(), false);
 
@@ -177,9 +187,11 @@ public class MetadataUtils {
                 ProxyHolder proxyHolder = null;
                 try {
                     proxyHolder = MetadataUtils.referProxy(instance);
-                    metadataInfo = proxyHolder
+                    metadataInfo = new MetadataInfo(proxyHolder
                             .getProxy()
-                            .getMetadataInfo(ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
+                            .getMetadataInfo(Revision.newBuilder()
+                                    .setValue(ServiceInstanceMetadataUtils.getExportedServicesRevision(instance))
+                                    .build()));
                 } finally {
                     MetadataUtils.destroyProxy(proxyHolder);
                 }

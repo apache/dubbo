@@ -18,14 +18,18 @@ package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.metadata.InstanceMetadataChangedListener;
+import org.apache.dubbo.metadata.ConsumerId;
+import org.apache.dubbo.metadata.HeartbeatMessage;
+import org.apache.dubbo.metadata.InstanceMetadata;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.RevisionResolver;
 import org.apache.dubbo.registry.Constants;
@@ -48,10 +52,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INSTANCE_METADATA_LISTEN;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_NOTIFY_EVENT;
 
 public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
@@ -113,15 +120,18 @@ public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
         // reduce the probability of failure when metadata update
         echoCheckExecutor.scheduleAtFixedRate(
                 () -> {
-                    Map<String, InstanceMetadataChangedListener> listenerMap =
-                            metadataService.getInstanceMetadataChangedListenerMap();
-                    Iterator<Map.Entry<String, InstanceMetadataChangedListener>> iterator =
+                    Map<String, StreamObserver<HeartbeatMessage>> listenerMap =
+                            metadataService.getHeartbeatListenerMap();
+                    Iterator<Map.Entry<String, StreamObserver<HeartbeatMessage>>> iterator =
                             listenerMap.entrySet().iterator();
 
                     while (iterator.hasNext()) {
-                        Map.Entry<String, InstanceMetadataChangedListener> entry = iterator.next();
+                        Map.Entry<String, StreamObserver<HeartbeatMessage>> entry = iterator.next();
                         try {
-                            entry.getValue().echo(CommonConstants.DUBBO);
+                            entry.getValue()
+                                    .onNext(HeartbeatMessage.newBuilder()
+                                            .setBeat(CommonConstants.DUBBO)
+                                            .build());
                         } catch (RpcException e) {
                             if (logger.isInfoEnabled()) {
                                 logger.info(
@@ -161,15 +171,18 @@ public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
             metadataService.exportInstanceMetadata(metadataString);
 
             // notify to consumer
-            Map<String, InstanceMetadataChangedListener> listenerMap =
+            Map<String, StreamObserver<InstanceMetadata>> listenerMap =
                     metadataService.getInstanceMetadataChangedListenerMap();
-            Iterator<Map.Entry<String, InstanceMetadataChangedListener>> iterator =
+            Iterator<Map.Entry<String, StreamObserver<InstanceMetadata>>> iterator =
                     listenerMap.entrySet().iterator();
 
             while (iterator.hasNext()) {
-                Map.Entry<String, InstanceMetadataChangedListener> entry = iterator.next();
+                Map.Entry<String, StreamObserver<InstanceMetadata>> entry = iterator.next();
                 try {
-                    entry.getValue().onEvent(metadataString);
+                    entry.getValue()
+                            .onNext(InstanceMetadata.newBuilder()
+                                    .setData(metadataString)
+                                    .build());
                 } catch (RpcException e) {
                     // 1-7 - Failed to notify registry event.
                     // The updating of metadata to consumer is a type of registry event.
@@ -196,11 +209,13 @@ public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
     public void doUnregister(ServiceInstance serviceInstance) throws RuntimeException {
         // notify empty message to consumer
         metadataService.exportInstanceMetadata("");
-        metadataService.getInstanceMetadataChangedListenerMap().forEach((consumerId, listener) -> listener.onEvent(""));
+        metadataService
+                .getInstanceMetadataChangedListenerMap()
+                .forEach((consumerId, listener) -> listener.onNext(
+                        InstanceMetadata.newBuilder().setData("").build()));
         metadataService.getInstanceMetadataChangedListenerMap().clear();
     }
 
-    @SuppressWarnings("unchecked")
     public final void fillServiceInstance(DefaultServiceInstance serviceInstance) {
         String hostId = serviceInstance.getAddress();
         if (metadataMap.containsKey(hostId)) {
@@ -216,19 +231,52 @@ public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
             String consumerId = ScopeModelUtil.getApplicationModel(registryURL.getScopeModel())
                             .getApplicationName()
                     + NetUtils.getLocalHost();
-            String metadata = metadataService.getAndListenInstanceMetadata(consumerId, metadataString -> {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Receive callback: " + metadataString + serviceInstance);
+            CountDownLatch latch = new CountDownLatch(1);
+            AtomicReference<String> firstMetadata = new AtomicReference<>();
+            metadataService.getAndListenInstanceMetadata(
+                    ConsumerId.newBuilder().setId(consumerId).build(), new StreamObserver<InstanceMetadata>() {
+                        @Override
+                        public void onNext(InstanceMetadata data) {
+                            String metadataString = data.getData();
+                            if (firstMetadata.compareAndSet(null,metadataString)) {
+                                latch.countDown();
+                            }
+                            if (logger.isDebugEnabled()) {
+                                logger.debug("Receive provider push instance metadata: " + metadataString + serviceInstance);
+                            }
+                            if (StringUtils.isEmpty(metadataString)) {
+                                // provider is shutdown
+                                metadataMap.remove(hostId);
+                            } else {
+                                metadataMap.put(hostId, metadataString);
+                            }
+                        }
+
+                        @Override
+                        public void onError(Throwable throwable) {
+                            metadataMap.remove(hostId);
+                            logger.warn(
+                                    INSTANCE_METADATA_LISTEN,
+                                    throwable.getCause().getMessage(),
+                                    throwable.getLocalizedMessage(),
+                                    "Some problems occurred when updating instance metadata.",
+                                    throwable);
+                        }
+
+                        @Override
+                        public void onCompleted() {
+                            metadataMap.remove(hostId);
+                        }
+                    });
+            try {
+                if(!latch.await(10,TimeUnit.SECONDS)) {
+                    logger.warn(INSTANCE_METADATA_LISTEN, "", "","Time out: cannot receive instance metadata from "+hostId+" in 10 seconds.");
                 }
-                if (StringUtils.isEmpty(metadataString)) {
-                    // provider is shutdown
-                    metadataMap.remove(hostId);
-                } else {
-                    metadataMap.put(hostId, metadataString);
-                }
-            });
-            metadataMap.put(hostId, metadata);
-            serviceInstance.setMetadata(JsonUtils.toJavaObject(metadata, Map.class));
+                metadataMap.put(hostId, firstMetadata.get());
+                serviceInstance.setMetadata(JsonUtils.toJavaObject(firstMetadata.get(), Map.class));
+            } catch (InterruptedException e) {
+                logger.debug("Thread interrupted when waiting first instance metadata.");
+            }
         }
     }
 

@@ -14,9 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
+package org.apache.dubbo.metadata.proto;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metadata.InstanceMetadataChangedListener;
+import org.apache.dubbo.metadata.MetadataInfo;
 
 import java.util.Collections;
 import java.util.List;
@@ -36,7 +38,8 @@ import static org.apache.dubbo.common.URL.buildKey;
  * 1. The Consumer queries the metadata information of the Provider to list the interfaces and each interface's configuration
  * 2. The Console (dubbo-admin) queries for the metadata of a specific process, or aggregate data of all processes.
  */
-public interface MetadataService {
+@Deprecated
+public interface _MetadataService {
 
     /**
      * The value of All service instances
@@ -44,7 +47,7 @@ public interface MetadataService {
     String ALL_SERVICE_INTERFACES = "*";
 
     /**
-     * The contract version of {@link MetadataService}, the future update must make sure compatible.
+     * The contract version of {@link _MetadataService}, the future update must make sure compatible.
      */
     String VERSION = "1.0.0";
 
@@ -56,7 +59,7 @@ public interface MetadataService {
     String serviceName();
 
     /**
-     * Gets the version of {@link MetadataService} that always equals {@link #VERSION}
+     * Gets the version of {@link _MetadataService} that always equals {@link #VERSION}
      *
      * @return non-null
      * @see #VERSION
@@ -188,7 +191,7 @@ public interface MetadataService {
     }
 
     static boolean isMetadataService(String interfaceName) {
-        return interfaceName != null && interfaceName.equals(MetadataService.class.getName());
+        return interfaceName != null && interfaceName.equals(_MetadataService.class.getName());
     }
 
     /**
