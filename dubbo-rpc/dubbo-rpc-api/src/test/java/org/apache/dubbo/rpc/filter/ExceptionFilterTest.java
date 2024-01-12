@@ -63,7 +63,7 @@ class ExceptionFilterTest {
             exceptionFilter.invoke(invoker, invocation);
         } catch (RpcException e) {
             assertEquals("TestRpcException", e.getMessage());
-            exceptionFilter.setLogger(failsafeLogger);
+            exceptionFilter.mockLogger(failsafeLogger);
             exceptionFilter.onError(e, invoker, invocation);
         }
 

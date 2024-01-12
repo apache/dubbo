@@ -317,21 +317,6 @@ class DubboBootstrapTest {
         registryConfig.setUseAsMetadataCenter(false);
         registryConfig.setUseAsConfigCenter(false);
 
-        Exception exception = null;
-        try {
-            DubboBootstrap.getInstance()
-                    .application(applicationConfig)
-                    .registry(registryConfig)
-                    .protocol(new ProtocolConfig(CommonConstants.DUBBO_PROTOCOL, -1))
-                    .service(service)
-                    .start();
-        } catch (Exception e) {
-            exception = e;
-            DubboBootstrap.reset();
-        }
-
-        Assertions.assertNotNull(exception);
-
         DubboBootstrap.getInstance()
                 .application(applicationConfig)
                 .registry(registryConfig)
@@ -341,6 +326,33 @@ class DubboBootstrapTest {
                 .start();
 
         assertMetadataService(DubboBootstrap.getInstance(), availablePort, false);
+    }
+
+    @Test
+    void testRemoteMetadataServiceExporterCheckMetadataType() {
+
+        Assertions.assertThrowsExactly(IllegalStateException.class, () -> {
+            ServiceConfig<DemoService> service = new ServiceConfig<>();
+            service.setInterface(DemoService.class);
+            service.setRef(new DemoServiceImpl());
+
+            int availablePort = NetUtils.getAvailablePort();
+
+            ApplicationConfig applicationConfig = new ApplicationConfig("bootstrap-test");
+            applicationConfig.setMetadataServicePort(availablePort);
+            applicationConfig.setMetadataType(REMOTE_METADATA_STORAGE_TYPE);
+
+            RegistryConfig registryConfig = new RegistryConfig(zkServerAddress);
+            registryConfig.setUseAsMetadataCenter(false);
+            registryConfig.setUseAsConfigCenter(false);
+
+            DubboBootstrap.getInstance()
+                    .application(applicationConfig)
+                    .registry(registryConfig)
+                    .protocol(new ProtocolConfig(CommonConstants.DUBBO_PROTOCOL, -1))
+                    .service(service)
+                    .start();
+        });
     }
 
     private ExporterDeployListener getListener(ApplicationModel model) {
