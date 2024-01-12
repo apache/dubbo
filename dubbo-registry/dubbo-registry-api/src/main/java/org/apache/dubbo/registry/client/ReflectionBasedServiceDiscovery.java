@@ -237,11 +237,12 @@ public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
                         @Override
                         public void onNext(InstanceMetadata data) {
                             String metadataString = data.getData();
-                            if (firstMetadata.compareAndSet(null,metadataString)) {
+                            if (firstMetadata.compareAndSet(null, metadataString)) {
                                 latch.countDown();
                             }
                             if (logger.isDebugEnabled()) {
-                                logger.debug("Receive provider push instance metadata: " + metadataString + serviceInstance);
+                                logger.debug(
+                                        "Receive provider push instance metadata: " + metadataString + serviceInstance);
                             }
                             if (StringUtils.isEmpty(metadataString)) {
                                 // provider is shutdown
@@ -268,8 +269,12 @@ public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
                         }
                     });
             try {
-                if(!latch.await(10,TimeUnit.SECONDS)) {
-                    logger.warn(INSTANCE_METADATA_LISTEN, "", "","Time out: cannot receive instance metadata from "+hostId+" in 10 seconds.");
+                if (!latch.await(10, TimeUnit.SECONDS)) {
+                    logger.warn(
+                            INSTANCE_METADATA_LISTEN,
+                            "",
+                            "",
+                            "Time out: cannot receive instance metadata from " + hostId + " in 10 seconds.");
                 }
                 metadataMap.put(hostId, firstMetadata.get());
                 serviceInstance.setMetadata(JsonUtils.toJavaObject(firstMetadata.get(), Map.class));
