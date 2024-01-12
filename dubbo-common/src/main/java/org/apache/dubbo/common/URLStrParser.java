@@ -18,15 +18,12 @@ package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.url.component.URLItemCache;
-import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
-import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.EMPTY_STRING;
 import static org.apache.dubbo.common.utils.StringUtils.decodeHexByte;
 import static org.apache.dubbo.common.utils.Utf8Utils.decodeUtf8;
@@ -45,8 +42,8 @@ public final class URLStrParser {
     }
 
     /**
-     * @param decodedURLStr : after {@link URL#decode} string decodedURLStr format:
-     *                      protocol://username:password@host:port/path?k1=v1&k2=v2
+     * @param decodedURLStr : after {@link URL#decode} string
+     *                      decodedURLStr format: protocol://username:password@host:port/path?k1=v1&k2=v2
      *                      [protocol://][username:password@][host:port]/[path][?k1=v1&k2=v2]
      */
     public static URL parseDecodedStr(String decodedURLStr) {
@@ -106,7 +103,6 @@ public final class URLStrParser {
         int starIdx = 0, endIdx = decodedBody.length();
         // ignore the url content following '#'
         int poundIndex = decodedBody.indexOf('#');
-
         if (poundIndex != -1) {
             endIdx = poundIndex;
         }
@@ -150,15 +146,6 @@ public final class URLStrParser {
                 username = decodedBody.substring(starIdx, pwdEndIdx);
             }
             starIdx = pwdEndIdx + 1;
-        }
-        if (username == null && parameters != null && StringUtils.isNotEmpty(parameters.get(USERNAME_KEY))) {
-            username = parameters.get(USERNAME_KEY);
-            parameters.remove(USERNAME_KEY);
-        }
-
-        if (password == null && parameters != null && StringUtils.isNotEmpty(parameters.get(PASSWORD_KEY))) {
-            password = parameters.get(PASSWORD_KEY);
-            parameters.remove(PASSWORD_KEY);
         }
 
         String host = null;
@@ -216,8 +203,8 @@ public final class URLStrParser {
     }
 
     /**
-     * @param encodedURLStr : after {@link URL#encode(String)} string encodedURLStr after decode format:
-     *                      protocol://username:password@host:port/path?k1=v1&k2=v2
+     * @param encodedURLStr : after {@link URL#encode(String)} string
+     *                      encodedURLStr after decode format: protocol://username:password@host:port/path?k1=v1&k2=v2
      *                      [protocol://][username:password@][host:port]/[path][?k1=v1&k2=v2]
      */
     public static URL parseEncodedStr(String encodedURLStr) {
