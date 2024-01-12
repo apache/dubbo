@@ -19,13 +19,55 @@
 # top-most EditorConfig file
 root = true
 
-# Unix-style newlines with a newline ending every file
 [*]
 charset = utf-8
 end_of_line = lf
-insert_final_newline = true
-
-# 4 space indentation
-[*.{java,xml}]
-indent_style = space
 indent_size = 4
+indent_style = space
+tab_width = 4
+max_line_length = 120
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.java]
+ij_java_continuation_indent_size = 8
+ij_java_keep_control_statement_in_one_line = false
+ij_java_for_brace_force = always
+ij_java_if_brace_force = always
+ij_java_keep_first_column_comment = false
+ij_java_keep_line_breaks = false
+ij_java_keep_simple_blocks_in_one_line = true
+ij_java_keep_simple_classes_in_one_line = true
+ij_java_keep_simple_lambdas_in_one_line = true
+ij_java_keep_simple_methods_in_one_line = true
+ij_java_keep_blank_lines_in_code = 1
+ij_java_keep_blank_lines_in_declarations = 1
+ij_java_class_count_to_use_import_on_demand = 999
+ij_java_names_count_to_use_import_on_demand = 999
+ij_java_imports_layout = org.apache.dubbo.**, |, javax.**, |, java.**, |, *, |, $*
+ij_java_insert_inner_class_imports = true
+ij_java_space_before_array_initializer_left_brace = true
+ij_java_method_parameters_new_line_after_left_paren = true
+ij_java_wrap_comments = true
+ij_java_wrap_long_lines = true
+ij_java_enum_constants_wrap = split_into_lines
+ij_java_method_call_chain_wrap = split_into_lines
+ij_java_method_parameters_wrap = on_every_item
+ij_java_extends_list_wrap = on_every_item
+ij_java_extends_keyword_wrap = normal
+ij_java_binary_operation_wrap = normal
+ij_java_binary_operation_sign_on_next_line = true
+
+[*.json]
+tab_width = 2
+
+[*.{yml,yaml}]
+indent_size = 2
+
+[*.xml]
+ij_xml_attribute_wrap = off
+ij_xml_text_wrap = off
+ij_xml_keep_blank_lines = 1
+
+[pom.xml]
+indent_size = 2

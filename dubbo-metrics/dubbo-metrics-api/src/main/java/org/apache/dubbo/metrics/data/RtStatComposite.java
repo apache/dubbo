@@ -160,7 +160,9 @@ public class RtStatComposite extends AbstractMetricsExport {
     public void calcMethodKeyRt(Invocation invocation, String registryOpType, Long responseTime) {
         List<Action> actions;
 
-        if (invocation.getServiceModel() != null && invocation.getServiceModel().getServiceMetadata() != null) {
+        if (getServiceLevel()
+                && invocation.getServiceModel() != null
+                && invocation.getServiceModel().getServiceMetadata() != null) {
             Map<String, Object> attributeMap =
                     invocation.getServiceModel().getServiceMetadata().getAttributeMap();
             Map<String, List<Action>> cache = (Map<String, List<Action>>) attributeMap.get("MethodKeyRt");

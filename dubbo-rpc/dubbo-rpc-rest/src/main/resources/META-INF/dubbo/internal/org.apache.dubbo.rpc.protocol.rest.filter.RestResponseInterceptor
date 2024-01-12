@@ -1,2 +1,3 @@
 resteasy=org.apache.dubbo.rpc.protocol.rest.extension.resteasy.intercept.ResteasyWriterInterceptorAdapter
 invoke=org.apache.dubbo.rpc.protocol.rest.filter.ServiceInvokeRestResponseInterceptor
+resteasy-resStatus=org.apache.dubbo.rpc.protocol.rest.extension.resteasy.intercept.ResteasyStatusCodeInterceptor
