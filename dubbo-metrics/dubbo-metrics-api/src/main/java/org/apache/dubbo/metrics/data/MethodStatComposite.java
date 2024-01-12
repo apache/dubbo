@@ -41,13 +41,11 @@ import java.util.concurrent.atomic.AtomicLong;
  * the key will not be displayed when exporting (to be optimized)
  */
 public class MethodStatComposite extends AbstractMetricsExport {
-    private boolean serviceLevel;
 
     private final AtomicBoolean samplesChanged = new AtomicBoolean(true);
 
     public MethodStatComposite(ApplicationModel applicationModel) {
         super(applicationModel);
-        this.serviceLevel = MethodMetric.isServiceLevel(getApplicationModel());
     }
 
     private final Map<MetricsKeyWrapper, Map<MethodMetric, AtomicLong>> methodNumStats = new ConcurrentHashMap<>();
@@ -70,7 +68,8 @@ public class MethodStatComposite extends AbstractMetricsExport {
         methodNumStats
                 .get(wrapper)
                 .computeIfAbsent(
-                        new MethodMetric(getApplicationModel(), invocation, serviceLevel), k -> new AtomicLong(0L));
+                        new MethodMetric(getApplicationModel(), invocation, getServiceLevel()),
+                        k -> new AtomicLong(0L));
         samplesChanged.set(true);
     }
 

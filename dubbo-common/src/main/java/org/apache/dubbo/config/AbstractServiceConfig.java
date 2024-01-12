@@ -155,6 +155,12 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
      */
     private Integer payload;
 
+    /**
+     * Whether to use java_package in IDL as path. Default use package.
+     * This param only available when service using native stub.
+     */
+    private Boolean useJavaPackageAsPath;
+
     public AbstractServiceConfig() {}
 
     public AbstractServiceConfig(ModuleModel moduleModel) {
@@ -170,7 +176,9 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
         if (dynamic == null) {
             dynamic = true;
         }
-
+        if (useJavaPackageAsPath == null) {
+            useJavaPackageAsPath = false;
+        }
         if (StringUtils.isBlank(preferSerialization)) {
             preferSerialization = serialization;
         }
@@ -387,5 +395,14 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
     public void setPayload(Integer payload) {
         this.payload = payload;
+    }
+
+    @Parameter(excluded = true, attribute = false)
+    public Boolean getUseJavaPackageAsPath() {
+        return useJavaPackageAsPath;
+    }
+
+    public void setUseJavaPackageAsPath(Boolean useJavaPackageAsPath) {
+        this.useJavaPackageAsPath = useJavaPackageAsPath;
     }
 }

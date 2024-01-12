@@ -899,10 +899,6 @@ public final class ReflectUtils {
     @Deprecated
     public static Method findMethodByMethodSignature(Class<?> clazz, String methodName, String[] parameterTypes)
             throws NoSuchMethodException, ClassNotFoundException {
-        String signature = clazz.getName() + "." + methodName;
-        if (parameterTypes != null && parameterTypes.length > 0) {
-            signature += StringUtils.join(parameterTypes);
-        }
         Method method;
         if (parameterTypes == null) {
             List<Method> finded = new ArrayList<>();

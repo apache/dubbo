@@ -64,6 +64,10 @@ public class ModuleBuilder extends AbstractBuilder<ModuleConfig, ModuleBuilder> 
      */
     private Boolean isDefault;
 
+    public static ModuleBuilder newBuilder() {
+        return new ModuleBuilder();
+    }
+
     public ModuleBuilder name(String name) {
         this.name = name;
         return getThis();
@@ -110,6 +114,7 @@ public class ModuleBuilder extends AbstractBuilder<ModuleConfig, ModuleBuilder> 
         return getThis();
     }
 
+    @Override
     public ModuleConfig build() {
         ModuleConfig moduleConfig = new ModuleConfig();
         super.build(moduleConfig);

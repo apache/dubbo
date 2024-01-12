@@ -139,6 +139,7 @@ public class ReferenceBuilder<T> extends AbstractReferenceBuilder<ReferenceConfi
         return getThis();
     }
 
+    @Override
     public ReferenceConfig<T> build() {
         ReferenceConfig<T> reference = new ReferenceConfig<>();
         super.build(reference);

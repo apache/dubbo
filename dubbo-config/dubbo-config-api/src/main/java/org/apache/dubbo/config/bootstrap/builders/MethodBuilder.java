@@ -110,6 +110,10 @@ public class MethodBuilder extends AbstractMethodBuilder<MethodConfig, MethodBui
 
     private String serviceId;
 
+    public static MethodBuilder newBuilder() {
+        return new MethodBuilder();
+    }
+
     public MethodBuilder name(String name) {
         this.name = name;
         return getThis();
@@ -206,6 +210,7 @@ public class MethodBuilder extends AbstractMethodBuilder<MethodConfig, MethodBui
         return getThis();
     }
 
+    @Override
     public MethodConfig build() {
         MethodConfig methodConfig = new MethodConfig();
         super.build(methodConfig);

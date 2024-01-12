@@ -16,7 +16,7 @@
 */
 
 {{#packageName}}
-    package {{packageName}};
+package {{packageName}};
 {{/packageName}}
 
 import org.apache.dubbo.common.stream.StreamObserver;
@@ -69,20 +69,19 @@ public final class {{className}} {
     {{{javaDoc}}}
     {{/javaDoc}}
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
-    {{inputType}}.class, {{outputType}}.class, serviceDescriptor, MethodDescriptor.RpcType.UNARY,
+    {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.UNARY,
     obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
     {{outputType}}::parseFrom);
 
     private static final StubMethodDescriptor {{methodName}}AsyncMethod = new StubMethodDescriptor("{{originMethodName}}",
-    {{inputType}}.class, java.util.concurrent.CompletableFuture.class, serviceDescriptor, MethodDescriptor.RpcType.UNARY,
+    {{inputType}}.class, java.util.concurrent.CompletableFuture.class, MethodDescriptor.RpcType.UNARY,
     obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
     {{outputType}}::parseFrom);
 
     private static final StubMethodDescriptor {{methodName}}ProxyAsyncMethod = new StubMethodDescriptor("{{originMethodName}}Async",
-    {{inputType}}.class, {{outputType}}.class, serviceDescriptor, MethodDescriptor.RpcType.UNARY,
+    {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.UNARY,
     obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
     {{outputType}}::parseFrom);
-
 {{/unaryMethods}}
 
 {{#serverStreamingMethods}}
@@ -90,10 +89,9 @@ public final class {{className}} {
     {{{javaDoc}}}
     {{/javaDoc}}
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
-    {{inputType}}.class, {{outputType}}.class, serviceDescriptor, MethodDescriptor.RpcType.SERVER_STREAM,
+    {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.SERVER_STREAM,
     obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
     {{outputType}}::parseFrom);
-
 {{/serverStreamingMethods}}
 
 {{#clientStreamingMethods}}
@@ -101,7 +99,7 @@ public final class {{className}} {
     {{{javaDoc}}}
     {{/javaDoc}}
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
-    {{inputType}}.class, {{outputType}}.class, serviceDescriptor, MethodDescriptor.RpcType.CLIENT_STREAM,
+    {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.CLIENT_STREAM,
     obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
     {{outputType}}::parseFrom);
 {{/clientStreamingMethods}}
@@ -111,10 +109,26 @@ public final class {{className}} {
     {{{javaDoc}}}
     {{/javaDoc}}
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
-    {{inputType}}.class, {{outputType}}.class, serviceDescriptor, MethodDescriptor.RpcType.BI_STREAM,
+    {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.BI_STREAM,
     obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
     {{outputType}}::parseFrom);
 {{/biStreamingWithoutClientStreamMethods}}
+
+    static{
+    {{#unaryMethods}}
+        serviceDescriptor.addMethod({{methodName}}Method);
+        serviceDescriptor.addMethod({{methodName}}ProxyAsyncMethod);
+    {{/unaryMethods}}
+    {{#serverStreamingMethods}}
+        serviceDescriptor.addMethod({{methodName}}Method);
+    {{/serverStreamingMethods}}
+    {{#clientStreamingMethods}}
+        serviceDescriptor.addMethod({{methodName}}Method);
+    {{/clientStreamingMethods}}
+    {{#biStreamingWithoutClientStreamMethods}}
+        serviceDescriptor.addMethod({{methodName}}Method);
+    {{/biStreamingWithoutClientStreamMethods}}
+    }
 
     public static class {{interfaceClassName}}Stub implements {{interfaceClassName}}{
         private final Invoker<{{interfaceClassName}}> invoker;
@@ -125,7 +139,7 @@ public final class {{className}} {
 
     {{#unaryMethods}}
         {{#javaDoc}}
-            {{{javaDoc}}}
+        {{{javaDoc}}}
         {{/javaDoc}}
         @Override
         public {{outputType}} {{methodName}}({{inputType}} request){
@@ -137,9 +151,8 @@ public final class {{className}} {
         }
 
         {{#javaDoc}}
-            {{{javaDoc}}}
+        {{{javaDoc}}}
         {{/javaDoc}}
-        @Override
         public void {{methodName}}({{inputType}} request, StreamObserver<{{outputType}}> responseObserver){
             StubInvocationUtil.unaryCall(invoker, {{methodName}}Method , request, responseObserver);
         }
@@ -147,7 +160,7 @@ public final class {{className}} {
 
     {{#serverStreamingMethods}}
         {{#javaDoc}}
-            {{{javaDoc}}}
+        {{{javaDoc}}}
         {{/javaDoc}}
         @Override
         public void {{methodName}}({{inputType}} request, StreamObserver<{{outputType}}> responseObserver){
@@ -157,7 +170,7 @@ public final class {{className}} {
 
     {{#biStreamingWithoutClientStreamMethods}}
         {{#javaDoc}}
-            {{{javaDoc}}}
+        {{{javaDoc}}}
         {{/javaDoc}}
         @Override
         public StreamObserver<{{inputType}}> {{methodName}}(StreamObserver<{{outputType}}> responseObserver){
@@ -167,7 +180,7 @@ public final class {{className}} {
 
     {{#clientStreamingMethods}}
         {{#javaDoc}}
-            {{{javaDoc}}}
+        {{{javaDoc}}}
         {{/javaDoc}}
         @Override
         public StreamObserver<{{inputType}}> {{methodName}}(StreamObserver<{{outputType}}> responseObserver){
@@ -192,6 +205,30 @@ public final class {{className}} {
                 }
             };
         }
+
+        {{#unaryMethods}}
+        @Override
+        public CompletableFuture<{{outputType}}> {{methodName}}Async({{inputType}} request){
+                return CompletableFuture.completedFuture({{methodName}}(request));
+        }
+        {{/unaryMethods}}
+
+        /**
+        * This server stream type unary method is <b>only</b> used for generated stub to support async unary method.
+        * It will not be called if you are NOT using Dubbo3 generated triple stub and <b>DO NOT</b> implement this method.
+        */
+        {{#unaryMethods}}
+        public void {{methodName}}({{inputType}} request, StreamObserver<{{outputType}}> responseObserver){
+            {{methodName}}Async(request).whenComplete((r, t) -> {
+                if (t != null) {
+                    responseObserver.onError(t);
+                } else {
+                    responseObserver.onNext(r);
+                    responseObserver.onCompleted();
+                }
+            });
+        }
+        {{/unaryMethods}}
 
         @Override
         public final Invoker<{{interfaceClassName}}> getInvoker(URL url) {

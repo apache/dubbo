@@ -76,6 +76,8 @@ public class ResteasyRequestContainerFilterAdapter implements RestRequestFilter,
             restFilterContext.setComplete(true);
         } catch (Throwable e) {
             throw new RuntimeException("dubbo rest resteasy ContainerRequestFilter write response encode error", e);
+        } finally {
+            containerRequestContext.getHttpRequest().releaseContentBuffer();
         }
     }
 }

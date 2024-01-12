@@ -25,21 +25,21 @@ class ArgumentBuilderTest {
 
     @Test
     void index() {
-        ArgumentBuilder builder = new ArgumentBuilder();
+        ArgumentBuilder builder = ArgumentBuilder.newBuilder();
         builder.index(1);
         Assertions.assertEquals(1, builder.build().getIndex());
     }
 
     @Test
     void type() {
-        ArgumentBuilder builder = new ArgumentBuilder();
+        ArgumentBuilder builder = ArgumentBuilder.newBuilder();
         builder.type("int");
         Assertions.assertEquals("int", builder.build().getType());
     }
 
     @Test
     void callback() {
-        ArgumentBuilder builder = new ArgumentBuilder();
+        ArgumentBuilder builder = ArgumentBuilder.newBuilder();
         builder.callback(true);
         Assertions.assertTrue(builder.build().isCallback());
         builder.callback(false);
@@ -48,7 +48,7 @@ class ArgumentBuilderTest {
 
     @Test
     void build() {
-        ArgumentBuilder builder = new ArgumentBuilder();
+        ArgumentBuilder builder = ArgumentBuilder.newBuilder();
         builder.index(1).type("int").callback(true);
 
         ArgumentConfig argument1 = builder.build();

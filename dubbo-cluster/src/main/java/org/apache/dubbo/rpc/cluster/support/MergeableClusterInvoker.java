@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
@@ -69,8 +70,10 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
                         return invokeWithContext(invoker, invocation);
                     } catch (RpcException e) {
                         if (e.isNoInvokerAvailableAfterFilter()) {
-                            log.debug("No available provider for service" + getUrl().getServiceKey() + " on group "
-                                    + invoker.getUrl().getGroup() + ", will continue to try another group.");
+                            log.debug(
+                                    "No available provider for service" + getUrl().getServiceKey() + " on group "
+                                            + invoker.getUrl().getGroup() + ", will continue to try another group.",
+                                    e);
                         } else {
                             throw e;
                         }
@@ -93,7 +96,21 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
         for (final Invoker<T> invoker : invokers) {
             RpcInvocation subInvocation = new RpcInvocation(invocation, invoker);
             subInvocation.setAttachment(ASYNC_KEY, "true");
-            results.put(invoker.getUrl().getServiceKey(), invokeWithContext(invoker, subInvocation));
+            try {
+                results.put(invoker.getUrl().getServiceKey(), invokeWithContext(invoker, subInvocation));
+            } catch (RpcException e) {
+                if (e.isNoInvokerAvailableAfterFilter()) {
+                    log.warn(
+                            LoggerCodeConstants.CLUSTER_NO_VALID_PROVIDER,
+                            e.getCause().getMessage(),
+                            "",
+                            "No available provider for service" + getUrl().getServiceKey() + " on group "
+                                    + invoker.getUrl().getGroup() + ", will continue to try another group.",
+                            e);
+                } else {
+                    throw e;
+                }
+            }
         }
 
         Object result;

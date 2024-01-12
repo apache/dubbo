@@ -33,6 +33,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.stream.Stream;
@@ -40,7 +41,7 @@ import java.util.stream.Stream;
 import com.google.protobuf.Message;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$ECHO;
-import static org.apache.dubbo.common.constants.CommonConstants.PROTOBUF_MESSAGE_CLASS_NAME;
+import static org.apache.dubbo.common.utils.ProtobufUtils.isProtobufClass;
 
 public class ReflectionPackableMethod implements PackableMethod {
 
@@ -73,18 +74,18 @@ public class ReflectionPackableMethod implements PackableMethod {
             case CLIENT_STREAM:
             case BI_STREAM:
                 actualRequestTypes = new Class<?>[] {
-                    (Class<?>)
-                            ((ParameterizedType) method.getMethod().getGenericReturnType()).getActualTypeArguments()[0]
+                    obtainActualTypeInStreamObserver(
+                            ((ParameterizedType) method.getMethod().getGenericReturnType()).getActualTypeArguments()[0])
                 };
-                actualResponseType =
-                        (Class<?>) ((ParameterizedType) method.getMethod().getGenericParameterTypes()[0])
-                                .getActualTypeArguments()[0];
+                actualResponseType = obtainActualTypeInStreamObserver(
+                        ((ParameterizedType) method.getMethod().getGenericParameterTypes()[0])
+                                .getActualTypeArguments()[0]);
                 break;
             case SERVER_STREAM:
                 actualRequestTypes = method.getMethod().getParameterTypes();
-                actualResponseType =
-                        (Class<?>) ((ParameterizedType) method.getMethod().getGenericParameterTypes()[1])
-                                .getActualTypeArguments()[0];
+                actualResponseType = obtainActualTypeInStreamObserver(
+                        ((ParameterizedType) method.getMethod().getGenericParameterTypes()[1])
+                                .getActualTypeArguments()[0]);
                 break;
             case UNARY:
                 actualRequestTypes = method.getParameterClasses();
@@ -268,26 +269,18 @@ public class ReflectionPackableMethod implements PackableMethod {
         return RX_RETURN_CLASS.equalsIgnoreCase(clz.getName());
     }
 
-    static boolean isProtobufClass(Class<?> clazz) {
-        while (clazz != Object.class && clazz != null) {
-            Class<?>[] interfaces = clazz.getInterfaces();
-            if (interfaces.length > 0) {
-                for (Class<?> clazzInterface : interfaces) {
-                    if (PROTOBUF_MESSAGE_CLASS_NAME.equalsIgnoreCase(clazzInterface.getName())) {
-                        return true;
-                    }
-                }
-            }
-            clazz = clazz.getSuperclass();
-        }
-        return false;
-    }
-
     private static String convertHessianFromWrapper(String serializeType) {
         if (TripleConstant.HESSIAN4.equals(serializeType)) {
             return TripleConstant.HESSIAN2;
         }
         return serializeType;
+    }
+
+    static Class<?> obtainActualTypeInStreamObserver(Type typeInStreamObserver) {
+        return (Class<?>)
+                (typeInStreamObserver instanceof ParameterizedType
+                        ? ((ParameterizedType) typeInStreamObserver).getRawType()
+                        : typeInStreamObserver);
     }
 
     @Override

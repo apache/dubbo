@@ -132,6 +132,7 @@ import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 import static org.apache.dubbo.remoting.Constants.CODEC_KEY;
 import static org.apache.dubbo.remoting.Constants.DISPATCHER_KEY;
 import static org.apache.dubbo.remoting.Constants.EXCHANGER_KEY;
+import static org.apache.dubbo.remoting.Constants.PREFER_SERIALIZATION_KEY;
 import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
 import static org.apache.dubbo.remoting.Constants.TELNET_KEY;
@@ -490,6 +491,12 @@ public class ConfigValidationUtils {
                     + "Please add <dubbo:application name=\"...\" /> to your spring config.");
         }
 
+        String name = config.getName();
+        if (!checkName(NAME, name)) {
+            throw new IllegalStateException(
+                    String.format("please correct dubbo application name: %s at your spring config.", name));
+        }
+
         // backward compatibility
         ScopeModel scopeModel = ScopeModelUtil.getOrDefaultApplicationModel(config.getScopeModel());
         PropertiesConfiguration configuration = scopeModel.modelEnvironment().getPropertiesConfiguration();
@@ -503,7 +510,6 @@ public class ConfigValidationUtils {
             }
         }
 
-        checkName(NAME, config.getName());
         checkMultiName(OWNER, config.getOwner());
         checkName(ORGANIZATION, config.getOrganization());
         checkName(ARCHITECTURE, config.getArchitecture());
@@ -602,6 +608,11 @@ public class ConfigValidationUtils {
                 checkMultiExtension(config.getScopeModel(), Codec2.class, CODEC_KEY, config.getCodec());
                 checkMultiExtension(
                         config.getScopeModel(), Serialization.class, SERIALIZATION_KEY, config.getSerialization());
+                checkMultiExtension(
+                        config.getScopeModel(),
+                        Serialization.class,
+                        PREFER_SERIALIZATION_KEY,
+                        config.getPreferSerialization());
                 checkMultiExtension(config.getScopeModel(), Transporter.class, SERVER_KEY, config.getServer());
                 checkMultiExtension(config.getScopeModel(), Transporter.class, CLIENT_KEY, config.getClient());
             }
@@ -623,6 +634,9 @@ public class ConfigValidationUtils {
         checkMultiExtension(config.getScopeModel(), StatusChecker.class, STATUS_KEY, config.getStatus());
         checkExtension(config.getScopeModel(), Transporter.class, TRANSPORTER_KEY, config.getTransporter());
         checkExtension(config.getScopeModel(), Exchanger.class, EXCHANGER_KEY, config.getExchanger());
+        checkMultiExtension(config.getScopeModel(), Serialization.class, SERIALIZATION_KEY, config.getSerialization());
+        checkMultiExtension(
+                config.getScopeModel(), Serialization.class, PREFER_SERIALIZATION_KEY, config.getPreferSerialization());
     }
 
     public static void validateConsumerConfig(ConsumerConfig config) {
@@ -723,8 +737,8 @@ public class ConfigValidationUtils {
         checkProperty(property, value, MAX_PATH_LENGTH, null);
     }
 
-    public static void checkName(String property, String value) {
-        checkProperty(property, value, MAX_LENGTH, PATTERN_NAME);
+    public static boolean checkName(String property, String value) {
+        return checkProperty(property, value, MAX_LENGTH, PATTERN_NAME);
     }
 
     public static void checkHost(String property, String value) {
@@ -780,9 +794,9 @@ public class ConfigValidationUtils {
         }
     }
 
-    public static void checkProperty(String property, String value, int maxlength, Pattern pattern) {
+    public static boolean checkProperty(String property, String value, int maxlength, Pattern pattern) {
         if (StringUtils.isEmpty(value)) {
-            return;
+            return false;
         }
         if (value.length() > maxlength) {
             logger.error(
@@ -791,6 +805,7 @@ public class ConfigValidationUtils {
                     "",
                     "Parameter value format error. Invalid " + property + "=\"" + value + "\" is longer than "
                             + maxlength);
+            return false;
         }
         if (pattern != null) {
             Matcher matcher = pattern.matcher(value);
@@ -802,7 +817,9 @@ public class ConfigValidationUtils {
                         "Parameter value format error. Invalid " + property
                                 + "=\"" + value + "\" contains illegal "
                                 + "character, only digit, letter, '-', '_' or '.' is legal.");
+                return false;
             }
         }
+        return true;
     }
 }

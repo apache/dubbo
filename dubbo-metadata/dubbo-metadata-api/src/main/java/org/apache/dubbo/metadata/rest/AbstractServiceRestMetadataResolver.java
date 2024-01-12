@@ -29,6 +29,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -207,18 +209,39 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         sort(declaredServiceMethods, MethodComparator.INSTANCE);
         sort(serviceMethods, MethodComparator.INSTANCE);
 
+        // prevent from repeat method (impl proxy) & leaving out method(interface proxy)
+        HashSet<String> methodComparators = new HashSet<>();
+
+        // TODO Map key: method desc &  value: Set<Method> for accelerate loop speed
         for (Method declaredServiceMethod : declaredServiceMethods) {
             for (Method serviceMethod : serviceMethods) {
-                if (overrides(serviceMethod, declaredServiceMethod)) {
-                    serviceMethodsMap.put(serviceMethod, declaredServiceMethod);
-                    // override method count > 1
-                    //                    // once method match ,break for decrease loop  times
-                    //                    break;
+
+                if (!overrides(serviceMethod, declaredServiceMethod)) {
+                    continue;
                 }
+
+                String methodDesc = getMethodDesc(serviceMethod);
+
+                if (!methodComparators.add(methodDesc)) {
+                    continue;
+                }
+
+                serviceMethodsMap.put(serviceMethod, declaredServiceMethod);
             }
         }
+
         // make them to be read-only
         return unmodifiableMap(serviceMethodsMap);
+    }
+
+    /**
+     * For simple method desc
+     *
+     * @param serviceMethod
+     * @return
+     */
+    private String getMethodDesc(Method serviceMethod) {
+        return serviceMethod.getName() + Arrays.toString(serviceMethod.getParameterTypes());
     }
 
     private void putServiceMethodToMap(Map<Method, Method> serviceMethodsMap, List<Method> declaredServiceMethods) {

@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.TimeoutException;
 
+import java.io.Serializable;
+
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.QueryStringEncoder;
@@ -35,7 +37,7 @@ import static org.apache.dubbo.rpc.RpcException.UNKNOWN_EXCEPTION;
 /**
  * See https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
  */
-public class TriRpcStatus {
+public class TriRpcStatus implements Serializable {
 
     public static final TriRpcStatus OK = fromCode(Code.OK);
     public static final TriRpcStatus UNKNOWN = fromCode(Code.UNKNOWN);
