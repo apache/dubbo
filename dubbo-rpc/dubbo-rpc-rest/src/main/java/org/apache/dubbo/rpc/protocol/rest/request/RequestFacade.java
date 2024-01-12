@@ -69,7 +69,7 @@ public abstract class RequestFacade<T> {
         try {
             decodedRequestURI = URLDecoder.decode(decodedRequestURI, enc);
         } catch (UnsupportedEncodingException e) {
-            // do nothing
+            // do nothing, try best to deliver
         }
 
         if (StringUtils.isNotEmpty(decodedRequestURI)) {
