@@ -222,27 +222,23 @@ public class DataParseUtils {
     @Nullable
     public static String[] parseAcceptCharset(List<String> acceptCharsets) {
         if (CollectionUtils.isEmpty(acceptCharsets)) {
-            return null;
+            return new String[0];
         }
 
         SortedMap<Float, Set<String>> encodings = new TreeMap<>(Comparator.reverseOrder());
         float defaultWeight = 1.0f;
         for (String acceptCharset : acceptCharsets) {
-            if (StringUtils.isNotEmpty(acceptCharset)) {
-                String[] charsets = acceptCharset.split(",");
-                for (String charset : charsets) {
-                    charset = charset.trim();
-                    if (StringUtils.isNotEmpty(charset)) {
-                        float weight = defaultWeight;
-                        String enc = charset;
-                        if (charset.contains(WEIGHT_IDENTIFIER)) {
-                            String[] split = charset.split(WEIGHT_IDENTIFIER);
-                            enc = split[0];
-                            weight = Float.parseFloat(split[1]);
-                        }
-                        encodings.computeIfAbsent(weight, k -> new HashSet<>()).add(enc);
-                    }
+            String[] charsets = acceptCharset.split(",");
+            for (String charset : charsets) {
+                charset = charset.trim();
+                float weight = defaultWeight;
+                String enc = charset;
+                if (charset.contains(WEIGHT_IDENTIFIER)) {
+                    String[] split = charset.split(WEIGHT_IDENTIFIER);
+                    enc = split[0];
+                    weight = Float.parseFloat(split[1]);
                 }
+                encodings.computeIfAbsent(weight, k -> new HashSet<>()).add(enc);
             }
         }
 

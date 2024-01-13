@@ -58,7 +58,7 @@ public abstract class RequestFacade<T> {
 
     protected void initParameters() {
         String requestURI = getRequestURI();
-        String decodedRequestURI = requestURI;
+        String decodedRequestURI = null;
 
         try {
             String enc = "UTF-8";
@@ -68,7 +68,7 @@ public abstract class RequestFacade<T> {
             if (parsed != null && parsed.length > 0) {
                 enc = parsed[0].toUpperCase();
             }
-            decodedRequestURI = URLDecoder.decode(decodedRequestURI, enc);
+            decodedRequestURI = URLDecoder.decode(requestURI, enc);
         } catch (Throwable t) {
             // do nothing, try best to deliver
         }
