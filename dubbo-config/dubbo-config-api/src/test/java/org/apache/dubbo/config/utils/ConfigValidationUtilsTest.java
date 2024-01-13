@@ -100,9 +100,6 @@ class ConfigValidationUtilsTest {
             mockedStatic
                     .when(() -> ConfigValidationUtils.validateApplicationConfig(any()))
                     .thenCallRealMethod();
-            mockedStatic
-                    .when(() -> ConfigValidationUtils.checkName(any(), any()))
-                    .thenReturn(true);
             ApplicationConfig config = new ApplicationConfig();
             Assertions.assertThrows(IllegalStateException.class, () -> {
                 ConfigValidationUtils.validateApplicationConfig(config);
