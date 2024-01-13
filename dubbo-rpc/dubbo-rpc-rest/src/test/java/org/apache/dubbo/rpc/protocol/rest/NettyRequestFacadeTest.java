@@ -104,7 +104,8 @@ public class NettyRequestFacadeTest {
         String uri = "/hello/world?name=%E6%9D%8E%E5%BC%BA&age=18";
         DefaultFullHttpRequest defaultFullHttpRequest =
                 new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri);
-        defaultFullHttpRequest.headers().add("Accept-Charset", "UTF-8");
+        defaultFullHttpRequest.headers().add("Accept-Charset", "utf-8, iso-8859-1;q=0.5, *;q=0.1");
+        defaultFullHttpRequest.headers().add("Accept-Charset", "utf-16;q=0.3");
 
         NettyRequestFacade nettyRequestFacade = new NettyRequestFacade(defaultFullHttpRequest, null);
         assertThat(nettyRequestFacade.getPath(), is("/hello/world"));

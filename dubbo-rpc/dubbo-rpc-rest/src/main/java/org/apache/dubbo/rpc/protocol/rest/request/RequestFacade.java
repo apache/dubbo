@@ -16,13 +16,12 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.request;
 
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
+import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -59,16 +58,18 @@ public abstract class RequestFacade<T> {
 
     protected void initParameters() {
         String requestURI = getRequestURI();
-
-        String enc = "UTF-8";
-        ArrayList<String> charset = headers.get(RestConstant.ACCEPT_CHARSET);
-        if (CollectionUtils.isNotEmpty(charset) && StringUtils.isNotEmpty(charset.get(0))) {
-            enc = charset.get(0);
-        }
         String decodedRequestURI = requestURI;
+
         try {
+            String enc = "UTF-8";
+            ArrayList<String> charset = headers.get(RestConstant.ACCEPT_CHARSET);
+            // take the highest priority charset
+            String[] parsed = DataParseUtils.parseAcceptCharset(charset);
+            if (parsed != null && parsed.length > 0) {
+                enc = parsed[0].toUpperCase();
+            }
             decodedRequestURI = URLDecoder.decode(decodedRequestURI, enc);
-        } catch (UnsupportedEncodingException e) {
+        } catch (Throwable t) {
             // do nothing, try best to deliver
         }
 

@@ -44,6 +44,7 @@ public interface RestConstant {
     String CONTENT_TYPE = "Content-Type";
     String TEXT_PLAIN = "text/plain";
     String ACCEPT_CHARSET = "Accept-Charset";
+    String WEIGHT_IDENTIFIER = ";q=";
     String ACCEPT = "Accept";
     String DEFAULT_ACCEPT = "*/*";
     String REST_HEADER_PREFIX = "rest-service-";
