@@ -27,6 +27,9 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Now the threads that run timer tasks are separate from the worker thread of HashedWheelTimer.
+ */
 public class HashedWheelTimerTest {
     private CountDownLatch tryStopTaskCountDownLatch = new CountDownLatch(1);
     private CountDownLatch errorTaskCountDownLatch = new CountDownLatch(1);
@@ -40,7 +43,9 @@ public class HashedWheelTimerTest {
     private static class BlockTask implements TimerTask {
         @Override
         public void run(Timeout timeout) throws InterruptedException {
-            this.wait();
+            synchronized (this) {
+                this.wait();
+            }
         }
     }
 
@@ -53,15 +58,8 @@ public class HashedWheelTimerTest {
     }
 
     private class TryStopTask implements TimerTask {
-        private Timer timer;
-
-        public TryStopTask(Timer timer) {
-            this.timer = timer;
-        }
-
         @Override
         public void run(Timeout timeout) {
-            Assertions.assertThrows(RuntimeException.class, () -> timer.stop());
             tryStopTaskCountDownLatch.countDown();
         }
     }
@@ -157,8 +155,8 @@ public class HashedWheelTimerTest {
 
         List<Timeout> timeouts = new LinkedList<>();
         for (; timer.pendingTimeouts() < 8; ) {
-            // to trigger maxPendingTimeouts
-            timeout = timer.newTimeout(new BlockTask(), -1, TimeUnit.MILLISECONDS);
+            // ensure to trigger maxPendingTimeouts by setting delay to 50ms
+            timeout = timer.newTimeout(new BlockTask(), 50, TimeUnit.MILLISECONDS);
             timeouts.add(timeout);
             Assertions.assertNotNull(timeout.toString());
         }
@@ -179,7 +177,7 @@ public class HashedWheelTimerTest {
     @Test
     public void stopTaskTest() throws InterruptedException {
         Timer timer = new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true));
-        timer.newTimeout(new TryStopTask(timer), 10, TimeUnit.MILLISECONDS);
+        timer.newTimeout(new TryStopTask(), 10, TimeUnit.MILLISECONDS);
         tryStopTaskCountDownLatch.await();
 
         for (int i = 0; i < 8; i++) {
