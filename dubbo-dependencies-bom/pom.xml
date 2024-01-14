@@ -188,6 +188,7 @@
     <open_feign_version>3.1.5</open_feign_version>
     <jakarta.xml.bind-api.version>4.0.1</jakarta.xml.bind-api.version>
     <jaxb-runtime.version>2.3.3-b02</jaxb-runtime.version>
+    <wasmtime-java.version>0.19.0</wasmtime-java.version>
   </properties>
 
   <dependencyManagement>
@@ -927,6 +928,12 @@
         <groupId>org.glassfish.jaxb</groupId>
         <artifactId>jaxb-runtime</artifactId>
         <version>${jaxb-runtime.version}</version>
+      </dependency>
+      <!-- wasm related dependencies -->
+      <dependency>
+        <groupId>io.github.kawamuray.wasmtime</groupId>
+        <artifactId>wasmtime-java</artifactId>
+        <version>${wasmtime-java.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

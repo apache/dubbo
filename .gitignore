@@ -50,3 +50,5 @@ dubbo-demo/dubbo-demo-triple/build/*
 
 .git.exec.error
 
+# rust ignore
+*.lock
