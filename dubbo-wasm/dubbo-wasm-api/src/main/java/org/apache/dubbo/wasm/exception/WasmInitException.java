@@ -20,8 +20,7 @@ public class WasmInitException extends RuntimeException {
 
     private static final long serialVersionUID = -325000764263035159L;
 
-    public WasmInitException() {
-    }
+    public WasmInitException() {}
 
     public WasmInitException(String message) {
         super(message);

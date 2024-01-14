@@ -18,16 +18,6 @@ package org.apache.dubbo.wasm;
 
 import org.apache.dubbo.wasm.exception.WasmInitException;
 
-import io.github.kawamuray.wasmtime.Extern;
-import io.github.kawamuray.wasmtime.Func;
-import io.github.kawamuray.wasmtime.Linker;
-import io.github.kawamuray.wasmtime.Memory;
-import io.github.kawamuray.wasmtime.Module;
-import io.github.kawamuray.wasmtime.Store;
-import io.github.kawamuray.wasmtime.WasmFunctions;
-import io.github.kawamuray.wasmtime.wasi.WasiCtx;
-import io.github.kawamuray.wasmtime.wasi.WasiCtxBuilder;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
@@ -38,6 +28,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+
+import io.github.kawamuray.wasmtime.Extern;
+import io.github.kawamuray.wasmtime.Func;
+import io.github.kawamuray.wasmtime.Linker;
+import io.github.kawamuray.wasmtime.Memory;
+import io.github.kawamuray.wasmtime.Module;
+import io.github.kawamuray.wasmtime.Store;
+import io.github.kawamuray.wasmtime.WasmFunctions;
+import io.github.kawamuray.wasmtime.wasi.WasiCtx;
+import io.github.kawamuray.wasmtime.wasi.WasiCtxBuilder;
 
 /**
  * The WasmLoader aims to load wasm file and provide the wasm function to java,
@@ -51,7 +51,8 @@ public class WasmLoader implements AutoCloseable {
 
     protected final String wasmName;
 
-    private final WasiCtx wasiCtx = new WasiCtxBuilder().inheritStdout().inheritStderr().build();
+    private final WasiCtx wasiCtx =
+            new WasiCtxBuilder().inheritStdout().inheritStderr().build();
 
     /**
      * @see WasmFunctions#wrap
@@ -82,7 +83,8 @@ public class WasmLoader implements AutoCloseable {
         this.wasmName = (wasmClass != null ? wasmClass : this.getClass()).getName() + ".wasm";
         try {
             // locate `.wasm` lib.
-            Path wasmPath = Paths.get(WasmLoader.class.getClassLoader().getResource(wasmName).toURI());
+            Path wasmPath = Paths.get(
+                    WasmLoader.class.getClassLoader().getResource(wasmName).toURI());
             // Reads the WebAssembly module as bytes.
             byte[] wasmBytes = Files.readAllBytes(wasmPath);
             // Instantiates the WebAssembly module.
@@ -98,7 +100,7 @@ public class WasmLoader implements AutoCloseable {
             // maybe need define many functions
             if (!wasmCallJavaFuncMap.isEmpty()) {
                 wasmCallJavaFuncMap.forEach((funcName, wasmCallJavaFunc) ->
-                    linker.define(store, IMPORT_WASM_MODULE_NAME, funcName, Extern.fromFunc(wasmCallJavaFunc)));
+                        linker.define(store, IMPORT_WASM_MODULE_NAME, funcName, Extern.fromFunc(wasmCallJavaFunc)));
             }
             linker.module(store, "", module);
             // Let the `wasmCallJavaFunc` function to refer this as a placeholder of Memory because

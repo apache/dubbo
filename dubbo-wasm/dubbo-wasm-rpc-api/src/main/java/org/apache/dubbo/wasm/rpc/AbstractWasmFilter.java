@@ -24,11 +24,11 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.wasm.WasmLoader;
 import org.apache.dubbo.wasm.exception.FunctionNotFoundException;
 
-import io.github.kawamuray.wasmtime.WasmFunctions;
-import io.github.kawamuray.wasmtime.WasmValType;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import io.github.kawamuray.wasmtime.WasmFunctions;
+import io.github.kawamuray.wasmtime.WasmValType;
 
 /**
  * Filters implemented in other languages should extend this class, we still need to write Java subclasses,
@@ -45,17 +45,18 @@ public abstract class AbstractWasmFilter extends WasmLoader implements Filter {
     @Override
     public final Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         return super.getWasmExtern(INVOKE_METHOD_NAME)
-            .map(extern -> {
-                // call wasi function
-                Long argumentId = getArgumentId(invoker, invocation);
-                ARGUMENTS.put(argumentId, new Argument(invoker, invocation));
-                // WASI cannot easily pass Java objects like JNI, here we pass Long
-                // then we can get the argument by Long
-                WasmFunctions.consumer(super.getStore(), extern.func(), WasmValType.I64).accept(argumentId);
-                ARGUMENTS.remove(argumentId);
-                return invoker.invoke(invocation);
-            })
-            .orElseThrow(() -> new FunctionNotFoundException("invoke function not found in " + wasmName));
+                .map(extern -> {
+                    // call wasi function
+                    Long argumentId = getArgumentId(invoker, invocation);
+                    ARGUMENTS.put(argumentId, new Argument(invoker, invocation));
+                    // WASI cannot easily pass Java objects like JNI, here we pass Long
+                    // then we can get the argument by Long
+                    WasmFunctions.consumer(super.getStore(), extern.func(), WasmValType.I64)
+                            .accept(argumentId);
+                    ARGUMENTS.remove(argumentId);
+                    return invoker.invoke(invocation);
+                })
+                .orElseThrow(() -> new FunctionNotFoundException("invoke function not found in " + wasmName));
     }
 
     protected abstract Long getArgumentId(Invoker<?> invoker, Invocation invocation);

@@ -20,8 +20,7 @@ public class FunctionNotFoundException extends RuntimeException {
 
     private static final long serialVersionUID = 5925652370728356835L;
 
-    public FunctionNotFoundException() {
-    }
+    public FunctionNotFoundException() {}
 
     public FunctionNotFoundException(String message) {
         super(message);

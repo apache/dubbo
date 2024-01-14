@@ -19,15 +19,15 @@ package org.apache.dubbo.wasm.rpc;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import io.github.kawamuray.wasmtime.Func;
 import io.github.kawamuray.wasmtime.Store;
 import io.github.kawamuray.wasmtime.WasmFunctions;
 import io.github.kawamuray.wasmtime.WasmValType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class AbstractWasmFilterTest {
 
