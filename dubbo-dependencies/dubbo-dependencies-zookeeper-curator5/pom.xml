@@ -32,7 +32,7 @@
 
   <properties>
     <revision>3.2.11-SNAPSHOT</revision>
-    <maven_flatten_version>1.5.0</maven_flatten_version>
+    <maven_flatten_version>1.6.0</maven_flatten_version>
     <curator5_version>5.1.0</curator5_version>
     <zookeeper_version>3.8.3</zookeeper_version>
     <spotless-maven-plugin.version>2.41.1</spotless-maven-plugin.version>
