@@ -41,6 +41,9 @@ public class AotUtils {
     private static void registerSerializationType(Class<?> registerType, RuntimeHints hints) {
         if (isPrimitive(registerType)) {
             hints.serialization().registerType(TypeReference.of(ClassUtils.getBoxedClass(registerType)));
+        } else if (registerType.isEnum()) {
+            hints.serialization().registerType(TypeReference.of(registerType));
+            hints.serialization().registerType(TypeReference.of(Enum.class));
         } else {
             if (Serializable.class.isAssignableFrom(registerType)) {
                 hints.serialization().registerType(TypeReference.of(registerType));

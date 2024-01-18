@@ -65,10 +65,18 @@ public class AotUtilsTest {
             }
         });
 
+        AtomicBoolean containSexEnum = new AtomicBoolean(false);
+        runtimeHints.serialization().javaSerializationHints().forEach(s -> {
+            if (s.getType().getName().equals(SexEnum.class.getName())) {
+                containSexEnum.set(true);
+            }
+        });
+
         Assertions.assertTrue(containHelloRequest.get());
         Assertions.assertTrue(containPerson.get());
         Assertions.assertTrue(containString.get());
         Assertions.assertTrue(containHelloRequestSuper.get());
         Assertions.assertTrue(containHelloResponse.get());
+        Assertions.assertTrue(containSexEnum.get());
     }
 }
