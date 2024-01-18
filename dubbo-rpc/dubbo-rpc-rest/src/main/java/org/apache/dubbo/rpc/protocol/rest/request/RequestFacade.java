@@ -28,6 +28,8 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.DEFAULT_CHARSET;
+
 /**
  * request facade for different request
  *
@@ -61,7 +63,7 @@ public abstract class RequestFacade<T> {
         String decodedRequestURI = null;
 
         try {
-            String enc = "UTF-8";
+            String enc = DEFAULT_CHARSET;
             ArrayList<String> charset = headers.get(RestConstant.ACCEPT_CHARSET);
             // take the highest priority charset
             String[] parsed = DataParseUtils.parseAcceptCharset(charset);
