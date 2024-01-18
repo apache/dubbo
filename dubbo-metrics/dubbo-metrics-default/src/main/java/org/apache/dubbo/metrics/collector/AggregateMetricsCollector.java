@@ -59,7 +59,7 @@ import static org.apache.dubbo.metrics.model.MetricsCategory.RT;
  */
 public class AggregateMetricsCollector implements MetricsCollector<RequestEvent> {
     private int bucketNum = DEFAULT_BUCKET_NUM;
-        private int timeWindowSeconds = DEFAULT_TIME_WINDOW_SECONDS;
+    private int timeWindowSeconds = DEFAULT_TIME_WINDOW_SECONDS;
     private int qpsTimeWindowMillSeconds = DEFAULT_QPS_TIME_WINDOW_MILL_SECONDS;
     private final Map<MetricsKeyWrapper, ConcurrentHashMap<MethodMetric, TimeWindowCounter>> methodTypeCounter =
             new ConcurrentHashMap<>();
