@@ -77,8 +77,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
 
     @Override
     protected Executor initializeExecutor(Http2Header metadata) {
-        Executor executor = executorSupport.getExecutor(metadata);
-        return new SerializingExecutor(executor);
+        return new SerializingExecutor(executorSupport.getExecutor(metadata));
     }
 
     protected void doOnMetadata(Http2Header metadata) {

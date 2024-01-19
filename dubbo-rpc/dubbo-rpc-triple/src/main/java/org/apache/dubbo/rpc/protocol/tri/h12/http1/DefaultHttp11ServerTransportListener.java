@@ -18,6 +18,8 @@ package org.apache.dubbo.rpc.protocol.tri.h12.http1;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
 import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpInputMessage;
@@ -30,6 +32,7 @@ import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.remoting.http12.message.codec.JsonCodec;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.executor.ExecutorSupport;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext;
@@ -40,18 +43,28 @@ import org.apache.dubbo.rpc.protocol.tri.h12.ServerCallListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.ServerStreamServerCallListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.UnaryServerCallListener;
 
+import java.util.concurrent.Executor;
+
 public class DefaultHttp11ServerTransportListener
         extends AbstractServerTransportListener<RequestMetadata, HttpInputMessage>
         implements Http1ServerTransportListener {
 
+    private final ExecutorSupport executorSupport;
     private final HttpChannel httpChannel;
     private Http1ServerChannelObserver serverChannelObserver;
 
     public DefaultHttp11ServerTransportListener(HttpChannel httpChannel, URL url, FrameworkModel frameworkModel) {
         super(frameworkModel, url, httpChannel);
+        executorSupport = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel())
+                .getExecutorSupport(url);
         this.httpChannel = httpChannel;
         serverChannelObserver = new Http1ServerChannelObserver(httpChannel);
         serverChannelObserver.setResponseEncoder(JsonCodec.INSTANCE);
+    }
+
+    @Override
+    protected Executor initializeExecutor(RequestMetadata metadata) {
+        return new SerializingExecutor(executorSupport.getExecutor(metadata));
     }
 
     @Override

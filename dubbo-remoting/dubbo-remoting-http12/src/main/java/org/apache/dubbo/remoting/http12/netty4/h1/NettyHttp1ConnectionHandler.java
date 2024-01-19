@@ -17,13 +17,10 @@
 package org.apache.dubbo.remoting.http12.netty4.h1;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.remoting.http12.h1.Http1Request;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerTransportListener;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerTransportListenerFactory;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-
-import java.util.concurrent.Executor;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -36,8 +33,6 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
 
     private final Http1ServerTransportListenerFactory http1ServerTransportListenerFactory;
 
-    private final Executor executor;
-
     public NettyHttp1ConnectionHandler(
             URL url,
             FrameworkModel frameworkModel,
@@ -45,10 +40,6 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
         this.url = url;
         this.frameworkModel = frameworkModel;
         this.http1ServerTransportListenerFactory = http1ServerTransportListenerFactory;
-        executor = url.getOrDefaultFrameworkModel()
-                .getExtensionLoader(ThreadPool.class)
-                .getAdaptiveExtension()
-                .getExecutor(url);
     }
 
     /**
@@ -57,9 +48,7 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
     protected void channelRead0(ChannelHandlerContext ctx, Http1Request http1Request) {
         Http1ServerTransportListener http1TransportListener = http1ServerTransportListenerFactory.newInstance(
                 new NettyHttp1Channel(ctx.channel()), url, frameworkModel);
-        executor.execute(() -> {
-            http1TransportListener.onMetadata(http1Request);
-            http1TransportListener.onData(http1Request);
-        });
+        http1TransportListener.onMetadata(http1Request);
+        http1TransportListener.onData(http1Request);
     }
 }
