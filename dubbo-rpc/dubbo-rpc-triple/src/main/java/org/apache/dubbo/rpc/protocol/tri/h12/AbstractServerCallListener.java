@@ -26,7 +26,6 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
-import org.apache.dubbo.rpc.protocol.tri.call.AbstractServerCall;
 
 import java.net.InetSocketAddress;
 
@@ -57,7 +56,7 @@ public abstract class AbstractServerCallListener implements ServerCallListener {
                     ((Http2CancelableStreamObserver<Object>) responseObserver).getCancellationContext());
         }
         InetSocketAddress remoteAddress =
-                (InetSocketAddress) invocation.getAttributes().remove(AbstractServerCall.REMOTE_ADDRESS_KEY);
+                (InetSocketAddress) invocation.getAttributes().remove("tri.remote.address");
         RpcContext.getServiceContext().setRemoteAddress(remoteAddress);
         String remoteApp = (String) invocation.getAttributes().remove(TripleHeaderEnum.CONSUMER_APP_NAME_KEY);
         if (null != remoteApp) {
