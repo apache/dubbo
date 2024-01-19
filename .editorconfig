@@ -71,6 +71,3 @@ ij_xml_keep_blank_lines = 1
 
 [pom.xml]
 indent_size = 2
-
-[pom.xml]
-indent_size = 2
