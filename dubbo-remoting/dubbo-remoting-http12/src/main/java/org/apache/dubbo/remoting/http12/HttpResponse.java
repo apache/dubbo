@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-public interface HttpResponse extends HttpResult<Object> {
+public interface HttpResponse {
 
     int status();
 
@@ -79,15 +79,15 @@ public interface HttpResponse extends HttpResult<Object> {
 
     void sendError(int status, String message);
 
-    boolean noContent();
-
     boolean isEmpty();
 
     boolean isCommitted();
 
-    void commit();
+    boolean commit();
 
     void reset();
 
     void resetBuffer();
+
+    HttpResult<Object> toHttpResult();
 }

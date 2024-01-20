@@ -24,19 +24,19 @@ import org.apache.dubbo.rpc.model.ServiceDescriptor;
 public final class HandlerMeta {
 
     private final Invoker<?> invoker;
-    private final ParameterMeta[] parameters;
+    private final MethodMeta method;
     private final MethodMetadata methodMetadata;
     private final MethodDescriptor methodDescriptor;
     private final ServiceDescriptor serviceDescriptor;
 
     public HandlerMeta(
             Invoker<?> invoker,
-            ParameterMeta[] parameters,
+            MethodMeta method,
             MethodMetadata methodMetadata,
             MethodDescriptor methodDescriptor,
             ServiceDescriptor serviceDescriptor) {
         this.invoker = invoker;
-        this.parameters = parameters;
+        this.method = method;
         this.methodMetadata = methodMetadata;
         this.methodDescriptor = methodDescriptor;
         this.serviceDescriptor = serviceDescriptor;
@@ -46,8 +46,12 @@ public final class HandlerMeta {
         return invoker;
     }
 
+    public MethodMeta getMethod() {
+        return method;
+    }
+
     public ParameterMeta[] getParameters() {
-        return parameters;
+        return method.getParameters();
     }
 
     public MethodMetadata getMethodMetadata() {

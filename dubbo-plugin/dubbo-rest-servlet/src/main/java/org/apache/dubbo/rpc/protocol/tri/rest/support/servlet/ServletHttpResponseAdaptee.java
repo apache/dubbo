@@ -26,6 +26,7 @@ import javax.servlet.WriteListener;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -95,6 +96,11 @@ public class ServletHttpResponseAdaptee extends DefaultHttpResponse implements H
     }
 
     @Override
+    public int getStatus() {
+        return status();
+    }
+
+    @Override
     public String getHeader(String name) {
         return header(name);
     }
@@ -155,7 +161,13 @@ public class ServletHttpResponseAdaptee extends DefaultHttpResponse implements H
     }
 
     @Override
-    public void flushBuffer() {}
+    public void flushBuffer() throws IOException {
+        //noinspection resource
+        OutputStream os = outputStream();
+        if (os instanceof BufferedOutputStream) {
+            os.flush();
+        }
+    }
 
     @Override
     public void setLocale(Locale loc) {

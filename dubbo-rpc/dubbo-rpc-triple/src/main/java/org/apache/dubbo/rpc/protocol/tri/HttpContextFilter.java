@@ -21,7 +21,7 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.remoting.http12.HttpResult;
-import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -44,11 +44,17 @@ public class HttpContextFilter implements Filter, BaseFilter.Listener {
         HttpResponse response = (HttpResponse) invocation.get(TripleConstant.HTTP_RESPONSE_KEY);
         RpcServiceContext context = RpcContext.getServiceContext();
         context.setRemoteAddress(request.remoteHost(), request.remotePort());
-        context.setLocalAddress(request.localHost(), request.localPort());
+        if (context.getLocalAddress() == null) {
+            context.setLocalAddress(request.localHost(), request.localPort());
+        }
         context.setRequest(request);
         context.setResponse(response);
         if (response.isCommitted()) {
-            return new AppResponse(response);
+            HttpResult<Object> result = response.toHttpResult();
+            if (result.getBody() instanceof Throwable) {
+                return AsyncRpcResult.newDefaultAsyncResult((Throwable) result.getBody(), invocation);
+            }
+            return AsyncRpcResult.newDefaultAsyncResult(result, invocation);
         }
         return invoker.invoke(invocation);
     }
@@ -63,27 +69,16 @@ public class HttpContextFilter implements Filter, BaseFilter.Listener {
         if (response.isEmpty()) {
             return;
         }
-        if (response.isCommitted()) {
-            appResponse.setValue(response);
-            return;
-        }
-        Object value = appResponse.getValue();
-        if (value instanceof HttpResult) {
-            HttpResult<?> httpResult = (HttpResult<?>) value;
-            if (httpResult.getStatus() != 0) {
-                response.setStatus(httpResult.getStatus());
-            }
-            if (httpResult.getHeaders() != null) {
-                response.headers().putAll(httpResult.getHeaders());
-            }
-            if (httpResult.getBody() != null) {
-                response.setBody(httpResult.getBody());
-            }
-        } else if (response.noContent()) {
-            response.setBody(appResponse.hasException() ? appResponse.getException() : value);
+        if (!response.isCommitted() && response.body() == null) {
+            response.setBody(appResponse.getValue());
         }
         response.commit();
-        appResponse.setValue(response);
+        HttpResult<Object> result = response.toHttpResult();
+        if (result.getBody() instanceof Throwable) {
+            appResponse.setException((Throwable) result.getBody());
+            return;
+        }
+        appResponse.setValue(result);
     }
 
     @Override

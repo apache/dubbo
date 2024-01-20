@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.util;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.lang.Prioritized;
+import org.apache.dubbo.rpc.protocol.tri.rest.filter.RestExtension;
 
 public final class RestUtils {
     private RestUtils() {}
@@ -60,5 +61,9 @@ public final class RestUtils {
         }
         Activate activate = obj.getClass().getAnnotation(Activate.class);
         return activate == null ? 0 : activate.order();
+    }
+
+    public static String[] getPattens(Object obj) {
+        return obj instanceof RestExtension ? ((RestExtension) obj).getPatterns() : null;
     }
 }

@@ -37,12 +37,12 @@ public class FormParamArgumentResolver extends AbstractJaxrsArgumentResolver {
 
     @Override
     protected Object resolveValue(NamedValueMeta meta, HttpRequest request, HttpResponse response) {
-        return CollectionUtils.first(request.postParameterValues(getFullName(meta)));
+        return CollectionUtils.first(request.formParameterValues(getFullName(meta)));
     }
 
     @Override
     protected Object resolveCollectionValue(NamedValueMeta meta, HttpRequest request, HttpResponse response) {
-        return request.postParameterValues(getFullName(meta));
+        return request.formParameterValues(getFullName(meta));
     }
 
     private String getFullName(NamedValueMeta meta) {

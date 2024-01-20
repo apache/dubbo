@@ -21,6 +21,7 @@ import org.apache.dubbo.remoting.http12.HttpCookie;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.remoting.http12.HttpResult;
 import org.apache.dubbo.remoting.http12.HttpStatus;
 import org.apache.dubbo.remoting.http12.HttpUtils;
 
@@ -43,7 +44,6 @@ public class DefaultHttpResponse implements HttpResponse {
     private int status;
     private String contentType;
     private String charset;
-    private List<HttpCookie> cookies;
     private Object body;
     private OutputStream outputStream;
 
@@ -119,11 +119,7 @@ public class DefaultHttpResponse implements HttpResponse {
 
     @Override
     public void addCookie(HttpCookie cookie) {
-        check();
-        if (cookies == null) {
-            cookies = new ArrayList<>();
-        }
-        cookies.add(cookie);
+        addHeader("set-cookie", HttpUtils.encodeCookie(cookie));
     }
 
     @Override
@@ -167,7 +163,7 @@ public class DefaultHttpResponse implements HttpResponse {
             if (contentType == null) {
                 charset = StringUtils.EMPTY_STRING;
             } else {
-                int index = contentType.lastIndexOf("charset=");
+                int index = contentType.lastIndexOf(HttpUtils.CHARSET_PREFIX);
                 charset = index == -1
                         ? StringUtils.EMPTY_STRING
                         : contentType.substring(index + 8).trim();
@@ -182,7 +178,7 @@ public class DefaultHttpResponse implements HttpResponse {
         check();
         String contentType = contentType();
         if (contentType != null) {
-            setContentType0(contentType + "; charset=" + charset);
+            setContentType0(contentType + "; " + HttpUtils.CHARSET_PREFIX + charset);
         }
         this.charset = charset;
     }
@@ -214,7 +210,7 @@ public class DefaultHttpResponse implements HttpResponse {
         if (outputStream == null) {
             outputStream = new ByteArrayOutputStream(1024);
         }
-        return null;
+        return outputStream;
     }
 
     @Override
@@ -247,21 +243,22 @@ public class DefaultHttpResponse implements HttpResponse {
     }
 
     @Override
-    public boolean noContent() {
-        if (body == null) {
-            if (outputStream == null) {
-                return true;
-            }
+    public boolean isEmpty() {
+        if (status != 0) {
+            return false;
+        }
+        if (!headers.isEmpty()) {
+            return false;
+        }
+        if (body != null) {
+            return false;
+        }
+        if (outputStream != null) {
             if (outputStream instanceof ByteArrayOutputStream) {
                 return ((ByteArrayOutputStream) outputStream).size() == 0;
             }
         }
-        return false;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return status == 0 && headers.isEmpty() && cookies == null && noContent();
+        return true;
     }
 
     @Override
@@ -270,24 +267,15 @@ public class DefaultHttpResponse implements HttpResponse {
     }
 
     @Override
-    public void commit() {
-        if (committed.compareAndSet(false, true)) {
-            return;
-        }
-
-        if (cookies != null) {
-            headers.put("set-cookie", HttpUtils.encodeCookies(cookies));
-        }
-
-        throw new IllegalStateException("The response has been committed");
+    public boolean commit() {
+        return committed.compareAndSet(false, true);
     }
 
     @Override
     public void reset() {
-        headers.clear();
         status = 0;
+        headers.clear();
         contentType = null;
-        cookies = null;
         body = null;
         resetBuffer();
         committed.set(false);
@@ -300,28 +288,49 @@ public class DefaultHttpResponse implements HttpResponse {
                 ((ByteArrayOutputStream) outputStream).reset();
                 return;
             }
-            throw new UnsupportedOperationException("The output stream is not supported to reset");
+            throw new UnsupportedOperationException(
+                    "The outputStream type [" + outputStream.getClass().getName() + "] is not supported to reset");
         }
-    }
-
-    @Override
-    public int getStatus() {
-        return status;
-    }
-
-    @Override
-    public Map<String, List<String>> getHeaders() {
-        return headers;
-    }
-
-    @Override
-    public Object getBody() {
-        return body == null ? outputStream : body;
     }
 
     private void check() {
         if (committed.get()) {
-            throw new IllegalStateException("Response already committed!");
+            throw new IllegalStateException("Response already committed");
         }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public HttpResult<Object> toHttpResult() {
+        int status = this.status;
+        Map<String, List<String>> headers = this.headers;
+        Object body = this.body;
+        if (body instanceof HttpResult) {
+            HttpResult<Object> result = (HttpResult<Object>) body;
+            if (result.getStatus() != 0) {
+                status = result.getStatus();
+            }
+            Map<String, List<String>> rHeaders = result.getHeaders();
+            if (rHeaders != null && !rHeaders.isEmpty()) {
+                headers = new HttpHeaders();
+                headers.putAll(this.headers);
+                for (Map.Entry<String, List<String>> entry : rHeaders.entrySet()) {
+                    String key = entry.getKey();
+                    if ("set-cookie".equalsIgnoreCase(key)) {
+                        headers.computeIfAbsent(key, k -> new ArrayList<>()).addAll(entry.getValue());
+                    } else {
+                        headers.put(key, entry.getValue());
+                    }
+                }
+            }
+            body = result.getBody();
+        }
+        if (status == 0) {
+            status = HttpStatus.OK.getCode();
+        }
+        if (body == null) {
+            body = outputStream;
+        }
+        return HttpResult.builder().status(status).headers(headers).body(body).build();
     }
 }

@@ -106,7 +106,7 @@ public class DefaultRequestMappingRegistry implements RequestMappingRegistry {
         MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(method.getName(), method.getParameterTypes());
         return new HandlerMeta(
                 invoker,
-                methodMeta.getParameters(),
+                methodMeta,
                 MethodMetadata.fromMethodDescriptor(methodDescriptor),
                 methodDescriptor,
                 serviceDescriptor);
@@ -181,7 +181,9 @@ public class DefaultRequestMappingRegistry implements RequestMappingRegistry {
 
         Candidate winner = candidates.get(0);
         RequestMapping mapping = winner.mapping;
+        HandlerMeta handler = winner.meta;
         request.setAttribute(RestConstants.MAPPING_ATTRIBUTE, mapping);
+        request.setAttribute(RestConstants.HANDLER_ATTRIBUTE, handler);
 
         if (!winner.variableMap.isEmpty()) {
             request.setAttribute(RestConstants.URI_TEMPLATE_VARIABLES_ATTRIBUTE, winner.variableMap);
@@ -192,7 +194,7 @@ public class DefaultRequestMappingRegistry implements RequestMappingRegistry {
             request.setAttribute(RestConstants.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE, producesCondition.getMediaTypes());
         }
 
-        return winner.meta;
+        return handler;
     }
 
     private static final class Registration {

@@ -22,17 +22,13 @@ import org.apache.dubbo.rpc.Result;
 
 public interface RestFilter extends RestExtension {
 
-    default String[] patterns() {
-        return null;
-    }
-
     void doFilter(HttpRequest request, HttpResponse response, FilterChain chain) throws Exception;
 
     interface Listener {
 
-        void onSuccess(Result result, HttpRequest request, HttpResponse response);
+        void onSuccess(Result result, HttpRequest request, HttpResponse response) throws Exception;
 
-        void onError(Throwable t, HttpRequest request, HttpResponse response);
+        void onError(Throwable t, HttpRequest request, HttpResponse response) throws Exception;
     }
 
     interface FilterChain {

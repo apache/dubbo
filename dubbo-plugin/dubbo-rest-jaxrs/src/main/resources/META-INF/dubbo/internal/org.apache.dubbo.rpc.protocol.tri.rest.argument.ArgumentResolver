@@ -5,4 +5,4 @@ jaxrs-header-param=org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.HeaderPa
 jaxrs-cookie-param=org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.CookieParamArgumentResolver
 jaxrs-form-param=org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.FormParamArgumentResolver
 jaxrs-body=org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.BodyArgumentResolver
-jaxrs-misc=org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.MiscJaxrsArgumentResolver
+jaxrs-misc=org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.JaxrsMiscArgumentResolver

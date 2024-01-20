@@ -61,6 +61,16 @@ public abstract class AnnotationSupport {
         });
     }
 
+    public final Annotation[] getRealAnnotations() {
+        AnnotationMeta[] annotations = getAnnotations();
+        int len = annotations.length;
+        Annotation[] result = new Annotation[len];
+        for (int i = 0; i < len; i++) {
+            result[i] = annotations[i].getAnnotation();
+        }
+        return result;
+    }
+
     public final AnnotationMeta getAnnotation(Class<Annotation> annotationType) {
         return cache.computeIfAbsent(Pair.of(annotationType, GET_KEY), k -> {
                     AnnotatedElement element = getAnnotatedElement();

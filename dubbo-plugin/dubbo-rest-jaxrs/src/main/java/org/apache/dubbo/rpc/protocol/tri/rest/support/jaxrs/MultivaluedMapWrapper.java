@@ -16,4 +16,14 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs;
 
-public class ContainerResponseFilterAdapter {}
+import javax.ws.rs.core.AbstractMultivaluedMap;
+
+import java.util.List;
+import java.util.Map;
+
+public final class MultivaluedMapWrapper<K, V> extends AbstractMultivaluedMap<K, V> {
+
+    public MultivaluedMapWrapper(Map<K, List<V>> store) {
+        super(store);
+    }
+}

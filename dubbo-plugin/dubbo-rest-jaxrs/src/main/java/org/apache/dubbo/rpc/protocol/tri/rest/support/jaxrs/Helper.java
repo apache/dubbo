@@ -16,10 +16,20 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs;
 
+import org.apache.dubbo.remoting.http12.HttpResult;
+import org.apache.dubbo.remoting.http12.HttpUtils;
+import org.apache.dubbo.remoting.http12.message.DefaultHttpResult;
+import org.apache.dubbo.remoting.http12.message.DefaultHttpResult.Builder;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 
-final class Helper {
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+public final class Helper {
 
     public Helper() {}
 
@@ -30,5 +40,33 @@ final class Helper {
     public static String defaultValue(ParameterMeta annotation) {
         AnnotationMeta<?> meta = annotation.getAnnotation(Annotations.DefaultValue);
         return meta == null ? null : meta.getValue();
+    }
+
+    public static DefaultHttpResult<Object> toBody(Response r) {
+        Builder<Object> builder = HttpResult.builder().status(r.getStatus());
+        if (r.hasEntity()) {
+            builder.body(r.getEntity());
+        }
+        builder.headers(r.getStringHeaders());
+        return builder.build();
+    }
+
+    public static MediaType toMediaType(String mediaType) {
+        if (mediaType == null) {
+            return null;
+        }
+        int index = mediaType.indexOf('/');
+        if (index == -1) {
+            return null;
+        }
+        return new MediaType(mediaType.substring(0, index), mediaType.substring(index + 1));
+    }
+
+    public static String toString(MediaType mediaType) {
+        return mediaType.getType() + '/' + mediaType.getSubtype();
+    }
+
+    public static List<MediaType> toMediaTypes(String accept) {
+        return HttpUtils.parseAccept(accept).stream().map(Helper::toMediaType).collect(Collectors.toList());
     }
 }

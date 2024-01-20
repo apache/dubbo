@@ -111,9 +111,13 @@ public interface HttpRequest extends RequestMetadata {
 
     List<String> queryParameterValues(String name);
 
-    String postParameter(String name);
+    Collection<String> queryParameterNames();
 
-    List<String> postParameterValues(String name);
+    String formParameter(String name);
+
+    List<String> formParameterValues(String name);
+
+    Collection<String> formParameterNames();
 
     boolean hasParameter(String name);
 

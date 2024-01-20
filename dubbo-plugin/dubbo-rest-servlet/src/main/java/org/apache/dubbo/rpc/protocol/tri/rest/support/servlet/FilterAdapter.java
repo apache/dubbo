@@ -31,9 +31,10 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 @Activate(onClass = "javax.servlet.Filter")
-public class FilterAdapter implements RestExtensionAdapter<Filter> {
+public final class FilterAdapter implements RestExtensionAdapter<Filter> {
 
     private final ServletHttpMessageAdapterFactory adapterFactory;
 
@@ -50,31 +51,58 @@ public class FilterAdapter implements RestExtensionAdapter<Filter> {
     @Override
     public RestFilter adapt(Filter extension) {
         try {
-            extension.init(
-                    adapterFactory.adapterFilterConfig(extension.getClass().getSimpleName()));
+            String filterName = extension.getClass().getSimpleName();
+            extension.init(adapterFactory.adapterFilterConfig(filterName));
         } catch (ServletException e) {
             throw new RuntimeException(e);
         }
+        return new FilterRestFilter(extension);
+    }
 
-        return new RestFilter() {
+    private static final class FilterRestFilter implements RestFilter {
 
-            @Override
-            public int getPriority() {
-                return RestUtils.getPriority(extension);
+        private final Filter filter;
+
+        @Override
+        public int getPriority() {
+            return RestUtils.getPriority(filter);
+        }
+
+        @Override
+        public String[] getPatterns() {
+            return RestUtils.getPattens(filter);
+        }
+
+        public FilterRestFilter(Filter filter) {
+            this.filter = filter;
+        }
+
+        @Override
+        public void doFilter(HttpRequest request, HttpResponse response, FilterChain chain) throws Exception {
+            filter.doFilter((ServletRequest) request, (ServletResponse) response, (q, p) -> {
+                try {
+                    chain.doFilter(request, response);
+                } catch (RuntimeException | IOException | ServletException e) {
+                    throw e;
+                } catch (Exception e) {
+                    throw new ServletException(e);
+                }
+            });
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder("RestFilter{filter=");
+            sb.append(filter);
+            int priority = getPriority();
+            if (priority != 0) {
+                sb.append(", priority=").append(priority);
             }
-
-            @Override
-            public void doFilter(HttpRequest q1, HttpResponse p1, FilterChain chain) throws Exception {
-                extension.doFilter((ServletRequest) q1, (ServletResponse) p1, (q2, p2) -> {
-                    try {
-                        chain.doFilter(q1, p1);
-                    } catch (ServletException | IOException | RuntimeException e) {
-                        throw e;
-                    } catch (Throwable t) {
-                        throw new ServletException(t);
-                    }
-                });
+            String[] patterns = getPatterns();
+            if (patterns != null) {
+                sb.append(", patterns=").append(Arrays.toString(patterns));
             }
-        };
+            return sb.append('}').toString();
+        }
     }
 }

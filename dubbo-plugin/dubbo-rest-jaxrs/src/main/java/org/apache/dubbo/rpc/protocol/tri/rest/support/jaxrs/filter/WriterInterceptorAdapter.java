@@ -14,19 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs;
+package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.filter;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.protocol.tri.rest.filter.AbstractRestFilter;
 import org.apache.dubbo.rpc.protocol.tri.rest.filter.RestExtensionAdapter;
 import org.apache.dubbo.rpc.protocol.tri.rest.filter.RestFilter;
-import org.apache.dubbo.rpc.protocol.tri.rest.util.RestUtils;
+import org.apache.dubbo.rpc.protocol.tri.rest.filter.RestFilter.Listener;
 
 import javax.ws.rs.ext.WriterInterceptor;
 
 @Activate(onClass = "javax.ws.rs.ext.WriterInterceptor")
-public class WriterInterceptorAdapter implements RestExtensionAdapter<WriterInterceptor> {
+public final class WriterInterceptorAdapter implements RestExtensionAdapter<WriterInterceptor> {
 
     @Override
     public boolean accept(Object extension) {
@@ -35,16 +37,18 @@ public class WriterInterceptorAdapter implements RestExtensionAdapter<WriterInte
 
     @Override
     public RestFilter adapt(WriterInterceptor extension) {
-        return new RestFilter() {
-            @Override
-            public int getPriority() {
-                return RestUtils.getPriority(extension);
-            }
+        return new Filter(extension);
+    }
 
-            @Override
-            public void doFilter(HttpRequest request, HttpResponse response, FilterChain chain) throws Exception {
-                chain.doFilter(request, response);
-            }
-        };
+    private static final class Filter extends AbstractRestFilter<WriterInterceptor> implements Listener {
+
+        public Filter(WriterInterceptor extension) {
+            super(extension);
+        }
+
+        @Override
+        public void onSuccess(Result result, HttpRequest request, HttpResponse response) throws Exception {
+            extension.aroundWriteTo(new WriterInterceptorContextImpl(request, response, result));
+        }
     }
 }

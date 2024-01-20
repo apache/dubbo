@@ -17,24 +17,31 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs;
 
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.remoting.http12.HttpCookie;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.RequestUtils;
 
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.UriInfo;
 
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import org.jboss.resteasy.specimpl.ResteasyHttpHeaders;
+import org.jboss.resteasy.spi.ResteasyUriInfo;
+
 @Activate(onClass = "javax.ws.rs.Path")
-public class MiscJaxrsArgumentResolver implements ArgumentResolver {
+public class JaxrsMiscArgumentResolver implements ArgumentResolver {
 
     public static final Set<Class<?>> SUPPORTED_TYPES = new HashSet<>();
 
@@ -44,7 +51,6 @@ public class MiscJaxrsArgumentResolver implements ArgumentResolver {
         SUPPORTED_TYPES.add(HttpHeaders.class);
         SUPPORTED_TYPES.add(MediaType.class);
         SUPPORTED_TYPES.add(MultivaluedMap.class);
-        SUPPORTED_TYPES.add(PathSegment.class);
         SUPPORTED_TYPES.add(UriInfo.class);
     }
 
@@ -54,7 +60,36 @@ public class MiscJaxrsArgumentResolver implements ArgumentResolver {
     }
 
     @Override
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public Object resolve(ParameterMeta parameter, HttpRequest request, HttpResponse response) {
+        Class<?> type = parameter.getActualType();
+        if (Cookie.class.isAssignableFrom(type)) {
+            HttpCookie cookie = request.cookie(parameter.getName());
+            return new Cookie(cookie.name(), cookie.value(), cookie.path(), cookie.domain());
+        }
+        if (Form.class.isAssignableFrom(type)) {
+            MultivaluedMap<String, String> result = new MultivaluedHashMap<>();
+            for (String name : request.formParameterNames()) {
+                List<String> values = request.formParameterValues(name);
+                if (values == null) {
+                    continue;
+                }
+                result.put(name, values);
+            }
+            return result;
+        }
+        if (HttpHeaders.class.isAssignableFrom(type)) {
+            return new ResteasyHttpHeaders(new MultivaluedMapWrapper<>(request.headers()));
+        }
+        if (MediaType.class.isAssignableFrom(type)) {
+            return Helper.toMediaType(request.mediaType());
+        }
+        if (MultivaluedMap.class.isAssignableFrom(type)) {
+            return new MultivaluedMapWrapper<>((Map) RequestUtils.getParametersMap(request));
+        }
+        if (UriInfo.class.isAssignableFrom(type)) {
+            return new ResteasyUriInfo(request.rawPath(), request.query(), "/");
+        }
         return null;
     }
 }

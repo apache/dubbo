@@ -16,7 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.filter;
 
-import org.apache.dubbo.common.logger.FluentLogger;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.Result;
@@ -27,7 +29,7 @@ import java.util.function.Supplier;
 
 final class DefaultFilterChain implements FilterChain, Listener {
 
-    private static final FluentLogger LOGGER = FluentLogger.of(DefaultFilterChain.class);
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(DefaultFilterChain.class);
 
     private final RestFilter[] filters;
     private final Supplier<Result> action;
@@ -47,6 +49,9 @@ final class DefaultFilterChain implements FilterChain, Listener {
 
     @Override
     public void doFilter(HttpRequest request, HttpResponse response) throws Exception {
+        if (response.isCommitted()) {
+            return;
+        }
         if (cursor < filters.length) {
             filters[cursor++].doFilter(request, response, this);
             return;
@@ -62,8 +67,11 @@ final class DefaultFilterChain implements FilterChain, Listener {
                 try {
                     ((Listener) filter).onSuccess(result, request, response);
                 } catch (Throwable t) {
-                    LOGGER.unexpected("Call onSuccess for filter [{}] error", filter)
-                            .error(t);
+                    LOGGER.error(
+                            LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION,
+                            "",
+                            "",
+                            "Call onSuccess for filter " + "[" + filter + "] error");
                 }
             }
         }
@@ -77,8 +85,11 @@ final class DefaultFilterChain implements FilterChain, Listener {
                 try {
                     ((Listener) filter).onError(t, request, response);
                 } catch (Throwable th) {
-                    LOGGER.unexpected("Call onError for filter [{}] error", filter)
-                            .error(th);
+                    LOGGER.error(
+                            LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION,
+                            "",
+                            "",
+                            "Call onError for filter " + "[" + filter + "] error");
                 }
             }
         }

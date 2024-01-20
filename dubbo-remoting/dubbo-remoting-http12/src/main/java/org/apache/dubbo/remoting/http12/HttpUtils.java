@@ -23,13 +23,7 @@ import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
@@ -43,16 +37,12 @@ import io.netty.handler.codec.http.cookie.CookieHeaderNames.SameSite;
 import io.netty.handler.codec.http.cookie.DefaultCookie;
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
-import io.netty.handler.codec.http.multipart.Attribute;
-import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
-import io.netty.handler.codec.http.multipart.FileUpload;
-import io.netty.handler.codec.http.multipart.HttpDataFactory;
-import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
-import io.netty.handler.codec.http.multipart.InterfaceHttpData;
+import io.netty.handler.codec.http.multipart.*;
 
 public final class HttpUtils {
 
     public static final HttpDataFactory DATA_FACTORY = new DefaultHttpDataFactory(DefaultHttpDataFactory.MINSIZE);
+    public static final String CHARSET_PREFIX = "charset=";
 
     private HttpUtils() {}
 
@@ -64,43 +54,39 @@ public final class HttpUtils {
         return cookies;
     }
 
-    public static List<String> encodeCookies(Collection<HttpCookie> cookies) {
-        List<String> encodedCookies = new ArrayList<>(cookies.size());
-        for (HttpCookie cookie : cookies) {
-            DefaultCookie c = new DefaultCookie(cookie.name(), cookie.value());
-            c.setPath(cookie.path());
-            c.setDomain(cookie.domain());
-            c.setMaxAge(cookie.maxAge());
-            c.setSecure(cookie.secure());
-            c.setHttpOnly(cookie.httpOnly());
-            c.setSameSite(SameSite.valueOf(cookie.sameSite()));
-            encodedCookies.add(ServerCookieEncoder.LAX.encode(c));
-        }
-        return encodedCookies;
+    public static String encodeCookie(HttpCookie cookie) {
+        DefaultCookie c = new DefaultCookie(cookie.name(), cookie.value());
+        c.setPath(cookie.path());
+        c.setDomain(cookie.domain());
+        c.setMaxAge(cookie.maxAge());
+        c.setSecure(cookie.secure());
+        c.setHttpOnly(cookie.httpOnly());
+        c.setSameSite(SameSite.valueOf(cookie.sameSite()));
+        return ServerCookieEncoder.LAX.encode(c);
     }
 
     public static List<String> parseAccept(String header) {
-        Map<Float, String> mediaTypes = new TreeMap<>();
+        List<Item<String>> mediaTypes = new ArrayList<>();
         if (header == null) {
             return Collections.emptyList();
         }
         for (String item : StringUtils.tokenize(header, ',')) {
             String[] pair = StringUtils.tokenize(item, ';');
-            mediaTypes.put(pair.length > 1 ? Float.parseFloat(pair[1]) : 1.0F, pair[0]);
+            mediaTypes.add(new Item<>(pair[0], pair.length > 1 ? Float.parseFloat(pair[1]) : 1.0F));
         }
-        return new ArrayList<>(mediaTypes.values());
+        return Item.sortAndGet(mediaTypes);
     }
 
     public static List<Locale> parseAcceptLanguage(String header) {
-        Map<Float, Locale> locales = new TreeMap<>();
+        List<Item<Locale>> locales = new ArrayList<>();
         if (header == null) {
             return Collections.emptyList();
         }
         for (String item : StringUtils.tokenize(header, ',')) {
             String[] pair = StringUtils.tokenize(item, ';');
-            locales.put(pair.length > 1 ? Float.parseFloat(pair[1]) : 1.0F, parseLocale(pair[0]));
+            locales.add(new Item<>(parseLocale(pair[0]), pair.length > 1 ? Float.parseFloat(pair[1]) : 1.0F));
         }
-        return new ArrayList<>(locales.values());
+        return Item.sortAndGet(locales);
     }
 
     public static List<Locale> parseContentLanguage(String header) {
@@ -209,6 +195,35 @@ public final class HttpUtils {
                 inputStream = new ByteBufInputStream(fu.content());
             }
             return inputStream;
+        }
+    }
+
+    private static final class Item<V> implements Comparable<Item<V>> {
+        private final V value;
+        private final float q;
+
+        public Item(V value, float q) {
+            this.value = value;
+            this.q = q;
+        }
+
+        @Override
+        public int compareTo(Item<V> o) {
+            return Float.compare(o.q, q);
+        }
+
+        public static <T> List<T> sortAndGet(List<Item<T>> items) {
+            int size = items.size();
+            if (size == 1) {
+                return Collections.singletonList(items.get(0).value);
+            }
+            Collections.sort(items);
+            List<T> values = new ArrayList<>(size);
+            for (int i = 0; i < size; i++) {
+                Item<T> item = items.get(i);
+                values.add(item.value);
+            }
+            return values;
         }
     }
 }

@@ -21,4 +21,9 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.lang.Prioritized;
 
 @SPI(scope = ExtensionScope.FRAMEWORK)
-public interface RestExtension extends Prioritized {}
+public interface RestExtension extends Prioritized {
+
+    default String[] getPatterns() {
+        return null;
+    }
+}

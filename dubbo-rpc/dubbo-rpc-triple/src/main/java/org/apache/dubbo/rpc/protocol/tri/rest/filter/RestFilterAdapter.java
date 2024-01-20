@@ -60,11 +60,7 @@ public abstract class RestFilterAdapter implements Filter, BaseFilter.Listener {
             Invoker<?> invoker, Invocation invocation, HttpRequest request, HttpResponse response) throws RpcException;
 
     protected void onResponse(
-            Result appResponse,
-            Invoker<?> invoker,
-            Invocation invocation,
-            HttpRequest request,
-            HttpResponse response) {}
+            Result result, Invoker<?> invoker, Invocation invocation, HttpRequest request, HttpResponse response) {}
 
     protected void onError(
             Throwable t, Invoker<?> invoker, Invocation invocation, HttpRequest request, HttpResponse response) {}

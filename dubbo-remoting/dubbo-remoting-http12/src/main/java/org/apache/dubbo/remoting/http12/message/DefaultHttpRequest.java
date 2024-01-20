@@ -18,30 +18,13 @@ package org.apache.dubbo.remoting.http12.message;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.remoting.http12.HttpChannel;
-import org.apache.dubbo.remoting.http12.HttpCookie;
-import org.apache.dubbo.remoting.http12.HttpHeaderNames;
-import org.apache.dubbo.remoting.http12.HttpHeaders;
-import org.apache.dubbo.remoting.http12.HttpMetadata;
-import org.apache.dubbo.remoting.http12.HttpMethods;
-import org.apache.dubbo.remoting.http12.HttpRequest;
-import org.apache.dubbo.remoting.http12.HttpUtils;
-import org.apache.dubbo.remoting.http12.RequestMetadata;
+import org.apache.dubbo.remoting.http12.*;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
 
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import io.netty.handler.codec.DateFormatter;
 import io.netty.handler.codec.http.QueryStringDecoder;
@@ -239,7 +222,7 @@ public class DefaultHttpRequest implements HttpRequest {
             if (contentType == null) {
                 charset = StringUtils.EMPTY_STRING;
             } else {
-                int index = contentType.lastIndexOf("charset=");
+                int index = contentType.lastIndexOf(HttpUtils.CHARSET_PREFIX);
                 charset = index == -1
                         ? StringUtils.EMPTY_STRING
                         : contentType.substring(index + 8).trim();
@@ -253,7 +236,7 @@ public class DefaultHttpRequest implements HttpRequest {
     public void setCharset(String charset) {
         String contentType = contentType();
         if (contentType != null) {
-            setContentType0(contentType + "; charset=" + charset);
+            setContentType0(contentType + "; " + HttpUtils.CHARSET_PREFIX + charset);
         }
         this.charset = charset;
     }
@@ -380,7 +363,7 @@ public class DefaultHttpRequest implements HttpRequest {
                 return HttpUtils.readPostValue(item);
             }
         }
-        return postParameter(name);
+        return formParameter(name);
     }
 
     @Override
@@ -423,7 +406,12 @@ public class DefaultHttpRequest implements HttpRequest {
     }
 
     @Override
-    public String postParameter(String name) {
+    public Collection<String> queryParameterNames() {
+        return getDecoder().parameters().keySet();
+    }
+
+    @Override
+    public String formParameter(String name) {
         HttpPostRequestDecoder postDecoder = getPostDecoder();
         if (postDecoder == null) {
             return null;
@@ -442,7 +430,7 @@ public class DefaultHttpRequest implements HttpRequest {
     }
 
     @Override
-    public List<String> postParameterValues(String name) {
+    public List<String> formParameterValues(String name) {
         HttpPostRequestDecoder postDecoder = getPostDecoder();
         if (postDecoder == null) {
             return null;
@@ -462,6 +450,29 @@ public class DefaultHttpRequest implements HttpRequest {
             }
         }
         return values;
+    }
+
+    @Override
+    public Collection<String> formParameterNames() {
+        HttpPostRequestDecoder postDecoder = getPostDecoder();
+        if (postDecoder == null) {
+            return Collections.emptyList();
+        }
+        List<InterfaceHttpData> items = postDecoder.getBodyHttpDatas();
+        if (items == null) {
+            return Collections.emptyList();
+        }
+        Set<String> names = null;
+        for (int i = 0, size = items.size(); i < size; i++) {
+            InterfaceHttpData item = items.get(i);
+            if (item.getHttpDataType() == HttpDataType.Attribute) {
+                if (names == null) {
+                    names = new LinkedHashSet<>();
+                }
+                names.add(item.getName());
+            }
+        }
+        return names;
     }
 
     @Override

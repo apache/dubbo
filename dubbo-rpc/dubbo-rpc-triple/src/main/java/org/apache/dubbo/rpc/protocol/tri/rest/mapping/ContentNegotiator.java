@@ -48,7 +48,12 @@ public class ContentNegotiator {
         // 1. find mediaType by producible
         List<MediaType> produces = request.attribute(RestConstants.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE);
         if (CollectionUtils.isNotEmpty(produces)) {
-            return produces.get(0).getName();
+            for (MediaType mediaType : produces) {
+                String name = mediaType.getName();
+                if (name.indexOf('*') == -1) {
+                    return name;
+                }
+            }
         }
 
         // 2. find mediaType by accept header
