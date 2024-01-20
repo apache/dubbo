@@ -16,9 +16,11 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.support.spring;
 
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionInjector;
-import org.apache.dubbo.common.logger.FluentLogger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -39,7 +41,8 @@ import java.util.Properties;
 @Activate(order = 1000, onClass = "org.springframework.context.ApplicationContext")
 public class SpringReflectionRestToolKit implements RestToolKit {
 
-    private static final FluentLogger LOGGER = FluentLogger.of(SpringReflectionRestToolKit.class);
+    private static final ErrorTypeAwareLogger LOGGER =
+            LoggerFactory.getErrorTypeAwareLogger(SpringReflectionRestToolKit.class);
 
     private final Object beanFactory;
     private final Object placeholderHelper;
@@ -64,7 +67,11 @@ public class SpringReflectionRestToolKit implements RestToolKit {
             conversionService = cs == null ? Methods.getSharedInstance.invokeStatic() : cs;
             discoverer = Constructors.ParameterNameDiscoverer.newInstance();
         } catch (Throwable t) {
-            LOGGER.unknown("Failed to initialize SpringReflectionRestToolKit").error(t);
+            LOGGER.error(
+                    LoggerCodeConstants.INTERNAL_ERROR,
+                    "",
+                    "",
+                    "Failed to initialize " + "SpringReflectionRestToolKit");
         }
         this.beanFactory = beanFactory;
         this.placeholderHelper = placeholderHelper;

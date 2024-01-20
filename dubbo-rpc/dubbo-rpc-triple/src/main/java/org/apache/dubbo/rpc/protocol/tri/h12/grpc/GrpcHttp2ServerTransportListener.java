@@ -21,7 +21,6 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.TimeUtils;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.UnimplementedException;
@@ -106,7 +105,7 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
         String timeoutString = getHttpMetadata().headers().getFirst(GrpcHeaderNames.GRPC_TIMEOUT.getName());
         try {
             if (null != timeoutString) {
-                Long timeout = TimeUtils.parseTimeoutToMills(timeoutString);
+                Long timeout = GrpcUtils.parseTimeoutToMills(timeoutString);
                 invocation.put(CommonConstants.TIMEOUT_KEY, timeout);
             }
         } catch (Throwable t) {
