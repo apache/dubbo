@@ -28,6 +28,12 @@ public abstract class Assert {
         }
     }
 
+    public static void notNull(Object obj, String format, Object... args) {
+        if (obj == null) {
+            throw new IllegalArgumentException(String.format(format, args));
+        }
+    }
+
     public static void notEmptyString(String str, String message) {
         if (StringUtils.isEmpty(str)) {
             throw new IllegalArgumentException(message);

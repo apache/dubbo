@@ -31,9 +31,13 @@ public final class PlainTextCodec implements HttpMessageCodec {
 
     @Override
     public void encode(OutputStream os, Object data, Charset charset) throws EncodeException {
+        if (data == null) {
+            return;
+        }
         try {
             if (data instanceof CharSequence) {
                 os.write((data.toString()).getBytes(charset));
+                return;
             }
         } catch (IOException e) {
             throw new EncodeException(e);

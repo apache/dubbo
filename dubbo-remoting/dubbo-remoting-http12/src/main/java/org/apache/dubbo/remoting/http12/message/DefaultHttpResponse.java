@@ -29,16 +29,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.netty.handler.codec.DateFormatter;
 
 public class DefaultHttpResponse implements HttpResponse {
 
-    private final AtomicBoolean committed = new AtomicBoolean();
     private final HttpHeaders headers = new HttpHeaders();
 
     private int status;
@@ -46,6 +45,7 @@ public class DefaultHttpResponse implements HttpResponse {
     private String charset;
     private Object body;
     private OutputStream outputStream;
+    private volatile boolean committed;
 
     @Override
     public int status() {
@@ -54,7 +54,9 @@ public class DefaultHttpResponse implements HttpResponse {
 
     @Override
     public void setStatus(int status) {
-        check();
+        if (committed) {
+            return;
+        }
         this.status = status;
     }
 
@@ -85,13 +87,15 @@ public class DefaultHttpResponse implements HttpResponse {
     }
 
     @Override
-    public HttpHeaders headers() {
-        return headers;
+    public Map<String, List<String>> headers() {
+        return Collections.unmodifiableMap(headers);
     }
 
     @Override
     public void addHeader(String name, String value) {
-        check();
+        if (committed) {
+            return;
+        }
         headers.computeIfAbsent(name, k -> new ArrayList<>()).add(value);
     }
 
@@ -102,7 +106,9 @@ public class DefaultHttpResponse implements HttpResponse {
 
     @Override
     public void setHeader(String name, String value) {
-        check();
+        if (committed) {
+            return;
+        }
         headers.set(name, value);
     }
 
@@ -113,7 +119,9 @@ public class DefaultHttpResponse implements HttpResponse {
 
     @Override
     public void setHeader(String name, List<String> values) {
-        check();
+        if (committed) {
+            return;
+        }
         headers.put(name, values);
     }
 
@@ -135,14 +143,11 @@ public class DefaultHttpResponse implements HttpResponse {
 
     @Override
     public void setContentType(String contentType) {
-        check();
-        setContentType0(contentType == null ? StringUtils.EMPTY_STRING : contentType.trim());
-        charset = null;
-    }
-
-    private void setContentType0(String contentType) {
+        if (committed) {
+            return;
+        }
         this.contentType = contentType;
-        headers.set(HttpHeaderNames.CONTENT_TYPE.getName(), contentType());
+        charset = null;
     }
 
     @Override
@@ -175,10 +180,12 @@ public class DefaultHttpResponse implements HttpResponse {
 
     @Override
     public void setCharset(String charset) {
-        check();
+        if (committed) {
+            return;
+        }
         String contentType = contentType();
         if (contentType != null) {
-            setContentType0(contentType + "; " + HttpUtils.CHARSET_PREFIX + charset);
+            this.contentType = contentType + "; " + HttpUtils.CHARSET_PREFIX + charset;
         }
         this.charset = charset;
     }
@@ -190,7 +197,9 @@ public class DefaultHttpResponse implements HttpResponse {
 
     @Override
     public void setLocale(String locale) {
-        check();
+        if (committed) {
+            return;
+        }
         headers.set("content-language", locale);
     }
 
@@ -201,7 +210,9 @@ public class DefaultHttpResponse implements HttpResponse {
 
     @Override
     public void setBody(Object body) {
-        check();
+        if (committed) {
+            return;
+        }
         this.body = body;
     }
 
@@ -215,7 +226,9 @@ public class DefaultHttpResponse implements HttpResponse {
 
     @Override
     public void setOutputStream(OutputStream os) {
-        check();
+        if (committed) {
+            return;
+        }
         outputStream = os;
     }
 
@@ -250,6 +263,11 @@ public class DefaultHttpResponse implements HttpResponse {
         if (!headers.isEmpty()) {
             return false;
         }
+        return isContentEmpty();
+    }
+
+    @Override
+    public boolean isContentEmpty() {
         if (body != null) {
             return false;
         }
@@ -263,38 +281,45 @@ public class DefaultHttpResponse implements HttpResponse {
 
     @Override
     public boolean isCommitted() {
-        return committed.get();
+        return committed;
     }
 
     @Override
-    public boolean commit() {
-        return committed.compareAndSet(false, true);
+    public void commit() {
+        committed = true;
+    }
+
+    @Override
+    public void setCommitted(boolean committed) {
+        this.committed = committed;
     }
 
     @Override
     public void reset() {
+        check();
         status = 0;
         headers.clear();
         contentType = null;
         body = null;
         resetBuffer();
-        committed.set(false);
     }
 
     @Override
     public void resetBuffer() {
-        if (outputStream != null) {
-            if (outputStream instanceof ByteArrayOutputStream) {
-                ((ByteArrayOutputStream) outputStream).reset();
-                return;
-            }
-            throw new UnsupportedOperationException(
-                    "The outputStream type [" + outputStream.getClass().getName() + "] is not supported to reset");
+        check();
+        if (outputStream == null) {
+            return;
         }
+        if (outputStream instanceof ByteArrayOutputStream) {
+            ((ByteArrayOutputStream) outputStream).reset();
+            return;
+        }
+        String name = outputStream.getClass().getName();
+        throw new UnsupportedOperationException("The outputStream type [" + name + "] is not supported to reset");
     }
 
     private void check() {
-        if (committed.get()) {
+        if (committed) {
             throw new IllegalStateException("Response already committed");
         }
     }
@@ -331,6 +356,15 @@ public class DefaultHttpResponse implements HttpResponse {
         if (body == null) {
             body = outputStream;
         }
-        return HttpResult.builder().status(status).headers(headers).body(body).build();
+        return HttpResult.builder(body).status(status).headers(headers).build();
+    }
+
+    @Override
+    public String toString() {
+        return "DefaultHttpResponse{" + fieldToString() + '}';
+    }
+
+    protected final String fieldToString() {
+        return "status=" + status + ", contentType='" + contentType() + '\'' + ", body=" + body;
     }
 }

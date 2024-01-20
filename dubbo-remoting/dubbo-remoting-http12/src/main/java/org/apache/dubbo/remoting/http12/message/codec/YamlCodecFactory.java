@@ -38,4 +38,9 @@ public final class YamlCodecFactory implements HttpMessageEncoderFactory, HttpMe
     public MediaType mediaType() {
         return MediaType.APPLICATION_YAML;
     }
+
+    @Override
+    public boolean supports(String mediaType) {
+        return mediaType.startsWith(mediaType().getName()) || mediaType.startsWith(MediaType.TEXT_YAML.getName());
+    }
 }

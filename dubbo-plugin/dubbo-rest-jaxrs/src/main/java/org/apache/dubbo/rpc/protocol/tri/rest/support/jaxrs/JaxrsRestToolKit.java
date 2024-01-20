@@ -27,14 +27,14 @@ final class JaxrsRestToolKit extends DefaultRestToolKit {
 
     private final BeanArgumentBinder binder;
 
-    @Override
-    public int getDialect() {
-        return RestConstants.DIALECT_JAXRS;
-    }
-
     public JaxrsRestToolKit(FrameworkModel frameworkModel) {
         super(frameworkModel);
         binder = new BeanArgumentBinder(frameworkModel);
+    }
+
+    @Override
+    public int getDialect() {
+        return RestConstants.DIALECT_JAXRS;
     }
 
     @Override

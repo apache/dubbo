@@ -57,7 +57,7 @@ public final class CompositeArgumentResolver implements ArgumentResolver {
     public Object resolve(ParameterMeta parameter, HttpRequest request, HttpResponse response) {
         AnnotationMeta[] annotations = parameter.findAnnotations();
         for (AnnotationMeta annotation : annotations) {
-            AnnotationBaseArgumentResolver resolver = resolverMap.get(annotation.getClass());
+            AnnotationBaseArgumentResolver resolver = resolverMap.get(annotation.getAnnotationType());
             if (resolver != null) {
                 return resolver.resolve(parameter, annotation, request, response);
             }

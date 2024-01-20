@@ -14,29 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.support;
+package org.apache.dubbo.rpc.protocol.tri.support.jaxrs.compatible.filter;
 
-import org.apache.dubbo.common.stream.StreamObserver;
+import javax.annotation.Priority;
+import javax.ws.rs.Priorities;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.core.Response;
 
-import java.util.concurrent.CompletableFuture;
+import java.io.IOException;
 
-import org.springframework.web.bind.annotation.GetMapping;
+@Priority(Priorities.USER)
+public class TestContainerRequestFilter implements ContainerRequestFilter {
+    @Override
+    public void filter(ContainerRequestContext requestContext) throws IOException {
 
-public interface IGreeter {
-
-    String SERVER_MSG = "HELLO WORLD";
-
-    /**
-     * Use request to respond
-     */
-    @GetMapping("/echo")
-    String echo(String request);
-
-    default CompletableFuture<String> echoAsync(String request) {
-        return CompletableFuture.supplyAsync(() -> echo(request));
+        requestContext.abortWith(Response.status(200).entity("return-success").build());
     }
-
-    void serverStream(String str, StreamObserver<String> observer);
-
-    StreamObserver<String> bidirectionalStream(StreamObserver<String> observer);
 }

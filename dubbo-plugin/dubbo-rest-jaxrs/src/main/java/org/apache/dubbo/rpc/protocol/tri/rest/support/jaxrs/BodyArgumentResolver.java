@@ -20,26 +20,28 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
-import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
-import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
-import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentResolver;
+import org.apache.dubbo.rpc.protocol.tri.rest.argument.AnnotationBaseArgumentResolver;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.RequestUtils;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
-
-import static org.apache.dubbo.rpc.protocol.tri.rest.RestConstants.BODY_DECODER_ATTRIBUTE;
+import java.lang.annotation.Annotation;
 
 @Activate(onClass = "org.jboss.resteasy.annotations.Body")
-public class BodyArgumentResolver implements ArgumentResolver {
+public class BodyArgumentResolver implements AnnotationBaseArgumentResolver<Annotation> {
 
     @Override
-    public boolean accept(ParameterMeta parameter) {
-        return parameter.getToolKit().getDialect() == RestConstants.DIALECT_JAXRS && !parameter.isSimple();
+    public Class<Annotation> accept() {
+        return Annotations.Body.type();
     }
 
     @Override
-    public Object resolve(ParameterMeta parameter, HttpRequest request, HttpResponse response) {
+    public Object resolve(
+            ParameterMeta parameter,
+            AnnotationMeta<Annotation> annotation,
+            HttpRequest request,
+            HttpResponse response) {
         Class<?> type = parameter.getActualType();
         if (type == byte[].class) {
             try {
@@ -48,10 +50,6 @@ public class BodyArgumentResolver implements ArgumentResolver {
                 throw new RuntimeException(e);
             }
         }
-        HttpMessageDecoder decoder = request.attribute(BODY_DECODER_ATTRIBUTE);
-        if (decoder == null) {
-            return null;
-        }
-        return decoder.decode(request.inputStream(), type, Charset.forName(request.charset()));
+        return RequestUtils.decodeBody(request, type);
     }
 }

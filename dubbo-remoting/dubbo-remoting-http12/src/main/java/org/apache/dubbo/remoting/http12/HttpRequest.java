@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.http12;
 
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -72,6 +73,8 @@ public interface HttpRequest extends RequestMetadata {
     String mediaType();
 
     String charset();
+
+    Charset charsetOrDefault();
 
     void setCharset(String charset);
 

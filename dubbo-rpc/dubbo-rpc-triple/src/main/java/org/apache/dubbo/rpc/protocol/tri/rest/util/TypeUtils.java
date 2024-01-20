@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.util;
 
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 
@@ -37,6 +38,8 @@ import java.util.Collections;
 import java.util.Currency;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -108,6 +111,27 @@ public final class TypeUtils {
         return false;
     }
 
+    public static Class<?> getMapValueType(Class<?> targetClass) {
+        for (Type gi : targetClass.getGenericInterfaces()) {
+            if (gi instanceof ParameterizedType) {
+                ParameterizedType type = (ParameterizedType) gi;
+                if (type.getRawType() == Map.class) {
+                    return getActualType(type.getActualTypeArguments()[1]);
+                }
+            }
+        }
+        return null;
+    }
+
+    public static Class<?> getSuperGenericType(Class<?> clazz, int index) {
+        Class<?> result = getNestedType(clazz.getGenericSuperclass(), index);
+        return result == null ? getNestedType(ArrayUtils.first(clazz.getGenericInterfaces()), index) : result;
+    }
+
+    public static Class<?> getSuperGenericType(Class<?> clazz) {
+        return getSuperGenericType(clazz, 0);
+    }
+
     public static Class<?>[] getNestedTypes(Type type) {
         if (type instanceof ParameterizedType) {
             Type[] typeArgs = ((ParameterizedType) type).getActualTypeArguments();
@@ -159,5 +183,36 @@ public final class TypeUtils {
             return ((WildcardType) type).getUpperBounds()[0];
         }
         return type;
+    }
+
+    public static Object nullDefault(Class<?> targetClass) {
+        if (targetClass == long.class) {
+            return 0L;
+        }
+        if (targetClass == int.class) {
+            return 0;
+        }
+        if (targetClass == boolean.class) {
+            return Boolean.FALSE;
+        }
+        if (targetClass == double.class) {
+            return 0D;
+        }
+        if (targetClass == float.class) {
+            return 0F;
+        }
+        if (targetClass == byte.class) {
+            return (byte) 0;
+        }
+        if (targetClass == short.class) {
+            return (short) 0;
+        }
+        if (targetClass == char.class) {
+            return (char) 0;
+        }
+        if (targetClass == Optional.class) {
+            return Optional.empty();
+        }
+        return null;
     }
 }

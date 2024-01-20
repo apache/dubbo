@@ -101,9 +101,11 @@ public class DefaultRequestMappingRegistry implements RequestMappingRegistry {
 
     private HandlerMeta buildHandlerMeta(Invoker<?> invoker, MethodMeta methodMeta) {
         ServiceDescriptor serviceDescriptor = DescriptorUtils.getReflectionServiceDescriptor(invoker.getUrl());
-        Assert.notNull(serviceDescriptor, "ServiceDescriptor can't be null");
+        String serviceInterface = invoker.getUrl().getServiceInterface();
+        Assert.notNull(serviceDescriptor, "ServiceDescriptor for [%s] can't be null", serviceInterface);
         Method method = methodMeta.getMethod();
         MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(method.getName(), method.getParameterTypes());
+        Assert.notNull(methodDescriptor, "MethodDescriptor for [%s] can't be null", method);
         return new HandlerMeta(
                 invoker,
                 methodMeta,

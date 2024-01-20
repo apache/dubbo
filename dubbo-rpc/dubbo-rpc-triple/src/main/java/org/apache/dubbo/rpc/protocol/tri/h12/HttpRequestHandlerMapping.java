@@ -101,13 +101,12 @@ public class HttpRequestHandlerMapping implements RequestHandlerMapping {
             request.setContentType(mediaType);
         }
 
-        String charset = request.charset();
+        Charset charset = request.charsetOrDefault();
         HttpMessageDecoder decoder = codecUtils.determineHttpMessageDecoder(url, frameworkModel, mediaType);
         HttpMessageEncoder encoder = codecUtils.determineHttpMessageEncoder(url, frameworkModel, mediaType);
-        if (!StandardCharsets.UTF_8.name().equals(charset)) {
-            Charset cs = Charset.forName(charset);
-            decoder = new HttpMessageDecoderWrapper(cs, decoder);
-            encoder = new HttpMessageEncoderWrapper(cs, encoder);
+        if (!StandardCharsets.UTF_8.equals(charset)) {
+            decoder = new HttpMessageDecoderWrapper(charset, decoder);
+            encoder = new HttpMessageEncoderWrapper(charset, encoder);
         }
         handler.setHttpMessageDecoder(decoder);
         handler.setHttpMessageEncoder(encoder);

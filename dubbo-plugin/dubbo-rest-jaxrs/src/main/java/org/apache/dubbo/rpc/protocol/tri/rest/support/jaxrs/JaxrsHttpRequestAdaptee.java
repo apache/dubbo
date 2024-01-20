@@ -118,15 +118,7 @@ public final class JaxrsHttpRequestAdaptee implements org.jboss.resteasy.spi.Htt
 
     @Override
     public MultivaluedMap<String, String> getDecodedFormParameters() {
-        MultivaluedMap<String, String> result = new MultivaluedHashMap<>();
-        for (String name : request.formParameterNames()) {
-            List<String> values = request.formParameterValues(name);
-            if (values == null) {
-                continue;
-            }
-            result.put(name, values);
-        }
-        return result;
+        return new MultivaluedMapWrapper<>(RequestUtils.getFormParametersMap(request));
     }
 
     @Override

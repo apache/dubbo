@@ -16,45 +16,62 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.argument;
 
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
-@SuppressWarnings({"rawtypes", "unchecked"})
+@SuppressWarnings("rawtypes")
 public final class CompositeArgumentConverter implements ArgumentConverter {
 
     private final List<ArgumentConverter> converters;
-    private final TypeConverter typeConverter;
+    private final Map<Class<?>, List<ArgumentConverter>> cache = CollectionUtils.newConcurrentHashMap();
 
     public CompositeArgumentConverter(FrameworkModel frameworkModel) {
         converters = frameworkModel.getActivateExtensions(ArgumentConverter.class);
-        typeConverter = frameworkModel.getBeanFactory().getBean(TypeConverter.class);
     }
 
     @Override
-    public Object convert(Object value, Class targetType, ParameterMeta parameter) {
+    public Object convert(Object value, ParameterMeta parameter) {
+        Class<?> type = parameter.getType();
         if (value == null) {
-            return typeConverter.convert(null, targetType);
+            return TypeUtils.nullDefault(type);
         }
-        if (targetType.isInstance(value)) {
+
+        if (type.isInstance(value)) {
             if (parameter.getGenericType() instanceof Class) {
                 return value;
             }
-            return typeConverter.convert(value, parameter.getGenericType());
+            return parameter.getToolKit().convert(value, parameter);
         }
 
+        List<ArgumentConverter> converters = getSuitableConverters(type);
         Object target;
-        for (ArgumentConverter converter : converters) {
-            target = converter.convert(value, targetType, parameter);
+        for (int i = 0, size = converters.size(); i < size; i++) {
+            target = converters.get(i).convert(value, parameter);
             if (target != null) {
                 return target;
             }
         }
-        target = parameter.getToolKit().convert(value, parameter);
-        if (target != null) {
-            return target;
-        }
-        return typeConverter.convert(value, parameter.getGenericType());
+
+        return parameter.getToolKit().convert(value, parameter);
+    }
+
+    private List<ArgumentConverter> getSuitableConverters(Class<?> type) {
+        return cache.computeIfAbsent(type, k -> {
+            List<ArgumentConverter> result = new ArrayList<>();
+            for (ArgumentConverter converter : converters) {
+                Class<?> supportType = TypeUtils.getSuperGenericType(converter.getClass());
+                if (supportType != null && supportType.isAssignableFrom(k)) {
+                    result.add(converter);
+                }
+            }
+            return result.isEmpty() ? Collections.emptyList() : result;
+        });
     }
 }

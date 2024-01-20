@@ -60,7 +60,7 @@ public class JaxrsRequestMappingResolver implements RequestMappingResolver {
         if (path == null) {
             return null;
         }
-        AnnotationMeta<?> httpMethod = methodMeta.findAnnotation(Annotations.HttpMethod);
+        AnnotationMeta<?> httpMethod = methodMeta.findMergedAnnotation(Annotations.HttpMethod);
         if (httpMethod == null) {
             return null;
         }
@@ -75,7 +75,7 @@ public class JaxrsRequestMappingResolver implements RequestMappingResolver {
     private Builder builder(AnnotationSupport meta, AnnotationMeta<?> path, AnnotationMeta<?> httpMethod) {
         Builder builder = RequestMapping.builder().path(path.getValue());
         if (httpMethod == null) {
-            httpMethod = meta.findAnnotation(Annotations.HttpMethod);
+            httpMethod = meta.findMergedAnnotation(Annotations.HttpMethod);
         }
         if (httpMethod != null) {
             builder.method(httpMethod.getValue());

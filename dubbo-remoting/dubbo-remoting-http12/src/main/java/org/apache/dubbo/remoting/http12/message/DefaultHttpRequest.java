@@ -32,6 +32,7 @@ import org.apache.dubbo.remoting.http12.h2.Http2Header;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -169,16 +170,20 @@ public class DefaultHttpRequest implements HttpRequest {
 
     @Override
     public Collection<HttpCookie> cookies() {
+        List<HttpCookie> cookies = this.cookies;
         if (cookies == null) {
-            parseCookies();
+            cookies = HttpUtils.decodeCookies(header("cookie"));
+            this.cookies = cookies;
         }
         return cookies;
     }
 
     @Override
     public HttpCookie cookie(String name) {
+        List<HttpCookie> cookies = this.cookies;
         if (cookies == null) {
-            parseCookies();
+            cookies = HttpUtils.decodeCookies(header("cookie"));
+            this.cookies = cookies;
         }
         for (int i = 0, size = cookies.size(); i < size; i++) {
             HttpCookie cookie = cookies.get(i);
@@ -187,10 +192,6 @@ public class DefaultHttpRequest implements HttpRequest {
             }
         }
         return null;
-    }
-
-    private void parseCookies() {
-        cookies = HttpUtils.decodeCookies(headers.getFirst("cookie"));
     }
 
     @Override
@@ -250,6 +251,12 @@ public class DefaultHttpRequest implements HttpRequest {
     }
 
     @Override
+    public Charset charsetOrDefault() {
+        String charset = charset();
+        return charset == null ? StandardCharsets.UTF_8 : Charset.forName(charset);
+    }
+
+    @Override
     public void setCharset(String charset) {
         String contentType = contentType();
         if (contentType != null) {
@@ -270,11 +277,13 @@ public class DefaultHttpRequest implements HttpRequest {
 
     @Override
     public List<Locale> locales() {
+        List<Locale> locales = this.locales;
         if (locales == null) {
             locales = HttpUtils.parseAcceptLanguage(headers.getFirst("accept-language"));
             if (locales.isEmpty()) {
                 locales.add(Locale.getDefault());
             }
+            this.locales = locales;
         }
         return locales;
     }
@@ -591,12 +600,14 @@ public class DefaultHttpRequest implements HttpRequest {
     }
 
     private HttpPostRequestDecoder getPostDecoder() {
+        HttpPostRequestDecoder postDecoder = this.postDecoder;
         if (postDecoder == null) {
             if (postParsed) {
                 return null;
             }
             if (inputStream != null && HttpMethods.supportBody(method)) {
                 postDecoder = HttpUtils.createPostRequestDecoder(this, inputStream, charset());
+                this.postDecoder = postDecoder;
             }
             postParsed = true;
         }
@@ -635,8 +646,10 @@ public class DefaultHttpRequest implements HttpRequest {
     }
 
     private Map<String, Object> getAttributes() {
+        Map<String, Object> attributes = this.attributes;
         if (attributes == null) {
             attributes = new HashMap<>();
+            this.attributes = attributes;
         }
         return attributes;
     }
@@ -653,5 +666,14 @@ public class DefaultHttpRequest implements HttpRequest {
             postDecoder = null;
             postParsed = false;
         }
+    }
+
+    @Override
+    public String toString() {
+        return "DefaultHttpRequest{" + fieldToString() + '}';
+    }
+
+    protected final String fieldToString() {
+        return "method='" + method + '\'' + ", uri='" + uri + '\'' + ", contentType='" + contentType() + '\'';
     }
 }

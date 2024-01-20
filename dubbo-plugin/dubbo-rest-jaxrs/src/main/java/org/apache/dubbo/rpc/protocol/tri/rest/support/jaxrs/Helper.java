@@ -33,8 +33,8 @@ public final class Helper {
 
     public Helper() {}
 
-    public static boolean isRequired(ParameterMeta meta) {
-        return meta.isAnnotated(Annotations.Nonnull);
+    public static boolean isRequired(ParameterMeta parameter) {
+        return parameter.isAnnotated(Annotations.Nonnull);
     }
 
     public static String defaultValue(ParameterMeta annotation) {
@@ -42,12 +42,12 @@ public final class Helper {
         return meta == null ? null : meta.getValue();
     }
 
-    public static DefaultHttpResult<Object> toBody(Response r) {
-        Builder<Object> builder = HttpResult.builder().status(r.getStatus());
-        if (r.hasEntity()) {
-            builder.body(r.getEntity());
+    public static DefaultHttpResult<Object> toBody(Response response) {
+        Builder<Object> builder = HttpResult.builder().status(response.getStatus());
+        if (response.hasEntity()) {
+            builder.body(response.getEntity());
         }
-        builder.headers(r.getStringHeaders());
+        builder.headers(response.getStringHeaders());
         return builder.build();
     }
 

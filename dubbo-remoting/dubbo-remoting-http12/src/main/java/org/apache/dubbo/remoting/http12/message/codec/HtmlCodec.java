@@ -34,6 +34,7 @@ public class HtmlCodec implements HttpMessageCodec {
         try {
             if (data instanceof CharSequence) {
                 os.write((data.toString()).getBytes(charset));
+                return;
             }
         } catch (IOException e) {
             throw new EncodeException(e);

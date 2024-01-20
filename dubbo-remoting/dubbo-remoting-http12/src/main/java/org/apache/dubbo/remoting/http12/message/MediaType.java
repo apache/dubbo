@@ -38,6 +38,12 @@ public final class MediaType {
 
     public static final MediaType MULTIPART_FORM_DATA = new MediaType("multipart", "form-data");
 
+    public static final MediaType TEXT_JSON = new MediaType("text", "json");
+
+    public static final MediaType TEXT_XML = new MediaType("text", "xml");
+
+    public static final MediaType TEXT_YAML = new MediaType("text", "yaml");
+
     public static final MediaType TEXT_HTML = new MediaType("text", "html");
 
     public static final MediaType TEXT_PLAIN = new MediaType("text", "plain");

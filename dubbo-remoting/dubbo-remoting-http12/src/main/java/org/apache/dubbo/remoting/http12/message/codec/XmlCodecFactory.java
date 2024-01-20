@@ -38,4 +38,9 @@ public final class XmlCodecFactory implements HttpMessageEncoderFactory, HttpMes
     public MediaType mediaType() {
         return MediaType.APPLICATION_XML;
     }
+
+    @Override
+    public boolean supports(String mediaType) {
+        return mediaType.startsWith(mediaType().getName()) || mediaType.startsWith(MediaType.TEXT_XML.getName());
+    }
 }

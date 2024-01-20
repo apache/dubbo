@@ -14,47 +14,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.rest.argument;
+package org.apache.dubbo.rpc.protocol.tri.rest.support.spring;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.Annotations;
+import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
+import org.apache.dubbo.rpc.protocol.tri.rest.argument.AbstractArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RequestUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
-import java.lang.reflect.Modifier;
-
-@Activate(order = Integer.MAX_VALUE - 10000)
+@Activate(order = Integer.MAX_VALUE - 10000, onClass = "org.springframework.web.bind.annotation.RequestMapping")
 public class FallbackArgumentResolver extends AbstractArgumentResolver {
 
     @Override
-    public boolean accept(ParameterMeta parameter) {
-        return parameter.isSimple()
-                || !Modifier.isAbstract(parameter.getActualType().getModifiers());
+    public boolean accept(ParameterMeta param) {
+        return param.getToolKit().getDialect() == RestConstants.DIALECT_SPRING_MVC;
     }
 
     @Override
-    protected NamedValueMeta createNamedValueMeta(ParameterMeta parameter) {
-        return new NamedValueMeta(parameter.getName(), parameter.isAnnotated(Annotations.Nonnull), null);
+    protected NamedValueMeta createNamedValueMeta(ParameterMeta param) {
+        return new NamedValueMeta(param.getName(), param.isAnnotated(Annotations.Nonnull), null);
     }
 
     @Override
     protected Object resolveValue(NamedValueMeta meta, HttpRequest request, HttpResponse response) {
-        if (meta.parameterMeta().isSimple()) {
+        ParameterMeta parameter = meta.parameterMeta();
+        if (parameter.isSimple()) {
             return request.parameter(meta.name());
         }
-        return meta.parameterMeta().bind(request, response);
+        return parameter.bind(request, response);
     }
 
     @Override
     protected Object resolveCollectionValue(NamedValueMeta meta, HttpRequest request, HttpResponse response) {
-        if (meta.parameterMeta().isSimple()) {
+        if (TypeUtils.isSimpleProperty(meta.nestedType(0))) {
             return request.parameterValues(meta.name());
         }
-        return meta.parameterMeta().bind(request, response);
+        return null;
     }
 
     @Override
@@ -62,6 +61,6 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
         if (TypeUtils.isSimpleProperty(meta.nestedType(1))) {
             return RequestUtils.getParametersMap(request);
         }
-        return meta.parameterMeta().bind(request, response);
+        return null;
     }
 }

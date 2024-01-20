@@ -1,1 +1,0 @@
-fallback=org.apache.dubbo.rpc.protocol.tri.rest.argument.FallbackArgumentResolver

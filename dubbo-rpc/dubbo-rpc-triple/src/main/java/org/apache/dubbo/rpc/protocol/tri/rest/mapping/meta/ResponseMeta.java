@@ -45,6 +45,12 @@ public class ResponseMeta {
     }
 
     public static ResponseMeta combine(ResponseMeta self, ResponseMeta other) {
+        if (self == null) {
+            return other;
+        }
+        if (other == null) {
+            return self;
+        }
         Integer status = other.getStatus() != null ? other.getStatus() : self.status;
         String reason = other.getReason() != null ? other.getReason() : self.reason;
         Map<String, List<String>> headers = self.headers;

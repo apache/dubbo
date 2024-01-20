@@ -26,13 +26,13 @@ import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentResolver;
+import org.apache.dubbo.rpc.protocol.tri.rest.argument.TypeConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 
 public final class RestHttpMessageCodec implements HttpMessageDecoder, HttpMessageEncoder {
 
@@ -43,6 +43,7 @@ public final class RestHttpMessageCodec implements HttpMessageDecoder, HttpMessa
     private final ParameterMeta[] parameters;
     private final ArgumentResolver argumentResolver;
     private final ArgumentConverter<?> argumentConverter;
+    private final TypeConverter typeConverter;
     private final HttpMessageEncoder messageEncoder;
     private final Charset charset;
 
@@ -52,15 +53,16 @@ public final class RestHttpMessageCodec implements HttpMessageDecoder, HttpMessa
             ParameterMeta[] parameters,
             ArgumentResolver argumentResolver,
             ArgumentConverter<?> argumentConverter,
+            TypeConverter typeConverter,
             HttpMessageEncoder messageEncoder) {
         this.request = request;
         this.response = response;
         this.parameters = parameters;
         this.argumentResolver = argumentResolver;
         this.argumentConverter = argumentConverter;
+        this.typeConverter = typeConverter;
         this.messageEncoder = messageEncoder;
-        String charset = request.charset();
-        this.charset = charset == null ? StandardCharsets.UTF_8 : Charset.forName(charset);
+        charset = request.charsetOrDefault();
     }
 
     @Override
@@ -81,7 +83,7 @@ public final class RestHttpMessageCodec implements HttpMessageDecoder, HttpMessa
         for (int i = 0; i < len; i++) {
             ParameterMeta parameter = parameters[i];
             Object arg = argumentResolver.resolve(parameter, request, response);
-            args[i] = argumentConverter.convert(arg, (Class) parameter.getType(), parameter);
+            args[i] = argumentConverter.convert(arg, parameter);
         }
         return args;
     }
@@ -110,6 +112,9 @@ public final class RestHttpMessageCodec implements HttpMessageDecoder, HttpMessa
                     }
                     return;
                 }
+                if (messageEncoder.mediaType() == MediaType.TEXT_PLAIN && type != String.class) {
+                    data = typeConverter.convert(data, String.class);
+                }
             } catch (Exception e) {
                 throw new EncodeException(e);
             }
@@ -124,6 +129,7 @@ public final class RestHttpMessageCodec implements HttpMessageDecoder, HttpMessa
 
     @Override
     public String contentType() {
-        return response.contentType();
+        String contentType = response.contentType();
+        return contentType == null ? messageEncoder.contentType() : contentType;
     }
 }

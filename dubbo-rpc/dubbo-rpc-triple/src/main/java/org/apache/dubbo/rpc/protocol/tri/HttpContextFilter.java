@@ -21,7 +21,6 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.remoting.http12.HttpResult;
-import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -49,13 +48,6 @@ public class HttpContextFilter implements Filter, BaseFilter.Listener {
         }
         context.setRequest(request);
         context.setResponse(response);
-        if (response.isCommitted()) {
-            HttpResult<Object> result = response.toHttpResult();
-            if (result.getBody() instanceof Throwable) {
-                return AsyncRpcResult.newDefaultAsyncResult((Throwable) result.getBody(), invocation);
-            }
-            return AsyncRpcResult.newDefaultAsyncResult(result, invocation);
-        }
         return invoker.invoke(invocation);
     }
 
@@ -69,7 +61,10 @@ public class HttpContextFilter implements Filter, BaseFilter.Listener {
         if (response.isEmpty()) {
             return;
         }
-        if (!response.isCommitted() && response.body() == null) {
+        if (response.isContentEmpty()) {
+            if (appResponse.hasException()) {
+                return;
+            }
             response.setBody(appResponse.getValue());
         }
         response.commit();
@@ -79,6 +74,7 @@ public class HttpContextFilter implements Filter, BaseFilter.Listener {
             return;
         }
         appResponse.setValue(result);
+        appResponse.setException(null);
     }
 
     @Override

@@ -54,15 +54,18 @@ public abstract class ParameterMeta extends AnnotationSupport {
     }
 
     public final boolean isSimple() {
+        Boolean simple = this.simple;
         if (simple == null) {
             simple = TypeUtils.isSimpleProperty(getActualType());
+            this.simple = simple;
         }
         return simple;
     }
 
     public final Class<?> getActualType() {
-        if (actualType == null) {
-            Class<?> type = getType();
+        Class<?> type = actualType;
+        if (type == null) {
+            type = getType();
             if (type == Optional.class) {
                 type = TypeUtils.getNestedType(getGenericType(), 0);
                 if (type == null) {
@@ -71,7 +74,7 @@ public abstract class ParameterMeta extends AnnotationSupport {
             }
             actualType = type;
         }
-        return actualType;
+        return type;
     }
 
     public final Object getTypeDescriptor() {

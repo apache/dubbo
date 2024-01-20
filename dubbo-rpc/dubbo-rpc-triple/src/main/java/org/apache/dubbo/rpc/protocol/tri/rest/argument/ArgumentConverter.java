@@ -23,5 +23,5 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface ArgumentConverter<T> {
 
-    T convert(Object value, Class<T> targetType, ParameterMeta parameter);
+    T convert(Object value, ParameterMeta parameter);
 }

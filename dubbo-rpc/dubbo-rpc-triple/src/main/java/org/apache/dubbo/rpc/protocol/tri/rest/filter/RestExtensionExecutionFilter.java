@@ -81,13 +81,34 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
     @Override
     protected void onResponse(
             Result result, Invoker<?> invoker, Invocation invocation, HttpRequest request, HttpResponse response) {
-        ((DefaultFilterChain) invocation.get(KEY)).onSuccess(result, request, response);
+        DefaultFilterChain chain = (DefaultFilterChain) invocation.get(KEY);
+        if (chain == null) {
+            return;
+        }
+        if (result.hasException()) {
+            chain.onError(result.getException(), request, response);
+            Object body = response.body();
+            if (body != null) {
+                if (body instanceof Throwable) {
+                    result.setException((Throwable) body);
+                } else {
+                    result.setValue(body);
+                    result.setException(null);
+                }
+            }
+            return;
+        }
+        chain.onSuccess(result, request, response);
     }
 
     @Override
     protected void onError(
             Throwable t, Invoker<?> invoker, Invocation invocation, HttpRequest request, HttpResponse response) {
-        ((DefaultFilterChain) invocation.get(KEY)).onError(t, request, response);
+        DefaultFilterChain chain = (DefaultFilterChain) invocation.get(KEY);
+        if (chain == null) {
+            return;
+        }
+        chain.onError(t, request, response);
     }
 
     private RestFilter[] getFilters(Invoker<?> invoker) {
@@ -124,10 +145,7 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
                 if (extension instanceof ExtensionAccessorAware) {
                     ((ExtensionAccessorAware) extension).setExtensionAccessor(frameworkModel);
                 }
-                RestFilter filter = adaptExtension(extension);
-                if (filter != null) {
-                    extensions.add(filter);
-                }
+                adaptExtension(extension, extensions);
             } catch (Throwable t) {
                 throw new RestInitializeException(t, Messages.EXTENSION_INIT_FAILED, className, url);
             }
@@ -138,10 +156,7 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
                 .getExtensionLoader(RestExtension.class)
                 .getActivateExtension(url, RestConstants.REST_FILTER_KEY);
         for (RestExtension extension : restExtensions) {
-            RestFilter filter = adaptExtension(extension);
-            if (filter != null) {
-                extensions.add(filter);
-            }
+            adaptExtension(extension, extensions);
         }
 
         // 3. sorts by order
@@ -150,15 +165,15 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
         return extensions.toArray(new RestFilter[0]);
     }
 
-    private RestFilter adaptExtension(Object extension) {
+    private void adaptExtension(Object extension, List<RestFilter> extensions) {
         if (extension instanceof RestFilter) {
-            return (RestFilter) extension;
+            extensions.add((RestFilter) extension);
+            return;
         }
         for (RestExtensionAdapter<Object> adapter : extensionAdapters) {
             if (adapter.accept(extension)) {
-                return adapter.adapt(extension);
+                extensions.add(adapter.adapt(extension));
             }
         }
-        return null;
     }
 }

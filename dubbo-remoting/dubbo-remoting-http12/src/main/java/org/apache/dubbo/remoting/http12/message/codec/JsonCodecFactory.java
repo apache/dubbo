@@ -36,4 +36,9 @@ public final class JsonCodecFactory implements HttpMessageEncoderFactory, HttpMe
     public MediaType mediaType() {
         return MediaType.APPLICATION_JSON;
     }
+
+    @Override
+    public boolean supports(String mediaType) {
+        return mediaType.startsWith(mediaType().getName()) || mediaType.startsWith(MediaType.TEXT_JSON.getName());
+    }
 }

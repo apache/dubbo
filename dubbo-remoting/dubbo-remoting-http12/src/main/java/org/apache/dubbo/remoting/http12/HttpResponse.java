@@ -20,6 +20,7 @@ import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public interface HttpResponse {
 
@@ -37,7 +38,7 @@ public interface HttpResponse {
 
     Collection<String> headerNames();
 
-    HttpHeaders headers();
+    Map<String, List<String>> headers();
 
     void addHeader(String name, String value);
 
@@ -81,9 +82,13 @@ public interface HttpResponse {
 
     boolean isEmpty();
 
+    boolean isContentEmpty();
+
     boolean isCommitted();
 
-    boolean commit();
+    void commit();
+
+    void setCommitted(boolean committed);
 
     void reset();
 

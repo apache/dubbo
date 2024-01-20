@@ -63,13 +63,13 @@ final class BeanArgumentBinder {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private Object resolveArgument(ParameterMeta meta, HttpRequest request, HttpResponse response) throws Exception {
-        AnnotationMeta form = meta.getAnnotation(Annotations.Form);
-        if (form != null || meta.isAnnotated(Annotations.BeanParam)) {
+    private Object resolveArgument(ParameterMeta param, HttpRequest request, HttpResponse response) throws Exception {
+        AnnotationMeta form = param.findAnnotation(Annotations.Form);
+        if (form != null || param.isHierarchyAnnotated(Annotations.BeanParam)) {
             String prefix = form == null ? null : form.getString("prefix");
             BeanMeta beanMeta = cache.computeIfAbsent(
-                    Pair.of(meta.getActualType(), prefix),
-                    k -> new BeanMeta(meta.getToolKit(), k.getValue(), k.getKey()));
+                    Pair.of(param.getActualType(), prefix),
+                    k -> new BeanMeta(param.getToolKit(), k.getValue(), k.getKey()));
 
             ConstructorMeta constructor = beanMeta.constructor;
             ParameterMeta[] parameters = constructor.parameters;
@@ -90,8 +90,8 @@ final class BeanArgumentBinder {
             return bean;
         }
 
-        Object arg = argumentResolver.resolve(meta, request, response);
-        return argumentConverter.convert(arg, (Class) meta.getType(), meta);
+        Object arg = argumentResolver.resolve(param, request, response);
+        return argumentConverter.convert(arg, param);
     }
 
     private static class BeanMeta {
@@ -134,15 +134,18 @@ final class BeanArgumentBinder {
                 if (field.getAnnotations().length == 0) {
                     continue;
                 }
+                if (!field.isAccessible()) {
+                    field.setAccessible(true);
+                }
                 fields.add(new FieldMeta(toolKit, prefix, field));
             }
             for (Method method : type.getDeclaredMethods()) {
+                if (method.getParameterCount() != 1) {
+                    continue;
+                }
                 int modifiers = method.getModifiers();
                 if ((modifiers & (Modifier.PUBLIC | Modifier.ABSTRACT | Modifier.STATIC)) == Modifier.PUBLIC) {
                     Parameter parameter = method.getParameters()[0];
-                    if (parameter.getAnnotations().length == 0) {
-                        continue;
-                    }
                     String name = method.getName();
                     if (name.length() > 3 && name.startsWith("set")) {
                         name = Character.toLowerCase(name.charAt(3)) + name.substring(4);
@@ -202,6 +205,11 @@ final class BeanArgumentBinder {
         public Type getGenericType() {
             return parameter.getParameterizedType();
         }
+
+        @Override
+        public String getDescription() {
+            return "ConstructorParameter{" + parameter + '}';
+        }
     }
 
     private static final class FieldMeta extends ParameterMeta {
@@ -230,6 +238,11 @@ final class BeanArgumentBinder {
 
         public void set(Object bean, Object value) throws Exception {
             field.set(bean, value);
+        }
+
+        @Override
+        public String getDescription() {
+            return "FieldParameter{" + field + '}';
         }
     }
 
@@ -261,6 +274,11 @@ final class BeanArgumentBinder {
 
         public void invoke(Object bean, Object value) throws Exception {
             method.invoke(bean, value);
+        }
+
+        @Override
+        public String getDescription() {
+            return "SetMethodParameter{" + method + '}';
         }
     }
 }

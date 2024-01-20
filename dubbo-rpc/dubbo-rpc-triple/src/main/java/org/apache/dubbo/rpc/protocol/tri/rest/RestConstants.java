@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.protocol.tri.rest;
 
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
-import org.apache.dubbo.rpc.protocol.tri.rest.filter.RestFilter.FilterChain;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.HandlerMeta;
 
@@ -43,7 +42,6 @@ public final class RestConstants {
     public static final String BODY_DECODER_ATTRIBUTE = HttpMessageDecoder.class.getName() + ".body";
     public static final String MAPPING_ATTRIBUTE = RequestMapping.class.getName();
     public static final String HANDLER_ATTRIBUTE = HandlerMeta.class.getName();
-    public static final String FILTER_RESULT_ATTRIBUTE = FilterChain.class.getName() + ".result";
     public static final String PATH_ATTRIBUTE = "org.springframework.web.util.UrlPathHelper.PATH";
     public static final String URI_TEMPLATE_VARIABLES_ATTRIBUTE =
             "org.springframework.web.servlet.HandlerMapping.uriTemplateVariables";

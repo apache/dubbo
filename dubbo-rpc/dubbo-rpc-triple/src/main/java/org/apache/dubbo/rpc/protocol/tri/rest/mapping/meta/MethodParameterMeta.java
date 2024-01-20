@@ -65,7 +65,7 @@ public final class MethodParameterMeta extends ParameterMeta {
 
     @Override
     public String getDescription() {
-        return "parameter [" + getMethod().toGenericString() + "] in {" + index + "}";
+        return "parameter [" + getMethod() + "] in {" + index + "}";
     }
 
     public Method getMethod() {

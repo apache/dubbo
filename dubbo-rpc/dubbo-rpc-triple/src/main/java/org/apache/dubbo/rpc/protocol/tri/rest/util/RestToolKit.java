@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.util;
 
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
@@ -27,7 +25,6 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.util.Map;
 
-@SPI(scope = ExtensionScope.FRAMEWORK)
 public interface RestToolKit {
 
     int getDialect();

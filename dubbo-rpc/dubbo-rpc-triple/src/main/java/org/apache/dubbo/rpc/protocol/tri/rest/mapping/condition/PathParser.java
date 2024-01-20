@@ -242,7 +242,7 @@ final class PathParser {
     }
 
     private void appendSegment(Type type, String name) {
-        segments.add(new PathSegment(type, buf.toString(), name));
+        segments.add(new PathSegment(type, buf.toString().trim(), name.trim()));
         buf.setLength(0);
     }
 

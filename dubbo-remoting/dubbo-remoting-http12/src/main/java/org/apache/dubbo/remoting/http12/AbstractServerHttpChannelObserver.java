@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.http12;
 
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
+import org.apache.dubbo.remoting.http12.exception.HttpResultPayloadException;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
 
@@ -110,6 +111,10 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
 
     @Override
     public void onError(Throwable throwable) {
+        if (throwable instanceof HttpResultPayloadException) {
+            onNext(((HttpResultPayloadException) throwable).getResult());
+            return;
+        }
         int httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR.getCode();
         if (throwable instanceof HttpStatusException) {
             httpStatusCode = ((HttpStatusException) throwable).getStatusCode();

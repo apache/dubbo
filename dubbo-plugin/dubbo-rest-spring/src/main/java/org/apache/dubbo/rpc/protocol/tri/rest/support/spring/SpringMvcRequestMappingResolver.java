@@ -33,7 +33,7 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
     private final RestToolKit toolKit;
 
     public SpringMvcRequestMappingResolver(FrameworkModel frameworkModel) {
-        toolKit = frameworkModel.getFirstActivateExtension(RestToolKit.class);
+        toolKit = new SpringRestToolKit(frameworkModel);
     }
 
     @Override

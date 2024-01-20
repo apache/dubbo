@@ -20,20 +20,16 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
-import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
-import org.apache.dubbo.rpc.protocol.tri.rest.argument.AnnotationBaseArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.RequestUtils;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.nio.charset.Charset;
-
-import static org.apache.dubbo.rpc.protocol.tri.rest.Messages.PARAMETER_VALUE_MISSING;
-import static org.apache.dubbo.rpc.protocol.tri.rest.RestConstants.BODY_DECODER_ATTRIBUTE;
 
 @Activate(onClass = "org.springframework.web.bind.annotation.RequestBody")
-public class RequestBodyArgumentResolver implements AnnotationBaseArgumentResolver<Annotation> {
+public class RequestBodyArgumentResolver extends AbstractSpringArgumentResolver {
 
     @Override
     public Class<Annotation> accept() {
@@ -41,12 +37,24 @@ public class RequestBodyArgumentResolver implements AnnotationBaseArgumentResolv
     }
 
     @Override
-    public Object resolve(
-            ParameterMeta parameter,
-            AnnotationMeta<Annotation> annotation,
-            HttpRequest request,
-            HttpResponse response) {
-        Class<?> type = parameter.getActualType();
+    protected NamedValueMeta createNamedValueMeta(ParameterMeta param, AnnotationMeta<Annotation> ann) {
+        return new NamedValueMeta(param.getName(), Helper.isRequired(ann), null);
+    }
+
+    @Override
+    protected Object resolveValue(NamedValueMeta meta, HttpRequest request, HttpResponse response) {
+        if (RequestUtils.isFormOrMultiPart(request)) {
+            if (meta.parameterMeta().isSimple()) {
+                return request.formParameter(meta.name());
+            }
+            return meta.parameterMeta().bind(request, response);
+        }
+        return RequestUtils.decodeBody(request, meta.type());
+    }
+
+    @Override
+    protected Object resolveCollectionValue(NamedValueMeta meta, HttpRequest request, HttpResponse response) {
+        Class<?> type = meta.type();
         if (type == byte[].class) {
             try {
                 return StreamUtils.readBytes(request.inputStream());
@@ -54,15 +62,17 @@ public class RequestBodyArgumentResolver implements AnnotationBaseArgumentResolv
                 throw new RuntimeException(e);
             }
         }
-        Object value = null;
-        HttpMessageDecoder decoder = request.attribute(BODY_DECODER_ATTRIBUTE);
-        if (decoder != null) {
-            value = decoder.decode(request.inputStream(), type, Charset.forName(request.charset()));
+        if (RequestUtils.isFormOrMultiPart(request)) {
+            return request.formParameterValues(meta.name());
         }
-        if (value == null && Helper.isRequired(annotation)) {
-            String typeName = parameter.getType().getSimpleName();
-            throw new IllegalArgumentException(PARAMETER_VALUE_MISSING.format(parameter.getName(), typeName));
+        return RequestUtils.decodeBody(request, meta.type());
+    }
+
+    @Override
+    protected Object resolveMapValue(NamedValueMeta meta, HttpRequest request, HttpResponse response) {
+        if (RequestUtils.isFormOrMultiPart(request)) {
+            return RequestUtils.getFormParametersMap(request);
         }
-        return value;
+        return RequestUtils.decodeBody(request, meta.type());
     }
 }

@@ -14,30 +14,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
+package org.apache.dubbo.rpc.protocol.tri.support.jaxrs.compatible.rest;
 
-import java.lang.annotation.Annotation;
+public class HttpMethodServiceImpl implements HttpMethodService {
 
-public enum Annotations implements AnnotationEnum {
-    Nonnull("javax.annotation.Nonnull");
-
-    private final String className;
-    private Class<Annotation> type;
-
-    Annotations(String className) {
-        this.className = className;
+    @Override
+    public String sayHelloPost(String name) {
+        return name;
     }
 
     @Override
-    public String className() {
-        return className;
+    public String sayHelloDelete(String name) {
+        return name;
     }
 
     @Override
-    public Class<Annotation> type() {
-        if (type == null) {
-            type = loadType();
-        }
-        return type;
+    public String sayHelloHead() {
+        return "hello";
+    }
+
+    @Override
+    public String sayHelloGet(String name) {
+        return name;
+    }
+
+    @Override
+    public String sayHelloPut(String name) {
+        return name;
+    }
+
+    @Override
+    public String sayHelloPatch(String name) {
+        return name;
+    }
+
+    @Override
+    public String sayHelloOptions(String name) {
+        return name;
     }
 }

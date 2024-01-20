@@ -58,12 +58,16 @@ public final class ServiceMeta extends AnnotationSupport {
         return url;
     }
 
-    public String getServiceVersion() {
-        return url.getVersion();
+    public String getServiceInterface() {
+        return url.getServiceInterface();
     }
 
     public String getServiceGroup() {
         return url.getGroup();
+    }
+
+    public String getServiceVersion() {
+        return url.getVersion();
     }
 
     public String getContextPath() {

@@ -16,19 +16,16 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.support.spring;
 
-import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.config.spring.extension.SpringExtensionInjector;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
+import org.apache.dubbo.rpc.protocol.tri.rest.argument.TypeConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestUtils;
-import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
-
-import javax.servlet.ServletRequest;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
@@ -44,18 +41,15 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.util.PropertyPlaceholderHelper;
-import org.springframework.web.bind.ServletRequestBindingException;
-import org.springframework.web.bind.ServletRequestDataBinder;
 
-@Activate(order = 100, onClass = "org.springframework.context.ApplicationContext")
-public class SpringRestToolKit implements RestToolKit {
-
-    public static final boolean HAS_SERVLET = TypeUtils.isPresent("javax.servlet.ServletRequest");
+final class SpringRestToolKit implements RestToolKit {
 
     private final ConfigurableBeanFactory beanFactory;
     private final PropertyPlaceholderHelper placeholderHelper;
     private final ConfigurationWrapper configuration;
     private final ConversionService conversionService;
+    private final TypeConverter typeConverter;
+    private final BeanArgumentBinder argumentBinder;
     private final ParameterNameDiscoverer discoverer;
 
     public SpringRestToolKit(FrameworkModel frameworkModel) {
@@ -70,7 +64,9 @@ public class SpringRestToolKit implements RestToolKit {
         }
         ConversionService cs = injector.getInstance(ConversionService.class, "mvcConversionService");
         conversionService = cs == null ? DefaultConversionService.getSharedInstance() : cs;
+        typeConverter = frameworkModel.getBeanFactory().getBean(TypeConverter.class);
         discoverer = new DefaultParameterNameDiscoverer();
+        argumentBinder = new BeanArgumentBinder(frameworkModel, conversionService);
     }
 
     @Override
@@ -101,23 +97,12 @@ public class SpringRestToolKit implements RestToolKit {
         if (conversionService.canConvert(sourceType, targetType)) {
             return conversionService.convert(value, sourceType, targetType);
         }
-        return true;
+        return typeConverter.convert(value, parameter.getGenericType());
     }
 
     @Override
     public Object bind(ParameterMeta parameter, HttpRequest request, HttpResponse response) {
-        if (HAS_SERVLET) {
-            ServletRequestDataBinder binder = new ServletRequestDataBinder(null, parameter.getName());
-            binder.setConversionService(conversionService);
-            binder.bind((ServletRequest) request);
-            try {
-                binder.closeNoCatch();
-            } catch (ServletRequestBindingException e) {
-                throw new RuntimeException(e);
-            }
-            return binder.getTarget();
-        }
-        return null;
+        return argumentBinder.bind(parameter, request, response);
     }
 
     @Override

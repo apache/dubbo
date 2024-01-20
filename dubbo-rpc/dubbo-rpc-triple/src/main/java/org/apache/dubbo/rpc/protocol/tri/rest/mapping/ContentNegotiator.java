@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpUtils;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoderFactory;
@@ -47,9 +46,9 @@ public class ContentNegotiator {
     public String negotiate(HttpRequest request) {
         // 1. find mediaType by producible
         List<MediaType> produces = request.attribute(RestConstants.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE);
-        if (CollectionUtils.isNotEmpty(produces)) {
-            for (MediaType mediaType : produces) {
-                String name = mediaType.getName();
+        if (produces != null) {
+            for (int i = 0, size = produces.size(); i < size; i++) {
+                String name = produces.get(i).getName();
                 if (name.indexOf('*') == -1) {
                     return name;
                 }
@@ -58,8 +57,9 @@ public class ContentNegotiator {
 
         // 2. find mediaType by accept header
         List<String> accepts = HttpUtils.parseAccept(request.accept());
-        if (!accepts.isEmpty()) {
-            for (String accept : accepts) {
+        if (accepts != null) {
+            for (int i = 0, size = accepts.size(); i < size; i++) {
+                String accept = accepts.get(i);
                 if (accept.indexOf('*') == -1) {
                     return accept;
                 }
@@ -80,20 +80,10 @@ public class ContentNegotiator {
         int index = path.lastIndexOf('.');
         if (index != -1) {
             String extension = path.substring(index + 1);
-            String mediaType = getMediaTypeByExtension(extension);
-            if (mediaType != null) {
-                return mediaType;
-            }
+            return getMediaTypeByExtension(extension);
         }
 
-        // 6. use request mediaType
-        String mediaType = request.mediaType();
-        if (mediaType != null) {
-            return mediaType;
-        }
-
-        // 7. use "application/json" as default mediaType
-        return MediaType.APPLICATION_JSON.getName();
+        return null;
     }
 
     private String getMediaTypeByExtension(String extension) {

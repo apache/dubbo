@@ -23,6 +23,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.remoting.http12.message.codec.CodecUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
@@ -30,7 +31,9 @@ import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestHttpMessageCodec;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentResolver;
+import org.apache.dubbo.rpc.protocol.tri.rest.argument.TypeConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.HandlerMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.RequestUtils;
 import org.apache.dubbo.rpc.protocol.tri.route.RequestHandler;
 import org.apache.dubbo.rpc.protocol.tri.route.RequestHandlerMapping;
 
@@ -41,6 +44,7 @@ public final class RestRequestHandlerMapping implements RequestHandlerMapping {
     private final RequestMappingRegistry requestMappingRegistry;
     private final ArgumentResolver argumentResolver;
     private final ArgumentConverter<?> argumentConverter;
+    private final TypeConverter typeConverter;
     private final ContentNegotiator contentNegotiator;
     private final CodecUtils codecUtils;
 
@@ -50,6 +54,7 @@ public final class RestRequestHandlerMapping implements RequestHandlerMapping {
         requestMappingRegistry = beanFactory.getBean(RequestMappingRegistry.class);
         argumentResolver = beanFactory.getBean(ArgumentResolver.class);
         argumentConverter = beanFactory.getBean(ArgumentConverter.class);
+        typeConverter = beanFactory.getBean(TypeConverter.class);
         contentNegotiator = beanFactory.getOrRegisterBean(ContentNegotiator.class);
         codecUtils = beanFactory.getOrRegisterBean(CodecUtils.class);
     }
@@ -61,18 +66,30 @@ public final class RestRequestHandlerMapping implements RequestHandlerMapping {
             return null;
         }
 
+        String requestMediaType = request.mediaType();
         String responseMediaType = contentNegotiator.negotiate(request);
-        response.setContentType(responseMediaType);
+        if (responseMediaType != null) {
+            response.setContentType(responseMediaType);
+        } else {
+            if (requestMediaType != null && !RequestUtils.isFormOrMultiPart(request)) {
+                responseMediaType = requestMediaType;
+            } else {
+                responseMediaType = MediaType.APPLICATION_JSON.getName();
+            }
+        }
         RestHttpMessageCodec codec = new RestHttpMessageCodec(
                 request,
                 response,
                 meta.getParameters(),
                 argumentResolver,
                 argumentConverter,
+                typeConverter,
                 codecUtils.determineHttpMessageEncoder(url, frameworkModel, responseMediaType));
 
-        String requestMediaType = StringUtils.defaultIf(request.mediaType(), responseMediaType);
-        if (HttpMethods.supportBody(request.method())) {
+        if (HttpMethods.supportBody(request.method()) && !RequestUtils.isFormOrMultiPart(request)) {
+            if (StringUtils.isEmpty(requestMediaType)) {
+                requestMediaType = responseMediaType;
+            }
             request.setAttribute(
                     RestConstants.BODY_DECODER_ATTRIBUTE,
                     codecUtils.determineHttpMessageDecoder(url, frameworkModel, requestMediaType));

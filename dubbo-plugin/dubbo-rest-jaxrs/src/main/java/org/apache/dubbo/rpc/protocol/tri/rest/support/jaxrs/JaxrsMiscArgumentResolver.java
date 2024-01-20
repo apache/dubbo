@@ -28,12 +28,10 @@ import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -68,15 +66,7 @@ public class JaxrsMiscArgumentResolver implements ArgumentResolver {
             return new Cookie(cookie.name(), cookie.value(), cookie.path(), cookie.domain());
         }
         if (Form.class.isAssignableFrom(type)) {
-            MultivaluedMap<String, String> result = new MultivaluedHashMap<>();
-            for (String name : request.formParameterNames()) {
-                List<String> values = request.formParameterValues(name);
-                if (values == null) {
-                    continue;
-                }
-                result.put(name, values);
-            }
-            return result;
+            return RequestUtils.getFormParametersMap(request);
         }
         if (HttpHeaders.class.isAssignableFrom(type)) {
             return new ResteasyHttpHeaders(new MultivaluedMapWrapper<>(request.headers()));

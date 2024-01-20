@@ -180,6 +180,11 @@ public class ServletHttpResponseAdaptee extends DefaultHttpResponse implements H
         return locale == null ? Locale.getDefault() : locale;
     }
 
+    @Override
+    public String toString() {
+        return "ServletHttpResponseAdaptee{" + fieldToString() + '}';
+    }
+
     private static final class HttpOutputStream extends ServletOutputStream {
 
         private final OutputStream outputStream;

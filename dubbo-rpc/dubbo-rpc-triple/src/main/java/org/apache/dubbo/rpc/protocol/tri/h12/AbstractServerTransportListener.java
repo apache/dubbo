@@ -91,6 +91,9 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         executor.execute(() -> {
             try {
                 doOnMetadata(metadata);
+            } catch (HttpStatusException e) {
+                LOGGER.debug("Http status exception", e);
+                onError(e);
             } catch (Throwable throwable) {
                 LOGGER.error(INTERNAL_ERROR, "", "", "server internal error", throwable);
                 onError(throwable);
@@ -123,6 +126,9 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         executor.execute(() -> {
             try {
                 doOnData(message);
+            } catch (HttpStatusException e) {
+                LOGGER.debug("Http status exception", e);
+                onError(e);
             } catch (Throwable e) {
                 LOGGER.error(INTERNAL_ERROR, "", "", "server internal error", e);
                 onError(e);
@@ -131,6 +137,9 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
     }
 
     protected void doOnData(MESSAGE message) {
+        if (httpMessageListener == null) {
+            return;
+        }
         onPrepareData(message);
         // decode message
         httpMessageListener.onMessage(message.getBody());

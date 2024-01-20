@@ -77,7 +77,7 @@ public final class ArrayUtils {
         return values;
     }
 
-    public static Object first(Object[] data) {
+    public static <T> T first(T[] data) {
         return isEmpty(data) ? null : data[0];
     }
 }

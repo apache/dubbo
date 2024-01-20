@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.filter;
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.protocol.tri.rest.filter.AbstractRestFilter;
@@ -25,6 +24,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.filter.RestExtensionAdapter;
 import org.apache.dubbo.rpc.protocol.tri.rest.filter.RestFilter;
 import org.apache.dubbo.rpc.protocol.tri.rest.filter.RestFilter.Listener;
 import org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.Helper;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
@@ -48,7 +48,7 @@ public final class ExceptionMapperAdapter implements RestExtensionAdapter<Except
 
         public Filter(ExceptionMapper<Throwable> extension) {
             super(extension);
-            exceptionType = ReflectUtils.getGenericClass(extension.getClass());
+            exceptionType = TypeUtils.getSuperGenericType(extension.getClass());
         }
 
         @Override

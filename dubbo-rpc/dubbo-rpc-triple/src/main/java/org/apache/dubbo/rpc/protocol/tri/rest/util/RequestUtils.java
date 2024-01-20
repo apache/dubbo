@@ -21,6 +21,9 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
+import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
+import org.apache.dubbo.remoting.http12.message.MediaType;
+import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -38,6 +41,15 @@ public final class RequestUtils {
 
     private RequestUtils() {}
 
+    public static boolean isFormOrMultiPart(HttpRequest request) {
+        String contentType = request.contentType();
+        if (contentType == null) {
+            return false;
+        }
+        return contentType.startsWith(MediaType.APPLICATION_FROM_URLENCODED.getName())
+                || contentType.startsWith(MediaType.MULTIPART_FORM_DATA.getName());
+    }
+
     public static String decodeURL(String value) {
         try {
             return URLDecoder.decode(value, StandardCharsets.UTF_8.name());
@@ -54,16 +66,50 @@ public final class RequestUtils {
         }
     }
 
-    public static Map<?, ?> getParametersMap(HttpRequest request) {
+    public static Map<String, List<String>> getParametersMap(HttpRequest request) {
         Collection<String> paramNames = request.parameterNames();
         if (paramNames.isEmpty()) {
             return Collections.emptyMap();
         }
-        Map<String, List<String>> mapValue = CollectionUtils.newLinkedHashMap(paramNames.size());
+        Map<String, List<String>> params = CollectionUtils.newLinkedHashMap(paramNames.size());
         for (String paramName : paramNames) {
-            mapValue.put(paramName, request.parameterValues(paramName));
+            params.put(paramName, request.parameterValues(paramName));
         }
-        return mapValue;
+        return params;
+    }
+
+    public static Map<String, List<String>> getFormParametersMap(HttpRequest request) {
+        Collection<String> paramNames = request.formParameterNames();
+        if (paramNames.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        Map<String, List<String>> params = CollectionUtils.newLinkedHashMap(paramNames.size());
+        for (String paramName : paramNames) {
+            params.put(paramName, request.formParameterValues(paramName));
+        }
+        return params;
+    }
+
+    public static Map<String, Object> getParametersMapStartingWith(HttpRequest request, String prefix) {
+        Collection<String> paramNames = request.parameterNames();
+        if (paramNames.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        if (prefix == null) {
+            prefix = StringUtils.EMPTY_STRING;
+        }
+        Map<String, Object> params = CollectionUtils.newLinkedHashMap(paramNames.size());
+        for (String paramName : paramNames) {
+            if (prefix.isEmpty() || paramName.startsWith(prefix)) {
+                String name = paramName.substring(prefix.length());
+                List<String> values = request.parameterValues(paramName);
+                if (CollectionUtils.isEmpty(values)) {
+                    continue;
+                }
+                params.put(name, values.size() == 1 ? values.get(0) : values);
+            }
+        }
+        return params;
     }
 
     public static Map<String, List<String>> parseMatrixVariables(String matrixVariables) {
@@ -113,5 +159,21 @@ public final class RequestUtils {
             result.addAll(values);
         }
         return result == null ? Collections.emptyList() : result;
+    }
+
+    public static Object decodeBody(HttpRequest request, Class<?> type) {
+        HttpMessageDecoder decoder = request.attribute(RestConstants.BODY_DECODER_ATTRIBUTE);
+        if (decoder == null) {
+            return null;
+        }
+        Object value = request.attribute(RestConstants.BODY_ATTRIBUTE);
+        if (value == null) {
+            if (decoder.mediaType() == MediaType.TEXT_PLAIN) {
+                type = String.class;
+            }
+            value = decoder.decode(request.inputStream(), type, request.charsetOrDefault());
+            request.setAttribute(RestConstants.BODY_ATTRIBUTE, value);
+        }
+        return value;
     }
 }

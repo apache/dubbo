@@ -218,7 +218,7 @@ public final class StreamUtils {
             String key = entry.getKey();
             Object value = attachments.remove(key);
             if (value != null) {
-                putAttachment(attachments, key, value);
+                putAttachment(attachments, entry.getValue(), value);
             }
         }
         return attachments;

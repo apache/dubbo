@@ -20,6 +20,7 @@ import org.apache.dubbo.common.utils.DateUtils;
 import org.apache.dubbo.remoting.http12.HttpResult;
 import org.apache.dubbo.remoting.http12.HttpStatus;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -60,9 +61,14 @@ public class DefaultHttpResult<T> implements HttpResult<T> {
         this.body = body;
     }
 
+    @Override
+    public String toString() {
+        return "DefaultHttpResult{" + "status=" + status + ", headers=" + headers + ", body=" + body + '}';
+    }
+
     public static final class Builder<T> {
-        private int status = HttpStatus.OK.getCode();
-        private Map<String, List<String>> headers = new LinkedHashMap<>();
+        private int status;
+        private Map<String, List<String>> headers;
         private T body;
 
         public Builder<T> status(int status) {
@@ -93,23 +99,36 @@ public class DefaultHttpResult<T> implements HttpResult<T> {
         }
 
         public Builder<T> header(String key, List<String> values) {
-            headers.put(key, values);
+            getHeaders().put(key, values);
             return this;
         }
 
         public Builder<T> header(String key, String... values) {
-            headers.put(key, Arrays.asList(values));
+            getHeaders().put(key, Arrays.asList(values));
             return this;
         }
 
         public Builder<T> header(String key, String value) {
-            headers.put(key, Collections.singletonList(value));
+            getHeaders().put(key, Collections.singletonList(value));
             return this;
         }
 
         public Builder<T> header(String key, Date value) {
-            headers.put(key, Collections.singletonList(DateUtils.formatHeader(value)));
+            return header(key, DateUtils.formatHeader(value));
+        }
+
+        public Builder<T> addHeader(String key, String value) {
+            getHeaders().computeIfAbsent(key, k -> new ArrayList<>()).add(value);
             return this;
+        }
+
+        private Map<String, List<String>> getHeaders() {
+            Map<String, List<String>> headers = this.headers;
+            if (headers == null) {
+                headers = new LinkedHashMap<>();
+                this.headers = headers;
+            }
+            return headers;
         }
 
         public Builder<T> body(T body) {

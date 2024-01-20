@@ -167,10 +167,11 @@ public final class RadixTree<T> {
             PathSegment segment = entry.getKey();
             if (segment.match(path, start, end, workVariableMap)) {
                 workVariableMap.putAll(variableMap);
-                if (segment.isTailMatching()) {
-                    addMatch(entry.getValue(), workVariableMap, matches);
+                Node<T> child = entry.getValue();
+                if (segment.isTailMatching() || child.isLeaf()) {
+                    addMatch(child, workVariableMap, matches);
                 } else {
-                    matchRecursive(entry.getValue(), path, end + 1, workVariableMap, matches);
+                    matchRecursive(child, path, end + 1, workVariableMap, matches);
                 }
                 if (!workVariableMap.isEmpty()) {
                     workVariableMap = new HashMap<>();

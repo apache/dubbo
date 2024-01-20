@@ -40,7 +40,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.security.Principal;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,7 +49,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public final class ServletHttpRequestAdaptee extends DefaultHttpRequest implements HttpServletRequest {
+public class ServletHttpRequestAdaptee extends DefaultHttpRequest implements HttpServletRequest {
 
     private final ServletContext servletContext;
     private final HttpSessionFactory sessionFactory;
@@ -341,11 +340,7 @@ public final class ServletHttpRequestAdaptee extends DefaultHttpRequest implemen
     @Override
     public BufferedReader getReader() {
         if (reader == null) {
-            try {
-                reader = new BufferedReader(new InputStreamReader(inputStream(), charset()));
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
-            }
+            reader = new BufferedReader(new InputStreamReader(inputStream(), charsetOrDefault()));
         }
         return reader;
     }
@@ -439,6 +434,11 @@ public final class ServletHttpRequestAdaptee extends DefaultHttpRequest implemen
     @Override
     public DispatcherType getDispatcherType() {
         return DispatcherType.REQUEST;
+    }
+
+    @Override
+    public String toString() {
+        return "ServletHttpRequestAdaptee{" + fieldToString() + '}';
     }
 
     private static final class HttpInputStream extends ServletInputStream {

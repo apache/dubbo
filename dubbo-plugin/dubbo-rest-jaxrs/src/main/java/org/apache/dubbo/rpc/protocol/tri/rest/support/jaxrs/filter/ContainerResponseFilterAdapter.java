@@ -27,7 +27,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.filter.RestFilter.Listener;
 
 import javax.ws.rs.container.ContainerResponseFilter;
 
-@Activate(onClass = "javax.ws.rs.ext.ContainerResponseFilter")
+@Activate(onClass = "javax.ws.rs.container.ContainerResponseFilter")
 public class ContainerResponseFilterAdapter implements RestExtensionAdapter<ContainerResponseFilter> {
 
     @Override

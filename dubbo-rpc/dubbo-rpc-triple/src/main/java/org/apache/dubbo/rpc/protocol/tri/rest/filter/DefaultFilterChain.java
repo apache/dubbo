@@ -49,9 +49,6 @@ final class DefaultFilterChain implements FilterChain, Listener {
 
     @Override
     public void doFilter(HttpRequest request, HttpResponse response) throws Exception {
-        if (response.isCommitted()) {
-            return;
-        }
         if (cursor < filters.length) {
             filters[cursor++].doFilter(request, response, this);
             return;

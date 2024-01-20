@@ -31,9 +31,13 @@ public class BinaryCodec implements HttpMessageCodec {
 
     @Override
     public void encode(OutputStream os, Object data, Charset charset) throws EncodeException {
+        if (data == null) {
+            return;
+        }
         try {
             if (data instanceof byte[]) {
                 os.write((byte[]) data);
+                return;
             }
         } catch (IOException e) {
             throw new EncodeException(e);

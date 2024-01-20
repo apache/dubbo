@@ -52,7 +52,7 @@ public enum Messages {
         return statusCode;
     }
 
-    public String format(Object... params) {
-        return ArrayUtils.isEmpty(params) ? message : MessageFormat.format(message, params);
+    public String format(Object... args) {
+        return ArrayUtils.isEmpty(args) ? message : MessageFormat.format(message, args);
     }
 }

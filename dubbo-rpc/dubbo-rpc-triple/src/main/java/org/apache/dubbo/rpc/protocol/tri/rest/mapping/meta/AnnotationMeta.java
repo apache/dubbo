@@ -51,13 +51,13 @@ public final class AnnotationMeta<A extends Annotation> {
     }
 
     public Map<String, Object> getAttributes() {
+        Map<String, Object> attributes = this.attributes;
         if (attributes == null) {
             Map<String, Object> map = toolKit.getAttributes(element, annotation);
-            Map<String, Object> result;
             if (CollectionUtils.isEmptyMap(map)) {
-                result = Collections.emptyMap();
+                attributes = Collections.emptyMap();
             } else {
-                result = CollectionUtils.newHashMap(map.size());
+                attributes = CollectionUtils.newHashMap(map.size());
                 for (Map.Entry<String, Object> entry : map.entrySet()) {
                     Object value = entry.getValue();
                     if (value instanceof String) {
@@ -68,10 +68,10 @@ public final class AnnotationMeta<A extends Annotation> {
                             array[i] = toolKit.resolvePlaceholders(array[i]);
                         }
                     }
-                    result.put(entry.getKey(), value);
+                    attributes.put(entry.getKey(), value);
                 }
             }
-            attributes = result;
+            this.attributes = attributes;
         }
         return attributes;
     }

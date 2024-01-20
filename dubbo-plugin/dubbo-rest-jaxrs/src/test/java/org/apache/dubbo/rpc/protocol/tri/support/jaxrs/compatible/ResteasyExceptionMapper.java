@@ -14,17 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.support;
+package org.apache.dubbo.rpc.protocol.tri.support.jaxrs.compatible;
 
-public class IGreeterException extends Exception {
-    private String message;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
 
-    public IGreeterException(String message) {
-        super(message);
-        this.message = message;
-    }
-
-    public IGreeterException(String message, Throwable cause) {
-        super(message, cause);
+public class ResteasyExceptionMapper implements ExceptionMapper<RuntimeException> {
+    @Override
+    public Response toResponse(RuntimeException exception) {
+        return Response.status(200).entity("test-exception").build();
     }
 }

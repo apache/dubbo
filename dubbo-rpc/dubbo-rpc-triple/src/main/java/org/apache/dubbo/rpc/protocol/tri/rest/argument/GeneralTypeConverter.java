@@ -92,7 +92,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 
 import static org.apache.dubbo.common.utils.StringUtils.tokenizeToList;
+import static org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils.getActualGenericType;
 import static org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils.getActualType;
+import static org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils.nullDefault;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class GeneralTypeConverter implements TypeConverter {
@@ -514,7 +516,7 @@ public class GeneralTypeConverter implements TypeConverter {
         }
 
         if (Collection.class.isAssignableFrom(targetClass)) {
-            target = convertCollection(toCollection(source, source.getClass()), targetClass);
+            target = convertCollection(toCollection(source), targetClass);
             if (target != null) {
                 return target;
             }
@@ -602,16 +604,12 @@ public class GeneralTypeConverter implements TypeConverter {
         }
 
         try {
-            return JsonUtils.convertObject(JsonUtils.toJson(source), targetClass);
+            return JsonUtils.convertObject(source, targetClass);
         } catch (Exception e) {
             LOGGER.debug("JSON convert from [{}] to [{}] failed", sourceClass.getName(), targetClass.getName(), e);
         }
 
         return null;
-    }
-
-    protected Object customConvert(Object source, Class<?> targetClass) {
-        return converterUtil == null ? null : converterUtil.convertIfPossible(source, targetClass);
     }
 
     private Object doConvert(Object source, Type targetType) throws Exception {
@@ -651,8 +649,8 @@ public class GeneralTypeConverter implements TypeConverter {
                 Type[] argTypes = type.getActualTypeArguments();
 
                 if (Collection.class.isAssignableFrom(targetClass)) {
-                    Type itemType = TypeUtils.getActualGenericType(argTypes[0]);
-                    Collection items = toCollection(source, source.getClass());
+                    Type itemType = getActualGenericType(argTypes[0]);
+                    Collection items = toCollection(source);
                     Collection targetItems = createCollection(targetClass, items.size());
                     for (Object item : items) {
                         targetItems.add(doConvert(item, itemType));
@@ -663,6 +661,8 @@ public class GeneralTypeConverter implements TypeConverter {
                 if (Map.class.isAssignableFrom(targetClass)) {
                     Type keyType = argTypes[0];
                     Type valueType = argTypes[1];
+                    Class<?> mapValueClass = TypeUtils.getMapValueType(targetClass);
+                    boolean multiValue = mapValueClass != null && Collection.class.isAssignableFrom(mapValueClass);
 
                     if (source instanceof CharSequence) {
                         source = tokenizeToMap(source.toString());
@@ -673,8 +673,16 @@ public class GeneralTypeConverter implements TypeConverter {
                         Map targetMap = createMap(targetClass, map.size());
                         for (Map.Entry entry : map.entrySet()) {
                             Object key = doConvert(entry.getKey(), keyType);
-                            Object value = doConvert(entry.getValue(), valueType);
-                            targetMap.put(key, value);
+                            if (multiValue) {
+                                Collection items = toCollection(entry.getValue());
+                                Collection targetItems = createCollection(mapValueClass, items.size());
+                                for (Object item : items) {
+                                    targetItems.add(doConvert(item, valueType));
+                                }
+                                targetMap.put(key, targetItems);
+                            } else {
+                                targetMap.put(key, doConvert(entry.getValue(), valueType));
+                            }
                         }
                         return targetMap;
                     }
@@ -691,7 +699,7 @@ public class GeneralTypeConverter implements TypeConverter {
         } else if (targetType instanceof GenericArrayType) {
             Type itemType = ((GenericArrayType) targetType).getGenericComponentType();
             Class<?> itemClass = getActualType(itemType);
-            Collection items = toCollection(source, source.getClass());
+            Collection items = toCollection(source);
             Object target = Array.newInstance(itemClass, items.size());
             int i = 0;
             for (Object item : items) {
@@ -706,20 +714,329 @@ public class GeneralTypeConverter implements TypeConverter {
         }
 
         try {
-            return JsonUtils.toJavaObject(JsonUtils.toJson(source), targetType);
+            return JsonUtils.convertObject(source, targetType);
         } catch (Exception e) {
-            LOGGER.debug(
-                    "JSON convert from [{}] to [{}] failed", source.getClass().getName(), targetType.getTypeName(), e);
+            String name = source.getClass().getName();
+            LOGGER.debug("JSON convert from [{}] to [{}] failed", name, targetType.getTypeName(), e);
         }
 
         return null;
+    }
+
+    protected Object customConvert(Object source, Class<?> targetClass) {
+        return converterUtil == null ? null : converterUtil.convertIfPossible(source, targetClass);
     }
 
     protected Object customConvert(Object source, Type targetType) {
         return null;
     }
 
-    private Map<String, String> tokenizeToMap(String str) {
+    protected Collection customCreateCollection(Class targetClass, int size) {
+        return null;
+    }
+
+    private Map customCreateMap(Class targetClass, int size) {
+        return null;
+    }
+
+    private Collection createCollection(Class targetClass, int size) {
+        if (targetClass.isInterface()) {
+            if (targetClass == List.class || targetClass == Collection.class) {
+                return new ArrayList<>(size);
+            }
+            if (targetClass == Set.class) {
+                return CollectionUtils.newHashSet(size);
+            }
+            if (targetClass == SortedSet.class) {
+                return CollectionUtils.newLinkedHashSet(size);
+            }
+            if (targetClass == Queue.class || targetClass == Deque.class) {
+                return new LinkedList<>();
+            }
+        } else if (Collection.class.isAssignableFrom(targetClass)) {
+            if (targetClass == ArrayList.class) {
+                return new ArrayList<>(size);
+            }
+            if (targetClass == LinkedList.class) {
+                return new LinkedList();
+            }
+            if (targetClass == HashSet.class) {
+                return CollectionUtils.newHashSet(size);
+            }
+            if (targetClass == LinkedHashSet.class) {
+                return CollectionUtils.newLinkedHashSet(size);
+            }
+            if (!Modifier.isAbstract(targetClass.getModifiers())) {
+                try {
+                    Constructor defCt = null;
+                    for (Constructor ct : targetClass.getConstructors()) {
+                        switch (ct.getParameterCount()) {
+                            case 0:
+                                defCt = ct;
+                                break;
+                            case 1:
+                                Class paramType = ct.getParameterTypes()[0];
+                                if (paramType == int.class) {
+                                    return (Collection) ct.newInstance(size);
+                                }
+                                break;
+                            default:
+                        }
+                    }
+                    if (defCt != null) {
+                        return (Collection) defCt.newInstance();
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+        }
+        Collection collection = customCreateCollection(targetClass, size);
+        if (collection != null) {
+            return collection;
+        }
+        collection = (Collection) converterUtil.convertIfPossible(size, targetClass);
+        if (collection != null) {
+            return collection;
+        }
+        if (targetClass.isAssignableFrom(ArrayList.class)) {
+            return new ArrayList<>(size);
+        }
+        if (targetClass.isAssignableFrom(LinkedHashSet.class)) {
+            return CollectionUtils.newLinkedHashSet(size);
+        }
+        throw new IllegalArgumentException("Unsupported collection type: " + targetClass.getName());
+    }
+
+    private Collection convertCollection(Collection source, Class targetClass) {
+        if (targetClass.isInstance(source)) {
+            return source;
+        }
+        if (targetClass.isInterface()) {
+            if (targetClass == List.class || targetClass == Collection.class) {
+                return new ArrayList<>(source);
+            }
+            if (targetClass == Set.class) {
+                return new HashSet<>(source);
+            }
+            if (targetClass == SortedSet.class) {
+                return new LinkedHashSet(source);
+            }
+            if (targetClass == Queue.class || targetClass == Deque.class) {
+                return new LinkedList<>(source);
+            }
+        } else {
+            if (targetClass == ArrayList.class) {
+                return new ArrayList<>(source);
+            }
+            if (targetClass == LinkedList.class) {
+                return new LinkedList(source);
+            }
+            if (targetClass == HashSet.class) {
+                return new HashSet(source);
+            }
+            if (targetClass == LinkedHashSet.class) {
+                return new LinkedHashSet(source);
+            }
+            if (Modifier.isAbstract(targetClass.getModifiers())) {
+                Collection collection = (Collection) converterUtil.convertIfPossible(source.size(), targetClass);
+                if (collection != null) {
+                    collection.addAll(source);
+                    return collection;
+                }
+                if (targetClass.isAssignableFrom(ArrayList.class)) {
+                    return new ArrayList<>(source);
+                }
+                if (targetClass.isAssignableFrom(LinkedHashSet.class)) {
+                    return new LinkedHashSet(source);
+                }
+                return null;
+            }
+            try {
+                Constructor defCt = null;
+                for (Constructor ct : targetClass.getConstructors()) {
+                    if (Modifier.isPublic(ct.getModifiers())) {
+                        switch (ct.getParameterCount()) {
+                            case 0:
+                                defCt = ct;
+                                break;
+                            case 1:
+                                Class paramType = ct.getParameterTypes()[0];
+                                if (paramType == Collection.class) {
+                                    return (Collection) ct.newInstance(source);
+                                } else if (paramType == List.class) {
+                                    return (Collection) ct.newInstance(toList(source));
+                                }
+                                break;
+                            default:
+                        }
+                    }
+                }
+                if (defCt != null) {
+                    Collection c = (Collection) defCt.newInstance();
+                    c.addAll(source);
+                    return c;
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        return null;
+    }
+
+    private Map createMap(Class targetClass, int size) {
+        if (targetClass.isInterface()) {
+            if (targetClass == Map.class) {
+                return CollectionUtils.newHashMap(size);
+            }
+            if (targetClass == ConcurrentMap.class) {
+                return CollectionUtils.newConcurrentHashMap(size);
+            }
+            if (SortedMap.class.isAssignableFrom(targetClass)) {
+                return new TreeMap<>();
+            }
+        } else if (Map.class.isAssignableFrom(targetClass)) {
+            if (targetClass == HashMap.class) {
+                return CollectionUtils.newHashMap(size);
+            }
+            if (targetClass == LinkedHashMap.class) {
+                return CollectionUtils.newLinkedHashMap(size);
+            }
+            if (targetClass == TreeMap.class) {
+                return new TreeMap<>();
+            }
+            if (targetClass == ConcurrentHashMap.class) {
+                return CollectionUtils.newConcurrentHashMap(size);
+            }
+            if (!Modifier.isAbstract(targetClass.getModifiers())) {
+                try {
+                    Constructor defCt = null;
+                    for (Constructor ct : targetClass.getConstructors()) {
+                        if (Modifier.isPublic(ct.getModifiers())) {
+                            switch (ct.getParameterCount()) {
+                                case 0:
+                                    defCt = ct;
+                                    break;
+                                case 1:
+                                    Class paramType = ct.getParameterTypes()[0];
+                                    if (paramType == int.class) {
+                                        return (Map) ct.newInstance(CollectionUtils.capacity(size));
+                                    }
+                                    break;
+                                default:
+                            }
+                        }
+                    }
+                    if (defCt != null) {
+                        return (Map) defCt.newInstance();
+                    }
+                } catch (Throwable ignored) {
+                }
+            }
+        }
+        Map map = customCreateMap(targetClass, size);
+        if (map != null) {
+            return map;
+        }
+        map = (Map) converterUtil.convertIfPossible(size, targetClass);
+        if (map != null) {
+            return map;
+        }
+        if (targetClass.isAssignableFrom(LinkedHashMap.class)) {
+            return CollectionUtils.newLinkedHashMap(size);
+        }
+        throw new IllegalArgumentException("Unsupported map type: " + targetClass.getName());
+    }
+
+    private Map convertMap(Map source, Class targetClass) {
+        if (targetClass.isInstance(source)) {
+            return source;
+        }
+        if (targetClass.isInterface()) {
+            if (targetClass == Map.class) {
+                return new HashMap<>(source);
+            }
+            if (targetClass == ConcurrentMap.class) {
+                return new ConcurrentHashMap<>(source);
+            }
+            if (SortedMap.class.isAssignableFrom(targetClass)) {
+                return new TreeMap<>(source);
+            }
+        } else {
+            if (targetClass == HashMap.class) {
+                return new HashMap(source);
+            }
+            if (targetClass == LinkedHashMap.class) {
+                return new LinkedHashMap(source);
+            }
+            if (targetClass == TreeMap.class) {
+                return new TreeMap(source);
+            }
+            if (targetClass == ConcurrentHashMap.class) {
+                return new ConcurrentHashMap(source);
+            }
+            if (Modifier.isAbstract(targetClass.getModifiers())) {
+                Map map = (Map) converterUtil.convertIfPossible(source.size(), targetClass);
+                if (map != null) {
+                    map.putAll(source);
+                    return map;
+                }
+                if (targetClass.isAssignableFrom(LinkedHashMap.class)) {
+                    return new LinkedHashMap(source);
+                }
+                return null;
+            }
+            try {
+                Constructor defCt = null;
+                for (Constructor ct : targetClass.getConstructors()) {
+                    switch (ct.getParameterCount()) {
+                        case 0:
+                            defCt = ct;
+                            break;
+                        case 1:
+                            Class paramType = ct.getParameterTypes()[0];
+                            if (paramType == Map.class) {
+                                return (Map) ct.newInstance(source);
+                            }
+                            break;
+                        default:
+                    }
+                }
+                if (defCt != null) {
+                    Map map = (Map) defCt.newInstance();
+                    map.putAll(source);
+                    return map;
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        return null;
+    }
+
+    private Object emptyDefault(Class targetClass) {
+        if (targetClass == null) {
+            return null;
+        }
+        if (targetClass.isPrimitive()) {
+            return nullDefault(targetClass);
+        }
+        if (targetClass == Optional.class) {
+            return Optional.empty();
+        }
+        if (List.class.isAssignableFrom(targetClass)) {
+            return targetClass == List.class ? Collections.EMPTY_LIST : createCollection(targetClass, 0);
+        }
+        if (Set.class.isAssignableFrom(targetClass)) {
+            return targetClass == Set.class ? Collections.EMPTY_SET : createCollection(targetClass, 0);
+        }
+        if (Map.class.isAssignableFrom(targetClass)) {
+            return targetClass == Map.class ? Collections.EMPTY_MAP : createMap(targetClass, 0);
+        }
+        if (targetClass.isArray()) {
+            return Array.newInstance(targetClass.getComponentType(), 0);
+        }
+        return null;
+    }
+
+    private static Map<String, String> tokenizeToMap(String str) {
         if (StringUtils.isEmpty(str)) {
             return Collections.emptyMap();
         }
@@ -908,62 +1225,6 @@ public class GeneralTypeConverter implements TypeConverter {
         return TimeZone.getTimeZone(sb.toString());
     }
 
-    public static Object nullDefault(Class<?> targetClass) {
-        if (targetClass == long.class) {
-            return 0L;
-        }
-        if (targetClass == int.class) {
-            return 0;
-        }
-        if (targetClass == boolean.class) {
-            return Boolean.FALSE;
-        }
-        if (targetClass == double.class) {
-            return 0D;
-        }
-        if (targetClass == float.class) {
-            return 0F;
-        }
-        if (targetClass == byte.class) {
-            return (byte) 0;
-        }
-        if (targetClass == short.class) {
-            return (short) 0;
-        }
-        if (targetClass == char.class) {
-            return (char) 0;
-        }
-        if (targetClass == Optional.class) {
-            return Optional.empty();
-        }
-        return null;
-    }
-
-    private static Object emptyDefault(Class targetClass) {
-        if (targetClass == null) {
-            return null;
-        }
-        if (targetClass.isPrimitive()) {
-            return nullDefault(targetClass);
-        }
-        if (targetClass == Optional.class) {
-            return Optional.empty();
-        }
-        if (List.class.isAssignableFrom(targetClass)) {
-            return targetClass == List.class ? Collections.EMPTY_LIST : createCollection(targetClass, 0);
-        }
-        if (Set.class.isAssignableFrom(targetClass)) {
-            return targetClass == Set.class ? Collections.EMPTY_SET : createCollection(targetClass, 0);
-        }
-        if (Map.class.isAssignableFrom(targetClass)) {
-            return targetClass == Map.class ? Collections.EMPTY_MAP : createMap(targetClass, 0);
-        }
-        if (targetClass.isArray()) {
-            return Array.newInstance(targetClass.getComponentType(), 0);
-        }
-        return null;
-    }
-
     private static List toList(Iterable source) {
         List list = new ArrayList(32);
         for (Object item : source) {
@@ -990,129 +1251,11 @@ public class GeneralTypeConverter implements TypeConverter {
         return Arrays.asList(array);
     }
 
-    private static Collection createCollection(Class targetClass, int size) {
-        if (targetClass.isInterface()) {
-            if (targetClass == List.class || targetClass == Collection.class) {
-                return new ArrayList<>(size);
-            }
-            if (targetClass == Set.class) {
-                return CollectionUtils.newHashSet(size);
-            }
-            if (targetClass == SortedSet.class) {
-                return CollectionUtils.newLinkedHashSet(size);
-            }
-            if (targetClass == Queue.class || targetClass == Deque.class) {
-                return new LinkedList<>();
-            }
-        } else if (Collection.class.isAssignableFrom(targetClass)) {
-            if (targetClass == ArrayList.class) {
-                return new ArrayList<>(size);
-            }
-            if (targetClass == LinkedList.class) {
-                return new LinkedList();
-            }
-            if (targetClass == HashSet.class) {
-                return CollectionUtils.newHashSet(size);
-            }
-            if (targetClass == LinkedHashSet.class) {
-                return CollectionUtils.newLinkedHashSet(size);
-            }
-            if (!Modifier.isAbstract(targetClass.getModifiers())) {
-                try {
-                    Constructor defCt = null;
-                    for (Constructor ct : targetClass.getConstructors()) {
-                        switch (ct.getParameterCount()) {
-                            case 0:
-                                defCt = ct;
-                                break;
-                            case 1:
-                                Class paramType = ct.getParameterTypes()[0];
-                                if (paramType == int.class) {
-                                    return (Collection) ct.newInstance(size);
-                                }
-                                break;
-                            default:
-                        }
-                    }
-                    if (defCt != null) {
-                        return (Collection) defCt.newInstance();
-                    }
-                } catch (Exception ignored) {
-                }
-            }
-        }
-        return Set.class.isAssignableFrom(targetClass) ? CollectionUtils.newHashSet(size) : new ArrayList<>(size);
-    }
-
-    private static Collection convertCollection(Collection source, Class targetClass) {
-        if (targetClass.isInstance(source)) {
-            return source;
-        }
-        if (targetClass.isInterface()) {
-            if (targetClass == List.class || targetClass == Collection.class) {
-                return new ArrayList<>(source);
-            }
-            if (targetClass == Set.class) {
-                return new HashSet<>(source);
-            }
-            if (targetClass == SortedSet.class) {
-                return new LinkedHashSet(source);
-            }
-            if (targetClass == Queue.class || targetClass == Deque.class) {
-                return new LinkedList<>(source);
-            }
-        } else {
-            if (targetClass == ArrayList.class) {
-                return new ArrayList<>(source);
-            }
-            if (targetClass == LinkedList.class) {
-                return new LinkedList(source);
-            }
-            if (targetClass == HashSet.class) {
-                return new HashSet(source);
-            }
-            if (targetClass == LinkedHashSet.class) {
-                return new LinkedHashSet(source);
-            }
-            if (Modifier.isAbstract(targetClass.getModifiers())) {
-                return null;
-            }
-            try {
-                Constructor defCt = null;
-                for (Constructor ct : targetClass.getConstructors()) {
-                    if (Modifier.isPublic(ct.getModifiers())) {
-                        switch (ct.getParameterCount()) {
-                            case 0:
-                                defCt = ct;
-                                break;
-                            case 1:
-                                Class paramType = ct.getParameterTypes()[0];
-                                if (paramType == Collection.class) {
-                                    return (Collection) ct.newInstance(source);
-                                } else if (paramType == List.class) {
-                                    return (Collection) ct.newInstance(toList(source));
-                                }
-                                break;
-                            default:
-                        }
-                    }
-                }
-                if (defCt != null) {
-                    Collection c = (Collection) defCt.newInstance();
-                    c.addAll(source);
-                    return c;
-                }
-            } catch (Exception ignored) {
-            }
-        }
-        return null;
-    }
-
-    private static Collection toCollection(Object source, Class sourceClass) {
+    private static Collection toCollection(Object source) {
         if (source instanceof Collection) {
             return (Collection) source;
         }
-        if (sourceClass.isArray()) {
+        if (source.getClass().isArray()) {
             return arrayToList(source);
         }
         if (source instanceof Iterable) {
@@ -1121,116 +1264,6 @@ public class GeneralTypeConverter implements TypeConverter {
         if (source instanceof CharSequence) {
             return tokenizeToList(source.toString());
         }
-        return Collections.singleton(source);
-    }
-
-    private static Map createMap(Class targetClass, int size) {
-        if (targetClass.isInterface()) {
-            if (targetClass == Map.class) {
-                return CollectionUtils.newHashMap(size);
-            }
-            if (targetClass == ConcurrentMap.class) {
-                return CollectionUtils.newConcurrentHashMap(size);
-            }
-            if (SortedMap.class.isAssignableFrom(targetClass)) {
-                return new TreeMap<>();
-            }
-        } else if (Map.class.isAssignableFrom(targetClass)) {
-            if (targetClass == HashMap.class) {
-                return CollectionUtils.newHashMap(size);
-            }
-            if (targetClass == LinkedHashMap.class) {
-                return CollectionUtils.newLinkedHashMap(size);
-            }
-            if (targetClass == TreeMap.class) {
-                return new TreeMap<>();
-            }
-            if (targetClass == ConcurrentHashMap.class) {
-                return CollectionUtils.newConcurrentHashMap(size);
-            }
-            if (!Modifier.isAbstract(targetClass.getModifiers())) {
-                try {
-                    Constructor defCt = null;
-                    for (Constructor ct : targetClass.getConstructors()) {
-                        if (Modifier.isPublic(ct.getModifiers())) {
-                            switch (ct.getParameterCount()) {
-                                case 0:
-                                    defCt = ct;
-                                    break;
-                                case 1:
-                                    Class paramType = ct.getParameterTypes()[0];
-                                    if (paramType == int.class) {
-                                        return (Map) ct.newInstance(CollectionUtils.capacity(size));
-                                    }
-                                    break;
-                                default:
-                            }
-                        }
-                    }
-                    if (defCt != null) {
-                        return (Map) defCt.newInstance();
-                    }
-                } catch (Throwable ignored) {
-                }
-            }
-        }
-        return CollectionUtils.newHashMap(size);
-    }
-
-    private static Map convertMap(Map source, Class targetClass) {
-        if (targetClass.isInstance(source)) {
-            return source;
-        }
-        if (targetClass.isInterface()) {
-            if (targetClass == Map.class) {
-                return new HashMap<>(source);
-            }
-            if (targetClass == ConcurrentMap.class) {
-                return new ConcurrentHashMap<>(source);
-            }
-            if (SortedMap.class.isAssignableFrom(targetClass)) {
-                return new TreeMap<>(source);
-            }
-        } else {
-            if (targetClass == HashMap.class) {
-                return new HashMap(source);
-            }
-            if (targetClass == LinkedHashMap.class) {
-                return new LinkedHashMap(source);
-            }
-            if (targetClass == TreeMap.class) {
-                return new TreeMap(source);
-            }
-            if (targetClass == ConcurrentHashMap.class) {
-                return new ConcurrentHashMap(source);
-            }
-            if (Modifier.isAbstract(targetClass.getModifiers())) {
-                return null;
-            }
-            try {
-                Constructor defCt = null;
-                for (Constructor ct : targetClass.getConstructors()) {
-                    switch (ct.getParameterCount()) {
-                        case 0:
-                            defCt = ct;
-                            break;
-                        case 1:
-                            Class paramType = ct.getParameterTypes()[0];
-                            if (paramType == Map.class) {
-                                return (Map) ct.newInstance(source);
-                            }
-                            break;
-                        default:
-                    }
-                }
-                if (defCt != null) {
-                    Map map = (Map) defCt.newInstance();
-                    map.putAll(source);
-                    return map;
-                }
-            } catch (Exception ignored) {
-            }
-        }
-        return null;
+        return Collections.singletonList(source);
     }
 }
