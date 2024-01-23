@@ -92,7 +92,7 @@ class JaxrsRestProtocolTest {
 
         DemoServiceImpl server = new DemoServiceImpl();
 
-        url = this.registerProvider(url, server, DemoService.class);
+        url = registerProvider(url, server, DemoService.class);
 
         Exporter<DemoService> exporter = tProtocol.export(proxy.getInvoker(server, DemoService.class, url));
 
