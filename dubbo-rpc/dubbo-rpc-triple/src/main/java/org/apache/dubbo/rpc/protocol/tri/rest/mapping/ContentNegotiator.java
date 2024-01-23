@@ -32,14 +32,13 @@ import java.util.Map;
 
 public class ContentNegotiator {
 
-    private final String parameterName;
+    private final FrameworkModel frameworkModel;
     private final CodecUtils codecUtils;
-
     private Map<String, MediaType> extensionMapping;
+    private String parameterName;
 
     public ContentNegotiator(FrameworkModel frameworkModel) {
-        Configuration conf = ConfigurationUtils.getGlobalConfiguration(frameworkModel.defaultApplication());
-        parameterName = conf.getString(RestConstants.FORMAT_PARAMETER_NAME_KEY, "format");
+        this.frameworkModel = frameworkModel;
         codecUtils = frameworkModel.getBeanFactory().getOrRegisterBean(CodecUtils.class);
     }
 
@@ -67,7 +66,7 @@ public class ContentNegotiator {
         }
 
         // 3. find mediaType by format parameter
-        String format = request.queryParameter(parameterName);
+        String format = request.queryParameter(getParameterName());
         if (format != null) {
             String mediaType = getMediaTypeByExtension(format);
             if (mediaType != null) {
@@ -84,6 +83,16 @@ public class ContentNegotiator {
         }
 
         return null;
+    }
+
+    public String getParameterName() {
+        String parameterName = this.parameterName;
+        if (parameterName == null) {
+            Configuration conf = ConfigurationUtils.getGlobalConfiguration(frameworkModel.defaultApplication());
+            parameterName = conf.getString(RestConstants.FORMAT_PARAMETER_NAME_KEY, "format");
+            this.parameterName = parameterName;
+        }
+        return parameterName;
     }
 
     private String getMediaTypeByExtension(String extension) {

@@ -32,11 +32,11 @@ import java.util.Map;
 
 public class DefaultRestToolKit implements RestToolKit {
 
-    protected final Environment environment;
+    protected final FrameworkModel frameworkModel;
     protected final TypeConverter typeConverter;
 
     public DefaultRestToolKit(FrameworkModel frameworkModel) {
-        environment = frameworkModel.defaultApplication().modelEnvironment();
+        this.frameworkModel = frameworkModel;
         typeConverter = frameworkModel.getBeanFactory().getBean(TypeConverter.class);
     }
 
@@ -47,7 +47,11 @@ public class DefaultRestToolKit implements RestToolKit {
 
     @Override
     public String resolvePlaceholders(String text) {
-        return RestUtils.hasPlaceholder(text) ? environment.resolvePlaceholders(text) : text;
+        return RestUtils.hasPlaceholder(text) ? getEnvironment().resolvePlaceholders(text) : text;
+    }
+
+    private Environment getEnvironment() {
+        return frameworkModel.defaultApplication().modelEnvironment();
     }
 
     @Override

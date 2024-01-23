@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.support.servlet;
 
-import org.apache.dubbo.common.config.Configuration;
-import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
@@ -33,13 +31,13 @@ import javax.servlet.ServletContext;
 public final class ServletHttpMessageAdapterFactory
         implements HttpMessageAdapterFactory<ServletHttpRequestAdaptee, HttpMetadata, Void> {
 
-    private final Configuration configuration;
+    private final FrameworkModel frameworkModel;
     private final ServletContext servletContext;
     private final HttpSessionFactory httpSessionFactory;
 
     public ServletHttpMessageAdapterFactory(FrameworkModel frameworkModel) {
-        configuration = ConfigurationUtils.getGlobalConfiguration(frameworkModel.defaultApplication());
-        servletContext = new DummyServletContext(configuration);
+        this.frameworkModel = frameworkModel;
+        servletContext = new DummyServletContext(frameworkModel);
         httpSessionFactory = getHttpSessionFactory(frameworkModel);
     }
 
@@ -63,6 +61,6 @@ public final class ServletHttpMessageAdapterFactory
     }
 
     public FilterConfig adapterFilterConfig(String filterName) {
-        return new DummyFilterConfig(filterName, configuration, servletContext);
+        return new DummyFilterConfig(filterName, frameworkModel, servletContext);
     }
 }

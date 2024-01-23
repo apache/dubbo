@@ -30,14 +30,25 @@ import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 @Activate(onClass = "org.springframework.web.bind.annotation.RequestMapping")
 public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
 
-    private final RestToolKit toolKit;
+    private final FrameworkModel frameworkModel;
+    private volatile RestToolKit toolKit;
 
     public SpringMvcRequestMappingResolver(FrameworkModel frameworkModel) {
-        toolKit = new SpringRestToolKit(frameworkModel);
+        this.frameworkModel = frameworkModel;
     }
 
     @Override
     public RestToolKit getRestToolKit() {
+        RestToolKit toolKit = this.toolKit;
+        if (toolKit == null) {
+            synchronized (this) {
+                toolKit = this.toolKit;
+                if (toolKit == null) {
+                    toolKit = new SpringRestToolKit(frameworkModel);
+                    this.toolKit = toolKit;
+                }
+            }
+        }
         return toolKit;
     }
 

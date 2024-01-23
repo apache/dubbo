@@ -17,6 +17,8 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.support.servlet;
 
 import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 
 import javax.servlet.FilterConfig;
@@ -28,12 +30,12 @@ import java.util.Enumeration;
 final class DummyFilterConfig implements FilterConfig {
 
     private final String filterName;
-    private final Configuration configuration;
+    private final FrameworkModel frameworkModel;
     private final ServletContext servletContext;
 
-    public DummyFilterConfig(String filterName, Configuration configuration, ServletContext servletContext) {
+    public DummyFilterConfig(String filterName, FrameworkModel frameworkModel, ServletContext servletContext) {
         this.filterName = filterName;
-        this.configuration = configuration;
+        this.frameworkModel = frameworkModel;
         this.servletContext = servletContext;
     }
 
@@ -50,9 +52,10 @@ final class DummyFilterConfig implements FilterConfig {
     @Override
     public String getInitParameter(String name) {
         String prefix = RestConstants.CONFIG_PREFIX + "filter-config.";
-        String value = configuration.getString(prefix + filterName + "." + name);
+        Configuration conf = ConfigurationUtils.getGlobalConfiguration(frameworkModel.defaultApplication());
+        String value = conf.getString(prefix + filterName + "." + name);
         if (value == null) {
-            value = configuration.getString(prefix + name);
+            value = conf.getString(prefix + name);
         }
         return value;
     }

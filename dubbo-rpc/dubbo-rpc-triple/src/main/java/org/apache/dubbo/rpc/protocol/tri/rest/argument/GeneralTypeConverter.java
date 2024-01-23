@@ -108,7 +108,7 @@ public class GeneralTypeConverter implements TypeConverter {
     }
 
     public GeneralTypeConverter(FrameworkModel frameworkModel) {
-        converterUtil = frameworkModel.getBeanFactory().getBean(ConverterUtil.class);
+        converterUtil = frameworkModel.getBeanFactory().getOrRegisterBean(ConverterUtil.class);
     }
 
     @Override

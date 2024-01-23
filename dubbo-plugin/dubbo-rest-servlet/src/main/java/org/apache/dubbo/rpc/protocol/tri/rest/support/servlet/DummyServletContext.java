@@ -17,7 +17,9 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.support.servlet;
 
 import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 
 import javax.servlet.Filter;
@@ -41,12 +43,12 @@ import java.util.Set;
 
 final class DummyServletContext implements ServletContext {
 
-    private final Configuration configuration;
+    private final FrameworkModel frameworkModel;
     private final Map<String, Object> attributes = new HashMap<>();
     private final Map<String, String> initParameters = new HashMap<>();
 
-    public DummyServletContext(Configuration configuration) {
-        this.configuration = configuration;
+    public DummyServletContext(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
     }
 
     @Override
@@ -155,7 +157,8 @@ final class DummyServletContext implements ServletContext {
         if (value != null) {
             return value;
         }
-        return configuration.getString(RestConstants.CONFIG_PREFIX + "servlet-context." + name);
+        Configuration conf = ConfigurationUtils.getGlobalConfiguration(frameworkModel.defaultApplication());
+        return conf.getString(RestConstants.CONFIG_PREFIX + "servlet-context." + name);
     }
 
     @Override
