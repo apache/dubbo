@@ -54,7 +54,8 @@ public class ServiceInstanceHostPortCustomizer implements ServiceInstanceCustomi
         Set<URL> urls = metadataInfo.collectExportedURLSet();
 
         if (CollectionUtils.isNotEmpty(urls)) {
-            String preferredProtocol = applicationModel.getCurrentConfig().getProtocol();
+            String preferredProtocol = applicationModel.getCurrentConfig()
+                    .getProtocol();
             if (preferredProtocol != null) {
                 for (URL exportedURL : urls) {
                     if (preferredProtocol.equals(exportedURL.getProtocol())) {
@@ -68,20 +69,19 @@ public class ServiceInstanceHostPortCustomizer implements ServiceInstanceCustomi
 
                     // 4-2 - Can't find an instance URL using the default preferredProtocol.
 
-                    logger.warn(
-                            PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER,
-                            "typo in preferred protocol",
-                            "",
+                    logger.warn(PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER, "typo in preferred protocol", "",
                             "Can't find an instance URL using the default preferredProtocol \"" + preferredProtocol
                                     + "\", " + "falling back to the strategy that pick the first found protocol. "
                                     + "Please try modifying the config of dubbo.application.protocol");
 
-                    URL url = urls.iterator().next();
+                    URL url = urls.iterator()
+                            .next();
                     host = url.getHost();
                     port = url.getPort();
                 }
             } else {
-                URL url = urls.iterator().next();
+                URL url = urls.iterator()
+                        .next();
                 host = url.getHost();
                 port = url.getPort();
             }
