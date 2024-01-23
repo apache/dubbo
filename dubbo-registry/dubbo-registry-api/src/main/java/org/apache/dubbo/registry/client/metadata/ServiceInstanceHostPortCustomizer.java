@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -33,7 +34,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAI
 /**
  * The {@link ServiceInstanceCustomizer} to customize the {@link ServiceInstance#getPort() port} of service instance.
  */
-public class ServiceInstanceHostPortCustomizer implements ServiceInstanceCustomizer {
+public class ServiceInstanceHostPortCustomizer implements ServiceInstanceCustomizer, Prioritized {
     private static final ErrorTypeAwareLogger logger =
             LoggerFactory.getErrorTypeAwareLogger(ServiceInstanceHostPortCustomizer.class);
 
