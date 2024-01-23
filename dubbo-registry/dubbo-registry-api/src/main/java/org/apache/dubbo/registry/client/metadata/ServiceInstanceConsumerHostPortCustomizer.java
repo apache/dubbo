@@ -31,9 +31,9 @@ import java.util.List;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER;
 
-
 public class ServiceInstanceConsumerHostPortCustomizer implements ServiceInstanceCustomizer, Prioritized {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ServiceInstanceConsumerHostPortCustomizer.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(ServiceInstanceConsumerHostPortCustomizer.class);
 
     @Override
     public void customize(ServiceInstance serviceInstance, ApplicationModel applicationModel) {
@@ -41,16 +41,21 @@ public class ServiceInstanceConsumerHostPortCustomizer implements ServiceInstanc
         if (serviceInstance.getHost() != null && serviceInstance.getPort() != 0) {
             return;
         }
-        String preferredProtocol = applicationModel.getCurrentConfig().getProtocol();
-        Protocol protocol = applicationModel.getFrameworkModel().getExtensionLoader(Protocol.class).getExtension(preferredProtocol, false);
+        String preferredProtocol = applicationModel.getCurrentConfig()
+                .getProtocol();
+        Protocol protocol = applicationModel.getFrameworkModel()
+                .getExtensionLoader(Protocol.class)
+                .getExtension(preferredProtocol, false);
         List<ProtocolServer> protocolServerList = protocol.getServers();
         if (CollectionUtils.isNotEmpty(protocolServerList)) {
             for (ProtocolServer protocolServer : protocolServerList) {
                 if (protocolServer.getUrl() == null) {
                     continue;
                 }
-                String host = protocolServer.getUrl().getHost();
-                int port = protocolServer.getUrl().getPort();
+                String host = protocolServer.getUrl()
+                        .getHost();
+                int port = protocolServer.getUrl()
+                        .getPort();
                 //if not match continue
                 if (host == null || port == 0) {
                     continue;
@@ -66,8 +71,8 @@ public class ServiceInstanceConsumerHostPortCustomizer implements ServiceInstanc
 
         if (serviceInstance.getHost() == null || serviceInstance.getPort() == 0) {
             logger.warn(PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER, "typo in preferred protocol", "",
-                    "Can't find an protocolServer using the default preferredProtocol \"" + preferredProtocol
-                            + "\", " + "Failed to fill host and port to serviceInstance when only consumers are present.");
+                    "Can't find an protocolServer using the default preferredProtocol \"" + preferredProtocol + "\", "
+                            + "Failed to fill host and port to serviceInstance when only consumers are present.");
         }
     }
 
