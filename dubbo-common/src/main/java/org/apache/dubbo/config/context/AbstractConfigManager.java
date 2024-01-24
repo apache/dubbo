@@ -551,7 +551,19 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         if (this.getConfigs(cls).isEmpty()) {
             // load single config
             List<Map<String, String>> configurationMaps = environment.getConfigurationMaps();
-            if (ConfigurationUtils.hasSubProperties(configurationMaps, AbstractConfig.getTypePrefix(cls))) {
+
+            // check type prefix.
+            String typePrefix = AbstractConfig.getTypePrefix(cls);
+            boolean hasSubProperties = ConfigurationUtils.hasSubProperties(configurationMaps, typePrefix);
+
+            // check ${prefix}.enabled property configuration.
+            boolean metricsEnabled = configurationMaps.stream()
+                    .anyMatch(configurationMap -> {
+                        String key = typePrefix + ".enabled";
+                        return configurationMap.containsKey(key) && "false".equals(configurationMap.get(key));
+                    });
+
+            if (hasSubProperties && metricsEnabled) {
                 T config;
                 try {
                     config = createConfig(cls, scopeModel);
