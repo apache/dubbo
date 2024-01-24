@@ -18,7 +18,49 @@ env:
     '
 
 jobs:
+  check-format:
+    name: Check if code needs formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Maven
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: zulu
+      - name: Check if code aligns with code style
+        id: check
+        run: mvn --log-file mvn.log spotless:check
+        continue-on-error: true
+      - name: Upload checkstyle result
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkstyle-result
+          path: mvn.log
+      - name: Generate Summary for successful run
+        if: ${{ steps.check.outcome == 'success' }}
+        run: |
+          echo ":ballot_box_with_check: Kudos! No formatting issues found!" >> $GITHUB_STEP_SUMMARY
+      - name: Generate Summary for failed run
+        if: ${{ steps.check.outcome == 'failure' }}
+        run: |
+          echo "## :negative_squared_cross_mark: Formatting issues found!" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          cat mvn.log | grep "ERROR" | sed 's/Check if code needs formatting    Check if code aligns with code style   [0-9A-Z:.-]\+//' | sed 's/\[ERROR] //' | head -n -11 >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "Please run \`mvn spotless:apply\` to fix the formatting issues." >> $GITHUB_STEP_SUMMARY
+      - name: Fail if code needs formatting
+        if: ${{ steps.check.outcome == 'failure' }}
+        uses: actions/github-script@v7.0.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            core.setFailed("Formatting issues found!")
+
   license:
+    name: "Check License"
+    needs: check-format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -43,6 +85,8 @@ jobs:
           mode: check
 
   build-source:
+    name: "Build Dubbo"
+    needs: check-format
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.dubbo-version.outputs.version }}
@@ -98,6 +142,7 @@ jobs:
 
   unit-test-prepare:
     name: "Preparation for Unit Test"
+    needs: check-format
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -146,7 +191,7 @@ jobs:
           echo "--- End Print Rsa Public Key"
 
   unit-test:
-    needs: [build-source, unit-test-prepare]
+    needs: [check-format, build-source, unit-test-prepare]
     name: "Unit Test On ubuntu-latest"
     runs-on: ubuntu-latest
     strategy:
@@ -212,6 +257,7 @@ jobs:
           path: "**/target/site/**/jacoco.xml"
 
   samples-test-prepare:
+    needs: check-format
     runs-on: ubuntu-latest
     env:
       JOB_COUNT: 3
@@ -229,7 +275,7 @@ jobs:
           name: samples-test-list
           path: test/jobs
   samples-test-job:
-    needs: [build-source, samples-test-prepare]
+    needs: [check-format, build-source, samples-test-prepare]
     name: "Samples Test on ubuntu-latest (JobId: ${{matrix.job_id}})"
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -296,7 +342,7 @@ jobs:
           name: samples-test-result
           path: test/jobs/*-result*
   samples-test-result:
-    needs: [samples-test-job]
+    needs: [check-format, samples-test-job]
     if: always()
     runs-on: ubuntu-latest
     env:
@@ -315,6 +361,7 @@ jobs:
         run: ./test/scripts/merge-test-results.sh
 
   integration-test-prepare:
+    needs: check-format
     runs-on: ubuntu-latest
     env:
       JOB_COUNT: 3
@@ -332,7 +379,7 @@ jobs:
           name: test-list
           path: test/jobs
   integration-test-job:
-    needs: [build-source, integration-test-prepare]
+    needs: [check-format, build-source, integration-test-prepare]
     name: "Integration Test on ubuntu-latest (JobId: ${{matrix.job_id}})"
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -399,7 +446,7 @@ jobs:
           name: test-result
           path: test/jobs/*-result*
   integration-test-result:
-    needs: [integration-test-job]
+    needs: [check-format, integration-test-job]
     if: always()
     runs-on: ubuntu-latest
     env:
@@ -419,7 +466,7 @@ jobs:
 
   jacoco-result-merge:
     runs-on: ubuntu-latest
-    needs: [integration-test-result, samples-test-result, unit-test]
+    needs: [check-format, integration-test-result, samples-test-result, unit-test]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -475,6 +522,7 @@ jobs:
           verbose: true
 
   error-code-inspecting:
+    needs: check-format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -513,6 +561,7 @@ jobs:
           path: ${{ github.workspace }}/dubbo-test-tools/dubbo-error-code-inspector/error-inspection-result.txt
 
   native-image-inspecting:
+    needs: check-format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

@@ -130,8 +130,8 @@
 
     <!-- Maven plugins -->
     <maven_jar_version>3.3.0</maven_jar_version>
-    <maven_surefire_version>3.2.3</maven_surefire_version>
-    <maven_failsafe_version>3.2.3</maven_failsafe_version>
+    <maven_surefire_version>3.2.5</maven_surefire_version>
+    <maven_failsafe_version>3.2.5</maven_failsafe_version>
     <maven_deploy_version>2.8.2</maven_deploy_version>
     <maven_compiler_version>3.12.1</maven_compiler_version>
     <maven_source_version>3.3.0</maven_source_version>
@@ -139,7 +139,7 @@
     <maven_jetty_version>9.4.53.v20231009</maven_jetty_version>
     <maven_checkstyle_version>3.3.1</maven_checkstyle_version>
     <maven_jacoco_version>0.8.11</maven_jacoco_version>
-    <maven_flatten_version>1.5.0</maven_flatten_version>
+    <maven_flatten_version>1.6.0</maven_flatten_version>
     <maven_enforce_version>3.4.1</maven_enforce_version>
     <maven_antrun_version>3.1.0</maven_antrun_version>
     <maven_os_plugin_version>1.7.1</maven_os_plugin_version>
@@ -147,7 +147,7 @@
 
     <protobuf-protoc_version>3.22.3</protobuf-protoc_version>
     <grpc_version>1.54.0</grpc_version>
-    <spotless-maven-plugin.version>2.41.1</spotless-maven-plugin.version>
+    <spotless-maven-plugin.version>2.42.0</spotless-maven-plugin.version>
     <spotless.action>check</spotless.action>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>

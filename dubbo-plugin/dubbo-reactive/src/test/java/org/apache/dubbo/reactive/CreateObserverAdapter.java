@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.reactive;
 
-import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
+import org.apache.dubbo.rpc.protocol.tri.ServerStreamObserver;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.doAnswer;
 
 public class CreateObserverAdapter {
 
-    private ServerCallToObserverAdapter<String> responseObserver;
+    private ServerStreamObserver<String> responseObserver;
     private AtomicInteger nextCounter;
     private AtomicInteger completeCounter;
     private AtomicInteger errorCounter;
@@ -39,7 +39,7 @@ public class CreateObserverAdapter {
         completeCounter = new AtomicInteger();
         errorCounter = new AtomicInteger();
 
-        responseObserver = Mockito.mock(ServerCallToObserverAdapter.class);
+        responseObserver = Mockito.mock(ServerStreamObserver.class);
         doAnswer(o -> nextCounter.incrementAndGet()).when(responseObserver).onNext(anyString());
         doAnswer(o -> completeCounter.incrementAndGet()).when(responseObserver).onCompleted();
         doAnswer(o -> errorCounter.incrementAndGet()).when(responseObserver).onError(any(Throwable.class));
@@ -57,7 +57,7 @@ public class CreateObserverAdapter {
         return errorCounter;
     }
 
-    public ServerCallToObserverAdapter<String> getResponseObserver() {
+    public ServerStreamObserver<String> getResponseObserver() {
         return this.responseObserver;
     }
 }
