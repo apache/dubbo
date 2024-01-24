@@ -557,11 +557,10 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
             boolean hasSubProperties = ConfigurationUtils.hasSubProperties(configurationMaps, typePrefix);
 
             // check ${prefix}.enabled property configuration.
-            boolean metricsEnabled = configurationMaps.stream()
-                    .anyMatch(configurationMap -> {
-                        String key = typePrefix + ".enabled";
-                        return configurationMap.containsKey(key) && "false".equals(configurationMap.get(key));
-                    });
+            boolean metricsEnabled = configurationMaps.stream().anyMatch(configurationMap -> {
+                String key = typePrefix + ".enabled";
+                return configurationMap.containsKey(key) && "false".equals(configurationMap.get(key));
+            });
 
             if (hasSubProperties && metricsEnabled) {
                 T config;
