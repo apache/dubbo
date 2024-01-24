@@ -37,13 +37,13 @@ public class ServiceInstanceConsumerHostPortCustomizer implements ServiceInstanc
 
     @Override
     public void customize(ServiceInstance serviceInstance, ApplicationModel applicationModel) {
-        //serviceInstance default host is null and port is 0
+        // serviceInstance default host is null and port is 0
         if (serviceInstance.getHost() != null && serviceInstance.getPort() != 0) {
             return;
         }
-        String preferredProtocol = applicationModel.getCurrentConfig()
-                .getProtocol();
-        Protocol protocol = applicationModel.getFrameworkModel()
+        String preferredProtocol = applicationModel.getCurrentConfig().getProtocol();
+        Protocol protocol = applicationModel
+                .getFrameworkModel()
                 .getExtensionLoader(Protocol.class)
                 .getExtension(preferredProtocol, false);
         List<ProtocolServer> protocolServerList = protocol.getServers();
@@ -52,11 +52,9 @@ public class ServiceInstanceConsumerHostPortCustomizer implements ServiceInstanc
                 if (protocolServer.getUrl() == null) {
                     continue;
                 }
-                String host = protocolServer.getUrl()
-                        .getHost();
-                int port = protocolServer.getUrl()
-                        .getPort();
-                //if not match continue
+                String host = protocolServer.getUrl().getHost();
+                int port = protocolServer.getUrl().getPort();
+                // if not match continue
                 if (host == null || port == 0) {
                     continue;
                 }
@@ -70,7 +68,10 @@ public class ServiceInstanceConsumerHostPortCustomizer implements ServiceInstanc
         }
 
         if (serviceInstance.getHost() == null || serviceInstance.getPort() == 0) {
-            logger.warn(PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER, "typo in preferred protocol", "",
+            logger.warn(
+                    PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER,
+                    "typo in preferred protocol",
+                    "",
                     "Can't find an protocolServer using the default preferredProtocol \"" + preferredProtocol + "\", "
                             + "Failed to fill host and port to serviceInstance when only consumers are present.");
         }
@@ -78,7 +79,7 @@ public class ServiceInstanceConsumerHostPortCustomizer implements ServiceInstanc
 
     @Override
     public int getPriority() {
-        //after serviceInstanceHostPortCustomizer
+        // after serviceInstanceHostPortCustomizer
         return Prioritized.MIN_PRIORITY;
     }
 }
