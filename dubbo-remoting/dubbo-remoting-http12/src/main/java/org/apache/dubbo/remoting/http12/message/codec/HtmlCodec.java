@@ -56,6 +56,6 @@ public class HtmlCodec implements HttpMessageCodec {
 
     @Override
     public MediaType mediaType() {
-        return MediaType.TEXT_PLAIN;
+        return MediaType.TEXT_HTML;
     }
 }

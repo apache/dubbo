@@ -105,7 +105,7 @@ public final class RestHttpMessageCodec implements HttpMessageDecoder, HttpMessa
                     }
                     return;
                 }
-                if (messageEncoder.mediaType() == MediaType.TEXT_PLAIN && type != String.class) {
+                if (messageEncoder.mediaType().isPureText() && type != String.class) {
                     data = typeConverter.convert(data, String.class);
                 }
             } catch (Exception e) {

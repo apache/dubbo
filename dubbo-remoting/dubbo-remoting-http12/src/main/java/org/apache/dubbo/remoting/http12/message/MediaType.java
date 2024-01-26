@@ -73,4 +73,8 @@ public final class MediaType {
     public String getSubType() {
         return subType;
     }
+
+    public boolean isPureText() {
+        return this == TEXT_HTML || this == TEXT_PLAIN;
+    }
 }

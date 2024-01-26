@@ -192,7 +192,7 @@ public final class PathSegment implements Comparable<PathSegment> {
          * will not be present in the PathExpression
          * E.g.: '/'
          */
-        SLASH(),
+        SLASH,
         /**
          * A literal segment.
          * E.g.: 'foo'
@@ -202,13 +202,13 @@ public final class PathSegment implements Comparable<PathSegment> {
          * A wildcard segment.
          * E.g.: 't?st*uv' and '/foo/&ast;/bar'
          */
-        WILDCARD(),
+        WILDCARD,
         /**
          * A wildcard matching suffix.
          * Transient type used for parsing, will not be present in the PathExpression
          * E.g.: '/foo/**' and '/**' and '/{*bar}'
          */
-        WILDCARD_TAIL(),
+        WILDCARD_TAIL,
         /**
          * A template variable segment.
          * E.g.: '{foo}'

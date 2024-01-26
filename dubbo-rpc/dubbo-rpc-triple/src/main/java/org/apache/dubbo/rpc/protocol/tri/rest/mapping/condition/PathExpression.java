@@ -107,8 +107,7 @@ public final class PathExpression implements Comparable<PathExpression> {
         if (obj == null || obj.getClass() != PathExpression.class) {
             return false;
         }
-        PathExpression that = (PathExpression) obj;
-        return path.equals(that.path);
+        return path.equals(((PathExpression) obj).path);
     }
 
     @Override

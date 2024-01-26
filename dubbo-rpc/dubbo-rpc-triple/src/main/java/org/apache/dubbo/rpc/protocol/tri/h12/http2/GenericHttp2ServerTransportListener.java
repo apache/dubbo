@@ -19,10 +19,12 @@ package org.apache.dubbo.rpc.protocol.tri.h12.http2;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
+import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessage;
+import org.apache.dubbo.remoting.http12.h2.Http2InputMessageFrame;
 import org.apache.dubbo.remoting.http12.h2.Http2ServerChannelObserver;
 import org.apache.dubbo.remoting.http12.h2.Http2TransportListener;
 import org.apache.dubbo.remoting.http12.message.DefaultListeningDecoder;
@@ -48,10 +50,14 @@ import org.apache.dubbo.rpc.protocol.tri.h12.ServerStreamServerCallListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.UnaryServerCallListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.grpc.StreamingHttpMessageListener;
 
+import java.io.ByteArrayInputStream;
 import java.util.concurrent.Executor;
 
 public class GenericHttp2ServerTransportListener extends AbstractServerTransportListener<Http2Header, Http2InputMessage>
         implements Http2TransportListener {
+
+    private static final Http2InputMessage EMPTY_MESSAGE =
+            new Http2InputMessageFrame(new ByteArrayInputStream(new byte[0]), true);
 
     private final ExecutorSupport executorSupport;
     private final StreamingDecoder streamingDecoder;
@@ -82,6 +88,10 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
 
     protected void doOnMetadata(Http2Header metadata) {
         if (metadata.isEndStream()) {
+            if (!HttpMethods.supportBody(metadata.method())) {
+                super.doOnMetadata(metadata);
+                doOnData(EMPTY_MESSAGE);
+            }
             return;
         }
         super.doOnMetadata(metadata);

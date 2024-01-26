@@ -79,10 +79,29 @@ public final class HttpUtils {
             return Collections.emptyList();
         }
         for (String item : StringUtils.tokenize(header, ',')) {
-            String[] pair = StringUtils.tokenize(item, ';');
-            mediaTypes.add(new Item<>(pair[0], pair.length > 1 ? Float.parseFloat(pair[1]) : 1.0F));
+            int index = item.indexOf(';');
+            mediaTypes.add(new Item<>(StringUtils.substring(item, 0, index), parseQuality(item, index)));
         }
         return Item.sortAndGet(mediaTypes);
+    }
+
+    public static float parseQuality(String expr, int index) {
+        float quality = 1.0F;
+        if (index != -1) {
+            int qStart = expr.indexOf("q=", index + 1);
+            if (qStart != -1) {
+                qStart += 2;
+                int qEnd = expr.indexOf(',', qStart);
+                String qString = qEnd == -1
+                        ? expr.substring(qStart)
+                        : expr.substring(qStart, qEnd).trim();
+                try {
+                    quality = Float.parseFloat(qString);
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+        return quality;
     }
 
     public static List<Locale> parseAcceptLanguage(String header) {

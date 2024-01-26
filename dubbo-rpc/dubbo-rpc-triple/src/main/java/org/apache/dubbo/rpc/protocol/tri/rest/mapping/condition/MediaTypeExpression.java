@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition;
 
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.http12.HttpUtils;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 
 import java.util.Collections;
@@ -95,26 +96,7 @@ public final class MediaTypeExpression implements Comparable<MediaTypeExpression
             return null;
         }
 
-        return new MediaTypeExpression(type, subType, parseQuality(expr, index), negated);
-    }
-
-    private static float parseQuality(String expr, int index) {
-        float quality = 1.0F;
-        if (index != -1) {
-            int qStart = expr.indexOf("q=", index + 1);
-            if (qStart != -1) {
-                qStart += 2;
-                int qEnd = expr.indexOf(',', qStart);
-                String qString = qEnd == -1
-                        ? expr.substring(qStart)
-                        : expr.substring(qStart, qEnd).trim();
-                try {
-                    quality = Float.parseFloat(qString);
-                } catch (NumberFormatException ignored) {
-                }
-            }
-        }
-        return quality;
+        return new MediaTypeExpression(type, subType, HttpUtils.parseQuality(expr, index), negated);
     }
 
     private static int compareType(String type1, String type2) {
