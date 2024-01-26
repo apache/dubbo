@@ -38,7 +38,7 @@ import java.util.Set;
 @Activate(onClass = "javax.servlet.http.HttpServletRequest")
 public class ServletArgumentResolver implements ArgumentResolver {
 
-    public static final Set<Class<?>> SUPPORTED_TYPES = new HashSet<>();
+    private static final Set<Class<?>> SUPPORTED_TYPES = new HashSet<>();
 
     static {
         SUPPORTED_TYPES.add(ServletRequest.class);

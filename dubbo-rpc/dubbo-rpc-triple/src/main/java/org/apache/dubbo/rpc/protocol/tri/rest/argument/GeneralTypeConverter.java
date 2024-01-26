@@ -1147,6 +1147,7 @@ public class GeneralTypeConverter implements TypeConverter {
                 if ("no".equalsIgnoreCase(str)) {
                     return Boolean.FALSE;
                 }
+                break;
             case 3:
                 if ("yes".equalsIgnoreCase(str)) {
                     return Boolean.TRUE;
@@ -1165,6 +1166,7 @@ public class GeneralTypeConverter implements TypeConverter {
                     return Boolean.FALSE;
                 }
                 break;
+            default:
         }
         return null;
     }

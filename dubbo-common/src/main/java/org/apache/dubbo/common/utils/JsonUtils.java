@@ -53,6 +53,7 @@ public class JsonUtils {
                                 case "jackson":
                                     instance = new JacksonImpl();
                                     break;
+                                default:
                             }
                             if (instance != null && instance.isSupport()) {
                                 jsonUtil = instance;

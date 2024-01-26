@@ -37,7 +37,7 @@ import org.springframework.web.context.request.WebRequest;
 @Activate(onClass = "org.springframework.web.context.request.WebRequest")
 public class SpringMiscArgumentResolver implements ArgumentResolver {
 
-    public static final Set<Class<?>> SUPPORTED_TYPES = new HashSet<>();
+    private static final Set<Class<?>> SUPPORTED_TYPES = new HashSet<>();
 
     static {
         SUPPORTED_TYPES.add(WebRequest.class);

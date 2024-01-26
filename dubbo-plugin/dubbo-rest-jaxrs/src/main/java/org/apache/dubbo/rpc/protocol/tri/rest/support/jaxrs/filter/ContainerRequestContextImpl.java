@@ -173,7 +173,7 @@ final class ContainerRequestContextImpl implements ContainerRequestContext {
         Collection<HttpCookie> cookies = request.cookies();
         Map<String, Cookie> result = new HashMap<>(cookies.size());
         for (HttpCookie cookie : cookies) {
-            result.put(cookie.name(), new Cookie(cookie.name(), cookie.value(), cookie.path(), cookie.domain()));
+            result.put(cookie.name(), Helper.convert(cookie));
         }
         return result;
     }

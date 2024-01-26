@@ -18,8 +18,9 @@ package org.apache.dubbo.rpc.protocol.tri.rest;
 
 import org.apache.dubbo.remoting.http12.HttpStatus;
 
-@SuppressWarnings("serial")
 public class RestParameterException extends RestException {
+
+    private static final long serialVersionUID = 1L;
 
     public RestParameterException(Messages message, Object... arguments) {
         super(message, arguments);

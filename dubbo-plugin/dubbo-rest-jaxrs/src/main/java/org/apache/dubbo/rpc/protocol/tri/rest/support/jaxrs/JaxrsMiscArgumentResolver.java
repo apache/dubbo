@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs;
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.remoting.http12.HttpCookie;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentResolver;
@@ -41,7 +40,7 @@ import org.jboss.resteasy.spi.ResteasyUriInfo;
 @Activate(onClass = "javax.ws.rs.Path")
 public class JaxrsMiscArgumentResolver implements ArgumentResolver {
 
-    public static final Set<Class<?>> SUPPORTED_TYPES = new HashSet<>();
+    private static final Set<Class<?>> SUPPORTED_TYPES = new HashSet<>();
 
     static {
         SUPPORTED_TYPES.add(Cookie.class);
@@ -62,8 +61,7 @@ public class JaxrsMiscArgumentResolver implements ArgumentResolver {
     public Object resolve(ParameterMeta parameter, HttpRequest request, HttpResponse response) {
         Class<?> type = parameter.getActualType();
         if (Cookie.class.isAssignableFrom(type)) {
-            HttpCookie cookie = request.cookie(parameter.getName());
-            return new Cookie(cookie.name(), cookie.value(), cookie.path(), cookie.domain());
+            return Helper.convert(request.cookie(parameter.getName()));
         }
         if (Form.class.isAssignableFrom(type)) {
             return RequestUtils.getFormParametersMap(request);

@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.ValueConstants;
 
 final class Helper {
 
-    public Helper() {}
+    private Helper() {}
 
     public static boolean isRequired(AnnotationMeta<Annotation> annotation) {
         return annotation.getBoolean("required");

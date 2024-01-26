@@ -16,8 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest;
 
-@SuppressWarnings("serial")
 public final class PathParserException extends RestException {
+
+    private static final long serialVersionUID = 1L;
 
     public PathParserException(Messages message, Object... arguments) {
         super(message, arguments);

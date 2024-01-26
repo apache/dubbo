@@ -31,7 +31,7 @@ import java.util.Set;
 @Activate
 public class MiscArgumentResolver implements ArgumentResolver {
 
-    public static final Set<Class<?>> SUPPORTED_TYPES = new HashSet<>();
+    private static final Set<Class<?>> SUPPORTED_TYPES = new HashSet<>();
 
     static {
         SUPPORTED_TYPES.add(HttpRequest.class);

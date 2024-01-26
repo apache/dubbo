@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs;
 
+import org.apache.dubbo.remoting.http12.HttpCookie;
 import org.apache.dubbo.remoting.http12.HttpResult;
 import org.apache.dubbo.remoting.http12.HttpUtils;
 import org.apache.dubbo.remoting.http12.message.DefaultHttpResult.Builder;
@@ -23,6 +24,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 
 import java.util.List;
@@ -30,7 +32,7 @@ import java.util.stream.Collectors;
 
 public final class Helper {
 
-    public Helper() {}
+    private Helper() {}
 
     public static boolean isRequired(ParameterMeta parameter) {
         return parameter.isAnnotated(Annotations.Nonnull);
@@ -67,5 +69,17 @@ public final class Helper {
 
     public static List<MediaType> toMediaTypes(String accept) {
         return HttpUtils.parseAccept(accept).stream().map(Helper::toMediaType).collect(Collectors.toList());
+    }
+
+    public static NewCookie convert(HttpCookie cookie) {
+        return new NewCookie(
+                cookie.name(),
+                cookie.value(),
+                cookie.path(),
+                cookie.domain(),
+                null,
+                (int) cookie.maxAge(),
+                cookie.secure(),
+                cookie.httpOnly());
     }
 }

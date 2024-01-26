@@ -43,10 +43,8 @@ public final class RestUtils {
                     }
                     state = 2;
                 }
-            } else if (c == '}') {
-                if (state == 2) {
-                    return true;
-                }
+            } else if (c == '}' && state == 2) {
+                return true;
             }
         }
         return false;

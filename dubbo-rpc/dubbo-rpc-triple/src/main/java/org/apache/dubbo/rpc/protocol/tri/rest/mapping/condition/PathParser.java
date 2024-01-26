@@ -104,6 +104,7 @@ final class PathParser {
                         case State.VARIABLE_START:
                         case State.WILDCARD_VARIABLE_START:
                             throw new PathParserException(Messages.MISSING_CLOSE_CAPTURE, path, i);
+                        default:
                     }
                     segments.add(SLASH);
                     state = State.SEGMENT_END;
@@ -115,6 +116,7 @@ final class PathParser {
                         case State.SEGMENT_END:
                             state = State.WILDCARD_START;
                             break;
+                        default:
                     }
                     break;
                 case '*':
@@ -130,6 +132,7 @@ final class PathParser {
                                 continue;
                             }
                             break;
+                        default:
                     }
                     break;
                 case '.':
@@ -175,6 +178,7 @@ final class PathParser {
                                 regexBraceStart = true;
                             }
                             break;
+                        default:
                     }
                     break;
                 case '}':
@@ -204,6 +208,7 @@ final class PathParser {
                             appendSegment(Type.WILDCARD_TAIL, buf.toString());
                             state = State.END;
                             continue;
+                        default:
                     }
                     break;
                 default:
@@ -232,6 +237,7 @@ final class PathParser {
                     throw new PathParserException(Messages.MISSING_CLOSE_CAPTURE, path, len - 1);
                 case State.END:
                     throw new PathParserException(Messages.NO_MORE_DATA_ALLOWED, path, len - 1);
+                default:
             }
         }
     }
@@ -265,6 +271,7 @@ final class PathParser {
                             case PATTERN_MULTI:
                                 prev.setValue(prev.getValue() + '/');
                                 break;
+                            default:
                         }
                     }
                     iterator.remove();
@@ -294,6 +301,7 @@ final class PathParser {
                 case PATTERN_MULTI:
                     curr.setValue("(?<" + curr.getVariable() + '>' + value + ')');
                     break;
+                default:
             }
             if (prev == null) {
                 prev = curr;
@@ -316,6 +324,7 @@ final class PathParser {
                             prev.setVariables(curr.getVariables());
                             iterator.remove();
                             continue;
+                        default:
                     }
                     break;
                 case VARIABLE:
@@ -334,6 +343,7 @@ final class PathParser {
                             prev.setValue("(?<" + prev.getVariable() + ">[^/]+)" + value);
                             iterator.remove();
                             continue;
+                        default:
                     }
                     break;
                 case PATTERN:
@@ -364,8 +374,10 @@ final class PathParser {
                             prev.setValue(pValue + "(?<" + curr.getVariable() + '>' + value + ')');
                             iterator.remove();
                             continue;
+                        default:
                     }
                     break;
+                default:
             }
             prev = curr;
         }
@@ -386,6 +398,7 @@ final class PathParser {
                 case '|':
                 case '\\':
                     return "\\Q" + regex + "\\E";
+                default:
             }
         }
         return regex;

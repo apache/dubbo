@@ -174,6 +174,7 @@ public final class DateUtils {
                 case '8':
                 case '9':
                     continue;
+                default:
             }
             if (isNumeric) {
                 isNumeric = false;
@@ -217,6 +218,7 @@ public final class DateUtils {
             case 29:
                 formatter = DateTimeFormatter.RFC_1123_DATE_TIME;
                 break;
+            default:
         }
 
         if (formatter != null) {

@@ -63,6 +63,7 @@ public final class PathUtils {
                         return false;
                     }
                     break;
+                default:
             }
         }
         return true;
@@ -107,10 +108,8 @@ public final class PathUtils {
                 return file2 + (ext1All ? ext2 : ext1);
             }
         }
-        if (last1 == '*') {
-            if (path1.charAt(len1 - 2) == '/') {
-                path1 = path1.substring(0, len1 - 2);
-            }
+        if (last1 == '*' && path1.charAt(len1 - 2) == '/') {
+            path1 = path1.substring(0, len1 - 2);
         }
 
         boolean slash1 = last1 == '/';
@@ -214,6 +213,7 @@ public final class PathUtils {
                         case State.DOT_DOT:
                             state = State.NORMAL;
                             break;
+                        default:
                     }
                     break;
                 case '?':
@@ -231,6 +231,7 @@ public final class PathUtils {
                         case State.DOT_DOT:
                             state = State.NORMAL;
                             break;
+                        default:
                     }
                     break;
             }

@@ -70,14 +70,12 @@ public class HttpRequestHandlerMapping implements RequestHandlerMapping {
         String group = request.header(TripleHeaderEnum.SERVICE_GROUP.getHeader());
         String key = URL.buildKey(serviceName, group, version);
         Invoker<?> invoker = pathResolver.resolve(key);
-        if (invoker == null) {
-            if (TripleProtocol.RESOLVE_FALLBACK_TO_DEFAULT) {
-                invoker = pathResolver.resolve(URL.buildKey(serviceName, group, TripleConstant.DEFAULT_VERSION));
+        if (invoker == null && TripleProtocol.RESOLVE_FALLBACK_TO_DEFAULT) {
+            invoker = pathResolver.resolve(URL.buildKey(serviceName, group, TripleConstant.DEFAULT_VERSION));
+            if (invoker == null) {
+                invoker = pathResolver.resolve(serviceName);
                 if (invoker == null) {
-                    invoker = pathResolver.resolve(serviceName);
-                    if (invoker == null) {
-                        return null;
-                    }
+                    return null;
                 }
             }
         }
