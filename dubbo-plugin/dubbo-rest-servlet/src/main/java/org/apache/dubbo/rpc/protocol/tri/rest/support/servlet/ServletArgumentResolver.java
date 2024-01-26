@@ -24,8 +24,10 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -43,6 +45,9 @@ public class ServletArgumentResolver implements ArgumentResolver {
         SUPPORTED_TYPES.add(HttpServletRequest.class);
         SUPPORTED_TYPES.add(ServletResponse.class);
         SUPPORTED_TYPES.add(HttpServletResponse.class);
+        SUPPORTED_TYPES.add(HttpSession.class);
+        SUPPORTED_TYPES.add(Cookie.class);
+        SUPPORTED_TYPES.add(Cookie[].class);
         SUPPORTED_TYPES.add(Reader.class);
         SUPPORTED_TYPES.add(Writer.class);
     }
@@ -60,6 +65,15 @@ public class ServletArgumentResolver implements ArgumentResolver {
         }
         if (type == ServletResponse.class || type == HttpServletResponse.class) {
             return response;
+        }
+        if (type == HttpSession.class) {
+            return ((HttpServletRequest) request).getSession();
+        }
+        if (type == Cookie.class) {
+            return Helper.convert(request.cookie(parameter.getName()));
+        }
+        if (type == Cookie[].class) {
+            return ((HttpServletRequest) request).getCookies();
         }
         if (type == Reader.class) {
             try {

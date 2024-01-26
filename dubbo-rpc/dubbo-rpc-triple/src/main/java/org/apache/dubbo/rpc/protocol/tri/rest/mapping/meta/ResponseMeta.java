@@ -16,20 +16,16 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import org.apache.dubbo.common.utils.StringUtils;
 
 public class ResponseMeta {
 
     private final Integer status;
     private final String reason;
-    private final Map<String, List<String>> headers;
 
-    public ResponseMeta(Integer status, String reason, Map<String, List<String>> headers) {
+    public ResponseMeta(Integer status, String reason) {
         this.status = status;
         this.reason = reason;
-        this.headers = headers;
     }
 
     public Integer getStatus() {
@@ -40,10 +36,6 @@ public class ResponseMeta {
         return reason;
     }
 
-    public Map<String, List<String>> getHeaders() {
-        return headers;
-    }
-
     public static ResponseMeta combine(ResponseMeta self, ResponseMeta other) {
         if (self == null) {
             return other;
@@ -51,18 +43,9 @@ public class ResponseMeta {
         if (other == null) {
             return self;
         }
-        Integer status = other.getStatus() != null ? other.getStatus() : self.status;
-        String reason = other.getReason() != null ? other.getReason() : self.reason;
-        Map<String, List<String>> headers = self.headers;
-        if (other.getHeaders() != null) {
-            if (headers != null) {
-                headers = new LinkedHashMap<>(headers);
-                headers.putAll(other.getHeaders());
-            } else {
-                headers = other.getHeaders();
-            }
-        }
-        return new ResponseMeta(status, reason, headers);
+        Integer status = other.getStatus() == null ? self.status : other.getStatus();
+        String reason = other.getReason() == null ? self.reason : other.getReason();
+        return new ResponseMeta(status, reason);
     }
 
     @Override
@@ -71,11 +54,8 @@ public class ResponseMeta {
         if (status != null) {
             sb.append("status=").append(status);
         }
-        if (reason != null) {
+        if (StringUtils.isNotEmpty(reason)) {
             sb.append(", reason='").append(reason).append('\'');
-        }
-        if (headers != null) {
-            sb.append(", headers=").append(headers);
         }
         sb.append('}');
         return sb.toString();

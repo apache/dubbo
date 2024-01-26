@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.argument;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.Pair;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
@@ -26,11 +27,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-@SuppressWarnings("rawtypes")
+@SuppressWarnings({"rawtypes", "unchecked"})
 public final class CompositeArgumentConverter implements ArgumentConverter {
 
     private final List<ArgumentConverter> converters;
-    private final Map<Class<?>, List<ArgumentConverter>> cache = CollectionUtils.newConcurrentHashMap();
+    private final Map<Pair<Class, Class>, List<ArgumentConverter>> cache = CollectionUtils.newConcurrentHashMap();
 
     public CompositeArgumentConverter(FrameworkModel frameworkModel) {
         converters = frameworkModel.getActivateExtensions(ArgumentConverter.class);
@@ -50,7 +51,7 @@ public final class CompositeArgumentConverter implements ArgumentConverter {
             return parameter.getToolKit().convert(value, parameter);
         }
 
-        List<ArgumentConverter> converters = getSuitableConverters(type);
+        List<ArgumentConverter> converters = getSuitableConverters(value.getClass(), type);
         Object target;
         for (int i = 0, size = converters.size(); i < size; i++) {
             target = converters.get(i).convert(value, parameter);
@@ -62,12 +63,19 @@ public final class CompositeArgumentConverter implements ArgumentConverter {
         return parameter.getToolKit().convert(value, parameter);
     }
 
-    private List<ArgumentConverter> getSuitableConverters(Class<?> type) {
-        return cache.computeIfAbsent(type, k -> {
+    private List<ArgumentConverter> getSuitableConverters(Class sourceType, Class targetType) {
+        return cache.computeIfAbsent(Pair.of(sourceType, targetType), k -> {
             List<ArgumentConverter> result = new ArrayList<>();
             for (ArgumentConverter converter : converters) {
-                Class<?> supportType = TypeUtils.getSuperGenericType(converter.getClass());
-                if (supportType != null && supportType.isAssignableFrom(k)) {
+                Class<?> supportSourceType = TypeUtils.getSuperGenericType(converter.getClass(), 0);
+                if (supportSourceType == null) {
+                    continue;
+                }
+                Class<?> supportTargetType = TypeUtils.getSuperGenericType(converter.getClass(), 1);
+                if (supportTargetType == null) {
+                    continue;
+                }
+                if (supportSourceType.isAssignableFrom(sourceType) && targetType.isAssignableFrom(supportTargetType)) {
                     result.add(converter);
                 }
             }

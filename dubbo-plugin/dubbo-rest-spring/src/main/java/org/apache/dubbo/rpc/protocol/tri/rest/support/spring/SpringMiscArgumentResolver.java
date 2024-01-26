@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.ServletWebRequest;
@@ -42,6 +43,7 @@ public class SpringMiscArgumentResolver implements ArgumentResolver {
         SUPPORTED_TYPES.add(WebRequest.class);
         SUPPORTED_TYPES.add(NativeWebRequest.class);
         SUPPORTED_TYPES.add(HttpEntity.class);
+        SUPPORTED_TYPES.add(HttpHeaders.class);
     }
 
     @Override
@@ -57,6 +59,9 @@ public class SpringMiscArgumentResolver implements ArgumentResolver {
         }
         if (type == HttpEntity.class) {
             return new HttpEntity<>(CollectionUtils.toMultiValueMap(request.headers()));
+        }
+        if (type == HttpHeaders.class) {
+            return new HttpHeaders(CollectionUtils.toMultiValueMap(request.headers()));
         }
         return null;
     }

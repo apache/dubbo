@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 
+import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.Condition;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.ConditionWrapper;
@@ -24,15 +25,11 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.HeadersCondition
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.MethodsCondition;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.ParamsCondition;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathCondition;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathExpression;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.ProducesCondition;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ResponseMeta;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 
 import static org.apache.dubbo.common.utils.ArrayUtils.isEmpty;
 
@@ -46,8 +43,9 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
     private final ConsumesCondition consumesCondition;
     private final ProducesCondition producesCondition;
     private final ConditionWrapper customCondition;
-    private final List<MethodMeta> exceptionHandlers;
     private final ResponseMeta response;
+
+    private int hashCode;
 
     private RequestMapping(
             String name,
@@ -58,7 +56,6 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
             ConsumesCondition consumesCondition,
             ProducesCondition producesCondition,
             Condition<?, HttpRequest> customCondition,
-            List<MethodMeta> exceptionHandlers,
             ResponseMeta response) {
         this.name = name;
         this.pathCondition = pathCondition;
@@ -68,7 +65,6 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         this.consumesCondition = consumesCondition;
         this.producesCondition = producesCondition;
         this.customCondition = customCondition == null ? null : new ConditionWrapper(customCondition);
-        this.exceptionHandlers = exceptionHandlers;
         this.response = response;
     }
 
@@ -87,20 +83,35 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         ProducesCondition produces = combine(producesCondition, other.producesCondition);
         ConditionWrapper custom = combine(customCondition, other.customCondition);
         ResponseMeta response = ResponseMeta.combine(this.response, other.response);
-        return new RequestMapping(
-                name, paths, methods, params, headers, consumes, produces, custom, exceptionHandlers, response);
+        return new RequestMapping(name, paths, methods, params, headers, consumes, produces, custom, response);
     }
 
     private <T extends Condition<T, HttpRequest>> T combine(T value, T other) {
         return value == null ? other : other == null ? value : value.combine(other);
     }
 
+    public RequestMapping match(HttpRequest request, PathExpression path) {
+        return doMatch(request, new PathCondition(path));
+    }
+
     @Override
     public RequestMapping match(HttpRequest request) {
+        return doMatch(request, null);
+    }
+
+    private RequestMapping doMatch(HttpRequest request, PathCondition pathCondition) {
         MethodsCondition methods = null;
         if (methodsCondition != null) {
             methods = methodsCondition.match(request);
             if (methods == null) {
+                return null;
+            }
+        }
+
+        PathCondition paths = pathCondition;
+        if (paths == null && this.pathCondition != null) {
+            paths = this.pathCondition.match(request);
+            if (paths == null) {
                 return null;
             }
         }
@@ -137,14 +148,6 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
             }
         }
 
-        PathCondition paths = null;
-        if (pathCondition != null) {
-            paths = pathCondition.match(request);
-            if (paths == null) {
-                return null;
-            }
-        }
-
         ConditionWrapper custom = null;
         if (customCondition != null) {
             custom = customCondition.match(request);
@@ -153,8 +156,7 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
             }
         }
 
-        return new RequestMapping(
-                name, paths, methods, params, headers, consumes, produces, custom, exceptionHandlers, response);
+        return new RequestMapping(name, paths, methods, params, headers, consumes, produces, custom, response);
     }
 
     public String getName() {
@@ -169,17 +171,95 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         return producesCondition;
     }
 
-    public List<MethodMeta> getExceptionHandlers() {
-        return exceptionHandlers;
-    }
-
     public ResponseMeta getResponse() {
         return response;
     }
 
     @Override
     public int compareTo(RequestMapping other, HttpRequest request) {
+        int result;
+        if (methodsCondition != null && HttpMethods.HEAD.name().equals(request.method())) {
+            result = methodsCondition.compareTo(other.methodsCondition, request);
+            if (result != 0) {
+                return result;
+            }
+        }
+        if (pathCondition != null) {
+            result = pathCondition.compareTo(other.pathCondition, request);
+            if (result != 0) {
+                return result;
+            }
+        }
+        if (paramsCondition != null) {
+            result = paramsCondition.compareTo(other.paramsCondition, request);
+            if (result != 0) {
+                return result;
+            }
+        }
+        if (headersCondition != null) {
+            result = headersCondition.compareTo(other.headersCondition, request);
+            if (result != 0) {
+                return result;
+            }
+        }
+        if (consumesCondition != null) {
+            result = consumesCondition.compareTo(other.consumesCondition, request);
+            if (result != 0) {
+                return result;
+            }
+        }
+        if (producesCondition != null) {
+            result = producesCondition.compareTo(other.producesCondition, request);
+            if (result != 0) {
+                return result;
+            }
+        }
+        if (methodsCondition != null) {
+            result = methodsCondition.compareTo(other.methodsCondition, request);
+            if (result != 0) {
+                return result;
+            }
+        }
+        if (customCondition != null) {
+            result = customCondition.compareTo(other.customCondition, request);
+            return result;
+        }
         return 0;
+    }
+
+    @Override
+    public int hashCode() {
+        int hashCode = this.hashCode;
+        if (hashCode == 0) {
+            hashCode = Objects.hash(
+                    pathCondition,
+                    methodsCondition,
+                    paramsCondition,
+                    headersCondition,
+                    consumesCondition,
+                    producesCondition,
+                    customCondition);
+            this.hashCode = hashCode;
+        }
+        return hashCode;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || obj.getClass() != RequestMapping.class) {
+            return false;
+        }
+        RequestMapping other = (RequestMapping) obj;
+        return Objects.equals(pathCondition, other.pathCondition)
+                && Objects.equals(methodsCondition, other.methodsCondition)
+                && Objects.equals(paramsCondition, other.paramsCondition)
+                && Objects.equals(headersCondition, other.headersCondition)
+                && Objects.equals(consumesCondition, other.consumesCondition)
+                && Objects.equals(producesCondition, other.producesCondition)
+                && Objects.equals(customCondition, other.customCondition);
     }
 
     @Override
@@ -207,9 +287,6 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         if (customCondition != null) {
             sb.append(", customCondition=").append(customCondition);
         }
-        if (exceptionHandlers != null) {
-            sb.append(", exceptionHandlers=").append(exceptionHandlers);
-        }
         if (response != null) {
             sb.append(", response=").append(response);
         }
@@ -227,10 +304,8 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         private String[] consumes;
         private String[] produces;
         private Condition<?, HttpRequest> customCondition;
-        private List<MethodMeta> exceptionHandlers;
-        private Integer responseStatusCode;
+        private Integer responseStatus;
         private String responseReason;
-        private Map<String, List<String>> responseHeaders;
 
         public Builder name(String name) {
             this.name = name;
@@ -277,38 +352,13 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
             return this;
         }
 
-        public Builder exceptionHandler(MethodMeta exceptionHandler) {
-            if (exceptionHandlers == null) {
-                exceptionHandlers = new ArrayList<>();
-            }
-            exceptionHandlers.add(exceptionHandler);
-            return this;
-        }
-
-        public Builder responseStatusCode(int statusCode) {
-            responseStatusCode = statusCode;
+        public Builder responseStatus(int status) {
+            responseStatus = status;
             return this;
         }
 
         public Builder responseReason(String reason) {
             responseReason = reason;
-            return this;
-        }
-
-        public Builder responseHeaders(Map<String, List<String>> headers) {
-            responseHeaders = headers;
-            return this;
-        }
-
-        public Builder responseHeader(String name, String value) {
-            return responseHeader(name, Collections.singletonList(value));
-        }
-
-        public Builder responseHeader(String name, List<String> values) {
-            if (responseHeaders == null) {
-                responseHeaders = new LinkedHashMap<>();
-            }
-            responseHeaders.put(name, values);
             return this;
         }
 
@@ -319,10 +369,7 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
             HeadersCondition headersCondition = isEmpty(headers) ? null : new HeadersCondition(headers);
             ConsumesCondition consumesCondition = isEmpty(consumes) ? null : new ConsumesCondition(consumes);
             ProducesCondition producesCondition = isEmpty(produces) ? null : new ProducesCondition(produces);
-            ResponseMeta response = null;
-            if (responseStatusCode != null || responseReason != null || responseHeaders != null) {
-                response = new ResponseMeta(responseStatusCode, responseReason, responseHeaders);
-            }
+            ResponseMeta response = responseStatus == null ? null : new ResponseMeta(responseStatus, responseReason);
             return new RequestMapping(
                     name,
                     pathCondition,
@@ -332,7 +379,6 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
                     consumesCondition,
                     producesCondition,
                     customCondition,
-                    exceptionHandlers,
                     response);
         }
     }

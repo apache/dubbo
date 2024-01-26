@@ -22,8 +22,8 @@ import org.apache.dubbo.common.utils.Pair;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentResolver;
+import org.apache.dubbo.rpc.protocol.tri.rest.argument.CompositeArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
@@ -42,14 +42,12 @@ import java.util.Map;
 final class BeanArgumentBinder {
 
     private final ArgumentResolver argumentResolver;
-    private final ArgumentConverter<?> argumentConverter;
 
     private final Map<Pair<Class<?>, String>, BeanMeta> cache = CollectionUtils.newConcurrentHashMap();
 
     BeanArgumentBinder(FrameworkModel frameworkModel) {
         ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
-        argumentResolver = beanFactory.getBean(ArgumentResolver.class);
-        argumentConverter = beanFactory.getBean(ArgumentConverter.class);
+        argumentResolver = beanFactory.getOrRegisterBean(CompositeArgumentResolver.class);
     }
 
     public Object bind(ParameterMeta parameter, HttpRequest request, HttpResponse response) {
@@ -62,9 +60,8 @@ final class BeanArgumentBinder {
         }
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
     private Object resolveArgument(ParameterMeta param, HttpRequest request, HttpResponse response) throws Exception {
-        AnnotationMeta form = param.findAnnotation(Annotations.Form);
+        AnnotationMeta<?> form = param.findAnnotation(Annotations.Form);
         if (form != null || param.isHierarchyAnnotated(Annotations.BeanParam)) {
             String prefix = form == null ? null : form.getString("prefix");
             BeanMeta beanMeta = cache.computeIfAbsent(
@@ -90,8 +87,7 @@ final class BeanArgumentBinder {
             return bean;
         }
 
-        Object arg = argumentResolver.resolve(param, request, response);
-        return argumentConverter.convert(arg, param);
+        return argumentResolver.resolve(param, request, response);
     }
 
     private static class BeanMeta {

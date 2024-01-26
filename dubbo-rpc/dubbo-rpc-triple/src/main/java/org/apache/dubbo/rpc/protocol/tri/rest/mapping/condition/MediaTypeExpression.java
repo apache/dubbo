@@ -247,14 +247,14 @@ public final class MediaTypeExpression implements Comparable<MediaTypeExpression
         if (this == obj) {
             return true;
         }
-        if (obj instanceof MediaTypeExpression) {
-            MediaTypeExpression that = (MediaTypeExpression) obj;
-            return negated == that.negated
-                    && Float.compare(quality, that.quality) == 0
-                    && Objects.equals(type, that.type)
-                    && Objects.equals(subType, that.subType);
+        if (obj == null || obj.getClass() != MediaTypeExpression.class) {
+            return false;
         }
-        return false;
+        MediaTypeExpression other = (MediaTypeExpression) obj;
+        return negated == other.negated
+                && Float.compare(quality, other.quality) == 0
+                && Objects.equals(type, other.type)
+                && Objects.equals(subType, other.subType);
     }
 
     @Override

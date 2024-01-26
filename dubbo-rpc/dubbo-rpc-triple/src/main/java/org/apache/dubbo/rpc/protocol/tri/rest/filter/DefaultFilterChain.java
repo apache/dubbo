@@ -21,10 +21,14 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.AsyncRpcResult;
+import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.protocol.tri.rest.filter.RestFilter.FilterChain;
 import org.apache.dubbo.rpc.protocol.tri.rest.filter.RestFilter.Listener;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 final class DefaultFilterChain implements FilterChain, Listener {
@@ -32,13 +36,16 @@ final class DefaultFilterChain implements FilterChain, Listener {
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(DefaultFilterChain.class);
 
     private final RestFilter[] filters;
+    private final Invocation invocation;
     private final Supplier<Result> action;
 
     private int cursor;
     private Result result;
+    private CompletableFuture<AppResponse> resultFuture;
 
-    DefaultFilterChain(RestFilter[] filters, Supplier<Result> action) {
+    DefaultFilterChain(RestFilter[] filters, Invocation invocation, Supplier<Result> action) {
         this.filters = filters;
+        this.invocation = invocation;
         this.action = action;
     }
 
@@ -53,16 +60,51 @@ final class DefaultFilterChain implements FilterChain, Listener {
             filters[cursor++].doFilter(request, response, this);
             return;
         }
-        result = action.get();
+        if (resultFuture == null) {
+            result = action.get();
+        } else {
+            action.get().whenCompleteWithContext((r, e) -> {
+                if (e == null) {
+                    resultFuture.complete(new AppResponse(r));
+                } else {
+                    resultFuture.complete(new AppResponse(e));
+                }
+            });
+        }
     }
 
     @Override
-    public void onSuccess(Result result, HttpRequest request, HttpResponse response) {
+    public CompletableFuture<Boolean> doFilterAsync(HttpRequest request, HttpResponse response) {
+        if (resultFuture == null) {
+            resultFuture = new CompletableFuture<>();
+            result = new AsyncRpcResult(resultFuture, invocation);
+        }
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
+        future.whenComplete((v, t) -> {
+            if (t == null) {
+                if (v != null && v) {
+                    try {
+                        doFilter(request, response);
+                    } catch (Exception e) {
+                        resultFuture.complete(new AppResponse(e));
+                    }
+                } else {
+                    resultFuture.complete(new AppResponse());
+                }
+            } else {
+                resultFuture.complete(new AppResponse(t));
+            }
+        });
+        return future;
+    }
+
+    @Override
+    public void onResponse(Result result, HttpRequest request, HttpResponse response) {
         for (int i = cursor - 1; i > -1; i--) {
             RestFilter filter = filters[i];
             if (filter instanceof Listener) {
                 try {
-                    ((Listener) filter).onSuccess(result, request, response);
+                    ((Listener) filter).onResponse(result, request, response);
                 } catch (Throwable t) {
                     LOGGER.error(
                             LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION,

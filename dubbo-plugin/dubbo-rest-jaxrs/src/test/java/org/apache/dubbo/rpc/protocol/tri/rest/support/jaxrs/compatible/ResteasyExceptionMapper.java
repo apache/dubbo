@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.rest.argument;
+package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.compatible;
 
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
 
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface ArgumentConverter<S, T> {
-
-    T convert(S value, ParameterMeta parameter);
+public class ResteasyExceptionMapper implements ExceptionMapper<RuntimeException> {
+    @Override
+    public Response toResponse(RuntimeException exception) {
+        return Response.status(200).entity("test-exception").build();
+    }
 }

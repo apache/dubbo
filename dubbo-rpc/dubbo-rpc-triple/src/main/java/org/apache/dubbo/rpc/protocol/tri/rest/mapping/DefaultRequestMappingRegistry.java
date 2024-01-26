@@ -24,7 +24,6 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorUtils;
-import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestInitializeException;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RadixTree.Match;
@@ -44,7 +43,10 @@ import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class DefaultRequestMappingRegistry implements RequestMappingRegistry {
+import static org.apache.dubbo.rpc.protocol.tri.rest.Messages.AMBIGUOUS_MAPPING;
+import static org.apache.dubbo.rpc.protocol.tri.rest.Messages.DUPLICATE_MAPPING;
+
+public final class DefaultRequestMappingRegistry implements RequestMappingRegistry {
 
     private final List<RequestMappingResolver> resolvers;
 
@@ -91,7 +93,7 @@ public class DefaultRequestMappingRegistry implements RequestMappingRegistry {
             for (PathExpression path : mapping.getPathCondition().getExpressions()) {
                 Registration exists = tree.addPath(path, registration);
                 if (exists != null) {
-                    throw new RestInitializeException(Messages.DUPLICATE_MAPPING, mapping, exists.mapping);
+                    throw new RestInitializeException(DUPLICATE_MAPPING, path.getPath(), mapping, exists.mapping);
                 }
             }
         } finally {
@@ -152,7 +154,7 @@ public class DefaultRequestMappingRegistry implements RequestMappingRegistry {
         List<Candidate> candidates = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             Match<Registration> match = matches.get(i);
-            RequestMapping mapping = match.getValue().mapping.match(request);
+            RequestMapping mapping = match.getValue().mapping.match(request, match.getExpression());
             if (mapping != null) {
                 Candidate candidate = new Candidate();
                 candidate.mapping = mapping;
@@ -169,7 +171,7 @@ public class DefaultRequestMappingRegistry implements RequestMappingRegistry {
         }
         if (size > 1) {
             candidates.sort((c1, c2) -> {
-                int comparison = c1.expression.compareTo(c2.expression);
+                int comparison = c1.expression.compareTo(c2.expression, path);
                 if (comparison != 0) {
                     return comparison;
                 }
@@ -179,6 +181,11 @@ public class DefaultRequestMappingRegistry implements RequestMappingRegistry {
                 }
                 return c1.variableMap.size() - c2.variableMap.size();
             });
+            Candidate first = candidates.get(0);
+            Candidate second = candidates.get(1);
+            if (first.mapping.compareTo(second.mapping, request) == 0) {
+                throw new RestInitializeException(AMBIGUOUS_MAPPING, path, first.mapping, second.mapping);
+            }
         }
 
         Candidate winner = candidates.get(0);
@@ -205,7 +212,13 @@ public class DefaultRequestMappingRegistry implements RequestMappingRegistry {
 
         @Override
         public boolean equals(Object obj) {
-            return obj instanceof Registration && mapping.equals(((Registration) obj).mapping);
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null || obj.getClass() != Registration.class) {
+                return false;
+            }
+            return mapping.equals(((Registration) obj).mapping);
         }
 
         @Override

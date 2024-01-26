@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.support.spring;
 
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping.Builder;
@@ -26,6 +27,8 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
+
+import org.springframework.http.HttpStatus;
 
 @Activate(onClass = "org.springframework.web.bind.annotation.RequestMapping")
 public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
@@ -58,7 +61,8 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
         if (requestMapping == null) {
             return null;
         }
-        return builder(requestMapping)
+        AnnotationMeta<?> responseStatus = serviceMeta.findMergedAnnotation(Annotations.ResponseStatus);
+        return builder(requestMapping, responseStatus)
                 .name(serviceMeta.getType().getSimpleName())
                 .contextPath(serviceMeta.getContextPath())
                 .build();
@@ -68,19 +72,32 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
     public RequestMapping resolve(MethodMeta methodMeta) {
         AnnotationMeta<?> requestMapping = methodMeta.findMergedAnnotation(Annotations.RequestMapping);
         if (requestMapping == null) {
+            AnnotationMeta<?> exceptionHandler = methodMeta.getAnnotation(Annotations.ExceptionHandler);
+            if (exceptionHandler != null) {
+                methodMeta.getServiceMeta().addExceptionHandler(methodMeta);
+            }
             return null;
         }
         ServiceMeta serviceMeta = methodMeta.getServiceMeta();
-        return builder(requestMapping)
+        AnnotationMeta<?> responseStatus = methodMeta.findMergedAnnotation(Annotations.ResponseStatus);
+        return builder(requestMapping, responseStatus)
                 .name(methodMeta.getMethod().getName())
                 .contextPath(serviceMeta.getContextPath())
                 .custom(new ServiceVersionCondition(serviceMeta.getServiceGroup(), serviceMeta.getServiceVersion()))
                 .build();
     }
 
-    private Builder builder(AnnotationMeta<?> requestMapping) {
-        return RequestMapping.builder()
-                .path(requestMapping.getValueArray())
+    private Builder builder(AnnotationMeta<?> requestMapping, AnnotationMeta<?> responseStatus) {
+        Builder builder = RequestMapping.builder();
+        if (responseStatus != null) {
+            HttpStatus value = responseStatus.getEnum("value");
+            builder.responseStatus(value.value());
+            String reason = responseStatus.getString("reason");
+            if (StringUtils.isNotEmpty(reason)) {
+                builder.responseReason(reason);
+            }
+        }
+        return builder.path(requestMapping.getValueArray())
                 .method(requestMapping.getStringArray("method"))
                 .param(requestMapping.getStringArray("params"))
                 .header(requestMapping.getStringArray("headers"))

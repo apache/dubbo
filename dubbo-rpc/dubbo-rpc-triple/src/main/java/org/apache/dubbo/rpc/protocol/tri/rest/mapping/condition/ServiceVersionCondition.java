@@ -20,6 +20,8 @@ import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 
+import java.util.Objects;
+
 public final class ServiceVersionCondition implements Condition<ServiceVersionCondition, HttpRequest> {
 
     private final String group;
@@ -59,6 +61,23 @@ public final class ServiceVersionCondition implements Condition<ServiceVersionCo
     @Override
     public int compareTo(ServiceVersionCondition other, HttpRequest request) {
         return 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(group, version);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || obj.getClass() != ServiceVersionCondition.class) {
+            return false;
+        }
+        ServiceVersionCondition other = (ServiceVersionCondition) obj;
+        return Objects.equals(group, other.group) && Objects.equals(version, other.version);
     }
 
     @Override

@@ -92,11 +92,11 @@ public final class MethodParameterMeta extends ParameterMeta {
         if (this == obj) {
             return true;
         }
-        if (obj instanceof MethodParameterMeta) {
-            MethodParameterMeta other = (MethodParameterMeta) obj;
-            return getMethod().equals(other.getMethod()) && index == other.index;
+        if (obj == null || obj.getClass() != MethodParameterMeta.class) {
+            return false;
         }
-        return false;
+        MethodParameterMeta other = (MethodParameterMeta) obj;
+        return getMethod().equals(other.getMethod()) && index == other.index;
     }
 
     @Override

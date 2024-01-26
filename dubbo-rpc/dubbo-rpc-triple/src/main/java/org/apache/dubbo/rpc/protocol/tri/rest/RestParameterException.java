@@ -14,14 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.support.jaxrs.compatible;
+package org.apache.dubbo.rpc.protocol.tri.rest;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
+import org.apache.dubbo.remoting.http12.HttpStatus;
 
-public class ResteasyExceptionMapper implements ExceptionMapper<RuntimeException> {
+@SuppressWarnings("serial")
+public class RestParameterException extends RestException {
+
+    public RestParameterException(Messages message, Object... arguments) {
+        super(message, arguments);
+    }
+
+    public RestParameterException(Throwable cause, Messages message, Object... arguments) {
+        super(cause, message, arguments);
+    }
+
     @Override
-    public Response toResponse(RuntimeException exception) {
-        return Response.status(200).entity("test-exception").build();
+    public int getStatusCode() {
+        return HttpStatus.PRECONDITION_FAILED.getCode();
     }
 }

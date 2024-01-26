@@ -56,6 +56,22 @@ public final class ParamsCondition implements Condition<ParamsCondition, HttpReq
     }
 
     @Override
+    public int hashCode() {
+        return expressions.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || obj.getClass() != ParamsCondition.class) {
+            return false;
+        }
+        return expressions.equals(((ParamsCondition) obj).expressions);
+    }
+
+    @Override
     public String toString() {
         return "ParamsCondition{params=" + expressions + '}';
     }

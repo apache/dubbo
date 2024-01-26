@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.AbstractExporter;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.DefaultRequestMappingRegistry;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMappingRegistry;
 import org.apache.dubbo.rpc.protocol.tri.service.TriBuiltinService;
 
@@ -58,7 +59,7 @@ public class TripleProtocol extends AbstractProtocol {
     private static final Logger logger = LoggerFactory.getLogger(TripleProtocol.class);
 
     private final PathResolver pathResolver;
-    private final RequestMappingRegistry requestMappingRegistry;
+    private final RequestMappingRegistry mappingRegistry;
     private final TriBuiltinService triBuiltinService;
     private final String acceptEncodings;
 
@@ -75,7 +76,7 @@ public class TripleProtocol extends AbstractProtocol {
         this.frameworkModel = frameworkModel;
         triBuiltinService = new TriBuiltinService(frameworkModel);
         pathResolver = frameworkModel.getDefaultExtension(PathResolver.class);
-        requestMappingRegistry = frameworkModel.getBeanFactory().getBean(RequestMappingRegistry.class);
+        mappingRegistry = frameworkModel.getBeanFactory().getOrRegisterBean(DefaultRequestMappingRegistry.class);
         CONVERT_NO_LOWER_HEADER = ConfigurationUtils.getEnvConfiguration(ApplicationModel.defaultModel())
                 .getBoolean(H2_SUPPORT_NO_LOWER_HEADER_KEY, true);
         IGNORE_1_0_0_VERSION = ConfigurationUtils.getEnvConfiguration(ApplicationModel.defaultModel())
@@ -102,7 +103,7 @@ public class TripleProtocol extends AbstractProtocol {
                 pathResolver.remove(url.getServiceKey());
                 pathResolver.remove(url.getServiceModel().getServiceModel().getInterfaceName());
                 // unregister rest request mapping
-                requestMappingRegistry.unregister(invoker);
+                mappingRegistry.unregister(invoker);
                 // set service status
                 if (triBuiltinService.enable()) {
                     triBuiltinService
@@ -146,7 +147,7 @@ public class TripleProtocol extends AbstractProtocol {
         }
 
         // register rest request mapping
-        requestMappingRegistry.register(invoker);
+        mappingRegistry.register(invoker);
 
         // set service status
         if (triBuiltinService.enable()) {
@@ -198,7 +199,7 @@ public class TripleProtocol extends AbstractProtocol {
         }
         PortUnificationExchanger.close();
         pathResolver.destroy();
-        requestMappingRegistry.destroy();
+        mappingRegistry.destroy();
         super.destroy();
     }
 }

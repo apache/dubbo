@@ -14,21 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.support.jaxrs.compatible.filter;
+package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs;
 
-import javax.annotation.Priority;
-import javax.ws.rs.Priorities;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.remoting.http12.HttpRequest;
+import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.protocol.tri.rest.filter.RestFilter;
+import org.apache.dubbo.rpc.protocol.tri.rest.filter.RestFilter.Listener;
+
 import javax.ws.rs.core.Response;
 
-import java.io.IOException;
+@Activate(order = -10000, onClass = "javax.ws.rs.Path")
+public class JaxrsResponseRestFilter implements RestFilter, Listener {
 
-@Priority(Priorities.USER)
-public class TestContainerRequestFilter implements ContainerRequestFilter {
     @Override
-    public void filter(ContainerRequestContext requestContext) throws IOException {
+    public void onResponse(Result result, HttpRequest request, HttpResponse response) {
+        if (result.hasException()) {
+            return;
+        }
 
-        requestContext.abortWith(Response.status(200).entity("return-success").build());
+        Object value = result.getValue();
+        if (value instanceof Response) {
+            result.setValue(Helper.toBody((Response) value));
+        }
     }
 }

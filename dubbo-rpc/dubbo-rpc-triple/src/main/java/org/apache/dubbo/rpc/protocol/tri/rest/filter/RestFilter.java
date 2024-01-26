@@ -20,19 +20,25 @@ import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.Result;
 
+import java.util.concurrent.CompletableFuture;
+
 public interface RestFilter extends RestExtension {
 
-    void doFilter(HttpRequest request, HttpResponse response, FilterChain chain) throws Exception;
+    default void doFilter(HttpRequest request, HttpResponse response, FilterChain chain) throws Exception {
+        chain.doFilter(request, response);
+    }
 
     interface Listener {
 
-        void onSuccess(Result result, HttpRequest request, HttpResponse response) throws Exception;
+        default void onResponse(Result result, HttpRequest request, HttpResponse response) throws Exception {}
 
-        void onError(Throwable t, HttpRequest request, HttpResponse response) throws Exception;
+        default void onError(Throwable t, HttpRequest request, HttpResponse response) throws Exception {}
     }
 
     interface FilterChain {
 
         void doFilter(HttpRequest request, HttpResponse response) throws Exception;
+
+        CompletableFuture<Boolean> doFilterAsync(HttpRequest request, HttpResponse response);
     }
 }

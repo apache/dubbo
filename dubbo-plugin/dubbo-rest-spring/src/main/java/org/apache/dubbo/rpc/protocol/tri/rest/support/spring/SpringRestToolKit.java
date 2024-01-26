@@ -19,8 +19,10 @@ package org.apache.dubbo.rpc.protocol.tri.rest.support.spring;
 import org.apache.dubbo.config.spring.extension.SpringExtensionInjector;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
+import org.apache.dubbo.rpc.protocol.tri.rest.argument.GeneralTypeConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.TypeConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
@@ -53,18 +55,19 @@ final class SpringRestToolKit implements RestToolKit {
     private final ParameterNameDiscoverer discoverer;
 
     public SpringRestToolKit(FrameworkModel frameworkModel) {
-        SpringExtensionInjector injector = SpringExtensionInjector.get(frameworkModel);
+        ApplicationModel applicationModel = frameworkModel.defaultApplication();
+        SpringExtensionInjector injector = SpringExtensionInjector.get(applicationModel);
         beanFactory = injector.getInstance(ConfigurableBeanFactory.class, null);
         if (beanFactory == null) {
             placeholderHelper = new PropertyPlaceholderHelper("${", "}", ":", true);
-            configuration = new ConfigurationWrapper(frameworkModel.defaultApplication());
+            configuration = new ConfigurationWrapper(applicationModel);
         } else {
             placeholderHelper = null;
             configuration = null;
         }
         ConversionService cs = injector.getInstance(ConversionService.class, "mvcConversionService");
         conversionService = cs == null ? DefaultConversionService.getSharedInstance() : cs;
-        typeConverter = frameworkModel.getBeanFactory().getBean(TypeConverter.class);
+        typeConverter = frameworkModel.getBeanFactory().getOrRegisterBean(GeneralTypeConverter.class);
         discoverer = new DefaultParameterNameDiscoverer();
         argumentBinder = new BeanArgumentBinder(frameworkModel, conversionService);
     }

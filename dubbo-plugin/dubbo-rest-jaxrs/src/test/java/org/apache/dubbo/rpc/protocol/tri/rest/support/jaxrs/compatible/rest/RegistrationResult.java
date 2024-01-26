@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.support.jaxrs.compatible.rest;
+package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.compatible.rest;
 
 import javax.xml.bind.annotation.XmlRootElement;
 

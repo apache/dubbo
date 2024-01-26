@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.support.jaxrs.compatible;
+package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.compatible;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -31,17 +31,17 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
-import org.apache.dubbo.rpc.protocol.tri.support.jaxrs.compatible.filter.TestContainerRequestFilter;
-import org.apache.dubbo.rpc.protocol.tri.support.jaxrs.compatible.filter.TraceFilter;
-import org.apache.dubbo.rpc.protocol.tri.support.jaxrs.compatible.filter.TraceRequestAndResponseFilter;
-import org.apache.dubbo.rpc.protocol.tri.support.jaxrs.compatible.intercept.DynamicTraceInterceptor;
-import org.apache.dubbo.rpc.protocol.tri.support.jaxrs.compatible.rest.AnotherUserRestService;
-import org.apache.dubbo.rpc.protocol.tri.support.jaxrs.compatible.rest.AnotherUserRestServiceImpl;
-import org.apache.dubbo.rpc.protocol.tri.support.jaxrs.compatible.rest.HttpMethodService;
-import org.apache.dubbo.rpc.protocol.tri.support.jaxrs.compatible.rest.HttpMethodServiceImpl;
-import org.apache.dubbo.rpc.protocol.tri.support.jaxrs.compatible.rest.RestDemoForTestException;
-import org.apache.dubbo.rpc.protocol.tri.support.jaxrs.compatible.rest.RestDemoService;
-import org.apache.dubbo.rpc.protocol.tri.support.jaxrs.compatible.rest.RestDemoServiceImpl;
+import org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.compatible.filter.TestContainerRequestFilter;
+import org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.compatible.filter.TraceFilter;
+import org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.compatible.filter.TraceRequestAndResponseFilter;
+import org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.compatible.intercept.DynamicTraceInterceptor;
+import org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.compatible.rest.AnotherUserRestService;
+import org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.compatible.rest.AnotherUserRestServiceImpl;
+import org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.compatible.rest.HttpMethodService;
+import org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.compatible.rest.HttpMethodServiceImpl;
+import org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.compatible.rest.RestDemoForTestException;
+import org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.compatible.rest.RestDemoService;
+import org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.compatible.rest.RestDemoServiceImpl;
 
 import java.util.ArrayList;
 import java.util.Arrays;

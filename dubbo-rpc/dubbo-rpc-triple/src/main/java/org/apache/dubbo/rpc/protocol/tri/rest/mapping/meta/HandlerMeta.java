@@ -50,6 +50,10 @@ public final class HandlerMeta {
         return method;
     }
 
+    public ServiceMeta getService() {
+        return method.getServiceMeta();
+    }
+
     public ParameterMeta[] getParameters() {
         return method.getParameters();
     }

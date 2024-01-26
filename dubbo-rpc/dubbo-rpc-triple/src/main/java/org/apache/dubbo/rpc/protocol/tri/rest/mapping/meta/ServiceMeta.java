@@ -33,6 +33,8 @@ public final class ServiceMeta extends AnnotationSupport {
     private final URL url;
     private final String contextPath;
 
+    private List<MethodMeta> exceptionHandlers;
+
     public ServiceMeta(Collection<Class<?>> hierarchy, Object service, URL url, RestToolKit toolKit) {
         super(toolKit);
         this.hierarchy = new ArrayList<>(hierarchy);
@@ -74,6 +76,10 @@ public final class ServiceMeta extends AnnotationSupport {
         return contextPath;
     }
 
+    public List<MethodMeta> getExceptionHandlers() {
+        return exceptionHandlers;
+    }
+
     @Override
     protected List<? extends AnnotatedElement> getAnnotatedElements() {
         return hierarchy;
@@ -87,5 +93,12 @@ public final class ServiceMeta extends AnnotationSupport {
     @Override
     public String toString() {
         return "ServiceMeta{class='" + getType().getName() + "', service=" + service + '}';
+    }
+
+    public void addExceptionHandler(MethodMeta methodMeta) {
+        if (exceptionHandlers == null) {
+            exceptionHandlers = new ArrayList<>();
+        }
+        exceptionHandlers.add(methodMeta);
     }
 }

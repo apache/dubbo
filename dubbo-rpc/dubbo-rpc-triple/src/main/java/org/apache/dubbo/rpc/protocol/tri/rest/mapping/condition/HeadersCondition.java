@@ -73,6 +73,22 @@ public final class HeadersCondition implements Condition<HeadersCondition, HttpR
     }
 
     @Override
+    public int hashCode() {
+        return expressions.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || obj.getClass() != HeadersCondition.class) {
+            return false;
+        }
+        return expressions.equals(((HeadersCondition) obj).expressions);
+    }
+
+    @Override
     public String toString() {
         return "HeadersCondition{headers=" + expressions + '}';
     }

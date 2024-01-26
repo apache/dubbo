@@ -25,7 +25,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-public class ConsumesCondition implements Condition<ConsumesCondition, HttpRequest> {
+public final class ConsumesCondition implements Condition<ConsumesCondition, HttpRequest> {
 
     public static final MediaTypeExpression DEFAULT = MediaTypeExpression.parse("application/octet-stream");
 
@@ -111,6 +111,22 @@ public class ConsumesCondition implements Condition<ConsumesCondition, HttpReque
             return -1;
         }
         return expressions.get(0).compareTo(other.expressions.get(0));
+    }
+
+    @Override
+    public int hashCode() {
+        return expressions.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || obj.getClass() != ConsumesCondition.class) {
+            return false;
+        }
+        return expressions.equals(((ConsumesCondition) obj).expressions);
     }
 
     @Override

@@ -14,14 +14,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.rest.argument;
+package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.compatible.rest;
 
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
+public class HttpMethodServiceImpl implements HttpMethodService {
 
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface ArgumentConverter<S, T> {
+    @Override
+    public String sayHelloPost(String name) {
+        return name;
+    }
 
-    T convert(S value, ParameterMeta parameter);
+    @Override
+    public String sayHelloDelete(String name) {
+        return name;
+    }
+
+    @Override
+    public String sayHelloHead() {
+        return "hello";
+    }
+
+    @Override
+    public String sayHelloGet(String name) {
+        return name;
+    }
+
+    @Override
+    public String sayHelloPut(String name) {
+        return name;
+    }
+
+    @Override
+    public String sayHelloPatch(String name) {
+        return name;
+    }
+
+    @Override
+    public String sayHelloOptions(String name) {
+        return name;
+    }
 }

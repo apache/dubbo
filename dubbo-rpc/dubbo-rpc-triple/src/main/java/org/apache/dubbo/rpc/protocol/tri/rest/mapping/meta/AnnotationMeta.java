@@ -219,11 +219,11 @@ public final class AnnotationMeta<A extends Annotation> {
         if (this == obj) {
             return true;
         }
-        if (obj instanceof AnnotationMeta) {
-            AnnotationMeta<?> other = (AnnotationMeta<?>) obj;
-            return element.equals(other.element) && annotation.equals(other.annotation);
+        if (obj == null || obj.getClass() != AnnotationMeta.class) {
+            return false;
         }
-        return false;
+        AnnotationMeta<?> other = (AnnotationMeta<?>) obj;
+        return element.equals(other.element) && annotation.equals(other.annotation);
     }
 
     @Override

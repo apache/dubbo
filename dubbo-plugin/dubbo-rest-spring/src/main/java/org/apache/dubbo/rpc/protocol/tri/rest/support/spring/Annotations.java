@@ -31,7 +31,6 @@ public enum Annotations implements AnnotationEnum {
     RequestPart,
     RequestBody,
     ModelAttribute,
-    ResponseBody,
     ResponseStatus,
     CrossOrigin,
     ExceptionHandler,

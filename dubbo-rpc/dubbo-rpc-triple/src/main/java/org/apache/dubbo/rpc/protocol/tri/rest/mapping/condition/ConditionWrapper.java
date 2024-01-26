@@ -48,6 +48,22 @@ public final class ConditionWrapper implements Condition<ConditionWrapper, HttpR
     }
 
     @Override
+    public int hashCode() {
+        return condition.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || obj.getClass() != ConditionWrapper.class) {
+            return false;
+        }
+        return condition.equals(((ConditionWrapper) obj).condition);
+    }
+
+    @Override
     public String toString() {
         return condition.toString();
     }

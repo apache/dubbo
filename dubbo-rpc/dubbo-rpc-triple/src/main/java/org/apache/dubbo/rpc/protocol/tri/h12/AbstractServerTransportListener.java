@@ -36,6 +36,7 @@ import org.apache.dubbo.rpc.protocol.tri.DescriptorUtils;
 import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
+import org.apache.dubbo.rpc.protocol.tri.route.DefaultRequestRouter;
 import org.apache.dubbo.rpc.protocol.tri.route.RequestRouter;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 
@@ -68,7 +69,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         this.frameworkModel = frameworkModel;
         this.url = url;
         this.httpChannel = httpChannel;
-        requestRouter = frameworkModel.getBeanFactory().getBean(RequestRouter.class);
+        requestRouter = frameworkModel.getBeanFactory().getOrRegisterBean(DefaultRequestRouter.class);
         headerFilters = frameworkModel
                 .getExtensionLoader(HeaderFilter.class)
                 .getActivateExtension(url, CommonConstants.HEADER_FILTER_KEY);

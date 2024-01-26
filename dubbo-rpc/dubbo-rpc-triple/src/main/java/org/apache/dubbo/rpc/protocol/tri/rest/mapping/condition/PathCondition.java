@@ -19,17 +19,20 @@ package org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
+import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.PathUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
-public class PathCondition implements Condition<PathCondition, HttpRequest> {
+public final class PathCondition implements Condition<PathCondition, HttpRequest> {
 
     private final String contextPath;
     private final Set<String> paths;
@@ -45,12 +48,20 @@ public class PathCondition implements Condition<PathCondition, HttpRequest> {
         this.paths = paths;
     }
 
+    public PathCondition(PathExpression path) {
+        contextPath = null;
+        paths = Collections.singleton(path.getPath());
+        expressions = Collections.singletonList(path);
+    }
+
     public List<PathExpression> getExpressions() {
+        List<PathExpression> expressions = this.expressions;
         if (expressions == null) {
             expressions = new ArrayList<>();
             for (String path : paths) {
                 expressions.add(PathExpression.parse(PathUtils.normalize(contextPath, path)));
             }
+            this.expressions = expressions;
         }
         return expressions;
     }
@@ -106,7 +117,39 @@ public class PathCondition implements Condition<PathCondition, HttpRequest> {
 
     @Override
     public int compareTo(PathCondition other, HttpRequest request) {
+        String lookupPath = request.attribute(RestConstants.PATH_ATTRIBUTE);
+        Iterator<PathExpression> it = getExpressions().iterator();
+        Iterator<PathExpression> oit = other.getExpressions().iterator();
+        while (it.hasNext() && oit.hasNext()) {
+            int result = it.next().compareTo(oit.next(), lookupPath);
+            if (result != 0) {
+                return result;
+            }
+        }
+        if (it.hasNext()) {
+            return -1;
+        }
+        if (oit.hasNext()) {
+            return 1;
+        }
         return 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * paths.hashCode() + contextPath.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || obj.getClass() != PathCondition.class) {
+            return false;
+        }
+        PathCondition other = (PathCondition) obj;
+        return paths.equals(other.paths) && Objects.equals(contextPath, other.contextPath);
     }
 
     @Override

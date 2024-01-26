@@ -71,7 +71,7 @@ public abstract class AnnotationSupport {
         return result;
     }
 
-    public final AnnotationMeta getAnnotation(Class<Annotation> annotationType) {
+    public final AnnotationMeta getAnnotation(Class<? extends Annotation> annotationType) {
         return cache.computeIfAbsent(Pair.of(annotationType, GET_KEY), k -> {
                     AnnotatedElement element = getAnnotatedElement();
                     Annotation annotation = element.getAnnotation(annotationType);

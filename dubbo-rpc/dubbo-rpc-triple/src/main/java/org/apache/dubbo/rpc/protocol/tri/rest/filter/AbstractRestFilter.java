@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.filter;
 
-import org.apache.dubbo.remoting.http12.HttpRequest;
-import org.apache.dubbo.remoting.http12.HttpResponse;
-import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestUtils;
 
 import java.util.Arrays;
@@ -40,15 +37,6 @@ public abstract class AbstractRestFilter<E> implements RestFilter {
     public String[] getPatterns() {
         return RestUtils.getPattens(extension);
     }
-
-    @Override
-    public void doFilter(HttpRequest request, HttpResponse response, FilterChain chain) throws Exception {
-        chain.doFilter(request, response);
-    }
-
-    public void onSuccess(Result result, HttpRequest request, HttpResponse response) throws Exception {}
-
-    public void onError(Throwable t, HttpRequest request, HttpResponse response) throws Exception {}
 
     @Override
     public String toString() {

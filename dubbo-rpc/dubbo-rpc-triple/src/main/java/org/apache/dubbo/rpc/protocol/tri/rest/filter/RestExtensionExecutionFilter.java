@@ -24,13 +24,12 @@ import org.apache.dubbo.common.extension.ExtensionAccessorAware;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
-import org.apache.dubbo.remoting.http12.HttpResult;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestInitializeException;
@@ -40,37 +39,39 @@ import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Supplier;
 
-@Activate(group = CommonConstants.PROVIDER)
+@Activate(group = CommonConstants.PROVIDER, order = 1000)
 public class RestExtensionExecutionFilter extends RestFilterAdapter {
 
     private static final String KEY = RestExtensionExecutionFilter.class.getSimpleName();
 
-    private final FrameworkModel frameworkModel;
+    private final ApplicationModel applicationModel;
     private final List<RestExtensionAdapter<Object>> extensionAdapters;
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public RestExtensionExecutionFilter(FrameworkModel frameworkModel) {
-        this.frameworkModel = frameworkModel;
-        extensionAdapters = (List) frameworkModel.getActivateExtensions(RestExtensionAdapter.class);
+    public RestExtensionExecutionFilter(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+        extensionAdapters = (List) applicationModel.getActivateExtensions(RestExtensionAdapter.class);
     }
 
     @Override
     protected Result invoke(Invoker<?> invoker, Invocation invocation, HttpRequest request, HttpResponse response)
             throws RpcException {
         RestFilter[] filters = getFilters(invoker);
-        DefaultFilterChain chain = new DefaultFilterChain(filters, () -> invoker.invoke(invocation));
+        DefaultFilterChain chain = new DefaultFilterChain(filters, invocation, () -> invoker.invoke(invocation));
         invocation.put(KEY, chain);
         try {
             Result result = chain.execute(request, response);
             if (result != null) {
                 return result;
             }
-            HttpResult<Object> hResult = response.toHttpResult();
-            if (hResult.getBody() instanceof Throwable) {
-                return AsyncRpcResult.newDefaultAsyncResult((Throwable) hResult.getBody(), invocation);
+            Object body = response.body();
+            if (body instanceof Throwable) {
+                response.setBody(null);
+                return AsyncRpcResult.newDefaultAsyncResult((Throwable) body, invocation);
             }
-            return AsyncRpcResult.newDefaultAsyncResult(hResult, invocation);
+            return AsyncRpcResult.newDefaultAsyncResult(invocation);
         } catch (RuntimeException e) {
             throw e;
         } catch (Throwable t) {
@@ -85,8 +86,8 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
         if (chain == null) {
             return;
         }
+        chain.onResponse(result, request, response);
         if (result.hasException()) {
-            chain.onError(result.getException(), request, response);
             Object body = response.body();
             if (body != null) {
                 if (body instanceof Throwable) {
@@ -95,10 +96,9 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
                     result.setValue(body);
                     result.setException(null);
                 }
+                response.setBody(null);
             }
-            return;
         }
-        chain.onSuccess(result, request, response);
     }
 
     @Override
@@ -138,12 +138,12 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
 
         // 1. load from extension config
         String extensionConfig = url.getParameter(RestConstants.EXTENSION_KEY);
-        InstantiationStrategy strategy = new InstantiationStrategy(() -> frameworkModel);
+        InstantiationStrategy strategy = new InstantiationStrategy(() -> applicationModel);
         for (String className : StringUtils.tokenize(extensionConfig)) {
             try {
                 Object extension = strategy.instantiate(TypeUtils.loadClass(className));
                 if (extension instanceof ExtensionAccessorAware) {
-                    ((ExtensionAccessorAware) extension).setExtensionAccessor(frameworkModel);
+                    ((ExtensionAccessorAware) extension).setExtensionAccessor(applicationModel);
                 }
                 adaptExtension(extension, extensions);
             } catch (Throwable t) {
@@ -152,7 +152,7 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
         }
 
         // 2. load from extension loader
-        List<RestExtension> restExtensions = frameworkModel
+        List<RestExtension> restExtensions = applicationModel
                 .getExtensionLoader(RestExtension.class)
                 .getActivateExtension(url, RestConstants.REST_FILTER_KEY);
         for (RestExtension extension : restExtensions) {
@@ -166,6 +166,9 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
     }
 
     private void adaptExtension(Object extension, List<RestFilter> extensions) {
+        if (extension instanceof Supplier) {
+            extension = ((Supplier<?>) extension).get();
+        }
         if (extension instanceof RestFilter) {
             extensions.add((RestFilter) extension);
             return;

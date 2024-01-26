@@ -32,7 +32,7 @@ import java.util.function.BiPredicate;
 
 import static java.util.Collections.singletonList;
 
-public class ProducesCondition implements Condition<ProducesCondition, HttpRequest> {
+public final class ProducesCondition implements Condition<ProducesCondition, HttpRequest> {
 
     private static final ProducesCondition ALL = new ProducesCondition(MediaTypeExpression.ALL_LIST);
     private static final List<ProducesCondition> ALL_LIST = singletonList(ALL);
@@ -177,6 +177,22 @@ public class ProducesCondition implements Condition<ProducesCondition, HttpReque
             mediaTypes.add(new MediaType(expr.getType(), expr.getSubType()));
         }
         return mediaTypes;
+    }
+
+    @Override
+    public int hashCode() {
+        return expressions.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || obj.getClass() != ProducesCondition.class) {
+            return false;
+        }
+        return expressions.equals(((ProducesCondition) obj).expressions);
     }
 
     private Pair<Integer, MediaTypeExpression> findMediaType(

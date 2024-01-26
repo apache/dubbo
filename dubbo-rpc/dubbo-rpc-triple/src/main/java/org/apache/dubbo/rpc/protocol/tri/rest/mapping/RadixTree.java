@@ -283,8 +283,8 @@ public final class RadixTree<T> {
         @Override
         @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
         public boolean equals(Object obj) {
-            Key that = (Key) obj;
-            return value.regionMatches(offset, that.value, that.offset, length);
+            Key other = (Key) obj;
+            return value.regionMatches(offset, other.value, other.offset, length);
         }
 
         @Override

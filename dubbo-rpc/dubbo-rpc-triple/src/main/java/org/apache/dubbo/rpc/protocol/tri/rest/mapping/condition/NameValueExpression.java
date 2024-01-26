@@ -101,11 +101,11 @@ public final class NameValueExpression {
         if (this == obj) {
             return true;
         }
-        if (obj instanceof NameValueExpression) {
-            NameValueExpression that = (NameValueExpression) obj;
-            return negated == that.negated && Objects.equals(name, that.name) && Objects.equals(value, that.value);
+        if (obj == null || obj.getClass() != NameValueExpression.class) {
+            return false;
         }
-        return false;
+        NameValueExpression other = (NameValueExpression) obj;
+        return negated == other.negated && Objects.equals(name, other.name) && Objects.equals(value, other.value);
     }
 
     @Override

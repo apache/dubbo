@@ -31,7 +31,7 @@ public interface SpringRestDemoService {
     @RequestMapping(value = "/hello", method = RequestMethod.GET)
     Integer hello(@RequestParam Integer a, @RequestParam Integer b);
 
-    @RequestMapping(value = "/error", method = RequestMethod.GET)
+    @RequestMapping(value = "/error", method = RequestMethod.GET, consumes = MediaType.TEXT_PLAIN_VALUE)
     String error();
 
     @RequestMapping(value = "/sayHello", method = RequestMethod.POST, consumes = MediaType.TEXT_PLAIN_VALUE)

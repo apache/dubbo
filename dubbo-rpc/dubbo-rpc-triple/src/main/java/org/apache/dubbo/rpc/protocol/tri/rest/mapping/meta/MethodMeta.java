@@ -105,7 +105,13 @@ public final class MethodMeta extends AnnotationSupport {
 
     @Override
     public boolean equals(Object obj) {
-        return obj == this || obj instanceof MethodMeta && method.equals(((MethodMeta) obj).method);
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || obj.getClass() != MethodMeta.class) {
+            return false;
+        }
+        return method.equals(((MethodMeta) obj).method);
     }
 
     @Override

@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public final class PathSegment {
+public final class PathSegment implements Comparable<PathSegment> {
 
     private Type type;
     private String value;
@@ -152,7 +152,7 @@ public final class PathSegment {
         if (this == obj) {
             return true;
         }
-        if (obj == null || PathSegment.class != obj.getClass()) {
+        if (obj == null || obj.getClass() != PathSegment.class) {
             return false;
         }
         PathSegment that = (PathSegment) obj;
@@ -173,43 +173,70 @@ public final class PathSegment {
         return sb.toString();
     }
 
+    @Override
+    public int compareTo(PathSegment other) {
+        if (type != other.type) {
+            int comparison = type.score() - other.type.score;
+            if (comparison != 0) {
+                return comparison;
+            }
+        }
+        int size = variables == null ? 0 : variables.size();
+        int otherSize = other.variables == null ? 0 : other.variables.size();
+        return size - otherSize;
+    }
+
     public enum Type {
         /**
          * A slash segment, transient type used for parsing.
-         * Transient type used for parsing, will not be present in the PathExpression
+         * will not be present in the PathExpression
          * E.g.: '/'
          */
-        SLASH,
+        SLASH(),
         /**
          * A literal segment.
          * E.g.: 'foo'
          */
-        LITERAL,
+        LITERAL(1),
         /**
          * A wildcard segment.
          * E.g.: 't?st*uv' and '/foo/&ast;/bar'
          */
-        WILDCARD,
+        WILDCARD(),
         /**
          * A wildcard matching suffix.
          * Transient type used for parsing, will not be present in the PathExpression
          * E.g.: '/foo/**' and '/**' and '/{*bar}'
          */
-        WILDCARD_TAIL,
+        WILDCARD_TAIL(),
         /**
          * A template variable segment.
          * E.g.: '{foo}'
          */
-        VARIABLE,
+        VARIABLE(10),
         /**
          * A regex variable matching single segment.
          * E.g.: '{foo:\d+}'
          */
-        PATTERN,
+        PATTERN(100),
         /**
          * A regex variable matching multiple segments.
          * E.g.: '{foo:.*}'
          */
-        PATTERN_MULTI
+        PATTERN_MULTI(200);
+
+        private final int score;
+
+        Type(int score) {
+            this.score = score;
+        }
+
+        Type() {
+            score = 10000;
+        }
+
+        public int score() {
+            return score;
+        }
     }
 }

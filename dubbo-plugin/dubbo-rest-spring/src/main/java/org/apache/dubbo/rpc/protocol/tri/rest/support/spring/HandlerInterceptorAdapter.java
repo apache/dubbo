@@ -74,7 +74,11 @@ public final class HandlerInterceptorAdapter implements RestExtensionAdapter<Han
         }
 
         @Override
-        public void onSuccess(Result result, HttpRequest request, HttpResponse response) throws Exception {
+        public void onResponse(Result result, HttpRequest request, HttpResponse response) throws Exception {
+            if (result.hasException()) {
+                onError(result.getException(), request, response);
+                return;
+            }
             Object handler = request.attribute(RestConstants.HANDLER_ATTRIBUTE);
             ModelAndView mv = new ModelAndView();
             mv.addObject("result", result);

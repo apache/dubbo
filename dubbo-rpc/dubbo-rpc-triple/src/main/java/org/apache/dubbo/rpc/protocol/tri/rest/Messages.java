@@ -30,7 +30,8 @@ public enum Messages {
     REGEX_PATTERN_INVALID("Invalid regex pattern ''{0}'' for path ''{0}''"),
     NO_MORE_DATA_ALLOWED("No more data allowed after '{*...}' or '**' pattern segment for path ''{0}'' at index {1}"),
     CANNOT_COMBINE_PATHS("Cannot combine paths: ''{0}'' vs ''{1}''"),
-    DUPLICATE_MAPPING("Duplicate mapping: {0}, exists: {1}"),
+    DUPLICATE_MAPPING("Duplicate mapping for ''{0}'': current={1}, exists={2}"),
+    AMBIGUOUS_MAPPING("Ambiguous mapping for ''{0}'': {{1}, {2}"),
     EXTENSION_INIT_FAILED("Rest extension: ''{0}'' initialization failed for invoker: ''{1}''"),
     PARAMETER_COULD_NOT_RESOLVED("Could not resolve {0}, no suitable resolver"),
     PARAMETER_VALUE_MISSING("Missing argument ''{0}'' for method parameter of type {1}");

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.argument;
 
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
@@ -27,7 +28,8 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
-public class GenericArgumentResolver implements ArgumentResolver {
+@Activate
+public class MiscArgumentResolver implements ArgumentResolver {
 
     public static final Set<Class<?>> SUPPORTED_TYPES = new HashSet<>();
 

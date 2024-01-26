@@ -47,7 +47,7 @@ public class ContainerResponseFilterAdapter implements RestExtensionAdapter<Cont
         }
 
         @Override
-        public void onSuccess(Result result, HttpRequest request, HttpResponse response) throws Exception {
+        public void onResponse(Result result, HttpRequest request, HttpResponse response) throws Exception {
             extension.filter(
                     new ContainerRequestContextImpl(request, response),
                     new ContainerResponseContextImpl(request, response, result));

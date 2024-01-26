@@ -260,6 +260,21 @@ public class SpringMvcRestProtocolTest {
     }
 
     @Test
+    void testExceptionHandler() {
+        SpringRestDemoService server = getServerImpl();
+
+        URL nettyUrl = registerProvider(getUrl(), server, SpringRestDemoService.class);
+        Exporter<SpringRestDemoService> exporter = getExport(nettyUrl, server);
+        SpringRestDemoService demoService = proxy.getProxy(protocol.refer(SpringRestDemoService.class, nettyUrl));
+
+        String result = demoService.error();
+
+        assertThat(result, is("ok"));
+
+        exporter.unexport();
+    }
+
+    @Test
     void testProxyDoubleCheck() {
 
         ProxyCreatorSupport proxyCreatorSupport = new ProxyCreatorSupport();

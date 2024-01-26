@@ -14,42 +14,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.support.jaxrs.compatible.rest;
+package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.compatible.rest;
 
-public class HttpMethodServiceImpl implements HttpMethodService {
+import org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.compatible.User;
+
+import java.util.Map;
+
+public class AnotherUserRestServiceImpl implements AnotherUserRestService {
 
     @Override
-    public String sayHelloPost(String name) {
-        return name;
+    public User getUser(Long id) {
+
+        User user = new User();
+        user.setId(id);
+        return user;
     }
 
     @Override
-    public String sayHelloDelete(String name) {
-        return name;
+    public RegistrationResult registerUser(User user) {
+        return new RegistrationResult(user.getId());
     }
 
     @Override
-    public String sayHelloHead() {
-        return "hello";
+    public String getContext() {
+
+        return "context";
     }
 
     @Override
-    public String sayHelloGet(String name) {
-        return name;
+    public byte[] bytes(byte[] bytes) {
+        return bytes;
     }
 
     @Override
-    public String sayHelloPut(String name) {
-        return name;
+    public Long number(Long number) {
+        return number;
     }
 
     @Override
-    public String sayHelloPatch(String name) {
-        return name;
-    }
-
-    @Override
-    public String sayHelloOptions(String name) {
-        return name;
+    public String headerMap(Map<String, String> headers) {
+        return headers.get("headers");
     }
 }

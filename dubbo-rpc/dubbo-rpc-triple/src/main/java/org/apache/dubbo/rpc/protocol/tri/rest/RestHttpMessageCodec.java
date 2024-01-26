@@ -24,7 +24,6 @@ import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
 import org.apache.dubbo.remoting.http12.message.MediaType;
-import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.TypeConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
@@ -42,7 +41,6 @@ public final class RestHttpMessageCodec implements HttpMessageDecoder, HttpMessa
     private final HttpResponse response;
     private final ParameterMeta[] parameters;
     private final ArgumentResolver argumentResolver;
-    private final ArgumentConverter<?> argumentConverter;
     private final TypeConverter typeConverter;
     private final HttpMessageEncoder messageEncoder;
     private final Charset charset;
@@ -52,14 +50,12 @@ public final class RestHttpMessageCodec implements HttpMessageDecoder, HttpMessa
             HttpResponse response,
             ParameterMeta[] parameters,
             ArgumentResolver argumentResolver,
-            ArgumentConverter<?> argumentConverter,
             TypeConverter typeConverter,
             HttpMessageEncoder messageEncoder) {
         this.request = request;
         this.response = response;
         this.parameters = parameters;
         this.argumentResolver = argumentResolver;
-        this.argumentConverter = argumentConverter;
         this.typeConverter = typeConverter;
         this.messageEncoder = messageEncoder;
         charset = request.charsetOrDefault();
@@ -71,7 +67,6 @@ public final class RestHttpMessageCodec implements HttpMessageDecoder, HttpMessa
     }
 
     @Override
-    @SuppressWarnings({"rawtypes", "unchecked"})
     public Object[] decode(InputStream inputStream, Class<?>[] targetTypes, Charset charset) throws DecodeException {
         request.setInputStream(inputStream);
         ParameterMeta[] parameters = this.parameters;
@@ -81,9 +76,7 @@ public final class RestHttpMessageCodec implements HttpMessageDecoder, HttpMessa
         }
         Object[] args = new Object[len];
         for (int i = 0; i < len; i++) {
-            ParameterMeta parameter = parameters[i];
-            Object arg = argumentResolver.resolve(parameter, request, response);
-            args[i] = argumentConverter.convert(arg, parameter);
+            args[i] = argumentResolver.resolve(parameters[i], request, response);
         }
         return args;
     }

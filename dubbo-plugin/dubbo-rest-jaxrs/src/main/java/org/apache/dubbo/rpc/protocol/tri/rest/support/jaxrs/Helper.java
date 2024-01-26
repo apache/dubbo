@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs;
 
 import org.apache.dubbo.remoting.http12.HttpResult;
 import org.apache.dubbo.remoting.http12.HttpUtils;
-import org.apache.dubbo.remoting.http12.message.DefaultHttpResult;
 import org.apache.dubbo.remoting.http12.message.DefaultHttpResult.Builder;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
@@ -42,7 +41,7 @@ public final class Helper {
         return meta == null ? null : meta.getValue();
     }
 
-    public static DefaultHttpResult<Object> toBody(Response response) {
+    public static HttpResult<Object> toBody(Response response) {
         Builder<Object> builder = HttpResult.builder().status(response.getStatus());
         if (response.hasEntity()) {
             builder.body(response.getEntity());

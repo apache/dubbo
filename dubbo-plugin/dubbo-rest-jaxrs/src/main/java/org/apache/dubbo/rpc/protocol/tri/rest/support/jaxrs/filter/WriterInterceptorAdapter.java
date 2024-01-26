@@ -47,7 +47,7 @@ public final class WriterInterceptorAdapter implements RestExtensionAdapter<Writ
         }
 
         @Override
-        public void onSuccess(Result result, HttpRequest request, HttpResponse response) throws Exception {
+        public void onResponse(Result result, HttpRequest request, HttpResponse response) throws Exception {
             extension.aroundWriteTo(new WriterInterceptorContextImpl(request, response, result));
         }
     }

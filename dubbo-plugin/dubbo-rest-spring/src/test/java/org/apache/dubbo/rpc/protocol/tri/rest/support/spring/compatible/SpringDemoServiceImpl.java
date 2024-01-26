@@ -16,12 +16,14 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.support.spring.compatible;
 
+import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.rpc.RpcContext;
 
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 
 public class SpringDemoServiceImpl implements SpringRestDemoService {
     private static Map<String, Object> context;
@@ -67,6 +69,16 @@ public class SpringDemoServiceImpl implements SpringRestDemoService {
     @Override
     public String error() {
         throw new RuntimeException();
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public String onError(HttpRequest request, Throwable t) {
+        return "ok";
+    }
+
+    @ExceptionHandler(Exception.class)
+    public String onError1() {
+        return "ok1";
     }
 
     public static Map<String, Object> getAttachments() {

@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.argument;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.rpc.protocol.tri.rest.RestParameterException;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
@@ -55,7 +56,7 @@ public abstract class NamedValueArgumentResolverSupport {
             return arg;
         }
         if (meta.required()) {
-            throw new IllegalArgumentException(PARAMETER_VALUE_MISSING.format(meta.name(), type.getSimpleName()));
+            throw new RestParameterException(PARAMETER_VALUE_MISSING, meta.name(), type.getSimpleName());
         }
         return null;
     }

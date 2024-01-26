@@ -20,13 +20,12 @@ import org.apache.dubbo.remoting.http12.HttpRequest;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 import static org.apache.dubbo.remoting.http12.HttpMethods.GET;
 import static org.apache.dubbo.remoting.http12.HttpMethods.HEAD;
 
-public class MethodsCondition implements Condition<MethodsCondition, HttpRequest> {
+public final class MethodsCondition implements Condition<MethodsCondition, HttpRequest> {
 
     private final Set<String> methods;
 
@@ -40,7 +39,7 @@ public class MethodsCondition implements Condition<MethodsCondition, HttpRequest
 
     @Override
     public MethodsCondition combine(MethodsCondition other) {
-        Set<String> set = new LinkedHashSet<>(methods);
+        Set<String> set = new HashSet<>(methods);
         set.addAll(other.methods);
         return new MethodsCondition(set);
     }
@@ -71,6 +70,22 @@ public class MethodsCondition implements Condition<MethodsCondition, HttpRequest
             }
         }
         return 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return methods.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || obj.getClass() != MethodsCondition.class) {
+            return false;
+        }
+        return methods.equals(((MethodsCondition) obj).methods);
     }
 
     @Override

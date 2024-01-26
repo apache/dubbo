@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.support.jaxrs.compatible;
+package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.compatible;
 
 import java.io.Serializable;
 import java.util.Objects;

@@ -14,45 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.support.jaxrs.compatible.rest;
+package org.apache.dubbo.rpc.protocol.tri.rest;
 
-import org.apache.dubbo.rpc.protocol.tri.support.jaxrs.compatible.User;
+import org.apache.dubbo.remoting.http12.HttpStatus;
 
-import java.util.Map;
+@SuppressWarnings("serial")
+public class RestBadRequestException extends RestException {
 
-public class AnotherUserRestServiceImpl implements AnotherUserRestService {
+    public RestBadRequestException(Messages message, Object... arguments) {
+        super(message, arguments);
+    }
 
-    @Override
-    public User getUser(Long id) {
-
-        User user = new User();
-        user.setId(id);
-        return user;
+    public RestBadRequestException(Throwable cause, Messages message, Object... arguments) {
+        super(cause, message, arguments);
     }
 
     @Override
-    public RegistrationResult registerUser(User user) {
-        return new RegistrationResult(user.getId());
-    }
-
-    @Override
-    public String getContext() {
-
-        return "context";
-    }
-
-    @Override
-    public byte[] bytes(byte[] bytes) {
-        return bytes;
-    }
-
-    @Override
-    public Long number(Long number) {
-        return number;
-    }
-
-    @Override
-    public String headerMap(Map<String, String> headers) {
-        return headers.get("headers");
+    public int getStatusCode() {
+        return HttpStatus.BAD_REQUEST.getCode();
     }
 }

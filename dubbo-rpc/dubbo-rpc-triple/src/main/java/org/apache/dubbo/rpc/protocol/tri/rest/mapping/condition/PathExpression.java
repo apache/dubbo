@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition;
 
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathSegment.Type;
+
 import javax.annotation.Nonnull;
 
 import java.util.Collections;
@@ -45,7 +47,7 @@ public final class PathExpression implements Comparable<PathExpression> {
     }
 
     public boolean isDirect() {
-        return segments.length == 1 && segments[0].getType() == PathSegment.Type.LITERAL;
+        return segments.length == 1 && segments[0].getType() == Type.LITERAL;
     }
 
     public Map<String, String> match(@Nonnull String path) {
@@ -67,9 +69,29 @@ public final class PathExpression implements Comparable<PathExpression> {
         return variableMap;
     }
 
+    public int compareTo(PathExpression other, String lookupPath) {
+        boolean equalsPath = path.equals(lookupPath);
+        boolean otherEqualsPath = other.path.equals(lookupPath);
+        if (equalsPath) {
+            return otherEqualsPath ? 0 : -1;
+        }
+        if (otherEqualsPath) {
+            return 1;
+        }
+        return compareTo(other);
+    }
+
     @Override
     public int compareTo(PathExpression other) {
-        return 0;
+        int size = segments.length;
+        int otherSize = other.segments.length;
+        for (int i = 0; i < size && i < otherSize; i++) {
+            int result = segments[i].compareTo(other.segments[i]);
+            if (result != 0) {
+                return result;
+            }
+        }
+        return otherSize - size;
     }
 
     @Override
@@ -82,7 +104,7 @@ public final class PathExpression implements Comparable<PathExpression> {
         if (this == obj) {
             return true;
         }
-        if (obj == null || PathExpression.class != obj.getClass()) {
+        if (obj == null || obj.getClass() != PathExpression.class) {
             return false;
         }
         PathExpression that = (PathExpression) obj;
@@ -91,6 +113,15 @@ public final class PathExpression implements Comparable<PathExpression> {
 
     @Override
     public String toString() {
-        return path;
+        StringBuilder sb = new StringBuilder(32);
+        for (PathSegment segment : segments) {
+            sb.append('/');
+            if (segment.getType() == Type.VARIABLE) {
+                sb.append('{').append(segment.getValue()).append('}');
+            } else {
+                sb.append(segment.getValue());
+            }
+        }
+        return sb.toString();
     }
 }

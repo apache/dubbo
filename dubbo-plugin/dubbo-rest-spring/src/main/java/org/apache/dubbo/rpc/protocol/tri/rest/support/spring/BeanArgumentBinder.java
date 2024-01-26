@@ -22,8 +22,8 @@ import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
-import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentResolver;
+import org.apache.dubbo.rpc.protocol.tri.rest.argument.CompositeArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RequestUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
@@ -44,15 +44,13 @@ import org.springframework.web.bind.WebDataBinder;
 final class BeanArgumentBinder {
 
     private final ArgumentResolver argumentResolver;
-    private final ArgumentConverter<?> argumentConverter;
     private final ConversionService conversionService;
 
     private final Map<Class<?>, ConstructorMeta> cache = CollectionUtils.newConcurrentHashMap();
 
     BeanArgumentBinder(FrameworkModel frameworkModel, ConversionService conversionService) {
         ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
-        argumentResolver = beanFactory.getBean(ArgumentResolver.class);
-        argumentConverter = beanFactory.getBean(ArgumentConverter.class);
+        argumentResolver = beanFactory.getOrRegisterBean(CompositeArgumentResolver.class);
         this.conversionService = conversionService;
     }
 
@@ -75,7 +73,6 @@ final class BeanArgumentBinder {
         }
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
     private Object buildBean(ParameterMeta parameter, HttpRequest request, HttpResponse response) throws Exception {
         Class<?> type = parameter.getActualType();
         if (Modifier.isAbstract(type.getModifiers())) {
@@ -86,8 +83,7 @@ final class BeanArgumentBinder {
         int len = parameters.length;
         Object[] args = new Object[len];
         for (int i = 0; i < len; i++) {
-            Object arg = argumentResolver.resolve(parameter, request, response);
-            args[i] = argumentConverter.convert(arg, parameter);
+            args[i] = argumentResolver.resolve(parameters[i], request, response);
         }
         return ct.newInstance(args);
     }
