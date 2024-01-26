@@ -22,6 +22,8 @@ import org.apache.dubbo.common.utils.Pair;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
+import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.CompositeArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
@@ -53,10 +55,8 @@ final class BeanArgumentBinder {
     public Object bind(ParameterMeta parameter, HttpRequest request, HttpResponse response) {
         try {
             return resolveArgument(parameter, request, response);
-        } catch (RuntimeException e) {
-            throw e;
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RestException(Messages.ARGUMENT_BIND_ERROR, parameter.getName(), parameter.getType(), e);
         }
     }
 

@@ -26,6 +26,7 @@ import org.apache.dubbo.remoting.http12.HttpResult;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
+import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.CompositeArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.filter.RestFilter;
@@ -156,7 +157,7 @@ public class SpringResponseRestFilter implements RestFilter, Listener {
         try {
             value = meta.getMethod().invoke(meta.getServiceMeta().getService(), args);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RestException("Failed to invoke exception handler method: " + meta.getMethod(), e);
         }
         AnnotationMeta<?> rs = meta.getAnnotation(ResponseStatus.class);
         if (rs == null) {

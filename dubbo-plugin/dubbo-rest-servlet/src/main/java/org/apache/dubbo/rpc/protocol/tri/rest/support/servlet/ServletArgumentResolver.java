@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.support.servlet;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 
@@ -79,14 +80,14 @@ public class ServletArgumentResolver implements ArgumentResolver {
             try {
                 return ((HttpServletRequest) request).getReader();
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new RestException(e);
             }
         }
         if (type == Writer.class) {
             try {
                 return ((HttpServletResponse) response).getWriter();
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new RestException(e);
             }
         }
         return null;

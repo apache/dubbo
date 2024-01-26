@@ -21,6 +21,7 @@ import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
+import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.AbstractArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
@@ -61,7 +62,7 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
             try {
                 return StreamUtils.readBytes(request.inputStream());
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new RestException(e);
             }
         }
         Object value = RequestUtils.decodeBody(request, meta.type());

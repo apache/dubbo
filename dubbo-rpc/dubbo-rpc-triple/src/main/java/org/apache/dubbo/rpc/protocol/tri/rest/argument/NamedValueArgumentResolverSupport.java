@@ -17,8 +17,10 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.argument;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestParameterException;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
@@ -29,9 +31,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
-
-import static org.apache.dubbo.common.utils.StringUtils.EMPTY_STRING;
-import static org.apache.dubbo.rpc.protocol.tri.rest.Messages.PARAMETER_VALUE_MISSING;
 
 public abstract class NamedValueArgumentResolverSupport {
 
@@ -49,14 +48,14 @@ public abstract class NamedValueArgumentResolverSupport {
         }
 
         if (arg != null) {
-            return EMPTY_STRING.equals(arg) ? meta.defaultValue() : arg;
+            return StringUtils.EMPTY_STRING.equals(arg) ? meta.defaultValue() : arg;
         }
         arg = meta.defaultValue();
         if (arg != null) {
             return arg;
         }
         if (meta.required()) {
-            throw new RestParameterException(PARAMETER_VALUE_MISSING, meta.name(), type.getSimpleName());
+            throw new RestParameterException(Messages.ARGUMENT_VALUE_MISSING, meta.name(), type);
         }
         return null;
     }

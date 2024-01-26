@@ -20,6 +20,7 @@ import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.http12.HttpCookie;
 import org.apache.dubbo.remoting.http12.HttpRequest.FileUpload;
+import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
 
 import javax.servlet.http.Part;
 
@@ -119,7 +120,7 @@ final class Helper {
             try (FileOutputStream fos = new FileOutputStream(fileName)) {
                 StreamUtils.copy(fileUpload.inputStream(), fos);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new RestException(e);
             }
         }
 

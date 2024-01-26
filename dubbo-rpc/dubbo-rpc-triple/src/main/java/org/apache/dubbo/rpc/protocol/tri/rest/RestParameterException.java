@@ -30,6 +30,18 @@ public class RestParameterException extends RestException {
         super(cause, message, arguments);
     }
 
+    public RestParameterException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public RestParameterException(String message) {
+        super(message);
+    }
+
+    public RestParameterException(Throwable cause) {
+        super(cause);
+    }
+
     @Override
     public int getStatusCode() {
         return HttpStatus.PRECONDITION_FAILED.getCode();

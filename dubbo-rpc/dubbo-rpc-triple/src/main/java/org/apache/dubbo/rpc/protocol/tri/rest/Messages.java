@@ -33,8 +33,11 @@ public enum Messages {
     DUPLICATE_MAPPING("Duplicate mapping for ''{0}'': current={1}, exists={2}"),
     AMBIGUOUS_MAPPING("Ambiguous mapping for ''{0}'': {{1}, {2}"),
     EXTENSION_INIT_FAILED("Rest extension: ''{0}'' initialization failed for invoker: ''{1}''"),
-    PARAMETER_COULD_NOT_RESOLVED("Could not resolve {0}, no suitable resolver"),
-    PARAMETER_VALUE_MISSING("Missing argument ''{0}'' for method parameter of type {1}");
+    ARGUMENT_VALUE_MISSING("Missing argument ''{0}'' for method parameter of type {1}", 412),
+    ARGUMENT_CONVERT_ERROR("Convert argument ''{0}'' value [{1}] from type [{2}] to type [{3}] error", 412),
+    ARGUMENT_COULD_NOT_RESOLVED("Could not resolve ''{0}'', no suitable resolver", 400),
+    ARGUMENT_BIND_ERROR("Bind argument ''{0}'' of type [{1}] error", 400),
+    INTERNAL_ERROR("Rest internal error");
 
     private final String message;
     private final int statusCode;

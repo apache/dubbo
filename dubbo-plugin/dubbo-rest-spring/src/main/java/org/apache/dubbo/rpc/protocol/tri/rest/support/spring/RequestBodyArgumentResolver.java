@@ -20,6 +20,7 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
@@ -59,7 +60,7 @@ public class RequestBodyArgumentResolver extends AbstractSpringArgumentResolver 
             try {
                 return StreamUtils.readBytes(request.inputStream());
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new RestException(e);
             }
         }
         if (RequestUtils.isFormOrMultiPart(request)) {

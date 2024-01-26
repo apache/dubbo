@@ -30,6 +30,18 @@ public class RestBadRequestException extends RestException {
         super(cause, message, arguments);
     }
 
+    public RestBadRequestException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public RestBadRequestException(String message) {
+        super(message);
+    }
+
+    public RestBadRequestException(Throwable cause) {
+        super(cause);
+    }
+
     @Override
     public int getStatusCode() {
         return HttpStatus.BAD_REQUEST.getCode();

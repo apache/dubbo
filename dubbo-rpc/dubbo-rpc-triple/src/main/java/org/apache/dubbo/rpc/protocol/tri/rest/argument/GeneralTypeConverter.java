@@ -26,6 +26,8 @@ import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpCookie;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
+import org.apache.dubbo.rpc.protocol.tri.rest.RestParameterException;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RequestUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
@@ -115,10 +117,8 @@ public class GeneralTypeConverter implements TypeConverter {
     public <T> T convert(Object source, Class<T> targetClass) {
         try {
             return targetClass == null ? (T) source : (T) doConvert(source, targetClass);
-        } catch (RuntimeException e) {
-            throw e;
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw RestException.wrap(e);
         }
     }
 
@@ -126,10 +126,8 @@ public class GeneralTypeConverter implements TypeConverter {
     public <T> T convert(Object source, Type targetType) {
         try {
             return targetType == null ? (T) source : (T) doConvert(source, targetType);
-        } catch (RuntimeException e) {
-            throw e;
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw RestException.wrap(e);
         }
     }
 
@@ -190,7 +188,7 @@ public class GeneralTypeConverter implements TypeConverter {
                     if (str.length() == 1) {
                         return str.charAt(0);
                     }
-                    throw new IllegalArgumentException("Can not convert String(" + str + ") to char, must only 1 char");
+                    throw new RestParameterException("Can not convert String(" + str + ") to char, must only 1 char");
                 case "java.lang.Byte":
                 case "byte":
                     return isHexNumber(str) ? Byte.decode(str) : Byte.valueOf(str);
@@ -1208,7 +1206,7 @@ public class GeneralTypeConverter implements TypeConverter {
 
     private static TimeZone toTimeZone(int offset) {
         if (offset < -12 || offset > 12) {
-            throw new IllegalArgumentException("Invalid timeZone offset " + offset);
+            throw new RestParameterException("Invalid timeZone offset " + offset);
         }
         StringBuilder sb = new StringBuilder();
         sb.append("GMT");

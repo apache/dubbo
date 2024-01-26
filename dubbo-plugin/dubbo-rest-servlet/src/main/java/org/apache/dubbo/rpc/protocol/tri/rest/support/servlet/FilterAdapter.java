@@ -21,6 +21,7 @@ import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.remoting.http12.message.HttpMessageAdapterFactory;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
 import org.apache.dubbo.rpc.protocol.tri.rest.filter.RestExtensionAdapter;
 import org.apache.dubbo.rpc.protocol.tri.rest.filter.RestFilter;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestUtils;
@@ -54,7 +55,7 @@ public final class FilterAdapter implements RestExtensionAdapter<Filter> {
             String filterName = extension.getClass().getSimpleName();
             extension.init(adapterFactory.adapterFilterConfig(filterName));
         } catch (ServletException e) {
-            throw new RuntimeException(e);
+            throw new RestException(e);
         }
         return new FilterRestFilter(extension);
     }

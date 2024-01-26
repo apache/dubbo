@@ -33,7 +33,7 @@ public final class HttpCookie {
     public HttpCookie(String name, String value) {
         name = StringUtils.trim(name);
         Assert.notEmptyString(name, "name is required");
-        this.name = name.trim();
+        this.name = name;
         setValue(value);
     }
 

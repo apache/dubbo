@@ -20,7 +20,9 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
+import org.apache.dubbo.rpc.protocol.tri.rest.RestParameterException;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.AnnotationBaseArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
@@ -47,7 +49,7 @@ public class PathParamArgumentResolver implements AnnotationBaseArgumentResolver
         String name = StringUtils.defaultIf(annotation.getValue(), parameter.getName());
         if (variableMap == null) {
             if (Helper.isRequired(parameter)) {
-                throw new IllegalArgumentException("PathVariable '" + name + "' not found");
+                throw new RestParameterException(Messages.ARGUMENT_VALUE_MISSING, name, parameter.getType());
             }
             return null;
         }

@@ -22,6 +22,7 @@ import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
+import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.CompositeArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
@@ -62,21 +63,18 @@ final class BeanArgumentBinder {
             binder.bind(new MutablePropertyValues(RequestUtils.getParametersMap(request)));
             BindingResult result = binder.getBindingResult();
             if (result.hasErrors()) {
-                String message = "Errors binding onto object '" + result.getObjectName() + "'";
-                throw new RuntimeException(message, new BindException(result));
+                throw new BindException(result);
             }
             return binder.getTarget();
-        } catch (RuntimeException e) {
-            throw e;
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RestException(e, Messages.ARGUMENT_BIND_ERROR, parameter.getName(), parameter.getType());
         }
     }
 
     private Object buildBean(ParameterMeta parameter, HttpRequest request, HttpResponse response) throws Exception {
         Class<?> type = parameter.getActualType();
         if (Modifier.isAbstract(type.getModifiers())) {
-            throw new IllegalStateException(Messages.PARAMETER_COULD_NOT_RESOLVED.format(parameter.getDescription()));
+            throw new IllegalStateException(Messages.ARGUMENT_COULD_NOT_RESOLVED.format(parameter.getDescription()));
         }
         ConstructorMeta ct = cache.computeIfAbsent(type, k -> resolveConstructor(parameter.getToolKit(), k));
         ParameterMeta[] parameters = ct.parameters;
