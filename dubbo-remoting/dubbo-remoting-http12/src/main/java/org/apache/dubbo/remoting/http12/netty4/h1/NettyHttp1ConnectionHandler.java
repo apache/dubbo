@@ -56,7 +56,7 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
                 .getExtensionLoader(ThreadPool.class)
                 .getAdaptiveExtension()
                 .getExecutor(url);
-        this.codecUtils = frameworkModel.getBeanFactory().getBean(CodecUtils.class);
+        this.codecUtils = frameworkModel.getBeanFactory().getOrRegisterBean(CodecUtils.class);
     }
 
     public NettyHttp1ConnectionHandler(
@@ -69,7 +69,7 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
                 .getExtensionLoader(ThreadPool.class)
                 .getAdaptiveExtension()
                 .getExecutor(url);
-        this.codecUtils = frameworkModel.getBeanFactory().getBean(CodecUtils.class);
+        this.codecUtils = frameworkModel.getBeanFactory().getOrRegisterBean(CodecUtils.class);
         this.http1ServerTransportListenerFactory = http1ServerTransportListenerFactory;
     }
 
