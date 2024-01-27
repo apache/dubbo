@@ -646,4 +646,6 @@ public interface CommonConstants {
     String DUBBO_MANUAL_REGISTER_KEY = "dubbo.application.manual-register";
 
     String DUBBO2_COMPACT_ENABLE = "dubbo.compact.enable";
+
+    String DUBBO_METRICS_ENABLED = ".enabled";
 }

@@ -61,6 +61,7 @@ import static java.lang.Boolean.TRUE;
 import static java.util.Collections.emptyMap;
 import static java.util.Optional.ofNullable;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_METRICS_ENABLED;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_TYPE_MISMATCH;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 import static org.apache.dubbo.config.AbstractConfig.getTagName;
@@ -558,8 +559,9 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
 
             // check ${prefix}.enabled property configuration.
             boolean metricsEnabled = configurationMaps.stream().anyMatch(configurationMap -> {
-                String key = typePrefix + ".enabled";
-                return configurationMap.containsKey(key) && "false".equals(configurationMap.get(key));
+                String key = typePrefix + DUBBO_METRICS_ENABLED;
+                return configurationMap.containsKey(key)
+                        && Boolean.FALSE.toString().equals(configurationMap.get(key));
             });
 
             if (hasSubProperties && metricsEnabled) {
