@@ -183,7 +183,7 @@ final class BeanArgumentBinder {
         private final Parameter parameter;
 
         ConstructorParameterMeta(RestToolKit toolKit, Parameter parameter, String prefix) {
-            super(toolKit, prefix, parameter.getName());
+            super(toolKit, prefix, parameter.isNamePresent() ? parameter.getName() : null);
             this.parameter = parameter;
         }
 

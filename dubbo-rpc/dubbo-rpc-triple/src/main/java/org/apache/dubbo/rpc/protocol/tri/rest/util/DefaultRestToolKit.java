@@ -71,7 +71,11 @@ public class DefaultRestToolKit implements RestToolKit {
         int len = parameters.length;
         String[] names = new String[len];
         for (int i = 0; i < len; i++) {
-            names[i] = parameters[i].getName();
+            Parameter param = parameters[i];
+            if (!param.isNamePresent()) {
+                return null;
+            }
+            names[i] = param.getName();
         }
         return names;
     }

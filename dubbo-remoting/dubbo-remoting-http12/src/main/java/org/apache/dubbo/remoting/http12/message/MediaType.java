@@ -28,6 +28,8 @@ public final class MediaType {
 
     public static final MediaType APPLICATION_YAML = new MediaType("application", "yaml");
 
+    public static final MediaType APPLICATION_JAVASCRIPT = new MediaType("application", "javascript");
+
     public static final MediaType APPLICATION_OCTET_STREAM = new MediaType("application", "octet-stream");
 
     public static final MediaType APPLICATION_GRPC = new MediaType("application", "grpc");
@@ -43,6 +45,10 @@ public final class MediaType {
     public static final MediaType TEXT_XML = new MediaType("text", "xml");
 
     public static final MediaType TEXT_YAML = new MediaType("text", "yaml");
+
+    public static final MediaType TEXT_CSS = new MediaType("text", "css");
+
+    public static final MediaType TEXT_JAVASCRIPT = new MediaType("text", "javascript");
 
     public static final MediaType TEXT_HTML = new MediaType("text", "html");
 

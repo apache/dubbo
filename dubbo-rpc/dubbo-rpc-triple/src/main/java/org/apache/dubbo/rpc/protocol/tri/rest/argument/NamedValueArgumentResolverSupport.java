@@ -61,6 +61,10 @@ public abstract class NamedValueArgumentResolverSupport {
     }
 
     protected final NamedValueMeta updateNamedValueMeta(ParameterMeta parameterMeta, NamedValueMeta meta) {
+        if (StringUtils.isEmpty(meta.name())) {
+            meta.setName(parameterMeta.getRequiredName());
+        }
+
         Class<?> type = parameterMeta.getType();
         Type genericType = parameterMeta.getGenericType();
         if (type == Optional.class) {

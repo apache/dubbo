@@ -20,6 +20,8 @@ import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 
+import javax.annotation.Nullable;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
@@ -35,6 +37,7 @@ public interface RestToolKit {
 
     Object bind(ParameterMeta parameter, HttpRequest request, HttpResponse response);
 
+    @Nullable
     String[] getParameterNames(Method method);
 
     Map<String, Object> getAttributes(AnnotatedElement element, Annotation annotation);

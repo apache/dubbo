@@ -19,8 +19,12 @@ package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
+import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
+
+import javax.annotation.Nullable;
 
 import java.lang.reflect.Type;
 import java.util.Optional;
@@ -49,7 +53,15 @@ public abstract class ParameterMeta extends AnnotationSupport {
         return prefix;
     }
 
+    @Nullable
     public final String getName() {
+        return name;
+    }
+
+    public final String getRequiredName() {
+        if (name == null) {
+            throw new RestException(Messages.ARGUMENT_NAME_MISSING, getType());
+        }
         return name;
     }
 

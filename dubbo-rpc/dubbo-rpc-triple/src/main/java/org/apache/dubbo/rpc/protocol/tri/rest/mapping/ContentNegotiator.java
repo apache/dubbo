@@ -110,6 +110,8 @@ public class ContentNegotiator {
                 extensionMapping.putIfAbsent(subType, mediaType);
             }
 
+            extensionMapping.put("css", MediaType.TEXT_CSS);
+            extensionMapping.put("js", MediaType.TEXT_JAVASCRIPT);
             extensionMapping.put("yml", MediaType.APPLICATION_YAML);
             extensionMapping.put("html", MediaType.TEXT_HTML);
             extensionMapping.put("htm", MediaType.TEXT_HTML);

@@ -46,7 +46,10 @@ public class PathVariableArgumentResolver implements AnnotationBaseArgumentResol
             HttpRequest request,
             HttpResponse response) {
         Map<String, String> variableMap = request.attribute(RestConstants.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
-        String name = StringUtils.defaultIf(annotation.getValue(), parameter.getName());
+        String name = annotation.getValue();
+        if (StringUtils.isEmpty(name)) {
+            name = parameter.getRequiredName();
+        }
         if (variableMap == null) {
             if (Helper.isRequired(annotation)) {
                 throw new RestParameterException(Messages.ARGUMENT_VALUE_MISSING, name, parameter.getType());

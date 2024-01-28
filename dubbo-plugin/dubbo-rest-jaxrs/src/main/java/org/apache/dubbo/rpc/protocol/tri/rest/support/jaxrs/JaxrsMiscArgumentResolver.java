@@ -61,7 +61,7 @@ public class JaxrsMiscArgumentResolver implements ArgumentResolver {
     public Object resolve(ParameterMeta parameter, HttpRequest request, HttpResponse response) {
         Class<?> type = parameter.getActualType();
         if (Cookie.class.isAssignableFrom(type)) {
-            return Helper.convert(request.cookie(parameter.getName()));
+            return Helper.convert(request.cookie(parameter.getRequiredName()));
         }
         if (Form.class.isAssignableFrom(type)) {
             return RequestUtils.getFormParametersMap(request);

@@ -16,13 +16,11 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
-import org.apache.dubbo.common.utils.StringUtils;
-
 import java.util.Arrays;
 
 public class NamedValueMeta {
 
-    private final String name;
+    private String name;
     private final boolean required;
     private final String defaultValue;
     private Class<?> type;
@@ -35,8 +33,18 @@ public class NamedValueMeta {
         this.defaultValue = defaultValue;
     }
 
+    public NamedValueMeta(boolean required, String defaultValue) {
+        name = null;
+        this.required = required;
+        this.defaultValue = defaultValue;
+    }
+
     public String name() {
-        return StringUtils.isEmpty(name) ? parameterMeta.getName() : name;
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public boolean required() {

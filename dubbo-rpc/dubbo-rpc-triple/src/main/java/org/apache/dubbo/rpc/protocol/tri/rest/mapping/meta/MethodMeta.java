@@ -59,7 +59,8 @@ public final class MethodMeta extends AnnotationSupport {
         String[] parameterNames = getToolKit().getParameterNames(method);
         ParameterMeta[] parameters = new ParameterMeta[count];
         for (int i = 0; i < count; i++) {
-            parameters[i] = new MethodParameterMeta(parameterHierarchies.get(i), parameterNames[i], i, this);
+            String parameterName = parameterNames == null ? null : parameterNames[i];
+            parameters[i] = new MethodParameterMeta(parameterHierarchies.get(i), parameterName, i, this);
         }
         return parameters;
     }

@@ -71,7 +71,7 @@ public class ServletArgumentResolver implements ArgumentResolver {
             return ((HttpServletRequest) request).getSession();
         }
         if (type == Cookie.class) {
-            return Helper.convert(request.cookie(parameter.getName()));
+            return Helper.convert(request.cookie(parameter.getRequiredName()));
         }
         if (type == Cookie[].class) {
             return ((HttpServletRequest) request).getCookies();

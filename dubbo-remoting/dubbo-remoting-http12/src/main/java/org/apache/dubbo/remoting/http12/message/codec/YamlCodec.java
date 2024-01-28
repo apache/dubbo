@@ -46,8 +46,9 @@ public class YamlCodec implements HttpMessageCodec {
         try (InputStreamReader reader = new InputStreamReader(is, charset)) {
             Yaml yaml = new Yaml();
             Iterator<Object> iterator = yaml.loadAll(reader).iterator();
-            Object[] results = new Object[targetTypes.length];
-            for (int i = 0; i < targetTypes.length; i++) {
+            int len = targetTypes.length;
+            Object[] results = new Object[len];
+            for (int i = 0; i < len; i++) {
                 if (iterator.hasNext()) {
                     Object result = iterator.next();
                     Class<?> targetType = targetTypes[i];
@@ -57,7 +58,7 @@ public class YamlCodec implements HttpMessageCodec {
                         results[i] = yaml.loadAs(yaml.dump(result), targetType);
                     }
                 } else {
-                    throw new DecodeException("Not enough YAML documents in the stream");
+                    throw new DecodeException("Not enough yaml documents in the stream");
                 }
             }
             return results;

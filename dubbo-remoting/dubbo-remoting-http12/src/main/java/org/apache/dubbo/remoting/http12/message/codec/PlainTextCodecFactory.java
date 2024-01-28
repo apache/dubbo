@@ -38,4 +38,9 @@ public final class PlainTextCodecFactory implements HttpMessageEncoderFactory, H
     public MediaType mediaType() {
         return MediaType.TEXT_PLAIN;
     }
+
+    @Override
+    public boolean supports(String mediaType) {
+        return mediaType.startsWith("text/");
+    }
 }

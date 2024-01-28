@@ -110,7 +110,7 @@ final class DefaultFilterChain implements FilterChain, Listener {
                             LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION,
                             "",
                             "",
-                            "Call onSuccess for filter " + "[" + filter + "] error");
+                            "Call onResponse for filter " + "[" + filter + "] error");
                 }
             }
         }

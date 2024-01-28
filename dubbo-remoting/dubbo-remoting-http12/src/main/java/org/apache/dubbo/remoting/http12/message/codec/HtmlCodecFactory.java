@@ -38,4 +38,9 @@ public final class HtmlCodecFactory implements HttpMessageEncoderFactory, HttpMe
     public MediaType mediaType() {
         return MediaType.TEXT_HTML;
     }
+
+    @Override
+    public boolean supports(String mediaType) {
+        return mediaType.startsWith(mediaType().getName()) || mediaType.startsWith("application/xhtml");
+    }
 }

@@ -39,7 +39,7 @@ public class RequestBodyArgumentResolver extends AbstractSpringArgumentResolver 
 
     @Override
     protected NamedValueMeta createNamedValueMeta(ParameterMeta param, AnnotationMeta<Annotation> ann) {
-        return new NamedValueMeta(param.getName(), Helper.isRequired(ann), null);
+        return new NamedValueMeta(Helper.isRequired(ann), null);
     }
 
     @Override

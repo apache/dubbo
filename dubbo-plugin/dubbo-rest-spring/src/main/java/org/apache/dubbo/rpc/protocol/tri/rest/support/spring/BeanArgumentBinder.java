@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.support.spring;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -40,6 +41,7 @@ import org.springframework.beans.MutablePropertyValues;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.DataBinder;
 import org.springframework.web.bind.WebDataBinder;
 
 final class BeanArgumentBinder {
@@ -56,9 +58,10 @@ final class BeanArgumentBinder {
     }
 
     public Object bind(ParameterMeta parameter, HttpRequest request, HttpResponse response) {
+        String name = StringUtils.defaultIf(parameter.getName(), DataBinder.DEFAULT_OBJECT_NAME);
         try {
             Object bean = buildBean(parameter, request, response);
-            WebDataBinder binder = new WebDataBinder(bean, parameter.getName());
+            WebDataBinder binder = new WebDataBinder(bean, name);
             binder.setConversionService(conversionService);
             binder.bind(new MutablePropertyValues(RequestUtils.getParametersMap(request)));
             BindingResult result = binder.getBindingResult();
@@ -67,7 +70,7 @@ final class BeanArgumentBinder {
             }
             return binder.getTarget();
         } catch (Exception e) {
-            throw new RestException(e, Messages.ARGUMENT_BIND_ERROR, parameter.getName(), parameter.getType());
+            throw new RestException(e, Messages.ARGUMENT_BIND_ERROR, name, parameter.getType());
         }
     }
 
@@ -133,7 +136,7 @@ final class BeanArgumentBinder {
         private final Parameter parameter;
 
         ConstructorParameterMeta(RestToolKit toolKit, Parameter parameter) {
-            super(toolKit, parameter.getName());
+            super(toolKit, parameter.isNamePresent() ? parameter.getName() : null);
             this.parameter = parameter;
         }
 

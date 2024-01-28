@@ -24,6 +24,7 @@ import org.apache.dubbo.common.extension.ExtensionAccessorAware;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -40,6 +41,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 @Activate(group = CommonConstants.PROVIDER, order = 1000)
@@ -71,6 +73,21 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
             if (body instanceof Throwable) {
                 response.setBody(null);
                 return AsyncRpcResult.newDefaultAsyncResult((Throwable) body, invocation);
+            }
+            if (body instanceof CompletableFuture) {
+                CompletableFuture<?> future = (CompletableFuture<?>) body;
+                response.setBody(null);
+                return new AsyncRpcResult(
+                        future.handleAsync((v, t) -> {
+                            AppResponse r = new AppResponse(invocation);
+                            if (t != null) {
+                                r.setException(t);
+                            } else {
+                                r.setValue(v);
+                            }
+                            return r;
+                        }),
+                        invocation);
             }
             return AsyncRpcResult.newDefaultAsyncResult(invocation);
         } catch (Throwable t) {

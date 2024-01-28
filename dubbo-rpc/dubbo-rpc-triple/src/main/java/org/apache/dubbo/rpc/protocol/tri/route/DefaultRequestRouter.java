@@ -21,9 +21,7 @@ import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
-import org.apache.dubbo.remoting.http12.HttpStatus;
 import org.apache.dubbo.remoting.http12.RequestMetadata;
-import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageAdapterFactory;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext;
@@ -57,10 +55,6 @@ public final class DefaultRequestRouter implements RequestRouter {
             handler.setAttribute(TripleConstant.HTTP_REQUEST_KEY, request);
             handler.setAttribute(TripleConstant.HTTP_RESPONSE_KEY, response);
             return handler;
-        }
-
-        if (request.contentType() == null) {
-            throw new HttpStatusException(HttpStatus.UNSUPPORTED_MEDIA_TYPE.getCode(), "Content-Type is null");
         }
 
         return null;
