@@ -35,6 +35,8 @@ import java.lang.reflect.Method;
 import java.util.Map;
 
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterNameDiscoverer;
@@ -57,16 +59,21 @@ final class SpringRestToolKit implements RestToolKit {
     public SpringRestToolKit(FrameworkModel frameworkModel) {
         ApplicationModel applicationModel = frameworkModel.defaultApplication();
         SpringExtensionInjector injector = SpringExtensionInjector.get(applicationModel);
-        beanFactory = injector.getInstance(ConfigurableBeanFactory.class, null);
-        if (beanFactory == null) {
-            placeholderHelper = new PropertyPlaceholderHelper("${", "}", ":", true);
-            configuration = new ConfigurationWrapper(applicationModel);
-        } else {
+        ApplicationContext context = injector.getContext();
+        if (context instanceof ConfigurableApplicationContext) {
+            beanFactory = ((ConfigurableApplicationContext) context).getBeanFactory();
             placeholderHelper = null;
             configuration = null;
+        } else {
+            beanFactory = null;
+            placeholderHelper = new PropertyPlaceholderHelper("${", "}", ":", true);
+            configuration = new ConfigurationWrapper(applicationModel);
         }
-        ConversionService cs = injector.getInstance(ConversionService.class, "mvcConversionService");
-        conversionService = cs == null ? DefaultConversionService.getSharedInstance() : cs;
+        if (context != null && context.containsBean("mvcConversionService")) {
+            conversionService = context.getBean(ConversionService.class, "mvcConversionService");
+        } else {
+            conversionService = DefaultConversionService.getSharedInstance();
+        }
         typeConverter = frameworkModel.getBeanFactory().getOrRegisterBean(GeneralTypeConverter.class);
         discoverer = new DefaultParameterNameDiscoverer();
         argumentBinder = new BeanArgumentBinder(frameworkModel, conversionService);
