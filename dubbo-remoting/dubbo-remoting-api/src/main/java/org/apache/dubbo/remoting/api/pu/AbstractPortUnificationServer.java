@@ -33,7 +33,7 @@ public abstract class AbstractPortUnificationServer extends AbstractServer {
     /**
      * extension name -> activate WireProtocol
      */
-    private final Map<String,WireProtocol> protocols;
+    private final Map<String, WireProtocol> protocols;
 
     /*
     protocol name --> URL object
@@ -50,12 +50,13 @@ public abstract class AbstractPortUnificationServer extends AbstractServer {
 
     public AbstractPortUnificationServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
-        ExtensionLoader<WireProtocol> extensionLoader = url.getOrDefaultFrameworkModel()
-                .getExtensionLoader(WireProtocol.class);
-        this.protocols = extensionLoader.getActivateExtension(url, new String[0]).stream().collect(Collectors.toConcurrentMap(extensionLoader::getExtensionName, Function.identity()));
+        ExtensionLoader<WireProtocol> extensionLoader =
+                url.getOrDefaultFrameworkModel().getExtensionLoader(WireProtocol.class);
+        this.protocols = extensionLoader.getActivateExtension(url, new String[0]).stream()
+                .collect(Collectors.toConcurrentMap(extensionLoader::getExtensionName, Function.identity()));
     }
 
-    public Map<String,WireProtocol> getProtocols() {
+    public Map<String, WireProtocol> getProtocols() {
         return protocols;
     }
 
