@@ -55,6 +55,11 @@ public class TripleConfig implements Serializable {
      */
     private String maxHeaderListSize;
 
+    /**
+     * Whether to pass through standard HTTP headers, default is false.
+     */
+    private Boolean passThroughStandardHttpHeaders;
+
     public String getHeaderTableSize() {
         return headerTableSize;
     }
@@ -101,5 +106,13 @@ public class TripleConfig implements Serializable {
 
     public void setMaxHeaderListSize(String maxHeaderListSize) {
         this.maxHeaderListSize = maxHeaderListSize;
+    }
+
+    public Boolean getPassThroughStandardHttpHeaders() {
+        return passThroughStandardHttpHeaders;
+    }
+
+    public void setPassThroughStandardHttpHeaders(Boolean passThroughStandardHttpHeaders) {
+        this.passThroughStandardHttpHeaders = passThroughStandardHttpHeaders;
     }
 }

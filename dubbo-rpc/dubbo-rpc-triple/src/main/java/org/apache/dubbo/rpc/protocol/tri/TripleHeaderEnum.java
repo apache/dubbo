@@ -17,7 +17,9 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -42,9 +44,7 @@ public enum TripleHeaderEnum {
     SERVICE_VERSION("tri-service-version"),
     SERVICE_GROUP("tri-service-group"),
     SERVICE_TIMEOUT("tri-service-timeout"),
-
     TRI_HEADER_CONVERT("tri-header-convert"),
-
     TRI_EXCEPTION_CODE("tri-exception-code"),
     ;
 
@@ -53,20 +53,95 @@ public enum TripleHeaderEnum {
     static final Set<String> excludeAttachmentsSet = new HashSet<>();
 
     static {
-        for (TripleHeaderEnum item : TripleHeaderEnum.values()) {
+        for (TripleHeaderEnum item : values()) {
             enumMap.put(item.getHeader(), item);
         }
-        excludeAttachmentsSet.add(CommonConstants.GROUP_KEY);
-        excludeAttachmentsSet.add(CommonConstants.INTERFACE_KEY);
-        excludeAttachmentsSet.add(CommonConstants.PATH_KEY);
-        excludeAttachmentsSet.add(CommonConstants.REMOTE_APPLICATION_KEY);
-        excludeAttachmentsSet.add(CommonConstants.APPLICATION_KEY);
-        excludeAttachmentsSet.add(TripleConstant.SERIALIZATION_KEY);
-        excludeAttachmentsSet.add(TripleConstant.TE_KEY);
 
         for (Http2Headers.PseudoHeaderName value : Http2Headers.PseudoHeaderName.values()) {
             excludeAttachmentsSet.add(value.value().toString());
         }
+
+        String[] internalHttpHeaders = new String[] {
+            CommonConstants.GROUP_KEY,
+            CommonConstants.INTERFACE_KEY,
+            CommonConstants.PATH_KEY,
+            CommonConstants.REMOTE_APPLICATION_KEY,
+            CommonConstants.APPLICATION_KEY,
+            TripleConstant.SERIALIZATION_KEY,
+            RestConstants.HEADER_SERVICE_VERSION,
+            RestConstants.HEADER_SERVICE_GROUP
+        };
+        Collections.addAll(excludeAttachmentsSet, internalHttpHeaders);
+
+        String[] excludeStandardHttpHeaders;
+        if (TripleProtocol.PASS_THROUGH_STANDARD_HTTP_HEADERS) {
+            excludeStandardHttpHeaders = new String[] {
+                "accept",
+                "accept-charset",
+                "accept-encoding",
+                "accept-language",
+                "cache-control",
+                "connection",
+                "content-length",
+                "content-md5",
+                "content-type",
+                "host"
+            };
+        } else {
+            excludeStandardHttpHeaders = new String[] {
+                "accept",
+                "accept-charset",
+                "accept-datetime",
+                "accept-encoding",
+                "accept-language",
+                "access-control-request-headers",
+                "access-control-request-method",
+                "authorization",
+                "cache-control",
+                "connection",
+                "content-length",
+                "content-md5",
+                "content-type",
+                "cookie",
+                "date",
+                "dnt",
+                "expect",
+                "forwarded",
+                "from",
+                "host",
+                "http2-settings",
+                "if-match",
+                "if-modified-since",
+                "if-none-match",
+                "if-range",
+                "if-unmodified-since",
+                "max-forwards",
+                "origin",
+                "pragma",
+                "proxy-authorization",
+                "range",
+                "referer",
+                "sec-fetch-dest",
+                "sec-fetch-mode",
+                "sec-fetch-site",
+                "sec-fetch-user",
+                "te",
+                "trailer",
+                "upgrade",
+                "upgrade-insecure-requests",
+                "user-agent",
+                "x-csrf-token",
+                "x-forwarded-for",
+                "x-forwarded-host",
+                "x-forwarded-proto",
+                "x-http-method-override",
+                "x-real-ip",
+                "x-request-id",
+                "x-requested-with"
+            };
+        }
+
+        Collections.addAll(excludeAttachmentsSet, excludeStandardHttpHeaders);
     }
 
     private final String header;

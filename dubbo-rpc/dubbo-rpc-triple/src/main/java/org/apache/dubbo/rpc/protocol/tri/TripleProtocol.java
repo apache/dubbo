@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -50,9 +51,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 import static org.apache.dubbo.config.Constants.CLIENT_THREAD_POOL_NAME;
 import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_NAME;
-import static org.apache.dubbo.rpc.Constants.H2_IGNORE_1_0_0_KEY;
-import static org.apache.dubbo.rpc.Constants.H2_RESOLVE_FALLBACK_TO_DEFAULT_KEY;
-import static org.apache.dubbo.rpc.Constants.H2_SUPPORT_NO_LOWER_HEADER_KEY;
+import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_IGNORE_1_0_0_KEY;
+import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_PASS_THROUGH_STANDARD_HTTP_HEADERS;
+import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_RESOLVE_FALLBACK_TO_DEFAULT_KEY;
+import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_SUPPORT_NO_LOWER_HEADER_KEY;
 
 public class TripleProtocol extends AbstractProtocol {
 
@@ -63,29 +65,24 @@ public class TripleProtocol extends AbstractProtocol {
     private final TriBuiltinService triBuiltinService;
     private final String acceptEncodings;
 
-    /**
-     * There is only one
-     */
     public static boolean CONVERT_NO_LOWER_HEADER = false;
-
     public static boolean IGNORE_1_0_0_VERSION = false;
-
     public static boolean RESOLVE_FALLBACK_TO_DEFAULT = true;
+    public static boolean PASS_THROUGH_STANDARD_HTTP_HEADERS = false;
 
     public TripleProtocol(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
         triBuiltinService = new TriBuiltinService(frameworkModel);
         pathResolver = frameworkModel.getDefaultExtension(PathResolver.class);
         mappingRegistry = frameworkModel.getBeanFactory().getOrRegisterBean(DefaultRequestMappingRegistry.class);
-        CONVERT_NO_LOWER_HEADER = ConfigurationUtils.getEnvConfiguration(ApplicationModel.defaultModel())
-                .getBoolean(H2_SUPPORT_NO_LOWER_HEADER_KEY, true);
-        IGNORE_1_0_0_VERSION = ConfigurationUtils.getEnvConfiguration(ApplicationModel.defaultModel())
-                .getBoolean(H2_IGNORE_1_0_0_KEY, false);
-        RESOLVE_FALLBACK_TO_DEFAULT = ConfigurationUtils.getEnvConfiguration(ApplicationModel.defaultModel())
-                .getBoolean(H2_RESOLVE_FALLBACK_TO_DEFAULT_KEY, true);
         Set<String> supported =
                 frameworkModel.getExtensionLoader(DeCompressor.class).getSupportedExtensions();
         acceptEncodings = String.join(",", supported);
+        Configuration conf = ConfigurationUtils.getEnvConfiguration(ApplicationModel.defaultModel());
+        CONVERT_NO_LOWER_HEADER = conf.getBoolean(H2_SETTINGS_SUPPORT_NO_LOWER_HEADER_KEY, true);
+        IGNORE_1_0_0_VERSION = conf.getBoolean(H2_SETTINGS_IGNORE_1_0_0_KEY, false);
+        RESOLVE_FALLBACK_TO_DEFAULT = conf.getBoolean(H2_SETTINGS_RESOLVE_FALLBACK_TO_DEFAULT_KEY, true);
+        PASS_THROUGH_STANDARD_HTTP_HEADERS = conf.getBoolean(H2_SETTINGS_PASS_THROUGH_STANDARD_HTTP_HEADERS, false);
     }
 
     @Override
