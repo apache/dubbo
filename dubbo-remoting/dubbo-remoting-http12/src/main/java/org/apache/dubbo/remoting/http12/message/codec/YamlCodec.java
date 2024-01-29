@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.remoting.http12.message.codec;
 
+import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.DefaultSerializeClassChecker;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
@@ -28,14 +30,18 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.util.Iterator;
 
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.representer.Representer;
 
 public class YamlCodec implements HttpMessageCodec {
 
     @Override
     public Object decode(InputStream is, Class<?> targetType, Charset charset) throws DecodeException {
         try (InputStreamReader reader = new InputStreamReader(is, charset)) {
-            return new Yaml().loadAs(reader, targetType);
+            return createYaml().loadAs(reader, targetType);
         } catch (Throwable t) {
             throw new DecodeException("Error decoding yaml", t);
         }
@@ -70,7 +76,7 @@ public class YamlCodec implements HttpMessageCodec {
     @Override
     public void encode(OutputStream os, Object data, Charset charset) throws EncodeException {
         try (OutputStreamWriter writer = new OutputStreamWriter(os, charset)) {
-            new Yaml().dump(data, writer);
+            createYaml().dump(data, writer);
         } catch (Throwable t) {
             throw new EncodeException("Error encoding yaml", t);
         }
@@ -79,7 +85,7 @@ public class YamlCodec implements HttpMessageCodec {
     @Override
     public void encode(OutputStream os, Object[] data, Charset charset) throws EncodeException {
         try (OutputStreamWriter writer = new OutputStreamWriter(os, charset)) {
-            new Yaml().dump(data, writer);
+            createYaml().dump(data, writer);
         } catch (Throwable t) {
             throw new EncodeException("Error encoding yaml", t);
         }
@@ -88,5 +94,24 @@ public class YamlCodec implements HttpMessageCodec {
     @Override
     public MediaType mediaType() {
         return MediaType.APPLICATION_YAML;
+    }
+
+    private Yaml createYaml() {
+        LoaderOptions options = new LoaderOptions();
+        options.setAllowDuplicateKeys(false);
+        DumperOptions dumperOptions = new DumperOptions();
+        return new Yaml(new FilteringConstructor(options), new Representer(dumperOptions), dumperOptions, options);
+    }
+
+    private static final class FilteringConstructor extends Constructor {
+
+        FilteringConstructor(LoaderOptions loaderOptions) {
+            super(loaderOptions);
+        }
+
+        @Override
+        protected Class<?> getClassForName(String name) throws ClassNotFoundException {
+            return DefaultSerializeClassChecker.getInstance().loadClass(ClassUtils.getClassLoader(), name);
+        }
     }
 }
