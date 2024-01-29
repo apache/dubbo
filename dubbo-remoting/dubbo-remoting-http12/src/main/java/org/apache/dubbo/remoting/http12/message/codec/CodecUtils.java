@@ -130,8 +130,8 @@ public class CodecUtils {
 
     public static String getEncodeMediaType(HttpHeaders headers) {
         String mediaType = headers.getAccept();
-        if (mediaType == null) {
-            mediaType = headers.getContentType();
+        if (mediaType == null || MediaType.ALL_VALUE.getName().equals(mediaType)) {
+            mediaType = MediaType.APPLICATION_JSON_VALUE.getName();
         }
         return mediaType;
     }
