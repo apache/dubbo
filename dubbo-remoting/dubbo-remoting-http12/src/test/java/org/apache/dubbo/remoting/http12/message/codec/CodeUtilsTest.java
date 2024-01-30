@@ -57,9 +57,10 @@ public class CodeUtilsTest {
                 codecUtils.determineHttpMessageDecoder(FrameworkModel.defaultModel(), headers1.getContentType(), null);
         Assertions.assertNotNull(decoder);
         Assertions.assertEquals(MultipartDecoder.class, decoder.getClass());
-        Assertions.assertThrows(
-                UnsupportedMediaTypeException.class,
-                () -> codecUtils.determineHttpMessageEncoder(FrameworkModel.defaultModel(), headers1, null));
+
+        encoder = codecUtils.determineHttpMessageEncoder(FrameworkModel.defaultModel(), headers1, null);
+        Assertions.assertNotNull(encoder);
+        Assertions.assertEquals(JsonPbCodec.class, encoder.getClass());
 
         headers1.put(
                 HttpHeaderNames.ACCEPT.getName(),
