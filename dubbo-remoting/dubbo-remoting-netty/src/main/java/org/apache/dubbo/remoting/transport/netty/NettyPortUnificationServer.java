@@ -156,7 +156,7 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
         } catch (Throwable e) {
             logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }
-        for (WireProtocol protocol : getProtocols()) {
+        for (WireProtocol protocol : getProtocols().values()) {
             protocol.close();
         }
 
