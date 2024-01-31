@@ -469,7 +469,7 @@ public class ReferenceBean<T>
         @SuppressWarnings("unchecked")
         ServiceBean<T> serviceBean =
                 applicationContext.getBeansOfType(ServiceBean.class).get(providerBeanName);
-        if (serviceBean != null && !serviceBean.isExported() && SCOPE_LOCAL.equals(serviceBean.getScope())) {
+        if (serviceBean != null && !serviceBean.isExported()) {
             serviceBean.export();
         }
     }
