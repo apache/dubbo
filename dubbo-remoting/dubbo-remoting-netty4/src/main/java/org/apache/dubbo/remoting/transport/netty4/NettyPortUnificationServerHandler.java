@@ -30,6 +30,7 @@ import org.apache.dubbo.remoting.transport.netty4.ssl.SslContexts;
 
 import javax.net.ssl.SSLSession;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,14 +52,14 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
     private final URL url;
     private final ChannelHandler handler;
     private final boolean detectSsl;
-    private final List<WireProtocol> protocols;
+    private final Map<String, WireProtocol> protocols;
     private final Map<String, URL> urlMapper;
     private final Map<String, ChannelHandler> handlerMapper;
 
     public NettyPortUnificationServerHandler(
             URL url,
             boolean detectSsl,
-            List<WireProtocol> protocols,
+            Map<String, WireProtocol> protocols,
             ChannelHandler handler,
             Map<String, URL> urlMapper,
             Map<String, ChannelHandler> handlerMapper) {
@@ -118,7 +119,11 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
         if (providerConnectionConfig != null && isSsl(in)) {
             enableSsl(ctx, providerConnectionConfig);
         } else {
-            for (final WireProtocol protocol : protocols) {
+            Set<String> supportedProtocolNames = new HashSet<>(protocols.keySet());
+            supportedProtocolNames.retainAll(urlMapper.keySet());
+
+            for (final String name : supportedProtocolNames) {
+                WireProtocol protocol = protocols.get(name);
                 in.markReaderIndex();
                 ChannelBuffer buf = new NettyBackedChannelBuffer(in);
                 final ProtocolDetector.Result result = protocol.detector().detect(buf);
@@ -127,11 +132,8 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
                     case UNRECOGNIZED:
                         continue;
                     case RECOGNIZED:
-                        String protocolName = url.getOrDefaultFrameworkModel()
-                                .getExtensionLoader(WireProtocol.class)
-                                .getExtensionName(protocol);
-                        ChannelHandler localHandler = this.handlerMapper.getOrDefault(protocolName, handler);
-                        URL localURL = this.urlMapper.getOrDefault(protocolName, url);
+                        ChannelHandler localHandler = this.handlerMapper.getOrDefault(name, handler);
+                        URL localURL = this.urlMapper.getOrDefault(name, url);
                         channel.setUrl(localURL);
                         NettyConfigOperator operator = new NettyConfigOperator(channel, localHandler);
                         protocol.configServerProtocolHandler(url, operator);
