@@ -16,32 +16,17 @@
  */
 package org.apache.dubbo.config.spring6.utils;
 
-import java.io.Serializable;
+public enum SexEnum {
+    BOY("boy"),
+    GIRL("girl");
 
-public class Person implements Serializable {
+    private final String desc;
 
-    private String name;
-
-    private SexEnum sex;
-
-    public Person(String name, SexEnum sex) {
-        this.name = name;
-        this.sex = sex;
+    SexEnum(String desc) {
+        this.desc = desc;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public SexEnum getSex() {
-        return sex;
-    }
-
-    public void setSex(SexEnum sex) {
-        this.sex = sex;
+    public String getDesc() {
+        return desc;
     }
 }

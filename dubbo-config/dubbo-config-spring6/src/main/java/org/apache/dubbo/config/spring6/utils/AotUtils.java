@@ -21,11 +21,15 @@ import org.apache.dubbo.common.compiler.support.ClassUtils;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.TypeReference;
 
 public class AotUtils {
+
+    private static final Set<Class<?>> serializationTypeCache = new LinkedHashSet<>();
 
     private AotUtils() {}
 
@@ -41,12 +45,18 @@ public class AotUtils {
     private static void registerSerializationType(Class<?> registerType, RuntimeHints hints) {
         if (isPrimitive(registerType)) {
             hints.serialization().registerType(TypeReference.of(ClassUtils.getBoxedClass(registerType)));
+            serializationTypeCache.add(registerType);
         } else {
             if (Serializable.class.isAssignableFrom(registerType)) {
                 hints.serialization().registerType(TypeReference.of(registerType));
+                serializationTypeCache.add(registerType);
 
-                Arrays.stream(registerType.getDeclaredFields())
-                        .forEach((field -> registerSerializationType(field.getType(), hints)));
+                Arrays.stream(registerType.getDeclaredFields()).forEach((field -> {
+                    if (!serializationTypeCache.contains(field.getType())) {
+                        registerSerializationType(field.getType(), hints);
+                        serializationTypeCache.add(field.getType());
+                    }
+                }));
 
                 registerSerializationType(registerType.getSuperclass(), hints);
             }
