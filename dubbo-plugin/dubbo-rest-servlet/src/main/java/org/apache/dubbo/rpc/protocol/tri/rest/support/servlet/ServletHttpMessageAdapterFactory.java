@@ -51,16 +51,16 @@ public final class ServletHttpMessageAdapterFactory
     }
 
     @Override
-    public ServletHttpRequestAdaptee adapterRequest(HttpMetadata rawRequest, HttpChannel channel) {
+    public ServletHttpRequestAdaptee adaptRequest(HttpMetadata rawRequest, HttpChannel channel) {
         return new ServletHttpRequestAdaptee(rawRequest, channel, servletContext, httpSessionFactory);
     }
 
     @Override
-    public HttpResponse adapterResponse(ServletHttpRequestAdaptee request, HttpMetadata rawRequest, Void rawResponse) {
+    public HttpResponse adaptResponse(ServletHttpRequestAdaptee request, HttpMetadata rawRequest, Void rawResponse) {
         return new ServletHttpResponseAdaptee();
     }
 
-    public FilterConfig adapterFilterConfig(String filterName) {
+    public FilterConfig adaptFilterConfig(String filterName) {
         return new DummyFilterConfig(filterName, frameworkModel, servletContext);
     }
 }

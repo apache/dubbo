@@ -25,11 +25,11 @@ import org.apache.dubbo.remoting.http12.HttpResponse;
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface HttpMessageAdapterFactory<HR extends HttpRequest, REQUEST, RESPONSE> {
 
-    HR adapterRequest(REQUEST rawRequest, HttpChannel channel);
+    HR adaptRequest(REQUEST rawRequest, HttpChannel channel);
 
-    HttpResponse adapterResponse(HR request, REQUEST rawRequest, RESPONSE rawResponse);
+    HttpResponse adaptResponse(HR request, REQUEST rawRequest, RESPONSE rawResponse);
 
-    default HttpResponse adapterResponse(HR request, REQUEST rawRequest) {
-        return adapterResponse(request, rawRequest, null);
+    default HttpResponse adaptResponse(HR request, REQUEST rawRequest) {
+        return adaptResponse(request, rawRequest, null);
     }
 }

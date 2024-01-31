@@ -53,7 +53,7 @@ public final class FilterAdapter implements RestExtensionAdapter<Filter> {
     public RestFilter adapt(Filter extension) {
         try {
             String filterName = extension.getClass().getSimpleName();
-            extension.init(adapterFactory.adapterFilterConfig(filterName));
+            extension.init(adapterFactory.adaptFilterConfig(filterName));
         } catch (ServletException e) {
             throw new RestException(e);
         }

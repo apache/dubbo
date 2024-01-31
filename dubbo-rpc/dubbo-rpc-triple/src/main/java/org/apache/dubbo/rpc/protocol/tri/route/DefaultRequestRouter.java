@@ -42,8 +42,8 @@ public final class DefaultRequestRouter implements RequestRouter {
 
     @Override
     public RpcInvocationBuildContext route(URL url, RequestMetadata metadata, HttpChannel httpChannel) {
-        HttpRequest request = httpMessageAdapterFactory.adapterRequest(metadata, httpChannel);
-        HttpResponse response = httpMessageAdapterFactory.adapterResponse(request, metadata);
+        HttpRequest request = httpMessageAdapterFactory.adaptRequest(metadata, httpChannel);
+        HttpResponse response = httpMessageAdapterFactory.adaptResponse(request, metadata);
 
         for (int i = 0, size = requestHandlerMappings.size(); i < size; i++) {
             RequestHandlerMapping mapping = requestHandlerMappings.get(i);

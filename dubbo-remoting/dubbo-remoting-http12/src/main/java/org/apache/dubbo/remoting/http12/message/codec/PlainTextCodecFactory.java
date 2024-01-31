@@ -24,7 +24,7 @@ import org.apache.dubbo.remoting.http12.message.HttpMessageEncoderFactory;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-@Activate
+@Activate(order = 10000)
 public final class PlainTextCodecFactory implements HttpMessageEncoderFactory, HttpMessageDecoderFactory {
 
     private final PlainTextCodec instance = new PlainTextCodec();

@@ -26,12 +26,12 @@ public final class DefaultHttpMessageAdapterFactory
         implements HttpMessageAdapterFactory<DefaultHttpRequest, HttpMetadata, Void> {
 
     @Override
-    public DefaultHttpRequest adapterRequest(HttpMetadata rawRequest, HttpChannel channel) {
+    public DefaultHttpRequest adaptRequest(HttpMetadata rawRequest, HttpChannel channel) {
         return new DefaultHttpRequest(rawRequest, channel);
     }
 
     @Override
-    public HttpResponse adapterResponse(DefaultHttpRequest request, HttpMetadata rawRequest, Void rawResponse) {
+    public HttpResponse adaptResponse(DefaultHttpRequest request, HttpMetadata rawRequest, Void rawResponse) {
         return new DefaultHttpResponse();
     }
 }
