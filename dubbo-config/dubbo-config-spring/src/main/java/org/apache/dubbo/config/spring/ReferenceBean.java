@@ -24,6 +24,7 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilder;
 import org.apache.dubbo.config.spring.context.DubboConfigApplicationListener;
 import org.apache.dubbo.config.spring.context.DubboConfigBeanInitializer;
 import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
@@ -56,6 +57,7 @@ import org.springframework.context.ApplicationContextAware;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_DUBBO_BEAN_INITIALIZER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_FAILED;
+import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 
 /**
  * <p>
@@ -443,6 +445,11 @@ public class ReferenceBean<T>
             return referenceConfig.get();
         }
         synchronized (LockUtils.getSingletonMutex(applicationContext)) {
+            if (SCOPE_LOCAL.equals(referenceConfig.getScope())) {
+                // In some case, local(InJVM) providers are not exported when consumer calls
+                // like user call a local service when bean initializing
+                tryExportLocalProvider();
+            }
             return referenceConfig.get();
         }
     }
@@ -451,6 +458,19 @@ public class ReferenceBean<T>
         @Override
         public Object getTarget() throws Exception {
             return getCallProxy();
+        }
+    }
+
+    private void tryExportLocalProvider() {
+        String providerBeanName = ServiceBeanNameBuilder.create(interfaceName, applicationContext.getEnvironment())
+                .group(getGroup())
+                .version(getVersion())
+                .build();
+        @SuppressWarnings("unchecked")
+        ServiceBean<T> serviceBean =
+                applicationContext.getBeansOfType(ServiceBean.class).get(providerBeanName);
+        if (serviceBean != null && !serviceBean.isExported() && SCOPE_LOCAL.equals(serviceBean.getScope())) {
+            serviceBean.export();
         }
     }
 }
