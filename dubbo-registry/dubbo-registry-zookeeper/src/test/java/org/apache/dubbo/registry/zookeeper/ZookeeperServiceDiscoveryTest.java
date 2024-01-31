@@ -38,6 +38,7 @@ import org.junit.jupiter.api.condition.JRE;
 import org.mockito.internal.util.collections.Sets;
 
 import static java.util.Arrays.asList;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -67,7 +68,9 @@ class ZookeeperServiceDiscoveryTest {
     public void init() throws Exception {
         this.registryUrl = URL.valueOf(zookeeperConnectionAddress1);
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
-        applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig(SERVICE_NAME));
+        ApplicationConfig applicationConfig = new ApplicationConfig(SERVICE_NAME);
+        applicationConfig.setProtocol(DUBBO);
+        applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
         registryUrl.setScopeModel(applicationModel);
         this.discovery = new ZookeeperServiceDiscovery(applicationModel, registryUrl);
     }

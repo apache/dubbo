@@ -44,6 +44,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.internal.util.collections.Sets;
 
 import static com.alibaba.nacos.api.common.Constants.DEFAULT_GROUP;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -116,7 +117,9 @@ class NacosServiceDiscoveryTest {
     @BeforeEach
     public void init() throws Exception {
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
-        applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig(SERVICE_NAME));
+        ApplicationConfig applicationConfig = new ApplicationConfig(SERVICE_NAME);
+        applicationConfig.setProtocol(DUBBO);
+        applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
 
         registryUrl.setScopeModel(applicationModel);
 

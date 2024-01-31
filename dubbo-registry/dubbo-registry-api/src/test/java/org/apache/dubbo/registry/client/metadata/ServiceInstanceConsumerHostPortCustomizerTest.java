@@ -35,6 +35,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -59,7 +60,7 @@ class ServiceInstanceConsumerHostPortCustomizerTest {
     @Test
     void customizePreferredProtocol() {
         ApplicationConfig applicationConfig = new ApplicationConfig("demo");
-        applicationConfig.setProtocol("dubbo");
+        applicationConfig.setProtocol(DUBBO);
         // mock currentConfig
         doReturn(applicationConfig).when(applicationModel).getCurrentConfig();
 
