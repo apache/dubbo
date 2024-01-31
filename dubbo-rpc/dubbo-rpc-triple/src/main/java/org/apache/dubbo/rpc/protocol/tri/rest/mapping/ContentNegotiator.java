@@ -43,13 +43,15 @@ public class ContentNegotiator {
     }
 
     public String negotiate(HttpRequest request) {
+        String mediaType;
+
         // 1. find mediaType by producible
         List<MediaType> produces = request.attribute(RestConstants.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE);
         if (produces != null) {
             for (int i = 0, size = produces.size(); i < size; i++) {
-                String name = produces.get(i).getName();
-                if (name.indexOf('*') == -1) {
-                    return name;
+                mediaType = getSuitableMediaType(produces.get(i).getName());
+                if (mediaType != null) {
+                    return mediaType;
                 }
             }
         }
@@ -58,9 +60,9 @@ public class ContentNegotiator {
         List<String> accepts = HttpUtils.parseAccept(request.accept());
         if (accepts != null) {
             for (int i = 0, size = accepts.size(); i < size; i++) {
-                String accept = accepts.get(i);
-                if (accept.indexOf('*') == -1) {
-                    return accept;
+                mediaType = getSuitableMediaType(accepts.get(i));
+                if (mediaType != null) {
+                    return mediaType;
                 }
             }
         }
@@ -68,7 +70,7 @@ public class ContentNegotiator {
         // 3. find mediaType by format parameter
         String format = request.queryParameter(getParameterName());
         if (format != null) {
-            String mediaType = getMediaTypeByExtension(format);
+            mediaType = getMediaTypeByExtension(format);
             if (mediaType != null) {
                 return mediaType;
             }
@@ -83,6 +85,30 @@ public class ContentNegotiator {
         }
 
         return null;
+    }
+
+    private String getSuitableMediaType(String name) {
+        int index = name.indexOf('/');
+        if (index == -1 || index == name.length() - 1) {
+            return null;
+        }
+
+        String type = name.substring(0, index);
+        if (MediaType.WILDCARD.equals(type)) {
+            return null;
+        }
+
+        String subType = name.substring(index + 1);
+        if (MediaType.WILDCARD.equals(subType)) {
+            return MediaType.TEXT_PLAIN.getType().equals(type) ? MediaType.TEXT_PLAIN.getName() : null;
+        }
+
+        int suffixIndex = subType.lastIndexOf('+');
+        if (suffixIndex != -1) {
+            return getMediaTypeByExtension(subType.substring(suffixIndex + 1));
+        }
+
+        return name;
     }
 
     public String getParameterName() {
@@ -113,6 +139,7 @@ public class ContentNegotiator {
             extensionMapping.put("css", MediaType.TEXT_CSS);
             extensionMapping.put("js", MediaType.TEXT_JAVASCRIPT);
             extensionMapping.put("yml", MediaType.APPLICATION_YAML);
+            extensionMapping.put("xhtml", MediaType.TEXT_HTML);
             extensionMapping.put("html", MediaType.TEXT_HTML);
             extensionMapping.put("htm", MediaType.TEXT_HTML);
             for (String ext : new String[] {"txt", "md", "csv", "log", "properties"}) {

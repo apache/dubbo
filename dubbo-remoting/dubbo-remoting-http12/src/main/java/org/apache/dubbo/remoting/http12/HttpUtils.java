@@ -247,8 +247,7 @@ public final class HttpUtils {
             Collections.sort(items);
             List<T> values = new ArrayList<>(size);
             for (int i = 0; i < size; i++) {
-                Item<T> item = items.get(i);
-                values.add(item.value);
+                values.add(items.get(i).value);
             }
             return values;
         }

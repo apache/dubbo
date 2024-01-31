@@ -84,10 +84,7 @@ public final class MediaTypeExpression implements Comparable<MediaTypeExpression
             mimeType = "*/*";
         }
         int subIndex = mimeType.indexOf('/');
-        if (subIndex == -1) {
-            return null;
-        }
-        if (subIndex == mimeType.length() - 1) {
+        if (subIndex == -1 || subIndex == mimeType.length() - 1) {
             return null;
         }
         String type = mimeType.substring(0, subIndex);

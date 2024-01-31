@@ -30,12 +30,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.BiPredicate;
 
-import static java.util.Collections.singletonList;
-
 public final class ProducesCondition implements Condition<ProducesCondition, HttpRequest> {
-
-    private static final ProducesCondition ALL = new ProducesCondition(MediaTypeExpression.ALL_LIST);
-    private static final List<ProducesCondition> ALL_LIST = singletonList(ALL);
 
     private final List<MediaTypeExpression> expressions;
 
