@@ -26,12 +26,6 @@ import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedLi
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
@@ -43,8 +37,13 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.internal.util.collections.Sets;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
 import static com.alibaba.nacos.api.common.Constants.DEFAULT_GROUP;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -117,9 +116,7 @@ class NacosServiceDiscoveryTest {
     @BeforeEach
     public void init() throws Exception {
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
-        ApplicationConfig applicationConfig = new ApplicationConfig(SERVICE_NAME);
-        applicationConfig.setProtocol(DUBBO);
-        applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
+        applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig(SERVICE_NAME));
 
         registryUrl.setScopeModel(applicationModel);
 

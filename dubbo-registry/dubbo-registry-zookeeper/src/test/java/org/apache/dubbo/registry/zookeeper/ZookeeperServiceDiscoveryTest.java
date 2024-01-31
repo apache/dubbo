@@ -24,11 +24,6 @@ import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,8 +32,12 @@ import org.junit.jupiter.api.condition.DisabledForJreRange;
 import org.junit.jupiter.api.condition.JRE;
 import org.mockito.internal.util.collections.Sets;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+
 import static java.util.Arrays.asList;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -68,9 +67,7 @@ class ZookeeperServiceDiscoveryTest {
     public void init() throws Exception {
         this.registryUrl = URL.valueOf(zookeeperConnectionAddress1);
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
-        ApplicationConfig applicationConfig = new ApplicationConfig(SERVICE_NAME);
-        applicationConfig.setProtocol(DUBBO);
-        applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
+        applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig(SERVICE_NAME));
         registryUrl.setScopeModel(applicationModel);
         this.discovery = new ZookeeperServiceDiscovery(applicationModel, registryUrl);
     }

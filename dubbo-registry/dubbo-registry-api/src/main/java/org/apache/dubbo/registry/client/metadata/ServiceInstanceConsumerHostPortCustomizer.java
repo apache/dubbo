@@ -42,31 +42,32 @@ public class ServiceInstanceConsumerHostPortCustomizer implements ServiceInstanc
             return;
         }
         String preferredProtocol = applicationModel.getCurrentConfig().getProtocol();
-        Protocol protocol = applicationModel
-                .getFrameworkModel()
-                .getExtensionLoader(Protocol.class)
-                .getExtension(preferredProtocol, false);
-        List<ProtocolServer> protocolServerList = protocol.getServers();
-        if (CollectionUtils.isNotEmpty(protocolServerList)) {
-            for (ProtocolServer protocolServer : protocolServerList) {
-                if (protocolServer.getUrl() == null) {
-                    continue;
-                }
-                String host = protocolServer.getUrl().getHost();
-                int port = protocolServer.getUrl().getPort();
-                // if not match continue
-                if (host == null || port == 0) {
-                    continue;
-                }
-                if (serviceInstance instanceof DefaultServiceInstance) {
-                    DefaultServiceInstance instance = (DefaultServiceInstance) serviceInstance;
-                    instance.setHost(host);
-                    instance.setPort(port);
-                    break;
+        if (preferredProtocol != null) {
+            Protocol protocol = applicationModel
+                    .getFrameworkModel()
+                    .getExtensionLoader(Protocol.class)
+                    .getExtension(preferredProtocol, false);
+            List<ProtocolServer> protocolServerList = protocol.getServers();
+            if (CollectionUtils.isNotEmpty(protocolServerList)) {
+                for (ProtocolServer protocolServer : protocolServerList) {
+                    if (protocolServer.getUrl() == null) {
+                        continue;
+                    }
+                    String host = protocolServer.getUrl().getHost();
+                    int port = protocolServer.getUrl().getPort();
+                    // if not match continue
+                    if (host == null || port == 0) {
+                        continue;
+                    }
+                    if (serviceInstance instanceof DefaultServiceInstance) {
+                        DefaultServiceInstance instance = (DefaultServiceInstance) serviceInstance;
+                        instance.setHost(host);
+                        instance.setPort(port);
+                        break;
+                    }
                 }
             }
         }
-
         if (serviceInstance.getHost() == null || serviceInstance.getPort() == 0) {
             logger.warn(
                     PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER,
