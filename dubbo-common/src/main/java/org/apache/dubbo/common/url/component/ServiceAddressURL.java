@@ -35,9 +35,9 @@ import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATE
 public abstract class ServiceAddressURL extends URL {
     protected final transient URL consumerURL;
 
-    //cache
+    // cache
     private transient Map<String, String> concatenatedPrams;
-//    private transient Map<String, String> allParameters;
+    //    private transient Map<String, String> allParameters;
 
     public ServiceAddressURL(
             String protocol,
@@ -47,8 +47,7 @@ public abstract class ServiceAddressURL extends URL {
             int port,
             String path,
             Map<String, String> parameters,
-            URL consumerURL
-    ) {
+            URL consumerURL) {
         super(protocol, username, password, host, port, path, parameters);
         this.consumerURL = consumerURL;
     }
@@ -90,6 +89,23 @@ public abstract class ServiceAddressURL extends URL {
     @Override
     public String getVersion() {
         return super.getParameter(VERSION_KEY);
+    }
+
+    @Override
+    public String getOriginalParameter(String key) {
+        // call corresponding methods directly, then we can remove the following if branches.
+        if (GROUP_KEY.equals(key)) {
+            return getGroup();
+        } else if (VERSION_KEY.equals(key)) {
+            return getVersion();
+        } else if (APPLICATION_KEY.equals(key)) {
+            return getRemoteApplication();
+        } else if (SIDE_KEY.equals(key)) {
+            return getSide();
+        } else if (CATEGORY_KEY.equals(key)) {
+            return getCategory();
+        }
+        return super.getParameter(key);
     }
 
     @Override
@@ -156,8 +172,7 @@ public abstract class ServiceAddressURL extends URL {
         // Combine filters and listeners on Provider and Consumer
         String remoteValue = super.getParameter(key);
         String localValue = consumerURL.getParameter(key);
-        if (remoteValue != null && remoteValue.length() > 0
-                && localValue != null && localValue.length() > 0) {
+        if (remoteValue != null && remoteValue.length() > 0 && localValue != null && localValue.length() > 0) {
             value = remoteValue + "," + localValue;
             concatenatedPrams.put(key, value);
             return value;

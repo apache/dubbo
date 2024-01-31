@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.support.DemoService;
 import org.apache.dubbo.rpc.support.MockInvocation;
 import org.apache.dubbo.rpc.support.MyInvoker;
@@ -39,7 +40,7 @@ import static org.mockito.Mockito.mock;
  */
 class ContextFilterTest {
 
-    Filter contextFilter = new ContextFilter();
+    Filter contextFilter = new ContextFilter(ApplicationModel.defaultModel());
     Invoker<DemoService> invoker;
     Invocation invocation;
 
@@ -48,8 +49,8 @@ class ContextFilterTest {
     void testSetContext() {
         invocation = mock(Invocation.class);
         given(invocation.getMethodName()).willReturn("$enumlength");
-        given(invocation.getParameterTypes()).willReturn(new Class<?>[]{Enum.class});
-        given(invocation.getArguments()).willReturn(new Object[]{"hello"});
+        given(invocation.getParameterTypes()).willReturn(new Class<?>[] {Enum.class});
+        given(invocation.getArguments()).willReturn(new Object[] {"hello"});
         given(invocation.getObjectAttachments()).willReturn(null);
 
         invoker = mock(Invoker.class);

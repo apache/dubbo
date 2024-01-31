@@ -18,19 +18,22 @@ package org.apache.dubbo.remoting.transport.netty;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import java.util.Random;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Random;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
 
 class ThreadNameTest {
 
@@ -52,13 +55,14 @@ class ThreadNameTest {
     @BeforeEach
     public void before() throws Exception {
         int port = NetUtils.getAvailablePort(20880 + new Random().nextInt(10000));
-        serverURL = URL.valueOf("telnet://localhost?side=provider&codec=telnet")
-            .setPort(port)
-            .setScopeModel(ApplicationModel.defaultModel());
-        clientURL = URL.valueOf("telnet://localhost?side=consumer&codec=telnet")
-            .setPort(port)
-            .setScopeModel(ApplicationModel.defaultModel());
-
+        serverURL = URL.valueOf("telnet://localhost?side=provider&codec=telnet").setPort(port);
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
+        applicationConfig.setExecutorManagementMode(EXECUTOR_MANAGEMENT_MODE_DEFAULT);
+        applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
+        serverURL = serverURL.setScopeModel(applicationModel);
+        clientURL = URL.valueOf("telnet://localhost?side=consumer&codec=telnet").setPort(port);
+        clientURL = clientURL.setScopeModel(applicationModel);
         serverHandler = new ThreadNameVerifyHandler(serverRegex, false, serverLatch);
         clientHandler = new ThreadNameVerifyHandler(clientRegex, true, clientLatch);
         server = new NettyServer(serverURL, serverHandler);
@@ -109,14 +113,14 @@ class ThreadNameTest {
             if (!success) {
                 success = Thread.currentThread().getName().matches(message);
             }
-            if(success) {
+            if (success) {
                 latch.countDown();
             }
         }
 
         private void output(String method) {
-            System.out.println(Thread.currentThread().getName()
-                    + " " + (client ? "client " + method : "server " + method));
+            System.out.println(
+                    Thread.currentThread().getName() + " " + (client ? "client " + method : "server " + method));
         }
 
         @Override
@@ -139,7 +143,7 @@ class ThreadNameTest {
 
         @Override
         public void received(Channel channel, Object message) throws RemotingException {
-            // server: DubboServerHandler or DubboSharedHandler thread. 
+            // server: DubboServerHandler or DubboSharedHandler thread.
             output("received");
         }
 
@@ -149,5 +153,4 @@ class ThreadNameTest {
             output("caught");
         }
     }
-
 }

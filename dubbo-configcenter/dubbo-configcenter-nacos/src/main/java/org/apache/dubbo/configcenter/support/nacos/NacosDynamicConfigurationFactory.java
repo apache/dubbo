@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.configcenter.support.nacos;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.AbstractDynamicConfigurationFactory;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import com.alibaba.nacos.api.PropertyKeyConst;
 
@@ -29,6 +29,12 @@ import com.alibaba.nacos.api.PropertyKeyConst;
  */
 public class NacosDynamicConfigurationFactory extends AbstractDynamicConfigurationFactory {
 
+    private ApplicationModel applicationModel;
+
+    public NacosDynamicConfigurationFactory(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+    }
+
     @Override
     protected DynamicConfiguration createDynamicConfiguration(URL url) {
         URL nacosURL = url;
@@ -36,6 +42,6 @@ public class NacosDynamicConfigurationFactory extends AbstractDynamicConfigurati
             // Nacos use empty string as default name space, replace default namespace "dubbo" to ""
             nacosURL = url.removeParameter(PropertyKeyConst.NAMESPACE);
         }
-        return new NacosDynamicConfiguration(nacosURL);
+        return new NacosDynamicConfiguration(nacosURL, applicationModel);
     }
 }

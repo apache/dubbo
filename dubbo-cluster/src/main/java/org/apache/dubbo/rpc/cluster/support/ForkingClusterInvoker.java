@@ -30,6 +30,8 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -57,15 +59,19 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
     public ForkingClusterInvoker(Directory<T> directory) {
         super(directory);
-        executor = directory.getUrl().getOrDefaultFrameworkModel().getBeanFactory()
-            .getBean(FrameworkExecutorRepository.class).getSharedExecutor();
+        executor = directory
+                .getUrl()
+                .getOrDefaultFrameworkModel()
+                .getBeanFactory()
+                .getBean(FrameworkExecutorRepository.class)
+                .getSharedExecutor();
     }
 
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public Result doInvoke(final Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
+    public Result doInvoke(final Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance)
+            throws RpcException {
         try {
-            checkInvokers(invokers, invocation);
             final List<Invoker<T>> selected;
             final int forks = getUrl().getParameter(FORKS_KEY, DEFAULT_FORKS);
             final int timeout = getUrl().getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
@@ -76,7 +82,7 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 while (selected.size() < forks) {
                     Invoker<T> invoker = select(loadbalance, invocation, invokers, selected);
                     if (!selected.contains(invoker)) {
-                        //Avoid add the same invoker several times.
+                        // Avoid add the same invoker several times.
                         selected.add(invoker);
                     }
                 }
@@ -84,35 +90,45 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
             RpcContext.getServiceContext().setInvokers((List) selected);
             final AtomicInteger count = new AtomicInteger();
             final BlockingQueue<Object> ref = new LinkedBlockingQueue<>(1);
-            for (final Invoker<T> invoker : selected) {
+            selected.forEach(invoker -> {
                 URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
-                executor.execute(() -> {
-                    try {
-                        if (ref.size() > 0) {
-                            return;
-                        }
-                        Result result = invokeWithContextAsync(invoker, invocation, consumerUrl);
-                        ref.offer(result);
-                    } catch (Throwable e) {
-                        int value = count.incrementAndGet();
-                        if (value >= selected.size()) {
-                            ref.offer(e);
-                        }
-                    }
-                });
-            }
+                CompletableFuture.<Object>supplyAsync(
+                                () -> {
+                                    if (ref.size() > 0) {
+                                        return null;
+                                    }
+                                    return invokeWithContextAsync(invoker, invocation, consumerUrl);
+                                },
+                                executor)
+                        .whenComplete((v, t) -> {
+                            if (t == null) {
+                                ref.offer(v);
+                            } else {
+                                int value = count.incrementAndGet();
+                                if (value >= selected.size()) {
+                                    ref.offer(t);
+                                }
+                            }
+                        });
+            });
             try {
                 Object ret = ref.poll(timeout, TimeUnit.MILLISECONDS);
                 if (ret instanceof Throwable) {
-                    Throwable e = (Throwable) ret;
-                    throw new RpcException(e instanceof RpcException ? ((RpcException) e).getCode() : RpcException.UNKNOWN_EXCEPTION,
-                        "Failed to forking invoke provider " + selected + ", but no luck to perform the invocation. " +
-                            "Last error is: " + e.getMessage(), e.getCause() != null ? e.getCause() : e);
+                    Throwable e = ret instanceof CompletionException
+                            ? ((CompletionException) ret).getCause()
+                            : (Throwable) ret;
+                    throw new RpcException(
+                            e instanceof RpcException ? ((RpcException) e).getCode() : RpcException.UNKNOWN_EXCEPTION,
+                            "Failed to forking invoke provider " + selected
+                                    + ", but no luck to perform the invocation. " + "Last error is: " + e.getMessage(),
+                            e.getCause() != null ? e.getCause() : e);
                 }
                 return (Result) ret;
             } catch (InterruptedException e) {
-                throw new RpcException("Failed to forking invoke provider " + selected + ", " +
-                    "but no luck to perform the invocation. Last error is: " + e.getMessage(), e);
+                throw new RpcException(
+                        "Failed to forking invoke provider " + selected + ", "
+                                + "but no luck to perform the invocation. Last error is: " + e.getMessage(),
+                        e);
             }
         } finally {
             // clear attachments which is binding to current thread.

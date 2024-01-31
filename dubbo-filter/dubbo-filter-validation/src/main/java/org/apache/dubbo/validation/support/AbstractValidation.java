@@ -47,5 +47,4 @@ public abstract class AbstractValidation implements Validation {
     }
 
     protected abstract Validator createValidator(URL url);
-
 }

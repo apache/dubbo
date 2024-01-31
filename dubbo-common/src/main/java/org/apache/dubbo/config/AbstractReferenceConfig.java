@@ -21,6 +21,8 @@ import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
+import java.beans.Transient;
+
 import static org.apache.dubbo.common.constants.CommonConstants.INVOKER_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFER_ASYNC_KEY;
@@ -74,9 +76,8 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     /**
      * Whether to support event in stub.
      */
-    //TODO solve merge problem
-    protected Boolean stubevent;//= Constants.DEFAULT_STUB_EVENT;
-
+    // TODO solve merge problem
+    protected Boolean stubevent; // = Constants.DEFAULT_STUB_EVENT;
 
     /**
      * declares which app or service this interface belongs to
@@ -118,8 +119,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
      */
     protected String protocol;
 
-    public AbstractReferenceConfig() {
-    }
+    public AbstractReferenceConfig() {}
 
     public AbstractReferenceConfig(ModuleModel moduleModel) {
         super(moduleModel);
@@ -181,6 +181,12 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         } else {
             throw new IllegalArgumentException("Unsupported generic type " + generic);
         }
+    }
+
+    @Override
+    @Transient
+    protected boolean isNeedCheckMethod() {
+        return StringUtils.isEmpty(getGeneric());
     }
 
     /**
@@ -262,7 +268,6 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     public void setSticky(Boolean sticky) {
         this.sticky = sticky;
     }
-
 
     @Parameter(key = PROVIDED_BY)
     public String getProvidedBy() {

@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-
 /**
  * 2015/1/27.
  */
@@ -66,14 +65,14 @@ public class TypeDefinitionBuilder {
                     return builder;
                 }
             } catch (NoClassDefFoundError cnfe) {
-                //ignore
+                // ignore
                 logger.info("Throw classNotFound (" + cnfe.getMessage() + ") in " + builder.getClass());
             }
         }
         return null;
     }
 
-    private Map<String, TypeDefinition> typeCache = new HashMap<>();
+    private final Map<String, TypeDefinition> typeCache = new HashMap<>();
 
     public TypeDefinition build(Type type, Class<?> clazz) {
         return build(type, clazz, typeCache);
@@ -82,5 +81,4 @@ public class TypeDefinitionBuilder {
     public List<TypeDefinition> getTypeDefinitions() {
         return new ArrayList<>(typeCache.values());
     }
-
 }

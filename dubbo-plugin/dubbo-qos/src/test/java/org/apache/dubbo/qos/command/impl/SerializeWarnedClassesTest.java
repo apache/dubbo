@@ -17,7 +17,7 @@
 package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.utils.SerializeSecurityManager;
-import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.Assertions;
@@ -38,19 +38,26 @@ class SerializeWarnedClassesTest {
         CommandContext commandContext2 = Mockito.mock(CommandContext.class);
         Mockito.when(commandContext2.isHttp()).thenReturn(true);
 
-        Assertions.assertFalse(serializeWarnedClasses.execute(commandContext1, null).contains("Test1234"));
-        Assertions.assertFalse(serializeWarnedClasses.execute(commandContext2, null).contains("Test1234"));
+        Assertions.assertFalse(
+                serializeWarnedClasses.execute(commandContext1, null).contains("Test1234"));
+        Assertions.assertFalse(
+                serializeWarnedClasses.execute(commandContext2, null).contains("Test1234"));
         ssm.getWarnedClasses().add("Test1234");
-        Assertions.assertTrue(serializeWarnedClasses.execute(commandContext1, null).contains("Test1234"));
-        Assertions.assertTrue(serializeWarnedClasses.execute(commandContext2, null).contains("Test1234"));
+        Assertions.assertTrue(
+                serializeWarnedClasses.execute(commandContext1, null).contains("Test1234"));
+        Assertions.assertTrue(
+                serializeWarnedClasses.execute(commandContext2, null).contains("Test1234"));
 
-        Assertions.assertFalse(serializeWarnedClasses.execute(commandContext1, null).contains("Test4321"));
-        Assertions.assertFalse(serializeWarnedClasses.execute(commandContext2, null).contains("Test4321"));
+        Assertions.assertFalse(
+                serializeWarnedClasses.execute(commandContext1, null).contains("Test4321"));
+        Assertions.assertFalse(
+                serializeWarnedClasses.execute(commandContext2, null).contains("Test4321"));
         ssm.getWarnedClasses().add("Test4321");
-        Assertions.assertTrue(serializeWarnedClasses.execute(commandContext1, null).contains("Test4321"));
-        Assertions.assertTrue(serializeWarnedClasses.execute(commandContext2, null).contains("Test4321"));
+        Assertions.assertTrue(
+                serializeWarnedClasses.execute(commandContext1, null).contains("Test4321"));
+        Assertions.assertTrue(
+                serializeWarnedClasses.execute(commandContext2, null).contains("Test4321"));
 
         frameworkModel.destroy();
     }
-
 }

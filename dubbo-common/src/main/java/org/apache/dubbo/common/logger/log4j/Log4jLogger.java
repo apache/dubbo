@@ -131,4 +131,8 @@ public class Log4jLogger implements Logger {
         return logger.isEnabledFor(Level.ERROR);
     }
 
+    // test purpose only
+    public org.apache.log4j.Logger getLogger() {
+        return logger;
+    }
 }

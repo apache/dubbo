@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.proxy;
 
 import org.apache.dubbo.common.URL;
@@ -27,18 +26,17 @@ import org.apache.dubbo.rpc.support.DemoService;
 import org.apache.dubbo.rpc.support.DemoServiceImpl;
 import org.apache.dubbo.rpc.support.MyInvoker;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.Arrays;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public abstract class AbstractProxyTest {
 
     public static ProxyFactory factory;
 
     @Test
-    void testGetProxy() throws Exception {
+    void testGetProxy() {
         URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");
 
         MyInvoker<DemoService> invoker = new MyInvoker<>(url);
@@ -51,17 +49,23 @@ public abstract class AbstractProxyTest {
         Assertions.assertTrue(Arrays.asList(proxy.getClass().getInterfaces()).contains(Destroyable.class));
         Assertions.assertTrue(Arrays.asList(proxy.getClass().getInterfaces()).contains(EchoService.class));
 
-        Assertions.assertEquals(invoker.invoke(new RpcInvocation("echo", DemoService.class.getName(), DemoService.class.getName() + ":dubbo", new Class[]{String.class}, new Object[]{"aa"})).getValue()
-                , proxy.echo("aa"));
+        Assertions.assertEquals(
+                invoker.invoke(new RpcInvocation(
+                                "echo",
+                                DemoService.class.getName(),
+                                DemoService.class.getName() + ":dubbo",
+                                new Class[] {String.class},
+                                new Object[] {"aa"}))
+                        .getValue(),
+                proxy.echo("aa"));
 
-        Destroyable destroyable = (Destroyable)proxy;
+        Destroyable destroyable = (Destroyable) proxy;
         destroyable.$destroy();
         Assertions.assertTrue(invoker.isDestroyed());
-
     }
 
     @Test
-    void testGetInvoker() throws Exception {
+    void testGetInvoker() {
         URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");
 
         DemoService origin = new DemoServiceImpl();
@@ -70,9 +74,14 @@ public abstract class AbstractProxyTest {
 
         Assertions.assertEquals(invoker.getInterface(), DemoService.class);
 
-        Assertions.assertEquals(invoker.invoke(new RpcInvocation("echo", DemoService.class.getName(), DemoService.class.getName() + ":dubbo", new Class[]{String.class}, new Object[]{"aa"})).getValue(),
+        Assertions.assertEquals(
+                invoker.invoke(new RpcInvocation(
+                                "echo",
+                                DemoService.class.getName(),
+                                DemoService.class.getName() + ":dubbo",
+                                new Class[] {String.class},
+                                new Object[] {"aa"}))
+                        .getValue(),
                 origin.echo("aa"));
-
     }
-
 }

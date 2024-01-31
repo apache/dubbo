@@ -49,5 +49,4 @@ public class ZookeeperRegistryFactory extends AbstractRegistryFactory {
     public Registry createRegistry(URL url) {
         return new ZookeeperRegistry(url, zookeeperTransporter);
     }
-
 }

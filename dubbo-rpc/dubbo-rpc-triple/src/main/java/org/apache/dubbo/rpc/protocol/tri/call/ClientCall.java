@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.stream.StreamObserver;
@@ -44,8 +43,9 @@ public interface ClientCall {
          * Callback when message received.
          *
          * @param message message received
+         * @param actualContentLength actual content length from body
          */
-        void onMessage(Object message);
+        void onMessage(Object message, int actualContentLength);
 
         /**
          * Callback when call is finished.
@@ -53,7 +53,7 @@ public interface ClientCall {
          * @param status   response status
          * @param trailers response trailers
          */
-        void onClose(TriRpcStatus status, Map<String, Object> trailers);
+        void onClose(TriRpcStatus status, Map<String, Object> trailers, boolean isReturnTriException);
     }
 
     /**
@@ -82,8 +82,7 @@ public interface ClientCall {
      * @param responseListener the listener to receive response
      * @return the stream observer representing the request sink
      */
-    StreamObserver<Object> start(RequestMetadata metadata,
-        Listener responseListener);
+    StreamObserver<Object> start(RequestMetadata metadata, Listener responseListener);
 
     /**
      * @return true if this call is auto request
@@ -97,7 +96,6 @@ public interface ClientCall {
      */
     void setAutoRequest(boolean autoRequest);
 
-
     /**
      * No more data will be sent.
      */
@@ -109,5 +107,4 @@ public interface ClientCall {
      * @param compression compression algorithm
      */
     void setCompression(String compression);
-
 }

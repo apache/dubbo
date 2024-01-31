@@ -19,9 +19,10 @@ package org.apache.dubbo.qos.command.impl;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.qos.command.BaseCommand;
-import org.apache.dubbo.qos.command.CommandContext;
-import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.qos.api.BaseCommand;
+import org.apache.dubbo.qos.api.Cmd;
+import org.apache.dubbo.qos.api.CommandContext;
+import org.apache.dubbo.qos.api.PermissionLevel;
 import org.apache.dubbo.qos.probe.StartupProbe;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -29,10 +30,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-@Cmd(name = "startup", summary = "Judge if service has started? ")
+@Cmd(name = "startup", summary = "Judge if service has started? ", requiredPermissionLevel = PermissionLevel.PUBLIC)
 public class Startup implements BaseCommand {
 
-    private FrameworkModel frameworkModel;
+    private final FrameworkModel frameworkModel;
 
     public Startup(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
@@ -40,18 +41,18 @@ public class Startup implements BaseCommand {
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        String config = frameworkModel.getApplicationModels()
-            .stream()
-            .map(applicationModel -> applicationModel.getApplicationConfigManager().getApplication())
-            .map(o -> o.orElse(null))
-            .filter(Objects::nonNull)
-            .map(ApplicationConfig::getStartupProbe)
-            .filter(Objects::nonNull)
-            .collect(Collectors.joining(","));
+        String config = frameworkModel.getApplicationModels().stream()
+                .map(applicationModel ->
+                        applicationModel.getApplicationConfigManager().getApplication())
+                .map(o -> o.orElse(null))
+                .filter(Objects::nonNull)
+                .map(ApplicationConfig::getStartupProbe)
+                .filter(Objects::nonNull)
+                .collect(Collectors.joining(","));
 
-        URL url = URL.valueOf("application://")
-                .addParameter(CommonConstants.QOS_STARTUP_PROBE_EXTENSION, config);
-        List<StartupProbe> startupProbes = frameworkModel.getExtensionLoader(StartupProbe.class)
+        URL url = URL.valueOf("application://").addParameter(CommonConstants.QOS_STARTUP_PROBE_EXTENSION, config);
+        List<StartupProbe> startupProbes = frameworkModel
+                .getExtensionLoader(StartupProbe.class)
                 .getActivateExtension(url, CommonConstants.QOS_STARTUP_PROBE_EXTENSION);
         if (!startupProbes.isEmpty()) {
             for (StartupProbe startupProbe : startupProbes) {

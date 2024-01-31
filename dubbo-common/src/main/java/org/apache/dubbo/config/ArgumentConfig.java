@@ -45,8 +45,7 @@ public class ArgumentConfig implements Serializable {
      */
     private Boolean callback;
 
-    public ArgumentConfig() {
-    }
+    public ArgumentConfig() {}
 
     public ArgumentConfig(Argument argument) {
         this.index = argument.index();
@@ -79,5 +78,4 @@ public class ArgumentConfig implements Serializable {
     public Boolean isCallback() {
         return callback;
     }
-
 }

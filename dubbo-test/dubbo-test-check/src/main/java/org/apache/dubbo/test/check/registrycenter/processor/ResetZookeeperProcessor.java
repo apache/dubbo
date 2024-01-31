@@ -21,11 +21,11 @@ import org.apache.dubbo.test.check.registrycenter.Context;
 import org.apache.dubbo.test.check.registrycenter.Processor;
 import org.apache.dubbo.test.check.registrycenter.context.ZookeeperContext;
 
+import java.util.concurrent.TimeUnit;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.RetryNTimes;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * Create {@link Process} to reset zookeeper.
@@ -34,13 +34,13 @@ public class ResetZookeeperProcessor implements Processor {
 
     @Override
     public void process(Context context) throws DubboTestException {
-        ZookeeperContext zookeeperContext = (ZookeeperContext)context;
+        ZookeeperContext zookeeperContext = (ZookeeperContext) context;
         for (int clientPort : zookeeperContext.getClientPorts()) {
             CuratorFramework client;
             try {
                 CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
-                    .connectString("127.0.0.1:" + clientPort)
-                    .retryPolicy(new RetryNTimes(1, 1000));
+                        .connectString("127.0.0.1:" + clientPort)
+                        .retryPolicy(new RetryNTimes(1, 1000));
                 client = builder.build();
                 client.start();
                 boolean connected = client.blockUntilConnected(1000, TimeUnit.MILLISECONDS);

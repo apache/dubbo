@@ -20,10 +20,12 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 
 /**
  * {@link AwaitingNonWebApplicationListener} Test
  */
+@Ignore
 public class AwaitingNonWebApplicationListenerTest {
 
     @Before
@@ -36,34 +38,34 @@ public class AwaitingNonWebApplicationListenerTest {
         DubboBootstrap.reset();
     }
 
-//    @Test
-//    public void init() {
-//        AtomicBoolean awaited = AwaitingNonWebApplicationListener.getAwaited();
-//        awaited.set(false);
-//    }
-//
-//    @Test
-//    public void testSingleContextNonWebApplication() {
-//        new SpringApplicationBuilder(Object.class)
-//                .web(false)
-//                .run()
-//                .close();
-//
-//        ShutdownHookCallbacks.INSTANCE.addCallback(() -> {
-//            AtomicBoolean awaited = AwaitingNonWebApplicationListener.getAwaited();
-//            Assert.assertTrue(awaited.get());
-//            System.out.println("Callback...");
-//        });
-//    }
-//
-//    @Test
-//    public void testMultipleContextNonWebApplication() {
-//        new SpringApplicationBuilder(Object.class)
-//                .parent(Object.class)
-//                .web(false)
-//                .run().close();
-//        AtomicBoolean awaited = AwaitingNonWebApplicationListener.getAwaited();
-//        Assert.assertFalse(awaited.get());
-//    }
+    //    @Test
+    //    public void init() {
+    //        AtomicBoolean awaited = AwaitingNonWebApplicationListener.getAwaited();
+    //        awaited.set(false);
+    //    }
+    //
+    //    @Test
+    //    public void testSingleContextNonWebApplication() {
+    //        new SpringApplicationBuilder(Object.class)
+    //                .web(false)
+    //                .run()
+    //                .close();
+    //
+    //        ShutdownHookCallbacks.INSTANCE.addCallback(() -> {
+    //            AtomicBoolean awaited = AwaitingNonWebApplicationListener.getAwaited();
+    //            Assert.assertTrue(awaited.get());
+    //            System.out.println("Callback...");
+    //        });
+    //    }
+    //
+    //    @Test
+    //    public void testMultipleContextNonWebApplication() {
+    //        new SpringApplicationBuilder(Object.class)
+    //                .parent(Object.class)
+    //                .web(false)
+    //                .run().close();
+    //        AtomicBoolean awaited = AwaitingNonWebApplicationListener.getAwaited();
+    //        Assert.assertFalse(awaited.get());
+    //    }
 
 }

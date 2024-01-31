@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.qos.command.util;
 
-import org.apache.dubbo.qos.command.BaseCommand;
+import org.apache.dubbo.qos.api.BaseCommand;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ import java.util.Set;
 
 public class CommandHelper {
 
-    private FrameworkModel frameworkModel;
+    private final FrameworkModel frameworkModel;
 
     public CommandHelper(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
@@ -41,25 +41,28 @@ public class CommandHelper {
         }
 
         return command != null;
-
     }
 
     public List<Class<?>> getAllCommandClass() {
-        final Set<String> commandList = frameworkModel.getExtensionLoader(BaseCommand.class).getSupportedExtensions();
+        final Set<String> commandList =
+                frameworkModel.getExtensionLoader(BaseCommand.class).getSupportedExtensions();
         final List<Class<?>> classes = new ArrayList<Class<?>>();
 
         for (String commandName : commandList) {
-            BaseCommand command = frameworkModel.getExtensionLoader(BaseCommand.class).getExtension(commandName);
+            BaseCommand command =
+                    frameworkModel.getExtensionLoader(BaseCommand.class).getExtension(commandName);
             classes.add(command.getClass());
         }
 
         return classes;
     }
 
-
     public Class<?> getCommandClass(String commandName) {
         if (hasCommand(commandName)) {
-            return frameworkModel.getExtensionLoader(BaseCommand.class).getExtension(commandName).getClass();
+            return frameworkModel
+                    .getExtensionLoader(BaseCommand.class)
+                    .getExtension(commandName)
+                    .getClass();
         } else {
             return null;
         }

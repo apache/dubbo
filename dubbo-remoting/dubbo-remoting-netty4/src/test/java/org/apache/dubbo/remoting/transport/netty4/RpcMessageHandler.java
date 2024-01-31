@@ -27,14 +27,13 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * RpcMessageHandler.
  */
-
 public class RpcMessageHandler implements Replier<RpcMessage> {
-    private final static ServiceProvider DEFAULT_PROVIDER = new ServiceProvider() {
+    private static final ServiceProvider DEFAULT_PROVIDER = new ServiceProvider() {
         public Object getImplementation(String service) {
             String impl = service + "Impl";
             try {
                 Class<?> cl = Thread.currentThread().getContextClassLoader().loadClass(impl);
-                return cl.newInstance();
+                return cl.getDeclaredConstructor().newInstance();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -67,11 +66,9 @@ public class RpcMessageHandler implements Replier<RpcMessage> {
         } catch (InvocationTargetException e) {
             return new MockResult(e.getTargetException());
         }
-
     }
 
     public interface ServiceProvider {
         Object getImplementation(String service);
     }
-
 }

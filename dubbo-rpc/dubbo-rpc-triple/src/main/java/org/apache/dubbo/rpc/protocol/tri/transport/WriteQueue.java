@@ -14,100 +14,76 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
 import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
+
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelPromise;
 
-import java.io.IOException;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
-
+@Deprecated
 public class WriteQueue {
 
     static final int DEQUE_CHUNK_SIZE = 128;
-    private final Channel channel;
     private final Queue<QueuedCommand> queue;
     private final AtomicBoolean scheduled;
-    private volatile boolean rst;
 
-    public WriteQueue(Channel channel) {
-        this.channel = channel;
+    public WriteQueue() {
         queue = new ConcurrentLinkedQueue<>();
         scheduled = new AtomicBoolean(false);
     }
 
-    public ChannelFuture success() {
-        return channel.newSucceededFuture();
-    }
-
-    public ChannelFuture failure(Throwable cause) {
-        return channel.newFailedFuture(cause);
-    }
-
     public ChannelFuture enqueue(QueuedCommand command, boolean rst) {
-        ChannelFuture future = enqueue(command);
-        if (rst) {
-            this.rst = true;
-        }
-        return future;
+        return enqueue(command);
     }
 
     public ChannelFuture enqueue(QueuedCommand command) {
-        if (!channel.isActive()) {
-            return channel.newFailedFuture(new IOException("channel is closed"));
-        }
-        if (rst) {
-            return channel.newFailedFuture(new IOException("channel has reset"));
-        }
         ChannelPromise promise = command.promise();
         if (promise == null) {
-            promise = channel.newPromise();
+            Channel ch = command.channel();
+            promise = ch.newPromise();
             command.promise(promise);
         }
         queue.add(command);
-        scheduleFlush();
+        scheduleFlush(command.channel());
         return promise;
     }
 
-    public void scheduleFlush() {
+    public void scheduleFlush(Channel ch) {
         if (scheduled.compareAndSet(false, true)) {
-            channel.eventLoop().execute(this::flush);
+            ch.parent().eventLoop().execute(this::flush);
         }
     }
 
-    public void close() {
-        channel.close();
-    }
-
     private void flush() {
+        Channel ch = null;
         try {
             QueuedCommand cmd;
             int i = 0;
             boolean flushedOnce = false;
             while ((cmd = queue.poll()) != null) {
-                cmd.run(channel);
+                ch = cmd.channel();
+                cmd.run(ch);
                 i++;
                 if (i == DEQUE_CHUNK_SIZE) {
                     i = 0;
-                    channel.flush();
+                    ch.parent().flush();
                     flushedOnce = true;
                 }
             }
-            if (i != 0 || !flushedOnce) {
-                channel.flush();
+            if (ch != null && (i != 0 || !flushedOnce)) {
+                ch.parent().flush();
             }
         } finally {
             scheduled.set(false);
             if (!queue.isEmpty()) {
-                scheduleFlush();
+                scheduleFlush(ch);
             }
         }
     }
-
 }

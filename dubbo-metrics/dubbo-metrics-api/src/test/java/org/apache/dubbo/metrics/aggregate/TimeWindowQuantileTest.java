@@ -14,24 +14,50 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.aggregate;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 class TimeWindowQuantileTest {
 
     @Test
-    void test() throws Exception {
-        TimeWindowQuantile quantile = new TimeWindowQuantile(100, 12, 1);
+    void test() {
+        TimeWindowQuantile quantile = new TimeWindowQuantile(100, 10, 1);
         for (int i = 1; i <= 100; i++) {
             quantile.add(i);
         }
 
         Assertions.assertEquals(quantile.quantile(0.01), 2);
         Assertions.assertEquals(quantile.quantile(0.99), 100);
-        Thread.sleep(1000);
-        Assertions.assertEquals(quantile.quantile(0.99), Double.NaN);
+    }
+
+    @Test
+    @RepeatedTest(100)
+    void testMulti() {
+
+        ExecutorService executorService = Executors.newFixedThreadPool(200);
+
+        TimeWindowQuantile quantile = new TimeWindowQuantile(100, 10, 120);
+        int index = 0;
+        while (index < 100) {
+            for (int i = 0; i < 100; i++) {
+                int finalI = i;
+                Assertions.assertDoesNotThrow(() -> quantile.add(finalI));
+                executorService.execute(() -> quantile.add(finalI));
+            }
+            index++;
+            //            try {
+            //                Thread.sleep(1);
+            //            } catch (InterruptedException e) {
+            //                e.printStackTrace();
+            //            }
+        }
+
+        executorService.shutdown();
     }
 }

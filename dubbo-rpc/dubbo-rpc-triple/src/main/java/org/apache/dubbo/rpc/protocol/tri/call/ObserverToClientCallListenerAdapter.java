@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.stream.StreamObserver;
@@ -27,7 +26,7 @@ public class ObserverToClientCallListenerAdapter implements ClientCall.Listener 
 
     private final StreamObserver<Object> delegate;
     private ClientCall call;
-    private Consumer<ClientCall> onStartConsumer = clientCall -> { };
+    private Consumer<ClientCall> onStartConsumer = clientCall -> {};
 
     public ObserverToClientCallListenerAdapter(StreamObserver<Object> delegate) {
         this.delegate = delegate;
@@ -38,7 +37,7 @@ public class ObserverToClientCallListenerAdapter implements ClientCall.Listener 
     }
 
     @Override
-    public void onMessage(Object message) {
+    public void onMessage(Object message, int actualContentLength) {
         delegate.onNext(message);
         if (call.isAutoRequest()) {
             call.request(1);
@@ -46,7 +45,7 @@ public class ObserverToClientCallListenerAdapter implements ClientCall.Listener 
     }
 
     @Override
-    public void onClose(TriRpcStatus status, Map<String, Object> trailers) {
+    public void onClose(TriRpcStatus status, Map<String, Object> trailers, boolean isReturnTriException) {
         if (status.isOk()) {
             delegate.onCompleted();
         } else {

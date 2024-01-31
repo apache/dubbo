@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.constants.CommonConstants;
@@ -27,7 +26,9 @@ import org.apache.dubbo.common.extension.SPI;
 @SPI(value = CommonConstants.TRIPLE, scope = ExtensionScope.FRAMEWORK)
 public interface PathResolver {
 
-    void add(String path, Invoker<?> invoker);
+    Invoker<?> add(String path, Invoker<?> invoker);
+
+    Invoker<?> addIfAbsent(String path, Invoker<?> invoker);
 
     Invoker<?> resolve(String path);
 

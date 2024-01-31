@@ -36,7 +36,7 @@ public class ShutdownHookCallbacks implements Disposable {
 
     private final List<ShutdownHookCallback> callbacks = new LinkedList<>();
 
-    private ApplicationModel applicationModel;
+    private final ApplicationModel applicationModel;
 
     public ShutdownHookCallbacks(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
@@ -45,7 +45,9 @@ public class ShutdownHookCallbacks implements Disposable {
 
     public ShutdownHookCallbacks addCallback(ShutdownHookCallback callback) {
         synchronized (this) {
-            this.callbacks.add(callback);
+            if (!callbacks.contains(callback)) {
+                this.callbacks.add(callback);
+            }
         }
         return this;
     }
@@ -64,8 +66,7 @@ public class ShutdownHookCallbacks implements Disposable {
     }
 
     private void loadCallbacks() {
-        ExtensionLoader<ShutdownHookCallback> loader =
-                applicationModel.getExtensionLoader(ShutdownHookCallback.class);
+        ExtensionLoader<ShutdownHookCallback> loader = applicationModel.getExtensionLoader(ShutdownHookCallback.class);
         loader.getSupportedExtensionInstances().forEach(this::addCallback);
     }
 

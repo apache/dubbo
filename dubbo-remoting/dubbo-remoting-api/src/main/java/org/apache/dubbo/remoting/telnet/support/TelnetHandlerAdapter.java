@@ -24,13 +24,18 @@ import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.transport.ChannelHandlerAdapter;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.remoting.Constants.TELNET_KEY;
 
 public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements TelnetHandler {
 
-    private final ExtensionLoader<TelnetHandler> extensionLoader = ExtensionLoader.getExtensionLoader(TelnetHandler.class);
+    private final ExtensionLoader<TelnetHandler> extensionLoader;
+
+    public TelnetHandlerAdapter(FrameworkModel frameworkModel) {
+        extensionLoader = frameworkModel.getExtensionLoader(TelnetHandler.class);
+    }
 
     @Override
     public String telnet(Channel channel, String message) throws RemotingException {
@@ -67,7 +72,8 @@ public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements Telne
                 } else {
                     buf.append("Command: ");
                     buf.append(command);
-                    buf.append(" disabled for security reasons, please enable support by listing the commands through 'telnet'");
+                    buf.append(
+                            " disabled for security reasons, please enable support by listing the commands through 'telnet'");
                 }
             } else {
                 buf.append("Unsupported command: ");
@@ -96,5 +102,4 @@ public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements Telne
         }
         return false;
     }
-
 }

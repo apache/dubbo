@@ -19,14 +19,14 @@ package org.apache.dubbo.common.utils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
-import org.apache.log4j.Level;
-
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.Level;
+
 public class LogUtil {
 
-    private static Logger Log = LoggerFactory.getLogger(LogUtil.class);
+    private static final Logger Log = LoggerFactory.getLogger(LogUtil.class);
 
     public static void start() {
         DubboAppender.doStart();
@@ -42,7 +42,6 @@ public class LogUtil {
         } else {
             return false;
         }
-
     }
 
     public static int findName(String expectedLogName) {
@@ -126,6 +125,5 @@ public class LogUtil {
         while (it.hasNext()) {
             Log.info(it.next().toString());
         }
-
     }
 }

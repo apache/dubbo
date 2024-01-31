@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
@@ -51,15 +52,16 @@ import static org.apache.dubbo.rpc.Constants.MERGER_KEY;
 @SuppressWarnings("unchecked")
 public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
-    private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(MergeableClusterInvoker.class);
+    private static final ErrorTypeAwareLogger log =
+            LoggerFactory.getErrorTypeAwareLogger(MergeableClusterInvoker.class);
 
     public MergeableClusterInvoker(Directory<T> directory) {
         super(directory);
     }
 
     @Override
-    protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
-        checkInvokers(invokers, invocation);
+    protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance)
+            throws RpcException {
         String merger = getUrl().getMethodParameter(invocation.getMethodName(), MERGER_KEY);
         if (ConfigUtils.isEmpty(merger)) { // If a method doesn't have a merger, only invoke one Group
             for (final Invoker<T> invoker : invokers) {
@@ -68,8 +70,10 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
                         return invokeWithContext(invoker, invocation);
                     } catch (RpcException e) {
                         if (e.isNoInvokerAvailableAfterFilter()) {
-                            log.debug("No available provider for service" + getUrl().getServiceKey() + " on group "
-                                + invoker.getUrl().getGroup() + ", will continue to try another group.");
+                            log.debug(
+                                    "No available provider for service" + getUrl().getServiceKey() + " on group "
+                                            + invoker.getUrl().getGroup() + ", will continue to try another group.",
+                                    e);
                         } else {
                             throw e;
                         }
@@ -81,7 +85,9 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
         Class<?> returnType;
         try {
-            returnType = getInterface().getMethod(invocation.getMethodName(), invocation.getParameterTypes()).getReturnType();
+            returnType = getInterface()
+                    .getMethod(invocation.getMethodName(), invocation.getParameterTypes())
+                    .getReturnType();
         } catch (NoSuchMethodException e) {
             returnType = null;
         }
@@ -90,7 +96,21 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
         for (final Invoker<T> invoker : invokers) {
             RpcInvocation subInvocation = new RpcInvocation(invocation, invoker);
             subInvocation.setAttachment(ASYNC_KEY, "true");
-            results.put(invoker.getUrl().getServiceKey(), invokeWithContext(invoker, subInvocation));
+            try {
+                results.put(invoker.getUrl().getServiceKey(), invokeWithContext(invoker, subInvocation));
+            } catch (RpcException e) {
+                if (e.isNoInvokerAvailableAfterFilter()) {
+                    log.warn(
+                            LoggerCodeConstants.CLUSTER_NO_VALID_PROVIDER,
+                            e.getCause().getMessage(),
+                            "",
+                            "No available provider for service" + getUrl().getServiceKey() + " on group "
+                                    + invoker.getUrl().getGroup() + ", will continue to try another group.",
+                            e);
+                } else {
+                    throw e;
+                }
+            }
         }
 
         Object result;
@@ -102,8 +122,12 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
             try {
                 Result r = asyncResult.get(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
                 if (r.hasException()) {
-                    log.error(CLUSTER_FAILED_GROUP_MERGE, "Invoke " + getGroupDescFromServiceKey(entry.getKey()) +
-                        " failed: " + r.getException().getMessage(), "", r.getException().getMessage());
+                    log.error(
+                            CLUSTER_FAILED_GROUP_MERGE,
+                            "Invoke " + getGroupDescFromServiceKey(entry.getKey()) + " failed: "
+                                    + r.getException().getMessage(),
+                            "",
+                            r.getException().getMessage());
                 } else {
                     resultList.add(r);
                 }
@@ -128,8 +152,8 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
             try {
                 method = returnType.getMethod(merger, returnType);
             } catch (NoSuchMethodException | NullPointerException e) {
-                throw new RpcException("Can not merge result because missing method [ " + merger + " ] in class [ " +
-                    returnType.getName() + " ]");
+                throw new RpcException("Can not merge result because missing method [ " + merger + " ] in class [ "
+                        + returnType.getName() + " ]");
             }
             if (!Modifier.isPublic(method.getModifiers())) {
                 method.setAccessible(true);
@@ -137,7 +161,7 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
             result = resultList.remove(0).getValue();
             try {
                 if (method.getReturnType() != void.class
-                    && method.getReturnType().isAssignableFrom(result.getClass())) {
+                        && method.getReturnType().isAssignableFrom(result.getClass())) {
                     for (Result r : resultList) {
                         result = method.invoke(result, r.getValue());
                     }
@@ -151,10 +175,14 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
             }
         } else {
             Merger resultMerger;
-            ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(invocation.getModuleModel().getApplicationModel());
+            ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(
+                    invocation.getModuleModel().getApplicationModel());
 
             if (ConfigUtils.isDefault(merger)) {
-                resultMerger = applicationModel.getBeanFactory().getBean(MergerFactory.class).getMerger(returnType);
+                resultMerger = applicationModel
+                        .getBeanFactory()
+                        .getBean(MergerFactory.class)
+                        .getMerger(returnType);
             } else {
                 resultMerger = applicationModel.getExtensionLoader(Merger.class).getExtension(merger);
             }
@@ -170,7 +198,6 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
         }
         return AsyncRpcResult.newDefaultAsyncResult(result, invocation);
     }
-
 
     @Override
     public Class<T> getInterface() {

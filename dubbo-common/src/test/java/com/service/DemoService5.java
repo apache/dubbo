@@ -16,5 +16,4 @@
  */
 package com.service;
 
-public abstract class DemoService5<T, R, Children extends DemoService5<T, R, Children>> {
-}
+public abstract class DemoService5<T, R, Children extends DemoService5<T, R, Children>> {}

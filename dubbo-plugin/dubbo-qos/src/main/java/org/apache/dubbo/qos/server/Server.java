@@ -19,8 +19,12 @@ package org.apache.dubbo.qos.server;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.qos.api.PermissionLevel;
+import org.apache.dubbo.qos.api.QosConfiguration;
 import org.apache.dubbo.qos.server.handler.QosProcessHandler;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -30,10 +34,6 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.concurrent.DefaultThreadFactory;
-
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_FAILED_START_SERVER;
 
 /**
  * A server serves for both telnet access and http access
@@ -53,6 +53,10 @@ public class Server {
 
     private boolean acceptForeignIp = true;
     private String acceptForeignIpWhitelist = StringUtils.EMPTY_STRING;
+
+    private String anonymousAccessPermissionLevel = PermissionLevel.NONE.name();
+
+    private String anonymousAllowCommands = StringUtils.EMPTY_STRING;
 
     private EventLoopGroup boss;
 
@@ -98,7 +102,16 @@ public class Server {
 
             @Override
             protected void initChannel(Channel ch) throws Exception {
-                ch.pipeline().addLast(new QosProcessHandler(frameworkModel, welcome, acceptForeignIp, acceptForeignIpWhitelist));
+                ch.pipeline()
+                        .addLast(new QosProcessHandler(
+                                frameworkModel,
+                                QosConfiguration.builder()
+                                        .welcome(welcome)
+                                        .acceptForeignIp(acceptForeignIp)
+                                        .acceptForeignIpWhitelist(acceptForeignIpWhitelist)
+                                        .anonymousAccessPermissionLevel(anonymousAccessPermissionLevel)
+                                        .anonymousAllowCommands(anonymousAllowCommands)
+                                        .build()));
             }
         });
         try {
@@ -110,8 +123,7 @@ public class Server {
 
             logger.info("qos-server bind localhost:" + port);
         } catch (Throwable throwable) {
-            logger.error(QOS_FAILED_START_SERVER, "", "", "qos-server can not bind localhost:" + port, throwable);
-            throw throwable;
+            throw new QosBindException("qos-server can not bind localhost:" + port, throwable);
         }
     }
 
@@ -126,6 +138,7 @@ public class Server {
         if (worker != null) {
             worker.shutdownGracefully();
         }
+        started.set(false);
     }
 
     public String getHost() {
@@ -150,6 +163,14 @@ public class Server {
 
     public void setAcceptForeignIpWhitelist(String acceptForeignIpWhitelist) {
         this.acceptForeignIpWhitelist = acceptForeignIpWhitelist;
+    }
+
+    public void setAnonymousAccessPermissionLevel(String anonymousAccessPermissionLevel) {
+        this.anonymousAccessPermissionLevel = anonymousAccessPermissionLevel;
+    }
+
+    public void setAnonymousAllowCommands(String anonymousAllowCommands) {
+        this.anonymousAllowCommands = anonymousAllowCommands;
     }
 
     public String getWelcome() {

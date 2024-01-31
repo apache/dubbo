@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc;
 
 public interface Constants {
@@ -63,6 +62,8 @@ public interface Constants {
 
     String ACCESS_LOG_KEY = "accesslog";
 
+    String ACCESS_LOG_FIXED_PATH_KEY = "accesslog.fixed.path";
+
     String ACTIVES_KEY = "actives";
 
     String ID_KEY = "id";
@@ -104,7 +105,12 @@ public interface Constants {
     String H2_SETTINGS_MAX_FRAME_SIZE_KEY = "dubbo.rpc.tri.max-frame-size";
     String H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY = "dubbo.rpc.tri.max-header-list-size";
 
+    String ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY = "lb_adaptive";
+    String ADAPTIVE_LOADBALANCE_START_TIME = "adaptive_startTime";
     String H2_SUPPORT_NO_LOWER_HEADER_KEY = "dubbo.rpc.tri.support-no-lower-header";
-
     String TRI_BUILTIN_SERVICE_INIT = "dubbo.tri.builtin.service.init";
+
+    String H2_IGNORE_1_0_0_KEY = "dubbo.rpc.tri.ignore-1.0.0-version";
+
+    String H2_RESOLVE_FALLBACK_TO_DEFAULT_KEY = "dubbo.rpc.tri.resolve-fallback-to-default";
 }

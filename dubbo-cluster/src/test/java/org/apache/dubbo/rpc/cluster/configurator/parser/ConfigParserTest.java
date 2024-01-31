@@ -17,22 +17,25 @@
 package org.apache.dubbo.rpc.cluster.configurator.parser;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConditionMatch;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfiguratorConfig;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.yaml.snakeyaml.LoaderOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
+
 import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.WEIGHT_KEY;
+import static org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfiguratorConfig.MATCH_CONDITION;
 
 /**
  *
@@ -48,7 +51,7 @@ class ConfigParserTest {
     @Test
     void snakeYamlBasicTest() throws IOException {
         try (InputStream yamlStream = this.getClass().getResourceAsStream("/ServiceNoApp.yml")) {
-            Yaml yaml = new Yaml(new SafeConstructor());
+            Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
             Map<String, Object> map = yaml.load(yamlStream);
             ConfiguratorConfig config = ConfiguratorConfig.parseFromMap(map);
             Assertions.assertNotNull(config);
@@ -118,7 +121,6 @@ class ConfigParserTest {
         }
     }
 
-
     @Test
     void parseConfiguratorsAppAnyServicesTest() throws IOException {
         try (InputStream yamlStream = this.getClass().getResourceAsStream("/AppAnyServices.yml")) {
@@ -166,9 +168,83 @@ class ConfigParserTest {
     }
 
     @Test
+    void parseProviderConfigurationV3() throws IOException {
+        try (InputStream yamlStream = this.getClass().getResourceAsStream("/ConfiguratorV3.yml")) {
+            List<URL> urls = ConfigParser.parseConfigurators(streamToString(yamlStream));
+            Assertions.assertNotNull(urls);
+            Assertions.assertEquals(1, urls.size());
+            URL url = urls.get(0);
+            Assertions.assertEquals("0.0.0.0", url.getAddress());
+            Assertions.assertEquals("*", url.getServiceInterface());
+            Assertions.assertEquals(200, url.getParameter(WEIGHT_KEY, 0));
+            Assertions.assertEquals("demo-provider", url.getApplication());
+
+            URL matchURL1 = URL.valueOf("dubbo://10.0.0.1:20880/DemoService?match_key1=value1");
+            URL matchURL2 = URL.valueOf("dubbo://10.0.0.1:20880/DemoService2?match_key1=value1");
+            URL notMatchURL1 = URL.valueOf("dubbo://10.0.0.2:20880/DemoService?match_key1=value1"); // address not match
+            URL notMatchURL2 =
+                    URL.valueOf("dubbo://10.0.0.1:20880/DemoServiceNotMatch?match_key1=value1"); // service not match
+            URL notMatchURL3 =
+                    URL.valueOf("dubbo://10.0.0.1:20880/DemoService?match_key1=value_not_match"); // key not match
+
+            ConditionMatch matcher = (ConditionMatch) url.getAttribute(MATCH_CONDITION);
+            Assertions.assertTrue(matcher.isMatch(matchURL1.getAddress(), matchURL1));
+            Assertions.assertTrue(matcher.isMatch(matchURL2.getAddress(), matchURL2));
+            Assertions.assertFalse(matcher.isMatch(notMatchURL1.getAddress(), notMatchURL1));
+            Assertions.assertFalse(matcher.isMatch(notMatchURL2.getAddress(), notMatchURL2));
+            Assertions.assertFalse(matcher.isMatch(notMatchURL3.getAddress(), notMatchURL3));
+        }
+    }
+
+    @Test
+    void parseProviderConfigurationV3Compatibility() throws IOException {
+        try (InputStream yamlStream = this.getClass().getResourceAsStream("/ConfiguratorV3Compatibility.yml")) {
+            List<URL> urls = ConfigParser.parseConfigurators(streamToString(yamlStream));
+            Assertions.assertNotNull(urls);
+            Assertions.assertEquals(1, urls.size());
+            URL url = urls.get(0);
+            Assertions.assertEquals("10.0.0.1:20880", url.getAddress());
+            Assertions.assertEquals("DemoService", url.getServiceInterface());
+            Assertions.assertEquals(200, url.getParameter(WEIGHT_KEY, 0));
+            Assertions.assertEquals("demo-provider", url.getApplication());
+
+            URL matchURL = URL.valueOf("dubbo://10.0.0.1:20880/DemoService?match_key1=value1");
+            URL notMatchURL =
+                    URL.valueOf("dubbo://10.0.0.1:20880/DemoService?match_key1=value_not_match"); // key not match
+
+            ConditionMatch matcher = (ConditionMatch) url.getAttribute(MATCH_CONDITION);
+            Assertions.assertTrue(matcher.isMatch(matchURL.getAddress(), matchURL));
+            Assertions.assertFalse(matcher.isMatch(notMatchURL.getAddress(), notMatchURL));
+        }
+    }
+
+    @Test
+    void parseProviderConfigurationV3Conflict() throws IOException {
+        try (InputStream yamlStream = this.getClass().getResourceAsStream("/ConfiguratorV3Duplicate.yml")) {
+            List<URL> urls = ConfigParser.parseConfigurators(streamToString(yamlStream));
+            Assertions.assertNotNull(urls);
+            Assertions.assertEquals(1, urls.size());
+            URL url = urls.get(0);
+            Assertions.assertEquals("10.0.0.1:20880", url.getAddress());
+            Assertions.assertEquals("DemoService", url.getServiceInterface());
+            Assertions.assertEquals(200, url.getParameter(WEIGHT_KEY, 0));
+            Assertions.assertEquals("demo-provider", url.getApplication());
+
+            URL matchURL = URL.valueOf("dubbo://10.0.0.1:20880/DemoService?match_key1=value1");
+            URL notMatchURL =
+                    URL.valueOf("dubbo://10.0.0.1:20880/DemoService?match_key1=value_not_match"); // key not match
+
+            ConditionMatch matcher = (ConditionMatch) url.getAttribute(MATCH_CONDITION);
+            Assertions.assertTrue(matcher.isMatch(matchURL.getAddress(), matchURL));
+            Assertions.assertFalse(matcher.isMatch(notMatchURL.getAddress(), notMatchURL));
+        }
+    }
+
+    @Test
     void parseURLJsonArrayCompatible() {
 
-        String configData = "[\"override://0.0.0.0/com.xx.Service?category=configurators&timeout=6666&disabled=true&dynamic=false&enabled=true&group=dubbo&priority=1&version=1.0\" ]";
+        String configData =
+                "[\"override://0.0.0.0/com.xx.Service?category=configurators&timeout=6666&disabled=true&dynamic=false&enabled=true&group=dubbo&priority=1&version=1.0\" ]";
 
         List<URL> urls = ConfigParser.parseConfigurators(configData);
 
@@ -180,5 +256,4 @@ class ConfigParserTest {
         Assertions.assertEquals("com.xx.Service", url.getServiceInterface());
         Assertions.assertEquals(6666, url.getParameter(TIMEOUT_KEY, 0));
     }
-
 }

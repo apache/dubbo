@@ -114,11 +114,8 @@ public final class ServiceDefinitionBuilder {
      */
     public static String schema(final Class<?> clazz) {
         ServiceDefinition sd = build(clazz);
-        return JsonUtils.getJson().toJson(sd);
+        return JsonUtils.toJson(sd);
     }
 
-    private ServiceDefinitionBuilder() {
-    }
+    private ServiceDefinitionBuilder() {}
 }
-
-

@@ -24,17 +24,23 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.RouterChain;
+import org.apache.dubbo.rpc.cluster.SingleRouterChain;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_SITE_SELECTION;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER_MODE_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 
 /**
  * StaticDirectory
  */
 public class StaticDirectory<T> extends AbstractDirectory<T> {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(StaticDirectory.class);
+    private final Class<T> interfaceClass;
 
     public StaticDirectory(List<Invoker<T>> invokers) {
         this(null, invokers, null);
@@ -49,16 +55,22 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
     }
 
     public StaticDirectory(URL url, List<Invoker<T>> invokers, RouterChain<T> routerChain) {
-        super(url == null && CollectionUtils.isNotEmpty(invokers) ? invokers.get(0).getUrl() : url, routerChain, false);
+        super(
+                url == null && CollectionUtils.isNotEmpty(invokers)
+                        ? invokers.get(0).getUrl()
+                        : url,
+                routerChain,
+                false);
         if (CollectionUtils.isEmpty(invokers)) {
             throw new IllegalArgumentException("invokers == null");
         }
         this.setInvokers(new BitList<>(invokers));
+        this.interfaceClass = invokers.get(0).getInterface();
     }
 
     @Override
     public Class<T> getInterface() {
-        return getInvokers().get(0).getInterface();
+        return interfaceClass;
     }
 
     @Override
@@ -74,6 +86,8 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
         for (Invoker<T> invoker : getValidInvokers()) {
             if (invoker.isAvailable()) {
                 return true;
+            } else {
+                addInvalidateInvoker(invoker);
             }
         }
         return false;
@@ -92,29 +106,45 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
 
     public void buildRouterChain() {
         RouterChain<T> routerChain = RouterChain.buildChain(getInterface(), getUrl());
-        routerChain.setInvokers(getInvokers());
+        routerChain.setInvokers(getInvokers(), () -> {});
         this.setRouterChain(routerChain);
     }
 
     public void notify(List<Invoker<T>> invokers) {
-        this.setInvokers(new BitList<>(invokers));
+        BitList<Invoker<T>> bitList = new BitList<>(invokers);
         if (routerChain != null) {
-            routerChain.setInvokers(this.getInvokers());
+            refreshRouter(bitList.clone(), () -> this.setInvokers(bitList));
+        } else {
+            this.setInvokers(bitList);
         }
     }
 
     @Override
-    protected List<Invoker<T>> doList(BitList<Invoker<T>> invokers, Invocation invocation) throws RpcException {
-        if (routerChain != null) {
+    protected List<Invoker<T>> doList(
+            SingleRouterChain<T> singleRouterChain, BitList<Invoker<T>> invokers, Invocation invocation)
+            throws RpcException {
+        if (singleRouterChain != null) {
             try {
-                List<Invoker<T>> finalInvokers = routerChain.route(getConsumerUrl(), invokers, invocation);
+                List<Invoker<T>> finalInvokers = singleRouterChain.route(getConsumerUrl(), invokers, invocation);
                 return finalInvokers == null ? BitList.emptyList() : finalInvokers;
             } catch (Throwable t) {
-                logger.error(CLUSTER_FAILED_SITE_SELECTION,"Failed to execute router","","Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(),t);
+                logger.error(
+                        CLUSTER_FAILED_SITE_SELECTION,
+                        "Failed to execute router",
+                        "",
+                        "Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(),
+                        t);
                 return BitList.emptyList();
             }
         }
         return invokers;
     }
 
+    @Override
+    protected Map<String, String> getDirectoryMeta() {
+        Map<String, String> metas = new HashMap<>();
+        metas.put(REGISTRY_KEY, "static");
+        metas.put(REGISTER_MODE_KEY, "static");
+        return metas;
+    }
 }

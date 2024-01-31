@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.registry;
 
 import org.apache.dubbo.common.URL;
@@ -27,6 +26,6 @@ public interface RegistryFactory extends org.apache.dubbo.registry.RegistryFacto
 
     @Override
     default Registry getRegistry(URL url) {
-        return this.getRegistry(new com.alibaba.dubbo.common.URL(url));
+        return this.getRegistry(new com.alibaba.dubbo.common.DelegateURL(url));
     }
 }

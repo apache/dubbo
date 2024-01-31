@@ -20,7 +20,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Hold a set of DubboSpringInitCustomizer, for register customizers by programing.
+ * Hold a set of DubboSpringInitCustomizer, for register customizers by programming.
  * <p>All customizers are store in thread local, and they will be clear after apply once.</p>
  *
  * <p>Usages:</p>
@@ -34,8 +34,8 @@ import java.util.Set;
  */
 public class DubboSpringInitCustomizerHolder {
 
-    private static final ThreadLocal<DubboSpringInitCustomizerHolder> holders = ThreadLocal.withInitial(() ->
-        new DubboSpringInitCustomizerHolder());
+    private static final ThreadLocal<DubboSpringInitCustomizerHolder> holders =
+            ThreadLocal.withInitial(DubboSpringInitCustomizerHolder::new);
 
     public static DubboSpringInitCustomizerHolder get() {
         return holders.get();
@@ -54,5 +54,4 @@ public class DubboSpringInitCustomizerHolder {
     public Set<DubboSpringInitCustomizer> getCustomizers() {
         return customizers;
     }
-
 }

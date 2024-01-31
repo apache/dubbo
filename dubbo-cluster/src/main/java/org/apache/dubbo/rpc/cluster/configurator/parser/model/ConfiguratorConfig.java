@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
  *
  */
 public class ConfiguratorConfig {
+    public static final String MATCH_CONDITION = "MATCH_CONDITION";
     public static final String SCOPE_SERVICE = "service";
     public static final String SCOPE_APPLICATION = "application";
     public static final String CONFIG_VERSION_KEY = "configVersion";
@@ -51,8 +52,8 @@ public class ConfiguratorConfig {
 
         Object configs = map.get(CONFIGS_KEY);
         if (configs != null && List.class.isAssignableFrom(configs.getClass())) {
-            configuratorConfig.setConfigs(((List<Map<String, Object>>) configs).stream()
-                    .map(ConfigItem::parseFromMap).collect(Collectors.toList()));
+            configuratorConfig.setConfigs(((List<Map<String, Object>>) configs)
+                    .stream().map(ConfigItem::parseFromMap).collect(Collectors.toList()));
         }
 
         return configuratorConfig;

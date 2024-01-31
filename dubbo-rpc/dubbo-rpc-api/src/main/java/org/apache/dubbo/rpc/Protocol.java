@@ -115,5 +115,4 @@ public interface Protocol {
     default List<ProtocolServer> getServers() {
         return Collections.emptyList();
     }
-
 }

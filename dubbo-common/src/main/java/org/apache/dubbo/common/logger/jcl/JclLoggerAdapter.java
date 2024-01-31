@@ -20,12 +20,12 @@ import org.apache.dubbo.common.logger.Level;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerAdapter;
 
-import org.apache.commons.logging.LogFactory;
-
 import java.io.File;
 
-public class JclLoggerAdapter implements LoggerAdapter {
+import org.apache.commons.logging.LogFactory;
 
+public class JclLoggerAdapter implements LoggerAdapter {
+    public static final String NAME = "jcl";
     private Level level;
     private File file;
 
@@ -58,5 +58,4 @@ public class JclLoggerAdapter implements LoggerAdapter {
     public void setFile(File file) {
         this.file = file;
     }
-
 }

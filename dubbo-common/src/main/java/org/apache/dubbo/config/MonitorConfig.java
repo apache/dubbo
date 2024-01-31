@@ -64,8 +64,7 @@ public class MonitorConfig extends AbstractConfig {
      */
     private Map<String, String> parameters;
 
-    public MonitorConfig() {
-    }
+    public MonitorConfig() {}
 
     public MonitorConfig(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -153,5 +152,4 @@ public class MonitorConfig extends AbstractConfig {
     public boolean isValid() {
         return StringUtils.isNotEmpty(address) || RegistryConstants.REGISTRY_PROTOCOL.equals(protocol);
     }
-
 }

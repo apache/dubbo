@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
@@ -28,9 +27,8 @@ import java.util.concurrent.Executor;
  */
 public abstract class AbstractStream implements Stream {
 
-    protected final Executor executor;
+    protected Executor executor;
     protected final FrameworkModel frameworkModel;
-
 
     private static final boolean HAS_PROTOBUF = hasProtobuf();
 
@@ -39,11 +37,13 @@ public abstract class AbstractStream implements Stream {
         this.frameworkModel = frameworkModel;
     }
 
+    public void setExecutor(Executor executor) {
+        this.executor = new SerializingExecutor(executor);
+    }
 
     public static boolean getGrpcStatusDetailEnabled() {
         return HAS_PROTOBUF;
     }
-
 
     private static boolean hasProtobuf() {
         try {

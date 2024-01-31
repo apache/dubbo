@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.filter.tps;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.filter.TpsLimitFilter;
 import org.apache.dubbo.rpc.support.MockInvocation;
@@ -54,14 +55,12 @@ class TpsLimitFilterTest {
             Invoker<TpsLimitFilterTest> invoker = new MyInvoker<TpsLimitFilterTest>(url);
             Invocation invocation = new MockInvocation();
             for (int i = 0; i < 10; i++) {
-                try {
-                    filter.invoke(invoker, invocation);
-                } catch (Exception e) {
-                    assertTrue(i >= 5);
-                    throw e;
+                Result re = filter.invoke(invoker, invocation);
+                if (i >= 5) {
+                    assertTrue(re.hasException());
+                    throw re.getException();
                 }
             }
         });
-
     }
 }

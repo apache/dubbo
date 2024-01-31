@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -79,7 +80,7 @@ public class TraceFilter implements Filter {
         Result result = invoker.invoke(invocation);
         long end = System.currentTimeMillis();
         if (TRACERS.size() > 0) {
-            String key = invoker.getInterface().getName() + "." + invocation.getMethodName();
+            String key = invoker.getInterface().getName() + "." + RpcUtils.getMethodName(invocation);
             Set<Channel> channels = TRACERS.get(key);
             if (CollectionUtils.isEmpty(channels)) {
                 key = invoker.getInterface().getName();
@@ -102,13 +103,16 @@ public class TraceFilter implements Filter {
                             }
                             count = c.getAndIncrement();
                             if (count < max) {
-                                String prompt = channel.getUrl().getParameter(Constants.PROMPT_KEY, Constants.DEFAULT_PROMPT);
-                                channel.send("\r\n" + RpcContext.getServiceContext().getRemoteAddress() + " -> "
-                                    + invoker.getInterface().getName()
-                                    + "." + invocation.getMethodName()
-                                    + "(" + JsonUtils.getJson().toJson(invocation.getArguments()) + ")" + " -> " + JsonUtils.getJson().toJson(result.getValue())
-                                    + "\r\nelapsed: " + (end - start) + " ms."
-                                    + "\r\n\r\n" + prompt);
+                                String prompt =
+                                        channel.getUrl().getParameter(Constants.PROMPT_KEY, Constants.DEFAULT_PROMPT);
+                                channel.send(
+                                        "\r\n" + RpcContext.getServiceContext().getRemoteAddress() + " -> "
+                                                + invoker.getInterface().getName()
+                                                + "." + RpcUtils.getMethodName(invocation)
+                                                + "(" + JsonUtils.toJson(invocation.getArguments()) + ")" + " -> "
+                                                + JsonUtils.toJson(result.getValue())
+                                                + "\r\nelapsed: " + (end - start) + " ms."
+                                                + "\r\n\r\n" + prompt);
                             }
                             if (count >= max - 1) {
                                 channels.remove(channel);
@@ -125,5 +129,4 @@ public class TraceFilter implements Filter {
         }
         return result;
     }
-
 }

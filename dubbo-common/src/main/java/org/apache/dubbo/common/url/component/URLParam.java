@@ -22,6 +22,7 @@ import org.apache.dubbo.common.url.component.param.DynamicParamTable;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
+import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
@@ -106,7 +107,8 @@ public class URLParam {
      */
     protected boolean enableCompressed;
 
-    private final static URLParam EMPTY_PARAM = new URLParam(new BitSet(0), Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), "");
+    private static final URLParam EMPTY_PARAM =
+            new URLParam(new BitSet(0), Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), "");
 
     protected URLParam() {
         this.rawParam = null;
@@ -117,7 +119,12 @@ public class URLParam {
         this.enableCompressed = true;
     }
 
-    protected URLParam(BitSet key, Map<Integer, Integer> value, Map<String, String> extraParams, Map<String, Map<String, String>> methodParameters, String rawParam) {
+    protected URLParam(
+            BitSet key,
+            Map<Integer, Integer> value,
+            Map<String, String> extraParams,
+            Map<String, Map<String, String>> methodParameters,
+            String rawParam) {
         this.KEY = key;
         this.VALUE = new int[value.size()];
         for (int i = key.nextSetBit(0), offset = 0; i >= 0; i = key.nextSetBit(i + 1)) {
@@ -127,19 +134,28 @@ public class URLParam {
                 throw new IllegalArgumentException();
             }
         }
-        this.EXTRA_PARAMS = Collections.unmodifiableMap((extraParams == null ? new HashMap<>() : new HashMap<>(extraParams)));
-        this.METHOD_PARAMETERS = Collections.unmodifiableMap((methodParameters == null) ? Collections.emptyMap() : new LinkedHashMap<>(methodParameters));
+        this.EXTRA_PARAMS =
+                Collections.unmodifiableMap((extraParams == null ? new HashMap<>() : new HashMap<>(extraParams)));
+        this.METHOD_PARAMETERS = Collections.unmodifiableMap(
+                (methodParameters == null) ? Collections.emptyMap() : new LinkedHashMap<>(methodParameters));
         this.rawParam = rawParam;
 
         this.timestamp = System.currentTimeMillis();
         this.enableCompressed = true;
     }
 
-    protected URLParam(BitSet key, int[] value, Map<String, String> extraParams, Map<String, Map<String, String>> methodParameters, String rawParam) {
+    protected URLParam(
+            BitSet key,
+            int[] value,
+            Map<String, String> extraParams,
+            Map<String, Map<String, String>> methodParameters,
+            String rawParam) {
         this.KEY = key;
         this.VALUE = value;
-        this.EXTRA_PARAMS = Collections.unmodifiableMap((extraParams == null ? new HashMap<>() : new HashMap<>(extraParams)));
-        this.METHOD_PARAMETERS = Collections.unmodifiableMap((methodParameters == null) ? Collections.emptyMap() : new LinkedHashMap<>(methodParameters));
+        this.EXTRA_PARAMS =
+                Collections.unmodifiableMap((extraParams == null ? new HashMap<>() : new HashMap<>(extraParams)));
+        this.METHOD_PARAMETERS = Collections.unmodifiableMap(
+                (methodParameters == null) ? Collections.emptyMap() : new LinkedHashMap<>(methodParameters));
         this.rawParam = rawParam;
         this.timestamp = System.currentTimeMillis();
         this.enableCompressed = true;
@@ -247,7 +263,7 @@ public class URLParam {
      * copy-on-write mode, urlParam reference will be changed after modify actions.
      * If wishes to get the result after modify, please use {@link URLParamMap#getUrlParam()}
      */
-    public static class URLParamMap implements Map<String, String> {
+    public static class URLParamMap extends AbstractMap<String, String> {
         private URLParam urlParam;
 
         public URLParamMap(URLParam urlParam) {
@@ -359,7 +375,8 @@ public class URLParam {
 
         @Override
         public Set<String> keySet() {
-            Set<String> set = new LinkedHashSet<>((int) ((urlParam.VALUE.length + urlParam.EXTRA_PARAMS.size()) / 0.75) + 1);
+            Set<String> set =
+                    new LinkedHashSet<>((int) ((urlParam.VALUE.length + urlParam.EXTRA_PARAMS.size()) / 0.75) + 1);
             for (int i = urlParam.KEY.nextSetBit(0); i >= 0; i = urlParam.KEY.nextSetBit(i + 1)) {
                 set.add(DynamicParamTable.getKey(i));
             }
@@ -371,7 +388,8 @@ public class URLParam {
 
         @Override
         public Collection<String> values() {
-            Set<String> set = new LinkedHashSet<>((int) ((urlParam.VALUE.length + urlParam.EXTRA_PARAMS.size()) / 0.75) + 1);
+            Set<String> set =
+                    new LinkedHashSet<>((int) ((urlParam.VALUE.length + urlParam.EXTRA_PARAMS.size()) / 0.75) + 1);
             for (int i = urlParam.KEY.nextSetBit(0); i >= 0; i = urlParam.KEY.nextSetBit(i + 1)) {
                 String value;
                 int offset = urlParam.keyIndexToOffset(i);
@@ -387,7 +405,8 @@ public class URLParam {
 
         @Override
         public Set<Entry<String, String>> entrySet() {
-            Set<Entry<String, String>> set = new LinkedHashSet<>((int) ((urlParam.KEY.cardinality() + urlParam.EXTRA_PARAMS.size()) / 0.75) + 1);
+            Set<Entry<String, String>> set =
+                    new LinkedHashSet<>((int) ((urlParam.KEY.cardinality() + urlParam.EXTRA_PARAMS.size()) / 0.75) + 1);
             for (int i = urlParam.KEY.nextSetBit(0); i >= 0; i = urlParam.KEY.nextSetBit(i + 1)) {
                 String value;
                 int offset = urlParam.keyIndexToOffset(i);
@@ -563,7 +582,8 @@ public class URLParam {
                     if (newMethodParams == null) {
                         newMethodParams = new HashMap<>(METHOD_PARAMETERS);
                     }
-                    Map<String, String> methodMap = newMethodParams.computeIfAbsent(methodSplit[1], (k) -> new HashMap<>());
+                    Map<String, String> methodMap =
+                            newMethodParams.computeIfAbsent(methodSplit[1], (k) -> new HashMap<>());
                     methodMap.put(methodSplit[0], entry.getValue());
                 }
             } else {
@@ -576,7 +596,10 @@ public class URLParam {
                         }
                         newValueMap.put(keyIndex, DynamicParamTable.getValueIndex(entry.getKey(), entry.getValue()));
                     } else {
-                        newValueArray = replaceOffset(VALUE, keyIndexToIndex(KEY, keyIndex), DynamicParamTable.getValueIndex(entry.getKey(), entry.getValue()));
+                        newValueArray = replaceOffset(
+                                VALUE,
+                                keyIndexToIndex(KEY, keyIndex),
+                                DynamicParamTable.getValueIndex(entry.getKey(), entry.getValue()));
                     }
                 } else {
                     // key is absent, add it
@@ -593,7 +616,10 @@ public class URLParam {
                         newValueMap.put(keyIndex, DynamicParamTable.getValueIndex(entry.getKey(), entry.getValue()));
                     } else {
                         // add parameter by moving array, only support for adding once
-                        newValueArray = addByMove(VALUE, keyIndexToIndex(newKey, keyIndex), DynamicParamTable.getValueIndex(entry.getKey(), entry.getValue()));
+                        newValueArray = addByMove(
+                                VALUE,
+                                keyIndexToIndex(newKey, keyIndex),
+                                DynamicParamTable.getValueIndex(entry.getKey(), entry.getValue()));
                     }
                 }
             }
@@ -785,17 +811,16 @@ public class URLParam {
             value = DynamicParamTable.getValue(keyIndex, offset);
 
             return value;
-//            if (StringUtils.isEmpty(value)) {
-//                // Forward compatible, make sure key dynamic increment can work.
-//                // In that case, some values which are proceed before increment will set in EXTRA_PARAMS.
-//                return EXTRA_PARAMS.get(key);
-//            } else {
-//                return value;
-//            }
+            //            if (StringUtils.isEmpty(value)) {
+            //                // Forward compatible, make sure key dynamic increment can work.
+            //                // In that case, some values which are proceed before increment will set in EXTRA_PARAMS.
+            //                return EXTRA_PARAMS.get(key);
+            //            } else {
+            //                return value;
+            //            }
         }
         return null;
     }
-
 
     private int keyIndexToIndex(BitSet key, int keyIndex) {
         return key.get(0, keyIndex).cardinality();
@@ -842,10 +867,10 @@ public class URLParam {
         }
         URLParam urlParam = (URLParam) o;
 
-        if (Objects.equals(KEY, urlParam.KEY)
-            && Arrays.equals(VALUE, urlParam.VALUE)) {
+        if (Objects.equals(KEY, urlParam.KEY) && Arrays.equals(VALUE, urlParam.VALUE)) {
             if (CollectionUtils.isNotEmptyMap(EXTRA_PARAMS)) {
-                if (CollectionUtils.isEmptyMap(urlParam.EXTRA_PARAMS) || EXTRA_PARAMS.size() != urlParam.EXTRA_PARAMS.size()) {
+                if (CollectionUtils.isEmptyMap(urlParam.EXTRA_PARAMS)
+                        || EXTRA_PARAMS.size() != urlParam.EXTRA_PARAMS.size()) {
                     return false;
                 }
                 for (Map.Entry<String, String> entry : EXTRA_PARAMS.entrySet()) {
@@ -962,7 +987,14 @@ public class URLParam {
                     addParameter(keyBit, valueMap, extraParam, methodParameters, key, value, false);
                     // compatible with lower versions registering "default." keys
                     if (key.startsWith(DEFAULT_KEY_PREFIX)) {
-                        addParameter(keyBit, valueMap, extraParam, methodParameters, key.substring(DEFAULT_KEY_PREFIX.length()), value, true);
+                        addParameter(
+                                keyBit,
+                                valueMap,
+                                extraParam,
+                                methodParameters,
+                                key.substring(DEFAULT_KEY_PREFIX.length()),
+                                value,
+                                true);
                     }
                 } else {
                     addParameter(keyBit, valueMap, extraParam, methodParameters, part, part, false);
@@ -994,7 +1026,20 @@ public class URLParam {
             Map<String, Map<String, String>> methodParameters = new HashMap<>(capacity);
 
             for (Map.Entry<String, String> entry : params.entrySet()) {
-                addParameter(keyBit, valueMap, extraParam, methodParameters, entry.getKey(), entry.getValue(), false);
+                String key = entry.getKey();
+                String value = entry.getValue();
+                addParameter(keyBit, valueMap, extraParam, methodParameters, key, value, false);
+                // compatible with lower versions registering "default." keys
+                if (key.startsWith(DEFAULT_KEY_PREFIX)) {
+                    addParameter(
+                            keyBit,
+                            valueMap,
+                            extraParam,
+                            methodParameters,
+                            key.substring(DEFAULT_KEY_PREFIX.length()),
+                            value,
+                            true);
+                }
             }
             return new URLParam(keyBit, valueMap, extraParam, methodParameters, rawParam);
         } else {
@@ -1002,8 +1047,14 @@ public class URLParam {
         }
     }
 
-    private static void addParameter(BitSet keyBit, Map<Integer, Integer> valueMap, Map<String, String> extraParam,
-                                     Map<String, Map<String, String>> methodParameters, String key, String value, boolean skipIfPresent) {
+    private static void addParameter(
+            BitSet keyBit,
+            Map<Integer, Integer> valueMap,
+            Map<String, String> extraParam,
+            Map<String, Map<String, String>> methodParameters,
+            String key,
+            String value,
+            boolean skipIfPresent) {
         int keyIndex = DynamicParamTable.getKeyIndex(true, key);
         if (skipIfPresent) {
             if (keyIndex < 0) {
@@ -1021,7 +1072,8 @@ public class URLParam {
             extraParam.put(key, value);
             String[] methodSplit = key.split("\\.", 2);
             if (methodSplit.length == 2) {
-                Map<String, String> methodMap = methodParameters.computeIfAbsent(methodSplit[1], (k) -> new HashMap<>());
+                Map<String, String> methodMap =
+                        methodParameters.computeIfAbsent(methodSplit[1], (k) -> new HashMap<>());
                 methodMap.put(methodSplit[0], value);
             }
         } else {

@@ -16,9 +16,12 @@
  */
 package org.apache.dubbo.common.extension.support;
 
+import org.apache.dubbo.common.compact.Dubbo2ActivateUtils;
+import org.apache.dubbo.common.compact.Dubbo2CompactUtils;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.Wrapper;
 
+import java.lang.annotation.Annotation;
 import java.util.Comparator;
 
 /**
@@ -63,11 +66,12 @@ public class WrapperComparator implements Comparator<Object> {
             // TODO: backward compatibility
             Activate activate = clazz.getAnnotation(Activate.class);
             info.order = activate.order();
-        } else if (clazz.isAnnotationPresent(com.alibaba.dubbo.common.extension.Activate.class)) {
+        } else if (Dubbo2CompactUtils.isEnabled()
+                && Dubbo2ActivateUtils.isActivateLoaded()
+                && clazz.isAnnotationPresent(Dubbo2ActivateUtils.getActivateClass())) {
             // TODO: backward compatibility
-            com.alibaba.dubbo.common.extension.Activate activate = clazz.getAnnotation(
-                    com.alibaba.dubbo.common.extension.Activate.class);
-            info.order = activate.order();
+            Annotation activate = clazz.getAnnotation(Dubbo2ActivateUtils.getActivateClass());
+            info.order = Dubbo2ActivateUtils.getOrder(activate);
         } else if (clazz.isAnnotationPresent(Wrapper.class)) {
             Wrapper wrapper = clazz.getAnnotation(Wrapper.class);
             info.order = wrapper.order();

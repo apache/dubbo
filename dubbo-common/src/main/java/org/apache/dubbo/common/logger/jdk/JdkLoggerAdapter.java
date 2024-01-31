@@ -29,23 +29,29 @@ import java.util.logging.LogManager;
 
 public class JdkLoggerAdapter implements LoggerAdapter {
 
+    public static final String NAME = "jdk";
     private static final String GLOBAL_LOGGER_NAME = "global";
 
     private File file;
+
+    private boolean propertiesLoaded = false;
 
     public JdkLoggerAdapter() {
         try {
             InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("logging.properties");
             if (in != null) {
                 LogManager.getLogManager().readConfiguration(in);
+                propertiesLoaded = true;
             } else {
                 System.err.println("No such logging.properties in classpath for jdk logging config!");
             }
-        } catch (Throwable t) {
-            System.err.println("Failed to load logging.properties in classpath for jdk logging config, cause: " + t.getMessage());
+        } catch (Exception t) {
+            System.err.println(
+                    "Failed to load logging.properties in classpath for jdk logging config, cause: " + t.getMessage());
         }
         try {
-            Handler[] handlers = java.util.logging.Logger.getLogger(GLOBAL_LOGGER_NAME).getHandlers();
+            Handler[] handlers =
+                    java.util.logging.Logger.getLogger(GLOBAL_LOGGER_NAME).getHandlers();
             for (Handler handler : handlers) {
                 if (handler instanceof FileHandler) {
                     FileHandler fileHandler = (FileHandler) handler;
@@ -56,7 +62,8 @@ public class JdkLoggerAdapter implements LoggerAdapter {
                     }
                 }
             }
-        } catch (Throwable t) {
+        } catch (Exception ignored) {
+            // ignore
         }
     }
 
@@ -118,7 +125,8 @@ public class JdkLoggerAdapter implements LoggerAdapter {
 
     @Override
     public Level getLevel() {
-        return fromJdkLevel(java.util.logging.Logger.getLogger(GLOBAL_LOGGER_NAME).getLevel());
+        return fromJdkLevel(
+                java.util.logging.Logger.getLogger(GLOBAL_LOGGER_NAME).getLevel());
     }
 
     @Override
@@ -133,7 +141,11 @@ public class JdkLoggerAdapter implements LoggerAdapter {
 
     @Override
     public void setFile(File file) {
-
+        // ignore
     }
 
+    @Override
+    public boolean isConfigured() {
+        return propertiesLoaded;
+    }
 }

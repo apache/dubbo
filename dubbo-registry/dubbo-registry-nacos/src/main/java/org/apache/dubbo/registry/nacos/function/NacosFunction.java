@@ -28,14 +28,13 @@ import com.alibaba.nacos.api.exception.NacosException;
  * @since 3.1.5
  */
 @FunctionalInterface
-public interface NacosFunction<T, R> {
+public interface NacosFunction<R> {
 
     /**
      * Applies this function to the given argument.
      *
-     * @param t the function argument
      * @return the function result
      * @throws NacosException if met with any error
      */
-    R apply(T t) throws NacosException;
+    R apply() throws NacosException;
 }

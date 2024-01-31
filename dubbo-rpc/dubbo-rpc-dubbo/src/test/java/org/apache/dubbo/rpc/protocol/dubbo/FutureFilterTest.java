@@ -46,8 +46,8 @@ class FutureFilterTest {
     public static void setUp() {
         invocation = new RpcInvocation();
         invocation.setMethodName("echo");
-        invocation.setParameterTypes(new Class<?>[]{Enum.class});
-        invocation.setArguments(new Object[]{"hello"});
+        invocation.setParameterTypes(new Class<?>[] {Enum.class});
+        invocation.setArguments(new Object[] {"hello"});
     }
 
     @Test

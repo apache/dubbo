@@ -22,7 +22,6 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.GlobalResourceInitializer;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
-import org.apache.dubbo.common.timer.Timeout;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
@@ -44,14 +43,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.unmodifiableCollection;
 import static org.apache.dubbo.common.constants.CommonConstants.READONLY_EVENT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_RESPONSE;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.remoting.Constants.HEARTBEAT_CHECK_TICK;
 import static org.apache.dubbo.remoting.Constants.LEAST_HEARTBEAT_DURATION;
 import static org.apache.dubbo.remoting.Constants.TICKS_PER_WHEEL;
-import static org.apache.dubbo.remoting.utils.UrlUtils.getHeartbeat;
-import static org.apache.dubbo.remoting.utils.UrlUtils.getIdleTimeout;
+import static org.apache.dubbo.remoting.utils.UrlUtils.getCloseTimeout;
 
 /**
  * ExchangeServerImpl
@@ -64,9 +62,12 @@ public class HeaderExchangeServer implements ExchangeServer {
 
     private final AtomicBoolean closed = new AtomicBoolean(false);
 
-    public static GlobalResourceInitializer<HashedWheelTimer> IDLE_CHECK_TIMER = new GlobalResourceInitializer<>(() -> new HashedWheelTimer(new NamedThreadFactory("dubbo-server-idleCheck", true), 1, TimeUnit.SECONDS, TICKS_PER_WHEEL), HashedWheelTimer::stop);
+    public static GlobalResourceInitializer<HashedWheelTimer> IDLE_CHECK_TIMER = new GlobalResourceInitializer<>(
+            () -> new HashedWheelTimer(
+                    new NamedThreadFactory("dubbo-server-idleCheck", true), 1, TimeUnit.SECONDS, TICKS_PER_WHEEL),
+            HashedWheelTimer::stop);
 
-    private Timeout closeTimer;
+    private CloseTimerTask closeTimer;
 
     public HeaderExchangeServer(RemotingServer server) {
         Assert.notNull(server, "server == null");
@@ -109,8 +110,7 @@ public class HeaderExchangeServer implements ExchangeServer {
             if (getUrl().getParameter(Constants.CHANNEL_SEND_READONLYEVENT_KEY, true)) {
                 sendChannelReadOnlyEvent();
             }
-            while (HeaderExchangeServer.this.isRunning()
-                && System.currentTimeMillis() - start < (long) timeout) {
+            while (HeaderExchangeServer.this.isRunning() && System.currentTimeMillis() - start < (long) timeout) {
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
@@ -141,7 +141,7 @@ public class HeaderExchangeServer implements ExchangeServer {
                 }
             } catch (RemotingException e) {
                 if (closed.get() && e.getCause() instanceof ClosedChannelException) {
-                    // ignore ClosedChannelException which means the connection has been closed. 
+                    // ignore ClosedChannelException which means the connection has been closed.
                     continue;
                 }
                 logger.warn(TRANSPORT_FAILED_RESPONSE, "", "", "send cannot write message error.", e);
@@ -212,11 +212,9 @@ public class HeaderExchangeServer implements ExchangeServer {
     public void reset(URL url) {
         server.reset(url);
         try {
-            int currHeartbeat = getHeartbeat(getUrl());
-            int currIdleTimeout = getIdleTimeout(getUrl());
-            int heartbeat = getHeartbeat(url);
-            int idleTimeout = getIdleTimeout(url);
-            if (currHeartbeat != heartbeat || currIdleTimeout != idleTimeout) {
+            int currCloseTimeout = getCloseTimeout(getUrl());
+            int closeTimeout = getCloseTimeout(url);
+            if (closeTimeout != currCloseTimeout) {
                 cancelCloseTask();
                 startIdleCheckTask(url);
             }
@@ -234,8 +232,10 @@ public class HeaderExchangeServer implements ExchangeServer {
     @Override
     public void send(Object message) throws RemotingException {
         if (closed.get()) {
-            throw new RemotingException(this.getLocalAddress(), null, "Failed to send message " + message
-                + ", cause: The server " + getLocalAddress() + " is closed!");
+            throw new RemotingException(
+                    this.getLocalAddress(),
+                    null,
+                    "Failed to send message " + message + ", cause: The server " + getLocalAddress() + " is closed!");
         }
         server.send(message);
     }
@@ -243,8 +243,10 @@ public class HeaderExchangeServer implements ExchangeServer {
     @Override
     public void send(Object message, boolean sent) throws RemotingException {
         if (closed.get()) {
-            throw new RemotingException(this.getLocalAddress(), null, "Failed to send message " + message
-                + ", cause: The server " + getLocalAddress() + " is closed!");
+            throw new RemotingException(
+                    this.getLocalAddress(),
+                    null,
+                    "Failed to send message " + message + ", cause: The server " + getLocalAddress() + " is closed!");
         }
         server.send(message, sent);
     }
@@ -262,13 +264,11 @@ public class HeaderExchangeServer implements ExchangeServer {
 
     private void startIdleCheckTask(URL url) {
         if (!server.canHandleIdle()) {
-            AbstractTimerTask.ChannelProvider cp = () -> unmodifiableCollection(HeaderExchangeServer.this.getChannels());
-            int idleTimeout = getIdleTimeout(url);
-            long idleTimeoutTick = calculateLeastDuration(idleTimeout);
-            CloseTimerTask closeTimerTask = new CloseTimerTask(cp, idleTimeoutTick, idleTimeout);
-
-            // init task and start timer.
-            this.closeTimer = IDLE_CHECK_TIMER.get().newTimeout(closeTimerTask, idleTimeoutTick, TimeUnit.MILLISECONDS);
+            AbstractTimerTask.ChannelProvider cp =
+                    () -> unmodifiableCollection(HeaderExchangeServer.this.getChannels());
+            int closeTimeout = getCloseTimeout(url);
+            long closeTimeoutTick = calculateLeastDuration(closeTimeout);
+            this.closeTimer = new CloseTimerTask(cp, IDLE_CHECK_TIMER.get(), closeTimeoutTick, closeTimeout);
         }
     }
 }

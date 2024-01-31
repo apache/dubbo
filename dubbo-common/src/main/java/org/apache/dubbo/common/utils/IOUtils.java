@@ -19,6 +19,7 @@ package org.apache.dubbo.common.utils;
 import org.apache.dubbo.common.constants.CommonConstants;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -48,8 +49,7 @@ public class IOUtils {
     private static final int BUFFER_SIZE = 1024 * 8;
     public static final int EOF = -1;
 
-    private IOUtils() {
-    }
+    private IOUtils() {}
 
     /**
      * write.
@@ -86,7 +86,8 @@ public class IOUtils {
      * @return count.
      * @throws IOException If an I/O error occurs
      */
-    public static long write(final InputStream input, final OutputStream output, final byte[] buffer) throws IOException {
+    public static long write(final InputStream input, final OutputStream output, final byte[] buffer)
+            throws IOException {
         long count = 0;
         int n;
         while (EOF != (n = input.read(buffer))) {
@@ -244,7 +245,6 @@ public class IOUtils {
         writeLines(new FileOutputStream(file, true), lines);
     }
 
-
     /**
      * use like spring code
      *
@@ -259,8 +259,7 @@ public class IOUtils {
             URL url = (cl != null ? cl.getResource(path) : ClassLoader.getSystemResource(path));
             if (url == null) {
                 String description = "class path resource [" + path + "]";
-                throw new FileNotFoundException(description +
-                    " cannot be resolved to URL because it does not exist");
+                throw new FileNotFoundException(description + " cannot be resolved to URL because it does not exist");
             }
             return url;
         }
@@ -272,9 +271,20 @@ public class IOUtils {
             try {
                 return new File(resourceLocation).toURI().toURL();
             } catch (MalformedURLException ex2) {
-                throw new FileNotFoundException("Resource location [" + resourceLocation +
-                    "] is neither a URL not a well-formed file path");
+                throw new FileNotFoundException(
+                        "Resource location [" + resourceLocation + "] is neither a URL not a well-formed file path");
             }
+        }
+    }
+
+    public static byte[] toByteArray(final InputStream inputStream) throws IOException {
+        try (final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[1024];
+            int n;
+            while (-1 != (n = inputStream.read(buffer))) {
+                byteArrayOutputStream.write(buffer, 0, n);
+            }
+            return byteArrayOutputStream.toByteArray();
         }
     }
 }

@@ -16,22 +16,32 @@
  */
 package org.apache.dubbo.registry.nacos;
 
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.registry.NotifyListener;
-
-import com.alibaba.nacos.api.naming.pojo.Instance;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.alibaba.nacos.api.naming.pojo.Instance;
+
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_NACOS_SUB_LEGACY;
+
 public class NacosAggregateListener {
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(NacosAggregateListener.class);
     private final NotifyListener notifyListener;
     private final Set<String> serviceNames = new ConcurrentHashSet<>();
     private final Map<String, List<Instance>> serviceInstances = new ConcurrentHashMap<>();
+    private final AtomicBoolean warned = new AtomicBoolean(false);
+    private static final Pattern SPLITTED_PATTERN = Pattern.compile(".*:.*:.*:.*");
 
     public NacosAggregateListener(NotifyListener notifyListener) {
         this.notifyListener = notifyListener;
@@ -44,7 +54,24 @@ public class NacosAggregateListener {
         } else {
             serviceInstances.put(serviceName, instances);
         }
+        if (isLegacyName(serviceName)
+                && instances != null
+                && !instances.isEmpty()
+                && warned.compareAndSet(false, true)) {
+            logger.error(
+                    REGISTRY_NACOS_SUB_LEGACY,
+                    "",
+                    "",
+                    "Received not empty notification for legacy service name: " + serviceName + ", " + "instances: ["
+                            + instances.stream().map(Instance::getIp).collect(Collectors.joining(" ,")) + "]. "
+                            + "Please upgrade these Dubbo client(lower than 2.7.3) to the latest version. "
+                            + "Dubbo will remove the support for legacy service name in the future.");
+        }
         return serviceInstances.values().stream().flatMap(List::stream).collect(Collectors.toList());
+    }
+
+    private static boolean isLegacyName(String serviceName) {
+        return !SPLITTED_PATTERN.matcher(serviceName).matches();
     }
 
     public NotifyListener getNotifyListener() {
@@ -64,11 +91,13 @@ public class NacosAggregateListener {
             return false;
         }
         NacosAggregateListener that = (NacosAggregateListener) o;
-        return Objects.equals(notifyListener, that.notifyListener) && Objects.equals(serviceNames, that.serviceNames) && Objects.equals(serviceInstances, that.serviceInstances);
+        return Objects.equals(notifyListener, that.notifyListener)
+                && Objects.equals(serviceNames, that.serviceNames)
+                && Objects.equals(serviceInstances, that.serviceInstances);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(notifyListener, serviceNames, serviceInstances);
+        return Objects.hash(notifyListener);
     }
 }

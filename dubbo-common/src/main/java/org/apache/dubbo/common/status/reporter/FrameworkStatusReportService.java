@@ -39,7 +39,9 @@ public class FrameworkStatusReportService implements ScopeModelAware {
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
-        reporters = applicationModel.getExtensionLoader(FrameworkStatusReporter.class).getSupportedExtensionInstances();
+        reporters = applicationModel
+                .getExtensionLoader(FrameworkStatusReporter.class)
+                .getSupportedExtensionInstances();
     }
 
     public void reportRegistrationStatus(Object obj) {
@@ -75,7 +77,7 @@ public class FrameworkStatusReportService implements ScopeModelAware {
         HashMap<String, String> registration = new HashMap<>();
         registration.put("application", applicationModel.getApplicationName());
         registration.put("status", status);
-        return JsonUtils.getJson().toJson(registration);
+        return JsonUtils.toJson(registration);
     }
 
     public String createConsumptionReport(String interfaceName, String version, String group, String status) {
@@ -86,10 +88,11 @@ public class FrameworkStatusReportService implements ScopeModelAware {
         migrationStatus.put("version", version);
         migrationStatus.put("group", group);
         migrationStatus.put("status", status);
-        return JsonUtils.getJson().toJson(migrationStatus);
+        return JsonUtils.toJson(migrationStatus);
     }
 
-    public String createMigrationStepReport(String interfaceName, String version, String group, String originStep, String newStep, String success) {
+    public String createMigrationStepReport(
+            String interfaceName, String version, String group, String originStep, String newStep, String success) {
         HashMap<String, String> migrationStatus = new HashMap<>();
         migrationStatus.put("type", "migrationStepStatus");
         migrationStatus.put("application", applicationModel.getApplicationName());
@@ -99,6 +102,6 @@ public class FrameworkStatusReportService implements ScopeModelAware {
         migrationStatus.put("originStep", originStep);
         migrationStatus.put("newStep", newStep);
         migrationStatus.put("success", success);
-        return JsonUtils.getJson().toJson(migrationStatus);
+        return JsonUtils.toJson(migrationStatus);
     }
 }

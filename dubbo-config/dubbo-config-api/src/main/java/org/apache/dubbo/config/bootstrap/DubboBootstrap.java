@@ -25,6 +25,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.ConsumerConfig;
@@ -38,6 +39,7 @@ import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.SslConfig;
+import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.config.bootstrap.builders.ApplicationBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ConfigCenterBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ConsumerBuilder;
@@ -53,8 +55,8 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
@@ -80,7 +82,7 @@ public final class DubboBootstrap {
 
     private static final Logger logger = LoggerFactory.getLogger(DubboBootstrap.class);
 
-    private static volatile Map<ApplicationModel, DubboBootstrap> instanceMap = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<ApplicationModel, DubboBootstrap> instanceMap = new ConcurrentHashMap<>();
     private static volatile DubboBootstrap instance;
 
     private final AtomicBoolean awaited = new AtomicBoolean(false);
@@ -91,15 +93,15 @@ public final class DubboBootstrap {
 
     private final Condition condition = lock.newCondition();
 
-    private ExecutorRepository executorRepository;
+    private final ExecutorRepository executorRepository;
+
+    private final Environment environment;
 
     private final ApplicationModel applicationModel;
 
-    protected final ConfigManager configManager;
+    private final ConfigManager configManager;
 
-    protected final Environment environment;
-
-    private ApplicationDeployer applicationDeployer;
+    private final ApplicationDeployer applicationDeployer;
 
     /**
      * See {@link ApplicationModel} and {@link ExtensionLoader} for why DubboBootstrap is designed to be singleton.
@@ -116,7 +118,8 @@ public final class DubboBootstrap {
     }
 
     public static DubboBootstrap getInstance(ApplicationModel applicationModel) {
-        return instanceMap.computeIfAbsent(applicationModel, _k -> new DubboBootstrap(applicationModel));
+        return ConcurrentHashMapUtils.computeIfAbsent(
+                instanceMap, applicationModel, _k -> new DubboBootstrap(applicationModel));
     }
 
     public static DubboBootstrap newInstance() {
@@ -160,9 +163,9 @@ public final class DubboBootstrap {
     private DubboBootstrap(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
         configManager = applicationModel.getApplicationConfigManager();
-        environment = applicationModel.getModelEnvironment();
+        environment = applicationModel.modelEnvironment();
 
-        executorRepository = applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+        executorRepository = ExecutorRepository.getInstance(applicationModel);
         applicationDeployer = applicationModel.getDeployer();
         // listen deploy events
         applicationDeployer.addDeployListener(new DeployListenerAdapter<ApplicationModel>() {
@@ -186,12 +189,14 @@ public final class DubboBootstrap {
     }
 
     private void notifyStarted(ApplicationModel applicationModel) {
-        ExtensionLoader<DubboBootstrapStartStopListener> exts = applicationModel.getExtensionLoader(DubboBootstrapStartStopListener.class);
+        ExtensionLoader<DubboBootstrapStartStopListener> exts =
+                applicationModel.getExtensionLoader(DubboBootstrapStartStopListener.class);
         exts.getSupportedExtensionInstances().forEach(ext -> ext.onStart(DubboBootstrap.this));
     }
 
     private void notifyStopped(ApplicationModel applicationModel) {
-        ExtensionLoader<DubboBootstrapStartStopListener> exts = applicationModel.getExtensionLoader(DubboBootstrapStartStopListener.class);
+        ExtensionLoader<DubboBootstrapStartStopListener> exts =
+                applicationModel.getExtensionLoader(DubboBootstrapStartStopListener.class);
         exts.getSupportedExtensionInstances().forEach(ext -> ext.onStop(DubboBootstrap.this));
         executeMutually(() -> {
             awaited.set(true);
@@ -217,6 +222,7 @@ public final class DubboBootstrap {
 
     /**
      * Start dubbo application
+     *
      * @param wait If true, wait for startup to complete, or else no waiting.
      * @return
      */
@@ -234,6 +240,7 @@ public final class DubboBootstrap {
 
     /**
      * Start dubbo application but no wait for finish.
+     *
      * @return the future object
      */
     public Future asyncStart() {
@@ -242,6 +249,7 @@ public final class DubboBootstrap {
 
     /**
      * Stop dubbo application
+     *
      * @return
      * @throws IllegalStateException
      */
@@ -346,7 +354,7 @@ public final class DubboBootstrap {
     }
 
     public void setTakeoverMode(BootstrapTakeoverMode takeoverMode) {
-        //TODO this.started.set(false);
+        // TODO this.started.set(false);
         this.takeoverMode = takeoverMode;
     }
 
@@ -362,14 +370,13 @@ public final class DubboBootstrap {
         return configManager;
     }
 
-
     // MetadataReportConfig correlative methods
 
     public DubboBootstrap metadataReport(Consumer<MetadataReportBuilder> consumerBuilder) {
         return metadataReport(null, consumerBuilder);
     }
 
-    public DubboBootstrap metadataReport(String id,Consumer<MetadataReportBuilder> consumerBuilder) {
+    public DubboBootstrap metadataReport(String id, Consumer<MetadataReportBuilder> consumerBuilder) {
         MetadataReportBuilder metadataReportBuilder = createMetadataReportBuilder(id);
         consumerBuilder.accept(metadataReportBuilder);
         return this;
@@ -428,7 +435,6 @@ public final class DubboBootstrap {
         return this;
     }
 
-
     // {@link RegistryConfig} correlative methods
 
     /**
@@ -479,7 +485,6 @@ public final class DubboBootstrap {
         registryConfigs.forEach(this::registry);
         return this;
     }
-
 
     // {@link ProtocolConfig} correlative methods
     public DubboBootstrap protocol(Consumer<ProtocolBuilder> consumerBuilder) {
@@ -699,6 +704,12 @@ public final class DubboBootstrap {
         return this;
     }
 
+    public DubboBootstrap tracing(TracingConfig tracing) {
+        tracing.setScopeModel(applicationModel);
+        configManager.setTracing(tracing);
+        return this;
+    }
+
     public DubboBootstrap ssl(SslConfig sslConfig) {
         sslConfig.setScopeModel(applicationModel);
         configManager.setSsl(sslConfig);
@@ -758,7 +769,6 @@ public final class DubboBootstrap {
     public DubboBootstrap endModule() {
         return this;
     }
-
 
     public class Module {
         private ModuleModel moduleModel;
@@ -878,5 +888,4 @@ public final class DubboBootstrap {
             return this;
         }
     }
-
 }

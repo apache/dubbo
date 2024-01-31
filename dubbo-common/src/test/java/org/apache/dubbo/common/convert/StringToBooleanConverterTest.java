@@ -35,7 +35,8 @@ class StringToBooleanConverterTest {
 
     @BeforeEach
     public void init() {
-        converter = (StringToBooleanConverter) getExtensionLoader(Converter.class).getExtension("string-to-boolean");
+        converter =
+                (StringToBooleanConverter) getExtensionLoader(Converter.class).getExtension("string-to-boolean");
     }
 
     @Test

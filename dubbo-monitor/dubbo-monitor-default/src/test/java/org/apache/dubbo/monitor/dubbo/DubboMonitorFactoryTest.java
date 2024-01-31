@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.monitor.Monitor;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -38,6 +39,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 class DubboMonitorFactoryTest {
     private DubboMonitorFactory dubboMonitorFactory;
+
     @Mock
     private ProxyFactory proxyFactory;
 
@@ -45,7 +47,7 @@ class DubboMonitorFactoryTest {
     public void setUp() throws Exception {
         initMocks(this);
         this.dubboMonitorFactory = new DubboMonitorFactory();
-        this.dubboMonitorFactory.setProtocol(new DubboProtocol());
+        this.dubboMonitorFactory.setProtocol(new DubboProtocol(FrameworkModel.defaultModel()));
         this.dubboMonitorFactory.setProxyFactory(proxyFactory);
     }
 

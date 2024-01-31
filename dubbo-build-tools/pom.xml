@@ -13,18 +13,77 @@
   See the License for the specific language governing permissions and
   limitations under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.apache.dubbo</groupId>
-    <artifactId>dubbo-build-tools</artifactId>
-    <version>1.0.0</version>
-    <packaging>jar</packaging>
+  <groupId>org.apache.dubbo</groupId>
+  <artifactId>dubbo-build-tools</artifactId>
+  <version>1.0.0</version>
+  <packaging>jar</packaging>
 
-    <properties>
-      <maven.deploy.skip>true</maven.deploy.skip>
-    </properties>
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+    <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
+    <spotless.action>check</spotless.action>
+    <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
+    <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
+  </properties>
+
+  <profiles>
+    <profile>
+      <id>java11+</id>
+      <activation>
+        <jdk>[11,)</jdk>
+      </activation>
+      <build>
+        <!--- newer versions of plugins requires JDK 11 -->
+        <plugins>
+          <plugin>
+            <groupId>com.diffplug.spotless</groupId>
+            <artifactId>spotless-maven-plugin</artifactId>
+            <version>${spotless-maven-plugin.version}</version>
+            <configuration>
+              <java>
+                <palantirJavaFormat>
+                  <version>${palantirJavaFormat.version}</version>
+                </palantirJavaFormat>
+                <removeUnusedImports />
+                <importOrder>
+                  <file>dubbo-importorder.txt</file>
+                </importOrder>
+                <licenseHeader>
+                  <file>checkstyle-header.txt</file>
+                </licenseHeader>
+              </java>
+              <pom>
+                <sortPom>
+                  <expandEmptyElements>false</expandEmptyElements>
+                  <spaceBeforeCloseEmptyElement>true</spaceBeforeCloseEmptyElement>
+                </sortPom>
+              </pom>
+              <upToDateChecking>
+                <enabled>true</enabled>
+              </upToDateChecking>
+            </configuration>
+            <dependencies>
+              <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>dubbo-shared-resources</artifactId>
+                <version>${dubbo-shared-resources.version}</version>
+              </dependency>
+            </dependencies>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>${spotless.action}</goal>
+                </goals>
+                <phase>process-sources</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
 </project>

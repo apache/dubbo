@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.rpc.TriRpcStatus.Code;
+
+import java.io.Serializable;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.jupiter.api.Assertions;
@@ -39,7 +40,7 @@ class TriRpcStatusTest {
             TriRpcStatus.fromCode(1000);
             fail();
         } catch (Throwable t) {
-            //pass
+            // pass
         }
     }
 
@@ -51,21 +52,21 @@ class TriRpcStatusTest {
     @Test
     void getStatus() {
         StatusRpcException rpcException = new StatusRpcException(TriRpcStatus.INTERNAL);
-        Assertions.assertEquals(TriRpcStatus.INTERNAL.code,
-            TriRpcStatus.getStatus(rpcException).code);
+        Assertions.assertEquals(TriRpcStatus.INTERNAL.code, TriRpcStatus.getStatus(rpcException).code);
     }
 
     @Test
     void testGetStatus() {
         StatusRpcException rpcException = new StatusRpcException(TriRpcStatus.INTERNAL);
-        Assertions.assertEquals(TriRpcStatus.INTERNAL.code,
-            TriRpcStatus.getStatus(rpcException, null).code);
+        Assertions.assertEquals(TriRpcStatus.INTERNAL.code, TriRpcStatus.getStatus(rpcException, null).code);
 
-        Assertions.assertEquals(TriRpcStatus.DEADLINE_EXCEEDED.code,
-            TriRpcStatus.getStatus(new RpcException(RpcException.TIMEOUT_EXCEPTION), null).code);
+        Assertions.assertEquals(
+                TriRpcStatus.DEADLINE_EXCEEDED.code,
+                TriRpcStatus.getStatus(new RpcException(RpcException.TIMEOUT_EXCEPTION), null).code);
 
-        Assertions.assertEquals(TriRpcStatus.DEADLINE_EXCEEDED.code,
-            TriRpcStatus.getStatus(new TimeoutException(true, null, null), null).code);
+        Assertions.assertEquals(
+                TriRpcStatus.DEADLINE_EXCEEDED.code,
+                TriRpcStatus.getStatus(new TimeoutException(true, null, null), null).code);
     }
 
     @Test
@@ -86,8 +87,7 @@ class TriRpcStatusTest {
     @Test
     void decodeMessage() {
         String message = "😯";
-        Assertions.assertEquals(message,
-            TriRpcStatus.decodeMessage(TriRpcStatus.encodeMessage(message)));
+        Assertions.assertEquals(message, TriRpcStatus.decodeMessage(TriRpcStatus.encodeMessage(message)));
 
         Assertions.assertTrue(TriRpcStatus.decodeMessage("").isEmpty());
         Assertions.assertTrue(TriRpcStatus.decodeMessage(null).isEmpty());
@@ -96,26 +96,23 @@ class TriRpcStatusTest {
     @Test
     void httpStatusToGrpcCode() {
         Assertions.assertEquals(Code.UNIMPLEMENTED, TriRpcStatus.httpStatusToGrpcCode(404));
-        Assertions.assertEquals(Code.UNAVAILABLE,
-            TriRpcStatus.httpStatusToGrpcCode(HttpResponseStatus.BAD_GATEWAY.code()));
-        Assertions.assertEquals(Code.UNAVAILABLE,
-            TriRpcStatus.httpStatusToGrpcCode(HttpResponseStatus.TOO_MANY_REQUESTS.code()));
-        Assertions.assertEquals(Code.UNAVAILABLE,
-            TriRpcStatus.httpStatusToGrpcCode(HttpResponseStatus.SERVICE_UNAVAILABLE.code()));
-        Assertions.assertEquals(Code.UNAVAILABLE,
-            TriRpcStatus.httpStatusToGrpcCode(HttpResponseStatus.GATEWAY_TIMEOUT.code()));
-        Assertions.assertEquals(Code.INTERNAL,
-            TriRpcStatus.httpStatusToGrpcCode(
-                HttpResponseStatus.CONTINUE.code()));
-        Assertions.assertEquals(Code.INTERNAL,
-            TriRpcStatus.httpStatusToGrpcCode(
-                HttpResponseStatus.REQUEST_HEADER_FIELDS_TOO_LARGE.code()));
-        Assertions.assertEquals(Code.UNKNOWN,
-            TriRpcStatus.httpStatusToGrpcCode(HttpResponseStatus.ACCEPTED.code()));
-        Assertions.assertEquals(Code.PERMISSION_DENIED,
-            TriRpcStatus.httpStatusToGrpcCode(HttpResponseStatus.FORBIDDEN.code()));
-        Assertions.assertEquals(Code.UNIMPLEMENTED,
-            TriRpcStatus.httpStatusToGrpcCode(HttpResponseStatus.NOT_FOUND.code()));
+        Assertions.assertEquals(
+                Code.UNAVAILABLE, TriRpcStatus.httpStatusToGrpcCode(HttpResponseStatus.BAD_GATEWAY.code()));
+        Assertions.assertEquals(
+                Code.UNAVAILABLE, TriRpcStatus.httpStatusToGrpcCode(HttpResponseStatus.TOO_MANY_REQUESTS.code()));
+        Assertions.assertEquals(
+                Code.UNAVAILABLE, TriRpcStatus.httpStatusToGrpcCode(HttpResponseStatus.SERVICE_UNAVAILABLE.code()));
+        Assertions.assertEquals(
+                Code.UNAVAILABLE, TriRpcStatus.httpStatusToGrpcCode(HttpResponseStatus.GATEWAY_TIMEOUT.code()));
+        Assertions.assertEquals(Code.INTERNAL, TriRpcStatus.httpStatusToGrpcCode(HttpResponseStatus.CONTINUE.code()));
+        Assertions.assertEquals(
+                Code.INTERNAL,
+                TriRpcStatus.httpStatusToGrpcCode(HttpResponseStatus.REQUEST_HEADER_FIELDS_TOO_LARGE.code()));
+        Assertions.assertEquals(Code.UNKNOWN, TriRpcStatus.httpStatusToGrpcCode(HttpResponseStatus.ACCEPTED.code()));
+        Assertions.assertEquals(
+                Code.PERMISSION_DENIED, TriRpcStatus.httpStatusToGrpcCode(HttpResponseStatus.FORBIDDEN.code()));
+        Assertions.assertEquals(
+                Code.UNIMPLEMENTED, TriRpcStatus.httpStatusToGrpcCode(HttpResponseStatus.NOT_FOUND.code()));
     }
 
     @Test
@@ -154,17 +151,18 @@ class TriRpcStatusTest {
     @Test
     void asException() {
         StatusRpcException exception = TriRpcStatus.NOT_FOUND
-            .withDescription("desc")
-            .withCause(new IllegalStateException("test")).asException();
+                .withDescription("desc")
+                .withCause(new IllegalStateException("test"))
+                .asException();
         Assertions.assertEquals(Code.NOT_FOUND, exception.getStatus().code);
     }
 
     @Test
     void toEncodedMessage() {
         String message = TriRpcStatus.NOT_FOUND
-            .withDescription("desc")
-            .withCause(new IllegalStateException("test"))
-            .toEncodedMessage();
+                .withDescription("desc")
+                .withCause(new IllegalStateException("test"))
+                .toEncodedMessage();
         Assertions.assertTrue(message.contains("desc"));
         Assertions.assertTrue(message.contains("test"));
     }
@@ -172,9 +170,9 @@ class TriRpcStatusTest {
     @Test
     void toMessageWithoutCause() {
         String message = TriRpcStatus.NOT_FOUND
-            .withDescription("desc")
-            .withCause(new IllegalStateException("test"))
-            .toMessageWithoutCause();
+                .withDescription("desc")
+                .withCause(new IllegalStateException("test"))
+                .toMessageWithoutCause();
         Assertions.assertTrue(message.contains("desc"));
         Assertions.assertFalse(message.contains("test"));
     }
@@ -182,9 +180,9 @@ class TriRpcStatusTest {
     @Test
     void toMessage() {
         String message = TriRpcStatus.NOT_FOUND
-            .withDescription("desc")
-            .withCause(new IllegalStateException("test"))
-            .toMessage();
+                .withDescription("desc")
+                .withCause(new IllegalStateException("test"))
+                .toMessage();
         Assertions.assertTrue(message.contains("desc"));
         Assertions.assertTrue(message.contains("test"));
     }
@@ -207,19 +205,22 @@ class TriRpcStatusTest {
     @Test
     void toMessage2() {
         String content = "\t\ntest with whitespace\r\nand Unicode BMP ☺ and non-BMP 😈\t\n";
-        final TriRpcStatus status = TriRpcStatus.INTERNAL
-            .withDescription(content);
+        final TriRpcStatus status = TriRpcStatus.INTERNAL.withDescription(content);
         Assertions.assertEquals(content, status.toMessage());
     }
 
     @Test
     void triCodeToDubboCode() {
-        Assertions.assertEquals(TIMEOUT_EXCEPTION,
-            TriRpcStatus.triCodeToDubboCode(Code.DEADLINE_EXCEEDED));
-        Assertions.assertEquals(FORBIDDEN_EXCEPTION,
-            TriRpcStatus.triCodeToDubboCode(Code.PERMISSION_DENIED));
-        Assertions.assertEquals(METHOD_NOT_FOUND,
-            TriRpcStatus.triCodeToDubboCode(Code.UNIMPLEMENTED));
+        Assertions.assertEquals(TIMEOUT_EXCEPTION, TriRpcStatus.triCodeToDubboCode(Code.DEADLINE_EXCEEDED));
+        Assertions.assertEquals(FORBIDDEN_EXCEPTION, TriRpcStatus.triCodeToDubboCode(Code.PERMISSION_DENIED));
+        Assertions.assertEquals(METHOD_NOT_FOUND, TriRpcStatus.triCodeToDubboCode(Code.UNIMPLEMENTED));
         Assertions.assertEquals(UNKNOWN_EXCEPTION, TriRpcStatus.triCodeToDubboCode(Code.UNKNOWN));
+    }
+
+    @Test
+    void testSerializable() {
+        TriRpcStatus status = TriRpcStatus.INTERNAL.withDescription("test");
+        Assertions.assertInstanceOf(Serializable.class, status.asException());
+        Assertions.assertInstanceOf(Serializable.class, status.asException().getStatus());
     }
 }

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.remoting.buffer;
 
 import java.io.IOException;
@@ -57,7 +56,7 @@ public class ChannelBufferInputStream extends InputStream {
     }
 
     @Override
-    public void mark(int readLimit) {
+    public synchronized void mark(int readLimit) {
         buffer.markReaderIndex();
     }
 
@@ -87,7 +86,7 @@ public class ChannelBufferInputStream extends InputStream {
     }
 
     @Override
-    public void reset() throws IOException {
+    public synchronized void reset() throws IOException {
         buffer.resetReaderIndex();
     }
 
@@ -105,5 +104,4 @@ public class ChannelBufferInputStream extends InputStream {
         buffer.skipBytes(nBytes);
         return nBytes;
     }
-
 }

@@ -25,58 +25,64 @@ class ConsumerBuilderTest {
 
     @Test
     void isDefault() {
-        ConsumerBuilder builder = new ConsumerBuilder();
+        ConsumerBuilder builder = ConsumerBuilder.newBuilder();
         builder.isDefault(false);
         Assertions.assertFalse(builder.build().isDefault());
     }
 
     @Test
     void client() {
-        ConsumerBuilder builder = new ConsumerBuilder();
+        ConsumerBuilder builder = ConsumerBuilder.newBuilder();
         builder.client("client");
         Assertions.assertEquals("client", builder.build().getClient());
     }
 
     @Test
     void threadPool() {
-        ConsumerBuilder builder = new ConsumerBuilder();
+        ConsumerBuilder builder = ConsumerBuilder.newBuilder();
         builder.threadPool("threadPool");
         Assertions.assertEquals("threadPool", builder.build().getThreadpool());
     }
 
     @Test
     void coreThreads() {
-        ConsumerBuilder builder = new ConsumerBuilder();
+        ConsumerBuilder builder = ConsumerBuilder.newBuilder();
         builder.coreThreads(10);
         Assertions.assertEquals(10, builder.build().getCorethreads());
     }
 
     @Test
     void threads() {
-        ConsumerBuilder builder = new ConsumerBuilder();
+        ConsumerBuilder builder = ConsumerBuilder.newBuilder();
         builder.threads(100);
         Assertions.assertEquals(100, builder.build().getThreads());
     }
 
     @Test
     void queues() {
-        ConsumerBuilder builder = new ConsumerBuilder();
+        ConsumerBuilder builder = ConsumerBuilder.newBuilder();
         builder.queues(200);
         Assertions.assertEquals(200, builder.build().getQueues());
     }
 
     @Test
     void shareConnections() {
-        ConsumerBuilder builder = new ConsumerBuilder();
+        ConsumerBuilder builder = ConsumerBuilder.newBuilder();
         builder.shareConnections(300);
         Assertions.assertEquals(300, builder.build().getShareconnections());
     }
 
     @Test
     void build() {
-        ConsumerBuilder builder = new ConsumerBuilder();
-        builder.isDefault(true).client("client").threadPool("threadPool").coreThreads(10).threads(100).queues(200)
-                .shareConnections(300).id("id");
+        ConsumerBuilder builder = ConsumerBuilder.newBuilder();
+        builder.isDefault(true)
+                .client("client")
+                .threadPool("threadPool")
+                .coreThreads(10)
+                .threads(100)
+                .queues(200)
+                .shareConnections(300)
+                .id("id");
 
         ConsumerConfig config = builder.build();
         ConsumerConfig config2 = builder.build();

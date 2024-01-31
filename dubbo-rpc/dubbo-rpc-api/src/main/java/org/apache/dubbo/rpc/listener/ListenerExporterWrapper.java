@@ -33,7 +33,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILE
  */
 public class ListenerExporterWrapper<T> implements Exporter<T> {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ListenerExporterWrapper.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(ListenerExporterWrapper.class);
 
     private final Exporter<T> exporter;
 
@@ -60,6 +61,16 @@ public class ListenerExporterWrapper<T> implements Exporter<T> {
         } finally {
             listenerEvent(listener -> listener.unexported(this));
         }
+    }
+
+    @Override
+    public void register() {
+        exporter.register();
+    }
+
+    @Override
+    public void unregister() {
+        exporter.unregister();
     }
 
     private void listenerEvent(Consumer<ExporterListener> consumer) {

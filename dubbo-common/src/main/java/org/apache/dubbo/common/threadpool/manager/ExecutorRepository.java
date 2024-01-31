@@ -17,16 +17,25 @@
 package org.apache.dubbo.common.threadpool.manager;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.rpc.executor.ExecutorSupport;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ServiceModel;
 
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
+
+import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_ISOLATION;
 
 /**
  *
  */
-@SPI(value = "default", scope = ExtensionScope.APPLICATION)
+@SPI(value = "isolation", scope = ExtensionScope.APPLICATION)
 public interface ExecutorRepository {
 
     /**
@@ -46,7 +55,7 @@ public interface ExecutorRepository {
      */
     ExecutorService getExecutor(URL url);
 
-
+    ExecutorService getExecutor(ServiceModel serviceModel, URL url);
 
     /**
      * Modify some of the threadpool's properties according to the url, for example, coreSize, maxSize, ...
@@ -168,4 +177,21 @@ public interface ExecutorRepository {
      */
     @Deprecated
     ExecutorService getMappingRefreshingExecutor();
+
+    ExecutorSupport getExecutorSupport(URL url);
+
+    static ExecutorRepository getInstance(ApplicationModel applicationModel) {
+        ExtensionLoader<ExecutorRepository> extensionLoader =
+                applicationModel.getExtensionLoader(ExecutorRepository.class);
+        String mode = getMode(applicationModel);
+        return StringUtils.isNotEmpty(mode)
+                ? extensionLoader.getExtension(mode)
+                : extensionLoader.getDefaultExtension();
+    }
+
+    static String getMode(ApplicationModel applicationModel) {
+        Optional<ApplicationConfig> optional =
+                applicationModel.getApplicationConfigManager().getApplication();
+        return optional.map(ApplicationConfig::getExecutorManagementMode).orElse(EXECUTOR_MANAGEMENT_MODE_ISOLATION);
+    }
 }

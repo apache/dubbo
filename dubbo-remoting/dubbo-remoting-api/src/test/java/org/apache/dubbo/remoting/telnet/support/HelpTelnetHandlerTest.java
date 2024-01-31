@@ -19,6 +19,7 @@ package org.apache.dubbo.remoting.telnet.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.telnet.support.command.HelpTelnetHandler;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -30,19 +31,17 @@ class HelpTelnetHandlerTest {
         Channel channel = Mockito.mock(Channel.class);
         Mockito.when(channel.getUrl()).thenReturn(URL.valueOf("dubbo://127.0.0.1:12345"));
 
-        HelpTelnetHandler helpTelnetHandler = new HelpTelnetHandler();
+        HelpTelnetHandler helpTelnetHandler = new HelpTelnetHandler(FrameworkModel.defaultModel());
         // default output
         String prompt = "Please input \"help [command]\" show detail.\r\n";
         Assertions.assertTrue(helpTelnetHandler.telnet(channel, "").contains(prompt));
 
         // "help" command output
-        String demoOutput =
-                "Command:\r\n" +
-                "    help [command]\r\n" +
-                "Summary:\r\n" +
-                "    Show help.\r\n" +
-                "Detail:\r\n" +
-                "    Show help.";
-        Assertions.assertEquals(helpTelnetHandler.telnet(channel, "help"),demoOutput);
+        String demoOutput = "Command:\r\n" + "    help [command]\r\n"
+                + "Summary:\r\n"
+                + "    Show help.\r\n"
+                + "Detail:\r\n"
+                + "    Show help.";
+        Assertions.assertEquals(helpTelnetHandler.telnet(channel, "help"), demoOutput);
     }
 }

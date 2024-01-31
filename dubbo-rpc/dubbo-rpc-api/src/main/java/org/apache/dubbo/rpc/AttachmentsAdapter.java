@@ -26,7 +26,7 @@ import java.util.Map;
 public class AttachmentsAdapter {
 
     public static class ObjectToStringMap extends HashMap<String, String> {
-        private Map<String, Object> attachments;
+        private final Map<String, Object> attachments;
 
         public ObjectToStringMap(Map<String, Object> attachments) {
             for (Entry<String, Object> entry : attachments.entrySet()) {

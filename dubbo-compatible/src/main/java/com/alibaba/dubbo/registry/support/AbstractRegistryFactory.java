@@ -25,17 +25,18 @@ import com.alibaba.dubbo.registry.RegistryFactory;
  * 2019-04-16
  */
 @Deprecated
-public abstract class AbstractRegistryFactory extends org.apache.dubbo.registry.support.AbstractRegistryFactory implements RegistryFactory {
+public abstract class AbstractRegistryFactory extends org.apache.dubbo.registry.support.AbstractRegistryFactory
+        implements RegistryFactory {
 
     @Override
     public com.alibaba.dubbo.registry.Registry getRegistry(com.alibaba.dubbo.common.URL url) {
-        return (com.alibaba.dubbo.registry.Registry)super.getRegistry(url.getOriginalURL());
+        return (com.alibaba.dubbo.registry.Registry) super.getRegistry(url.getOriginalURL());
     }
 
     protected abstract com.alibaba.dubbo.registry.Registry createRegistry(com.alibaba.dubbo.common.URL url);
 
     @Override
     protected Registry createRegistry(URL url) {
-        return createRegistry(new com.alibaba.dubbo.common.URL(url));
+        return createRegistry(new com.alibaba.dubbo.common.DelegateURL(url));
     }
 }

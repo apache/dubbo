@@ -14,21 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.command;
+
+import org.apache.dubbo.rpc.protocol.tri.stream.TripleStreamChannelFuture;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 
-public class EndStreamQueueCommand extends QueuedCommand {
+public class EndStreamQueueCommand extends StreamQueueCommand {
 
-    public static EndStreamQueueCommand create() {
-        return new EndStreamQueueCommand();
+    public EndStreamQueueCommand(TripleStreamChannelFuture streamChannelFuture) {
+        super(streamChannelFuture);
+    }
+
+    public static EndStreamQueueCommand create(TripleStreamChannelFuture streamChannelFuture) {
+        return new EndStreamQueueCommand(streamChannelFuture);
     }
 
     @Override
     public void doSend(ChannelHandlerContext ctx, ChannelPromise promise) {
-        ctx.write(new DefaultHttp2DataFrame(true));
+        ctx.write(new DefaultHttp2DataFrame(true), promise);
     }
 }

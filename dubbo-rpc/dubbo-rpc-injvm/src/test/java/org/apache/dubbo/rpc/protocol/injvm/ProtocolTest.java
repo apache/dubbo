@@ -21,6 +21,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.Test;
@@ -41,17 +42,22 @@ class ProtocolTest {
         InjvmProtocol injvm = InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel());
     }
 
-    ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getExtension("javassist");
+    ProxyFactory proxyFactory =
+            ExtensionLoader.getExtensionLoader(ProxyFactory.class).getExtension("javassist");
 
-    URL url = URL.valueOf("injvm://localhost:0/org.apache.dubbo.rpc.support.IEcho?interface=org.apache.dubbo.rpc.support.IEcho");
+    URL url = URL.valueOf(
+                    "injvm://localhost:0/org.apache.dubbo.rpc.support.IEcho?interface=org.apache.dubbo.rpc.support.IEcho")
+            .setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
 
     Invoker<IEcho> invoker = proxyFactory.getInvoker(echo, IEcho.class, url);
 
     @Test
     void test_destroyWontCloseAllProtocol() throws Exception {
-        Protocol autowireProtocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        Protocol autowireProtocol =
+                ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
-        Protocol InjvmProtocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("injvm");
+        Protocol InjvmProtocol =
+                ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("injvm");
 
         assertEquals(0, InjvmProtocol.getDefaultPort());
 
@@ -65,7 +71,9 @@ class ProtocolTest {
         try {
             autowireProtocol.destroy();
         } catch (UnsupportedOperationException expected) {
-            assertThat(expected.getMessage(), containsString("of interface org.apache.dubbo.rpc.Protocol is not adaptive method!"));
+            assertThat(
+                    expected.getMessage(),
+                    containsString("of interface org.apache.dubbo.rpc.Protocol is not adaptive method!"));
         }
 
         assertEquals("ok2", echoProxy.echo("ok2"));

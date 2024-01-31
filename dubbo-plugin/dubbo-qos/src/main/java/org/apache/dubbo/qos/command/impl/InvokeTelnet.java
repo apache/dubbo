@@ -21,16 +21,16 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.qos.command.BaseCommand;
-import org.apache.dubbo.qos.command.CommandContext;
-import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.qos.api.BaseCommand;
+import org.apache.dubbo.qos.api.Cmd;
+import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.AsyncContext;
+import org.apache.dubbo.rpc.AsyncContextImpl;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ProviderModel;
-
-import io.netty.channel.Channel;
-import io.netty.util.AttributeKey;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -38,19 +38,25 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+
+import io.netty.channel.Channel;
+import io.netty.util.AttributeKey;
 
 import static org.apache.dubbo.common.utils.PojoUtils.realize;
 
-@Cmd(name = "invoke", summary = "Invoke the service method.", example = {
-    "invoke IHelloService.sayHello(\"xxxx\")",
-    "invoke sayHello(\"xxxx\")"
-})
+@Cmd(
+        name = "invoke",
+        summary = "Invoke the service method.",
+        example = {"invoke IHelloService.sayHello(\"xxxx\")", "invoke sayHello(\"xxxx\")"})
 public class InvokeTelnet implements BaseCommand {
     public static final AttributeKey<String> INVOKE_MESSAGE_KEY = AttributeKey.valueOf("telnet.invoke.method.message");
-    public static final AttributeKey<List<Method>> INVOKE_METHOD_LIST_KEY = AttributeKey.valueOf("telnet.invoke.method.list");
-    public static final AttributeKey<ProviderModel> INVOKE_METHOD_PROVIDER_KEY = AttributeKey.valueOf("telnet.invoke.method.provider");
+    public static final AttributeKey<List<Method>> INVOKE_METHOD_LIST_KEY =
+            AttributeKey.valueOf("telnet.invoke.method.list");
+    public static final AttributeKey<ProviderModel> INVOKE_METHOD_PROVIDER_KEY =
+            AttributeKey.valueOf("telnet.invoke.method.provider");
 
-    private FrameworkModel frameworkModel;
+    private final FrameworkModel frameworkModel;
 
     public InvokeTelnet(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
@@ -59,12 +65,14 @@ public class InvokeTelnet implements BaseCommand {
     @Override
     public String execute(CommandContext commandContext, String[] args) {
         if (ArrayUtils.isEmpty(args)) {
-            return "Please input method name, eg: \r\ninvoke xxxMethod(1234, \"abcd\", {\"prop\" : \"value\"})\r\n" +
-                "invoke XxxService.xxxMethod(1234, \"abcd\", {\"prop\" : \"value\"})\r\n" +
-                "invoke com.xxx.XxxService.xxxMethod(1234, \"abcd\", {\"prop\" : \"value\"})";
+            return "Please input method name, eg: \r\ninvoke xxxMethod(1234, \"abcd\", {\"prop\" : \"value\"})\r\n"
+                    + "invoke XxxService.xxxMethod(1234, \"abcd\", {\"prop\" : \"value\"})\r\n"
+                    + "invoke com.xxx.XxxService.xxxMethod(1234, \"abcd\", {\"prop\" : \"value\"})";
         }
         Channel channel = commandContext.getRemote();
-        String service = channel.attr(ChangeTelnet.SERVICE_KEY) != null ? channel.attr(ChangeTelnet.SERVICE_KEY).get() : null;
+        String service = channel.attr(ChangeTelnet.SERVICE_KEY) != null
+                ? channel.attr(ChangeTelnet.SERVICE_KEY).get()
+                : null;
 
         String message = args[0];
         int i = message.indexOf("(");
@@ -82,13 +90,13 @@ public class InvokeTelnet implements BaseCommand {
         }
 
         if (StringUtils.isEmpty(service)) {
-            return "If you want to invoke like [invoke sayHello(\"xxxx\")], please execute cd command first," +
-                " or you can execute it like [invoke IHelloService.sayHello(\"xxxx\")]";
+            return "If you want to invoke like [invoke sayHello(\"xxxx\")], please execute cd command first,"
+                    + " or you can execute it like [invoke IHelloService.sayHello(\"xxxx\")]";
         }
 
         List<Object> list;
         try {
-            list = JsonUtils.getJson().toJavaList("[" + param + "]", Object.class);
+            list = JsonUtils.toJavaList("[" + param + "]", Object.class);
         } catch (Throwable t) {
             return "Invalid json argument, cause: " + t.getMessage();
         }
@@ -119,7 +127,7 @@ public class InvokeTelnet implements BaseCommand {
                     }
                     if (matchMethods.size() == 1) {
                         invokeMethod = matchMethods.get(0);
-                    } else { //exist overridden method
+                    } else { // exist overridden method
                         channel.attr(INVOKE_METHOD_PROVIDER_KEY).set(provider);
                         channel.attr(INVOKE_METHOD_LIST_KEY).set(matchMethods);
                         channel.attr(INVOKE_MESSAGE_KEY).set(message);
@@ -131,7 +139,6 @@ public class InvokeTelnet implements BaseCommand {
             }
         }
 
-
         if (!StringUtils.isEmpty(service)) {
             buf.append("Use default service ").append(service).append('.');
         }
@@ -140,23 +147,43 @@ public class InvokeTelnet implements BaseCommand {
             return buf.toString();
         }
         if (invokeMethod == null) {
-            buf.append("\r\nNo such method ").append(method).append(" in service ").append(service);
+            buf.append("\r\nNo such method ")
+                    .append(method)
+                    .append(" in service ")
+                    .append(service);
             return buf.toString();
         }
         try {
-            Object[] array = realize(list.toArray(), invokeMethod.getParameterTypes(),
-                invokeMethod.getGenericParameterTypes());
+            Object[] array =
+                    realize(list.toArray(), invokeMethod.getParameterTypes(), invokeMethod.getGenericParameterTypes());
             long start = System.currentTimeMillis();
             AppResponse result = new AppResponse();
             try {
                 Object o = invokeMethod.invoke(selectedProvider.getServiceInstance(), array);
-                result.setValue(o);
+                boolean setValueDone = false;
+                if (RpcContext.getServerAttachment().isAsyncStarted()) {
+                    AsyncContext asyncContext = RpcContext.getServerAttachment().getAsyncContext();
+                    if (asyncContext instanceof AsyncContextImpl) {
+                        CompletableFuture<Object> internalFuture =
+                                ((AsyncContextImpl) asyncContext).getInternalFuture();
+                        result.setValue(internalFuture.get());
+                        setValueDone = true;
+                    }
+                }
+                if (!setValueDone) {
+                    result.setValue(o);
+                }
             } catch (Throwable t) {
                 result.setException(t);
+                if (t instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                }
+            } finally {
+                RpcContext.removeContext();
             }
             long end = System.currentTimeMillis();
             buf.append("\r\nresult: ");
-            buf.append(JsonUtils.getJson().toJson(result.recreate()));
+            buf.append(JsonUtils.toJson(result.recreate()));
             buf.append("\r\nelapsed: ");
             buf.append(end - start);
             buf.append(" ms.");
@@ -166,15 +193,15 @@ public class InvokeTelnet implements BaseCommand {
         return buf.toString();
     }
 
-
     private boolean isServiceMatch(String service, ProviderModel provider) {
         return provider.getServiceKey().equalsIgnoreCase(service)
-            || provider.getServiceInterfaceClass().getSimpleName().equalsIgnoreCase(service)
-            || provider.getServiceInterfaceClass().getName().equalsIgnoreCase(service)
-            || StringUtils.isEmpty(service);
+                || provider.getServiceInterfaceClass().getSimpleName().equalsIgnoreCase(service)
+                || provider.getServiceInterfaceClass().getName().equalsIgnoreCase(service)
+                || StringUtils.isEmpty(service);
     }
 
-    private List<Method> findSameSignatureMethod(Set<MethodDescriptor> methods, String lookupMethodName, List<Object> args) {
+    private List<Method> findSameSignatureMethod(
+            Set<MethodDescriptor> methods, String lookupMethodName, List<Object> args) {
         List<Method> sameSignatureMethods = new ArrayList<>();
         for (MethodDescriptor model : methods) {
             Method method = model.getMethod();

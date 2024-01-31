@@ -31,8 +31,7 @@ public interface ProtocolServer {
         return null;
     }
 
-    default void setRemotingServers(RemotingServer server) {
-    }
+    default void setRemotingServers(RemotingServer server) {}
 
     String getAddress();
 
@@ -42,8 +41,7 @@ public interface ProtocolServer {
         return null;
     }
 
-    default void reset(URL url) {
-    }
+    default void reset(URL url) {}
 
     void close();
 

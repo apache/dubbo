@@ -47,7 +47,8 @@ public class Parameters {
     }
 
     public Parameters(Map<String, String> parameters) {
-        this.parameters = Collections.unmodifiableMap(parameters != null ? new HashMap<>(parameters) : new HashMap<>(0));
+        this.parameters =
+                Collections.unmodifiableMap(parameters != null ? new HashMap<>(parameters) : new HashMap<>(0));
     }
 
     private static Map<String, String> toMap(String... pairs) {
@@ -62,21 +63,37 @@ public class Parameters {
         return parameters;
     }
 
+    /**
+     * @deprecated will be removed in 3.3.0
+     */
+    @Deprecated
     public <T> T getExtension(Class<T> type, String key) {
         String name = getParameter(key);
         return ExtensionLoader.getExtensionLoader(type).getExtension(name);
     }
 
+    /**
+     * @deprecated will be removed in 3.3.0
+     */
+    @Deprecated
     public <T> T getExtension(Class<T> type, String key, String defaultValue) {
         String name = getParameter(key, defaultValue);
         return ExtensionLoader.getExtensionLoader(type).getExtension(name);
     }
 
+    /**
+     * @deprecated will be removed in 3.3.0
+     */
+    @Deprecated
     public <T> T getMethodExtension(Class<T> type, String method, String key) {
         String name = getMethodParameter(method, key);
         return ExtensionLoader.getExtensionLoader(type).getExtension(name);
     }
 
+    /**
+     * @deprecated will be removed in 3.3.0
+     */
+    @Deprecated
     public <T> T getMethodExtension(Class<T> type, String method, String key, String defaultValue) {
         String name = getMethodParameter(method, key, defaultValue);
         return ExtensionLoader.getExtensionLoader(type).getExtension(name);
@@ -260,5 +277,4 @@ public class Parameters {
     public String toString() {
         return StringUtils.toQueryString(getParameters());
     }
-
 }

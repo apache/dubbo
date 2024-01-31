@@ -20,20 +20,24 @@ import org.apache.dubbo.spring.boot.actuate.endpoint.metadata.AbstractDubboMetad
 
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+
+import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_PREFIX;
 
 /**
  * Dubbo Endpoints Metadata Auto-{@link Configuration}
  */
-@ConditionalOnClass(name = {
-        "org.springframework.boot.actuate.health.Health" // If spring-boot-actuator is present
-})
+@ConditionalOnProperty(prefix = DUBBO_PREFIX, name = "enabled", matchIfMissing = true)
+@ConditionalOnClass(
+        name = {"org.springframework.boot.actuate.health.Health" // If spring-boot-actuator is present
+        })
 @Configuration
-@AutoConfigureAfter(name = {
-        "org.apache.dubbo.spring.boot.autoconfigure.DubboAutoConfiguration",
-        "org.apache.dubbo.spring.boot.autoconfigure.DubboRelaxedBindingAutoConfiguration"
-})
+@AutoConfigureAfter(
+        name = {
+            "org.apache.dubbo.spring.boot.autoconfigure.DubboAutoConfiguration",
+            "org.apache.dubbo.spring.boot.autoconfigure.DubboRelaxedBindingAutoConfiguration"
+        })
 @ComponentScan(basePackageClasses = AbstractDubboMetadata.class)
-public class DubboEndpointMetadataAutoConfiguration {
-}
+public class DubboEndpointMetadataAutoConfiguration {}

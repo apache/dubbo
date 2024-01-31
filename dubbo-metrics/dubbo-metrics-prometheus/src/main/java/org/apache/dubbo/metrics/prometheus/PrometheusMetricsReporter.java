@@ -14,43 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.prometheus;
 
-import com.sun.net.httpserver.HttpServer;
-import io.micrometer.prometheus.PrometheusConfig;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
-import io.prometheus.client.exporter.BasicAuthHttpConnectionFactory;
-import io.prometheus.client.exporter.PushGateway;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.metrics.AbstractMetricsReporter;
+import org.apache.dubbo.metrics.report.AbstractMetricsReporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import io.micrometer.prometheus.PrometheusConfig;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.prometheus.client.exporter.BasicAuthHttpConnectionFactory;
+import io.prometheus.client.exporter.PushGateway;
+
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_EXPORTER_ENABLED_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_EXPORTER_METRICS_PORT_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_DEFAULT_METRICS_PORT;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_EXPORTER_METRICS_PATH_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_DEFAULT_METRICS_PATH;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_PUSHGATEWAY_ENABLED_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_PUSHGATEWAY_BASE_URL_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_PUSHGATEWAY_JOB_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_DEFAULT_JOB_NAME;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_PUSHGATEWAY_PUSH_INTERVAL_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_DEFAULT_PUSH_INTERVAL;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_PUSHGATEWAY_USERNAME_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_PUSHGATEWAY_BASE_URL_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_PUSHGATEWAY_ENABLED_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_PUSHGATEWAY_JOB_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_PUSHGATEWAY_PASSWORD_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_PUSHGATEWAY_PUSH_INTERVAL_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_PUSHGATEWAY_USERNAME_KEY;
 
 /**
  * Metrics reporter for prometheus.
@@ -61,8 +53,6 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
 
     private final PrometheusMeterRegistry prometheusRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
     private ScheduledExecutorService pushJobExecutor = null;
-    private HttpServer prometheusExporterHttpServer = null;
-    private Thread httpServerThread = null;
 
     public PrometheusMetricsReporter(URL url, ApplicationModel applicationModel) {
         super(url, applicationModel);
@@ -71,35 +61,11 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
     @Override
     public void doInit() {
         addMeterRegistry(prometheusRegistry);
-        exportHttpServer();
         schedulePushJob();
     }
 
-    private void exportHttpServer() {
-        boolean exporterEnabled = url.getParameter(PROMETHEUS_EXPORTER_ENABLED_KEY, false);
-        if (exporterEnabled) {
-            int port = url.getParameter(PROMETHEUS_EXPORTER_METRICS_PORT_KEY, PROMETHEUS_DEFAULT_METRICS_PORT);
-            String path = url.getParameter(PROMETHEUS_EXPORTER_METRICS_PATH_KEY, PROMETHEUS_DEFAULT_METRICS_PATH);
-            if (!path.startsWith("/")) {
-                path = "/" + path;
-            }
-
-            try {
-                prometheusExporterHttpServer = HttpServer.create(new InetSocketAddress(port), 0);
-                prometheusExporterHttpServer.createContext(path, httpExchange -> {
-                    String response = prometheusRegistry.scrape();
-                    httpExchange.sendResponseHeaders(200, response.getBytes().length);
-                    try (OutputStream os = httpExchange.getResponseBody()) {
-                        os.write(response.getBytes());
-                    }
-                });
-
-                httpServerThread = new Thread(prometheusExporterHttpServer::start);
-                httpServerThread.start();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
+    public String getResponse() {
+        return prometheusRegistry.scrape();
     }
 
     private void schedulePushJob() {
@@ -107,7 +73,8 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
         if (pushEnabled) {
             String baseUrl = url.getParameter(PROMETHEUS_PUSHGATEWAY_BASE_URL_KEY);
             String job = url.getParameter(PROMETHEUS_PUSHGATEWAY_JOB_KEY, PROMETHEUS_DEFAULT_JOB_NAME);
-            int pushInterval = url.getParameter(PROMETHEUS_PUSHGATEWAY_PUSH_INTERVAL_KEY, PROMETHEUS_DEFAULT_PUSH_INTERVAL);
+            int pushInterval =
+                    url.getParameter(PROMETHEUS_PUSHGATEWAY_PUSH_INTERVAL_KEY, PROMETHEUS_DEFAULT_PUSH_INTERVAL);
             String username = url.getParameter(PROMETHEUS_PUSHGATEWAY_USERNAME_KEY);
             String password = url.getParameter(PROMETHEUS_PUSHGATEWAY_PASSWORD_KEY);
 
@@ -118,27 +85,27 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
                 pushGateway.setConnectionFactory(new BasicAuthHttpConnectionFactory(username, password));
             }
 
-            pushJobExecutor.scheduleWithFixedDelay(() -> push(pushGateway, job), pushInterval, pushInterval, TimeUnit.SECONDS);
+            pushJobExecutor.scheduleWithFixedDelay(
+                    () -> push(pushGateway, job), pushInterval, pushInterval, TimeUnit.SECONDS);
         }
     }
 
     protected void push(PushGateway pushGateway, String job) {
         try {
+            resetIfSamplesChanged();
             pushGateway.pushAdd(prometheusRegistry.getPrometheusRegistry(), job);
         } catch (IOException e) {
-            logger.error(COMMON_METRICS_COLLECTOR_EXCEPTION, "", "", "Error occurred when pushing metrics to prometheus: ", e);
+            logger.error(
+                    COMMON_METRICS_COLLECTOR_EXCEPTION,
+                    "",
+                    "",
+                    "Error occurred when pushing metrics to prometheus: ",
+                    e);
         }
     }
 
     @Override
     public void doDestroy() {
-        if (prometheusExporterHttpServer != null) {
-            prometheusExporterHttpServer.stop(1);
-        }
-
-        if (httpServerThread != null) {
-            httpServerThread.interrupt();
-        }
 
         if (pushJobExecutor != null) {
             pushJobExecutor.shutdownNow();

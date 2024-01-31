@@ -53,7 +53,8 @@ class ExceptionFilterTest {
         RpcException exception = new RpcException("TestRpcException");
 
         ExceptionFilter exceptionFilter = new ExceptionFilter();
-        RpcInvocation invocation = new RpcInvocation("sayHello", DemoService.class.getName(), "", new Class<?>[]{String.class}, new Object[]{"world"});
+        RpcInvocation invocation = new RpcInvocation(
+                "sayHello", DemoService.class.getName(), "", new Class<?>[] {String.class}, new Object[] {"world"});
         Invoker<DemoService> invoker = mock(Invoker.class);
         given(invoker.getInterface()).willReturn(DemoService.class);
         given(invoker.invoke(eq(invocation))).willThrow(exception);
@@ -62,13 +63,18 @@ class ExceptionFilterTest {
             exceptionFilter.invoke(invoker, invocation);
         } catch (RpcException e) {
             assertEquals("TestRpcException", e.getMessage());
-            exceptionFilter.setLogger(failsafeLogger);
+            exceptionFilter.mockLogger(failsafeLogger);
             exceptionFilter.onError(e, invoker, invocation);
         }
 
-        failsafeLogger.error(CONFIG_FILTER_VALIDATION_EXCEPTION, "", "", eq("Got unchecked and undeclared exception which called by 127.0.0.1. service: "
-            + DemoService.class.getName() + ", method: sayHello, exception: "
-            + RpcException.class.getName() + ": TestRpcException"), eq(exception));
+        failsafeLogger.error(
+                CONFIG_FILTER_VALIDATION_EXCEPTION,
+                "",
+                "",
+                eq("Got unchecked and undeclared exception which called by 127.0.0.1. service: "
+                        + DemoService.class.getName() + ", method: sayHello, exception: "
+                        + RpcException.class.getName() + ": TestRpcException"),
+                eq(exception));
         RpcContext.removeContext();
     }
 
@@ -77,7 +83,8 @@ class ExceptionFilterTest {
     void testJavaException() {
 
         ExceptionFilter exceptionFilter = new ExceptionFilter();
-        RpcInvocation invocation = new RpcInvocation("sayHello", DemoService.class.getName(), "", new Class<?>[]{String.class}, new Object[]{"world"});
+        RpcInvocation invocation = new RpcInvocation(
+                "sayHello", DemoService.class.getName(), "", new Class<?>[] {String.class}, new Object[] {"world"});
 
         AppResponse appResponse = new AppResponse();
         appResponse.setException(new IllegalArgumentException("java"));
@@ -89,7 +96,6 @@ class ExceptionFilterTest {
         Result newResult = exceptionFilter.invoke(invoker, invocation);
 
         Assertions.assertEquals(appResponse.getException(), newResult.getException());
-
     }
 
     @SuppressWarnings("unchecked")
@@ -97,7 +103,8 @@ class ExceptionFilterTest {
     void testRuntimeException() {
 
         ExceptionFilter exceptionFilter = new ExceptionFilter();
-        RpcInvocation invocation = new RpcInvocation("sayHello", DemoService.class.getName(), "", new Class<?>[]{String.class}, new Object[]{"world"});
+        RpcInvocation invocation = new RpcInvocation(
+                "sayHello", DemoService.class.getName(), "", new Class<?>[] {String.class}, new Object[] {"world"});
 
         AppResponse appResponse = new AppResponse();
         appResponse.setException(new LocalException("localException"));
@@ -109,7 +116,6 @@ class ExceptionFilterTest {
         Result newResult = exceptionFilter.invoke(invoker, invocation);
 
         Assertions.assertEquals(appResponse.getException(), newResult.getException());
-
     }
 
     @SuppressWarnings("unchecked")
@@ -117,12 +123,12 @@ class ExceptionFilterTest {
     void testConvertToRunTimeException() throws Exception {
 
         ExceptionFilter exceptionFilter = new ExceptionFilter();
-        RpcInvocation invocation = new RpcInvocation("sayHello", DemoService.class.getName(), "", new Class<?>[]{String.class}, new Object[]{"world"});
+        RpcInvocation invocation = new RpcInvocation(
+                "sayHello", DemoService.class.getName(), "", new Class<?>[] {String.class}, new Object[] {"world"});
 
         AppResponse mockRpcResult = new AppResponse();
         mockRpcResult.setException(new HessianException("hessian"));
         Result mockAsyncResult = AsyncRpcResult.newDefaultAsyncResult(mockRpcResult, invocation);
-
 
         Invoker<DemoService> invoker = mock(Invoker.class);
         when(invoker.invoke(invocation)).thenReturn(mockAsyncResult);
@@ -137,5 +143,4 @@ class ExceptionFilterTest {
 
         Assertions.assertEquals(appResponse.getException().getClass(), RuntimeException.class);
     }
-
 }

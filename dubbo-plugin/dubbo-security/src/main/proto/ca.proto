@@ -1,0 +1,47 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+syntax = "proto3";
+
+import "google/protobuf/struct.proto";
+
+package org.apache.dubbo.auth.v1alpha1;
+
+option go_package = "github.com/apache/dubbo-admin/ca/v1alpha1";
+option java_multiple_files = true;
+
+
+message DubboCertificateRequest {
+  string csr = 1;
+  string type = 2;
+
+  google.protobuf.Struct metadata = 3;
+}
+
+message DubboCertificateResponse {
+  bool success = 1;
+  string cert_pem = 2;
+  repeated string trust_certs = 3;
+  int64 expire_time = 4;
+  string message = 5;
+}
+
+service DubboCertificateService {
+  rpc CreateCertificate(DubboCertificateRequest)
+      returns (DubboCertificateResponse) {
+  }
+}

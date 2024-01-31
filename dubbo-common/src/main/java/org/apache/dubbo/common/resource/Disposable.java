@@ -22,5 +22,4 @@ package org.apache.dubbo.common.resource;
 public interface Disposable {
 
     void destroy();
-
 }

@@ -16,18 +16,6 @@
  */
 package org.apache.dubbo.registry.support;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.URLStrParser;
@@ -40,11 +28,23 @@ import org.apache.dubbo.common.url.component.ServiceAddressURL;
 import org.apache.dubbo.common.url.component.URLAddress;
 import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
-import org.apache.dubbo.registry.ProviderFirstParams;
 import org.apache.dubbo.rpc.model.ScopeModel;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.URLStrParser.ENCODED_AND_MARK;
 import static org.apache.dubbo.common.URLStrParser.ENCODED_PID_KEY;
@@ -62,6 +62,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAI
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_URL_EVICTING;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_NO_PARAMETERS_URL;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_ENABLE_EMPTY_PROTECTION;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
@@ -77,12 +78,13 @@ import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATE
  * @see org.apache.dubbo.registry.support.AbstractRegistry
  */
 public abstract class CacheableFailbackRegistry extends FailbackRegistry {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(CacheableFailbackRegistry.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(CacheableFailbackRegistry.class);
 
-    private static String[] VARIABLE_KEYS = new String[]{ENCODED_TIMESTAMP_KEY, ENCODED_PID_KEY};
+    private static String[] VARIABLE_KEYS = new String[] {ENCODED_TIMESTAMP_KEY, ENCODED_PID_KEY};
 
-    protected Map<String, URLAddress> stringAddress = new ConcurrentHashMap<>();
-    protected Map<String, URLParam> stringParam = new ConcurrentHashMap<>();
+    protected ConcurrentMap<String, URLAddress> stringAddress = new ConcurrentHashMap<>();
+    protected ConcurrentMap<String, URLParam> stringParam = new ConcurrentHashMap<>();
 
     private ScheduledExecutorService cacheRemovalScheduler;
     private int cacheRemovalTaskIntervalInMillis;
@@ -99,9 +101,13 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         extraParameters = new HashMap<>(8);
         extraParameters.put(CHECK_KEY, String.valueOf(false));
 
-        cacheRemovalScheduler = url.getOrDefaultFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class).nextScheduledExecutor();
+        cacheRemovalScheduler = url.getOrDefaultFrameworkModel()
+                .getBeanFactory()
+                .getBean(FrameworkExecutorRepository.class)
+                .nextScheduledExecutor();
         cacheRemovalTaskIntervalInMillis = getIntConfig(url.getScopeModel(), CACHE_CLEAR_TASK_INTERVAL, 2 * 60 * 1000);
-        cacheClearWaitingThresholdInMillis = getIntConfig(url.getScopeModel(), CACHE_CLEAR_WAITING_THRESHOLD, 5 * 60 * 1000);
+        cacheClearWaitingThresholdInMillis =
+                getIntConfig(url.getScopeModel(), CACHE_CLEAR_WAITING_THRESHOLD, 5 * 60 * 1000);
     }
 
     protected static int getIntConfig(ScopeModel scopeModel, String key, int def) {
@@ -113,8 +119,11 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
             } catch (NumberFormatException e) {
                 // 0-2 Property type mismatch.
 
-                logger.warn(COMMON_PROPERTY_TYPE_MISMATCH, "typo in property value", "This property requires an integer value.",
-                    "Invalid registry properties configuration key " + key + ", value " + str);
+                logger.warn(
+                        COMMON_PROPERTY_TYPE_MISMATCH,
+                        "typo in property value",
+                        "This property requires an integer value.",
+                        "Invalid registry properties configuration key " + key + ", value " + str);
             }
         }
         return result;
@@ -136,7 +145,8 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
                 }
                 if (CollectionUtils.isNotEmptyMap(waitForRemove)) {
                     if (semaphore.tryAcquire()) {
-                        cacheRemovalScheduler.schedule(new RemovalTask(), cacheRemovalTaskIntervalInMillis, TimeUnit.MILLISECONDS);
+                        cacheRemovalScheduler.schedule(
+                                new RemovalTask(), cacheRemovalTaskIntervalInMillis, TimeUnit.MILLISECONDS);
                     }
                 }
             }
@@ -152,8 +162,12 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
             // When? FrameworkExecutorRepository gets destroyed.
 
             // 1-3: URL evicting failed.
-            logger.warn(REGISTRY_FAILED_URL_EVICTING, "thread pool getting destroyed", "",
-                "Failed to evict url for " + url.getServiceKey(), e);
+            logger.warn(
+                    REGISTRY_FAILED_URL_EVICTING,
+                    "thread pool getting destroyed",
+                    "",
+                    "Failed to evict url for " + url.getServiceKey(),
+                    e);
         }
     }
 
@@ -221,15 +235,20 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         if (urls.isEmpty()) {
             int i = path.lastIndexOf(PATH_SEPARATOR);
             String category = i < 0 ? path : path.substring(i + 1);
-            if (!PROVIDERS_CATEGORY.equals(category) || !getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, true)) {
+            if (!PROVIDERS_CATEGORY.equals(category)
+                    || !getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, DEFAULT_ENABLE_EMPTY_PROTECTION)) {
                 if (PROVIDERS_CATEGORY.equals(category)) {
-                    logger.warn(REGISTRY_EMPTY_ADDRESS, "", "",
-                        "Service " + consumer.getServiceKey() + " received empty address list and empty protection is disabled, will clear current available addresses");
+                    logger.warn(
+                            REGISTRY_EMPTY_ADDRESS,
+                            "",
+                            "",
+                            "Service " + consumer.getServiceKey()
+                                    + " received empty address list and empty protection is disabled, will clear current available addresses");
                 }
                 URL empty = URLBuilder.from(consumer)
-                    .setProtocol(EMPTY_PROTOCOL)
-                    .addParameter(CATEGORY_KEY, category)
-                    .build();
+                        .setProtocol(EMPTY_PROTOCOL)
+                        .addParameter(CATEGORY_KEY, category)
+                        .build();
                 urls.add(empty);
             }
         }
@@ -240,8 +259,8 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     /**
      * Create DubboServiceAddress object using provider url, consumer url, and extra parameters.
      *
-     * @param rawProvider provider url string
-     * @param consumerURL URL object of consumer
+     * @param rawProvider     provider url string
+     * @param consumerURL     URL object of consumer
      * @param extraParameters extra parameters
      * @return created DubboServiceAddressURL object
      */
@@ -264,8 +283,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
 
         if (parts.length <= 1) {
             // 1-5 Received URL without any parameters.
-            logger.warn(REGISTRY_NO_PARAMETERS_URL, "", "",
-                "Received url without any parameters " + rawProvider);
+            logger.warn(REGISTRY_NO_PARAMETERS_URL, "", "", "Received url without any parameters " + rawProvider);
 
             return DubboServiceAddressURL.valueOf(rawProvider, consumerURL);
         }
@@ -277,10 +295,12 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         boolean isEncoded = encoded;
 
         // PathURLAddress if it's using dubbo protocol.
-        URLAddress address = stringAddress.computeIfAbsent(rawAddress, k -> URLAddress.parse(k, getDefaultURLProtocol(), isEncoded));
+        URLAddress address = ConcurrentHashMapUtils.computeIfAbsent(
+                stringAddress, rawAddress, k -> URLAddress.parse(k, getDefaultURLProtocol(), isEncoded));
         address.setTimestamp(System.currentTimeMillis());
 
-        URLParam param = stringParam.computeIfAbsent(rawParams, k -> URLParam.parse(k, isEncoded, extraParameters));
+        URLParam param = ConcurrentHashMapUtils.computeIfAbsent(
+                stringParam, rawParams, k -> URLParam.parse(k, isEncoded, extraParameters));
         param.setTimestamp(System.currentTimeMillis());
 
         // create service URL using cached address, param, and consumer URL.
@@ -293,21 +313,8 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         return null;
     }
 
-
     protected ServiceAddressURL createServiceURL(URLAddress address, URLParam param, URL consumerURL) {
         return new DubboServiceAddressURL(address, param, consumerURL, null);
-    }
-
-    protected URL removeParamsFromConsumer(URL consumer) {
-        Set<ProviderFirstParams> providerFirstParams = consumer.getOrDefaultApplicationModel().getExtensionLoader(ProviderFirstParams.class).getSupportedExtensionInstances();
-        if (CollectionUtils.isEmpty(providerFirstParams)) {
-            return consumer;
-        }
-
-        for (ProviderFirstParams paramsFilter : providerFirstParams) {
-            consumer = consumer.removeParameters(paramsFilter.params());
-        }
-        return consumer;
     }
 
     private String stripOffVariableKeys(String rawProvider) {
@@ -388,7 +395,8 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
             logger.info("Clearing cached URLs, waiting to clear size " + waitForRemove.size());
             int clearCount = 0;
             try {
-                Iterator<Map.Entry<ServiceAddressURL, Long>> it = waitForRemove.entrySet().iterator();
+                Iterator<Map.Entry<ServiceAddressURL, Long>> it =
+                        waitForRemove.entrySet().iterator();
                 while (it.hasNext()) {
                     Map.Entry<ServiceAddressURL, Long> entry = it.next();
                     ServiceAddressURL removeURL = entry.getKey();
@@ -410,8 +418,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
             } catch (Throwable t) {
                 // 1-6 Error when clearing cached URLs.
 
-                logger.error(REGISTRY_FAILED_CLEAR_CACHED_URLS, "", "",
-                    "Error occurred when clearing cached URLs", t);
+                logger.error(REGISTRY_FAILED_CLEAR_CACHED_URLS, "", "", "Error occurred when clearing cached URLs", t);
 
             } finally {
                 semaphore.release();
@@ -421,7 +428,8 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
             if (CollectionUtils.isNotEmptyMap(waitForRemove)) {
                 // move to next schedule
                 if (semaphore.tryAcquire()) {
-                    cacheRemovalScheduler.schedule(new RemovalTask(), cacheRemovalTaskIntervalInMillis, TimeUnit.MILLISECONDS);
+                    cacheRemovalScheduler.schedule(
+                            new RemovalTask(), cacheRemovalTaskIntervalInMillis, TimeUnit.MILLISECONDS);
                 }
             }
         }

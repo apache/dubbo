@@ -20,10 +20,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.exchange.Request;
-import org.apache.dubbo.remoting.exchange.Response;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -59,7 +57,8 @@ public class NettyClientHandler extends ChannelDuplexHandler {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
         handler.connected(channel);
         if (logger.isInfoEnabled()) {
-            logger.info("The connection of " + channel.getLocalAddress() + " -> " + channel.getRemoteAddress() + " is established.");
+            logger.info("The connection of " + channel.getLocalAddress() + " -> " + channel.getRemoteAddress()
+                    + " is established.");
         }
     }
 
@@ -73,7 +72,8 @@ public class NettyClientHandler extends ChannelDuplexHandler {
         }
 
         if (logger.isInfoEnabled()) {
-            logger.info("The connection of " + channel.getLocalAddress() + " -> " + channel.getRemoteAddress() + " is disconnected.");
+            logger.info("The connection of " + channel.getLocalAddress() + " -> " + channel.getRemoteAddress()
+                    + " is disconnected.");
         }
     }
 
@@ -86,26 +86,6 @@ public class NettyClientHandler extends ChannelDuplexHandler {
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         super.write(ctx, msg, promise);
-        final NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
-        final boolean isRequest = msg instanceof Request;
-
-        // We add listeners to make sure our out bound event is correct.
-        // If our out bound event has an error (in most cases the encoder fails),
-        // we need to have the request return directly instead of blocking the invoke process.
-        promise.addListener(future -> {
-            if (future.isSuccess()) {
-                // if our future is success, mark the future to sent.
-                handler.sent(channel, msg);
-                return;
-            }
-
-            Throwable t = future.cause();
-            if (t != null && isRequest) {
-                Request request = (Request) msg;
-                Response response = buildErrorResponse(request, t);
-                handler.received(channel, response);
-            }
-        });
     }
 
     @Override
@@ -131,27 +111,12 @@ public class NettyClientHandler extends ChannelDuplexHandler {
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-            throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
         try {
             handler.caught(channel, cause);
         } finally {
             NettyChannel.removeChannelIfDisconnected(ctx.channel());
         }
-    }
-
-    /**
-     * build a bad request's response
-     *
-     * @param request the request
-     * @param t       the throwable. In most cases, serialization fails.
-     * @return the response
-     */
-    private static Response buildErrorResponse(Request request, Throwable t) {
-        Response response = new Response(request.getId(), request.getVersion());
-        response.setStatus(Response.BAD_REQUEST);
-        response.setErrorMessage(StringUtils.toString(t));
-        return response;
     }
 }

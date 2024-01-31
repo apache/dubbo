@@ -58,7 +58,6 @@ public interface ThrowableConsumer<T> {
      * @param t        the function argument
      * @param consumer {@link ThrowableConsumer}
      * @param <T>      the source type
-     * @return the result after execution
      */
     static <T> void execute(T t, ThrowableConsumer<T> consumer) {
         consumer.execute(t);

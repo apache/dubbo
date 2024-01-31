@@ -1,0 +1,4 @@
+attachment=org.apache.dubbo.rpc.cluster.router.condition.matcher.attachment.AttachmentConditionMatcherFactory
+argument=org.apache.dubbo.rpc.cluster.router.condition.matcher.argument.ArgumentConditionMatcherFactory
+param=org.apache.dubbo.rpc.cluster.router.condition.matcher.param.UrlParamConditionMatcherFactory
+

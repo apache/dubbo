@@ -28,7 +28,7 @@ import static org.apache.dubbo.metadata.rest.RestMetadataConstants.JAX_RS.MATRIX
 public class MatrixParamParameterProcessor extends ParamAnnotationParameterProcessor {
 
     @Override
-    public String getAnnotationType() {
+    public String getAnnotationName() {
         return MATRIX_PARAM_ANNOTATION_CLASS_NAME;
     }
 }

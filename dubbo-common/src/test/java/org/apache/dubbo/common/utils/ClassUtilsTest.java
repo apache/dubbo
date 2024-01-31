@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.utils;
 
 import org.junit.jupiter.api.Test;
@@ -48,24 +47,28 @@ class ClassUtilsTest {
     }
 
     @Test
-    void testGetCallerClassLoader() throws Exception {
-        assertThat(ClassUtils.getCallerClassLoader(ClassUtilsTest.class), sameInstance(ClassUtilsTest.class.getClassLoader()));
+    void testGetCallerClassLoader() {
+        assertThat(
+                ClassUtils.getCallerClassLoader(ClassUtilsTest.class),
+                sameInstance(ClassUtilsTest.class.getClassLoader()));
     }
 
     @Test
-    void testGetClassLoader1() throws Exception {
+    void testGetClassLoader1() {
         ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             assertThat(ClassUtils.getClassLoader(ClassUtilsTest.class), sameInstance(oldClassLoader));
             Thread.currentThread().setContextClassLoader(null);
-            assertThat(ClassUtils.getClassLoader(ClassUtilsTest.class), sameInstance(ClassUtilsTest.class.getClassLoader()));
+            assertThat(
+                    ClassUtils.getClassLoader(ClassUtilsTest.class),
+                    sameInstance(ClassUtilsTest.class.getClassLoader()));
         } finally {
             Thread.currentThread().setContextClassLoader(oldClassLoader);
         }
     }
 
     @Test
-    void testGetClassLoader2() throws Exception {
+    void testGetClassLoader2() {
         assertThat(ClassUtils.getClassLoader(), sameInstance(ClassUtils.class.getClassLoader()));
     }
 
@@ -89,7 +92,7 @@ class ClassUtilsTest {
     }
 
     @Test
-    void testResolvePrimitiveClassName() throws Exception {
+    void testResolvePrimitiveClassName() {
         assertThat(ClassUtils.resolvePrimitiveClassName("boolean") == boolean.class, is(true));
         assertThat(ClassUtils.resolvePrimitiveClassName("byte") == byte.class, is(true));
         assertThat(ClassUtils.resolvePrimitiveClassName("char") == char.class, is(true));
@@ -109,13 +112,13 @@ class ClassUtilsTest {
     }
 
     @Test
-    void testToShortString() throws Exception {
+    void testToShortString() {
         assertThat(ClassUtils.toShortString(null), equalTo("null"));
         assertThat(ClassUtils.toShortString(new ClassUtilsTest()), startsWith("ClassUtilsTest@"));
     }
 
     @Test
-    void testConvertPrimitive() throws Exception {
+    void testConvertPrimitive() {
 
         assertThat(ClassUtils.convertPrimitive(char.class, ""), equalTo(null));
         assertThat(ClassUtils.convertPrimitive(char.class, null), equalTo(null));
@@ -128,7 +131,6 @@ class ClassUtilsTest {
         assertThat(ClassUtils.convertPrimitive(byte.class, ""), equalTo(null));
         assertThat(ClassUtils.convertPrimitive(byte.class, null), equalTo(null));
         assertThat(ClassUtils.convertPrimitive(byte.class, "127"), equalTo(Byte.MAX_VALUE));
-
 
         assertThat(ClassUtils.convertPrimitive(short.class, ""), equalTo(null));
         assertThat(ClassUtils.convertPrimitive(short.class, null), equalTo(null));
@@ -150,5 +152,4 @@ class ClassUtilsTest {
         assertThat(ClassUtils.convertPrimitive(double.class, null), equalTo(null));
         assertThat(ClassUtils.convertPrimitive(double.class, "10.1"), equalTo(Double.valueOf(10.1)));
     }
-
 }

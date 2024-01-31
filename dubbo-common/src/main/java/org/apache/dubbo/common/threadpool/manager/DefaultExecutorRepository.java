@@ -23,14 +23,20 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.store.DataStore;
 import org.apache.dubbo.common.threadpool.ThreadPool;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.ProviderConfig;
+import org.apache.dubbo.rpc.executor.DefaultExecutorSupport;
+import org.apache.dubbo.rpc.executor.ExecutorSupport;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,28 +60,33 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_EXECU
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXECUTORS_SHUTDOWN;
 
 /**
- * Consider implementing {@code Licycle} to enable executors shutdown when the process stops.
+ * Consider implementing {@code Lifecycle} to enable executors shutdown when the process stops.
  */
 public class DefaultExecutorRepository implements ExecutorRepository, ExtensionAccessorAware {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DefaultExecutorRepository.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(DefaultExecutorRepository.class);
+
+    private static final String MAX_KEY = String.valueOf(Integer.MAX_VALUE);
 
     private volatile ScheduledExecutorService serviceExportExecutor;
 
     private volatile ExecutorService serviceReferExecutor;
 
-    private final ConcurrentMap<String, ConcurrentMap<Integer, ExecutorService>> data = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ConcurrentMap<String, ExecutorService>> data = new ConcurrentHashMap<>();
 
     private final Object LOCK = new Object();
     private ExtensionAccessor extensionAccessor;
 
     private final ApplicationModel applicationModel;
     private final FrameworkExecutorRepository frameworkExecutorRepository;
+    private ExecutorSupport executorSupport;
 
     private final DataStore dataStore;
 
     public DefaultExecutorRepository(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
-        this.frameworkExecutorRepository = applicationModel.getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
+        this.frameworkExecutorRepository =
+                applicationModel.getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
         this.dataStore = applicationModel.getExtensionLoader(DataStore.class).getDefaultExtension();
     }
 
@@ -88,29 +99,71 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     @Override
     public synchronized ExecutorService createExecutorIfAbsent(URL url) {
         String executorKey = getExecutorKey(url);
-        Map<Integer, ExecutorService> executors = data.computeIfAbsent(executorKey, k -> new ConcurrentHashMap<>());
-        // Consumer's executor is sharing globally, key=Integer.MAX_VALUE. Provider's executor is sharing by protocol.
-        Integer portKey = CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY)) ? Integer.MAX_VALUE : url.getPort();
+        ConcurrentMap<String, ExecutorService> executors =
+                ConcurrentHashMapUtils.computeIfAbsent(data, executorKey, k -> new ConcurrentHashMap<>());
 
-        String protocol = url.getProtocol();
-        if (StringUtils.isEmpty(protocol)) {
-            protocol = DEFAULT_PROTOCOL;
-        }
+        String executorCacheKey = getExecutorSecondKey(url);
 
-        if (url.getParameter(THREAD_NAME_KEY) == null) {
-            url = url.putAttribute(THREAD_NAME_KEY, protocol + "-protocol-" + portKey);
-        }
+        url = setThreadNameIfAbsent(url, executorCacheKey);
+
         URL finalUrl = url;
-        ExecutorService executor = executors.computeIfAbsent(portKey, k -> createExecutor(finalUrl));
+        ExecutorService executor =
+                ConcurrentHashMapUtils.computeIfAbsent(executors, executorCacheKey, k -> createExecutor(finalUrl));
         // If executor has been shut down, create a new one
         if (executor.isShutdown() || executor.isTerminated()) {
-            executors.remove(portKey);
+            executors.remove(executorCacheKey);
             executor = createExecutor(url);
-            executors.put(portKey, executor);
+            executors.put(executorCacheKey, executor);
         }
-
-        dataStore.put(executorKey, Integer.toString(portKey), executor);
+        dataStore.put(executorKey, executorCacheKey, executor);
         return executor;
+    }
+
+    protected URL setThreadNameIfAbsent(URL url, String executorCacheKey) {
+        if (url.getParameter(THREAD_NAME_KEY) == null) {
+            String protocol = url.getProtocol();
+            if (StringUtils.isEmpty(protocol)) {
+                protocol = DEFAULT_PROTOCOL;
+            }
+            url = url.putAttribute(THREAD_NAME_KEY, protocol + "-protocol-" + executorCacheKey);
+        }
+        return url;
+    }
+
+    private String getExecutorSecondKey(URL url) {
+        if (CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY))) {
+            return getConsumerKey(url);
+        } else {
+            return getProviderKey(url);
+        }
+    }
+
+    private String getExecutorSecondKey(ServiceModel serviceModel, URL url) {
+        if (serviceModel instanceof ConsumerModel) {
+            return getConsumerKey(serviceModel);
+        } else {
+            return getProviderKey((ProviderModel) serviceModel, url);
+        }
+    }
+
+    private String getConsumerKey(URL url) {
+        // Consumer's executor is sharing globally, key=Integer.MAX_VALUE
+        return String.valueOf(Integer.MAX_VALUE);
+    }
+
+    private String getConsumerKey(ServiceModel serviceModel) {
+        // Consumer's executor is sharing globally, key=Integer.MAX_VALUE
+        return MAX_KEY;
+    }
+
+    protected String getProviderKey(URL url) {
+        // Provider's executor is sharing by protocol.
+        return String.valueOf(url.getPort());
+    }
+
+    protected String getProviderKey(ProviderModel providerModel, URL url) {
+        // Provider's executor is sharing by protocol.
+        return String.valueOf(url.getPort());
     }
 
     /**
@@ -126,30 +179,80 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
         return EXECUTOR_SERVICE_COMPONENT_KEY;
     }
 
-    private ExecutorService createExecutor(URL url) {
-        return (ExecutorService) extensionAccessor.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
+    private String getExecutorKey(ServiceModel serviceModel) {
+        if (serviceModel instanceof ProviderModel) {
+            return EXECUTOR_SERVICE_COMPONENT_KEY;
+        } else {
+            return CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY;
+        }
+    }
+
+    protected ExecutorService createExecutor(URL url) {
+        return (ExecutorService) extensionAccessor
+                .getExtensionLoader(ThreadPool.class)
+                .getAdaptiveExtension()
+                .getExecutor(url);
     }
 
     @Override
     public ExecutorService getExecutor(URL url) {
-        Map<Integer, ExecutorService> executors = data.get(getExecutorKey(url));
+        Map<String, ExecutorService> executors = data.get(getExecutorKey(url));
 
         /*
          * It's guaranteed that this method is called after {@link #createExecutorIfAbsent(URL)}, so data should already
          * have Executor instances generated and stored.
          */
         if (executors == null) {
-            logger.warn(COMMON_EXECUTORS_NO_FOUND, "", "", "No available executors, this is not expected, framework should call createExecutorIfAbsent first" +
-                "before coming to here.");
+            logger.warn(
+                    COMMON_EXECUTORS_NO_FOUND,
+                    "",
+                    "",
+                    "No available executors, this is not expected, framework should call createExecutorIfAbsent first"
+                            + "before coming to here.");
 
             return null;
         }
 
         // Consumer's executor is sharing globally, key=Integer.MAX_VALUE. Provider's executor is sharing by protocol.
-        Integer portKey = CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY)) ? Integer.MAX_VALUE : url.getPort();
-        ExecutorService executor = executors.get(portKey);
+        String executorCacheKey = getExecutorSecondKey(url);
+        ExecutorService executor = executors.get(executorCacheKey);
         if (executor != null && (executor.isShutdown() || executor.isTerminated())) {
-            executors.remove(portKey);
+            executors.remove(executorCacheKey);
+            // Does not re-create a shutdown executor, use SHARED_EXECUTOR for downgrade.
+            executor = null;
+            logger.info("Executor for " + url + " is shutdown.");
+        }
+        if (executor == null) {
+            return frameworkExecutorRepository.getSharedExecutor();
+        } else {
+            return executor;
+        }
+    }
+
+    @Override
+    public ExecutorService getExecutor(ServiceModel serviceModel, URL url) {
+        Map<String, ExecutorService> executors = data.get(getExecutorKey(serviceModel));
+
+        /*
+         * It's guaranteed that this method is called after {@link #createExecutorIfAbsent(URL)}, so data should already
+         * have Executor instances generated and stored.
+         */
+        if (executors == null) {
+            logger.warn(
+                    COMMON_EXECUTORS_NO_FOUND,
+                    "",
+                    "",
+                    "No available executors, this is not expected, framework should call createExecutorIfAbsent first"
+                            + "before coming to here.");
+
+            return null;
+        }
+
+        // Consumer's executor is sharing globally, key=Integer.MAX_VALUE. Provider's executor is sharing by protocol.
+        String executorCacheKey = getExecutorSecondKey(serviceModel, url);
+        ExecutorService executor = executors.get(executorCacheKey);
+        if (executor != null && (executor.isShutdown() || executor.isTerminated())) {
+            executors.remove(executorCacheKey);
             // Does not re-create a shutdown executor, use SHARED_EXECUTOR for downgrade.
             executor = null;
             logger.info("Executor for " + url + " is shutdown.");
@@ -164,8 +267,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     @Override
     public void updateThreadpool(URL url, ExecutorService executor) {
         try {
-            if (url.hasParameter(THREADS_KEY)
-                && executor instanceof ThreadPoolExecutor && !executor.isShutdown()) {
+            if (url.hasParameter(THREADS_KEY) && executor instanceof ThreadPoolExecutor && !executor.isShutdown()) {
                 ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) executor;
                 int threads = url.getParameter(THREADS_KEY, 0);
                 int max = threadPoolExecutor.getMaximumPoolSize();
@@ -196,8 +298,8 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
                 int coreSize = getExportThreadNum();
                 String applicationName = applicationModel.tryGetApplicationName();
                 applicationName = StringUtils.isEmpty(applicationName) ? "app" : applicationName;
-                serviceExportExecutor = Executors.newScheduledThreadPool(coreSize,
-                    new NamedThreadFactory("Dubbo-" + applicationName + "-service-export", true));
+                serviceExportExecutor = Executors.newScheduledThreadPool(
+                        coreSize, new NamedThreadFactory("Dubbo-" + applicationName + "-service-export", true));
             }
         }
         return serviceExportExecutor;
@@ -225,8 +327,8 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
                 int coreSize = getReferThreadNum();
                 String applicationName = applicationModel.tryGetApplicationName();
                 applicationName = StringUtils.isEmpty(applicationName) ? "app" : applicationName;
-                serviceReferExecutor = Executors.newFixedThreadPool(coreSize,
-                    new NamedThreadFactory("Dubbo-" + applicationName + "-service-refer", true));
+                serviceReferExecutor = Executors.newFixedThreadPool(
+                        coreSize, new NamedThreadFactory("Dubbo-" + applicationName + "-service-refer", true));
             }
         }
         return serviceReferExecutor;
@@ -256,7 +358,8 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
             }
         }
         if (threadNum == null) {
-            logger.info("Cannot get config `export-thread-num` from module config, using default: " + DEFAULT_EXPORT_THREAD_NUM);
+            logger.info("Cannot get config `export-thread-num` from module config, using default: "
+                    + DEFAULT_EXPORT_THREAD_NUM);
             return DEFAULT_EXPORT_THREAD_NUM;
         }
         return threadNum;
@@ -269,11 +372,11 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
         }
         Integer threadNum = moduleConfig.getExportThreadNum();
         if (threadNum == null) {
-            threadNum = moduleModel.getConfigManager().getProviders()
-                .stream()
-                .map(ProviderConfig::getExportThreadNum)
-                .filter(k -> k != null && k > 0)
-                .findAny().orElse(null);
+            threadNum = moduleModel.getConfigManager().getProviders().stream()
+                    .map(ProviderConfig::getExportThreadNum)
+                    .filter(k -> k != null && k > 0)
+                    .findAny()
+                    .orElse(null);
         }
         return threadNum;
     }
@@ -288,7 +391,8 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
             }
         }
         if (threadNum == null) {
-            logger.info("Cannot get config `refer-thread-num` from module config, using default: " + DEFAULT_REFER_THREAD_NUM);
+            logger.info("Cannot get config `refer-thread-num` from module config, using default: "
+                    + DEFAULT_REFER_THREAD_NUM);
             return DEFAULT_REFER_THREAD_NUM;
         }
         return threadNum;
@@ -301,11 +405,11 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
         }
         Integer threadNum = moduleConfig.getReferThreadNum();
         if (threadNum == null) {
-            threadNum = moduleModel.getConfigManager().getConsumers()
-                .stream()
-                .map(ConsumerConfig::getReferThreadNum)
-                .filter(k -> k != null && k > 0)
-                .findAny().orElse(null);
+            threadNum = moduleModel.getConfigManager().getConsumers().stream()
+                    .map(ConsumerConfig::getReferThreadNum)
+                    .filter(k -> k != null && k > 0)
+                    .findAny()
+                    .orElse(null);
         }
         return threadNum;
     }
@@ -400,5 +504,13 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     @Override
     public ExecutorService getMappingRefreshingExecutor() {
         return frameworkExecutorRepository.getMappingRefreshingExecutor();
+    }
+
+    @Override
+    public ExecutorSupport getExecutorSupport(URL url) {
+        if (executorSupport == null) {
+            executorSupport = new DefaultExecutorSupport(url);
+        }
+        return executorSupport;
     }
 }

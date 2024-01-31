@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.URL;
@@ -26,12 +25,11 @@ import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.StubMethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.stream.TripleServerStream;
 
+import java.util.Collections;
+
 import io.netty.util.concurrent.ImmediateEventExecutor;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import java.io.IOException;
-import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -40,33 +38,31 @@ import static org.mockito.Mockito.when;
 class StubServerCallTest {
 
     @Test
-    void doStartCall() throws IOException, ClassNotFoundException {
+    void doStartCall() throws Exception {
         Invoker<?> invoker = Mockito.mock(Invoker.class);
         TripleServerStream tripleServerStream = Mockito.mock(TripleServerStream.class);
         ProviderModel providerModel = Mockito.mock(ProviderModel.class);
         ServiceDescriptor serviceDescriptor = Mockito.mock(ServiceDescriptor.class);
         StubMethodDescriptor methodDescriptor = Mockito.mock(StubMethodDescriptor.class);
         URL url = Mockito.mock(URL.class);
-        when(invoker.getUrl())
-            .thenReturn(url);
-        when(url.getServiceModel())
-            .thenReturn(providerModel);
-        when(providerModel.getServiceModel())
-            .thenReturn(serviceDescriptor);
-        when(serviceDescriptor.getMethods(anyString()))
-            .thenReturn(Collections.singletonList(methodDescriptor));
-        when(methodDescriptor.getRpcType())
-            .thenReturn(RpcType.UNARY);
-        when(methodDescriptor.parseRequest(any(byte[].class)))
-            .thenReturn("test");
+        when(invoker.getUrl()).thenReturn(url);
+        when(url.getServiceModel()).thenReturn(providerModel);
+        when(providerModel.getServiceModel()).thenReturn(serviceDescriptor);
+        when(serviceDescriptor.getMethods(anyString())).thenReturn(Collections.singletonList(methodDescriptor));
+        when(methodDescriptor.getRpcType()).thenReturn(RpcType.UNARY);
+        when(methodDescriptor.parseRequest(any(byte[].class))).thenReturn("test");
         String service = "testService";
         String method = "method";
-        StubAbstractServerCall call = new StubAbstractServerCall(invoker, tripleServerStream,
-            new FrameworkModel(), "",
-            service, method,
-            ImmediateEventExecutor.INSTANCE);
+        StubAbstractServerCall call = new StubAbstractServerCall(
+                invoker,
+                tripleServerStream,
+                new FrameworkModel(),
+                "",
+                service,
+                method,
+                ImmediateEventExecutor.INSTANCE);
         call.onHeader(Collections.emptyMap());
-        call.onMessage(new byte[0]);
+        call.onMessage(new byte[0], false);
         call.onComplete();
     }
 }

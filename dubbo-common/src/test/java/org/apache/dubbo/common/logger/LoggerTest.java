@@ -22,16 +22,16 @@ import org.apache.dubbo.common.logger.log4j.Log4jLoggerAdapter;
 import org.apache.dubbo.common.logger.log4j2.Log4j2LoggerAdapter;
 import org.apache.dubbo.common.logger.slf4j.Slf4jLoggerAdapter;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.stream.Stream;
+
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.stream.Stream;
-
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-
 
 class LoggerTest {
 
@@ -41,14 +41,13 @@ class LoggerTest {
                 Arguments.of(JdkLoggerAdapter.class),
                 Arguments.of(Log4jLoggerAdapter.class),
                 Arguments.of(Slf4jLoggerAdapter.class),
-                Arguments.of(Log4j2LoggerAdapter.class)
-        );
+                Arguments.of(Log4j2LoggerAdapter.class));
     }
 
     @ParameterizedTest
     @MethodSource("data")
-    public void testAllLogMethod(Class<? extends LoggerAdapter> loggerAdapter) throws Exception {
-        LoggerAdapter adapter = loggerAdapter.newInstance();
+    void testAllLogMethod(Class<? extends LoggerAdapter> loggerAdapter) throws Exception {
+        LoggerAdapter adapter = loggerAdapter.getDeclaredConstructor().newInstance();
         adapter.setLevel(Level.ALL);
         Logger logger = adapter.getLogger(this.getClass());
         logger.error("error");
@@ -72,8 +71,9 @@ class LoggerTest {
 
     @ParameterizedTest
     @MethodSource("data")
-    public void testLevelEnable(Class<? extends LoggerAdapter> loggerAdapter) throws IllegalAccessException, InstantiationException {
-        LoggerAdapter adapter = loggerAdapter.newInstance();
+    void testLevelEnable(Class<? extends LoggerAdapter> loggerAdapter)
+            throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+        LoggerAdapter adapter = loggerAdapter.getDeclaredConstructor().newInstance();
         adapter.setLevel(Level.ALL);
         Logger logger = adapter.getLogger(this.getClass());
         assertThat(logger.isWarnEnabled(), not(nullValue()));

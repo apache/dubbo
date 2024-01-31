@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.log4j.FileAppender;
-import org.apache.log4j.spi.LoggingEvent;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.spi.LoggingEvent;
 
 public class DubboAppender extends FileAppender {
 
@@ -64,5 +64,4 @@ public class DubboAppender extends FileAppender {
         log.setLogMessage(event.getMessage().toString());
         return log;
     }
-
 }

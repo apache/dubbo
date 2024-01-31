@@ -14,21 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
-import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.exchange.Request;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.remoting.Constants.HEARTBEAT_CHECK_TICK;
@@ -55,8 +54,14 @@ class HeartBeatTaskTest {
             }
         };
 
-        AbstractTimerTask.ChannelProvider cp = () -> Collections.<Channel>singletonList(channel);
-        heartbeatTimerTask = new HeartbeatTimerTask(cp, tickDuration / HEARTBEAT_CHECK_TICK, (int) tickDuration);
+        heartbeatTimerTask = new HeartbeatTimerTask(
+                () -> Collections.singleton(channel), heartbeatTimer, tickDuration / HEARTBEAT_CHECK_TICK, (int)
+                        tickDuration);
+    }
+
+    @AfterEach
+    public void teardown() {
+        heartbeatTimerTask.cancel();
     }
 
     @Test
@@ -67,8 +72,6 @@ class HeartBeatTaskTest {
         channel.setAttribute(HeartbeatHandler.KEY_READ_TIMESTAMP, now);
         channel.setAttribute(HeartbeatHandler.KEY_WRITE_TIMESTAMP, now);
 
-        heartbeatTimer.newTimeout(heartbeatTimerTask, 250, TimeUnit.MILLISECONDS);
-
         Thread.sleep(2000L);
         List<Object> objects = channel.getSentObjects();
         Assertions.assertTrue(objects.size() > 0);
@@ -77,5 +80,4 @@ class HeartBeatTaskTest {
         Request request = (Request) obj;
         Assertions.assertTrue(request.isHeartbeat());
     }
-
 }

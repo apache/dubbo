@@ -19,12 +19,12 @@ package org.apache.dubbo.common.serialize.fastjson2;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeClassLoaderListener;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import com.alibaba.fastjson2.JSONFactory;
 import com.alibaba.fastjson2.reader.ObjectReaderCreatorASM;
 import com.alibaba.fastjson2.writer.ObjectWriterCreatorASM;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class Fastjson2CreatorManager implements ScopeClassLoaderListener<FrameworkModel> {
 

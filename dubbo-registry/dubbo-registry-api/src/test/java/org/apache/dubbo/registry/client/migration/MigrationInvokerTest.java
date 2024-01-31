@@ -29,15 +29,15 @@ import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-
-import java.util.LinkedList;
-import java.util.List;
 
 class MigrationInvokerTest {
     @BeforeEach
@@ -54,6 +54,7 @@ class MigrationInvokerTest {
         FrameworkModel.destroyAll();
     }
 
+    @SuppressWarnings("all")
     @Test
     void test() {
         RegistryProtocol registryProtocol = Mockito.mock(RegistryProtocol.class);
@@ -73,17 +74,20 @@ class MigrationInvokerTest {
         Mockito.when(invoker.hasProxyInvokers()).thenReturn(true);
         Mockito.when(serviceDiscoveryInvoker.hasProxyInvokers()).thenReturn(true);
 
-        List<Invoker> invokers = new LinkedList<>();
+        List<Invoker<?>> invokers = new LinkedList<>();
         invokers.add(Mockito.mock(Invoker.class));
         invokers.add(Mockito.mock(Invoker.class));
-        List<Invoker> serviceDiscoveryInvokers = new LinkedList<>();
+        List<Invoker<?>> serviceDiscoveryInvokers = new LinkedList<>();
         serviceDiscoveryInvokers.add(Mockito.mock(Invoker.class));
         serviceDiscoveryInvokers.add(Mockito.mock(Invoker.class));
         Mockito.when(directory.getAllInvokers()).thenReturn(invokers);
         Mockito.when(serviceDiscoveryDirectory.getAllInvokers()).thenReturn(serviceDiscoveryInvokers);
 
-        Mockito.when(registryProtocol.getInvoker(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(invoker);
-        Mockito.when(registryProtocol.getServiceDiscoveryInvoker(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(serviceDiscoveryInvoker);
+        Mockito.when(registryProtocol.getInvoker(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+                .thenReturn(invoker);
+        Mockito.when(registryProtocol.getServiceDiscoveryInvoker(
+                        Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+                .thenReturn(serviceDiscoveryInvoker);
 
         URL consumerURL = Mockito.mock(URL.class);
         Mockito.when(consumerURL.getServiceInterface()).thenReturn("Test");
@@ -96,7 +100,8 @@ class MigrationInvokerTest {
         Mockito.when(invoker.getUrl()).thenReturn(consumerURL);
         Mockito.when(serviceDiscoveryInvoker.getUrl()).thenReturn(consumerURL);
 
-        MigrationInvoker migrationInvoker = new MigrationInvoker(registryProtocol, null, null, DemoService.class, null, consumerURL);
+        MigrationInvoker<?> migrationInvoker =
+                new MigrationInvoker<>(registryProtocol, null, null, DemoService.class, null, consumerURL);
 
         MigrationRule migrationRule = Mockito.mock(MigrationRule.class);
         Mockito.when(migrationRule.getForce(Mockito.any())).thenReturn(true);
@@ -225,6 +230,7 @@ class MigrationInvokerTest {
         Assertions.assertTrue(System.currentTimeMillis() - currentTimeMillis >= 2000);
     }
 
+    @SuppressWarnings("all")
     @Test
     void testDecide() {
         RegistryProtocol registryProtocol = Mockito.mock(RegistryProtocol.class);
@@ -244,17 +250,20 @@ class MigrationInvokerTest {
         Mockito.when(invoker.hasProxyInvokers()).thenReturn(true);
         Mockito.when(serviceDiscoveryInvoker.hasProxyInvokers()).thenReturn(true);
 
-        List<Invoker> invokers = new LinkedList<>();
+        List<Invoker<?>> invokers = new LinkedList<>();
         invokers.add(Mockito.mock(Invoker.class));
         invokers.add(Mockito.mock(Invoker.class));
-        List<Invoker> serviceDiscoveryInvokers = new LinkedList<>();
+        List<Invoker<?>> serviceDiscoveryInvokers = new LinkedList<>();
         serviceDiscoveryInvokers.add(Mockito.mock(Invoker.class));
         serviceDiscoveryInvokers.add(Mockito.mock(Invoker.class));
         Mockito.when(directory.getAllInvokers()).thenReturn(invokers);
         Mockito.when(serviceDiscoveryDirectory.getAllInvokers()).thenReturn(serviceDiscoveryInvokers);
 
-        Mockito.when(registryProtocol.getInvoker(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(invoker);
-        Mockito.when(registryProtocol.getServiceDiscoveryInvoker(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(serviceDiscoveryInvoker);
+        Mockito.when(registryProtocol.getInvoker(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+                .thenReturn(invoker);
+        Mockito.when(registryProtocol.getServiceDiscoveryInvoker(
+                        Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+                .thenReturn(serviceDiscoveryInvoker);
 
         URL consumerURL = Mockito.mock(URL.class);
         Mockito.when(consumerURL.getServiceInterface()).thenReturn("Test");
@@ -267,7 +276,8 @@ class MigrationInvokerTest {
         Mockito.when(invoker.getUrl()).thenReturn(consumerURL);
         Mockito.when(serviceDiscoveryInvoker.getUrl()).thenReturn(consumerURL);
 
-        MigrationInvoker migrationInvoker = new MigrationInvoker(registryProtocol, null, null, DemoService.class, null, consumerURL);
+        MigrationInvoker<?> migrationInvoker =
+                new MigrationInvoker<>(registryProtocol, null, null, DemoService.class, null, consumerURL);
 
         MigrationRule migrationRule = Mockito.mock(MigrationRule.class);
         Mockito.when(migrationRule.getForce(Mockito.any())).thenReturn(true);

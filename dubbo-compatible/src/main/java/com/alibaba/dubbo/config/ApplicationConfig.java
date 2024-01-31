@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.config;
 
 @Deprecated
@@ -26,5 +25,18 @@ public class ApplicationConfig extends org.apache.dubbo.config.ApplicationConfig
 
     public ApplicationConfig(String name) {
         super(name);
+    }
+
+    public void setRegistry(com.alibaba.dubbo.config.RegistryConfig registry) {
+        super.setRegistry(registry);
+    }
+
+    public void setMonitor(com.alibaba.dubbo.config.MonitorConfig monitor) {
+        super.setMonitor(monitor);
+    }
+
+    @Override
+    public void setMonitor(String monitor) {
+        setMonitor(new com.alibaba.dubbo.config.MonitorConfig(monitor));
     }
 }

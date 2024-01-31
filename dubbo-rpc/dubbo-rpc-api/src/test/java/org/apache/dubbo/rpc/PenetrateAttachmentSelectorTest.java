@@ -20,12 +20,12 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * {@link PenetrateAttachmentSelector}
@@ -34,15 +34,33 @@ class PenetrateAttachmentSelectorTest {
 
     @Test
     void test() {
-        ExtensionLoader<PenetrateAttachmentSelector> selectorExtensionLoader = ApplicationModel.defaultModel().getExtensionLoader(PenetrateAttachmentSelector.class);
+        ExtensionLoader<PenetrateAttachmentSelector> selectorExtensionLoader =
+                ApplicationModel.defaultModel().getExtensionLoader(PenetrateAttachmentSelector.class);
         Set<String> supportedSelectors = selectorExtensionLoader.getSupportedExtensions();
         Map<String, Object> allSelected = new HashMap<>();
         if (CollectionUtils.isNotEmpty(supportedSelectors)) {
             for (String supportedSelector : supportedSelectors) {
-                Map<String, Object> selected = selectorExtensionLoader.getExtension(supportedSelector).select();
+                Map<String, Object> selected =
+                        selectorExtensionLoader.getExtension(supportedSelector).select(null, null, null);
                 allSelected.putAll(selected);
             }
         }
         Assertions.assertEquals(allSelected.get("testKey"), "testVal");
+    }
+
+    @Test
+    public void testSelectReverse() {
+        ExtensionLoader<PenetrateAttachmentSelector> selectorExtensionLoader =
+                ApplicationModel.defaultModel().getExtensionLoader(PenetrateAttachmentSelector.class);
+        Set<String> supportedSelectors = selectorExtensionLoader.getSupportedExtensions();
+        Map<String, Object> allSelected = new HashMap<>();
+        if (CollectionUtils.isNotEmpty(supportedSelectors)) {
+            for (String supportedSelector : supportedSelectors) {
+                Map<String, Object> selected =
+                        selectorExtensionLoader.getExtension(supportedSelector).selectReverse(null, null, null);
+                allSelected.putAll(selected);
+            }
+        }
+        Assertions.assertEquals(allSelected.get("reverseKey"), "reverseVal");
     }
 }

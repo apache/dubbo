@@ -25,174 +25,192 @@ class ProviderBuilderTest {
 
     @Test
     void setHost() {
-        ProviderBuilder builder = new ProviderBuilder();
+        ProviderBuilder builder = ProviderBuilder.newBuilder();
         builder.host("host");
         Assertions.assertEquals("host", builder.build().getHost());
     }
 
     @Test
     void port() {
-        ProviderBuilder builder = new ProviderBuilder();
+        ProviderBuilder builder = ProviderBuilder.newBuilder();
         builder.port(8080);
         Assertions.assertEquals(8080, builder.build().getPort());
     }
 
     @Test
     void contextPath() {
-        ProviderBuilder builder = new ProviderBuilder();
+        ProviderBuilder builder = ProviderBuilder.newBuilder();
         builder.contextPath("contextpath");
         Assertions.assertEquals("contextpath", builder.build().getContextpath());
     }
 
     @Test
     void threadPool() {
-        ProviderBuilder builder = new ProviderBuilder();
+        ProviderBuilder builder = ProviderBuilder.newBuilder();
         builder.threadPool("mockthreadpool");
         Assertions.assertEquals("mockthreadpool", builder.build().getThreadpool());
     }
 
     @Test
     void threads() {
-        ProviderBuilder builder = new ProviderBuilder();
+        ProviderBuilder builder = ProviderBuilder.newBuilder();
         builder.threads(20);
         Assertions.assertEquals(20, builder.build().getThreads());
     }
 
     @Test
     void ioThreads() {
-        ProviderBuilder builder = new ProviderBuilder();
+        ProviderBuilder builder = ProviderBuilder.newBuilder();
         builder.ioThreads(25);
         Assertions.assertEquals(25, builder.build().getIothreads());
     }
 
     @Test
     void queues() {
-        ProviderBuilder builder = new ProviderBuilder();
+        ProviderBuilder builder = ProviderBuilder.newBuilder();
         builder.queues(30);
         Assertions.assertEquals(30, builder.build().getQueues());
     }
 
     @Test
     void accepts() {
-        ProviderBuilder builder = new ProviderBuilder();
+        ProviderBuilder builder = ProviderBuilder.newBuilder();
         builder.accepts(35);
         Assertions.assertEquals(35, builder.build().getAccepts());
     }
 
     @Test
     void codec() {
-        ProviderBuilder builder = new ProviderBuilder();
+        ProviderBuilder builder = ProviderBuilder.newBuilder();
         builder.codec("mockcodec");
         Assertions.assertEquals("mockcodec", builder.build().getCodec());
     }
 
     @Test
     void charset() {
-        ProviderBuilder builder = new ProviderBuilder();
+        ProviderBuilder builder = ProviderBuilder.newBuilder();
         builder.charset("utf-8");
         Assertions.assertEquals("utf-8", builder.build().getCharset());
     }
 
     @Test
     void payload() {
-        ProviderBuilder builder = new ProviderBuilder();
+        ProviderBuilder builder = ProviderBuilder.newBuilder();
         builder.payload(40);
         Assertions.assertEquals(40, builder.build().getPayload());
     }
 
     @Test
     void buffer() {
-        ProviderBuilder builder = new ProviderBuilder();
+        ProviderBuilder builder = ProviderBuilder.newBuilder();
         builder.buffer(1024);
         Assertions.assertEquals(1024, builder.build().getBuffer());
     }
 
     @Test
     void transporter() {
-        ProviderBuilder builder = new ProviderBuilder();
+        ProviderBuilder builder = ProviderBuilder.newBuilder();
         builder.transporter("mocktransporter");
         Assertions.assertEquals("mocktransporter", builder.build().getTransporter());
     }
 
     @Test
     void exchanger() {
-        ProviderBuilder builder = new ProviderBuilder();
+        ProviderBuilder builder = ProviderBuilder.newBuilder();
         builder.exchanger("mockexchanger");
         Assertions.assertEquals("mockexchanger", builder.build().getExchanger());
     }
 
     @Test
     void dispatcher() {
-        ProviderBuilder builder = new ProviderBuilder();
+        ProviderBuilder builder = ProviderBuilder.newBuilder();
         builder.dispatcher("mockdispatcher");
         Assertions.assertEquals("mockdispatcher", builder.build().getDispatcher());
     }
 
     @Test
     void networker() {
-        ProviderBuilder builder = new ProviderBuilder();
+        ProviderBuilder builder = ProviderBuilder.newBuilder();
         builder.networker("networker");
         Assertions.assertEquals("networker", builder.build().getNetworker());
     }
 
     @Test
     void server() {
-        ProviderBuilder builder = new ProviderBuilder();
+        ProviderBuilder builder = ProviderBuilder.newBuilder();
         builder.server("server");
         Assertions.assertEquals("server", builder.build().getServer());
     }
 
     @Test
     void client() {
-        ProviderBuilder builder = new ProviderBuilder();
+        ProviderBuilder builder = ProviderBuilder.newBuilder();
         builder.client("client");
         Assertions.assertEquals("client", builder.build().getClient());
     }
 
     @Test
     void telnet() {
-        ProviderBuilder builder = new ProviderBuilder();
+        ProviderBuilder builder = ProviderBuilder.newBuilder();
         builder.telnet("mocktelnethandler");
         Assertions.assertEquals("mocktelnethandler", builder.build().getTelnet());
     }
 
     @Test
     void prompt() {
-        ProviderBuilder builder = new ProviderBuilder();
+        ProviderBuilder builder = ProviderBuilder.newBuilder();
         builder.prompt("prompt");
         Assertions.assertEquals("prompt", builder.build().getPrompt());
     }
 
     @Test
     void status() {
-        ProviderBuilder builder = new ProviderBuilder();
+        ProviderBuilder builder = ProviderBuilder.newBuilder();
         builder.status("mockstatuschecker");
         Assertions.assertEquals("mockstatuschecker", builder.build().getStatus());
     }
 
     @Test
     void Wait() {
-        ProviderBuilder builder = new ProviderBuilder();
+        ProviderBuilder builder = ProviderBuilder.newBuilder();
         builder.wait(Integer.valueOf(1000));
         Assertions.assertEquals(1000, builder.build().getWait());
     }
 
     @Test
     void isDefault() {
-        ProviderBuilder builder = new ProviderBuilder();
+        ProviderBuilder builder = ProviderBuilder.newBuilder();
         builder.isDefault(true);
         Assertions.assertTrue(builder.build().isDefault());
     }
 
     @Test
     void build() {
-        ProviderBuilder builder = new ProviderBuilder();
-        builder.host("host").port(8080).contextPath("contextpath").threadPool("mockthreadpool")
-                .threads(2).ioThreads(3).queues(4).accepts(5).codec("mockcodec")
-                .charset("utf-8").payload(6).buffer(1024).transporter("mocktransporter").exchanger("mockexchanger")
-                .dispatcher("mockdispatcher").networker("networker").server("server").client("client")
-                .telnet("mocktelnethandler").prompt("prompt").status("mockstatuschecker").wait(Integer.valueOf(1000))
-                .isDefault(true).id("id");
+        ProviderBuilder builder = ProviderBuilder.newBuilder();
+        builder.host("host")
+                .port(8080)
+                .contextPath("contextpath")
+                .threadPool("mockthreadpool")
+                .threads(2)
+                .ioThreads(3)
+                .queues(4)
+                .accepts(5)
+                .codec("mockcodec")
+                .charset("utf-8")
+                .payload(6)
+                .buffer(1024)
+                .transporter("mocktransporter")
+                .exchanger("mockexchanger")
+                .dispatcher("mockdispatcher")
+                .networker("networker")
+                .server("server")
+                .client("client")
+                .telnet("mocktelnethandler")
+                .prompt("prompt")
+                .status("mockstatuschecker")
+                .wait(Integer.valueOf(1000))
+                .isDefault(true)
+                .id("id");
 
         ProviderConfig config = builder.build();
         ProviderConfig config2 = builder.build();

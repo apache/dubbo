@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.constants;
 
 /**
@@ -89,6 +88,8 @@ public interface LoggerCodeConstants {
     String COMMON_METADATA_PROCESSOR = "0-26";
 
     String COMMON_ISOLATED_EXECUTOR_CONFIGURATION_ERROR = "0-27";
+
+    String VULNERABILITY_WARNING = "0-28";
 
     // Registry module
 
@@ -188,6 +189,8 @@ public interface LoggerCodeConstants {
     String REGISTRY_ROUTER_WAIT_LONG = "1-40";
 
     String REGISTRY_ISTIO_EXCEPTION = "1-41";
+
+    String REGISTRY_NACOS_SUB_LEGACY = "1-42";
 
     // Cluster module 2-x
     String CLUSTER_FAILED_SITE_SELECTION = "2-1";
@@ -376,6 +379,12 @@ public interface LoggerCodeConstants {
     String CONFIG_DUBBO_BEAN_INITIALIZER = "5-39";
 
     String CONFIG_DUBBO_BEAN_NOT_FOUND = "5-40";
+
+    String CONFIG_SSL_PATH_LOAD_FAILED = "5-41";
+
+    String CONFIG_SSL_CERT_GENERATE_FAILED = "5-42";
+
+    String CONFIG_SSL_CONNECT_INSECURE = "5-43";
 
     // Transport module
     String TRANSPORT_FAILED_CONNECT_PROVIDER = "6-1";

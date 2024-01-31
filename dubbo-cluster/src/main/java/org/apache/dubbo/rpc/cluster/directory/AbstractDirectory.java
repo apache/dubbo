@@ -20,12 +20,16 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
@@ -33,6 +37,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.RouterChain;
+import org.apache.dubbo.rpc.cluster.SingleRouterChain;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -40,6 +45,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +56,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RECONNECT_TASK_PERIOD;
@@ -125,6 +132,8 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
      */
     private final int reconnectTaskPeriod;
 
+    private ApplicationModel applicationModel;
+
     public AbstractDirectory(URL url) {
         this(url, null, false);
     }
@@ -150,19 +159,21 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         }
 
         // remove some local only parameters
-        ApplicationModel applicationModel = url.getOrDefaultApplicationModel();
-        this.queryMap = applicationModel.getBeanFactory().getBean(ClusterUtils.class).mergeLocalParams(queryMap);
+        applicationModel = url.getOrDefaultApplicationModel();
+        this.queryMap =
+                applicationModel.getBeanFactory().getBean(ClusterUtils.class).mergeLocalParams(queryMap);
 
         if (consumerUrl == null) {
-            String host = isNotEmpty(queryMap.get(REGISTER_IP_KEY)) ? queryMap.get(REGISTER_IP_KEY) : this.url.getHost();
+            String host =
+                    isNotEmpty(queryMap.get(REGISTER_IP_KEY)) ? queryMap.get(REGISTER_IP_KEY) : this.url.getHost();
             String path = isNotEmpty(queryMap.get(PATH_KEY)) ? queryMap.get(PATH_KEY) : queryMap.get(INTERFACE_KEY);
             String consumedProtocol = isNotEmpty(queryMap.get(PROTOCOL_KEY)) ? queryMap.get(PROTOCOL_KEY) : CONSUMER;
 
             URL consumerUrlFrom = this.url
-                .setHost(host)
-                .setPort(0)
-                .setProtocol(consumedProtocol)
-                .setPath(path);
+                    .setHost(host)
+                    .setPort(0)
+                    .setProtocol(consumedProtocol)
+                    .setPath(path);
             if (isUrlFromRegistry) {
                 // reserve parameters if url is already a consumer url
                 consumerUrlFrom = consumerUrlFrom.clearParameters();
@@ -170,8 +181,11 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             this.consumerUrl = consumerUrlFrom.addParameters(queryMap);
         }
 
-        this.connectivityExecutor = applicationModel.getFrameworkModel().getBeanFactory()
-            .getBean(FrameworkExecutorRepository.class).getConnectivityScheduledExecutor();
+        this.connectivityExecutor = applicationModel
+                .getFrameworkModel()
+                .getBeanFactory()
+                .getBean(FrameworkExecutorRepository.class)
+                .getConnectivityScheduledExecutor();
         Configuration configuration = ConfigurationUtils.getGlobalConfiguration(url.getOrDefaultModuleModel());
         this.reconnectTaskTryCount = configuration.getInt(RECONNECT_TASK_TRY_COUNT, DEFAULT_RECONNECT_TASK_TRY_COUNT);
         this.reconnectTaskPeriod = configuration.getInt(RECONNECT_TASK_PERIOD, DEFAULT_RECONNECT_TASK_PERIOD);
@@ -181,31 +195,56 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     @Override
     public List<Invoker<T>> list(Invocation invocation) throws RpcException {
         if (destroyed) {
-            throw new RpcException("Directory of type " + this.getClass().getSimpleName() +  " already destroyed for service " + getConsumerUrl().getServiceKey() + " from registry " + getUrl());
+            throw new RpcException(
+                    "Directory of type " + this.getClass().getSimpleName() + " already destroyed for service "
+                            + getConsumerUrl().getServiceKey() + " from registry " + getUrl());
         }
 
         BitList<Invoker<T>> availableInvokers;
-        // use clone to avoid being modified at doList().
-        if (invokersInitialized) {
-            availableInvokers = validInvokers.clone();
-        } else {
-            availableInvokers = invokers.clone();
-        }
+        SingleRouterChain<T> singleChain = null;
+        try {
+            try {
+                if (routerChain != null) {
+                    routerChain.getLock().readLock().lock();
+                }
+                // use clone to avoid being modified at doList().
+                if (invokersInitialized) {
+                    availableInvokers = validInvokers.clone();
+                } else {
+                    availableInvokers = invokers.clone();
+                }
 
-        List<Invoker<T>> routedResult = doList(availableInvokers, invocation);
-        if (routedResult.isEmpty()) {
-            // 2-2 - No provider available.
+                if (routerChain != null) {
+                    singleChain = routerChain.getSingleChain(getConsumerUrl(), availableInvokers, invocation);
+                    singleChain.getLock().readLock().lock();
+                }
+            } finally {
+                if (routerChain != null) {
+                    routerChain.getLock().readLock().unlock();
+                }
+            }
 
-            logger.warn(CLUSTER_NO_VALID_PROVIDER, "provider server or registry center crashed", "",
-                "No provider available after connectivity filter for the service " + getConsumerUrl().getServiceKey()
-                + " All validInvokers' size: " + validInvokers.size()
-                + " All routed invokers' size: " + routedResult.size()
-                + " All invokers' size: " + invokers.size()
-                + " from registry " + getUrl().getAddress()
-                + " on the consumer " + NetUtils.getLocalHost()
-                + " using the dubbo version " + Version.getVersion() + ".");
+            List<Invoker<T>> routedResult = doList(singleChain, availableInvokers, invocation);
+            if (routedResult.isEmpty()) {
+                // 2-2 - No provider available.
+
+                logger.warn(
+                        CLUSTER_NO_VALID_PROVIDER,
+                        "provider server or registry center crashed",
+                        "",
+                        "No provider available after connectivity filter for the service "
+                                + getConsumerUrl().getServiceKey()
+                                + " All routed invokers' size: " + routedResult.size()
+                                + " from registry " + this
+                                + " on the consumer " + NetUtils.getLocalHost()
+                                + " using the dubbo version " + Version.getVersion() + ".");
+            }
+            return Collections.unmodifiableList(routedResult);
+        } finally {
+            if (singleChain != null) {
+                singleChain.getLock().readLock().unlock();
+            }
         }
-        return Collections.unmodifiableList(routedResult);
     }
 
     @Override
@@ -260,64 +299,79 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             invokersToReconnect.add(invoker);
             // 3. try start check connectivity task
             checkConnectivity();
+
+            logger.info("The invoker " + invoker.getUrl()
+                    + " has been added to invalidate list due to connectivity problem. "
+                    + "Will trying to reconnect to it in the background.");
         }
     }
 
     public void checkConnectivity() {
         // try to submit task, to ensure there is only one task at most for each directory
         if (checkConnectivityPermit.tryAcquire()) {
-            this.connectivityCheckFuture = connectivityExecutor.schedule(() -> {
-                try {
-                    if (isDestroyed()) {
-                        return;
-                    }
-                    RpcContext.getServiceContext().setConsumerUrl(getConsumerUrl());
-                    List<Invoker<T>> needDeleteList = new ArrayList<>();
-                    List<Invoker<T>> invokersToTry = new ArrayList<>();
-
-                    // 1. pick invokers from invokersToReconnect
-                    // limit max reconnectTaskTryCount, prevent this task hang up all the connectivityExecutor for long time
-                    if (invokersToReconnect.size() < reconnectTaskTryCount) {
-                        invokersToTry.addAll(invokersToReconnect);
-                    } else {
-                        for (int i = 0; i < reconnectTaskTryCount; i++) {
-                            Invoker<T> tInvoker = invokersToReconnect.get(ThreadLocalRandom.current().nextInt(invokersToReconnect.size()));
-                            if (!invokersToTry.contains(tInvoker)) {
-                                // ignore if is selected, invokersToTry's size is always smaller than reconnectTaskTryCount + 1
-                                invokersToTry.add(tInvoker);
+            this.connectivityCheckFuture = connectivityExecutor.schedule(
+                    () -> {
+                        try {
+                            if (isDestroyed()) {
+                                return;
                             }
-                        }
-                    }
+                            RpcContext.getServiceContext().setConsumerUrl(getConsumerUrl());
+                            List<Invoker<T>> needDeleteList = new ArrayList<>();
+                            List<Invoker<T>> invokersToTry = new ArrayList<>();
 
-                    // 2. try to check the invoker's status
-                    for (Invoker<T> invoker : invokersToTry) {
-                        if (invokers.contains(invoker)) {
-                            if (invoker.isAvailable()) {
-                                needDeleteList.add(invoker);
+                            // 1. pick invokers from invokersToReconnect
+                            // limit max reconnectTaskTryCount, prevent this task hang up all the connectivityExecutor
+                            // for long time
+                            if (invokersToReconnect.size() < reconnectTaskTryCount) {
+                                invokersToTry.addAll(invokersToReconnect);
+                            } else {
+                                for (int i = 0; i < reconnectTaskTryCount; i++) {
+                                    Invoker<T> tInvoker = invokersToReconnect.get(
+                                            ThreadLocalRandom.current().nextInt(invokersToReconnect.size()));
+                                    if (!invokersToTry.contains(tInvoker)) {
+                                        // ignore if is selected, invokersToTry's size is always smaller than
+                                        // reconnectTaskTryCount + 1
+                                        invokersToTry.add(tInvoker);
+                                    }
+                                }
                             }
-                        } else {
-                            needDeleteList.add(invoker);
-                        }
-                    }
 
-                    // 3. recover valid invoker
-                    for (Invoker<T> tInvoker : needDeleteList) {
-                        if (invokers.contains(tInvoker)) {
-                            addValidInvoker(tInvoker);
-                            logger.info("Recover service address: " + tInvoker.getUrl() + "  from invalid list.");
-                        }
-                        invokersToReconnect.remove(tInvoker);
-                    }
-                } finally {
-                    checkConnectivityPermit.release();
-                }
+                            // 2. try to check the invoker's status
+                            for (Invoker<T> invoker : invokersToTry) {
+                                if (invokers.contains(invoker)) {
+                                    if (invoker.isAvailable()) {
+                                        needDeleteList.add(invoker);
+                                    }
+                                } else {
+                                    needDeleteList.add(invoker);
+                                }
+                            }
 
-                // 4. submit new task if it has more to recover
-                if (!invokersToReconnect.isEmpty()) {
-                    checkConnectivity();
-                }
-            }, reconnectTaskPeriod, TimeUnit.MILLISECONDS);
+                            // 3. recover valid invoker
+                            for (Invoker<T> tInvoker : needDeleteList) {
+                                if (invokers.contains(tInvoker)) {
+                                    addValidInvoker(tInvoker);
+                                    logger.info(
+                                            "Recover service address: " + tInvoker.getUrl() + "  from invalid list.");
+                                }
+                                invokersToReconnect.remove(tInvoker);
+                            }
+                        } finally {
+                            checkConnectivityPermit.release();
+                        }
+
+                        // 4. submit new task if it has more to recover
+                        if (!invokersToReconnect.isEmpty()) {
+                            checkConnectivity();
+                        }
+                        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(
+                                applicationModel, getSummary(), getDirectoryMeta()));
+                    },
+                    reconnectTaskPeriod,
+                    TimeUnit.MILLISECONDS);
         }
+        MetricsEventBus.publish(
+                RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
     }
 
     /**
@@ -331,6 +385,12 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         if (invokersInitialized) {
             refreshInvokerInternal();
         }
+        MetricsEventBus.publish(
+                RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
+    }
+
+    protected Map<String, String> getDirectoryMeta() {
+        return Collections.emptyMap();
     }
 
     private synchronized void refreshInvokerInternal() {
@@ -359,6 +419,8 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             removeValidInvoker(invoker);
             logger.info("Disable service address: " + invoker.getUrl() + ".");
         }
+        MetricsEventBus.publish(
+                RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
     }
 
     @Override
@@ -370,6 +432,27 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             } catch (Throwable ignore) {
 
             }
+        }
+        MetricsEventBus.publish(
+                RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
+    }
+
+    protected final void refreshRouter(BitList<Invoker<T>> newlyInvokers, Runnable switchAction) {
+        try {
+            routerChain.setInvokers(newlyInvokers.clone(), switchAction);
+        } catch (Throwable t) {
+            logger.error(
+                    LoggerCodeConstants.INTERNAL_ERROR,
+                    "",
+                    "",
+                    "Error occurred when refreshing router chain. " + "The addresses from notification: "
+                            + newlyInvokers.stream()
+                                    .map(Invoker::getUrl)
+                                    .map(URL::getAddress)
+                                    .collect(Collectors.joining(", ")),
+                    t);
+
+            throw t;
         }
     }
 
@@ -411,6 +494,9 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         this.invokers = invokers;
         refreshInvokerInternal();
         this.invokersInitialized = true;
+
+        MetricsEventBus.publish(
+                RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
     }
 
     protected void destroyInvokers() {
@@ -421,17 +507,78 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     }
 
     private boolean addValidInvoker(Invoker<T> invoker) {
+        boolean result;
         synchronized (this.validInvokers) {
-            return this.validInvokers.add(invoker);
+            result = this.validInvokers.add(invoker);
         }
+        MetricsEventBus.publish(
+                RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
+        return result;
     }
 
     private boolean removeValidInvoker(Invoker<T> invoker) {
+        boolean result;
         synchronized (this.validInvokers) {
-            return this.validInvokers.remove(invoker);
+            result = this.validInvokers.remove(invoker);
         }
+        MetricsEventBus.publish(
+                RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
+        return result;
     }
 
-    protected abstract List<Invoker<T>> doList(BitList<Invoker<T>> invokers, Invocation invocation) throws RpcException;
+    protected abstract List<Invoker<T>> doList(
+            SingleRouterChain<T> singleRouterChain, BitList<Invoker<T>> invokers, Invocation invocation)
+            throws RpcException;
 
+    protected String joinValidInvokerAddresses() {
+        BitList<Invoker<T>> validInvokers = getValidInvokers().clone();
+        if (validInvokers.isEmpty()) {
+            return "empty";
+        }
+        return validInvokers.stream()
+                .limit(5)
+                .map(Invoker::getUrl)
+                .map(URL::getAddress)
+                .collect(Collectors.joining(","));
+    }
+
+    private Map<MetricsKey, Map<String, Integer>> getSummary() {
+        Map<MetricsKey, Map<String, Integer>> summaryMap = new HashMap<>();
+
+        summaryMap.put(MetricsKey.DIRECTORY_METRIC_NUM_VALID, groupByServiceKey(getValidInvokers()));
+        summaryMap.put(MetricsKey.DIRECTORY_METRIC_NUM_DISABLE, groupByServiceKey(getDisabledInvokers()));
+        summaryMap.put(MetricsKey.DIRECTORY_METRIC_NUM_TO_RECONNECT, groupByServiceKey(getInvokersToReconnect()));
+        summaryMap.put(MetricsKey.DIRECTORY_METRIC_NUM_ALL, groupByServiceKey(getInvokers()));
+        return summaryMap;
+    }
+
+    private Map<String, Integer> groupByServiceKey(Collection<Invoker<T>> invokers) {
+        return Collections.singletonMap(getConsumerUrl().getServiceKey(), invokers.size());
+    }
+
+    @Override
+    public String toString() {
+        return "Directory(" + "invokers: "
+                + invokers.size() + "["
+                + invokers.stream()
+                        .map(Invoker::getUrl)
+                        .map(URL::getAddress)
+                        .limit(3)
+                        .collect(Collectors.joining(", "))
+                + "]" + ", validInvokers: "
+                + validInvokers.size() + "["
+                + validInvokers.stream()
+                        .map(Invoker::getUrl)
+                        .map(URL::getAddress)
+                        .limit(3)
+                        .collect(Collectors.joining(", "))
+                + "]" + ", invokersToReconnect: "
+                + invokersToReconnect.size() + "["
+                + invokersToReconnect.stream()
+                        .map(Invoker::getUrl)
+                        .map(URL::getAddress)
+                        .limit(3)
+                        .collect(Collectors.joining(", "))
+                + "]" + ')';
+    }
 }

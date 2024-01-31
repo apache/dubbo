@@ -29,8 +29,10 @@ import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
 public class AppStateRouterFactory implements StateRouterFactory {
     public static final String NAME = "app";
 
+    @SuppressWarnings("rawtypes")
     private volatile StateRouter router;
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url) {
         if (router != null) {

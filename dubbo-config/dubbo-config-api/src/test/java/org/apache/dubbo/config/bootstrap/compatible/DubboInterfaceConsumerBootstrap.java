@@ -38,10 +38,10 @@ public class DubboInterfaceConsumerBootstrap {
                 .application("dubbo-consumer-demo")
                 // Zookeeper
                 .registry(interfaceRegistry)
-                // Nacos
-//                .registry("consul", builder -> builder.address("consul://127.0.0.1:8500?registry.type=service&subscribed.services=dubbo-provider-demo"))
-                .reference("echo", builder -> builder.interfaceClass(EchoService.class).protocol("dubbo"))
-                .reference("user", builder -> builder.interfaceClass(UserService.class).protocol("rest"))
+                .reference("echo", builder -> builder.interfaceClass(EchoService.class)
+                        .protocol("dubbo"))
+                .reference("user", builder -> builder.interfaceClass(UserService.class)
+                        .protocol("rest"))
                 .start()
                 .await();
 
@@ -53,6 +53,5 @@ public class DubboInterfaceConsumerBootstrap {
             System.out.println(echoService.echo("Hello,World"));
             System.out.println(userService.getUser(1L));
         }
-
     }
 }

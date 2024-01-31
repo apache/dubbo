@@ -51,5 +51,4 @@ public class StatusUtils {
         }
         return new Status(level, msg.toString());
     }
-
 }

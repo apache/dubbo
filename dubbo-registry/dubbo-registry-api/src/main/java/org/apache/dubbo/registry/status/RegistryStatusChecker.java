@@ -61,5 +61,4 @@ public class RegistryStatusChecker implements StatusChecker {
         }
         return new Status(level, buf.toString());
     }
-
 }

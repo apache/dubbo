@@ -14,13 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.qos.command;
 
-import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.api.CommandContext;
 
 @Deprecated
-public interface BaseCommand extends org.apache.dubbo.qos.command.BaseCommand {
+public interface BaseCommand extends org.apache.dubbo.qos.api.BaseCommand {
 
     String execute(com.alibaba.dubbo.qos.command.CommandContext commandContext, String[] args);
 

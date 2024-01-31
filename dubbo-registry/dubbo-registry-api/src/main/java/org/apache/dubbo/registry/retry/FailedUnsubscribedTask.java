@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.registry.retry;
 
 import org.apache.dubbo.common.URL;
@@ -41,7 +40,7 @@ public final class FailedUnsubscribedTask extends AbstractRetryTask {
 
     @Override
     protected void doRetry(URL url, FailbackRegistry registry, Timeout timeout) {
-        registry.unsubscribe(url, listener);
+        registry.doUnsubscribe(url, listener);
         registry.removeFailedUnsubscribedTask(url, listener);
     }
 }

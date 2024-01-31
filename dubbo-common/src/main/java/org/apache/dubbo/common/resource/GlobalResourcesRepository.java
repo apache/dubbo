@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.resource;
 
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
@@ -25,7 +26,9 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 
 /**
@@ -34,15 +37,15 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXP
  */
 public class GlobalResourcesRepository {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(GlobalResourcesRepository.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(GlobalResourcesRepository.class);
 
-    private volatile static GlobalResourcesRepository instance;
+    private static volatile GlobalResourcesRepository instance;
     private volatile ExecutorService executorService;
     private final List<Disposable> oneoffDisposables = new CopyOnWriteArrayList<>();
     private static final List<Disposable> globalReusedDisposables = new CopyOnWriteArrayList<>();
 
-    private GlobalResourcesRepository() {
-    }
+    private GlobalResourcesRepository() {}
 
     public static GlobalResourcesRepository getInstance() {
         if (instance == null) {
@@ -92,7 +95,8 @@ public class GlobalResourcesRepository {
                     if (logger.isInfoEnabled()) {
                         logger.info("Creating global shared handler ...");
                     }
-                    executorService = Executors.newCachedThreadPool(new NamedThreadFactory("Dubbo-global-shared-handler", true));
+                    executorService =
+                            Executors.newCachedThreadPool(new NamedThreadFactory("Dubbo-global-shared-handler", true));
                 }
             }
         }
@@ -105,6 +109,15 @@ public class GlobalResourcesRepository {
         }
         if (executorService != null) {
             executorService.shutdownNow();
+            try {
+                if (!executorService.awaitTermination(
+                        ConfigurationUtils.reCalShutdownTime(DEFAULT_SERVER_SHUTDOWN_TIMEOUT), TimeUnit.MILLISECONDS)) {
+                    logger.warn(
+                            COMMON_UNEXPECTED_EXCEPTION, "", "", "Wait global executor service terminated timeout.");
+                }
+            } catch (InterruptedException e) {
+                logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "destroy resources failed: " + e.getMessage(), e);
+            }
             executorService = null;
         }
 
@@ -157,7 +170,6 @@ public class GlobalResourcesRepository {
             }
         }
     }
-
 
     // for test
     public static List<Disposable> getGlobalReusedDisposables() {

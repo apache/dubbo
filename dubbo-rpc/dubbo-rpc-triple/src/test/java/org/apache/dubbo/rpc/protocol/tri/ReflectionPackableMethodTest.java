@@ -20,14 +20,14 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ReflectionMethodDescriptor;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.util.concurrent.CompletableFuture;
+
 import io.reactivex.Single;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
-
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -36,7 +36,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ReflectionPackableMethodTest {
-
 
     @Test
     void testUnaryFuture() throws Exception {
@@ -115,14 +114,46 @@ class ReflectionPackableMethodTest {
 
     @Test
     void testIsServerStream() throws NoSuchMethodException {
-        Method method = DescriptorService.class.getMethod("sayHelloServerStream", HelloReply.class,
-                StreamObserver.class);
+        Method method =
+                DescriptorService.class.getMethod("sayHelloServerStream", HelloReply.class, StreamObserver.class);
         ReflectionMethodDescriptor descriptor = new ReflectionMethodDescriptor(method);
         Assertions.assertFalse(needWrap(descriptor));
 
         Method method2 = DescriptorService.class.getMethod("sayHelloServerStream2", Object.class, StreamObserver.class);
         ReflectionMethodDescriptor descriptor2 = new ReflectionMethodDescriptor(method2);
         Assertions.assertTrue(needWrap(descriptor2));
+    }
+
+    @Test
+    void testObtainActualType() throws NoSuchMethodException {
+
+        Method method1 = DescriptorService.class.getMethod("serverStream1", Object.class, StreamObserver.class);
+        Class<?> clazz1 = ReflectionPackableMethod.obtainActualTypeInStreamObserver(
+                ((ParameterizedType) method1.getGenericParameterTypes()[1]).getActualTypeArguments()[0]);
+        Assertions.assertEquals(clazz1.getName(), String.class.getName());
+
+        Method method2 = DescriptorService.class.getMethod("serverStream2", Object.class, StreamObserver.class);
+        Class<?> clazz2 = ReflectionPackableMethod.obtainActualTypeInStreamObserver(
+                ((ParameterizedType) method2.getGenericParameterTypes()[1]).getActualTypeArguments()[0]);
+        Assertions.assertEquals(clazz2.getName(), DataWrapper.class.getName());
+
+        Method method3 = DescriptorService.class.getMethod("biStream1", StreamObserver.class);
+        Class<?> clazz31 = ReflectionPackableMethod.obtainActualTypeInStreamObserver(
+                ((ParameterizedType) method3.getGenericReturnType()).getActualTypeArguments()[0]);
+        Assertions.assertEquals(clazz31.getName(), String.class.getName());
+
+        Class<?> clazz32 = ReflectionPackableMethod.obtainActualTypeInStreamObserver(
+                ((ParameterizedType) method3.getGenericParameterTypes()[0]).getActualTypeArguments()[0]);
+        Assertions.assertEquals(clazz32.getName(), String.class.getName());
+
+        Method method4 = DescriptorService.class.getMethod("biStream2", StreamObserver.class);
+        Class<?> clazz41 = ReflectionPackableMethod.obtainActualTypeInStreamObserver(
+                ((ParameterizedType) method4.getGenericReturnType()).getActualTypeArguments()[0]);
+        Assertions.assertEquals(clazz41.getName(), DataWrapper.class.getName());
+
+        Class<?> clazz42 = ReflectionPackableMethod.obtainActualTypeInStreamObserver(
+                ((ParameterizedType) method4.getGenericParameterTypes()[0]).getActualTypeArguments()[0]);
+        Assertions.assertEquals(clazz42.getName(), DataWrapper.class.getName());
     }
 
     @Test
@@ -150,17 +181,15 @@ class ReflectionPackableMethodTest {
         MethodDescriptor descriptor3 = new ReflectionMethodDescriptor(method3);
         Assertions.assertFalse(needWrap(descriptor3));
 
-
         Method method4 = DescriptorService.class.getMethod("rxJavaMethod", Single.class);
         MethodDescriptor descriptor4 = new ReflectionMethodDescriptor(method4);
         Assertions.assertFalse(needWrap(descriptor4));
     }
 
-
     @Test
     void testMultiProtoParameter() throws Exception {
-        Method method = DescriptorService.class.getMethod("testMultiProtobufParameters", HelloReply.class,
-                HelloReply.class);
+        Method method =
+                DescriptorService.class.getMethod("testMultiProtobufParameters", HelloReply.class, HelloReply.class);
         assertThrows(IllegalStateException.class, () -> {
             MethodDescriptor descriptor = new ReflectionMethodDescriptor(method);
             needWrap(descriptor);
@@ -184,29 +213,29 @@ class ReflectionPackableMethodTest {
 
     @Test
     void testErrorServerStream() throws Exception {
-        Method method = DescriptorService.class.getMethod("testErrorServerStream", StreamObserver.class,
-                HelloReply.class);
+        Method method =
+                DescriptorService.class.getMethod("testErrorServerStream", StreamObserver.class, HelloReply.class);
         assertThrows(IllegalStateException.class, () -> {
             MethodDescriptor descriptor = new ReflectionMethodDescriptor(method);
             needWrap(descriptor);
         });
 
-        Method method2 = DescriptorService.class.getMethod("testErrorServerStream2", HelloReply.class, HelloReply.class,
-                StreamObserver.class);
+        Method method2 = DescriptorService.class.getMethod(
+                "testErrorServerStream2", HelloReply.class, HelloReply.class, StreamObserver.class);
         assertThrows(IllegalStateException.class, () -> {
             MethodDescriptor descriptor = new ReflectionMethodDescriptor(method2);
             needWrap(descriptor);
         });
 
-        Method method3 = DescriptorService.class.getMethod("testErrorServerStream3", String.class,
-                StreamObserver.class);
+        Method method3 =
+                DescriptorService.class.getMethod("testErrorServerStream3", String.class, StreamObserver.class);
         assertThrows(IllegalStateException.class, () -> {
             MethodDescriptor descriptor = new ReflectionMethodDescriptor(method3);
             needWrap(descriptor);
         });
 
-        Method method4 = DescriptorService.class.getMethod("testErrorServerStream4", String.class, String.class,
-                StreamObserver.class);
+        Method method4 = DescriptorService.class.getMethod(
+                "testErrorServerStream4", String.class, String.class, StreamObserver.class);
         assertThrows(IllegalStateException.class, () -> {
             MethodDescriptor descriptor = new ReflectionMethodDescriptor(method4);
             needWrap(descriptor);
@@ -247,15 +276,19 @@ class ReflectionPackableMethodTest {
         switch (method.getRpcType()) {
             case CLIENT_STREAM:
             case BI_STREAM:
-                actualRequestTypes = new Class<?>[]{(Class<?>) ((ParameterizedType) method.getMethod()
-                        .getGenericReturnType()).getActualTypeArguments()[0]};
-                actualResponseType = (Class<?>) ((ParameterizedType) method.getMethod()
-                        .getGenericParameterTypes()[0]).getActualTypeArguments()[0];
+                actualRequestTypes = new Class<?>[] {
+                    (Class<?>)
+                            ((ParameterizedType) method.getMethod().getGenericReturnType()).getActualTypeArguments()[0]
+                };
+                actualResponseType =
+                        (Class<?>) ((ParameterizedType) method.getMethod().getGenericParameterTypes()[0])
+                                .getActualTypeArguments()[0];
                 break;
             case SERVER_STREAM:
                 actualRequestTypes = method.getMethod().getParameterTypes();
-                actualResponseType = (Class<?>) ((ParameterizedType) method.getMethod()
-                        .getGenericParameterTypes()[1]).getActualTypeArguments()[0];
+                actualResponseType =
+                        (Class<?>) ((ParameterizedType) method.getMethod().getGenericParameterTypes()[1])
+                                .getActualTypeArguments()[0];
                 break;
             case UNARY:
                 actualRequestTypes = method.getParameterClasses();
@@ -267,5 +300,4 @@ class ReflectionPackableMethodTest {
 
         return ReflectionPackableMethod.needWrap(method, actualRequestTypes, actualResponseType);
     }
-
 }

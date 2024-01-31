@@ -1,0 +1,1 @@
+ssl-config=org.apache.dubbo.common.ssl.impl.SSLConfigCertProvider

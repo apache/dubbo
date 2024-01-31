@@ -18,8 +18,10 @@ package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.Client;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
+import org.apache.dubbo.remoting.api.connection.ConnectionManager;
+import org.apache.dubbo.remoting.api.connection.MultiplexProtocolConnectionManager;
 import org.apache.dubbo.remoting.api.pu.AbstractPortUnificationServer;
 import org.apache.dubbo.remoting.api.pu.PortUnificationTransporter;
 
@@ -33,7 +35,10 @@ public class NettyPortUnificationTransporter implements PortUnificationTransport
     }
 
     @Override
-    public Client connect(URL url, ChannelHandler handler) throws RemotingException {
-        return null;
+    public AbstractConnectionClient connect(URL url, ChannelHandler handler) throws RemotingException {
+        ConnectionManager manager = url.getOrDefaultFrameworkModel()
+                .getExtensionLoader(ConnectionManager.class)
+                .getExtension(MultiplexProtocolConnectionManager.NAME);
+        return manager.connect(url, handler);
     }
 }

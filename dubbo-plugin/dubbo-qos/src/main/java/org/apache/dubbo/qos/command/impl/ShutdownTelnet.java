@@ -17,21 +17,22 @@
 package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.qos.command.BaseCommand;
-import org.apache.dubbo.qos.command.CommandContext;
-import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.qos.api.BaseCommand;
+import org.apache.dubbo.qos.api.Cmd;
+import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Cmd(name = "shutdown", summary = "Shutdown Dubbo Application.", example = {
-    "shutdown -t <milliseconds>"
-})
+@Cmd(
+        name = "shutdown",
+        summary = "Shutdown Dubbo Application.",
+        example = {"shutdown -t <milliseconds>"})
 public class ShutdownTelnet implements BaseCommand {
 
-    private FrameworkModel frameworkModel;
+    private final FrameworkModel frameworkModel;
 
     public ShutdownTelnet(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
@@ -62,8 +63,8 @@ public class ShutdownTelnet implements BaseCommand {
             applicationModel.destroy();
         }
         // TODO change to ApplicationDeployer.destroy() or ApplicationModel.destroy()
-//        DubboShutdownHook.getDubboShutdownHook().unregister();
-//        DubboShutdownHook.getDubboShutdownHook().doDestroy();
+        //        DubboShutdownHook.getDubboShutdownHook().unregister();
+        //        DubboShutdownHook.getDubboShutdownHook().doDestroy();
         long end = System.currentTimeMillis();
         buf.append("Application has shutdown successfully");
         buf.append("\r\nelapsed: ");

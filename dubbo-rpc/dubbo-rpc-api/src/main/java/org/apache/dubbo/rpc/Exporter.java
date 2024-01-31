@@ -41,4 +41,13 @@ public interface Exporter<T> {
      */
     void unexport();
 
+    /**
+     * register to registry
+     */
+    void register();
+
+    /**
+     * unregister from registry
+     */
+    void unregister();
 }

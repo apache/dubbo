@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.utils;
 
 import org.apache.log4j.Level;
@@ -34,7 +33,7 @@ class LogUtilTest {
     }
 
     @Test
-    void testStartStop() throws Exception {
+    void testStartStop() {
         LogUtil.start();
         assertThat(DubboAppender.available, is(true));
         LogUtil.stop();
@@ -42,7 +41,7 @@ class LogUtilTest {
     }
 
     @Test
-    void testCheckNoError() throws Exception {
+    void testCheckNoError() {
         Log log = mock(Log.class);
         DubboAppender.logList.add(log);
         when(log.getLogLevel()).thenReturn(Level.ERROR);
@@ -52,7 +51,7 @@ class LogUtilTest {
     }
 
     @Test
-    void testFindName() throws Exception {
+    void testFindName() {
         Log log = mock(Log.class);
         DubboAppender.logList.add(log);
         when(log.getLogName()).thenReturn("a");
@@ -60,7 +59,7 @@ class LogUtilTest {
     }
 
     @Test
-    void testFindLevel() throws Exception {
+    void testFindLevel() {
         Log log = mock(Log.class);
         DubboAppender.logList.add(log);
         when(log.getLogLevel()).thenReturn(Level.ERROR);
@@ -69,7 +68,7 @@ class LogUtilTest {
     }
 
     @Test
-    void testFindLevelWithThreadName() throws Exception {
+    void testFindLevelWithThreadName() {
         Log log = mock(Log.class);
         DubboAppender.logList.add(log);
         when(log.getLogLevel()).thenReturn(Level.ERROR);
@@ -82,7 +81,7 @@ class LogUtilTest {
     }
 
     @Test
-    void testFindThread() throws Exception {
+    void testFindThread() {
         Log log = mock(Log.class);
         DubboAppender.logList.add(log);
         when(log.getLogThread()).thenReturn("thread-1");
@@ -90,7 +89,7 @@ class LogUtilTest {
     }
 
     @Test
-    void testFindMessage1() throws Exception {
+    void testFindMessage1() {
         Log log = mock(Log.class);
         DubboAppender.logList.add(log);
         when(log.getLogMessage()).thenReturn("message");
@@ -98,7 +97,7 @@ class LogUtilTest {
     }
 
     @Test
-    void testFindMessage2() throws Exception {
+    void testFindMessage2() {
         Log log = mock(Log.class);
         DubboAppender.logList.add(log);
         when(log.getLogMessage()).thenReturn("message");
@@ -109,5 +108,4 @@ class LogUtilTest {
         when(log.getLogLevel()).thenReturn(Level.INFO);
         assertThat(LogUtil.findMessage(Level.ERROR, "message"), equalTo(1));
     }
-
 }

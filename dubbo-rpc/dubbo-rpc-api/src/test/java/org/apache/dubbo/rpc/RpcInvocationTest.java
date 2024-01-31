@@ -16,10 +16,12 @@
  */
 package org.apache.dubbo.rpc;
 
+import java.util.Arrays;
+import java.util.HashMap;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.HashMap;
+import org.mockito.Mockito;
 
 class RpcInvocationTest {
 
@@ -42,5 +44,22 @@ class RpcInvocationTest {
         map.put("mapKey2", "mapValue2");
         invocation.setObjectAttachments(map);
         Assertions.assertEquals(map, invocation.getObjectAttachments());
+    }
+
+    @Test
+    void testInvokers() {
+        RpcInvocation rpcInvocation = new RpcInvocation();
+
+        Invoker invoker1 = Mockito.mock(Invoker.class);
+        Invoker invoker2 = Mockito.mock(Invoker.class);
+        Invoker invoker3 = Mockito.mock(Invoker.class);
+
+        rpcInvocation.addInvokedInvoker(invoker1);
+        rpcInvocation.addInvokedInvoker(invoker2);
+        rpcInvocation.addInvokedInvoker(invoker3);
+        rpcInvocation.addInvokedInvoker(invoker3);
+
+        Assertions.assertEquals(
+                Arrays.asList(invoker1, invoker2, invoker3, invoker3), rpcInvocation.getInvokedInvokers());
     }
 }

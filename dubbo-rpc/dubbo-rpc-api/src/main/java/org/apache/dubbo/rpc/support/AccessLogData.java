@@ -16,9 +16,8 @@
  */
 package org.apache.dubbo.rpc.support;
 
-
-import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.ToStringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
@@ -56,7 +55,7 @@ public final class AccessLogData {
     /**
      * This is used to store log data in key val format.
      */
-    private Map<String, Object> data;
+    private final Map<String, Object> data;
 
     /**
      * Default constructor.
@@ -78,7 +77,6 @@ public final class AccessLogData {
     public static AccessLogData newLogData() {
         return new AccessLogData();
     }
-
 
     /**
      * Add version information.
@@ -197,25 +195,26 @@ public final class AccessLogData {
         return get(SERVICE).toString();
     }
 
-
     public String getLogMessage() {
         StringBuilder sn = new StringBuilder();
 
         sn.append("[")
-            .append(LocalDateTime.ofInstant(getInvocationTime().toInstant(), ZoneId.systemDefault()).format(MESSAGE_DATE_FORMATTER))
-            .append("] ")
-            .append("-> ")
-            .append("[")
-            .append(LocalDateTime.ofInstant(getOutTime().toInstant(), ZoneId.systemDefault()).format(MESSAGE_DATE_FORMATTER))
-            .append("] ")
-            .append(get(REMOTE_HOST))
-            .append(':')
-            .append(get(REMOTE_PORT))
-            .append(" -> ")
-            .append(get(LOCAL_HOST))
-            .append(':')
-            .append(get(LOCAL_PORT))
-            .append(" - ");
+                .append(LocalDateTime.ofInstant(getInvocationTime().toInstant(), ZoneId.systemDefault())
+                        .format(MESSAGE_DATE_FORMATTER))
+                .append("] ")
+                .append("-> ")
+                .append("[")
+                .append(LocalDateTime.ofInstant(getOutTime().toInstant(), ZoneId.systemDefault())
+                        .format(MESSAGE_DATE_FORMATTER))
+                .append("] ")
+                .append(get(REMOTE_HOST))
+                .append(':')
+                .append(get(REMOTE_PORT))
+                .append(" -> ")
+                .append(get(LOCAL_HOST))
+                .append(':')
+                .append(get(LOCAL_PORT))
+                .append(" - ");
 
         String group = get(GROUP) != null ? get(GROUP).toString() : "";
         if (StringUtils.isNotEmpty(group)) {
@@ -245,10 +244,9 @@ public final class AccessLogData {
         }
         sn.append(") ");
 
-
         Object[] args = get(ARGUMENTS) != null ? (Object[]) get(ARGUMENTS) : null;
         if (args != null && args.length > 0) {
-            sn.append(JsonUtils.getJson().toJson(args));
+            sn.append(ToStringUtils.printToString(args));
         }
 
         return sn.toString();
@@ -259,7 +257,7 @@ public final class AccessLogData {
     }
 
     private Date getOutTime() {
-        return (Date)get(OUT_TIME);
+        return (Date) get(OUT_TIME);
     }
 
     /**
@@ -284,12 +282,11 @@ public final class AccessLogData {
 
     public void buildAccessLogData(Invoker<?> invoker, Invocation inv) {
         setServiceName(invoker.getInterface().getName());
-        setMethodName(inv.getMethodName());
+        setMethodName(RpcUtils.getMethodName(inv));
         setVersion(invoker.getUrl().getVersion());
         setGroup(invoker.getUrl().getGroup());
         setInvocationTime(new Date());
         setTypes(inv.getParameterTypes());
         setArguments(inv.getArguments());
     }
-
 }

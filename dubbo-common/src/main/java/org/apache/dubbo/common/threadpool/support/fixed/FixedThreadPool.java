@@ -45,7 +45,8 @@ public class FixedThreadPool implements ThreadPool {
 
     @Override
     public Executor getExecutor(URL url) {
-        String name = url.getParameter(THREAD_NAME_KEY, (String) url.getAttribute(THREAD_NAME_KEY, DEFAULT_THREAD_NAME));
+        String name =
+                url.getParameter(THREAD_NAME_KEY, (String) url.getAttribute(THREAD_NAME_KEY, DEFAULT_THREAD_NAME));
         int threads = url.getParameter(THREADS_KEY, DEFAULT_THREADS);
         int queues = url.getParameter(QUEUES_KEY, DEFAULT_QUEUES);
 
@@ -59,8 +60,13 @@ public class FixedThreadPool implements ThreadPool {
             blockingQueue = new LinkedBlockingQueue<>(queues);
         }
 
-        return new ThreadPoolExecutor(threads, threads, 0, TimeUnit.MILLISECONDS, blockingQueue,
-                new NamedInternalThreadFactory(name, true), new AbortPolicyWithReport(name, url));
+        return new ThreadPoolExecutor(
+                threads,
+                threads,
+                0,
+                TimeUnit.MILLISECONDS,
+                blockingQueue,
+                new NamedInternalThreadFactory(name, true),
+                new AbortPolicyWithReport(name, url));
     }
-
 }

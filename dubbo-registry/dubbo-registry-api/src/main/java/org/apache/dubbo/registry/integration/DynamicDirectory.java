@@ -39,6 +39,7 @@ import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.Constants;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.RouterFactory;
+import org.apache.dubbo.rpc.cluster.SingleRouterChain;
 import org.apache.dubbo.rpc.cluster.directory.AbstractDirectory;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -46,16 +47,15 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_SITE_SELECTION;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_DESTROY_SERVICE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_DESTROY_UNREGISTER_URL;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_SITE_SELECTION;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
 import static org.apache.dubbo.registry.Constants.SIMPLIFIED_KEY;
 import static org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol.DEFAULT_REGISTER_CONSUMER_KEYS;
 import static org.apache.dubbo.remoting.Constants.CHECK_KEY;
-
 
 /**
  * DynamicDirectory
@@ -81,7 +81,8 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     /**
      * Initialization at construction time, assertion not null, and always assign non-null value
      */
-    protected final URL directoryUrl;
+    protected volatile URL directoryUrl;
+
     protected final boolean multiGroup;
 
     /**
@@ -93,6 +94,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
      * Initialization at the time of injection, the assertion is not null
      */
     protected Registry registry;
+
     protected volatile boolean forbidden = false;
     protected boolean shouldRegister;
     protected boolean shouldSimplified;
@@ -101,6 +103,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
      * Initialization at construction time, assertion not null, and always assign not null value
      */
     protected volatile URL subscribeUrl;
+
     protected volatile URL registeredConsumerUrl;
 
     /**
@@ -121,7 +124,6 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
 
     private volatile InvokersChangedListener invokersChangedListener;
     private volatile boolean invokersChanged;
-
 
     public DynamicDirectory(Class<T> serviceType, URL url) {
         super(url, true);
@@ -149,7 +151,8 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         String group = directoryUrl.getGroup("");
         this.multiGroup = group != null && (ANY_VALUE.equals(group) || group.contains(","));
 
-        this.shouldFailFast = Boolean.parseBoolean(ConfigurationUtils.getProperty(moduleModel, Constants.SHOULD_FAIL_FAST_KEY, "true"));
+        this.shouldFailFast = Boolean.parseBoolean(
+                ConfigurationUtils.getProperty(moduleModel, Constants.SHOULD_FAIL_FAST_KEY, "true"));
     }
 
     @Override
@@ -189,13 +192,17 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     }
 
     @Override
-    public List<Invoker<T>> doList(BitList<Invoker<T>> invokers, Invocation invocation) {
+    public List<Invoker<T>> doList(
+            SingleRouterChain<T> singleRouterChain, BitList<Invoker<T>> invokers, Invocation invocation) {
         if (forbidden && shouldFailFast) {
             // 1. No service provider 2. Service providers are disabled
-            throw new RpcException(RpcException.FORBIDDEN_EXCEPTION, "No provider available from registry " +
-                getUrl().getAddress() + " for service " + getConsumerUrl().getServiceKey() + " on consumer " +
-                NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() +
-                ", please check status of providers(disabled, not registered or in blacklist).");
+            throw new RpcException(
+                    RpcException.FORBIDDEN_EXCEPTION,
+                    "No provider available from registry " + this
+                            + " for service " + getConsumerUrl().getServiceKey() + " on consumer "
+                            + NetUtils.getLocalHost()
+                            + " use dubbo version " + Version.getVersion()
+                            + ", please check status of providers(disabled, not registered or in blacklist).");
         }
 
         if (multiGroup) {
@@ -204,12 +211,16 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
 
         try {
             // Get invokers from cache, only runtime routers will be executed.
-            List<Invoker<T>> result = routerChain.route(getConsumerUrl(), invokers, invocation);
+            List<Invoker<T>> result = singleRouterChain.route(getConsumerUrl(), invokers, invocation);
             return result == null ? BitList.emptyList() : result;
         } catch (Throwable t) {
             // 2-1 - Failed to execute routing.
-            logger.error(CLUSTER_FAILED_SITE_SELECTION, "", "",
-                "Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
+            logger.error(
+                    CLUSTER_FAILED_SITE_SELECTION,
+                    "",
+                    "",
+                    "Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(),
+                    t);
 
             return BitList.emptyList();
         }
@@ -232,7 +243,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
      */
     @Override
     public URL getConsumerUrl() {
-        return this.consumerUrl;
+        return this.directoryUrl;
     }
 
     /**
@@ -268,11 +279,11 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
 
     public void setRegisteredConsumerUrl(URL url) {
         if (!shouldSimplified) {
-            this.registeredConsumerUrl = url.addParameters(CATEGORY_KEY, CONSUMERS_CATEGORY, CHECK_KEY,
-                String.valueOf(false));
+            this.registeredConsumerUrl =
+                    url.addParameters(CATEGORY_KEY, CONSUMERS_CATEGORY, CHECK_KEY, String.valueOf(false));
         } else {
-            this.registeredConsumerUrl = URL.valueOf(url, DEFAULT_REGISTER_CONSUMER_KEYS, null).addParameters(
-                CATEGORY_KEY, CONSUMERS_CATEGORY, CHECK_KEY, String.valueOf(false));
+            this.registeredConsumerUrl = URL.valueOf(url, DEFAULT_REGISTER_CONSUMER_KEYS, null)
+                    .addParameters(CATEGORY_KEY, CONSUMERS_CATEGORY, CHECK_KEY, String.valueOf(false));
         }
     }
 
@@ -285,8 +296,14 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         if (isDestroyed() || this.forbidden) {
             return false;
         }
-        return CollectionUtils.isNotEmpty(getValidInvokers())
-            && getValidInvokers().stream().anyMatch(Invoker::isAvailable);
+        for (Invoker<T> validInvoker : getValidInvokers()) {
+            if (validInvoker.isAvailable()) {
+                return true;
+            } else {
+                addInvalidateInvoker(validInvoker);
+            }
+        }
+        return false;
     }
 
     @Override
@@ -302,8 +319,12 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
             }
         } catch (Throwable t) {
             // 1-8: Failed to unregister / unsubscribe url on destroy.
-            logger.warn(REGISTRY_FAILED_DESTROY_UNREGISTER_URL, "", "",
-                "unexpected error when unregister service " + serviceKey + " from registry: " + registry.getUrl(), t);
+            logger.warn(
+                    REGISTRY_FAILED_DESTROY_UNREGISTER_URL,
+                    "",
+                    "",
+                    "unexpected error when unregister service " + serviceKey + " from registry: " + registry.getUrl(),
+                    t);
         }
 
         // unsubscribe.
@@ -313,12 +334,18 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
             }
         } catch (Throwable t) {
             // 1-8: Failed to unregister / unsubscribe url on destroy.
-            logger.warn(REGISTRY_FAILED_DESTROY_UNREGISTER_URL, "", "",
-                "unexpected error when unsubscribe service " + serviceKey + " from registry: " + registry.getUrl(), t);
+            logger.warn(
+                    REGISTRY_FAILED_DESTROY_UNREGISTER_URL,
+                    "",
+                    "",
+                    "unexpected error when unsubscribe service " + serviceKey + " from registry: " + registry.getUrl(),
+                    t);
         }
 
-        ExtensionLoader<AddressListener> addressListenerExtensionLoader = getUrl().getOrDefaultModuleModel().getExtensionLoader(AddressListener.class);
-        List<AddressListener> supportedListeners = addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);
+        ExtensionLoader<AddressListener> addressListenerExtensionLoader =
+                getUrl().getOrDefaultModuleModel().getExtensionLoader(AddressListener.class);
+        List<AddressListener> supportedListeners =
+                addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);
         if (CollectionUtils.isNotEmpty(supportedListeners)) {
             for (AddressListener addressListener : supportedListeners) {
                 addressListener.destroy(getConsumerUrl(), this);
@@ -330,8 +357,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
                 destroyAllInvokers();
             } catch (Throwable t) {
                 // 1-15 - Failed to destroy service.
-                logger.warn(REGISTRY_FAILED_DESTROY_SERVICE, "", "",
-                    "Failed to destroy service " + serviceKey, t);
+                logger.warn(REGISTRY_FAILED_DESTROY_SERVICE, "", "", "Failed to destroy service " + serviceKey, t);
             }
             routerChain.destroy();
             invokersChangedListener = null;
@@ -347,8 +373,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
             destroyAllInvokers();
         } catch (Throwable t) {
             // 1-15 - Failed to destroy service.
-            logger.warn(REGISTRY_FAILED_DESTROY_SERVICE, "", "",
-                "Failed to destroy service " + serviceKey, t);
+            logger.warn(REGISTRY_FAILED_DESTROY_SERVICE, "", "", "Failed to destroy service " + serviceKey, t);
         }
     }
 
@@ -374,4 +399,6 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     }
 
     protected abstract void destroyAllInvokers();
+
+    protected abstract void refreshOverrideAndInvoker(List<URL> urls);
 }

@@ -82,7 +82,6 @@ class NacosServiceNameTest {
         name.setGroup(null);
         name.setVersion(null);
         assertTrue(name.isConcrete());
-
     }
 
     @Test

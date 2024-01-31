@@ -19,11 +19,13 @@ package org.apache.dubbo.qos.server.handler;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.api.CommandContext;
+import org.apache.dubbo.qos.api.QosConfiguration;
 import org.apache.dubbo.qos.command.CommandExecutor;
 import org.apache.dubbo.qos.command.DefaultCommandExecutor;
-import org.apache.dubbo.qos.command.NoSuchCommandException;
 import org.apache.dubbo.qos.command.decoder.TelnetCommandDecoder;
+import org.apache.dubbo.qos.command.exception.NoSuchCommandException;
+import org.apache.dubbo.qos.command.exception.PermissionDenyException;
 import org.apache.dubbo.qos.common.QosConstants;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -32,6 +34,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_COMMAND_NOT_FOUND;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_PERMISSION_DENY_EXCEPTION;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_UNEXPECTED_EXCEPTION;
 
 /**
@@ -42,8 +45,11 @@ public class TelnetProcessHandler extends SimpleChannelInboundHandler<String> {
     private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(TelnetProcessHandler.class);
     private final CommandExecutor commandExecutor;
 
-    public TelnetProcessHandler(FrameworkModel frameworkModel) {
+    private final QosConfiguration qosConfiguration;
+
+    public TelnetProcessHandler(FrameworkModel frameworkModel, QosConfiguration qosConfiguration) {
         this.commandExecutor = new DefaultCommandExecutor(frameworkModel);
+        this.qosConfiguration = qosConfiguration;
     }
 
     @Override
@@ -53,6 +59,7 @@ public class TelnetProcessHandler extends SimpleChannelInboundHandler<String> {
             ctx.writeAndFlush(QosProcessHandler.PROMPT);
         } else {
             CommandContext commandContext = TelnetCommandDecoder.decode(msg);
+            commandContext.setQosConfiguration(qosConfiguration);
             commandContext.setRemote(ctx.channel());
 
             try {
@@ -66,10 +73,20 @@ public class TelnetProcessHandler extends SimpleChannelInboundHandler<String> {
                 ctx.writeAndFlush(msg + " :no such command");
                 ctx.writeAndFlush(QosConstants.BR_STR + QosProcessHandler.PROMPT);
                 log.error(QOS_COMMAND_NOT_FOUND, "", "", "can not found command " + commandContext, ex);
+            } catch (PermissionDenyException ex) {
+                ctx.writeAndFlush(msg + " :permission deny");
+                ctx.writeAndFlush(QosConstants.BR_STR + QosProcessHandler.PROMPT);
+                log.error(
+                        QOS_PERMISSION_DENY_EXCEPTION,
+                        "",
+                        "",
+                        "permission deny to access command " + commandContext,
+                        ex);
             } catch (Exception ex) {
                 ctx.writeAndFlush(msg + " :fail to execute commandContext by " + ex.getMessage());
                 ctx.writeAndFlush(QosConstants.BR_STR + QosProcessHandler.PROMPT);
-                log.error(QOS_UNEXPECTED_EXCEPTION, "", "", "execute commandContext got exception " + commandContext, ex);
+                log.error(
+                        QOS_UNEXPECTED_EXCEPTION, "", "", "execute commandContext got exception " + commandContext, ex);
             }
         }
     }
@@ -77,5 +94,4 @@ public class TelnetProcessHandler extends SimpleChannelInboundHandler<String> {
     private String getByeLabel() {
         return "BYE!\n";
     }
-
 }

@@ -43,6 +43,7 @@ public class LfuCache implements Cache {
     /**
      * This is used to store cache records
      */
+    @SuppressWarnings("rawtypes")
     private final LFUCache store;
 
     /**
@@ -51,7 +52,8 @@ public class LfuCache implements Cache {
      *  If nothing is provided then it will use 0.3 as default value.
      * @param url A valid URL instance
      */
-    public LfuCache (URL url) {
+    @SuppressWarnings("rawtypes")
+    public LfuCache(URL url) {
         final int max = url.getParameter("cache.size", 1000);
         final float factor = url.getParameter("cache.evictionFactor", 0.75f);
         this.store = new LFUCache(max, factor);
@@ -62,6 +64,7 @@ public class LfuCache implements Cache {
      * @param key  Unique identifier for the object being store.
      * @param value Value getting store
      */
+    @SuppressWarnings("unchecked")
     @Override
     public void put(Object key, Object value) {
         store.put(key, value);
@@ -72,9 +75,9 @@ public class LfuCache implements Cache {
      * @param key Unique identifier for cache lookup
      * @return Return stored object against key
      */
+    @SuppressWarnings("unchecked")
     @Override
     public Object get(Object key) {
         return store.get(key);
     }
-
 }

@@ -17,14 +17,27 @@
 package org.apache.dubbo.registry.nacos;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.AbstractServiceDiscoveryFactory;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_NAMESPACE_KEY;
+
 public class NacosServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
+
+    @Override
+    protected String createRegistryCacheKey(URL url) {
+        String namespace = url.getParameter(CONFIG_NAMESPACE_KEY);
+        url = URL.valueOf(url.toServiceStringWithoutResolving());
+        if (StringUtils.isNotEmpty(namespace)) {
+            url = url.addParameter(CONFIG_NAMESPACE_KEY, namespace);
+        }
+
+        return url.toFullString();
+    }
 
     @Override
     protected ServiceDiscovery createDiscovery(URL registryURL) {
         return new NacosServiceDiscovery(applicationModel, registryURL);
     }
-
 }

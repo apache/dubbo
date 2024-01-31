@@ -22,11 +22,16 @@ import java.rmi.RemoteException;
 
 public class RemoteServiceImpl implements RemoteService {
     public String getThreadName() throws RemoteException {
-        System.out.println("RpcContext.getServerAttachment().getRemoteHost()=" + RpcContext.getServiceContext().getRemoteHost());
+        System.out.println("RpcContext.getServerAttachment().getRemoteHost()="
+                + RpcContext.getServiceContext().getRemoteHost());
         return Thread.currentThread().getName();
     }
 
     public String sayHello(String name) throws RemoteException {
         return "hello " + name + "@" + RemoteServiceImpl.class.getName();
+    }
+
+    public String sayHello(String name, String arg2) {
+        return "hello " + name + "@" + RemoteServiceImpl.class.getName() + ", arg2 " + arg2;
     }
 }

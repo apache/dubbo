@@ -19,6 +19,10 @@ package org.apache.dubbo.remoting.transport.netty4;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.Codec2;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
+import org.apache.dubbo.remoting.exchange.support.MultiMessage;
+
+import java.io.IOException;
+import java.util.List;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -27,13 +31,10 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.MessageToByteEncoder;
 
-import java.io.IOException;
-import java.util.List;
-
 /**
  * NettyCodecAdapter.
  */
-final public class NettyCodecAdapter {
+public final class NettyCodecAdapter {
 
     private final ChannelHandler encoder = new InternalEncoder();
 
@@ -63,10 +64,27 @@ final public class NettyCodecAdapter {
 
         @Override
         protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf out) throws Exception {
-            ChannelBuffer buffer = new NettyBackedChannelBuffer(out);
-            Channel ch = ctx.channel();
-            NettyChannel channel = NettyChannel.getOrAddChannel(ch, url, handler);
-            codec.encode(channel, buffer, msg);
+            boolean encoded = false;
+            if (msg instanceof ByteBuf) {
+                out.writeBytes(((ByteBuf) msg));
+                encoded = true;
+            } else if (msg instanceof MultiMessage) {
+                for (Object singleMessage : ((MultiMessage) msg)) {
+                    if (singleMessage instanceof ByteBuf) {
+                        ByteBuf buf = (ByteBuf) singleMessage;
+                        out.writeBytes(buf);
+                        encoded = true;
+                        buf.release();
+                    }
+                }
+            }
+
+            if (!encoded) {
+                ChannelBuffer buffer = new NettyBackedChannelBuffer(out);
+                Channel ch = ctx.channel();
+                NettyChannel channel = NettyChannel.getOrAddChannel(ch, url, handler);
+                codec.encode(channel, buffer, msg);
+            }
         }
     }
 
@@ -87,7 +105,7 @@ final public class NettyCodecAdapter {
                     message.readerIndex(saveReaderIndex);
                     break;
                 } else {
-                    //is it possible to go here ?
+                    // is it possible to go here ?
                     if (saveReaderIndex == message.readerIndex()) {
                         throw new IOException("Decode without read data.");
                     }

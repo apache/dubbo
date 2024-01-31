@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,15 +19,13 @@ package org.apache.dubbo.common.utils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 class LFUCacheTest {
 
     @Test
-    void testCacheEviction() throws Exception {
+    void testCacheEviction() {
         LFUCache<String, Integer> cache = new LFUCache<>(8, 0.8f);
         cache.put("one", 1);
         cache.put("two", 2);
@@ -48,7 +46,7 @@ class LFUCacheTest {
     }
 
     @Test
-    void testCacheRemove() throws Exception {
+    void testCacheRemove() {
         LFUCache<String, Integer> cache = new LFUCache<>(8, 0.8f);
         cache.put("one", 1);
         cache.put("two", 2);
@@ -68,13 +66,13 @@ class LFUCacheTest {
     }
 
     @Test
-    void testDefaultCapacity() throws Exception {
+    void testDefaultCapacity() {
         LFUCache<String, Integer> cache = new LFUCache<>();
         assertThat(cache.getCapacity(), equalTo(1000));
     }
 
     @Test
-    void testErrorConstructArguments() throws IOException {
+    void testErrorConstructArguments() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> new LFUCache<>(0, 0.8f));
         Assertions.assertThrows(IllegalArgumentException.class, () -> new LFUCache<>(-1, 0.8f));
         Assertions.assertThrows(IllegalArgumentException.class, () -> new LFUCache<>(100, 0.0f));

@@ -22,7 +22,7 @@ import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.qos.probe.ReadinessProbe;
 import org.apache.dubbo.qos.probe.impl.DeployerReadinessProbe;
 import org.apache.dubbo.qos.probe.impl.ProviderReadinessProbe;
@@ -31,15 +31,15 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class ReadyTest {
 
@@ -68,11 +68,10 @@ class ReadyTest {
         ExtensionLoader loader = Mockito.mock(ExtensionLoader.class);
         Mockito.when(frameworkModel.getExtensionLoader(ReadinessProbe.class)).thenReturn(loader);
         URL url = URL.valueOf("application://").addParameter(CommonConstants.QOS_READY_PROBE_EXTENSION, "");
-        List<ReadinessProbe> readinessProbes = Arrays.asList(
-            new DeployerReadinessProbe(frameworkModel),
-            new ProviderReadinessProbe(frameworkModel)
-        );
-        Mockito.when(loader.getActivateExtension(url, CommonConstants.QOS_READY_PROBE_EXTENSION)).thenReturn(readinessProbes);
+        List<ReadinessProbe> readinessProbes =
+                Arrays.asList(new DeployerReadinessProbe(frameworkModel), new ProviderReadinessProbe(frameworkModel));
+        Mockito.when(loader.getActivateExtension(url, CommonConstants.QOS_READY_PROBE_EXTENSION))
+                .thenReturn(readinessProbes);
     }
 
     @Test

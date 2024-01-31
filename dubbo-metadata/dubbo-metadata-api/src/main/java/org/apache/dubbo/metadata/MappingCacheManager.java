@@ -53,12 +53,12 @@ public class MappingCacheManager extends AbstractCacheManager<Set<String>> {
         String rawMaxFileSize = System.getProperty("dubbo.mapping.cache.maxFileSize");
         long maxFileSize = StringUtils.parseLong(rawMaxFileSize);
 
-        init(enableFileCache, filePath, fileName, entrySize,  maxFileSize, 50, executorService);
+        init(enableFileCache, filePath, fileName, entrySize, maxFileSize, 50, executorService);
     }
 
     @Override
     protected Set<String> toValueType(String value) {
-        return new HashSet<>(JsonUtils.getJson().toJavaList(value, String.class));
+        return new HashSet<>(JsonUtils.toJavaList(value, String.class));
     }
 
     @Override

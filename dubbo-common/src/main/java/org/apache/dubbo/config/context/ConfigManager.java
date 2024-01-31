@@ -32,6 +32,7 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.SslConfig;
+import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Arrays;
@@ -56,15 +57,22 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
     public static final String BEAN_NAME = "dubboConfigManager";
     public static final String DUBBO_CONFIG_MODE = ConfigKeys.DUBBO_CONFIG_MODE;
 
-
     public ConfigManager(ApplicationModel applicationModel) {
-        super(applicationModel, Arrays.asList(ApplicationConfig.class, MonitorConfig.class,
-            MetricsConfig.class, SslConfig.class, ProtocolConfig.class, RegistryConfig.class, ConfigCenterConfig.class,
-            MetadataReportConfig.class));
+        super(
+                applicationModel,
+                Arrays.asList(
+                        ApplicationConfig.class,
+                        MonitorConfig.class,
+                        MetricsConfig.class,
+                        SslConfig.class,
+                        ProtocolConfig.class,
+                        RegistryConfig.class,
+                        ConfigCenterConfig.class,
+                        MetadataReportConfig.class,
+                        TracingConfig.class));
     }
 
-
-// ApplicationConfig correlative methods
+    // ApplicationConfig correlative methods
 
     /**
      * Set application config
@@ -106,6 +114,15 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
     }
 
     @DisableInject
+    public void setTracing(TracingConfig tracing) {
+        addConfig(tracing);
+    }
+
+    public Optional<TracingConfig> getTracing() {
+        return ofNullable(getSingleConfig(getTagName(TracingConfig.class)));
+    }
+
+    @DisableInject
     public void setSsl(SslConfig sslConfig) {
         addConfig(sslConfig);
     }
@@ -125,7 +142,8 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
     }
 
     public Optional<Collection<ConfigCenterConfig>> getDefaultConfigCenter() {
-        Collection<ConfigCenterConfig> defaults = getDefaultConfigs(getConfigsMap(getTagName(ConfigCenterConfig.class)));
+        Collection<ConfigCenterConfig> defaults =
+                getDefaultConfigs(getConfigsMap(getTagName(ConfigCenterConfig.class)));
         if (CollectionUtils.isEmpty(defaults)) {
             defaults = getConfigCenters();
         }
@@ -155,7 +173,8 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
     }
 
     public Collection<MetadataReportConfig> getDefaultMetadataConfigs() {
-        Collection<MetadataReportConfig> defaults = getDefaultConfigs(getConfigsMap(getTagName(MetadataReportConfig.class)));
+        Collection<MetadataReportConfig> defaults =
+                getDefaultConfigs(getConfigsMap(getTagName(MetadataReportConfig.class)));
         if (CollectionUtils.isEmpty(defaults)) {
             return getMetadataConfigs();
         }
@@ -191,7 +210,6 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         return getConfigs(getTagName(ProtocolConfig.class));
     }
 
-
     // RegistryConfig correlative methods
 
     public void addRegistry(RegistryConfig registryConfig) {
@@ -216,13 +234,13 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         return getConfigs(getTagName(RegistryConfig.class));
     }
 
-
     @Override
     public void refreshAll() {
         // refresh all configs here
         getApplication().ifPresent(ApplicationConfig::refresh);
         getMonitor().ifPresent(MonitorConfig::refresh);
         getMetrics().ifPresent(MetricsConfig::refresh);
+        getTracing().ifPresent(TracingConfig::refresh);
         getSsl().ifPresent(SslConfig::refresh);
 
         getProtocols().forEach(ProtocolConfig::refresh);
@@ -243,6 +261,9 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         // load dubbo.metrics.xxx
         loadConfigsOfTypeFromProps(MetricsConfig.class);
 
+        // load dubbo.tracing.xxx
+        loadConfigsOfTypeFromProps(TracingConfig.class);
+
         // load multiple config types:
         // load dubbo.protocols.xxx
         loadConfigsOfTypeFromProps(ProtocolConfig.class);
@@ -254,7 +275,7 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         loadConfigsOfTypeFromProps(MetadataReportConfig.class);
 
         // config centers has bean loaded before starting config center
-        //loadConfigsOfTypeFromProps(ConfigCenterConfig.class);
+        // loadConfigsOfTypeFromProps(ConfigCenterConfig.class);
 
         refreshAll();
 
@@ -269,12 +290,13 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
     private void checkConfigs() {
         // check config types (ignore metadata-center)
         List<Class<? extends AbstractConfig>> multipleConfigTypes = Arrays.asList(
-            ApplicationConfig.class,
-            ProtocolConfig.class,
-            RegistryConfig.class,
-            MonitorConfig.class,
-            MetricsConfig.class,
-            SslConfig.class);
+                ApplicationConfig.class,
+                ProtocolConfig.class,
+                RegistryConfig.class,
+                MonitorConfig.class,
+                MetricsConfig.class,
+                TracingConfig.class,
+                SslConfig.class);
 
         for (Class<? extends AbstractConfig> configType : multipleConfigTypes) {
             checkDefaultAndValidateConfigs(configType);
@@ -289,8 +311,8 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
             }
             ProtocolConfig prevProtocol = protocolPortMap.get(port);
             if (prevProtocol != null) {
-                throw new IllegalStateException("Duplicated port used by protocol configs, port: " + port +
-                    ", configs: " + Arrays.asList(prevProtocol, protocol));
+                throw new IllegalStateException("Duplicated port used by protocol configs, port: " + port
+                        + ", configs: " + Arrays.asList(prevProtocol, protocol));
             }
             protocolPortMap.put(port, protocol);
         }
@@ -298,9 +320,7 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         // Log the current configurations.
         logger.info("The current configurations or effective configurations are as follows:");
         for (Class<? extends AbstractConfig> configType : multipleConfigTypes) {
-            getConfigs(configType).stream().forEach((config) -> {
-                logger.info(config.toString());
-            });
+            getConfigs(configType).forEach((config) -> logger.info(config.toString()));
         }
     }
 

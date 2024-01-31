@@ -50,7 +50,7 @@ public class InstanceAddressURL extends URL {
     private final MetadataInfo metadataInfo;
 
     // cached numbers
-    private volatile transient Set<String> providerFirstParams;
+    private transient volatile Set<String> providerFirstParams;
     // one instance address url serves only one protocol.
     private final transient String protocol;
 
@@ -58,20 +58,13 @@ public class InstanceAddressURL extends URL {
         this(null, null, null);
     }
 
-    public InstanceAddressURL(
-        ServiceInstance instance,
-        MetadataInfo metadataInfo
-    ) {
+    public InstanceAddressURL(ServiceInstance instance, MetadataInfo metadataInfo) {
         this.instance = instance;
         this.metadataInfo = metadataInfo;
         this.protocol = DUBBO;
     }
 
-    public InstanceAddressURL(
-        ServiceInstance instance,
-        MetadataInfo metadataInfo,
-        String protocol
-    ) {
+    public InstanceAddressURL(ServiceInstance instance, MetadataInfo metadataInfo, String protocol) {
         this.instance = instance;
         this.metadataInfo = metadataInfo;
         this.protocol = protocol;
@@ -126,22 +119,26 @@ public class InstanceAddressURL extends URL {
 
     @Override
     public URL setProtocol(String protocol) {
-        return new ServiceConfigURL(protocol, getUsername(), getPassword(), getHost(), getPort(), getPath(), getParameters(), attributes);
+        return new ServiceConfigURL(
+                protocol, getUsername(), getPassword(), getHost(), getPort(), getPath(), getParameters(), attributes);
     }
 
     @Override
     public URL setHost(String host) {
-        return new ServiceConfigURL(getProtocol(), getUsername(), getPassword(), host, getPort(), getPath(), getParameters(), attributes);
+        return new ServiceConfigURL(
+                getProtocol(), getUsername(), getPassword(), host, getPort(), getPath(), getParameters(), attributes);
     }
 
     @Override
     public URL setPort(int port) {
-        return new ServiceConfigURL(getProtocol(), getUsername(), getPassword(), getHost(), port, getPath(), getParameters(), attributes);
+        return new ServiceConfigURL(
+                getProtocol(), getUsername(), getPassword(), getHost(), port, getPath(), getParameters(), attributes);
     }
 
     @Override
     public URL setPath(String path) {
-        return new ServiceConfigURL(getProtocol(), getUsername(), getPassword(), getHost(), getPort(), path, getParameters(), attributes);
+        return new ServiceConfigURL(
+                getProtocol(), getUsername(), getPassword(), getHost(), getPort(), path, getParameters(), attributes);
     }
 
     @Override
@@ -188,6 +185,27 @@ public class InstanceAddressURL extends URL {
     }
 
     @Override
+    public String getOriginalParameter(String key) {
+        if (VERSION_KEY.equals(key)) {
+            return getVersion();
+        } else if (GROUP_KEY.equals(key)) {
+            return getGroup();
+        } else if (INTERFACE_KEY.equals(key)) {
+            return getServiceInterface();
+        } else if (REMOTE_APPLICATION_KEY.equals(key)) {
+            return instance.getServiceName();
+        } else if (SIDE_KEY.equals(key)) {
+            return getSide();
+        }
+
+        String protocolServiceKey = getProtocolServiceKey();
+        if (isEmpty(protocolServiceKey)) {
+            return getInstanceParameter(key);
+        }
+        return getServiceParameter(protocolServiceKey, key);
+    }
+
+    @Override
     public String getParameter(String key) {
         if (VERSION_KEY.equals(key)) {
             return getVersion();
@@ -216,6 +234,18 @@ public class InstanceAddressURL extends URL {
             return getInstanceParameter(key);
         }
         return getServiceParameter(protocolServiceKey, key);
+    }
+
+    @Override
+    public String getOriginalServiceParameter(String service, String key) {
+        if (metadataInfo != null) {
+            String value = metadataInfo.getParameter(key, service);
+            if (StringUtils.isNotEmpty(value)) {
+                return value;
+            }
+        }
+
+        return getInstanceParameter(key);
     }
 
     @Override
@@ -393,6 +423,24 @@ public class InstanceAddressURL extends URL {
         return hasServiceMethodParameter(protocolServiceKey, method);
     }
 
+    @Override
+    public Map<String, String> getOriginalServiceParameters(String protocolServiceKey) {
+        Map<String, String> instanceParams = getInstance().getAllParams();
+        Map<String, String> metadataParams =
+                (metadataInfo == null ? new HashMap<>() : metadataInfo.getParameters(protocolServiceKey));
+        int i = instanceParams == null ? 0 : instanceParams.size();
+        int j = metadataParams == null ? 0 : metadataParams.size();
+        Map<String, String> params = new HashMap<>((int) ((i + j) / 0.75) + 1);
+        if (instanceParams != null) {
+            params.putAll(instanceParams);
+        }
+        if (metadataParams != null) {
+            params.putAll(metadataParams);
+        }
+
+        return params;
+    }
+
     /**
      * Avoid calling this method in RPC call.
      *
@@ -401,7 +449,8 @@ public class InstanceAddressURL extends URL {
     @Override
     public Map<String, String> getServiceParameters(String protocolServiceKey) {
         Map<String, String> instanceParams = getInstance().getAllParams();
-        Map<String, String> metadataParams = (metadataInfo == null ? new HashMap<>() : metadataInfo.getParameters(protocolServiceKey));
+        Map<String, String> metadataParams =
+                (metadataInfo == null ? new HashMap<>() : metadataInfo.getParameters(protocolServiceKey));
         int i = instanceParams == null ? 0 : instanceParams.size();
         int j = metadataParams == null ? 0 : metadataParams.size();
         Map<String, String> params = new HashMap<>((int) ((i + j) / 0.75) + 1);
@@ -421,6 +470,15 @@ public class InstanceAddressURL extends URL {
             params.putAll(consumerParams);
         }
         return params;
+    }
+
+    @Override
+    public Map<String, String> getOriginalParameters() {
+        String protocolServiceKey = getProtocolServiceKey();
+        if (isEmpty(protocolServiceKey)) {
+            return getInstance().getAllParams();
+        }
+        return getOriginalServiceParameters(protocolServiceKey);
     }
 
     @Override
@@ -495,6 +553,16 @@ public class InstanceAddressURL extends URL {
      */
     @Override
     public String getAnyMethodParameter(String key) {
+        if (consumerParamFirst(key)) {
+            URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
+            if (consumerUrl != null) {
+                String v = consumerUrl.getAnyMethodParameter(key);
+                if (StringUtils.isNotEmpty(v)) {
+                    return v;
+                }
+            }
+        }
+
         String suffix = "." + key;
         String protocolServiceKey = getProtocolServiceKey();
         if (StringUtils.isNotEmpty(protocolServiceKey)) {
@@ -556,8 +624,8 @@ public class InstanceAddressURL extends URL {
     @Override
     public ScopeModel getScopeModel() {
         return Optional.ofNullable(RpcContext.getServiceContext().getConsumerUrl())
-            .map(URL::getScopeModel)
-            .orElse(super.getScopeModel());
+                .map(URL::getScopeModel)
+                .orElse(super.getScopeModel());
     }
 
     @Override

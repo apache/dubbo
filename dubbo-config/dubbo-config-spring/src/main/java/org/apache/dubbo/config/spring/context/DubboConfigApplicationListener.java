@@ -16,33 +16,36 @@
  */
 package org.apache.dubbo.config.spring.context;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_DUBBO_BEAN_NOT_FOUND;
-import static org.springframework.util.ObjectUtils.nullSafeEquals;
-
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.spring.context.event.DubboConfigInitEvent;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.rpc.model.ModuleModel;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_DUBBO_BEAN_NOT_FOUND;
+import static org.springframework.util.ObjectUtils.nullSafeEquals;
+
 /**
  * An ApplicationListener to load config beans
  */
-public class DubboConfigApplicationListener implements ApplicationListener<DubboConfigInitEvent>, ApplicationContextAware {
+public class DubboConfigApplicationListener
+        implements ApplicationListener<DubboConfigInitEvent>, ApplicationContextAware {
 
-    private final static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DubboConfigApplicationListener.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(DubboConfigApplicationListener.class);
 
     private ApplicationContext applicationContext;
 
     private ModuleModel moduleModel;
 
-    private AtomicBoolean initialized = new AtomicBoolean();
+    private final AtomicBoolean initialized = new AtomicBoolean();
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -53,11 +56,16 @@ public class DubboConfigApplicationListener implements ApplicationListener<Dubbo
     @Override
     public void onApplicationEvent(DubboConfigInitEvent event) {
         if (nullSafeEquals(applicationContext, event.getSource())) {
-            // It's expected to be notified at org.springframework.context.support.AbstractApplicationContext.registerListeners(),
-            // before loading non-lazy singleton beans. At this moment, all BeanFactoryPostProcessor have been processed,
-            if (initialized.compareAndSet(false, true)) {
-                initDubboConfigBeans();
-            }
+            init();
+        }
+    }
+
+    public void init() {
+        // It's expected to be notified at
+        // org.springframework.context.support.AbstractApplicationContext.registerListeners(),
+        // before loading non-lazy singleton beans. At this moment, all BeanFactoryPostProcessor have been processed,
+        if (initialized.compareAndSet(false, true)) {
+            initDubboConfigBeans();
         }
     }
 
@@ -66,12 +74,14 @@ public class DubboConfigApplicationListener implements ApplicationListener<Dubbo
         if (applicationContext.containsBean(DubboConfigBeanInitializer.BEAN_NAME)) {
             applicationContext.getBean(DubboConfigBeanInitializer.BEAN_NAME, DubboConfigBeanInitializer.class);
         } else {
-            logger.warn(CONFIG_DUBBO_BEAN_NOT_FOUND, "", "", "Bean '" + DubboConfigBeanInitializer.BEAN_NAME + "' was not found");
+            logger.warn(
+                    CONFIG_DUBBO_BEAN_NOT_FOUND,
+                    "",
+                    "",
+                    "Bean '" + DubboConfigBeanInitializer.BEAN_NAME + "' was not found");
         }
 
         // All infrastructure config beans are loaded, initialize dubbo here
         moduleModel.getDeployer().prepare();
     }
-
-
 }

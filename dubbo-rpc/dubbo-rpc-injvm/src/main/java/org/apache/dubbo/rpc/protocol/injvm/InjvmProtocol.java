@@ -25,7 +25,6 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
-import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.util.Map;
 
@@ -66,14 +65,7 @@ public class InjvmProtocol extends AbstractProtocol {
             }
         }
 
-        if (result == null) {
-            return null;
-        } else if (ProtocolUtils.isGeneric(
-                result.getInvoker().getUrl().getParameter(GENERIC_KEY))) {
-            return null;
-        } else {
-            return result;
-        }
+        return result;
     }
 
     @Override

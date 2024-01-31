@@ -18,14 +18,14 @@ package org.apache.dubbo.test.check.registrycenter.context;
 
 import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
 
-import org.apache.commons.exec.ExecuteWatchdog;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.exec.ExecuteWatchdog;
 
 /**
  * The global context for zookeeper on Windows OS.
@@ -35,9 +35,14 @@ public class ZookeeperWindowsContext extends ZookeeperContext {
     /**
      * The default executor service to manage the lifecycle of zookeeper.
      */
-    private final ExecutorService DEFAULT_EXECUTOR_SERVICE = new ThreadPoolExecutor(2, 2, 0, TimeUnit.MILLISECONDS,
-        new SynchronousQueue<>(),
-        new NamedInternalThreadFactory("mocked-zookeeper", true), new ThreadPoolExecutor.AbortPolicy());
+    private final ExecutorService DEFAULT_EXECUTOR_SERVICE = new ThreadPoolExecutor(
+            2,
+            2,
+            0,
+            TimeUnit.MILLISECONDS,
+            new SynchronousQueue<>(),
+            new NamedInternalThreadFactory("mocked-zookeeper", true),
+            new ThreadPoolExecutor.AbortPolicy());
 
     /**
      * Define the default {@link ExecuteWatchdog} for terminating all registered zookeeper processes.
@@ -73,7 +78,7 @@ public class ZookeeperWindowsContext extends ZookeeperContext {
      * Remove the registered pid with the given client port.
      * @param clientPort the client port of zookeeper instance.
      */
-    public void removePid(int clientPort){
+    public void removePid(int clientPort) {
         this.processIds.remove(clientPort);
     }
 

@@ -18,18 +18,19 @@ package org.apache.dubbo.rpc.cluster.router.tag.model;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 
+import java.util.Map;
+
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
-import java.util.Map;
-
 /**
- *
+ * Parse raw rule into structured tag rule
  */
 public class TagRuleParser {
 
     public static TagRouterRule parse(String rawRule) {
-        Yaml yaml = new Yaml(new SafeConstructor());
+        Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
         Map<String, Object> map = yaml.load(rawRule);
         TagRouterRule rule = TagRouterRule.parseFromMap(map);
         rule.setRawRule(rawRule);
@@ -37,7 +38,6 @@ public class TagRuleParser {
             rule.setValid(false);
         }
 
-        rule.init();
         return rule;
     }
 }

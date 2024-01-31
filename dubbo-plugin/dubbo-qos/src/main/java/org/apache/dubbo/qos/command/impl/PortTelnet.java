@@ -17,9 +17,9 @@
 package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.qos.command.BaseCommand;
-import org.apache.dubbo.qos.command.CommandContext;
-import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.qos.api.BaseCommand;
+import org.apache.dubbo.qos.api.Cmd;
+import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.rpc.ProtocolServer;
@@ -28,11 +28,12 @@ import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 import java.util.Collection;
 
-@Cmd(name = "ps", summary = "Print server ports and connections.", example = {
-    "ps -l [port]", "ps", "ps -l", "ps -l 20880"
-})
+@Cmd(
+        name = "ps",
+        summary = "Print server ports and connections.",
+        example = {"ps -l [port]", "ps", "ps -l", "ps -l 20880"})
 public class PortTelnet implements BaseCommand {
-    private DubboProtocol dubboProtocol;
+    private final DubboProtocol dubboProtocol;
 
     public PortTelnet(FrameworkModel frameworkModel) {
         this.dubboProtocol = DubboProtocol.getDubboProtocol(frameworkModel);
@@ -61,7 +62,9 @@ public class PortTelnet implements BaseCommand {
                     buf.append("\r\n");
                 }
                 if (detail) {
-                    buf.append(server.getUrl().getProtocol()).append("://").append(server.getUrl().getAddress());
+                    buf.append(server.getUrl().getProtocol())
+                            .append("://")
+                            .append(server.getUrl().getAddress());
                 } else {
                     buf.append(server.getUrl().getPort());
                 }

@@ -49,17 +49,17 @@ import static org.apache.dubbo.registry.client.migration.model.MigrationStep.APP
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
-    private ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MigrationInvoker.class);
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MigrationInvoker.class);
 
     private URL url;
-    private URL consumerUrl;
-    private Cluster cluster;
-    private Registry registry;
-    private Class<T> type;
-    private RegistryProtocol registryProtocol;
+    private final URL consumerUrl;
+    private final Cluster cluster;
+    private final Registry registry;
+    private final Class<T> type;
+    private final RegistryProtocol registryProtocol;
     private MigrationRuleListener migrationRuleListener;
-    private ConsumerModel consumerModel;
-    private FrameworkStatusReportService reportService;
+    private final ConsumerModel consumerModel;
+    private final FrameworkStatusReportService reportService;
 
     private volatile ClusterInvoker<T> invoker;
     private volatile ClusterInvoker<T> serviceDiscoveryInvoker;
@@ -68,23 +68,26 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     private volatile MigrationRule rule;
     private volatile int promotion = 100;
 
-    public MigrationInvoker(RegistryProtocol registryProtocol,
-                            Cluster cluster,
-                            Registry registry,
-                            Class<T> type,
-                            URL url,
-                            URL consumerUrl) {
+    public MigrationInvoker(
+            RegistryProtocol registryProtocol,
+            Cluster cluster,
+            Registry registry,
+            Class<T> type,
+            URL url,
+            URL consumerUrl) {
         this(null, null, registryProtocol, cluster, registry, type, url, consumerUrl);
     }
 
-    public MigrationInvoker(ClusterInvoker<T> invoker,
-                            ClusterInvoker<T> serviceDiscoveryInvoker,
-                            RegistryProtocol registryProtocol,
-                            Cluster cluster,
-                            Registry registry,
-                            Class<T> type,
-                            URL url,
-                            URL consumerUrl) {
+    @SuppressWarnings("unchecked")
+    public MigrationInvoker(
+            ClusterInvoker<T> invoker,
+            ClusterInvoker<T> serviceDiscoveryInvoker,
+            RegistryProtocol registryProtocol,
+            Cluster cluster,
+            Registry registry,
+            Class<T> type,
+            URL url,
+            URL consumerUrl) {
         this.invoker = invoker;
         this.serviceDiscoveryInvoker = serviceDiscoveryInvoker;
         this.registryProtocol = registryProtocol;
@@ -94,10 +97,12 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         this.url = url;
         this.consumerUrl = consumerUrl;
         this.consumerModel = (ConsumerModel) consumerUrl.getServiceModel();
-        this.reportService = consumerUrl.getOrDefaultApplicationModel().getBeanFactory().getBean(FrameworkStatusReportService.class);
+        this.reportService =
+                consumerUrl.getOrDefaultApplicationModel().getBeanFactory().getBean(FrameworkStatusReportService.class);
 
         if (consumerModel != null) {
-            Object object = consumerModel.getServiceMetadata().getAttribute(CommonConstants.CURRENT_CLUSTER_INVOKER_KEY);
+            Object object =
+                    consumerModel.getServiceMetadata().getAttribute(CommonConstants.CURRENT_CLUSTER_INVOKER_KEY);
             Map<Registry, MigrationInvoker<?>> invokerMap;
             if (object instanceof Map) {
                 invokerMap = (Map<Registry, MigrationInvoker<?>>) object;
@@ -183,10 +188,13 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             return true;
         }
 
-        Set<MigrationAddressComparator> detectors = ScopeModelUtil.getApplicationModel(consumerUrl == null ? null : consumerUrl.getScopeModel())
-            .getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();
+        Set<MigrationAddressComparator> detectors = ScopeModelUtil.getApplicationModel(
+                        consumerUrl == null ? null : consumerUrl.getScopeModel())
+                .getExtensionLoader(MigrationAddressComparator.class)
+                .getSupportedExtensionInstances();
         if (CollectionUtils.isNotEmpty(detectors)) {
-            if (detectors.stream().allMatch(comparator -> comparator.shouldMigrate(invoker, serviceDiscoveryInvoker, newRule))) {
+            if (detectors.stream()
+                    .allMatch(comparator -> comparator.shouldMigrate(invoker, serviceDiscoveryInvoker, newRule))) {
                 this.currentAvailableInvoker = invoker;
                 this.destroyServiceDiscoveryInvoker();
                 return true;
@@ -221,10 +229,13 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             return true;
         }
 
-        Set<MigrationAddressComparator> detectors = ScopeModelUtil.getApplicationModel(consumerUrl == null ? null : consumerUrl.getScopeModel())
-            .getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();
+        Set<MigrationAddressComparator> detectors = ScopeModelUtil.getApplicationModel(
+                        consumerUrl == null ? null : consumerUrl.getScopeModel())
+                .getExtensionLoader(MigrationAddressComparator.class)
+                .getSupportedExtensionInstances();
         if (CollectionUtils.isNotEmpty(detectors)) {
-            if (detectors.stream().allMatch(comparator -> comparator.shouldMigrate(serviceDiscoveryInvoker, invoker, newRule))) {
+            if (detectors.stream()
+                    .allMatch(comparator -> comparator.shouldMigrate(serviceDiscoveryInvoker, invoker, newRule))) {
                 this.currentAvailableInvoker = serviceDiscoveryInvoker;
                 this.destroyInterfaceInvoker();
                 return true;
@@ -249,6 +260,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         calcPreferredInvoker(newRule);
     }
 
+    @SuppressWarnings("all")
     private void waitAddressNotify(MigrationRule newRule, CountDownLatch latch) {
         // wait and compare threshold
         int delay = newRule.getDelay(consumerUrl);
@@ -313,10 +325,12 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     @Override
     public boolean isAvailable() {
         return currentAvailableInvoker != null
-            ? currentAvailableInvoker.isAvailable()
-            : (invoker != null && invoker.isAvailable()) || (serviceDiscoveryInvoker != null && serviceDiscoveryInvoker.isAvailable());
+                ? currentAvailableInvoker.isAvailable()
+                : (invoker != null && invoker.isAvailable())
+                        || (serviceDiscoveryInvoker != null && serviceDiscoveryInvoker.isAvailable());
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void destroy() {
         if (migrationRuleListener != null) {
@@ -329,13 +343,17 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             serviceDiscoveryInvoker.destroy();
         }
         if (consumerModel != null) {
-            Object object = consumerModel.getServiceMetadata().getAttribute(CommonConstants.CURRENT_CLUSTER_INVOKER_KEY);
+            Object object =
+                    consumerModel.getServiceMetadata().getAttribute(CommonConstants.CURRENT_CLUSTER_INVOKER_KEY);
             Map<Registry, MigrationInvoker<?>> invokerMap;
             if (object instanceof Map) {
                 invokerMap = (Map<Registry, MigrationInvoker<?>>) object;
                 invokerMap.remove(registry);
                 if (invokerMap.isEmpty()) {
-                    consumerModel.getServiceMetadata().getAttributeMap().remove(CommonConstants.CURRENT_CLUSTER_INVOKER_KEY);
+                    consumerModel
+                            .getServiceMetadata()
+                            .getAttributeMap()
+                            .remove(CommonConstants.CURRENT_CLUSTER_INVOKER_KEY);
                 }
             }
         }
@@ -381,8 +399,9 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     @Override
     public boolean isDestroyed() {
         return currentAvailableInvoker != null
-            ? currentAvailableInvoker.isDestroyed()
-            : (invoker == null || invoker.isDestroyed()) && (serviceDiscoveryInvoker == null || serviceDiscoveryInvoker.isDestroyed());
+                ? currentAvailableInvoker.isDestroyed()
+                : (invoker == null || invoker.isDestroyed())
+                        && (serviceDiscoveryInvoker == null || serviceDiscoveryInvoker.isDestroyed());
     }
 
     @Override
@@ -417,7 +436,9 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         }
         if (serviceDiscoveryInvoker != null && !serviceDiscoveryInvoker.isDestroyed()) {
             if (logger.isInfoEnabled()) {
-                logger.info("Destroying instance address invokers, will not listen for address changes until re-subscribed, " + type.getName());
+                logger.info(
+                        "Destroying instance address invokers, will not listen for address changes until re-subscribed, "
+                                + type.getName());
             }
             serviceDiscoveryInvoker.destroy();
             serviceDiscoveryInvoker = null;
@@ -439,8 +460,8 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         setListener(serviceDiscoveryInvoker, () -> {
             latch.countDown();
             if (reportService.hasReporter()) {
-                reportService.reportConsumptionStatus(
-                    reportService.createConsumptionReport(consumerUrl.getServiceInterface(), consumerUrl.getVersion(), consumerUrl.getGroup(), "app"));
+                reportService.reportConsumptionStatus(reportService.createConsumptionReport(
+                        consumerUrl.getServiceInterface(), consumerUrl.getVersion(), consumerUrl.getGroup(), "app"));
             }
             if (step == APPLICATION_FIRST) {
                 calcPreferredInvoker(rule);
@@ -463,8 +484,11 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         setListener(invoker, () -> {
             latch.countDown();
             if (reportService.hasReporter()) {
-                reportService.reportConsumptionStatus(
-                    reportService.createConsumptionReport(consumerUrl.getServiceInterface(), consumerUrl.getVersion(), consumerUrl.getGroup(), "interface"));
+                reportService.reportConsumptionStatus(reportService.createConsumptionReport(
+                        consumerUrl.getServiceInterface(),
+                        consumerUrl.getVersion(),
+                        consumerUrl.getGroup(),
+                        "interface"));
             }
             if (step == APPLICATION_FIRST) {
                 calcPreferredInvoker(rule);
@@ -476,12 +500,16 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         if (serviceDiscoveryInvoker == null || invoker == null) {
             return;
         }
-        Set<MigrationAddressComparator> detectors = ScopeModelUtil.getApplicationModel(consumerUrl == null ? null : consumerUrl.getScopeModel())
-            .getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();
+        Set<MigrationAddressComparator> detectors = ScopeModelUtil.getApplicationModel(
+                        consumerUrl == null ? null : consumerUrl.getScopeModel())
+                .getExtensionLoader(MigrationAddressComparator.class)
+                .getSupportedExtensionInstances();
         if (CollectionUtils.isNotEmpty(detectors)) {
             // pick preferred invoker
             // the real invoker choice in invocation will be affected by promotion
-            if (detectors.stream().allMatch(comparator -> comparator.shouldMigrate(serviceDiscoveryInvoker, invoker, migrationRule))) {
+            if (detectors.stream()
+                    .allMatch(
+                            comparator -> comparator.shouldMigrate(serviceDiscoveryInvoker, invoker, migrationRule))) {
                 this.currentAvailableInvoker = serviceDiscoveryInvoker;
             } else {
                 this.currentAvailableInvoker = invoker;
@@ -495,7 +523,9 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         }
         if (invoker != null && !invoker.isDestroyed()) {
             if (logger.isInfoEnabled()) {
-                logger.info("Destroying interface address invokers, will not listen for address changes until re-subscribed, " + type.getName());
+                logger.info(
+                        "Destroying interface address invokers, will not listen for address changes until re-subscribed, "
+                                + type.getName());
             }
             invoker.destroy();
             invoker = null;
@@ -540,5 +570,13 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
     public URL getConsumerUrl() {
         return consumerUrl;
+    }
+
+    @Override
+    public String toString() {
+        return "MigrationInvoker{" + "serviceKey="
+                + consumerUrl.getServiceKey() + ", invoker="
+                + decideInvoker() + ", step="
+                + step + '}';
     }
 }

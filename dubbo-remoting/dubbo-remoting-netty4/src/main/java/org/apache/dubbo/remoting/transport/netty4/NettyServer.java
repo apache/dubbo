@@ -21,17 +21,20 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.api.NettyEventLoopFactory;
-import org.apache.dubbo.remoting.api.SslServerTlsHandler;
 import org.apache.dubbo.remoting.transport.AbstractServer;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
+import org.apache.dubbo.remoting.transport.netty4.ssl.SslServerTlsHandler;
 import org.apache.dubbo.remoting.utils.UrlUtils;
+
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -43,19 +46,12 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.Future;
 
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.KEEP_ALIVE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE;
 import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_BOSS_POOL_NAME;
 import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_WORKER_POOL_NAME;
-
 
 /**
  * NettyServer.
@@ -82,9 +78,10 @@ public class NettyServer extends AbstractServer {
     private final int serverShutdownTimeoutMills;
 
     public NettyServer(URL url, ChannelHandler handler) throws RemotingException {
-        // you can customize name and type of client thread pool by THREAD_NAME_KEY and THREAD_POOL_KEY in CommonConstants.
+        // you can customize name and type of client thread pool by THREAD_NAME_KEY and THREAD_POOL_KEY in
+        // CommonConstants.
         // the handler will be wrapped: MultiMessageHandler->HeartbeatHandler->handler
-        super(ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME), ChannelHandlers.wrap(handler, url));
+        super(url, ChannelHandlers.wrap(handler, url));
 
         // read config before destroy
         serverShutdownTimeoutMills = ConfigurationUtils.getServerShutdownTimeout(getUrl().getOrDefaultModuleModel());
@@ -108,10 +105,14 @@ public class NettyServer extends AbstractServer {
         initServerBootstrap(nettyServerHandler);
 
         // bind
-        ChannelFuture channelFuture = bootstrap.bind(getBindAddress());
-        channelFuture.syncUninterruptibly();
-        channel = channelFuture.channel();
-
+        try {
+            ChannelFuture channelFuture = bootstrap.bind(getBindAddress());
+            channelFuture.syncUninterruptibly();
+            channel = channelFuture.channel();
+        } catch (Throwable t) {
+            closeBootstrap();
+            throw t;
+        }
     }
 
     protected EventLoopGroup createBossGroup() {
@@ -120,8 +121,8 @@ public class NettyServer extends AbstractServer {
 
     protected EventLoopGroup createWorkerGroup() {
         return NettyEventLoopFactory.eventLoopGroup(
-            getUrl().getPositiveParameter(IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS),
-            EVENT_LOOP_WORKER_POOL_NAME);
+                getUrl().getPositiveParameter(IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS),
+                EVENT_LOOP_WORKER_POOL_NAME);
     }
 
     protected NettyServerHandler createNettyServerHandler() {
@@ -130,29 +131,26 @@ public class NettyServer extends AbstractServer {
 
     protected void initServerBootstrap(NettyServerHandler nettyServerHandler) {
         boolean keepalive = getUrl().getParameter(KEEP_ALIVE_KEY, Boolean.FALSE);
-
-        bootstrap.group(bossGroup, workerGroup)
-            .channel(NettyEventLoopFactory.serverSocketChannelClass())
-            .option(ChannelOption.SO_REUSEADDR, Boolean.TRUE)
-            .childOption(ChannelOption.TCP_NODELAY, Boolean.TRUE)
-            .childOption(ChannelOption.SO_KEEPALIVE, keepalive)
-            .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-            .childHandler(new ChannelInitializer<SocketChannel>() {
-                @Override
-                protected void initChannel(SocketChannel ch) throws Exception {
-                    // FIXME: should we use getTimeout()?
-                    int idleTimeout = UrlUtils.getIdleTimeout(getUrl());
-                    NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyServer.this);
-                    if (getUrl().getParameter(SSL_ENABLED_KEY, false)) {
+        bootstrap
+                .group(bossGroup, workerGroup)
+                .channel(NettyEventLoopFactory.serverSocketChannelClass())
+                .option(ChannelOption.SO_REUSEADDR, Boolean.TRUE)
+                .childOption(ChannelOption.TCP_NODELAY, Boolean.TRUE)
+                .childOption(ChannelOption.SO_KEEPALIVE, keepalive)
+                .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+                .childHandler(new ChannelInitializer<SocketChannel>() {
+                    @Override
+                    protected void initChannel(SocketChannel ch) throws Exception {
+                        int closeTimeout = UrlUtils.getCloseTimeout(getUrl());
+                        NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyServer.this);
                         ch.pipeline().addLast("negotiation", new SslServerTlsHandler(getUrl()));
+                        ch.pipeline()
+                                .addLast("decoder", adapter.getDecoder())
+                                .addLast("encoder", adapter.getEncoder())
+                                .addLast("server-idle-handler", new IdleStateHandler(0, 0, closeTimeout, MILLISECONDS))
+                                .addLast("handler", nettyServerHandler);
                     }
-                    ch.pipeline()
-                        .addLast("decoder", adapter.getDecoder())
-                        .addLast("encoder", adapter.getEncoder())
-                        .addLast("server-idle-handler", new IdleStateHandler(0, 0, idleTimeout, MILLISECONDS))
-                        .addLast("handler", nettyServerHandler);
-                }
-            });
+                });
     }
 
     @Override
@@ -179,18 +177,7 @@ public class NettyServer extends AbstractServer {
         } catch (Throwable e) {
             logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }
-        try {
-            if (bootstrap != null) {
-                long timeout = serverShutdownTimeoutMills;
-                long quietPeriod = Math.min(2000L, timeout);
-                Future<?> bossGroupShutdownFuture = bossGroup.shutdownGracefully(quietPeriod, timeout, MILLISECONDS);
-                Future<?> workerGroupShutdownFuture = workerGroup.shutdownGracefully(quietPeriod, timeout, MILLISECONDS);
-                bossGroupShutdownFuture.syncUninterruptibly();
-                workerGroupShutdownFuture.syncUninterruptibly();
-            }
-        } catch (Throwable e) {
-            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
-        }
+        closeBootstrap();
         try {
             if (channels != null) {
                 channels.clear();
@@ -198,6 +185,27 @@ public class NettyServer extends AbstractServer {
         } catch (Throwable e) {
             logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }
+    }
+
+    private void closeBootstrap() {
+        try {
+            if (bootstrap != null) {
+                long timeout = ConfigurationUtils.reCalShutdownTime(serverShutdownTimeoutMills);
+                long quietPeriod = Math.min(2000L, timeout);
+                Future<?> bossGroupShutdownFuture = bossGroup.shutdownGracefully(quietPeriod, timeout, MILLISECONDS);
+                Future<?> workerGroupShutdownFuture =
+                        workerGroup.shutdownGracefully(quietPeriod, timeout, MILLISECONDS);
+                bossGroupShutdownFuture.syncUninterruptibly();
+                workerGroupShutdownFuture.syncUninterruptibly();
+            }
+        } catch (Throwable e) {
+            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
+        }
+    }
+
+    @Override
+    protected int getChannelsSize() {
+        return channels.size();
     }
 
     @Override

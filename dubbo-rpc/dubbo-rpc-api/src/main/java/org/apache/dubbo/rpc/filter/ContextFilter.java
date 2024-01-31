@@ -17,15 +17,19 @@
 package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.PenetrateAttachmentSelector;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TimeoutCountDown;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.HashMap;
@@ -49,7 +53,6 @@ import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 import static org.apache.dubbo.rpc.Constants.FORCE_USE_TAG;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
-
 /**
  * ContextFilter set the provider RpcContext with invoker, invocation, local port it is using and host for
  * current execution thread.
@@ -58,6 +61,13 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
  */
 @Activate(group = PROVIDER, order = Integer.MIN_VALUE)
 public class ContextFilter implements Filter, Filter.Listener {
+    private final Set<PenetrateAttachmentSelector> supportedSelectors;
+
+    public ContextFilter(ApplicationModel applicationModel) {
+        ExtensionLoader<PenetrateAttachmentSelector> selectorExtensionLoader =
+                applicationModel.getExtensionLoader(PenetrateAttachmentSelector.class);
+        supportedSelectors = selectorExtensionLoader.getSupportedExtensionInstances();
+    }
 
     private static final Set<String> UNLOADING_KEYS;
 
@@ -92,11 +102,10 @@ public class ContextFilter implements Filter, Filter.Listener {
             attachments = newAttach;
         }
 
-        RpcContext.getServiceContext().setInvoker(invoker)
-                .setInvocation(invocation);
+        RpcContext.getServiceContext().setInvoker(invoker).setInvocation(invocation);
 
         RpcContext context = RpcContext.getServerAttachment();
-//                .setAttachments(attachments)  // merged from dubbox
+        //                .setAttachments(attachments)  // merged from dubbox
         if (context.getLocalAddress() == null) {
             context.setLocalAddress(invoker.getUrl().getHost(), invoker.getUrl().getPort());
         }
@@ -111,12 +120,14 @@ public class ContextFilter implements Filter, Filter.Listener {
         long timeout = RpcUtils.getTimeout(invocation, -1);
         if (timeout != -1) {
             // pass to next hop
-            RpcContext.getServerAttachment().setObjectAttachment(TIME_COUNTDOWN_KEY, TimeoutCountDown.newCountDown(timeout, TimeUnit.MILLISECONDS));
+            RpcContext.getServerAttachment()
+                    .setObjectAttachment(
+                            TIME_COUNTDOWN_KEY, TimeoutCountDown.newCountDown(timeout, TimeUnit.MILLISECONDS));
         }
 
         // merged from dubbox
         // we may already add some attachments into RpcContext before this filter (e.g. in rest protocol)
-        if (attachments != null) {
+        if (CollectionUtils.isNotEmptyMap(attachments)) {
             if (context.getObjectAttachments().size() > 0) {
                 context.getObjectAttachments().putAll(attachments);
             } else {
@@ -125,7 +136,8 @@ public class ContextFilter implements Filter, Filter.Listener {
         }
 
         if (invocation instanceof RpcInvocation) {
-            ((RpcInvocation) invocation).setInvoker(invoker);
+            RpcInvocation rpcInvocation = (RpcInvocation) invocation;
+            rpcInvocation.setInvoker(invoker);
         }
 
         try {
@@ -142,7 +154,19 @@ public class ContextFilter implements Filter, Filter.Listener {
     @Override
     public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
         // pass attachments to result
-        appResponse.addObjectAttachments(RpcContext.getServerContext().getObjectAttachments());
+        if (CollectionUtils.isNotEmpty(supportedSelectors)) {
+            for (PenetrateAttachmentSelector supportedSelector : supportedSelectors) {
+                Map<String, Object> selected = supportedSelector.selectReverse(
+                        invocation, RpcContext.getClientResponseContext(), RpcContext.getServerResponseContext());
+                if (CollectionUtils.isNotEmptyMap(selected)) {
+                    appResponse.addObjectAttachments(selected);
+                }
+            }
+        } else {
+            appResponse.addObjectAttachments(
+                    RpcContext.getClientResponseContext().getObjectAttachments());
+        }
+        appResponse.addObjectAttachments(RpcContext.getServerResponseContext().getObjectAttachments());
         removeContext();
     }
 
@@ -155,6 +179,7 @@ public class ContextFilter implements Filter, Filter.Listener {
         RpcContext.removeServerAttachment();
         RpcContext.removeClientAttachment();
         RpcContext.removeServiceContext();
-        RpcContext.removeServerContext();
+        RpcContext.removeClientResponseContext();
+        RpcContext.removeServerResponseContext();
     }
 }

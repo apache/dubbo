@@ -14,12 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.threadlocal;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.util.concurrent.CountDownLatch;
@@ -27,6 +22,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.LockSupport;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -49,7 +48,7 @@ class InternalThreadLocalTest {
     }
 
     @Test
-    void testInternalThreadLocal() throws InterruptedException {
+    void testInternalThreadLocal() {
         final AtomicInteger index = new AtomicInteger(0);
 
         final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>() {
@@ -71,10 +70,10 @@ class InternalThreadLocalTest {
     }
 
     @Test
-    void testRemoveAll() throws InterruptedException {
+    void testRemoveAll() {
         final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
         internalThreadLocal.set(1);
-        Assertions.assertEquals(1, (int)internalThreadLocal.get(), "set failed");
+        Assertions.assertEquals(1, (int) internalThreadLocal.get(), "set failed");
 
         final InternalThreadLocal<String> internalThreadLocalString = new InternalThreadLocal<String>();
         internalThreadLocalString.set("value");
@@ -86,7 +85,7 @@ class InternalThreadLocalTest {
     }
 
     @Test
-    void testSize() throws InterruptedException {
+    void testSize() {
         final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
         internalThreadLocal.set(1);
         Assertions.assertEquals(1, InternalThreadLocal.size(), "size method is wrong!");
@@ -109,7 +108,7 @@ class InternalThreadLocalTest {
     void testRemove() {
         final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
         internalThreadLocal.set(1);
-        Assertions.assertEquals(1, (int)internalThreadLocal.get(), "get method false!");
+        Assertions.assertEquals(1, (int) internalThreadLocal.get(), "get method false!");
 
         internalThreadLocal.remove();
         Assertions.assertNull(internalThreadLocal.get(), "remove failed!");
@@ -120,16 +119,16 @@ class InternalThreadLocalTest {
         final Integer[] valueToRemove = {null};
         final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>() {
             @Override
-            protected void onRemoval(Integer value) throws Exception {
-                //value calculate
+            protected void onRemoval(Integer value) {
+                // value calculate
                 valueToRemove[0] = value + 1;
             }
         };
         internalThreadLocal.set(1);
-        Assertions.assertEquals(1, (int)internalThreadLocal.get(), "get method false!");
+        Assertions.assertEquals(1, (int) internalThreadLocal.get(), "get method false!");
 
         internalThreadLocal.remove();
-        Assertions.assertEquals(2, (int)valueToRemove[0], "onRemove method failed!");
+        Assertions.assertEquals(2, (int) valueToRemove[0], "onRemove method failed!");
     }
 
     @Test
@@ -187,8 +186,7 @@ class InternalThreadLocalTest {
                     }
                 }
                 long end = System.nanoTime();
-                System.out.println("take[" + TimeUnit.NANOSECONDS.toMillis(end - start) +
-                        "]ms");
+                System.out.println("take[" + TimeUnit.NANOSECONDS.toMillis(end - start) + "]ms");
                 LockSupport.unpark(mainThread);
             }
         });
@@ -222,8 +220,7 @@ class InternalThreadLocalTest {
                     }
                 }
                 long end = System.nanoTime();
-                System.out.println("take[" + TimeUnit.NANOSECONDS.toMillis(end - start) +
-                        "]ms");
+                System.out.println("take[" + TimeUnit.NANOSECONDS.toMillis(end - start) + "]ms");
                 LockSupport.unpark(mainThread);
             }
         });
@@ -235,17 +232,16 @@ class InternalThreadLocalTest {
     void testConstructionWithIndex() throws Exception {
         // reset ARRAY_LIST_CAPACITY_MAX_SIZE to speed up
         int NEW_ARRAY_LIST_CAPACITY_MAX_SIZE = 8;
-        Field nextIndexField =
-            InternalThreadLocalMap.class.getDeclaredField("NEXT_INDEX");
+        Field nextIndexField = InternalThreadLocalMap.class.getDeclaredField("NEXT_INDEX");
 
         nextIndexField.setAccessible(true);
         AtomicInteger nextIndex = (AtomicInteger) nextIndexField.get(AtomicInteger.class);
         int arrayListCapacityMaxSize = InternalThreadLocalMap.ARRAY_LIST_CAPACITY_MAX_SIZE;
-        int nextIndex_before = nextIndex.get();
+        int nextIndex_before = nextIndex.incrementAndGet();
         nextIndex.set(0);
         final AtomicReference<Throwable> throwable = new AtomicReference<Throwable>();
         try {
-            InternalThreadLocalMap.ARRAY_LIST_CAPACITY_MAX_SIZE =  NEW_ARRAY_LIST_CAPACITY_MAX_SIZE;
+            InternalThreadLocalMap.ARRAY_LIST_CAPACITY_MAX_SIZE = NEW_ARRAY_LIST_CAPACITY_MAX_SIZE;
             while (nextIndex.get() < NEW_ARRAY_LIST_CAPACITY_MAX_SIZE) {
                 new InternalThreadLocal<Boolean>();
             }

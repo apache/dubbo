@@ -23,6 +23,7 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.Help;
 import org.apache.dubbo.remoting.telnet.support.TelnetUtils;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,18 +37,22 @@ import java.util.WeakHashMap;
 @Help(parameter = "[command]", summary = "Show help.", detail = "Show help.")
 public class HelpTelnetHandler implements TelnetHandler {
 
-    private final ExtensionLoader<TelnetHandler> extensionLoader = ExtensionLoader.getExtensionLoader(TelnetHandler.class);
+    private final ExtensionLoader<TelnetHandler> extensionLoader;
 
     private static final String MAIN_HELP = "mainHelp";
 
     private static Map<String, String> processedTable = new WeakHashMap<>();
 
+    public HelpTelnetHandler(FrameworkModel frameworkModel) {
+        extensionLoader = frameworkModel.getExtensionLoader(TelnetHandler.class);
+    }
+
     @Override
     public String telnet(Channel channel, String message) {
         if (message.length() > 0) {
-            return processedTable.computeIfAbsent(message, commandName ->  generateForOneCommand(commandName));
+            return processedTable.computeIfAbsent(message, commandName -> generateForOneCommand(commandName));
         } else {
-            return processedTable.computeIfAbsent(MAIN_HELP, commandName ->  generateForAllCommand(channel));
+            return processedTable.computeIfAbsent(MAIN_HELP, commandName -> generateForAllCommand(channel));
         }
     }
 
@@ -74,14 +79,15 @@ public class HelpTelnetHandler implements TelnetHandler {
             for (TelnetHandler handler : handlers) {
                 Help help = handler.getClass().getAnnotation(Help.class);
                 List<String> row = new ArrayList<String>();
-                String parameter = " " + extensionLoader.getExtensionName(handler) + " " + (help != null ? help.parameter().replace("\r\n", " ").replace("\n", " ") : "");
+                String parameter = " " + extensionLoader.getExtensionName(handler) + " "
+                        + (help != null ? help.parameter().replace("\r\n", " ").replace("\n", " ") : "");
                 row.add(parameter.length() > 55 ? parameter.substring(0, 55) + "..." : parameter);
-                String summary = help != null ? help.summary().replace("\r\n", " ").replace("\n", " ") : "";
+                String summary =
+                        help != null ? help.summary().replace("\r\n", " ").replace("\n", " ") : "";
                 row.add(summary.length() > 55 ? summary.substring(0, 55) + "..." : summary);
                 table.add(row);
             }
         }
         return "Please input \"help [command]\" show detail.\r\n" + TelnetUtils.toList(table);
     }
-
 }

@@ -32,7 +32,7 @@ public class ExcludedParamsFilter implements MetadataParamsFilter {
 
     @Override
     public String[] serviceParamsExcluded() {
-        return new String[]{TIMEOUT_KEY, GROUP_KEY, "anyhost"};
+        return new String[] {TIMEOUT_KEY, GROUP_KEY, "anyhost"};
     }
 
     /**

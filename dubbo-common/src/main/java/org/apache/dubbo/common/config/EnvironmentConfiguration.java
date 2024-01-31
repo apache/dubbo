@@ -27,14 +27,24 @@ public class EnvironmentConfiguration implements Configuration {
 
     @Override
     public Object getInternalProperty(String key) {
-        String value = System.getenv(key);
+        String value = getenv(key);
         if (StringUtils.isEmpty(value)) {
-            value = System.getenv(StringUtils.toOSStyleKey(key));
+            value = getenv(StringUtils.toOSStyleKey(key));
         }
         return value;
     }
 
     public Map<String, String> getProperties() {
+        return getenv();
+    }
+
+    // Adapt to System api, design for unit test
+
+    protected String getenv(String key) {
+        return System.getenv(key);
+    }
+
+    protected Map<String, String> getenv() {
         return System.getenv();
     }
 }

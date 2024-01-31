@@ -51,25 +51,23 @@ public class DemoServiceImpl implements DemoService {
     }
 
     public int getSize(String[] strs) {
-        if (strs == null)
-            return -1;
+        if (strs == null) return -1;
         return strs.length;
     }
 
     public int getSize(Object[] os) {
-        if (os == null)
-            return -1;
+        if (os == null) return -1;
         return os.length;
     }
 
     public Object invoke(String service, String method) throws Exception {
-        System.out.println("RpcContext.getServerAttachment().getRemoteHost()=" + RpcContext.getServiceContext().getRemoteHost());
+        System.out.println("RpcContext.getServerAttachment().getRemoteHost()="
+                + RpcContext.getServiceContext().getRemoteHost());
         return service + ":" + method;
     }
 
     public Type enumlength(Type... types) {
-        if (types.length == 0)
-            return Type.Lower;
+        if (types.length == 0) return Type.Lower;
         return types[0];
     }
 
@@ -97,8 +95,7 @@ public class DemoServiceImpl implements DemoService {
         return map == null ? null : map.keySet();
     }
 
-    public void nonSerializedParameter(NonSerialized ns) {
-    }
+    public void nonSerializedParameter(NonSerialized ns) {}
 
     public NonSerialized returnNonSerialized() {
         return new NonSerialized();

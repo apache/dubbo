@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invoker;
@@ -40,7 +41,11 @@ public class MeshRuleCache<T> {
     private final Map<String, Map<String, BitList<Invoker<T>>>> totalSubsetMap;
     private final BitList<Invoker<T>> unmatchedInvokers;
 
-    private MeshRuleCache(List<String> appList, Map<String, VsDestinationGroup> appToVDGroup, Map<String, Map<String, BitList<Invoker<T>>>> totalSubsetMap, BitList<Invoker<T>> unmatchedInvokers) {
+    private MeshRuleCache(
+            List<String> appList,
+            Map<String, VsDestinationGroup> appToVDGroup,
+            Map<String, Map<String, BitList<Invoker<T>>>> totalSubsetMap,
+            BitList<Invoker<T>> unmatchedInvokers) {
         this.appList = appList;
         this.appToVDGroup = appToVDGroup;
         this.totalSubsetMap = totalSubsetMap;
@@ -82,7 +87,10 @@ public class MeshRuleCache<T> {
         return !totalSubsetMap.isEmpty();
     }
 
-    public static <T> MeshRuleCache<T> build(String protocolServiceKey, BitList<Invoker<T>> invokers, Map<String, VsDestinationGroup> vsDestinationGroupMap) {
+    public static <T> MeshRuleCache<T> build(
+            String protocolServiceKey,
+            BitList<Invoker<T>> invokers,
+            Map<String, VsDestinationGroup> vsDestinationGroupMap) {
         if (CollectionUtils.isNotEmptyMap(vsDestinationGroupMap)) {
             BitList<Invoker<T>> unmatchedInvokers = new BitList<>(invokers.getOriginList(), true);
             Map<String, Map<String, BitList<Invoker<T>>>> totalSubsetMap = new HashMap<>();
@@ -98,7 +106,8 @@ public class MeshRuleCache<T> {
                     unmatchedInvokers.add(invoker);
                     continue;
                 }
-                Map<String, BitList<Invoker<T>>> subsetMap = totalSubsetMap.computeIfAbsent(remoteApplication, (k) -> new HashMap<>());
+                Map<String, BitList<Invoker<T>>> subsetMap =
+                        totalSubsetMap.computeIfAbsent(remoteApplication, (k) -> new HashMap<>());
 
                 boolean matched = false;
                 for (DestinationRule destinationRule : vsDestinationGroup.getDestinationRuleList()) {
@@ -106,10 +115,11 @@ public class MeshRuleCache<T> {
                     List<Subset> subsetList = destinationRuleSpec.getSubsets();
                     for (Subset subset : subsetList) {
                         String subsetName = subset.getName();
-                        List<Invoker<T>> subsetInvokers = subsetMap.computeIfAbsent(subsetName, (k) -> new BitList<>(invokers.getOriginList(), true));
+                        List<Invoker<T>> subsetInvokers = subsetMap.computeIfAbsent(
+                                subsetName, (k) -> new BitList<>(invokers.getOriginList(), true));
 
                         Map<String, String> labels = subset.getLabels();
-                        if (containMapKeyValue(invoker.getUrl().getServiceParameters(protocolServiceKey), labels)) {
+                        if (isLabelMatch(invoker.getUrl(), protocolServiceKey, labels)) {
                             subsetInvokers.add(invoker);
                             matched = true;
                         }
@@ -120,20 +130,23 @@ public class MeshRuleCache<T> {
                 }
             }
 
-            return new MeshRuleCache<>(new LinkedList<>(vsDestinationGroupMap.keySet()),
-                Collections.unmodifiableMap(vsDestinationGroupMap),
-                Collections.unmodifiableMap(totalSubsetMap),
-                unmatchedInvokers);
+            return new MeshRuleCache<>(
+                    new LinkedList<>(vsDestinationGroupMap.keySet()),
+                    Collections.unmodifiableMap(vsDestinationGroupMap),
+                    Collections.unmodifiableMap(totalSubsetMap),
+                    unmatchedInvokers);
         } else {
-            return new MeshRuleCache<T>(Collections.emptyList(), Collections.emptyMap(), Collections.emptyMap(), invokers);
+            return new MeshRuleCache<T>(
+                    Collections.emptyList(), Collections.emptyMap(), Collections.emptyMap(), invokers);
         }
     }
 
     public static <T> MeshRuleCache<T> emptyCache() {
-        return new MeshRuleCache<>(Collections.emptyList(), Collections.emptyMap(), Collections.emptyMap(), BitList.emptyList());
+        return new MeshRuleCache<>(
+                Collections.emptyList(), Collections.emptyMap(), Collections.emptyMap(), BitList.emptyList());
     }
 
-    protected static boolean containMapKeyValue(Map<String, String> originMap, Map<String, String> inputMap) {
+    protected static boolean isLabelMatch(URL url, String protocolServiceKey, Map<String, String> inputMap) {
         if (inputMap == null || inputMap.size() == 0) {
             return true;
         }
@@ -142,7 +155,7 @@ public class MeshRuleCache<T> {
             String key = entry.getKey();
             String value = entry.getValue();
 
-            String originMapValue = originMap.get(key);
+            String originMapValue = url.getOriginalServiceParameter(protocolServiceKey, key);
             if (!value.equals(originMapValue)) {
                 return false;
             }
@@ -160,7 +173,10 @@ public class MeshRuleCache<T> {
             return false;
         }
         MeshRuleCache<?> ruleCache = (MeshRuleCache<?>) o;
-        return Objects.equals(appList, ruleCache.appList) && Objects.equals(appToVDGroup, ruleCache.appToVDGroup) && Objects.equals(totalSubsetMap, ruleCache.totalSubsetMap) && Objects.equals(unmatchedInvokers, ruleCache.unmatchedInvokers);
+        return Objects.equals(appList, ruleCache.appList)
+                && Objects.equals(appToVDGroup, ruleCache.appToVDGroup)
+                && Objects.equals(totalSubsetMap, ruleCache.totalSubsetMap)
+                && Objects.equals(unmatchedInvokers, ruleCache.unmatchedInvokers);
     }
 
     @Override

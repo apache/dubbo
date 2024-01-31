@@ -22,6 +22,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -69,11 +70,11 @@ class MockDirInvocation implements Invocation {
     }
 
     public Class<?>[] getParameterTypes() {
-        return new Class[]{String.class};
+        return new Class[] {String.class};
     }
 
     public Object[] getArguments() {
-        return new Object[]{"aa"};
+        return new Object[] {"aa"};
     }
 
     public Map<String, String> getAttachments() {
@@ -102,7 +103,7 @@ class MockDirInvocation implements Invocation {
 
     @Override
     public void setAttachment(String key, Object value) {
-       setObjectAttachment(key, value);
+        setObjectAttachment(key, value);
     }
 
     @Override
@@ -122,9 +123,7 @@ class MockDirInvocation implements Invocation {
 
     @Override
     public void setObjectAttachmentIfAbsent(String key, Object value) {
-        if (attachments.get(key) == null) {
-            attachments.put(key, value);
-        }
+        attachments.putIfAbsent(key, value);
     }
 
     public Invoker<?> getInvoker() {
@@ -142,9 +141,7 @@ class MockDirInvocation implements Invocation {
     }
 
     @Override
-    public void setServiceModel(ServiceModel serviceModel) {
-
-    }
+    public void setServiceModel(ServiceModel serviceModel) {}
 
     @Override
     public ServiceModel getServiceModel() {
@@ -170,6 +167,14 @@ class MockDirInvocation implements Invocation {
     }
 
     @Override
+    public void addInvokedInvoker(Invoker<?> invoker) {}
+
+    @Override
+    public List<Invoker<?>> getInvokedInvokers() {
+        return null;
+    }
+
+    @Override
     public Object getObjectAttachment(String key, Object defaultValue) {
         Object result = attachments.get(key);
         if (result == null) {
@@ -177,5 +182,4 @@ class MockDirInvocation implements Invocation {
         }
         return result;
     }
-
 }

@@ -52,8 +52,7 @@ public class ServiceMetadata extends BaseServiceMetadata {
         this.serviceType = serviceType;
     }
 
-    public ServiceMetadata() {
-    }
+    public ServiceMetadata() {}
 
     @Override
     public String getServiceKey() {

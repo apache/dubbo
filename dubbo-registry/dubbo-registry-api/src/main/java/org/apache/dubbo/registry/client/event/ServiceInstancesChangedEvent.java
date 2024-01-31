@@ -58,12 +58,10 @@ public class ServiceInstancesChangedEvent {
         return serviceName;
     }
 
-
     /**
      * @return all {@link ServiceInstance service instances}
      */
     public List<ServiceInstance> getServiceInstances() {
         return serviceInstances;
     }
-
 }

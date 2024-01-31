@@ -17,33 +17,11 @@
 package org.apache.dubbo.common.json.impl;
 
 import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-
-import org.apache.dubbo.common.utils.CollectionUtils;
 
 import com.alibaba.fastjson.serializer.SerializerFeature;
 
 public class FastJsonImpl extends AbstractJSONImpl {
-
-    @Override
-    public boolean isSupport() {
-        try {
-            Map<String, String> map = new HashMap<>();
-            map.put("fastjson", "test");
-            if (!CollectionUtils.mapEquals(map, toJavaObject(toJson(map), Map.class))) {
-                return false;
-            }
-
-            List<String> list = new LinkedList<>();
-            list.add("fastjson");
-            return CollectionUtils.equals(list, toJavaList(toJson(list), String.class));
-        } catch (Throwable t) {
-            return false;
-        }
-    }
 
     @Override
     public <T> T toJavaObject(String json, Type type) {

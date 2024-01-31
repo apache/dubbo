@@ -22,21 +22,21 @@ import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.qos.probe.StartupProbe;
 import org.apache.dubbo.qos.probe.impl.DeployerStartupProbe;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
 
 class StartupTest {
     private FrameworkModel frameworkModel;
@@ -60,10 +60,9 @@ class StartupTest {
         ExtensionLoader loader = Mockito.mock(ExtensionLoader.class);
         Mockito.when(frameworkModel.getExtensionLoader(StartupProbe.class)).thenReturn(loader);
         URL url = URL.valueOf("application://").addParameter(CommonConstants.QOS_STARTUP_PROBE_EXTENSION, "");
-        List<StartupProbe> readinessProbes = Arrays.asList(
-            new DeployerStartupProbe(frameworkModel)
-        );
-        Mockito.when(loader.getActivateExtension(url, CommonConstants.QOS_STARTUP_PROBE_EXTENSION)).thenReturn(readinessProbes);
+        List<StartupProbe> readinessProbes = Arrays.asList(new DeployerStartupProbe(frameworkModel));
+        Mockito.when(loader.getActivateExtension(url, CommonConstants.QOS_STARTUP_PROBE_EXTENSION))
+                .thenReturn(readinessProbes);
     }
 
     @Test

@@ -18,101 +18,101 @@ package org.apache.dubbo.config.bootstrap.builders;
 
 import org.apache.dubbo.config.ConfigCenterConfig;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class ConfigCenterBuilderTest {
 
     @Test
     void protocol() {
-        ConfigCenterBuilder builder = new ConfigCenterBuilder();
+        ConfigCenterBuilder builder = ConfigCenterBuilder.newBuilder();
         builder.protocol("protocol");
         Assertions.assertEquals("protocol", builder.build().getProtocol());
     }
 
     @Test
     void address() {
-        ConfigCenterBuilder builder = new ConfigCenterBuilder();
+        ConfigCenterBuilder builder = ConfigCenterBuilder.newBuilder();
         builder.address("address");
         Assertions.assertEquals("address", builder.build().getAddress());
     }
 
     @Test
     void cluster() {
-        ConfigCenterBuilder builder = new ConfigCenterBuilder();
+        ConfigCenterBuilder builder = ConfigCenterBuilder.newBuilder();
         builder.cluster("cluster");
         Assertions.assertEquals("cluster", builder.build().getCluster());
     }
 
     @Test
     void namespace() {
-        ConfigCenterBuilder builder = new ConfigCenterBuilder();
+        ConfigCenterBuilder builder = ConfigCenterBuilder.newBuilder();
         builder.namespace("namespace");
         Assertions.assertEquals("namespace", builder.build().getNamespace());
     }
 
     @Test
     void group() {
-        ConfigCenterBuilder builder = new ConfigCenterBuilder();
+        ConfigCenterBuilder builder = ConfigCenterBuilder.newBuilder();
         builder.group("group");
         Assertions.assertEquals("group", builder.build().getGroup());
     }
 
     @Test
     void username() {
-        ConfigCenterBuilder builder = new ConfigCenterBuilder();
+        ConfigCenterBuilder builder = ConfigCenterBuilder.newBuilder();
         builder.username("username");
         Assertions.assertEquals("username", builder.build().getUsername());
     }
 
     @Test
     void password() {
-        ConfigCenterBuilder builder = new ConfigCenterBuilder();
+        ConfigCenterBuilder builder = ConfigCenterBuilder.newBuilder();
         builder.password("password");
         Assertions.assertEquals("password", builder.build().getPassword());
     }
 
     @Test
     void timeout() {
-        ConfigCenterBuilder builder = new ConfigCenterBuilder();
+        ConfigCenterBuilder builder = ConfigCenterBuilder.newBuilder();
         builder.timeout(1000L);
         Assertions.assertEquals(1000L, builder.build().getTimeout());
     }
 
     @Test
     void highestPriority() {
-        ConfigCenterBuilder builder = new ConfigCenterBuilder();
+        ConfigCenterBuilder builder = ConfigCenterBuilder.newBuilder();
         builder.highestPriority(true);
         Assertions.assertTrue(builder.build().isHighestPriority());
     }
 
     @Test
     void check() {
-        ConfigCenterBuilder builder = new ConfigCenterBuilder();
+        ConfigCenterBuilder builder = ConfigCenterBuilder.newBuilder();
         builder.check(true);
         Assertions.assertTrue(builder.build().isCheck());
     }
 
     @Test
     void configFile() {
-        ConfigCenterBuilder builder = new ConfigCenterBuilder();
+        ConfigCenterBuilder builder = ConfigCenterBuilder.newBuilder();
         builder.configFile("configFile");
         Assertions.assertEquals("configFile", builder.build().getConfigFile());
     }
 
     @Test
     void appConfigFile() {
-        ConfigCenterBuilder builder = new ConfigCenterBuilder();
+        ConfigCenterBuilder builder = ConfigCenterBuilder.newBuilder();
         builder.appConfigFile("appConfigFile");
         Assertions.assertEquals("appConfigFile", builder.build().getAppConfigFile());
     }
 
     @Test
     void appendParameter() {
-        ConfigCenterBuilder builder = new ConfigCenterBuilder();
+        ConfigCenterBuilder builder = ConfigCenterBuilder.newBuilder();
         builder.appendParameter("default.num", "one").appendParameter("num", "ONE");
 
         Map<String, String> parameters = builder.build().getParameters();
@@ -127,7 +127,7 @@ class ConfigCenterBuilderTest {
         source.put("default.num", "one");
         source.put("num", "ONE");
 
-        ConfigCenterBuilder builder = new ConfigCenterBuilder();
+        ConfigCenterBuilder builder = ConfigCenterBuilder.newBuilder();
         builder.appendParameters(source);
 
         Map<String, String> parameters = builder.build().getParameters();
@@ -138,11 +138,21 @@ class ConfigCenterBuilderTest {
 
     @Test
     void build() {
-        ConfigCenterBuilder builder = new ConfigCenterBuilder();
-        builder.check(true).protocol("protocol").address("address").appConfigFile("appConfigFile")
-                .cluster("cluster").configFile("configFile").group("group").highestPriority(false)
-                .namespace("namespace").password("password").timeout(1000L).username("usernama")
-                .appendParameter("default.num", "one").id("id");
+        ConfigCenterBuilder builder = ConfigCenterBuilder.newBuilder();
+        builder.check(true)
+                .protocol("protocol")
+                .address("address")
+                .appConfigFile("appConfigFile")
+                .cluster("cluster")
+                .configFile("configFile")
+                .group("group")
+                .highestPriority(false)
+                .namespace("namespace")
+                .password("password")
+                .timeout(1000L)
+                .username("usernama")
+                .appendParameter("default.num", "one")
+                .id("id");
 
         ConfigCenterConfig config = builder.build();
         ConfigCenterConfig config2 = builder.build();

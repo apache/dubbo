@@ -16,13 +16,14 @@
  */
 package org.apache.dubbo.common.convert;
 
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
@@ -47,11 +48,9 @@ class ConverterTest {
 
     @Test
     void testGetConverter() {
-        getExtensionLoader(Converter.class)
-                .getSupportedExtensionInstances()
-                .forEach(converter -> {
-                    assertSame(converter, converterUtil.getConverter(converter.getSourceType(), converter.getTargetType()));
-                });
+        getExtensionLoader(Converter.class).getSupportedExtensionInstances().forEach(converter -> {
+            assertSame(converter, converterUtil.getConverter(converter.getSourceType(), converter.getTargetType()));
+        });
     }
 
     @Test
@@ -59,5 +58,9 @@ class ConverterTest {
         assertEquals(Integer.valueOf(2), converterUtil.convertIfPossible("2", Integer.class));
         assertEquals(Boolean.FALSE, converterUtil.convertIfPossible("false", Boolean.class));
         assertEquals(Double.valueOf(1), converterUtil.convertIfPossible("1", Double.class));
+    }
+
+    private <T> ExtensionLoader<T> getExtensionLoader(Class<T> extClass) {
+        return ApplicationModel.defaultModel().getDefaultModule().getExtensionLoader(extClass);
     }
 }

@@ -20,10 +20,10 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.validation.Validation;
 import org.apache.dubbo.validation.Validator;
 
+import javax.validation.ValidationException;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import javax.validation.ValidationException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -33,11 +33,10 @@ class JValidationTest {
     void testReturnTypeWithInvalidValidationProvider() {
         Assertions.assertThrows(ValidationException.class, () -> {
             Validation jValidation = new JValidation();
-            URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.JValidation?" +
-                    "jvalidation=org.apache.dubbo.validation.Validation");
+            URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.JValidation?"
+                    + "jvalidation=org.apache.dubbo.validation.Validation");
             jValidation.getValidator(url);
         });
-
     }
 
     @Test

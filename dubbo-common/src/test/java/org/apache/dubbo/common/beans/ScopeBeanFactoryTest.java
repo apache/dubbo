@@ -22,6 +22,8 @@ import org.apache.dubbo.common.beans.model.FooBeanWithFrameworkModel;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -32,19 +34,32 @@ class ScopeBeanFactoryTest {
 
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
-        FooBeanWithApplicationModel beanWithApplicationModel = beanFactory.registerBean(FooBeanWithApplicationModel.class);
+        FooBeanWithApplicationModel beanWithApplicationModel =
+                beanFactory.registerBean(FooBeanWithApplicationModel.class);
         Assertions.assertSame(applicationModel, beanWithApplicationModel.getApplicationModel());
 
         FrameworkModel frameworkModel = applicationModel.getFrameworkModel();
-        FooBeanWithFrameworkModel beanWithFrameworkModel = frameworkModel.getBeanFactory().registerBean(FooBeanWithFrameworkModel.class);
+        FooBeanWithFrameworkModel beanWithFrameworkModel =
+                frameworkModel.getBeanFactory().registerBean(FooBeanWithFrameworkModel.class);
         Assertions.assertSame(frameworkModel, beanWithFrameworkModel.getFrameworkModel());
 
         // child bean factory can obtain bean from parent bean factory
-        FooBeanWithFrameworkModel beanWithFrameworkModelFromApp = applicationModel.getBeanFactory().getBean(FooBeanWithFrameworkModel.class);
+        FooBeanWithFrameworkModel beanWithFrameworkModelFromApp =
+                applicationModel.getBeanFactory().getBean(FooBeanWithFrameworkModel.class);
         Assertions.assertSame(beanWithFrameworkModel, beanWithFrameworkModelFromApp);
 
         Object objectBean = applicationModel.getBeanFactory().getBean(Object.class);
         Assertions.assertNull(objectBean);
+
+        // child bean factory can obtain bean from parent bean factory by classType
+        frameworkModel.getBeanFactory().registerBean(new TestBean());
+        applicationModel.getBeanFactory().registerBean(new TestBean());
+        List<TestBean> testBeans = applicationModel.getBeanFactory().getBeansOfType(TestBean.class);
+        Assertions.assertEquals(testBeans.size(), 2);
+
+        // father can't get son's
+        List<TestBean> testBeans_1 = frameworkModel.getBeanFactory().getBeansOfType(TestBean.class);
+        Assertions.assertEquals(testBeans_1.size(), 1);
 
         Assertions.assertFalse(beanWithApplicationModel.isDestroyed());
         Assertions.assertFalse(beanWithFrameworkModel.isDestroyed());
@@ -54,4 +69,6 @@ class ScopeBeanFactoryTest {
         Assertions.assertTrue(beanWithApplicationModel.isDestroyed());
         Assertions.assertTrue(beanWithFrameworkModel.isDestroyed());
     }
+
+    static class TestBean {}
 }

@@ -14,11 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.rest;
 
 /**
- *
+ * Constants definition.
  */
 public interface Constants {
     String KEEP_ALIVE_KEY = "keepalive";
@@ -26,4 +25,8 @@ public interface Constants {
     boolean DEFAULT_KEEP_ALIVE = true;
 
     String EXTENSION_KEY = "extension";
+
+    // http server
+
+    String NETTY_HTTP = "netty_http";
 }

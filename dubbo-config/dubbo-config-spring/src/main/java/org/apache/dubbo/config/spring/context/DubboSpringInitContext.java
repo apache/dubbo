@@ -20,12 +20,12 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModelConstants;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ApplicationContext;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Dubbo spring initialization context object
@@ -40,7 +40,7 @@ public class DubboSpringInitContext {
 
     private ModuleModel moduleModel;
 
-    private Map<String, Object> moduleAttributes = new HashMap<>();
+    private final Map<String, Object> moduleAttributes = new HashMap<>();
 
     private volatile boolean bound;
 

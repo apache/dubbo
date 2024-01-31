@@ -125,5 +125,4 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
     public void setMaxCapacity(int maxCapacity) {
         this.maxCapacity = maxCapacity;
     }
-
 }

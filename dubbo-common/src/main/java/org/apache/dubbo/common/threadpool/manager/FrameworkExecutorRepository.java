@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.threadpool.manager;
 
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.Disposable;
@@ -27,13 +28,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXECUTORS_SHUTDOWN;
 
 public class FrameworkExecutorRepository implements Disposable {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(FrameworkExecutorRepository.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(FrameworkExecutorRepository.class);
 
     private final ExecutorService sharedExecutor;
     private final ScheduledExecutorService sharedScheduledExecutor;
@@ -56,39 +60,65 @@ public class FrameworkExecutorRepository implements Disposable {
 
     private final Ring<ExecutorService> executorServiceRing = new Ring<>();
 
+    private final ExecutorService internalServiceExecutor;
+
     public FrameworkExecutorRepository() {
         sharedExecutor = Executors.newCachedThreadPool(new NamedThreadFactory("Dubbo-framework-shared-handler", true));
-        sharedScheduledExecutor = Executors.newScheduledThreadPool(8, new NamedThreadFactory("Dubbo-framework-shared-scheduler", true));
+        sharedScheduledExecutor =
+                Executors.newScheduledThreadPool(8, new NamedThreadFactory("Dubbo-framework-shared-scheduler", true));
 
         int availableProcessors = Runtime.getRuntime().availableProcessors();
         for (int i = 0; i < availableProcessors; i++) {
             ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(
-                new NamedThreadFactory("Dubbo-framework-scheduler-" + i, true));
+                    new NamedThreadFactory("Dubbo-framework-scheduler-" + i, true));
             scheduledExecutors.addItem(scheduler);
 
-            executorServiceRing.addItem(new ThreadPoolExecutor(1, 1,
-                0L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<>(1024), new NamedInternalThreadFactory("Dubbo-framework-state-router-loop-" + i, true)
-                , new ThreadPoolExecutor.AbortPolicy()));
+            executorServiceRing.addItem(new ThreadPoolExecutor(
+                    1,
+                    1,
+                    0L,
+                    TimeUnit.MILLISECONDS,
+                    new LinkedBlockingQueue<>(1024),
+                    new NamedInternalThreadFactory("Dubbo-framework-state-router-loop-" + i, true),
+                    new ThreadPoolExecutor.AbortPolicy()));
         }
 
-        connectivityScheduledExecutor = Executors.newScheduledThreadPool(availableProcessors, new NamedThreadFactory("Dubbo-framework-connectivity-scheduler", true));
-        cacheRefreshingScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-framework-cache-refreshing-scheduler", true));
-        mappingRefreshingExecutor = Executors.newFixedThreadPool(availableProcessors, new NamedThreadFactory("Dubbo-framework-mapping-refreshing-scheduler", true));
-        poolRouterExecutor = new ThreadPoolExecutor(1, 10, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(1024),
-            new NamedInternalThreadFactory("Dubbo-framework-state-router-pool-router", true), new ThreadPoolExecutor.AbortPolicy());
+        connectivityScheduledExecutor = Executors.newScheduledThreadPool(
+                availableProcessors, new NamedThreadFactory("Dubbo-framework-connectivity-scheduler", true));
+        cacheRefreshingScheduledExecutor = Executors.newSingleThreadScheduledExecutor(
+                new NamedThreadFactory("Dubbo-framework-cache-refreshing-scheduler", true));
+        mappingRefreshingExecutor = Executors.newFixedThreadPool(
+                availableProcessors, new NamedThreadFactory("Dubbo-framework-mapping-refreshing-scheduler", true));
+        poolRouterExecutor = new ThreadPoolExecutor(
+                1,
+                10,
+                0L,
+                TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<>(1024),
+                new NamedInternalThreadFactory("Dubbo-framework-state-router-pool-router", true),
+                new ThreadPoolExecutor.AbortPolicy());
 
         for (int i = 0; i < availableProcessors; i++) {
             ScheduledExecutorService serviceDiscoveryAddressNotificationExecutor =
-                Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-framework-SD-address-refresh-" + i));
-            ScheduledExecutorService registryNotificationExecutor =
-                Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-framework-registry-notification-" + i));
+                    Executors.newSingleThreadScheduledExecutor(
+                            new NamedThreadFactory("Dubbo-framework-SD-address-refresh-" + i));
+            ScheduledExecutorService registryNotificationExecutor = Executors.newSingleThreadScheduledExecutor(
+                    new NamedThreadFactory("Dubbo-framework-registry-notification-" + i));
 
             serviceDiscoveryAddressNotificationExecutorRing.addItem(serviceDiscoveryAddressNotificationExecutor);
             registryNotificationExecutorRing.addItem(registryNotificationExecutor);
         }
 
-        metadataRetryExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-framework-metadata-retry"));
+        metadataRetryExecutor =
+                Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-framework-metadata-retry"));
+        internalServiceExecutor = new ThreadPoolExecutor(
+                0,
+                100,
+                60L,
+                TimeUnit.SECONDS,
+                new SynchronousQueue<>(),
+                new NamedInternalThreadFactory("Dubbo-internal-service", true),
+                new ThreadPoolExecutor.AbortPolicy());
     }
 
     /**
@@ -122,6 +152,10 @@ public class FrameworkExecutorRepository implements Disposable {
         return metadataRetryExecutor;
     }
 
+    public ExecutorService getInternalServiceExecutor() {
+        return internalServiceExecutor;
+    }
+
     /**
      * Get the default shared thread pool.
      *
@@ -139,7 +173,6 @@ public class FrameworkExecutorRepository implements Disposable {
     public ScheduledExecutorService getSharedScheduledExecutor() {
         return sharedScheduledExecutor;
     }
-
 
     public ExecutorService getPoolRouterExecutor() {
         return poolRouterExecutor;
@@ -177,6 +210,7 @@ public class FrameworkExecutorRepository implements Disposable {
         logger.info("destroying framework executor repository ..");
         shutdownExecutorService(poolRouterExecutor, "poolRouterExecutor");
         shutdownExecutorService(metadataRetryExecutor, "metadataRetryExecutor");
+        shutdownExecutorService(internalServiceExecutor, "internalServiceExecutor");
 
         // scheduledExecutors
         shutdownExecutorServices(scheduledExecutors.listItems(), "scheduledExecutors");
@@ -193,16 +227,15 @@ public class FrameworkExecutorRepository implements Disposable {
         shutdownExecutorService(sharedScheduledExecutor, "sharedScheduledExecutor");
 
         // serviceDiscoveryAddressNotificationExecutorRing
-        shutdownExecutorServices(serviceDiscoveryAddressNotificationExecutorRing.listItems(),
-            "serviceDiscoveryAddressNotificationExecutorRing");
+        shutdownExecutorServices(
+                serviceDiscoveryAddressNotificationExecutorRing.listItems(),
+                "serviceDiscoveryAddressNotificationExecutorRing");
 
         // registryNotificationExecutorRing
-        shutdownExecutorServices(registryNotificationExecutorRing.listItems(),
-            "registryNotificationExecutorRing");
+        shutdownExecutorServices(registryNotificationExecutorRing.listItems(), "registryNotificationExecutorRing");
 
         // mappingRefreshingExecutor
-        shutdownExecutorService(mappingRefreshingExecutor,
-            "mappingRefreshingExecutor");
+        shutdownExecutorService(mappingRefreshingExecutor, "mappingRefreshingExecutor");
     }
 
     private void shutdownExecutorServices(List<? extends ExecutorService> executorServices, String msg) {
@@ -214,6 +247,14 @@ public class FrameworkExecutorRepository implements Disposable {
     private void shutdownExecutorService(ExecutorService executorService, String name) {
         try {
             executorService.shutdownNow();
+            if (!executorService.awaitTermination(
+                    ConfigurationUtils.reCalShutdownTime(DEFAULT_SERVER_SHUTDOWN_TIMEOUT), TimeUnit.MILLISECONDS)) {
+                logger.warn(
+                        COMMON_UNEXPECTED_EXECUTORS_SHUTDOWN,
+                        "",
+                        "",
+                        "Wait global executor service terminated timeout.");
+            }
         } catch (Exception e) {
             String msg = "shutdown executor service [" + name + "] failed: ";
             logger.warn(COMMON_UNEXPECTED_EXECUTORS_SHUTDOWN, "", "", msg + e.getMessage(), e);

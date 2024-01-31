@@ -17,7 +17,10 @@
 package org.apache.dubbo.qos.server.handler;
 
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.qos.api.QosConfiguration;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import java.util.Collections;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -31,8 +34,6 @@ import io.netty.handler.codec.string.StringEncoder;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.util.Collections;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
@@ -43,7 +44,13 @@ class QosProcessHandlerTest {
         ChannelHandlerContext context = Mockito.mock(ChannelHandlerContext.class);
         ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
         Mockito.when(context.pipeline()).thenReturn(pipeline);
-        QosProcessHandler handler = new QosProcessHandler(FrameworkModel.defaultModel(), "welcome", false, StringUtils.EMPTY_STRING);
+        QosProcessHandler handler = new QosProcessHandler(
+                FrameworkModel.defaultModel(),
+                QosConfiguration.builder()
+                        .welcome("welcome")
+                        .acceptForeignIp(false)
+                        .acceptForeignIpWhitelist(StringUtils.EMPTY_STRING)
+                        .build());
         handler.decode(context, buf, Collections.emptyList());
         verify(pipeline).addLast(any(HttpServerCodec.class));
         verify(pipeline).addLast(any(HttpObjectAggregator.class));
@@ -57,7 +64,13 @@ class QosProcessHandlerTest {
         ChannelHandlerContext context = Mockito.mock(ChannelHandlerContext.class);
         ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
         Mockito.when(context.pipeline()).thenReturn(pipeline);
-        QosProcessHandler handler = new QosProcessHandler(FrameworkModel.defaultModel(), "welcome", false, StringUtils.EMPTY_STRING);
+        QosProcessHandler handler = new QosProcessHandler(
+                FrameworkModel.defaultModel(),
+                QosConfiguration.builder()
+                        .welcome("welcome")
+                        .acceptForeignIp(false)
+                        .acceptForeignIpWhitelist(StringUtils.EMPTY_STRING)
+                        .build());
         handler.decode(context, buf, Collections.emptyList());
         verify(pipeline).addLast(any(LineBasedFrameDecoder.class));
         verify(pipeline).addLast(any(StringDecoder.class));
@@ -65,6 +78,4 @@ class QosProcessHandlerTest {
         verify(pipeline).addLast(any(TelnetProcessHandler.class));
         verify(pipeline).remove(handler);
     }
-
-
 }

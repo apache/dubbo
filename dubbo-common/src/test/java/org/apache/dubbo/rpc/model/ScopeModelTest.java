@@ -18,13 +18,13 @@ package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.utils.StringUtils;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class ScopeModelTest {
 
@@ -102,11 +102,15 @@ class ScopeModelTest {
             errorMsg = StringUtils.toString(throwable);
             errorMsg += "\n";
         }
-        Assertions.assertEquals(0, errors.size(), "Error occurred while destroy FrameworkModel: "+ errorMsg);
+        Assertions.assertEquals(0, errors.size(), "Error occurred while destroy FrameworkModel: " + errorMsg);
 
         // destroy all FrameworkModel
         FrameworkModel.destroyAll();
-        List<String> remainFrameworks = FrameworkModel.getAllInstances().stream().map(m -> m.getDesc()).collect(Collectors.toList());
-        Assertions.assertEquals(0, FrameworkModel.getAllInstances().size(), "FrameworkModel is not completely destroyed: " + remainFrameworks);
+        List<String> remainFrameworks =
+                FrameworkModel.getAllInstances().stream().map(m -> m.getDesc()).collect(Collectors.toList());
+        Assertions.assertEquals(
+                0,
+                FrameworkModel.getAllInstances().size(),
+                "FrameworkModel is not completely destroyed: " + remainFrameworks);
     }
 }

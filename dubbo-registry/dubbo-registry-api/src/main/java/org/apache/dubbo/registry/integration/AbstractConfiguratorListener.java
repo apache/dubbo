@@ -36,7 +36,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_PARSE_DYNAMIC_CONFIG;
-import static org.apache.dubbo.rpc.Constants.ACCESS_LOG_KEY;
+import static org.apache.dubbo.rpc.Constants.ACCESS_LOG_FIXED_PATH_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.RUNTIME_KEY;
@@ -46,7 +46,8 @@ import static org.apache.dubbo.rpc.cluster.Constants.TYPE_KEY;
  * AbstractConfiguratorListener
  */
 public abstract class AbstractConfiguratorListener implements ConfigurationListener {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractConfiguratorListener.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(AbstractConfiguratorListener.class);
 
     protected List<Configurator> configurators = Collections.emptyList();
     protected GovernanceRuleRepository ruleRepository;
@@ -57,14 +58,15 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
     public AbstractConfiguratorListener(ModuleModel moduleModel) {
         this.moduleModel = moduleModel;
 
-        ruleRepository = moduleModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
+        ruleRepository =
+                moduleModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
 
         initSecurityKey();
     }
 
     private void initSecurityKey() {
-        // accessLogKey and FileRouterFactory key
-        securityKey.add(ACCESS_LOG_KEY);
+        // FileRouterFactory key
+        securityKey.add(ACCESS_LOG_FIXED_PATH_KEY);
         securityKey.add(ROUTER_KEY);
         securityKey.add(RULE_KEY);
         securityKey.add(RUNTIME_KEY);
@@ -86,8 +88,8 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
     @Override
     public void process(ConfigChangedEvent event) {
         if (logger.isInfoEnabled()) {
-            logger.info("Notification of overriding rule, change type is: " + event.getChangeType() +
-                    ", raw config content is:\n " + event.getContent());
+            logger.info("Notification of overriding rule, change type is: " + event.getChangeType()
+                    + ", raw config content is:\n " + event.getContent());
         }
 
         if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
@@ -110,16 +112,19 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
         } catch (Exception e) {
             // 1-14 - Failed to parse raw dynamic config.
 
-            logger.warn(REGISTRY_FAILED_PARSE_DYNAMIC_CONFIG, "", "",
-                "Failed to parse raw dynamic config and it will not take effect, the raw config is: "
-                    + rawConfig + ", cause: " + e.getMessage());
+            logger.warn(
+                    REGISTRY_FAILED_PARSE_DYNAMIC_CONFIG,
+                    "",
+                    "",
+                    "Failed to parse raw dynamic config and it will not take effect, the raw config is: " + rawConfig
+                            + ", cause: " + e.getMessage());
 
             return false;
         }
         List<URL> safeUrls = urls.stream()
-            .map(url -> url.removeParameters(securityKey))
-            .map(url -> url.setScopeModel(moduleModel))
-            .collect(Collectors.toList());
+                .map(url -> url.removeParameters(securityKey))
+                .map(url -> url.setScopeModel(moduleModel))
+                .collect(Collectors.toList());
         configurators = Configurator.toConfigurators(safeUrls).orElse(configurators);
         return true;
     }

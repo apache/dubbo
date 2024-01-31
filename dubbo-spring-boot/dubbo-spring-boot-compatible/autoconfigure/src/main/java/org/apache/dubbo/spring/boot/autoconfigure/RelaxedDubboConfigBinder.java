@@ -18,12 +18,11 @@ package org.apache.dubbo.spring.boot.autoconfigure;
 
 import org.apache.dubbo.config.spring.context.properties.DubboConfigBinder;
 
+import java.util.Map;
+
 import com.alibaba.spring.context.config.ConfigurationBeanBinder;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.boot.bind.RelaxedDataBinder;
-
-import java.util.Map;
-
 
 /**
  * Spring Boot Relaxed {@link DubboConfigBinder} implementation
@@ -33,8 +32,11 @@ import java.util.Map;
 class RelaxedDubboConfigBinder implements ConfigurationBeanBinder {
 
     @Override
-    public void bind(Map<String, Object> configurationProperties, boolean ignoreUnknownFields,
-                     boolean ignoreInvalidFields, Object configurationBean) {
+    public void bind(
+            Map<String, Object> configurationProperties,
+            boolean ignoreUnknownFields,
+            boolean ignoreInvalidFields,
+            Object configurationBean) {
         RelaxedDataBinder relaxedDataBinder = new RelaxedDataBinder(configurationBean);
         // Set ignored*
         relaxedDataBinder.setIgnoreInvalidFields(ignoreInvalidFields);

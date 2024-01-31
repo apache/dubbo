@@ -29,6 +29,11 @@ public class Response {
     public static final byte OK = 20;
 
     /**
+     * serialization error
+     */
+    public static final byte SERIALIZATION_ERROR = 25;
+
+    /**
      * client side timeout.
      */
     public static final byte CLIENT_TIMEOUT = 30;
@@ -90,8 +95,7 @@ public class Response {
 
     private Object mResult;
 
-    public Response() {
-    }
+    public Response() {}
 
     public Response(long id) {
         mId = id;

@@ -18,11 +18,11 @@ package org.apache.dubbo.common.json;
 
 import org.apache.dubbo.common.utils.ClassUtils;
 
+import java.lang.reflect.Type;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
-
-import java.lang.reflect.Type;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_GSON;
 
@@ -56,7 +56,9 @@ public class GsonUtils {
         try {
             return getGson().fromJson(json, type);
         } catch (JsonSyntaxException ex) {
-            throw new RuntimeException(String.format("Generic serialization [%s] Json syntax exception thrown when parsing (message:%s type:%s) error:%s", GENERIC_SERIALIZATION_GSON, json, type.toString(), ex.getMessage()));
+            throw new RuntimeException(String.format(
+                    "Generic serialization [%s] Json syntax exception thrown when parsing (message:%s type:%s) error:%s",
+                    GENERIC_SERIALIZATION_GSON, json, type.toString(), ex.getMessage()));
         }
     }
 

@@ -36,8 +36,7 @@ import static org.apache.dubbo.rpc.Constants.RETURN_KEY;
 
 public class RpcServiceContext extends RpcContext {
 
-    protected RpcServiceContext() {
-    }
+    protected RpcServiceContext() {}
 
     // RPC service context updated before each service call.
     private URL consumerUrl;
@@ -58,10 +57,14 @@ public class RpcServiceContext extends RpcContext {
 
     private String remoteApplicationName;
 
+    private Boolean localInvoke;
+
     @Deprecated
     private List<Invoker<?>> invokers;
+
     @Deprecated
     private Invoker<?> invoker;
+
     @Deprecated
     private Invocation invocation;
 
@@ -379,8 +382,10 @@ public class RpcServiceContext extends RpcContext {
      */
     @Override
     public String getLocalHost() {
-        String host = localAddress == null ? null :
-                localAddress.getAddress() == null ? localAddress.getHostName()
+        String host = localAddress == null
+                ? null
+                : localAddress.getAddress() == null
+                        ? localAddress.getHostName()
                         : NetUtils.filterLocalHost(localAddress.getAddress().getHostAddress());
         if (host == null || host.length() == 0) {
             return NetUtils.getLocalHost();
@@ -405,8 +410,10 @@ public class RpcServiceContext extends RpcContext {
      */
     @Override
     public String getRemoteHost() {
-        return remoteAddress == null ? null :
-                remoteAddress.getAddress() == null ? remoteAddress.getHostName()
+        return remoteAddress == null
+                ? null
+                : remoteAddress.getAddress() == null
+                        ? remoteAddress.getHostName()
                         : NetUtils.filterLocalHost(remoteAddress.getAddress().getHostAddress());
     }
 
@@ -512,7 +519,7 @@ public class RpcServiceContext extends RpcContext {
             try {
                 setAttachment(ASYNC_KEY, Boolean.TRUE.toString());
                 final T o = callable.call();
-                //local invoke will return directly
+                // local invoke will return directly
                 if (o != null) {
                     if (o instanceof CompletableFuture) {
                         return (CompletableFuture<T>) o;
@@ -618,6 +625,15 @@ public class RpcServiceContext extends RpcContext {
         this.needPrintRouterSnapshot = needPrintRouterSnapshot;
     }
 
+    public RpcServiceContext setLocalInvoke(boolean localInvoke) {
+        this.localInvoke = localInvoke;
+        return this;
+    }
+
+    public Boolean getLocalInvoke() {
+        return this.localInvoke;
+    }
+
     /**
      * Only part of the properties are copied, the others are either not used currently or can be got from invocation.
      * Also see {@link RpcContextAttachment#copyOf(boolean)}
@@ -648,5 +664,4 @@ public class RpcServiceContext extends RpcContext {
             return this;
         }
     }
-
 }

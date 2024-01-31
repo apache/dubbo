@@ -22,19 +22,20 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.apache.dubbo.registry.client.migration.DefaultMigrationAddressComparator.NEW_ADDRESS_SIZE;
 import static org.apache.dubbo.registry.client.migration.DefaultMigrationAddressComparator.OLD_ADDRESS_SIZE;
 
 class DefaultMigrationAddressComparatorTest {
 
+    @SuppressWarnings("all")
     @Test
     void test() {
         DefaultMigrationAddressComparator comparator = new DefaultMigrationAddressComparator();
@@ -69,13 +70,13 @@ class DefaultMigrationAddressComparatorTest {
 
         Mockito.when(oldInvoker.hasProxyInvokers()).thenReturn(true);
 
-        List<Invoker> newInvokerList = new LinkedList<>();
+        List<Invoker<?>> newInvokerList = new LinkedList<>();
         newInvokerList.add(Mockito.mock(Invoker.class));
         newInvokerList.add(Mockito.mock(Invoker.class));
         newInvokerList.add(Mockito.mock(Invoker.class));
         Mockito.when(newDirectory.getAllInvokers()).thenReturn(newInvokerList);
 
-        List<Invoker> oldInvokerList = new LinkedList<>();
+        List<Invoker<?>> oldInvokerList = new LinkedList<>();
         oldInvokerList.add(Mockito.mock(Invoker.class));
         oldInvokerList.add(Mockito.mock(Invoker.class));
         Mockito.when(oldDirectory.getAllInvokers()).thenReturn(oldInvokerList);

@@ -29,11 +29,15 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.SslConfig;
+import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.config.context.AbstractConfigManager;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.ConfigCenterBean;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
 import org.apache.dubbo.rpc.model.ModuleModel;
+
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.FatalBeanException;
@@ -43,10 +47,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 
 /**
  *
@@ -61,7 +61,7 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private AtomicBoolean initialized = new AtomicBoolean(false);
+    private final AtomicBoolean initialized = new AtomicBoolean(false);
     private ConfigurableListableBeanFactory beanFactory;
     private ReferenceBeanManager referenceBeanManager;
 
@@ -100,7 +100,7 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
     private void prepareDubboConfigBeans() {
         logger.info("loading dubbo config beans ...");
 
-        //Make sure all these config beans are initialed and registered to ConfigManager
+        // Make sure all these config beans are initialed and registered to ConfigManager
         // load application config beans
         loadConfigBeansOfType(ApplicationConfig.class, configManager);
         loadConfigBeansOfType(RegistryConfig.class, configManager);
@@ -109,6 +109,7 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
         loadConfigBeansOfType(ConfigCenterBean.class, configManager);
         loadConfigBeansOfType(MetadataReportConfig.class, configManager);
         loadConfigBeansOfType(MetricsConfig.class, configManager);
+        loadConfigBeansOfType(TracingConfig.class, configManager);
         loadConfigBeansOfType(SslConfig.class, configManager);
 
         // load module config beans
@@ -126,7 +127,8 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
         logger.info("dubbo config beans are loaded.");
     }
 
-    private void loadConfigBeansOfType(Class<? extends AbstractConfig> configClass, AbstractConfigManager configManager) {
+    private void loadConfigBeansOfType(
+            Class<? extends AbstractConfig> configClass, AbstractConfigManager configManager) {
         String[] beanNames = beanFactory.getBeanNamesForType(configClass, true, false);
         for (String beanName : beanNames) {
             AbstractConfig configBean = beanFactory.getBean(beanName, configClass);
@@ -134,5 +136,4 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
             configManager.addConfig(configBean);
         }
     }
-
 }

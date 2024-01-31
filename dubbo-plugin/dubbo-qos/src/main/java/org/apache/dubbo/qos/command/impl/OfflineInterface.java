@@ -17,14 +17,14 @@
 package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.utils.UrlUtils;
-import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.qos.api.Cmd;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
 
-@Cmd(name = "offlineInterface", summary = "offline dubbo", example = {
-        "offlineInterface dubbo",
-        "offlineInterface xx.xx.xxx.service"
-})
+@Cmd(
+        name = "offlineInterface",
+        summary = "offline dubbo",
+        example = {"offlineInterface dubbo", "offlineInterface xx.xx.xxx.service"})
 public class OfflineInterface extends BaseOffline {
     public OfflineInterface(FrameworkModel frameworkModel) {
         super(frameworkModel);

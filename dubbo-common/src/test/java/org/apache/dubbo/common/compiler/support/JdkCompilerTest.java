@@ -16,10 +16,10 @@
  */
 package org.apache.dubbo.common.compiler.support;
 
+import java.lang.reflect.Method;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.lang.reflect.Method;
 
 class JdkCompilerTest extends JavaCodeTest {
 
@@ -27,28 +27,30 @@ class JdkCompilerTest extends JavaCodeTest {
     void test_compileJavaClass() throws Exception {
         JdkCompiler compiler = new JdkCompiler();
         Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCode(), JdkCompiler.class.getClassLoader());
-        Object instance = clazz.newInstance();
+        Object instance = clazz.getDeclaredConstructor().newInstance();
         Method sayHello = instance.getClass().getMethod("sayHello");
         Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
     }
 
     @Test
-    void test_compileJavaClass0() throws Exception {
+    void test_compileJavaClass0() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             JdkCompiler compiler = new JdkCompiler();
-            Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCodeWithoutPackage(), JdkCompiler.class.getClassLoader());
-            Object instance = clazz.newInstance();
+            Class<?> clazz = compiler.compile(
+                    JavaCodeTest.class, getSimpleCodeWithoutPackage(), JdkCompiler.class.getClassLoader());
+            Object instance = clazz.getDeclaredConstructor().newInstance();
             Method sayHello = instance.getClass().getMethod("sayHello");
             Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
         });
     }
 
     @Test
-    void test_compileJavaClass1() throws Exception {
+    void test_compileJavaClass1() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             JdkCompiler compiler = new JdkCompiler();
-            Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCodeWithSyntax(), JdkCompiler.class.getClassLoader());
-            Object instance = clazz.newInstance();
+            Class<?> clazz =
+                    compiler.compile(JavaCodeTest.class, getSimpleCodeWithSyntax(), JdkCompiler.class.getClassLoader());
+            Object instance = clazz.getDeclaredConstructor().newInstance();
             Method sayHello = instance.getClass().getMethod("sayHello");
             Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
         });
@@ -58,28 +60,30 @@ class JdkCompilerTest extends JavaCodeTest {
     void test_compileJavaClass_java8() throws Exception {
         JdkCompiler compiler = new JdkCompiler("1.8");
         Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCode(), JdkCompiler.class.getClassLoader());
-        Object instance = clazz.newInstance();
+        Object instance = clazz.getDeclaredConstructor().newInstance();
         Method sayHello = instance.getClass().getMethod("sayHello");
         Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
     }
 
     @Test
-    void test_compileJavaClass0_java8() throws Exception {
+    void test_compileJavaClass0_java8() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             JdkCompiler compiler = new JdkCompiler("1.8");
-            Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCodeWithoutPackage(), JdkCompiler.class.getClassLoader());
-            Object instance = clazz.newInstance();
+            Class<?> clazz = compiler.compile(
+                    JavaCodeTest.class, getSimpleCodeWithoutPackage(), JdkCompiler.class.getClassLoader());
+            Object instance = clazz.getDeclaredConstructor().newInstance();
             Method sayHello = instance.getClass().getMethod("sayHello");
             Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
         });
     }
 
     @Test
-    void test_compileJavaClass1_java8() throws Exception {
+    void test_compileJavaClass1_java8() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             JdkCompiler compiler = new JdkCompiler("1.8");
-            Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCodeWithSyntax(), JdkCompiler.class.getClassLoader());
-            Object instance = clazz.newInstance();
+            Class<?> clazz =
+                    compiler.compile(JavaCodeTest.class, getSimpleCodeWithSyntax(), JdkCompiler.class.getClassLoader());
+            Object instance = clazz.getDeclaredConstructor().newInstance();
             Method sayHello = instance.getClass().getMethod("sayHello");
             Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
         });

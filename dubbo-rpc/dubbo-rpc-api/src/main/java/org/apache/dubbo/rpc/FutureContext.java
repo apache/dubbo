@@ -31,7 +31,7 @@ import java.util.concurrent.CompletableFuture;
  */
 public class FutureContext {
 
-    private static InternalThreadLocal<FutureContext> futureTL = new InternalThreadLocal<FutureContext>() {
+    private static final InternalThreadLocal<FutureContext> futureTL = new InternalThreadLocal<FutureContext>() {
         @Override
         protected FutureContext initialValue() {
             return new FutureContext();
@@ -48,7 +48,8 @@ public class FutureContext {
     /**
      * Whether clear future once get
      */
-    private final static boolean clearFutureAfterGet = Boolean.parseBoolean(System.getProperty(CommonConstants.CLEAR_FUTURE_AFTER_GET, "false"));
+    private static final boolean clearFutureAfterGet =
+            Boolean.parseBoolean(System.getProperty(CommonConstants.CLEAR_FUTURE_AFTER_GET, "false"));
 
     /**
      * get future.
@@ -122,5 +123,4 @@ public class FutureContext {
             this.setFuture(new FutureAdapter(compatibleFuture));
         }
     }
-
 }

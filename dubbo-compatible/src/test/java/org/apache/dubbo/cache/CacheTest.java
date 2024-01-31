@@ -14,10 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.cache;
 
 import org.apache.dubbo.rpc.RpcInvocation;
+
+import java.util.List;
+import java.util.Map;
 
 import com.alibaba.dubbo.cache.Cache;
 import com.alibaba.dubbo.cache.CacheFactory;
@@ -26,8 +28,6 @@ import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.Map;
 
 class CacheTest {
 
@@ -40,7 +40,8 @@ class CacheTest {
         cache.put("testKey", "testValue");
 
         org.apache.dubbo.cache.CacheFactory factory = cacheFactory;
-        org.apache.dubbo.common.URL u = org.apache.dubbo.common.URL.valueOf("test://test:11/test?cache=jacache&.cache.write.expire=1");
+        org.apache.dubbo.common.URL u =
+                org.apache.dubbo.common.URL.valueOf("test://test:11/test?cache=jacache&.cache.write.expire=1");
         org.apache.dubbo.rpc.Invocation inv = new RpcInvocation();
         org.apache.dubbo.cache.Cache c = factory.getCache(u, inv);
         String v = (String) c.get("testKey");
@@ -105,6 +106,14 @@ class CacheTest {
 
         @Override
         public Map<Object, Object> getAttributes() {
+            return null;
+        }
+
+        @Override
+        public void addInvokedInvoker(org.apache.dubbo.rpc.Invoker<?> invoker) {}
+
+        @Override
+        public List<org.apache.dubbo.rpc.Invoker<?>> getInvokedInvokers() {
             return null;
         }
     }

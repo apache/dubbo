@@ -5,5 +5,6 @@
 <suppressions>
     <suppress files="[\\/]src[\\/]main[\\/]java[\\/]com[\\/]alibaba[\\/]com[\\/]caucho[\\/]hessian" checks=".*"/>
     <suppress files="[\\/]build[\\/]generated[\\/]source[\\/]proto" checks=".*"/>
+    <suppress files="[\\/]target[\\/]generated-sources[\\/]protobuf" checks=".*"/>
     <suppress files="Yylex\.java" checks="AvoidEscapedUnicodeCharacters"/>
 </suppressions>

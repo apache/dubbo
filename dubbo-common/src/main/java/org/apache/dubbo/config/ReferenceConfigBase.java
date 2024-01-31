@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.compact.Dubbo2CompactUtils;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.RegexProperties;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -29,6 +30,7 @@ import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
+import java.beans.Transient;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -57,7 +59,6 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
      * The interface class of the reference service
      */
     protected Class<?> interfaceClass;
-
 
     /**
      * The url for peer-to-peer invocation
@@ -132,8 +133,8 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         super.preProcessRefresh();
         if (consumer == null) {
             consumer = getModuleConfigManager()
-                .getDefaultConsumer()
-                .orElseThrow(() -> new IllegalStateException("Default consumer is not initialized"));
+                    .getDefaultConsumer()
+                    .orElseThrow(() -> new IllegalStateException("Default consumer is not initialized"));
         }
         // try set properties from `dubbo.reference` if not set in current config
         refreshWithPrefixes(super.getPrefixes(), ConfigMode.OVERRIDE_IF_ABSENT);
@@ -149,6 +150,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     }
 
     @Override
+    @Transient
     public Map<String, String> getMetaData() {
         return getMetaData(null);
     }
@@ -225,7 +227,9 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     public static Class<?> determineInterfaceClass(String generic, String interfaceName, ClassLoader classLoader) {
         if (ProtocolUtils.isGeneric(generic)) {
-            return GenericService.class;
+            return Dubbo2CompactUtils.isEnabled() && Dubbo2CompactUtils.isGenericServiceClassLoaded()
+                    ? Dubbo2CompactUtils.getGenericServiceClass()
+                    : GenericService.class;
         }
         try {
             if (StringUtils.isNotEmpty(interfaceName)) {
@@ -256,12 +260,15 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         } else {
             if (interfaceClass != null) {
                 try {
-                    if (!interfaceClass.equals(Class.forName(interfaceClass.getName(), false, getInterfaceClassLoader()))) {
-                        // interfaceClass is not visible from origin classloader, override the classloader from interfaceClass into referenceConfig
+                    if (!interfaceClass.equals(
+                            Class.forName(interfaceClass.getName(), false, getInterfaceClassLoader()))) {
+                        // interfaceClass is not visible from origin classloader, override the classloader from
+                        // interfaceClass into referenceConfig
                         setInterfaceClassLoader(interfaceClass.getClassLoader());
                     }
                 } catch (ClassNotFoundException e) {
-                    // class not found from origin classloader, override the classloader from interfaceClass into referenceConfig
+                    // class not found from origin classloader, override the classloader from interfaceClass into
+                    // referenceConfig
                     setInterfaceClassLoader(interfaceClass.getClassLoader());
                 }
             }
@@ -294,6 +301,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         this.unloadClusterRelated = unloadClusterRelated;
     }
 
+    @Transient
     public ServiceMetadata getServiceMetadata() {
         return serviceMetadata;
     }
@@ -324,9 +332,18 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
             url = resolve;
             if (logger.isWarnEnabled()) {
                 if (resolveFile != null) {
-                    logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "Using default dubbo resolve file " + resolveFile + " replace " + interfaceName + "" + resolve + " to p2p invoke remote service.");
+                    logger.warn(
+                            COMMON_UNEXPECTED_EXCEPTION,
+                            "",
+                            "",
+                            "Using default dubbo resolve file " + resolveFile + " replace " + interfaceName + ""
+                                    + resolve + " to p2p invoke remote service.");
                 } else {
-                    logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "Using -D" + interfaceName + "=" + resolve + " to p2p invoke remote service.");
+                    logger.warn(
+                            COMMON_UNEXPECTED_EXCEPTION,
+                            "",
+                            "",
+                            "Using -D" + interfaceName + "=" + resolve + " to p2p invoke remote service.");
                 }
             }
         }
@@ -348,7 +365,9 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     @Override
     public String getVersion() {
-        return StringUtils.isEmpty(this.version) ? (consumer != null ? consumer.getVersion() : this.version) : this.version;
+        return StringUtils.isEmpty(this.version)
+                ? (consumer != null ? consumer.getVersion() : this.version)
+                : this.version;
     }
 
     @Override
@@ -365,10 +384,18 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         return shouldReferAsync;
     }
 
-    public abstract T get();
+    @Transient
+    public abstract T get(boolean check);
+
+    @Transient
+    public abstract void checkOrDestroy(long timeout);
+
+    @Transient
+    public final T get() {
+        return get(true);
+    }
 
     public void destroy() {
         getModuleConfigManager().removeConfig(this);
     }
-
 }

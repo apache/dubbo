@@ -24,16 +24,16 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.rpc.Constants.AUTO_ATTACH_INVOCATIONID_KEY;
@@ -50,6 +50,16 @@ class RpcUtilsTest {
      * regular scenario: async invocation in URL
      * verify: 1. whether invocationId is set correctly, 2. idempotent or not
      */
+    Invoker createMockInvoker(URL url) {
+        Invoker invoker = createMockInvoker();
+        given(invoker.getUrl()).willReturn(url);
+        return invoker;
+    }
+
+    Invoker createMockInvoker() {
+        return mock(Invoker.class);
+    }
+
     @Test
     void testAttachInvocationIdIfAsync_normal() {
         URL url = URL.valueOf("dubbo://localhost/?test.async=true");
@@ -117,51 +127,55 @@ class RpcUtilsTest {
     void testGetReturnType() {
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
-        Invoker invoker = mock(Invoker.class);
-        given(invoker.getUrl()).willReturn(URL.valueOf(
-                "test://127.0.0.1:1/org.apache.dubbo.rpc.support.DemoService?interface=org.apache.dubbo.rpc.support.DemoService"));
+        Invoker invoker = createMockInvoker(
+                URL.valueOf(
+                        "test://127.0.0.1:1/org.apache.dubbo.rpc.support.DemoService?interface=org.apache.dubbo.rpc.support.DemoService"));
 
         // void sayHello(String name);
-        RpcInvocation inv = new RpcInvocation("sayHello", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
+        RpcInvocation inv = new RpcInvocation(
+                "sayHello", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
         Class<?> returnType = RpcUtils.getReturnType(inv);
         Assertions.assertNull(returnType);
 
-        //String echo(String text);
-        RpcInvocation inv1 = new RpcInvocation("echo", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
+        // String echo(String text);
+        RpcInvocation inv1 =
+                new RpcInvocation("echo", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
         Class<?> returnType1 = RpcUtils.getReturnType(inv1);
         Assertions.assertNotNull(returnType1);
         Assertions.assertEquals(String.class, returnType1);
 
-        //int getSize(String[] strs);
-        RpcInvocation inv2 = new RpcInvocation("getSize", serviceName, "", new Class<?>[] {String[].class}, null, null, invoker, null);
+        // int getSize(String[] strs);
+        RpcInvocation inv2 = new RpcInvocation(
+                "getSize", serviceName, "", new Class<?>[] {String[].class}, null, null, invoker, null);
         Class<?> returnType2 = RpcUtils.getReturnType(inv2);
         Assertions.assertNotNull(returnType2);
         Assertions.assertEquals(int.class, returnType2);
 
-        //Person getPerson(Person person);
-        RpcInvocation inv3 = new RpcInvocation("getPerson", serviceName, "", new Class<?>[] {Person.class}, null, null, invoker, null);
+        // Person getPerson(Person person);
+        RpcInvocation inv3 = new RpcInvocation(
+                "getPerson", serviceName, "", new Class<?>[] {Person.class}, null, null, invoker, null);
         Class<?> returnType3 = RpcUtils.getReturnType(inv3);
         Assertions.assertNotNull(returnType3);
         Assertions.assertEquals(Person.class, returnType3);
 
-        //List<String> testReturnType1(String str);
-        RpcInvocation inv4 =
-                new RpcInvocation("testReturnType1", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
+        // List<String> testReturnType1(String str);
+        RpcInvocation inv4 = new RpcInvocation(
+                "testReturnType1", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
         Class<?> returnType4 = RpcUtils.getReturnType(inv4);
         Assertions.assertNotNull(returnType4);
         Assertions.assertEquals(List.class, returnType4);
-
     }
 
     @Test
     void testGetReturnTypesUseCache() throws Exception {
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
-        Invoker invoker = mock(Invoker.class);
-        given(invoker.getUrl()).willReturn(URL.valueOf(
-                "test://127.0.0.1:1/org.apache.dubbo.rpc.support.DemoService?interface=org.apache.dubbo.rpc.support.DemoService"));
+        Invoker invoker = createMockInvoker(
+                URL.valueOf(
+                        "test://127.0.0.1:1/org.apache.dubbo.rpc.support.DemoService?interface=org.apache.dubbo.rpc.support.DemoService"));
 
-        RpcInvocation inv = new RpcInvocation("testReturnType", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
+        RpcInvocation inv = new RpcInvocation(
+                "testReturnType", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
         Type[] types = RpcUtils.getReturnTypes(inv);
         Assertions.assertNotNull(types);
         Assertions.assertEquals(2, types.length);
@@ -169,17 +183,18 @@ class RpcUtilsTest {
         Assertions.assertEquals(String.class, types[1]);
         Assertions.assertArrayEquals(types, inv.getReturnTypes());
 
-        RpcInvocation inv1 =
-                new RpcInvocation("testReturnType1", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
+        RpcInvocation inv1 = new RpcInvocation(
+                "testReturnType1", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
         java.lang.reflect.Type[] types1 = RpcUtils.getReturnTypes(inv1);
         Assertions.assertNotNull(types1);
         Assertions.assertEquals(2, types1.length);
         Assertions.assertEquals(List.class, types1[0]);
-        Assertions.assertEquals(demoServiceClass.getMethod("testReturnType1", String.class).getGenericReturnType(), types1[1]);
+        Assertions.assertEquals(
+                demoServiceClass.getMethod("testReturnType1", String.class).getGenericReturnType(), types1[1]);
         Assertions.assertArrayEquals(types1, inv1.getReturnTypes());
 
-        RpcInvocation inv2 =
-                new RpcInvocation("testReturnType2", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
+        RpcInvocation inv2 = new RpcInvocation(
+                "testReturnType2", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
         java.lang.reflect.Type[] types2 = RpcUtils.getReturnTypes(inv2);
         Assertions.assertNotNull(types2);
         Assertions.assertEquals(2, types2.length);
@@ -187,18 +202,19 @@ class RpcUtilsTest {
         Assertions.assertEquals(String.class, types2[1]);
         Assertions.assertArrayEquals(types2, inv2.getReturnTypes());
 
-        RpcInvocation inv3 =
-                new RpcInvocation("testReturnType3", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
+        RpcInvocation inv3 = new RpcInvocation(
+                "testReturnType3", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
         java.lang.reflect.Type[] types3 = RpcUtils.getReturnTypes(inv3);
         Assertions.assertNotNull(types3);
         Assertions.assertEquals(2, types3.length);
         Assertions.assertEquals(List.class, types3[0]);
-        java.lang.reflect.Type genericReturnType3 = demoServiceClass.getMethod("testReturnType3", String.class).getGenericReturnType();
+        java.lang.reflect.Type genericReturnType3 =
+                demoServiceClass.getMethod("testReturnType3", String.class).getGenericReturnType();
         Assertions.assertEquals(((ParameterizedType) genericReturnType3).getActualTypeArguments()[0], types3[1]);
         Assertions.assertArrayEquals(types3, inv3.getReturnTypes());
 
-        RpcInvocation inv4 =
-                new RpcInvocation("testReturnType4", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
+        RpcInvocation inv4 = new RpcInvocation(
+                "testReturnType4", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
         java.lang.reflect.Type[] types4 = RpcUtils.getReturnTypes(inv4);
         Assertions.assertNotNull(types4);
         Assertions.assertEquals(2, types4.length);
@@ -206,13 +222,14 @@ class RpcUtilsTest {
         Assertions.assertNull(types4[1]);
         Assertions.assertArrayEquals(types4, inv4.getReturnTypes());
 
-        RpcInvocation inv5 =
-                new RpcInvocation("testReturnType5", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
+        RpcInvocation inv5 = new RpcInvocation(
+                "testReturnType5", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
         java.lang.reflect.Type[] types5 = RpcUtils.getReturnTypes(inv5);
         Assertions.assertNotNull(types5);
         Assertions.assertEquals(2, types5.length);
         Assertions.assertEquals(Map.class, types5[0]);
-        java.lang.reflect.Type genericReturnType5 = demoServiceClass.getMethod("testReturnType5", String.class).getGenericReturnType();
+        java.lang.reflect.Type genericReturnType5 =
+                demoServiceClass.getMethod("testReturnType5", String.class).getGenericReturnType();
         Assertions.assertEquals(((ParameterizedType) genericReturnType5).getActualTypeArguments()[0], types5[1]);
         Assertions.assertArrayEquals(types5, inv5.getReturnTypes());
     }
@@ -221,11 +238,12 @@ class RpcUtilsTest {
     void testGetReturnTypesWithoutCache() throws Exception {
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
-        Invoker invoker = mock(Invoker.class);
-        given(invoker.getUrl()).willReturn(URL.valueOf(
-            "test://127.0.0.1:1/org.apache.dubbo.rpc.support.DemoService?interface=org.apache.dubbo.rpc.support.DemoService"));
+        Invoker invoker = createMockInvoker(
+                URL.valueOf(
+                        "test://127.0.0.1:1/org.apache.dubbo.rpc.support.DemoService?interface=org.apache.dubbo.rpc.support.DemoService"));
 
-        RpcInvocation inv = new RpcInvocation("testReturnType", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
+        RpcInvocation inv = new RpcInvocation(
+                "testReturnType", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
         inv.setReturnTypes(null);
         Type[] types = RpcUtils.getReturnTypes(inv);
         Assertions.assertNotNull(types);
@@ -233,17 +251,18 @@ class RpcUtilsTest {
         Assertions.assertEquals(String.class, types[0]);
         Assertions.assertEquals(String.class, types[1]);
 
-        RpcInvocation inv1 =
-            new RpcInvocation("testReturnType1", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
+        RpcInvocation inv1 = new RpcInvocation(
+                "testReturnType1", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
         inv1.setReturnTypes(null);
         java.lang.reflect.Type[] types1 = RpcUtils.getReturnTypes(inv1);
         Assertions.assertNotNull(types1);
         Assertions.assertEquals(2, types1.length);
         Assertions.assertEquals(List.class, types1[0]);
-        Assertions.assertEquals(demoServiceClass.getMethod("testReturnType1", String.class).getGenericReturnType(), types1[1]);
+        Assertions.assertEquals(
+                demoServiceClass.getMethod("testReturnType1", String.class).getGenericReturnType(), types1[1]);
 
-        RpcInvocation inv2 =
-            new RpcInvocation("testReturnType2", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
+        RpcInvocation inv2 = new RpcInvocation(
+                "testReturnType2", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
         inv2.setReturnTypes(null);
         java.lang.reflect.Type[] types2 = RpcUtils.getReturnTypes(inv2);
         Assertions.assertNotNull(types2);
@@ -251,18 +270,19 @@ class RpcUtilsTest {
         Assertions.assertEquals(String.class, types2[0]);
         Assertions.assertEquals(String.class, types2[1]);
 
-        RpcInvocation inv3 =
-            new RpcInvocation("testReturnType3", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
+        RpcInvocation inv3 = new RpcInvocation(
+                "testReturnType3", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
         inv3.setReturnTypes(null);
         java.lang.reflect.Type[] types3 = RpcUtils.getReturnTypes(inv3);
         Assertions.assertNotNull(types3);
         Assertions.assertEquals(2, types3.length);
         Assertions.assertEquals(List.class, types3[0]);
-        java.lang.reflect.Type genericReturnType3 = demoServiceClass.getMethod("testReturnType3", String.class).getGenericReturnType();
+        java.lang.reflect.Type genericReturnType3 =
+                demoServiceClass.getMethod("testReturnType3", String.class).getGenericReturnType();
         Assertions.assertEquals(((ParameterizedType) genericReturnType3).getActualTypeArguments()[0], types3[1]);
 
-        RpcInvocation inv4 =
-            new RpcInvocation("testReturnType4", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
+        RpcInvocation inv4 = new RpcInvocation(
+                "testReturnType4", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
         inv4.setReturnTypes(null);
         java.lang.reflect.Type[] types4 = RpcUtils.getReturnTypes(inv4);
         Assertions.assertNotNull(types4);
@@ -270,102 +290,109 @@ class RpcUtilsTest {
         Assertions.assertNull(types4[0]);
         Assertions.assertNull(types4[1]);
 
-        RpcInvocation inv5 =
-            new RpcInvocation("testReturnType5", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
+        RpcInvocation inv5 = new RpcInvocation(
+                "testReturnType5", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
         inv5.setReturnTypes(null);
         java.lang.reflect.Type[] types5 = RpcUtils.getReturnTypes(inv5);
         Assertions.assertNotNull(types5);
         Assertions.assertEquals(2, types5.length);
         Assertions.assertEquals(Map.class, types5[0]);
-        java.lang.reflect.Type genericReturnType5 = demoServiceClass.getMethod("testReturnType5", String.class).getGenericReturnType();
+        java.lang.reflect.Type genericReturnType5 =
+                demoServiceClass.getMethod("testReturnType5", String.class).getGenericReturnType();
         Assertions.assertEquals(((ParameterizedType) genericReturnType5).getActualTypeArguments()[0], types5[1]);
     }
-
 
     @Test
     void testGetReturnTypesWhenGeneric() throws Exception {
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
-        Invoker invoker = mock(Invoker.class);
-        given(invoker.getUrl()).willReturn(URL.valueOf(
-            "test://127.0.0.1:1/org.apache.dubbo.rpc.support.DemoService?interface=org.apache.dubbo.rpc.support.DemoService"));
+        Invoker invoker = createMockInvoker(
+                URL.valueOf(
+                        "test://127.0.0.1:1/org.apache.dubbo.rpc.support.DemoService?interface=org.apache.dubbo.rpc.support.DemoService"));
 
-        RpcInvocation inv = new RpcInvocation("testReturnType", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
+        RpcInvocation inv = new RpcInvocation(
+                "testReturnType", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
         inv.setMethodName($INVOKE);
         Type[] types = RpcUtils.getReturnTypes(inv);
         Assertions.assertNull(types);
 
-        RpcInvocation inv1 =
-            new RpcInvocation("testReturnType1", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
+        RpcInvocation inv1 = new RpcInvocation(
+                "testReturnType1", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
         inv1.setMethodName($INVOKE);
         java.lang.reflect.Type[] types1 = RpcUtils.getReturnTypes(inv1);
         Assertions.assertNull(types1);
 
-        RpcInvocation inv2 =
-            new RpcInvocation("testReturnType2", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
+        RpcInvocation inv2 = new RpcInvocation(
+                "testReturnType2", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
         inv2.setMethodName($INVOKE);
         java.lang.reflect.Type[] types2 = RpcUtils.getReturnTypes(inv2);
         Assertions.assertNull(types2);
 
-        RpcInvocation inv3 =
-            new RpcInvocation("testReturnType3", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
+        RpcInvocation inv3 = new RpcInvocation(
+                "testReturnType3", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
         inv3.setMethodName($INVOKE);
         java.lang.reflect.Type[] types3 = RpcUtils.getReturnTypes(inv3);
         Assertions.assertNull(types3);
 
-        RpcInvocation inv4 =
-            new RpcInvocation("testReturnType4", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
+        RpcInvocation inv4 = new RpcInvocation(
+                "testReturnType4", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
         inv4.setMethodName($INVOKE);
         java.lang.reflect.Type[] types4 = RpcUtils.getReturnTypes(inv4);
         Assertions.assertNull(types4);
 
-        RpcInvocation inv5 =
-            new RpcInvocation("testReturnType5", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
+        RpcInvocation inv5 = new RpcInvocation(
+                "testReturnType5", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
         inv5.setMethodName($INVOKE);
         java.lang.reflect.Type[] types5 = RpcUtils.getReturnTypes(inv5);
         Assertions.assertNull(types5);
     }
+
     @Test
     void testGetParameterTypes() {
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
-        Invoker invoker = mock(Invoker.class);
+        Invoker invoker = createMockInvoker();
 
         // void sayHello(String name);
-        RpcInvocation inv1 = new RpcInvocation("sayHello", serviceName, "",
-                new Class<?>[] {String.class}, null, null, invoker, null);
+        RpcInvocation inv1 = new RpcInvocation(
+                "sayHello", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
         Class<?>[] parameterTypes1 = RpcUtils.getParameterTypes(inv1);
         Assertions.assertNotNull(parameterTypes1);
         Assertions.assertEquals(1, parameterTypes1.length);
         Assertions.assertEquals(String.class, parameterTypes1[0]);
 
-        //long timestamp();
+        // long timestamp();
         RpcInvocation inv2 = new RpcInvocation("timestamp", serviceName, "", null, null, null, invoker, null);
         Class<?>[] parameterTypes2 = RpcUtils.getParameterTypes(inv2);
         Assertions.assertEquals(0, parameterTypes2.length);
 
-        //Type enumlength(Type... types);
-        RpcInvocation inv3 = new RpcInvocation("enumlength", serviceName, "",
-                new Class<?>[] {Type.class, Type.class}, null, null, invoker, null);
+        // Type enumlength(Type... types);
+        RpcInvocation inv3 = new RpcInvocation(
+                "enumlength", serviceName, "", new Class<?>[] {Type.class, Type.class}, null, null, invoker, null);
         Class<?>[] parameterTypes3 = RpcUtils.getParameterTypes(inv3);
         Assertions.assertNotNull(parameterTypes3);
         Assertions.assertEquals(2, parameterTypes3.length);
         Assertions.assertEquals(Type.class, parameterTypes3[0]);
         Assertions.assertEquals(Type.class, parameterTypes3[1]);
 
-        //byte getbyte(byte arg);
-        RpcInvocation inv4 = new RpcInvocation("getbyte", serviceName, "",
-                new Class<?>[] {byte.class}, null, null, invoker, null);
+        // byte getbyte(byte arg);
+        RpcInvocation inv4 =
+                new RpcInvocation("getbyte", serviceName, "", new Class<?>[] {byte.class}, null, null, invoker, null);
         Class<?>[] parameterTypes4 = RpcUtils.getParameterTypes(inv4);
         Assertions.assertNotNull(parameterTypes4);
         Assertions.assertEquals(1, parameterTypes4.length);
         Assertions.assertEquals(byte.class, parameterTypes4[0]);
 
-        //void $invoke(String s1, String s2);
-        RpcInvocation inv5 = new RpcInvocation("$invoke", serviceName, "",
+        // void $invoke(String s1, String s2);
+        RpcInvocation inv5 = new RpcInvocation(
+                "$invoke",
+                serviceName,
+                "",
                 new Class<?>[] {String.class, String[].class},
                 new Object[] {"method", new String[] {"java.lang.String", "void", "java.lang.Object"}},
-                null, invoker, null);
+                null,
+                invoker,
+                null);
         Class<?>[] parameterTypes5 = RpcUtils.getParameterTypes(inv5);
         Assertions.assertNotNull(parameterTypes5);
         Assertions.assertEquals(3, parameterTypes5.length);
@@ -374,43 +401,86 @@ class RpcUtilsTest {
         Assertions.assertEquals(Object.class, parameterTypes5[2]);
     }
 
+    @Test
+    void testGet_$invokeAsync_ParameterTypes() {
+        Object[] args = new Object[] {"hello", true, 520};
+        Class<?> demoServiceClass = DemoService.class;
+        String serviceName = demoServiceClass.getName();
+        Invoker invoker = createMockInvoker();
+
+        RpcInvocation inv = new RpcInvocation(
+                "$invokeAsync",
+                serviceName,
+                "",
+                new Class<?>[] {String.class, String[].class, Object[].class},
+                new Object[] {
+                    "method", new String[] {"java.lang.String", "java.lang.Boolean", "java.lang.Integer"}, args
+                },
+                null,
+                invoker,
+                null);
+
+        Class<?>[] parameterTypes = RpcUtils.getParameterTypes(inv);
+        for (int i = 0; i < args.length; i++) {
+            Assertions.assertNotNull(parameterTypes[i]);
+            Assertions.assertEquals(args[i].getClass(), parameterTypes[i]);
+        }
+    }
+
     @ParameterizedTest
-    @CsvSource({
-            "echo",
-            "stringLength",
-            "testReturnType"
-    })
+    @CsvSource({"echo", "stringLength", "testReturnType"})
     public void testGetMethodName(String methodName) {
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
-        Invoker invoker = mock(Invoker.class);
+        Invoker invoker = createMockInvoker();
 
-        RpcInvocation inv1 = new RpcInvocation(methodName, serviceName, "",
-                new Class<?>[] {String.class}, null, null, invoker, null);
+        RpcInvocation inv1 = new RpcInvocation(
+                methodName, serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
         String actual = RpcUtils.getMethodName(inv1);
         Assertions.assertNotNull(actual);
         Assertions.assertEquals(methodName, actual);
     }
 
     @ParameterizedTest
-    @CsvSource({
-            "hello",
-            "apache",
-            "dubbo"
-    })
+    @CsvSource({"hello", "apache", "dubbo"})
     public void testGet_$invoke_MethodName(String method) {
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
-        Invoker invoker = mock(Invoker.class);
+        Invoker invoker = createMockInvoker();
 
-        RpcInvocation inv = new RpcInvocation("$invoke", serviceName, "",
+        RpcInvocation inv = new RpcInvocation(
+                "$invoke",
+                serviceName,
+                "",
                 new Class<?>[] {String.class, String[].class},
                 new Object[] {method, new String[] {"java.lang.String", "void", "java.lang.Object"}},
-                null, invoker, null);
+                null,
+                invoker,
+                null);
         String actual = RpcUtils.getMethodName(inv);
         Assertions.assertNotNull(actual);
         Assertions.assertEquals(method, actual);
+    }
 
+    @ParameterizedTest
+    @CsvSource({"hello", "apache", "dubbo"})
+    public void testGet_$invokeAsync_MethodName(String method) {
+        Class<?> demoServiceClass = DemoService.class;
+        String serviceName = demoServiceClass.getName();
+        Invoker invoker = createMockInvoker();
+
+        RpcInvocation inv = new RpcInvocation(
+                "$invokeAsync",
+                serviceName,
+                "",
+                new Class<?>[] {String.class, String[].class},
+                new Object[] {method, new String[] {"java.lang.String", "void", "java.lang.Object"}},
+                null,
+                invoker,
+                null);
+        String actual = RpcUtils.getMethodName(inv);
+        Assertions.assertNotNull(actual);
+        Assertions.assertEquals(method, actual);
     }
 
     @Test
@@ -418,17 +488,49 @@ class RpcUtilsTest {
         Object[] args = new Object[] {"hello", "dubbo", 520};
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
-        Invoker invoker = mock(Invoker.class);
+        Invoker invoker = createMockInvoker();
 
-        RpcInvocation inv = new RpcInvocation("$invoke", serviceName, "",
+        RpcInvocation inv = new RpcInvocation(
+                "$invoke",
+                serviceName,
+                "",
                 new Class<?>[] {String.class, String[].class, Object[].class},
                 new Object[] {"method", new String[] {}, args},
-                null, invoker, null);
+                null,
+                invoker,
+                null);
 
         Object[] arguments = RpcUtils.getArguments(inv);
         for (int i = 0; i < args.length; i++) {
             Assertions.assertNotNull(arguments[i]);
-            Assertions.assertEquals(args[i].getClass().getName(), arguments[i].getClass().getName());
+            Assertions.assertEquals(
+                    args[i].getClass().getName(), arguments[i].getClass().getName());
+            Assertions.assertEquals(args[i], arguments[i]);
+        }
+    }
+
+    @Test
+    void testGet_$invokeAsync_Arguments() {
+        Object[] args = new Object[] {"hello", "dubbo", 520};
+        Class<?> demoServiceClass = DemoService.class;
+        String serviceName = demoServiceClass.getName();
+        Invoker invoker = createMockInvoker();
+
+        RpcInvocation inv = new RpcInvocation(
+                "$invokeAsync",
+                serviceName,
+                "",
+                new Class<?>[] {String.class, String[].class, Object[].class},
+                new Object[] {"method", new String[] {}, args},
+                null,
+                invoker,
+                null);
+
+        Object[] arguments = RpcUtils.getArguments(inv);
+        for (int i = 0; i < args.length; i++) {
+            Assertions.assertNotNull(arguments[i]);
+            Assertions.assertEquals(
+                    args[i].getClass().getName(), arguments[i].getClass().getName());
             Assertions.assertEquals(args[i], arguments[i]);
         }
     }
@@ -438,15 +540,20 @@ class RpcUtilsTest {
         Object[] args = new Object[] {"hello", "dubbo", 520};
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
-        Invoker invoker = mock(Invoker.class);
+        Invoker invoker = createMockInvoker();
 
         URL url = URL.valueOf(
                 "test://127.0.0.1:1/org.apache.dubbo.rpc.support.DemoService?interface=org.apache.dubbo.rpc.support.DemoService");
 
-        RpcInvocation inv = new RpcInvocation("test", serviceName, "",
+        RpcInvocation inv = new RpcInvocation(
+                "test",
+                serviceName,
+                "",
                 new Class<?>[] {String.class, String[].class, Object[].class},
                 new Object[] {"method", new String[] {}, args},
-                null, invoker, null);
+                null,
+                invoker,
+                null);
 
         Assertions.assertFalse(RpcUtils.isAsync(url, inv));
         inv.setInvokeMode(InvokeMode.ASYNC);
@@ -455,9 +562,12 @@ class RpcUtilsTest {
 
     @Test
     void testIsGenericCall() {
-        Assertions.assertTrue(RpcUtils.isGenericCall("Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Object;", "$invoke"));
-        Assertions.assertTrue(RpcUtils.isGenericCall("Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Object;", "$invokeAsync"));
-        Assertions.assertFalse(RpcUtils.isGenericCall("Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Object;", "testMethod"));
+        Assertions.assertTrue(
+                RpcUtils.isGenericCall("Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Object;", "$invoke"));
+        Assertions.assertTrue(
+                RpcUtils.isGenericCall("Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Object;", "$invokeAsync"));
+        Assertions.assertFalse(
+                RpcUtils.isGenericCall("Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Object;", "testMethod"));
     }
 
     @Test
@@ -466,22 +576,25 @@ class RpcUtilsTest {
         Assertions.assertFalse(RpcUtils.isEcho("Ljava/lang/Object;", "testMethod"));
         Assertions.assertFalse(RpcUtils.isEcho("Ljava/lang/String;", "$echo"));
     }
+
     @Test
     void testIsReturnTypeFuture() {
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
-        Invoker invoker = mock(Invoker.class);
-        given(invoker.getUrl()).willReturn(URL.valueOf(
-                "test://127.0.0.1:1/org.apache.dubbo.rpc.support.DemoService?interface=org.apache.dubbo.rpc.support.DemoService"));
+        Invoker invoker = createMockInvoker(
+                URL.valueOf(
+                        "test://127.0.0.1:1/org.apache.dubbo.rpc.support.DemoService?interface=org.apache.dubbo.rpc.support.DemoService"));
 
-        RpcInvocation inv = new RpcInvocation("testReturnType", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
+        RpcInvocation inv = new RpcInvocation(
+                "testReturnType", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
         Assertions.assertFalse(RpcUtils.isReturnTypeFuture(inv));
 
-        ModuleServiceRepository repository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
+        ModuleServiceRepository repository =
+                ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
         repository.registerService(demoServiceClass);
 
-        inv = new RpcInvocation("testReturnType4", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
+        inv = new RpcInvocation(
+                "testReturnType4", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
         Assertions.assertTrue(RpcUtils.isReturnTypeFuture(inv));
     }
-
 }

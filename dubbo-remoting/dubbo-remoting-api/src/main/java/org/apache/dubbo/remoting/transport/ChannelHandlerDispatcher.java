@@ -24,7 +24,9 @@ import org.apache.dubbo.remoting.ChannelHandler;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 
@@ -33,20 +35,24 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERR
  */
 public class ChannelHandlerDispatcher implements ChannelHandler {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ChannelHandlerDispatcher.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(ChannelHandlerDispatcher.class);
 
     private final Collection<ChannelHandler> channelHandlers = new CopyOnWriteArraySet<>();
 
-    public ChannelHandlerDispatcher() {
-    }
+    public ChannelHandlerDispatcher() {}
 
     public ChannelHandlerDispatcher(ChannelHandler... handlers) {
+        // if varargs is used, the type of handlers is ChannelHandler[] and it is not null
+        // so we should filter the null object
         this(handlers == null ? null : Arrays.asList(handlers));
     }
 
     public ChannelHandlerDispatcher(Collection<ChannelHandler> handlers) {
         if (CollectionUtils.isNotEmpty(handlers)) {
-            this.channelHandlers.addAll(handlers);
+            // filter null object
+            this.channelHandlers.addAll(
+                    handlers.stream().filter(Objects::nonNull).collect(Collectors.toSet()));
         }
     }
 
@@ -118,5 +124,4 @@ public class ChannelHandlerDispatcher implements ChannelHandler {
             }
         }
     }
-
 }

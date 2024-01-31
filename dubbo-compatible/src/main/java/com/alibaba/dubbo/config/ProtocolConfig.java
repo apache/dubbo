@@ -14,14 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.config;
 
 @Deprecated
 public class ProtocolConfig extends org.apache.dubbo.config.ProtocolConfig {
 
-    public ProtocolConfig() {
-    }
+    public ProtocolConfig() {}
 
     public ProtocolConfig(String name) {
         super(name);
@@ -29,5 +27,9 @@ public class ProtocolConfig extends org.apache.dubbo.config.ProtocolConfig {
 
     public ProtocolConfig(String name, int port) {
         super(name, port);
+    }
+
+    public void mergeProtocol(ProtocolConfig sourceConfig) {
+        super.mergeProtocol(sourceConfig);
     }
 }

@@ -18,10 +18,11 @@ package org.apache.dubbo.rpc.cluster.router.condition.config.model;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 
+import java.util.Map;
+
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
-
-import java.util.Map;
 
 /**
  * %YAML1.2
@@ -40,7 +41,7 @@ import java.util.Map;
 public class ConditionRuleParser {
 
     public static ConditionRouterRule parse(String rawRule) {
-        Yaml yaml = new Yaml(new SafeConstructor());
+        Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
         Map<String, Object> map = yaml.load(rawRule);
         ConditionRouterRule rule = ConditionRouterRule.parseFromMap(map);
         rule.setRawRule(rawRule);
@@ -50,5 +51,4 @@ public class ConditionRuleParser {
 
         return rule;
     }
-
 }

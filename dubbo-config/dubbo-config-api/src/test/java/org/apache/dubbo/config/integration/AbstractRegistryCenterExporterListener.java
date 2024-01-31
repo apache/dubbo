@@ -19,6 +19,7 @@ package org.apache.dubbo.config.integration;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.filter.FilterChainBuilder;
 import org.apache.dubbo.rpc.listener.ListenerExporterWrapper;
@@ -56,9 +57,15 @@ public abstract class AbstractRegistryCenterExporterListener implements Exporter
     @Override
     public void exported(Exporter<?> exporter) throws RpcException {
         ListenerExporterWrapper listenerExporterWrapper = (ListenerExporterWrapper) exporter;
-        FilterChainBuilder.CallbackRegistrationInvoker callbackRegistrationInvoker = (FilterChainBuilder.CallbackRegistrationInvoker) listenerExporterWrapper.getInvoker();
-        if (callbackRegistrationInvoker == null ||
-            callbackRegistrationInvoker.getInterface() != getInterface()) {
+
+        Invoker invoker = listenerExporterWrapper.getInvoker();
+        if (!(invoker instanceof FilterChainBuilder.CallbackRegistrationInvoker)) {
+            exportedExporters.add(exporter);
+            return;
+        }
+        FilterChainBuilder.CallbackRegistrationInvoker callbackRegistrationInvoker =
+                (FilterChainBuilder.CallbackRegistrationInvoker) invoker;
+        if (callbackRegistrationInvoker == null || callbackRegistrationInvoker.getInterface() != getInterface()) {
             return;
         }
         exportedExporters.add(exporter);
@@ -97,7 +104,8 @@ public abstract class AbstractRegistryCenterExporterListener implements Exporter
     /**
      * Use reflection to obtain {@link Filter}
      */
-    private FilterChainBuilder.CopyOfFilterChainNode getFilterChainNode(FilterChainBuilder.CallbackRegistrationInvoker callbackRegistrationInvoker) {
+    private FilterChainBuilder.CopyOfFilterChainNode getFilterChainNode(
+            FilterChainBuilder.CallbackRegistrationInvoker callbackRegistrationInvoker) {
         if (callbackRegistrationInvoker != null) {
             Field field = null;
             try {
@@ -131,7 +139,8 @@ public abstract class AbstractRegistryCenterExporterListener implements Exporter
     /**
      * Use reflection to obtain {@link FilterChainBuilder.CopyOfFilterChainNode}
      */
-    private FilterChainBuilder.CopyOfFilterChainNode getNextNode(FilterChainBuilder.CopyOfFilterChainNode filterChainNode) {
+    private FilterChainBuilder.CopyOfFilterChainNode getNextNode(
+            FilterChainBuilder.CopyOfFilterChainNode filterChainNode) {
         if (filterChainNode != null) {
             Field field = null;
             try {

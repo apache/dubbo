@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.registry;
 
 public interface Constants {
@@ -66,9 +65,9 @@ public interface Constants {
     int DEFAULT_SESSION_TIMEOUT = 60 * 1000;
 
     /**
-     * Default value for the times of retry: 3
+     * Default value for the times of retry: -1 (forever)
      */
-    int DEFAULT_REGISTRY_RETRY_TIMES = 3;
+    int DEFAULT_REGISTRY_RETRY_TIMES = -1;
 
     int DEFAULT_REGISTRY_RECONNECT_PERIOD = 3 * 1000;
 
@@ -109,6 +108,8 @@ public interface Constants {
 
     String MIGRATION_THRESHOLD_KEY = "migration.threshold";
 
+    String ENABLE_26X_CONFIGURATION_LISTEN = "enable-26x-configuration-listen";
+
     String ENABLE_CONFIGURATION_LISTEN = "enable-configuration-listen";
 
     /**
@@ -116,7 +117,7 @@ public interface Constants {
      */
     String MIGRATION_RULE_KEY = "key";
 
-    String MIGRATION_RULE_STEP_KEY ="step";
+    String MIGRATION_RULE_STEP_KEY = "step";
 
     String MIGRATION_RULE_THRESHOLD_KEY = "threshold";
 
@@ -132,7 +133,7 @@ public interface Constants {
 
     String USER_HOME = "user.home";
 
-    String DUBBO_REGISTRY  = "/.dubbo/dubbo-registry-";
+    String DUBBO_REGISTRY = "/.dubbo/dubbo-registry-";
 
     String CACHE = ".cache";
 

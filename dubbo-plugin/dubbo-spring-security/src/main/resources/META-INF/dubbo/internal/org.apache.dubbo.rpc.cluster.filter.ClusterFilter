@@ -1,0 +1,2 @@
+authenticationPrepare=org.apache.dubbo.spring.security.filter.ContextHolderAuthenticationPrepareFilter
+contextHolderParametersSelectedTransfer=org.apache.dubbo.spring.security.filter.ContextHolderParametersSelectedTransferFilter

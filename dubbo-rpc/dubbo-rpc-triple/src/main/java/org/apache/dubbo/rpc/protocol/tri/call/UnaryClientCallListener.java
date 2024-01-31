@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.call;
 
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.DeadlineFuture;
@@ -27,32 +27,38 @@ public class UnaryClientCallListener implements ClientCall.Listener {
 
     private final DeadlineFuture future;
     private Object appResponse;
+    private int actualContentLength;
 
     public UnaryClientCallListener(DeadlineFuture deadlineFuture) {
         this.future = deadlineFuture;
     }
 
     @Override
-    public void onMessage(Object message) {
+    public void onMessage(Object message, int actualContentLength) {
         this.appResponse = message;
+        this.actualContentLength = actualContentLength;
     }
 
     @Override
-    public void onClose(TriRpcStatus status, Map<String, Object> trailers) {
+    public void onClose(TriRpcStatus status, Map<String, Object> trailers, boolean isReturnTriException) {
         AppResponse result = new AppResponse();
         result.setObjectAttachments(trailers);
         if (status.isOk()) {
-            result.setValue(appResponse);
+            if (isReturnTriException) {
+                result.setException((Exception) appResponse);
+            } else {
+                result.setValue(appResponse);
+            }
         } else {
             result.setException(status.asException());
         }
+        result.setAttribute(Constants.CONTENT_LENGTH_KEY, actualContentLength);
         future.received(status, result);
     }
 
     @Override
     public void onStart(ClientCall call) {
-        future.addTimeoutListener(
-            () -> call.cancelByLocal(new IllegalStateException("client timeout")));
+        future.addTimeoutListener(() -> call.cancelByLocal(new IllegalStateException("client timeout")));
         call.request(2);
     }
 }

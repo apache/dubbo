@@ -55,7 +55,8 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
     protected static final byte FLAG_TWOWAY = (byte) 0x40;
     protected static final byte FLAG_EVENT = (byte) 0x20;
     protected static final int SERIALIZATION_MASK = 0x1f;
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DeprecatedExchangeCodec.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(DeprecatedExchangeCodec.class);
 
     public Short getMagicCode() {
         return MAGIC;
@@ -80,8 +81,7 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
 
     protected Object decode(Channel channel, InputStream is, int readable, byte[] header) throws IOException {
         // check magic number.
-        if (readable > 0 && header[0] != MAGIC_HIGH
-            || readable > 1 && header[1] != MAGIC_LOW) {
+        if (readable > 0 && header[0] != MAGIC_HIGH || readable > 1 && header[1] != MAGIC_LOW) {
             int length = header.length;
             if (header.length < readable) {
                 header = Bytes.copyOf(header, readable);
@@ -112,8 +112,7 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
         }
 
         // limit input stream.
-        if (readable != tt)
-            is = StreamUtils.limitedInputStream(is, len);
+        if (readable != tt) is = StreamUtils.limitedInputStream(is, len);
 
         try {
             return decodeBody(channel, is, header);
@@ -194,11 +193,9 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
 
     protected Object getRequestData(long id) {
         DefaultFuture future = DefaultFuture.getFuture(id);
-        if (future == null)
-            return null;
+        if (future == null) return null;
         Request req = future.getRequest();
-        if (req == null)
-            return null;
+        if (req == null) return null;
         return req.getData();
     }
 
@@ -279,16 +276,31 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
             if (!res.isEvent() && res.getStatus() != Response.BAD_RESPONSE) {
                 try {
                     // FIXME log error info in Codec and put all error handle logic in IoHanndler?
-                    logger.warn(TRANSPORT_FAILED_RESPONSE, "", "", "Fail to encode response: " + res + ", send bad_response info instead, cause: " + t.getMessage(), t);
+                    logger.warn(
+                            TRANSPORT_FAILED_RESPONSE,
+                            "",
+                            "",
+                            "Fail to encode response: " + res + ", send bad_response info instead, cause: "
+                                    + t.getMessage(),
+                            t);
 
                     Response r = new Response(res.getId(), res.getVersion());
-                    r.setStatus(Response.BAD_RESPONSE);
+                    if (t instanceof IOException) {
+                        r.setStatus(Response.SERIALIZATION_ERROR);
+                    } else {
+                        r.setStatus(Response.BAD_RESPONSE);
+                    }
                     r.setErrorMessage("Failed to send response: " + res + ", cause: " + StringUtils.toString(t));
                     channel.send(r);
 
                     return;
                 } catch (RemotingException e) {
-                    logger.warn(TRANSPORT_FAILED_RESPONSE, "", "", "Failed to send bad_response info back: " + res + ", cause: " + e.getMessage(), e);
+                    logger.warn(
+                            TRANSPORT_FAILED_RESPONSE,
+                            "",
+                            "",
+                            "Failed to send bad_response info back: " + res + ", cause: " + e.getMessage(),
+                            e);
                 }
             }
 
@@ -408,5 +420,4 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
     protected void encodeResponseData(Channel channel, ObjectOutput out, Object data) throws IOException {
         encodeResponseData(out, data);
     }
-
 }

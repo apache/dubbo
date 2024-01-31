@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.cache;
 
+import com.alibaba.dubbo.common.DelegateURL;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
 
@@ -25,7 +25,8 @@ public interface CacheFactory extends org.apache.dubbo.cache.CacheFactory {
 
     Cache getCache(URL url, Invocation invocation);
 
-    default org.apache.dubbo.cache.Cache getCache(org.apache.dubbo.common.URL url, org.apache.dubbo.rpc.Invocation invocation) {
-        return this.getCache(new URL(url), new Invocation.CompatibleInvocation(invocation));
+    default org.apache.dubbo.cache.Cache getCache(
+            org.apache.dubbo.common.URL url, org.apache.dubbo.rpc.Invocation invocation) {
+        return this.getCache(new DelegateURL(url), new Invocation.CompatibleInvocation(invocation));
     }
 }

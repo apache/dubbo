@@ -23,16 +23,15 @@ import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.rpc.service.GenericService;
 
-import org.springframework.util.Assert;
-
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.alibaba.spring.util.AnnotationUtils.getAttribute;
+import org.springframework.util.Assert;
+
 import static org.springframework.util.ClassUtils.getAllInterfacesForClass;
 import static org.springframework.util.StringUtils.hasText;
 
@@ -43,7 +42,6 @@ import static org.springframework.util.StringUtils.hasText;
  * @since 2.5.11
  */
 public class DubboAnnotationUtils {
-
 
     @Deprecated
     public static String resolveInterfaceName(Service service, Class<?> defaultInterfaceClass)
@@ -57,13 +55,11 @@ public class DubboAnnotationUtils {
         } else if (defaultInterfaceClass.isInterface()) {
             interfaceName = defaultInterfaceClass.getName();
         } else {
-            throw new IllegalStateException(
-                    "The @Service undefined interfaceClass or interfaceName, and the type "
-                            + defaultInterfaceClass.getName() + " is not a interface.");
+            throw new IllegalStateException("The @Service undefined interfaceClass or interfaceName, and the type "
+                    + defaultInterfaceClass.getName() + " is not a interface.");
         }
 
         return interfaceName;
-
     }
 
     /**
@@ -78,25 +74,29 @@ public class DubboAnnotationUtils {
      */
     public static String resolveInterfaceName(Map<String, Object> attributes, Class<?> defaultInterfaceClass) {
         // 1. get from DubboService.interfaceName()
-        String interfaceClassName = getAttribute(attributes, "interfaceName");
+        String interfaceClassName = AnnotationUtils.getAttribute(attributes, "interfaceName");
         if (StringUtils.hasText(interfaceClassName)) {
-            if (GenericService.class.getName().equals(interfaceClassName) ||
-                com.alibaba.dubbo.rpc.service.GenericService.class.getName().equals(interfaceClassName)) {
-                throw new IllegalStateException("@Service interfaceName() cannot be GenericService: " + interfaceClassName);
+            if ("org.apache.dubbo.rpc.service.GenericService".equals(interfaceClassName)
+                    || "com.alibaba.dubbo.rpc.service.GenericService".equals(interfaceClassName)) {
+                throw new IllegalStateException(
+                        "@Service interfaceName() cannot be GenericService: " + interfaceClassName);
             }
             return interfaceClassName;
         }
 
         // 2. get from DubboService.interfaceClass()
-        Class<?> interfaceClass = getAttribute(attributes, "interfaceClass");
+        Class<?> interfaceClass = AnnotationUtils.getAttribute(attributes, "interfaceClass");
         if (interfaceClass == null || void.class.equals(interfaceClass)) { // default or set void.class for purpose.
             interfaceClass = null;
-        } else  if (GenericService.class.isAssignableFrom(interfaceClass)) {
-            throw new IllegalStateException("@Service interfaceClass() cannot be GenericService :" + interfaceClass.getName());
+        } else if (GenericService.class.isAssignableFrom(interfaceClass)) {
+            throw new IllegalStateException(
+                    "@Service interfaceClass() cannot be GenericService :" + interfaceClass.getName());
         }
 
         // 3. get from annotation element type, ignore GenericService
-        if (interfaceClass == null && defaultInterfaceClass != null  && !GenericService.class.isAssignableFrom(defaultInterfaceClass)) {
+        if (interfaceClass == null
+                && defaultInterfaceClass != null
+                && !GenericService.class.isAssignableFrom(defaultInterfaceClass)) {
             // Find all interfaces from the annotated class
             // To resolve an issue : https://github.com/apache/dubbo/issues/3251
             Class<?>[] allInterfaces = getAllInterfacesForClass(defaultInterfaceClass);
@@ -105,7 +105,8 @@ public class DubboAnnotationUtils {
             }
         }
 
-        Assert.notNull(interfaceClass, "@Service interfaceClass() or interfaceName() or interface class must be present!");
+        Assert.notNull(
+                interfaceClass, "@Service interfaceClass() or interfaceName() or interface class must be present!");
         Assert.isTrue(interfaceClass.isInterface(), "The annotated type must be an interface!");
         return interfaceClass.getName();
     }
@@ -122,9 +123,8 @@ public class DubboAnnotationUtils {
         } else if (defaultInterfaceClass.isInterface()) {
             interfaceName = defaultInterfaceClass.getName();
         } else {
-            throw new IllegalStateException(
-                    "The @Reference undefined interfaceClass or interfaceName, and the type "
-                            + defaultInterfaceClass.getName() + " is not a interface.");
+            throw new IllegalStateException("The @Reference undefined interfaceClass or interfaceName, and the type "
+                    + defaultInterfaceClass.getName() + " is not a interface.");
         }
 
         return interfaceName;
@@ -138,7 +138,7 @@ public class DubboAnnotationUtils {
      * be split in anytime.It will throw IllegalArgumentException If converted array length isn't
      * even number.
      * The convert cases below work in right way,which are best practice.
-     * <p>
+     * <pre>
      * (array->map)
      * ["a","b"] ==> {a=b}
      * [" a "," b "] ==> {a=b}
@@ -147,41 +147,42 @@ public class DubboAnnotationUtils {
      * ["a=b","c","d"] ==>{a=b,c=d}
      * ["a","a:b"] ==>{a="a:b"}
      * ["a","a,b"] ==>{a="a,b"}
-     * </p>
+     * </pre>
      *
      * @param parameters
      * @return
      */
     public static Map<String, String> convertParameters(String[] parameters) {
         if (ArrayUtils.isEmpty(parameters)) {
-            return Collections.emptyMap();
+            return new HashMap<>();
         }
 
         List<String> compatibleParameterArray = Arrays.stream(parameters)
-            .map(String::trim)
-            .reduce(new ArrayList<>(parameters.length), (list, parameter) ->
-                {
-                    if (list.size() % 2 == 1) {
-                        //value doesn't split
-                        list.add(parameter);
-                        return list;
-                    }
+                .map(String::trim)
+                .reduce(
+                        new ArrayList<>(parameters.length),
+                        (list, parameter) -> {
+                            if (list.size() % 2 == 1) {
+                                // value doesn't split
+                                list.add(parameter);
+                                return list;
+                            }
 
-                    String[] sp1 = parameter.split(":");
-                    if (sp1.length > 0 && sp1.length % 2 == 0) {
-                        //key split
-                        list.addAll(Arrays.stream(sp1).map(String::trim).collect(Collectors.toList()));
-                        return list;
-                    }
-                    sp1 = parameter.split("=");
-                    if (sp1.length > 0 && sp1.length % 2 == 0) {
-                        list.addAll(Arrays.stream(sp1).map(String::trim).collect(Collectors.toList()));
-                        return list;
-                    }
-                    list.add(parameter);
-                    return list;
-                }
-                , (a, b) -> a);
+                            String[] sp1 = parameter.split(":");
+                            if (sp1.length > 0 && sp1.length % 2 == 0) {
+                                // key split
+                                list.addAll(Arrays.stream(sp1).map(String::trim).collect(Collectors.toList()));
+                                return list;
+                            }
+                            sp1 = parameter.split("=");
+                            if (sp1.length > 0 && sp1.length % 2 == 0) {
+                                list.addAll(Arrays.stream(sp1).map(String::trim).collect(Collectors.toList()));
+                                return list;
+                            }
+                            list.add(parameter);
+                            return list;
+                        },
+                        (a, b) -> a);
 
         return CollectionUtils.toStringMap(compatibleParameterArray.toArray(new String[0]));
     }

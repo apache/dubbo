@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.threadlocal;
 
 import org.junit.jupiter.api.Assertions;
@@ -25,12 +24,8 @@ class NamedInternalThreadFactoryTest {
     @Test
     void newThread() throws Exception {
         NamedInternalThreadFactory namedInternalThreadFactory = new NamedInternalThreadFactory();
-        Thread t = namedInternalThreadFactory.newThread(new Runnable() {
-            @Override
-            public void run() {
+        Thread t = namedInternalThreadFactory.newThread(() -> {});
 
-            }
-        });
         Assertions.assertEquals(t.getClass(), InternalThread.class, "thread is not InternalThread");
     }
 }

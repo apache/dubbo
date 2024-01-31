@@ -46,6 +46,10 @@ public interface LoadbalanceRules {
      **/
     String SHORTEST_RESPONSE = "shortestresponse";
 
-    String EMPTY = "";
+    /**
+     *  adaptive load balance.
+     **/
+    String ADAPTIVE = "adaptive";
 
+    String EMPTY = "";
 }

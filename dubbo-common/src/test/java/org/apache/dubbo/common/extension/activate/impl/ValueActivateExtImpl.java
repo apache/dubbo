@@ -14,13 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.extension.activate.impl;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.activate.ActivateExt1;
 
-@Activate(value = {"value"}, group = {"value"})
+@Activate(
+        value = {"value"},
+        group = {"value"})
 public class ValueActivateExtImpl implements ActivateExt1 {
 
     public String echo(String msg) {

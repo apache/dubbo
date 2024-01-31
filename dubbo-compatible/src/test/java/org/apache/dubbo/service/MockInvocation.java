@@ -22,6 +22,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -73,11 +74,11 @@ public class MockInvocation implements Invocation {
     }
 
     public Class<?>[] getParameterTypes() {
-        return new Class[]{String.class};
+        return new Class[] {String.class};
     }
 
     public Object[] getArguments() {
-        return new Object[]{arg0};
+        return new Object[] {arg0};
     }
 
     public Map<String, String> getAttachments() {
@@ -144,9 +145,7 @@ public class MockInvocation implements Invocation {
     }
 
     @Override
-    public void setServiceModel(ServiceModel serviceModel) {
-
-    }
+    public void setServiceModel(ServiceModel serviceModel) {}
 
     @Override
     public ServiceModel getServiceModel() {
@@ -178,5 +177,13 @@ public class MockInvocation implements Invocation {
             return defaultValue;
         }
         return result;
+    }
+
+    @Override
+    public void addInvokedInvoker(Invoker<?> invoker) {}
+
+    @Override
+    public List<Invoker<?>> getInvokedInvokers() {
+        return null;
     }
 }

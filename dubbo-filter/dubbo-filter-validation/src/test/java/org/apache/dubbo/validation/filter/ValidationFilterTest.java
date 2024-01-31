@@ -43,38 +43,37 @@ class ValidationFilterTest {
     private ValidationFilter validationFilter;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUp() {
         this.validationFilter = new ValidationFilter();
     }
 
     @Test
-    void testItWithNotExistClass() throws Exception {
+    void testItWithNotExistClass() {
         URL url = URL.valueOf("test://test:11/test?validation=true");
 
         given(validation.getValidator(url)).willThrow(new IllegalStateException("Not found class test, cause: test"));
         given(invoker.invoke(invocation)).willReturn(new AppResponse("success"));
         given(invoker.getUrl()).willReturn(url);
         given(invocation.getMethodName()).willReturn("echo1");
-        given(invocation.getParameterTypes()).willReturn(new Class<?>[]{String.class});
-        given(invocation.getArguments()).willReturn(new Object[]{"arg1"});
+        given(invocation.getParameterTypes()).willReturn(new Class<?>[] {String.class});
+        given(invocation.getArguments()).willReturn(new Object[] {"arg1"});
 
         validationFilter.setValidation(validation);
         Result result = validationFilter.invoke(invoker, invocation);
 
         assertThat(result.getException().getMessage(), is("Not found class test, cause: test"));
-
     }
 
     @Test
-    void testItWithExistClass() throws Exception {
+    void testItWithExistClass() {
         URL url = URL.valueOf("test://test:11/test?validation=true");
 
         given(validation.getValidator(url)).willReturn(validator);
         given(invoker.invoke(invocation)).willReturn(new AppResponse("success"));
         given(invoker.getUrl()).willReturn(url);
         given(invocation.getMethodName()).willReturn("echo1");
-        given(invocation.getParameterTypes()).willReturn(new Class<?>[]{String.class});
-        given(invocation.getArguments()).willReturn(new Object[]{"arg1"});
+        given(invocation.getParameterTypes()).willReturn(new Class<?>[] {String.class});
+        given(invocation.getArguments()).willReturn(new Object[] {"arg1"});
 
         validationFilter.setValidation(validation);
         Result result = validationFilter.invoke(invoker, invocation);
@@ -83,15 +82,15 @@ class ValidationFilterTest {
     }
 
     @Test
-    void testItWithoutUrlParameters() throws Exception {
+    void testItWithoutUrlParameters() {
         URL url = URL.valueOf("test://test:11/test");
 
         given(validation.getValidator(url)).willReturn(validator);
         given(invoker.invoke(invocation)).willReturn(new AppResponse("success"));
         given(invoker.getUrl()).willReturn(url);
         given(invocation.getMethodName()).willReturn("echo1");
-        given(invocation.getParameterTypes()).willReturn(new Class<?>[]{String.class});
-        given(invocation.getArguments()).willReturn(new Object[]{"arg1"});
+        given(invocation.getParameterTypes()).willReturn(new Class<?>[] {String.class});
+        given(invocation.getArguments()).willReturn(new Object[] {"arg1"});
 
         validationFilter.setValidation(validation);
         Result result = validationFilter.invoke(invoker, invocation);
@@ -100,26 +99,24 @@ class ValidationFilterTest {
     }
 
     @Test
-    void testItWhileMethodNameStartWithDollar() throws Exception {
+    void testItWhileMethodNameStartWithDollar() {
         URL url = URL.valueOf("test://test:11/test");
 
         given(validation.getValidator(url)).willReturn(validator);
         given(invoker.invoke(invocation)).willReturn(new AppResponse("success"));
         given(invoker.getUrl()).willReturn(url);
         given(invocation.getMethodName()).willReturn("$echo1");
-        given(invocation.getParameterTypes()).willReturn(new Class<?>[]{String.class});
-        given(invocation.getArguments()).willReturn(new Object[]{"arg1"});
+        given(invocation.getParameterTypes()).willReturn(new Class<?>[] {String.class});
+        given(invocation.getArguments()).willReturn(new Object[] {"arg1"});
 
         validationFilter.setValidation(validation);
         Result result = validationFilter.invoke(invoker, invocation);
 
         assertThat(String.valueOf(result.getValue()), is("success"));
-
     }
 
-
     @Test
-    void testItWhileThrowoutRpcException() throws Exception {
+    void testItWhileThrowoutRpcException() {
         Assertions.assertThrows(RpcException.class, () -> {
             URL url = URL.valueOf("test://test:11/test?validation=true");
 
@@ -127,8 +124,8 @@ class ValidationFilterTest {
             given(invoker.invoke(invocation)).willReturn(new AppResponse("success"));
             given(invoker.getUrl()).willReturn(url);
             given(invocation.getMethodName()).willReturn("echo1");
-            given(invocation.getParameterTypes()).willReturn(new Class<?>[]{String.class});
-            given(invocation.getArguments()).willReturn(new Object[]{"arg1"});
+            given(invocation.getParameterTypes()).willReturn(new Class<?>[] {String.class});
+            given(invocation.getArguments()).willReturn(new Object[] {"arg1"});
 
             validationFilter.setValidation(validation);
             validationFilter.invoke(invoker, invocation);

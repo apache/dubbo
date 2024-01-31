@@ -19,6 +19,7 @@ package org.apache.dubbo.metadata.report;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.resource.Disposable;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.metadata.report.support.NopMetadataReport;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -35,6 +36,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_FILE_CACHE_ENABLED;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
+import static org.apache.dubbo.metadata.MetadataConstants.NAMESPACE_KEY;
 import static org.apache.dubbo.metadata.report.support.Constants.METADATA_REPORT_KEY;
 
 /**
@@ -55,9 +57,10 @@ public class MetadataReportInstance implements Disposable {
     private AtomicBoolean init = new AtomicBoolean(false);
     private String metadataType;
 
-    // mapping of registry id to metadata report instance, registry instances will use this mapping to find related metadata reports
+    // mapping of registry id to metadata report instance, registry instances will use this mapping to find related
+    // metadata reports
     private final Map<String, MetadataReport> metadataReports = new HashMap<>();
-    private ApplicationModel applicationModel;
+    private final ApplicationModel applicationModel;
     private final NopMetadataReport nopMetadataReport;
 
     public MetadataReportInstance(ApplicationModel applicationModel) {
@@ -70,12 +73,16 @@ public class MetadataReportInstance implements Disposable {
             return;
         }
 
-        this.metadataType = applicationModel.getApplicationConfigManager().getApplicationOrElseThrow().getMetadataType();
+        this.metadataType = applicationModel
+                .getApplicationConfigManager()
+                .getApplicationOrElseThrow()
+                .getMetadataType();
         if (metadataType == null) {
             this.metadataType = DEFAULT_METADATA_STORAGE_TYPE;
         }
 
-        MetadataReportFactory metadataReportFactory = applicationModel.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
+        MetadataReportFactory metadataReportFactory =
+                applicationModel.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
         for (MetadataReportConfig metadataReportConfig : metadataReportConfigs) {
             init(metadataReportConfig, metadataReportFactory);
         }
@@ -92,15 +99,29 @@ public class MetadataReportInstance implements Disposable {
                     .removeParameter(METADATA_REPORT_KEY)
                     .build();
         }
-        url = url.addParameterIfAbsent(APPLICATION_KEY, applicationModel.getCurrentConfig().getName());
-        url = url.addParameterIfAbsent(REGISTRY_LOCAL_FILE_CACHE_ENABLED, String.valueOf(applicationModel.getCurrentConfig().getEnableFileCache()));
-        String relatedRegistryId = isEmpty(config.getRegistry()) ? (isEmpty(config.getId()) ? DEFAULT_KEY : config.getId()) : config.getRegistry();
-//        RegistryConfig registryConfig = applicationModel.getConfigManager().getRegistry(relatedRegistryId)
-//                .orElseThrow(() -> new IllegalStateException("Registry id " + relatedRegistryId + " does not exist."));
+        url = url.addParameterIfAbsent(
+                APPLICATION_KEY, applicationModel.getCurrentConfig().getName());
+        url = url.addParameterIfAbsent(
+                REGISTRY_LOCAL_FILE_CACHE_ENABLED,
+                String.valueOf(applicationModel.getCurrentConfig().getEnableFileCache()));
+        //        RegistryConfig registryConfig = applicationModel.getConfigManager().getRegistry(relatedRegistryId)
+        //                .orElseThrow(() -> new IllegalStateException("Registry id " + relatedRegistryId + " does not
+        // exist."));
         MetadataReport metadataReport = metadataReportFactory.getMetadataReport(url);
         if (metadataReport != null) {
-            metadataReports.put(relatedRegistryId, metadataReport);
+            metadataReports.put(getRelatedRegistryId(config, url), metadataReport);
         }
+    }
+
+    private String getRelatedRegistryId(MetadataReportConfig config, URL url) {
+        String relatedRegistryId = isEmpty(config.getRegistry())
+                ? (isEmpty(config.getId()) ? DEFAULT_KEY : config.getId())
+                : config.getRegistry();
+        String namespace = url.getParameter(NAMESPACE_KEY);
+        if (!StringUtils.isEmpty(namespace)) {
+            relatedRegistryId += ":" + namespace;
+        }
+        return relatedRegistryId;
     }
 
     public Map<String, MetadataReport> getMetadataReports(boolean checked) {

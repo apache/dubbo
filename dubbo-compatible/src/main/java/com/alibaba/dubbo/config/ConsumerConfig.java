@@ -14,9 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.config;
 
 @Deprecated
 public class ConsumerConfig extends org.apache.dubbo.config.ConsumerConfig {
+
+    public void setApplication(com.alibaba.dubbo.config.ApplicationConfig application) {
+        super.setApplication(application);
+    }
+
+    public void setModule(com.alibaba.dubbo.config.ModuleConfig module) {
+        super.setModule(module);
+    }
+
+    public void setRegistry(com.alibaba.dubbo.config.RegistryConfig registry) {
+        super.setRegistry(registry);
+    }
+
+    public void addMethod(com.alibaba.dubbo.config.MethodConfig methodConfig) {
+        super.addMethod(methodConfig);
+    }
+
+    public void setMonitor(com.alibaba.dubbo.config.MonitorConfig monitor) {
+        super.setMonitor(monitor);
+    }
+
+    public void setMock(Boolean mock) {
+        if (mock == null) {
+            setMock((String) null);
+        } else {
+            setMock(String.valueOf(mock));
+        }
+    }
 }

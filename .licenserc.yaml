@@ -38,7 +38,6 @@ header:
     - '**/*.fc'
     - '**/*.javascript'
     - '**/*.properties'
-    - '**/*.thrift'
     - '**/*.sh'
     - '**/*.bat'
     - '**/*.md'
@@ -67,6 +66,8 @@ header:
     - 'CNAME'
     - 'Jenkinsfile'
     - '**/vendor/**'
+    - '**/src/test/resources/certs/**'
+    - '**/src/test/resources/definition/**'
     - 'dubbo-common/src/main/java/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java'
     - 'dubbo-common/src/main/java/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java'
     - 'dubbo-common/src/main/java/org/apache/dubbo/common/timer/HashedWheelTimer.java'
@@ -76,7 +77,29 @@ header:
     - 'dubbo-common/src/main/java/org/apache/dubbo/common/utils/CIDRUtils.java'
     - 'dubbo-common/src/main/java/org/apache/dubbo/common/utils/Utf8Utils.java'
     - 'dubbo-config/dubbo-config-spring/src/test/java/org/apache/dubbo/config/spring/EmbeddedZooKeeper.java'
+    - 'dubbo-test/dubbo-test-common/src/main/java/org/apache/dubbo/test/common/utils/TestSocketUtils.java'
+    - 'dubbo-rpc/dubbo-rpc-triple/src/main/java/org/apache/dubbo/rpc/protocol/tri/TriHttp2RemoteFlowController.java'
     - 'dubbo-common/src/main/java/org/apache/dubbo/common/threadpool/serial/SerializingExecutor.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/AbstractAotMojo.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/AbstractDependencyFilterMojo.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/CommandLineBuilder.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/DependencyFilter.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/Exclude.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/ExcludeFilter.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/FilterableDependency.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/Include.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/IncludeFilter.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/JavaCompilerPluginConfiguration.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/JavaExecutable.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/JavaProcessExecutor.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/MatchingGroupIdFilter.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/RunArguments.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/RunProcess.java'
+    - 'dubbo-native/src/main/java/org/apache/dubbo/aot/generate/BasicJsonWriter.java'
+    - 'dubbo-native/src/main/java/org/apache/dubbo/aot/generate/ExecutableMode.java'
+    - 'dubbo-native/src/main/java/org/apache/dubbo/aot/generate/MemberCategory.java'
+    - 'dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/aggregate/DubboMergingDigest.java'
+    - 'dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/aggregate/DubboAbstractTDigest.java'
 
   comment: on-failure
 
@@ -169,6 +192,16 @@ dependency:
       license: Apache-2.0
     - name: org.slf4j:jul-to-slf4j
       license: Apache-2.0
+    - name: org.codehaus.plexus:plexus-interpolation
+      license: Apache-2.0
+    - name: org.sonatype.plexus:plexus-sec-dispatcher
+      license: Apache-2.0
+    - name: org.sonatype.plexus:plexus-cipher
+      license: Apache-2.0
+    - name: com.google.protobuf:protobuf-java
+      license: BSD 3-clause
+    - name: com.google.protobuf:protobuf-java-util
+      license: BSD 3-clause
     # multi license
     - name: org.javassist:javassist
       license: Apache-2.0

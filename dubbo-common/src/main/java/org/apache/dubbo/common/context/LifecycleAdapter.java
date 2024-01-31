@@ -19,17 +19,11 @@ package org.apache.dubbo.common.context;
 public abstract class LifecycleAdapter implements Lifecycle {
 
     @Override
-    public void initialize() throws IllegalStateException {
-
-    }
+    public void initialize() throws IllegalStateException {}
 
     @Override
-    public void start() throws IllegalStateException {
-
-    }
+    public void start() throws IllegalStateException {}
 
     @Override
-    public void destroy() throws IllegalStateException {
-
-    }
+    public void destroy() throws IllegalStateException {}
 }

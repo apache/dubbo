@@ -20,12 +20,13 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.common.store.DataStore;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * {@link ThreadPoolStatusChecker}
@@ -34,18 +35,20 @@ class ThreadPoolStatusCheckerTest {
 
     @Test
     void test() {
-        DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
+        DataStore dataStore =
+                ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
         ExecutorService executorService1 = Executors.newFixedThreadPool(1);
         ExecutorService executorService2 = Executors.newFixedThreadPool(10);
         dataStore.put(CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY, "8888", executorService1);
         dataStore.put(CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY, "8889", executorService2);
 
-        ThreadPoolStatusChecker threadPoolStatusChecker = new ThreadPoolStatusChecker();
+        ThreadPoolStatusChecker threadPoolStatusChecker = new ThreadPoolStatusChecker(ApplicationModel.defaultModel());
         Status status = threadPoolStatusChecker.check();
         Assertions.assertEquals(status.getLevel(), Status.Level.WARN);
-        Assertions.assertEquals(status.getMessage(),
-            "Pool status:WARN, max:1, core:1, largest:0, active:0, task:0, service port: 8888;"
-                + "Pool status:OK, max:10, core:10, largest:0, active:0, task:0, service port: 8889");
+        Assertions.assertEquals(
+                status.getMessage(),
+                "Pool status:WARN, max:1, core:1, largest:0, active:0, task:0, service port: 8888;"
+                        + "Pool status:OK, max:10, core:10, largest:0, active:0, task:0, service port: 8889");
 
         // reset
         executorService1.shutdown();

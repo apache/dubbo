@@ -20,37 +20,37 @@ import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.RegistryConfig;
 
+import java.util.Collections;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.Collections;
 
 class ModuleBuilderTest {
 
     @Test
     void name() {
-        ModuleBuilder builder = new ModuleBuilder();
+        ModuleBuilder builder = ModuleBuilder.newBuilder();
         builder.name("name");
         Assertions.assertEquals("name", builder.build().getName());
     }
 
     @Test
     void version() {
-        ModuleBuilder builder = new ModuleBuilder();
+        ModuleBuilder builder = ModuleBuilder.newBuilder();
         builder.version("version");
         Assertions.assertEquals("version", builder.build().getVersion());
     }
 
     @Test
     void owner() {
-        ModuleBuilder builder = new ModuleBuilder();
+        ModuleBuilder builder = ModuleBuilder.newBuilder();
         builder.owner("owner");
         Assertions.assertEquals("owner", builder.build().getOwner());
     }
 
     @Test
     void organization() {
-        ModuleBuilder builder = new ModuleBuilder();
+        ModuleBuilder builder = ModuleBuilder.newBuilder();
         builder.organization("organization");
         Assertions.assertEquals("organization", builder.build().getOrganization());
     }
@@ -58,7 +58,7 @@ class ModuleBuilderTest {
     @Test
     void addRegistries() {
         RegistryConfig registry = new RegistryConfig();
-        ModuleBuilder builder = new ModuleBuilder();
+        ModuleBuilder builder = ModuleBuilder.newBuilder();
         builder.addRegistries(Collections.singletonList(registry));
         Assertions.assertTrue(builder.build().getRegistries().contains(registry));
         Assertions.assertEquals(1, builder.build().getRegistries().size());
@@ -67,7 +67,7 @@ class ModuleBuilderTest {
     @Test
     void addRegistry() {
         RegistryConfig registry = new RegistryConfig();
-        ModuleBuilder builder = new ModuleBuilder();
+        ModuleBuilder builder = ModuleBuilder.newBuilder();
         builder.addRegistry(registry);
         Assertions.assertTrue(builder.build().getRegistries().contains(registry));
         Assertions.assertEquals(1, builder.build().getRegistries().size());
@@ -76,14 +76,14 @@ class ModuleBuilderTest {
     @Test
     void monitor() {
         MonitorConfig monitor = new MonitorConfig();
-        ModuleBuilder builder = new ModuleBuilder();
+        ModuleBuilder builder = ModuleBuilder.newBuilder();
         builder.monitor(monitor);
         Assertions.assertSame(monitor, builder.build().getMonitor());
     }
 
     @Test
     void isDefault() {
-        ModuleBuilder builder = new ModuleBuilder();
+        ModuleBuilder builder = ModuleBuilder.newBuilder();
         builder.isDefault(true);
         Assertions.assertTrue(builder.build().isDefault());
     }
@@ -93,9 +93,14 @@ class ModuleBuilderTest {
         RegistryConfig registry = new RegistryConfig();
         MonitorConfig monitor = new MonitorConfig();
 
-        ModuleBuilder builder = new ModuleBuilder();
-        builder.name("name").version("version").owner("owner").organization("organization").addRegistry(registry)
-                .monitor(monitor).isDefault(false);
+        ModuleBuilder builder = ModuleBuilder.newBuilder();
+        builder.name("name")
+                .version("version")
+                .owner("owner")
+                .organization("organization")
+                .addRegistry(registry)
+                .monitor(monitor)
+                .isDefault(false);
 
         ModuleConfig config = builder.build();
         ModuleConfig config2 = builder.build();

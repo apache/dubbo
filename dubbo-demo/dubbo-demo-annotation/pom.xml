@@ -17,41 +17,40 @@
   ~ specific language governing permissions and limitations
   ~ under the License.
   -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <artifactId>dubbo-demo</artifactId>
-        <groupId>org.apache.dubbo</groupId>
-        <version>${revision}</version>
-    </parent>
-    <modelVersion>4.0.0</modelVersion>
-    <packaging>pom</packaging>
-    <artifactId>dubbo-demo-annotation</artifactId>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.dubbo</groupId>
+    <artifactId>dubbo-demo</artifactId>
+    <version>${revision}</version>
+  </parent>
+  <artifactId>dubbo-demo-annotation</artifactId>
+  <packaging>pom</packaging>
 
-    <properties>
-        <skip_maven_deploy>true</skip_maven_deploy>
-        <spring-boot-maven-plugin.version>2.1.4.RELEASE</spring-boot-maven-plugin.version>
-    </properties>
+  <modules>
+    <module>dubbo-demo-annotation-provider</module>
+    <module>dubbo-demo-annotation-consumer</module>
+  </modules>
 
-    <modules>
-        <module>dubbo-demo-annotation-provider</module>
-        <module>dubbo-demo-annotation-consumer</module>
-    </modules>
+  <properties>
+    <skip_maven_deploy>true</skip_maven_deploy>
+    <spring-boot-maven-plugin.version>2.7.18</spring-boot-maven-plugin.version>
+  </properties>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${spring-boot-maven-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring-boot-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

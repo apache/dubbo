@@ -22,10 +22,7 @@ import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -34,6 +31,10 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import static org.awaitility.Awaitility.await;
 
@@ -72,22 +73,24 @@ class EagerThreadPoolExecutorTest {
         // alive 1 second
         long alive = 1000;
 
-        //init queue and executor
+        // init queue and executor
         TaskQueue<Runnable> taskQueue = new TaskQueue<Runnable>(queues);
-        final EagerThreadPoolExecutor executor = new EagerThreadPoolExecutor(cores,
-            threads,
-            alive,
-            TimeUnit.MILLISECONDS,
-            taskQueue,
-            new NamedThreadFactory(name, true),
-            new AbortPolicyWithReport(name, URL));
+        final EagerThreadPoolExecutor executor = new EagerThreadPoolExecutor(
+                cores,
+                threads,
+                alive,
+                TimeUnit.MILLISECONDS,
+                taskQueue,
+                new NamedThreadFactory(name, true),
+                new AbortPolicyWithReport(name, URL));
         taskQueue.setExecutor(executor);
 
         for (int i = 0; i < 15; i++) {
             Thread.sleep(50);
             executor.execute(() -> {
-                System.out.println("thread number in current pool：" + executor.getPoolSize() + ",  task number in task queue：" + executor.getQueue()
-                    .size() + " executor size: " + executor.getPoolSize());
+                System.out.println(
+                        "thread number in current pool：" + executor.getPoolSize() + ",  task number in task queue："
+                                + executor.getQueue().size() + " executor size: " + executor.getPoolSize());
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
@@ -101,7 +104,7 @@ class EagerThreadPoolExecutorTest {
     }
 
     @Test
-    void testEagerThreadPoolFast() throws Exception {
+    void testEagerThreadPoolFast() {
         String name = "eager-tf";
         int queues = 5;
         int cores = 5;
@@ -109,15 +112,16 @@ class EagerThreadPoolExecutorTest {
         // alive 1 second
         long alive = 1000;
 
-        //init queue and executor
-        TaskQueue<Runnable> taskQueue = new TaskQueue<Runnable>(queues);
-        final EagerThreadPoolExecutor executor = new EagerThreadPoolExecutor(cores,
-            threads,
-            alive,
-            TimeUnit.MILLISECONDS,
-            taskQueue,
-            new NamedThreadFactory(name, true),
-            new AbortPolicyWithReport(name, URL));
+        // init queue and executor
+        TaskQueue<Runnable> taskQueue = new TaskQueue<>(queues);
+        final EagerThreadPoolExecutor executor = new EagerThreadPoolExecutor(
+                cores,
+                threads,
+                alive,
+                TimeUnit.MILLISECONDS,
+                taskQueue,
+                new NamedThreadFactory(name, true),
+                new AbortPolicyWithReport(name, URL));
         taskQueue.setExecutor(executor);
 
         CountDownLatch countDownLatch1 = new CountDownLatch(1);
@@ -163,15 +167,18 @@ class EagerThreadPoolExecutorTest {
 
     @Test
     void testSPI() {
-        ExecutorService executorService = (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class)
-            .getExtension("eager")
-            .getExecutor(URL);
-        Assertions.assertEquals("EagerThreadPoolExecutor", executorService.getClass()
-            .getSimpleName(), "test spi fail!");
+        ExtensionLoader<ThreadPool> extensionLoader =
+                ApplicationModel.defaultModel().getDefaultModule().getExtensionLoader(ThreadPool.class);
+
+        ExecutorService executorService =
+                (ExecutorService) extensionLoader.getExtension("eager").getExecutor(URL);
+
+        Assertions.assertEquals(
+                "EagerThreadPoolExecutor", executorService.getClass().getSimpleName(), "test spi fail!");
     }
 
     @Test
-    void testEagerThreadPool_rejectExecution1() throws Exception {
+    void testEagerThreadPool_rejectExecution1() {
         String name = "eager-tf";
         int cores = 1;
         int threads = 3;
@@ -180,12 +187,14 @@ class EagerThreadPoolExecutorTest {
 
         // init queue and executor
         TaskQueue<Runnable> taskQueue = new TaskQueue<>(queues);
-        final EagerThreadPoolExecutor executor = new EagerThreadPoolExecutor(cores,
-            threads,
-            alive, TimeUnit.MILLISECONDS,
-            taskQueue,
-            new NamedThreadFactory(name, true),
-            new AbortPolicyWithReport(name, URL));
+        final EagerThreadPoolExecutor executor = new EagerThreadPoolExecutor(
+                cores,
+                threads,
+                alive,
+                TimeUnit.MILLISECONDS,
+                taskQueue,
+                new NamedThreadFactory(name, true),
+                new AbortPolicyWithReport(name, URL));
         taskQueue.setExecutor(executor);
 
         CountDownLatch countDownLatch = new CountDownLatch(1);
@@ -211,9 +220,8 @@ class EagerThreadPoolExecutorTest {
         executor.execute(runnable);
     }
 
-
     @Test
-    void testEagerThreadPool_rejectExecution2() throws Exception {
+    void testEagerThreadPool_rejectExecution2() {
         String name = "eager-tf";
         int cores = 1;
         int threads = 3;
@@ -231,12 +239,14 @@ class EagerThreadPoolExecutorTest {
                 return super.retryOffer(o, timeout, unit);
             }
         };
-        final EagerThreadPoolExecutor executor = new EagerThreadPoolExecutor(cores,
-            threads,
-            alive, TimeUnit.MILLISECONDS,
-            taskQueue,
-            new NamedThreadFactory(name, true),
-            new AbortPolicyWithReport(name, URL));
+        final EagerThreadPoolExecutor executor = new EagerThreadPoolExecutor(
+                cores,
+                threads,
+                alive,
+                TimeUnit.MILLISECONDS,
+                taskQueue,
+                new NamedThreadFactory(name, true),
+                new AbortPolicyWithReport(name, URL));
         taskQueue.setExecutor(executor);
 
         Semaphore semaphore = new Semaphore(0);

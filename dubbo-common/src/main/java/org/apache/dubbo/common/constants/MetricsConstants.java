@@ -19,12 +19,17 @@ package org.apache.dubbo.common.constants;
 public interface MetricsConstants {
 
     String PROTOCOL_PROMETHEUS = "prometheus";
+    String PROTOCOL_DEFAULT = "default";
 
     String TAG_IP = "ip";
+
+    String TAG_PID = "pid";
 
     String TAG_HOSTNAME = "hostname";
 
     String TAG_APPLICATION_NAME = "application.name";
+
+    String TAG_APPLICATION_MODULE = "application.module.id";
 
     String TAG_INTERFACE_KEY = "interface";
 
@@ -34,7 +39,19 @@ public interface MetricsConstants {
 
     String TAG_VERSION_KEY = "version";
 
-    String ENABLE_JVM_METRICS_KEY = "enable.jvm.metrics";
+    String TAG_APPLICATION_VERSION_KEY = "application.version";
+
+    String TAG_KEY_KEY = "key";
+
+    String TAG_CONFIG_CENTER = "config.center";
+
+    String TAG_CHANGE_TYPE = "change.type";
+
+    String ENABLE_JVM_METRICS_KEY = "enable.jvm";
+
+    String ENABLE_COLLECTOR_SYNC_KEY = "enable.collector.sync";
+
+    String COLLECTOR_SYNC_PERIOD_KEY = "collector.sync.period";
 
     String AGGREGATION_COLLECTOR_KEY = "aggregation";
 
@@ -43,6 +60,8 @@ public interface MetricsConstants {
     String AGGREGATION_BUCKET_NUM_KEY = "aggregation.bucket.num";
 
     String AGGREGATION_TIME_WINDOW_SECONDS_KEY = "aggregation.time.window.seconds";
+
+    String HISTOGRAM_ENABLED_KEY = "histogram.enabled";
 
     String PROMETHEUS_EXPORTER_ENABLED_KEY = "prometheus.exporter.enabled";
 
@@ -75,4 +94,6 @@ public interface MetricsConstants {
     String PROMETHEUS_DEFAULT_JOB_NAME = "default_dubbo_job";
 
     String METRIC_FILTER_START_TIME = "metric_filter_start_time";
+
+    String TAG_THREAD_NAME = "thread.pool.name";
 }

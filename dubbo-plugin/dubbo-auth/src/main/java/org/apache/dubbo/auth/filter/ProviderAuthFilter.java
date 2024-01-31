@@ -31,7 +31,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 @Activate(group = CommonConstants.PROVIDER, value = Constants.SERVICE_AUTH, order = -10000)
 public class ProviderAuthFilter implements Filter {
-    private ApplicationModel applicationModel;
+    private final ApplicationModel applicationModel;
 
     public ProviderAuthFilter(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
@@ -42,7 +42,8 @@ public class ProviderAuthFilter implements Filter {
         URL url = invoker.getUrl();
         boolean shouldAuth = url.getParameter(Constants.SERVICE_AUTH, false);
         if (shouldAuth) {
-            Authenticator authenticator = applicationModel.getExtensionLoader(Authenticator.class)
+            Authenticator authenticator = applicationModel
+                    .getExtensionLoader(Authenticator.class)
                     .getExtension(url.getParameter(Constants.AUTHENTICATOR, Constants.DEFAULT_AUTHENTICATOR));
             try {
                 authenticator.authenticate(invocation, url);
@@ -52,6 +53,4 @@ public class ProviderAuthFilter implements Filter {
         }
         return invoker.invoke(invocation);
     }
-
-
 }

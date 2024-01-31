@@ -17,10 +17,11 @@
 package org.apache.dubbo.common.config.configcenter;
 
 import org.apache.dubbo.common.config.configcenter.nop.NopDynamicConfigurationFactory;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.Test;
 
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -32,8 +33,17 @@ class DynamicConfigurationFactoryTest {
 
     @Test
     void testDefaultExtension() {
-        DynamicConfigurationFactory factory = getExtensionLoader(DynamicConfigurationFactory.class).getDefaultExtension();
+        DynamicConfigurationFactory factory =
+                getExtensionLoader(DynamicConfigurationFactory.class).getDefaultExtension();
         assertEquals(NopDynamicConfigurationFactory.class, factory.getClass());
-        assertEquals(NopDynamicConfigurationFactory.class, getExtensionLoader(DynamicConfigurationFactory.class).getExtension("nop").getClass());
+        assertEquals(
+                NopDynamicConfigurationFactory.class,
+                getExtensionLoader(DynamicConfigurationFactory.class)
+                        .getExtension("nop")
+                        .getClass());
+    }
+
+    private <T> ExtensionLoader<T> getExtensionLoader(Class<T> extClass) {
+        return ApplicationModel.defaultModel().getDefaultModule().getExtensionLoader(extClass);
     }
 }

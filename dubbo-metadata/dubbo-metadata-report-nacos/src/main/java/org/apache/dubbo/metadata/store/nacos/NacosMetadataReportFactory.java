@@ -14,12 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metadata.store.nacos;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
+
+import static org.apache.dubbo.metadata.MetadataConstants.NAMESPACE_KEY;
 
 /**
  * metadata report factory impl for nacos
@@ -28,5 +30,16 @@ public class NacosMetadataReportFactory extends AbstractMetadataReportFactory {
     @Override
     protected MetadataReport createMetadataReport(URL url) {
         return new NacosMetadataReport(url);
+    }
+
+    @Override
+    protected String toMetadataReportKey(URL url) {
+        String namespace = url.getParameter(NAMESPACE_KEY);
+        if (!StringUtils.isEmpty(namespace)) {
+            return URL.valueOf(url.toServiceString())
+                    .addParameter(NAMESPACE_KEY, namespace)
+                    .toString();
+        }
+        return super.toMetadataReportKey(url);
     }
 }

@@ -23,6 +23,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
 import javax.lang.model.type.DeclaredType;
+
 import java.util.Map;
 
 import static org.apache.dubbo.metadata.annotation.processing.util.FieldUtils.getDeclaredFields;
@@ -41,10 +42,10 @@ public class EnumTypeDefinitionBuilder implements DeclaredTypeDefinitionBuilder 
     }
 
     @Override
-    public TypeDefinition build(ProcessingEnvironment processingEnv, DeclaredType type, Map<String, TypeDefinition> typeCache) {
+    public TypeDefinition build(
+            ProcessingEnvironment processingEnv, DeclaredType type, Map<String, TypeDefinition> typeCache) {
         TypeDefinition typeDefinition = new TypeDefinition(type.toString());
-        getDeclaredFields(type, FieldUtils::isEnumMemberField)
-                .stream()
+        getDeclaredFields(type, FieldUtils::isEnumMemberField).stream()
                 .map(Element::getSimpleName)
                 .map(Name::toString)
                 .forEach(typeDefinition.getEnums()::add);

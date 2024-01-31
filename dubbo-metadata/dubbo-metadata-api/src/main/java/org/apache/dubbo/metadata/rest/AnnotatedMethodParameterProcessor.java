@@ -16,10 +16,12 @@
  */
 package org.apache.dubbo.metadata.rest;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.lang.Prioritized;
 
 import javax.lang.model.element.VariableElement;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -29,20 +31,27 @@ import java.lang.reflect.Parameter;
  *
  * @since 2.7.6
  */
-@SPI
+@SPI(scope = ExtensionScope.FRAMEWORK)
 public interface AnnotatedMethodParameterProcessor extends Prioritized {
+
+    /**
+     * The string presenting the annotation name
+     *
+     * @return non-null
+     */
+    String getAnnotationName();
 
     /**
      * The string presenting the annotation type
      *
      * @return non-null
      */
-    String getAnnotationType();
+    Class getAnnotationClass();
 
     /**
      * Process the specified method {@link VariableElement parameter}
      *
-     * @param annotation            {@link Annotation the target annotation} whose type is {@link #getAnnotationType()}
+     * @param annotation            {@link Annotation the target annotation} whose type is {@link #getAnnotationName()}
      * @param parameter             the method parameter
      * @param parameterIndex        the index of method parameter
      * @param method                {@link Method method that parameter belongs to}
@@ -50,8 +59,14 @@ public interface AnnotatedMethodParameterProcessor extends Prioritized {
      * @param serviceInterfaceClass The type of Dubbo Service interface
      * @param restMethodMetadata    {@link RestMethodMetadata the metadata is used to update}
      */
-    void process(Annotation annotation, Parameter parameter, int parameterIndex, Method method,
-                 Class<?> serviceType, Class<?> serviceInterfaceClass, RestMethodMetadata restMethodMetadata);
+    void process(
+            Annotation annotation,
+            Parameter parameter,
+            int parameterIndex,
+            Method method,
+            Class<?> serviceType,
+            Class<?> serviceInterfaceClass,
+            RestMethodMetadata restMethodMetadata);
 
     /**
      * Build the default value
@@ -62,5 +77,4 @@ public interface AnnotatedMethodParameterProcessor extends Prioritized {
     static String buildDefaultValue(int parameterIndex) {
         return "{" + parameterIndex + "}";
     }
-
 }

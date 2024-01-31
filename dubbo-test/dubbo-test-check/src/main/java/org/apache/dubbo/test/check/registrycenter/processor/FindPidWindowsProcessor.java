@@ -22,11 +22,6 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.test.check.exception.DubboTestException;
 import org.apache.dubbo.test.check.registrycenter.context.ZookeeperWindowsContext;
 
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.Executor;
-import org.apache.commons.exec.PumpStreamHandler;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -34,6 +29,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.Executor;
+import org.apache.commons.exec.PumpStreamHandler;
 
 /**
  * Create a {@link org.apache.dubbo.test.check.registrycenter.Processor} to find pid on Windows OS.
@@ -82,8 +81,8 @@ public class FindPidWindowsProcessor extends ZookeeperWindowsProcessor {
                 if (values != null && values.length > 0) {
                     for (int i = 0; i < values.length; i++) {
                         List<String> segments = Arrays.stream(values[i].trim().split(" "))
-                            .filter(str -> !"".equals(str))
-                            .collect(Collectors.toList());
+                                .filter(str -> !"".equals(str))
+                                .collect(Collectors.toList());
                         // segments sample:
                         // TCP
                         // 127.0.0.1:2182
@@ -92,7 +91,8 @@ public class FindPidWindowsProcessor extends ZookeeperWindowsProcessor {
                         // 4020
                         if (segments != null && segments.size() == 5) {
                             if (this.check(segments.get(1), clientPort)) {
-                                int pid = Integer.valueOf(segments.get(segments.size() - 1).trim());
+                                int pid = Integer.valueOf(
+                                        segments.get(segments.size() - 1).trim());
                                 context.register(clientPort, pid);
                                 return;
                             }
@@ -101,7 +101,8 @@ public class FindPidWindowsProcessor extends ZookeeperWindowsProcessor {
                 }
             }
         } catch (IOException e) {
-            throw new DubboTestException(String.format("Failed to find the PID of zookeeper with port %d", clientPort), e);
+            throw new DubboTestException(
+                    String.format("Failed to find the PID of zookeeper with port %d", clientPort), e);
         }
     }
 
@@ -114,7 +115,7 @@ public class FindPidWindowsProcessor extends ZookeeperWindowsProcessor {
      */
     private boolean check(String segment, int clientPort) {
         return ("[::]:" + clientPort).equalsIgnoreCase(segment)
-            || ("0.0.0.0:" + clientPort).equalsIgnoreCase(segment)
-            || ("127.0.0.1:" + clientPort).equalsIgnoreCase(segment);
+                || ("0.0.0.0:" + clientPort).equalsIgnoreCase(segment)
+                || ("127.0.0.1:" + clientPort).equalsIgnoreCase(segment);
     }
 }

@@ -27,14 +27,14 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import org.apache.dubbo.rpc.protocol.dubbo.filter.TraceFilter;
 
+import java.lang.reflect.Field;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.lang.reflect.Field;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -68,7 +68,9 @@ class TraceTelnetHandlerTest {
         String message = "org.apache.dubbo.qos.legacy.service.DemoService sayHello 1";
         Class<?> type = DemoService.class;
 
-        ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME).export(mockInvoker);
+        ExtensionLoader.getExtensionLoader(Protocol.class)
+                .getExtension(DubboProtocol.NAME)
+                .export(mockInvoker);
         handler.telnet(mockChannel, message);
 
         String key = type.getName() + "." + method;

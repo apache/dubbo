@@ -22,7 +22,7 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 
 public class DefaultGovernanceRuleRepositoryImpl implements GovernanceRuleRepository {
 
-    private ModuleModel moduleModel;
+    private final ModuleModel moduleModel;
 
     public DefaultGovernanceRuleRepositoryImpl(ModuleModel moduleModel) {
         this.moduleModel = moduleModel;
@@ -54,7 +54,6 @@ public class DefaultGovernanceRuleRepositoryImpl implements GovernanceRuleReposi
     }
 
     private DynamicConfiguration getDynamicConfiguration() {
-        return moduleModel.getModelEnvironment().getDynamicConfiguration().orElse(null);
+        return moduleModel.modelEnvironment().getDynamicConfiguration().orElse(null);
     }
-
 }

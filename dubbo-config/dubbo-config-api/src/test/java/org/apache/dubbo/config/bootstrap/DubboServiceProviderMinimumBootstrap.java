@@ -28,11 +28,13 @@ public class DubboServiceProviderMinimumBootstrap {
     public static void main(String[] args) {
         DubboBootstrap.getInstance()
                 .application("dubbo-provider-demo")
-                .registry(builder -> builder.address(ZookeeperRegistryCenterConfig.getConnectionAddress()+"?registry-type=service"))
-//                .registry(builder -> builder.address("eureka://127.0.0.1:8761?registry-type=service"))
+                .registry(builder -> builder.address(
+                        ZookeeperRegistryCenterConfig.getConnectionAddress() + "?registry-type=service"))
                 .protocol(builder -> builder.port(-1).name("dubbo"))
-                .service("echo", builder -> builder.interfaceClass(EchoService.class).ref(new EchoServiceImpl()))
-                .service("user", builder -> builder.interfaceClass(UserService.class).ref(new UserServiceImpl()))
+                .service("echo", builder -> builder.interfaceClass(EchoService.class)
+                        .ref(new EchoServiceImpl()))
+                .service("user", builder -> builder.interfaceClass(UserService.class)
+                        .ref(new UserServiceImpl()))
                 .start()
                 .await();
     }

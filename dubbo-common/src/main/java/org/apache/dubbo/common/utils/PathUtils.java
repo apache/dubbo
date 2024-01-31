@@ -39,9 +39,7 @@ public interface PathUtils {
         paths.add(rootPath);
         paths.addAll(asList(subPaths));
 
-        return normalize(paths.stream()
-                .filter(StringUtils::isNotEmpty)
-                .collect(Collectors.joining(SLASH)));
+        return normalize(paths.stream().filter(StringUtils::isNotEmpty).collect(Collectors.joining(SLASH)));
     }
 
     /**
@@ -67,8 +65,6 @@ public interface PathUtils {
         while (normalizedPath.contains("//")) {
             normalizedPath = replace(normalizedPath, "//", "/");
         }
-
         return normalizedPath;
     }
-
 }

@@ -23,6 +23,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.common.constants.CommonConstants.HEARTBEAT_EVENT;
+import static org.apache.dubbo.remoting.Constants.USE_SECURE_RANDOM_ID;
 
 /**
  * Request.
@@ -41,6 +42,8 @@ public class Request {
 
     private boolean mBroken = false;
 
+    private int mPayload;
+
     private Object mData;
 
     public Request() {
@@ -53,10 +56,12 @@ public class Request {
 
     static {
         long startID = ThreadLocalRandom.current().nextLong();
-        try {
-            SecureRandom rand = new SecureRandom(SecureRandom.getSeed(20));
-            startID = rand.nextLong();
-        } catch (Throwable ignore) {
+        if (Boolean.parseBoolean(System.getProperty(USE_SECURE_RANDOM_ID, "false"))) {
+            try {
+                SecureRandom rand = new SecureRandom(SecureRandom.getSeed(20));
+                startID = rand.nextLong();
+            } catch (Throwable ignore) {
+            }
         }
         INVOKE_ID = new AtomicLong(startID);
     }
@@ -73,7 +78,7 @@ public class Request {
 
         try {
             return data.toString();
-        } catch (Throwable e) {
+        } catch (Exception e) {
             return "<Fail toString of " + data.getClass() + ", cause: " + StringUtils.toString(e) + ">";
         }
     }
@@ -119,6 +124,14 @@ public class Request {
         this.mBroken = mBroken;
     }
 
+    public int getPayload() {
+        return mPayload;
+    }
+
+    public void setPayload(int mPayload) {
+        this.mPayload = mPayload;
+    }
+
     public Object getData() {
         return mData;
     }
@@ -143,6 +156,7 @@ public class Request {
         copy.mTwoWay = this.mTwoWay;
         copy.mEvent = this.mEvent;
         copy.mBroken = this.mBroken;
+        copy.mPayload = this.mPayload;
         copy.mData = this.mData;
         return copy;
     }
@@ -153,12 +167,14 @@ public class Request {
         copy.mTwoWay = this.mTwoWay;
         copy.mEvent = this.mEvent;
         copy.mBroken = this.mBroken;
+        copy.mPayload = this.mPayload;
         return copy;
     }
 
     @Override
     public String toString() {
         return "Request [id=" + mId + ", version=" + mVersion + ", twoWay=" + mTwoWay + ", event=" + mEvent
-            + ", broken=" + mBroken + ", data=" + (mData == this ? "this" : safeToString(mData)) + "]";
+                + ", broken=" + mBroken + ", mPayload=" + mPayload + ", data="
+                + (mData == this ? "this" : safeToString(mData)) + "]";
     }
 }

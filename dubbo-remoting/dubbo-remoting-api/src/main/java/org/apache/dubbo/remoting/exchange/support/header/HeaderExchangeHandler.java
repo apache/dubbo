@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -31,22 +32,24 @@ import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
+import org.apache.dubbo.remoting.exchange.support.MultiMessage;
 import org.apache.dubbo.remoting.transport.ChannelHandlerDelegate;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletionStage;
 
 import static org.apache.dubbo.common.constants.CommonConstants.READONLY_EVENT;
+import static org.apache.dubbo.common.constants.CommonConstants.WRITEABLE_EVENT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_RESPONSE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNSUPPORTED_MESSAGE;
-
 
 /**
  * ExchangeReceiver
  */
 public class HeaderExchangeHandler implements ChannelHandlerDelegate {
 
-    protected static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(HeaderExchangeHandler.class);
+    protected static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(HeaderExchangeHandler.class);
 
     private final ExchangeHandler handler;
 
@@ -66,14 +69,19 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
     private static boolean isClientSide(Channel channel) {
         InetSocketAddress address = channel.getRemoteAddress();
         URL url = channel.getUrl();
-        return url.getPort() == address.getPort() &&
-            NetUtils.filterLocalHost(url.getIp())
-                .equals(NetUtils.filterLocalHost(address.getAddress().getHostAddress()));
+        return url.getPort() == address.getPort()
+                && NetUtils.filterLocalHost(url.getIp())
+                        .equals(NetUtils.filterLocalHost(address.getAddress().getHostAddress()));
     }
 
     void handlerEvent(Channel channel, Request req) throws RemotingException {
         if (req.getData() != null && req.getData().equals(READONLY_EVENT)) {
             channel.setAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY, Boolean.TRUE);
+            logger.info("ChannelReadOnly set true for channel: " + channel);
+        }
+        if (req.getData() != null && req.getData().equals(WRITEABLE_EVENT)) {
+            channel.removeAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY);
+            logger.info("ChannelReadOnly set false for channel: " + channel);
         }
     }
 
@@ -111,7 +119,11 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
                     }
                     channel.send(res);
                 } catch (RemotingException e) {
-                    logger.warn(TRANSPORT_FAILED_RESPONSE, "", "", "Send result to consumer failed, channel is " + channel + ", msg is " + e);
+                    logger.warn(
+                            TRANSPORT_FAILED_RESPONSE,
+                            "",
+                            "",
+                            "Send result to consumer failed, channel is " + channel + ", msg is " + e);
                 }
             });
         } catch (Throwable e) {
@@ -125,6 +137,9 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
     public void connected(Channel channel) throws RemotingException {
         ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
         handler.connected(exchangeChannel);
+        channel.setAttribute(
+                Constants.CHANNEL_SHUTDOWN_TIMEOUT_KEY,
+                ConfigurationUtils.getServerShutdownTimeout(channel.getUrl().getOrDefaultApplicationModel()));
     }
 
     @Override
@@ -133,7 +148,12 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         try {
             handler.disconnected(exchangeChannel);
         } finally {
-            DefaultFuture.closeChannel(channel);
+            int shutdownTimeout = 0;
+            Object timeoutObj = channel.getAttribute(Constants.CHANNEL_SHUTDOWN_TIMEOUT_KEY);
+            if (timeoutObj instanceof Integer) {
+                shutdownTimeout = (Integer) timeoutObj;
+            }
+            DefaultFuture.closeChannel(channel, ConfigurationUtils.reCalShutdownTime(shutdownTimeout));
             HeaderExchangeChannel.removeChannel(channel);
         }
     }
@@ -152,14 +172,22 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
             Request request = (Request) message;
             DefaultFuture.sent(channel, request);
         }
+        if (message instanceof MultiMessage) {
+            MultiMessage multiMessage = (MultiMessage) message;
+            for (Object single : multiMessage) {
+                if (single instanceof Request) {
+                    DefaultFuture.sent(channel, ((Request) single));
+                }
+            }
+        }
         if (exception != null) {
             if (exception instanceof RuntimeException) {
                 throw (RuntimeException) exception;
             } else if (exception instanceof RemotingException) {
                 throw (RemotingException) exception;
             } else {
-                throw new RemotingException(channel.getLocalAddress(), channel.getRemoteAddress(),
-                    exception.getMessage(), exception);
+                throw new RemotingException(
+                        channel.getLocalAddress(), channel.getRemoteAddress(), exception.getMessage(), exception);
             }
         }
     }
@@ -183,7 +211,8 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
             handleResponse(channel, (Response) message);
         } else if (message instanceof String) {
             if (isClientSide(channel)) {
-                Exception e = new Exception("Dubbo client can not supported string message: " + message + " in channel: " + channel + ", url: " + channel.getUrl());
+                Exception e = new Exception("Dubbo client can not supported string message: " + message
+                        + " in channel: " + channel + ", url: " + channel.getUrl());
                 logger.error(TRANSPORT_UNSUPPORTED_MESSAGE, "", "", e.getMessage(), e);
             } else {
                 String echo = handler.telnet(channel, (String) message);

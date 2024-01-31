@@ -28,13 +28,12 @@ import com.alibaba.nacos.api.exception.NacosException;
  * @since 3.1.5
  */
 @FunctionalInterface
-public interface NacosConsumer<T> {
+public interface NacosConsumer {
 
     /**
      * Applies this function to the given argument.
      *
-     * @param t the function argument
      * @throws NacosException if met with any error
      */
-    void accept(T t) throws NacosException;
+    void accept() throws NacosException;
 }

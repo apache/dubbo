@@ -16,6 +16,30 @@
  */
 package org.apache.dubbo.registry.client.event.listener;
 
+import org.apache.dubbo.common.ProtocolServiceKey;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.URLBuilder;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
+import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
+import org.apache.dubbo.metrics.registry.event.RegistryEvent;
+import org.apache.dubbo.registry.NotifyListener;
+import org.apache.dubbo.registry.client.DefaultServiceInstance;
+import org.apache.dubbo.registry.client.ServiceDiscovery;
+import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.event.RetryServiceInstancesChangedEvent;
+import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
+import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
+import org.apache.dubbo.registry.client.metadata.ServiceInstanceNotificationCustomizer;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,31 +56,10 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.dubbo.common.ProtocolServiceKey;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.URLBuilder;
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
-import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
-import org.apache.dubbo.metadata.MetadataInfo;
-import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
-import org.apache.dubbo.registry.NotifyListener;
-import org.apache.dubbo.registry.client.DefaultServiceInstance;
-import org.apache.dubbo.registry.client.ServiceDiscovery;
-import org.apache.dubbo.registry.client.ServiceInstance;
-import org.apache.dubbo.registry.client.event.RetryServiceInstancesChangedEvent;
-import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
-import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
-import org.apache.dubbo.registry.client.metadata.ServiceInstanceNotificationCustomizer;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ScopeModelUtil;
-
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_REFRESH_ADDRESS;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_ENABLE_EMPTY_PROTECTION;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
@@ -69,11 +72,11 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  */
 public class ServiceInstancesChangedListener {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ServiceInstancesChangedListener.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(ServiceInstancesChangedListener.class);
 
     protected final Set<String> serviceNames;
     protected final ServiceDiscovery serviceDiscovery;
-    protected URL url;
     protected Map<String, Set<NotifyListenerWithKey>> listeners;
 
     protected AtomicBoolean destroyed = new AtomicBoolean(false);
@@ -87,7 +90,7 @@ public class ServiceInstancesChangedListener {
     private final ScheduledExecutorService scheduler;
     private volatile boolean hasEmptyMetadata;
     private final Set<ServiceInstanceNotificationCustomizer> serviceInstanceNotificationCustomizers;
-
+    private final ApplicationModel applicationModel;
 
     public ServiceInstancesChangedListener(Set<String> serviceNames, ServiceDiscovery serviceDiscovery) {
         this.serviceNames = serviceNames;
@@ -96,9 +99,18 @@ public class ServiceInstancesChangedListener {
         this.allInstances = new HashMap<>();
         this.serviceUrls = new HashMap<>();
         retryPermission = new Semaphore(1);
-        ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(serviceDiscovery == null || serviceDiscovery.getUrl() == null ? null : serviceDiscovery.getUrl().getScopeModel());
-        this.scheduler = applicationModel.getBeanFactory().getBean(FrameworkExecutorRepository.class).getMetadataRetryExecutor();
-        this.serviceInstanceNotificationCustomizers = applicationModel.getExtensionLoader(ServiceInstanceNotificationCustomizer.class).getSupportedExtensionInstances();
+        ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(
+                serviceDiscovery == null || serviceDiscovery.getUrl() == null
+                        ? null
+                        : serviceDiscovery.getUrl().getScopeModel());
+        this.scheduler = applicationModel
+                .getBeanFactory()
+                .getBean(FrameworkExecutorRepository.class)
+                .getMetadataRetryExecutor();
+        this.serviceInstanceNotificationCustomizers = applicationModel
+                .getExtensionLoader(ServiceInstanceNotificationCustomizer.class)
+                .getSupportedExtensionInstances();
+        this.applicationModel = applicationModel;
     }
 
     /**
@@ -141,7 +153,8 @@ public class ServiceInstancesChangedListener {
                     }
                     continue;
                 }
-                List<ServiceInstance> subInstances = revisionToInstances.computeIfAbsent(revision, r -> new LinkedList<>());
+                List<ServiceInstance> subInstances =
+                        revisionToInstances.computeIfAbsent(revision, r -> new LinkedList<>());
                 subInstances.add(instance);
             }
         }
@@ -152,11 +165,11 @@ public class ServiceInstancesChangedListener {
             List<ServiceInstance> subInstances = entry.getValue();
 
             MetadataInfo metadata = subInstances.stream()
-                .map(ServiceInstance::getServiceMetadata)
-                .filter(Objects::nonNull)
-                .filter(m -> revision.equals(m.getRevision()))
-                .findFirst()
-                .orElseGet(() -> serviceDiscovery.getRemoteMetadata(revision, subInstances));
+                    .map(ServiceInstance::getServiceMetadata)
+                    .filter(Objects::nonNull)
+                    .filter(m -> revision.equals(m.getRevision()))
+                    .findFirst()
+                    .orElseGet(() -> serviceDiscovery.getRemoteMetadata(revision, subInstances));
 
             parseMetadata(revision, metadata, localServiceToRevisions);
             // update metadata into each instance, in case new instance created.
@@ -169,7 +182,7 @@ public class ServiceInstancesChangedListener {
         }
 
         int emptyNum = hasEmptyMetadata(revisionToInstances);
-        if (emptyNum != 0) {// retry every 10 seconds
+        if (emptyNum != 0) { // retry every 10 seconds
             hasEmptyMetadata = true;
             if (retryPermission.tryAcquire()) {
                 if (retryFuture != null && !retryFuture.isDone()) {
@@ -177,18 +190,29 @@ public class ServiceInstancesChangedListener {
                     retryFuture.cancel(true);
                 }
                 try {
-                    retryFuture = scheduler.schedule(new AddressRefreshRetryTask(retryPermission, event.getServiceName()), 10_000L, TimeUnit.MILLISECONDS);
+                    retryFuture = scheduler.schedule(
+                            new AddressRefreshRetryTask(retryPermission, event.getServiceName()),
+                            10_000L,
+                            TimeUnit.MILLISECONDS);
                 } catch (Exception e) {
-                    logger.error(INTERNAL_ERROR, "unknown error in registry module", "", "Error submitting async retry task.");
+                    logger.error(
+                            INTERNAL_ERROR,
+                            "unknown error in registry module",
+                            "",
+                            "Error submitting async retry task.");
                 }
-                logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", "Address refresh try task submitted");
+                logger.warn(
+                        INTERNAL_ERROR, "unknown error in registry module", "", "Address refresh try task submitted");
             }
 
             // return if all metadata is empty, this notification will not take effect.
             if (emptyNum == revisionToInstances.size()) {
                 // 1-17 - Address refresh failed.
-                logger.error(REGISTRY_FAILED_REFRESH_ADDRESS, "metadata Server failure", "",
-                    "Address refresh failed because of Metadata Server failure, wait for retry or new address refresh event.");
+                logger.error(
+                        REGISTRY_FAILED_REFRESH_ADDRESS,
+                        "metadata Server failure",
+                        "",
+                        "Address refresh failed because of Metadata Server failure, wait for retry or new address refresh event.");
 
                 return;
             }
@@ -201,15 +225,17 @@ public class ServiceInstancesChangedListener {
             ServiceInfo serviceInfo = entry.getKey();
             Set<String> revisions = entry.getValue();
 
-            Map<Integer, Map<Set<String>, Object>> portToRevisions = protocolRevisionsToUrls.computeIfAbsent(serviceInfo.getProtocol(), k -> new HashMap<>());
-            Map<Set<String>, Object> revisionsToUrls = portToRevisions.computeIfAbsent(serviceInfo.getPort(), k -> new HashMap<>());
-            Object urls = revisionsToUrls.get(revisions);
-            if (urls == null) {
-                urls = getServiceUrlsCache(revisionToInstances, revisions, serviceInfo.getProtocol(), serviceInfo.getPort());
-                revisionsToUrls.put(revisions, urls);
-            }
+            Map<Integer, Map<Set<String>, Object>> portToRevisions =
+                    protocolRevisionsToUrls.computeIfAbsent(serviceInfo.getProtocol(), k -> new HashMap<>());
+            Map<Set<String>, Object> revisionsToUrls =
+                    portToRevisions.computeIfAbsent(serviceInfo.getPort(), k -> new HashMap<>());
+            Object urls = revisionsToUrls.computeIfAbsent(
+                    revisions,
+                    k -> getServiceUrlsCache(
+                            revisionToInstances, revisions, serviceInfo.getProtocol(), serviceInfo.getPort()));
 
-            List<ProtocolServiceKeyWithUrls> list = newServiceUrls.computeIfAbsent(serviceInfo.getPath(), k -> new LinkedList<>());
+            List<ProtocolServiceKeyWithUrls> list =
+                    newServiceUrls.computeIfAbsent(serviceInfo.getPath(), k -> new LinkedList<>());
             list.add(new ProtocolServiceKeyWithUrls(serviceInfo.getProtocolServiceKey(), (List<URL>) urls));
         }
 
@@ -222,10 +248,14 @@ public class ServiceInstancesChangedListener {
             return;
         }
 
-        Set<NotifyListenerWithKey> notifyListeners = this.listeners.computeIfAbsent(url.getServiceKey(), _k -> new ConcurrentHashSet<>());
+        Set<NotifyListenerWithKey> notifyListeners =
+                this.listeners.computeIfAbsent(url.getServiceKey(), _k -> new ConcurrentHashSet<>());
         String protocol = listener.getConsumerUrl().getParameter(PROTOCOL_KEY, url.getProtocol());
-        ProtocolServiceKey protocolServiceKey = new ProtocolServiceKey(url.getServiceInterface(), url.getVersion(), url.getGroup(),
-            !CommonConstants.CONSUMER.equals(protocol) ? protocol : null);
+        ProtocolServiceKey protocolServiceKey = new ProtocolServiceKey(
+                url.getServiceInterface(),
+                url.getVersion(),
+                url.getGroup(),
+                !CommonConstants.CONSUMER.equals(protocol) ? protocol : null);
         NotifyListenerWithKey listenerWithKey = new NotifyListenerWithKey(protocolServiceKey, listener);
         notifyListeners.add(listenerWithKey);
 
@@ -233,7 +263,9 @@ public class ServiceInstancesChangedListener {
         List<URL> urls = getAddresses(protocolServiceKey, listener.getConsumerUrl());
 
         if (CollectionUtils.isNotEmpty(urls)) {
-            logger.info(String.format("Notify serviceKey: %s, listener: %s with %s urls on subscription", protocolServiceKey, listener, urls.size()));
+            logger.info(String.format(
+                    "Notify serviceKey: %s, listener: %s with %s urls on subscription",
+                    protocolServiceKey, listener, urls.size()));
             listener.notify(urls);
         }
     }
@@ -249,7 +281,7 @@ public class ServiceInstancesChangedListener {
             notifyListeners.removeIf(listener -> listener.getNotifyListener().equals(notifyListener));
 
             // ServiceKey has no listener, remove set
-            if (notifyListeners.size() == 0) {
+            if (notifyListeners.isEmpty()) {
                 this.listeners.remove(serviceKey);
             }
         }
@@ -268,14 +300,6 @@ public class ServiceInstancesChangedListener {
         return serviceNames;
     }
 
-    public void setUrl(URL url) {
-        this.url = url;
-    }
-
-    public URL getUrl() {
-        return url;
-    }
-
     public Map<String, List<ServiceInstance>> getAllInstances() {
         return allInstances;
     }
@@ -291,9 +315,18 @@ public class ServiceInstancesChangedListener {
     protected boolean isRetryAndExpired(ServiceInstancesChangedEvent event) {
         if (event instanceof RetryServiceInstancesChangedEvent) {
             RetryServiceInstancesChangedEvent retryEvent = (RetryServiceInstancesChangedEvent) event;
-            logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", "Received address refresh retry event, " + retryEvent.getFailureRecordTime());
+            logger.warn(
+                    INTERNAL_ERROR,
+                    "unknown error in registry module",
+                    "",
+                    "Received address refresh retry event, " + retryEvent.getFailureRecordTime());
             if (retryEvent.getFailureRecordTime() < lastRefreshTime && !hasEmptyMetadata) {
-                logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", "Ignore retry event, event time: " + retryEvent.getFailureRecordTime() + ", last refresh time: " + lastRefreshTime);
+                logger.warn(
+                        INTERNAL_ERROR,
+                        "unknown error in registry module",
+                        "",
+                        "Ignore retry event, event time: " + retryEvent.getFailureRecordTime() + ", last refresh time: "
+                                + lastRefreshTime);
                 return true;
             }
             logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", "Retrying address notification...");
@@ -308,7 +341,8 @@ public class ServiceInstancesChangedListener {
         String appName = event.getServiceName();
         List<ServiceInstance> appInstances = event.getServiceInstances();
         logger.info("Received instance notification, serviceName: " + appName + ", instances: " + appInstances.size());
-        for (ServiceInstanceNotificationCustomizer serviceInstanceNotificationCustomizer : serviceInstanceNotificationCustomizers) {
+        for (ServiceInstanceNotificationCustomizer serviceInstanceNotificationCustomizer :
+                serviceInstanceNotificationCustomizers) {
             serviceInstanceNotificationCustomizer.customize(appInstances);
         }
         allInstances.put(appName, appInstances);
@@ -329,7 +363,8 @@ public class ServiceInstancesChangedListener {
         StringBuilder builder = new StringBuilder();
         int emptyMetadataNum = 0;
         for (Map.Entry<String, List<ServiceInstance>> entry : revisionToInstances.entrySet()) {
-            DefaultServiceInstance serviceInstance = (DefaultServiceInstance) entry.getValue().get(0);
+            DefaultServiceInstance serviceInstance =
+                    (DefaultServiceInstance) entry.getValue().get(0);
             if (serviceInstance == null || serviceInstance.getServiceMetadata() == MetadataInfo.EMPTY) {
                 emptyMetadataNum++;
             }
@@ -339,7 +374,10 @@ public class ServiceInstancesChangedListener {
         }
 
         if (emptyMetadataNum > 0) {
-            builder.insert(0, emptyMetadataNum + "/" + revisionToInstances.size() + " revisions failed to get metadata from remote: ");
+            builder.insert(
+                    0,
+                    emptyMetadataNum + "/" + revisionToInstances.size()
+                            + " revisions failed to get metadata from remote: ");
             logger.error(INTERNAL_ERROR, "unknown error in registry module", "", builder.toString());
         } else {
             builder.insert(0, revisionToInstances.size() + " unique working revisions: ");
@@ -348,7 +386,8 @@ public class ServiceInstancesChangedListener {
         return emptyMetadataNum;
     }
 
-    protected Map<ServiceInfo, Set<String>> parseMetadata(String revision, MetadataInfo metadata, Map<ServiceInfo, Set<String>> localServiceToRevisions) {
+    protected Map<ServiceInfo, Set<String>> parseMetadata(
+            String revision, MetadataInfo metadata, Map<ServiceInfo, Set<String>> localServiceToRevisions) {
         Map<String, ServiceInfo> serviceInfos = metadata.getServices();
         for (Map.Entry<String, ServiceInfo> entry : serviceInfos.entrySet()) {
             Set<String> set = localServiceToRevisions.computeIfAbsent(entry.getValue(), _k -> new TreeSet<>());
@@ -358,7 +397,8 @@ public class ServiceInstancesChangedListener {
         return localServiceToRevisions;
     }
 
-    protected Object getServiceUrlsCache(Map<String, List<ServiceInstance>> revisionToInstances, Set<String> revisions, String protocol, int port) {
+    protected Object getServiceUrlsCache(
+            Map<String, List<ServiceInstance>> revisionToInstances, Set<String> revisions, String protocol, int port) {
         List<URL> urls = new ArrayList<>();
         for (String r : revisions) {
             for (ServiceInstance i : revisionToInstances.get(r)) {
@@ -366,7 +406,10 @@ public class ServiceInstancesChangedListener {
                     if (i.getPort() == port) {
                         urls.add(i.toURL(protocol).setScopeModel(i.getApplicationModel()));
                     } else {
-                        urls.add(((DefaultServiceInstance) i).copyFrom(port).toURL(protocol).setScopeModel(i.getApplicationModel()));
+                        urls.add(((DefaultServiceInstance) i)
+                                .copyFrom(port)
+                                .toURL(protocol)
+                                .setScopeModel(i.getApplicationModel()));
                     }
                     continue;
                 }
@@ -385,11 +428,13 @@ public class ServiceInstancesChangedListener {
     }
 
     protected List<URL> getAddresses(ProtocolServiceKey protocolServiceKey, URL consumerURL) {
-        List<ProtocolServiceKeyWithUrls> protocolServiceKeyWithUrlsList = serviceUrls.get(protocolServiceKey.getInterfaceName());
+        List<ProtocolServiceKeyWithUrls> protocolServiceKeyWithUrlsList =
+                serviceUrls.get(protocolServiceKey.getInterfaceName());
         List<URL> urls = new ArrayList<>();
         if (protocolServiceKeyWithUrlsList != null) {
             for (ProtocolServiceKeyWithUrls protocolServiceKeyWithUrls : protocolServiceKeyWithUrlsList) {
-                if (ProtocolServiceKey.Matcher.isMatch(protocolServiceKey, protocolServiceKeyWithUrls.getProtocolServiceKey())) {
+                if (ProtocolServiceKey.Matcher.isMatch(
+                        protocolServiceKey, protocolServiceKeyWithUrls.getProtocolServiceKey())) {
                     urls.addAll(protocolServiceKeyWithUrls.getUrls());
                 }
             }
@@ -406,21 +451,30 @@ public class ServiceInstancesChangedListener {
      * race condition is protected by onEvent/doOnEvent
      */
     protected void notifyAddressChanged() {
-        // 1 different services
-        listeners.forEach((serviceKey, listenerSet) -> {
-            // 2 multiple subscription listener of the same service
-            for (NotifyListenerWithKey listenerWithKey : listenerSet) {
-                NotifyListener notifyListener = listenerWithKey.getNotifyListener();
 
-                List<URL> urls = toUrlsWithEmpty(getAddresses(listenerWithKey.getProtocolServiceKey(), notifyListener.getConsumerUrl()));
-                logger.info("Notify service " + listenerWithKey.getProtocolServiceKey() + " with urls " + urls.size());
-                notifyListener.notify(urls);
-            }
+        MetricsEventBus.post(RegistryEvent.toNotifyEvent(applicationModel), () -> {
+            Map<String, Integer> lastNumMap = new HashMap<>();
+            // 1 different services
+            listeners.forEach((serviceKey, listenerSet) -> {
+                // 2 multiple subscription listener of the same service
+                for (NotifyListenerWithKey listenerWithKey : listenerSet) {
+                    NotifyListener notifyListener = listenerWithKey.getNotifyListener();
+
+                    List<URL> urls = toUrlsWithEmpty(
+                            getAddresses(listenerWithKey.getProtocolServiceKey(), notifyListener.getConsumerUrl()));
+                    logger.info(
+                            "Notify service " + listenerWithKey.getProtocolServiceKey() + " with urls " + urls.size());
+                    notifyListener.notify(urls);
+                    lastNumMap.put(serviceKey, urls.size());
+                }
+            });
+            return lastNumMap;
         });
     }
 
     protected List<URL> toUrlsWithEmpty(List<URL> urls) {
-        boolean emptyProtectionEnabled = serviceDiscovery.getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, true);
+        boolean emptyProtectionEnabled =
+                serviceDiscovery.getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, DEFAULT_ENABLE_EMPTY_PROTECTION);
         if (!emptyProtectionEnabled && urls == null) {
             urls = new ArrayList<>();
         } else if (emptyProtectionEnabled && urls == null) {
@@ -429,7 +483,9 @@ public class ServiceInstancesChangedListener {
 
         if (CollectionUtils.isEmpty(urls) && !emptyProtectionEnabled) {
             // notice that the service of this.url may not be the same as notify listener.
-            URL empty = URLBuilder.from(this.url).setProtocol(EMPTY_PROTOCOL).build();
+            URL empty = URLBuilder.from(serviceDiscovery.getUrl())
+                    .setProtocol(EMPTY_PROTOCOL)
+                    .build();
             urls.add(empty);
         }
         return urls;
@@ -471,7 +527,7 @@ public class ServiceInstancesChangedListener {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getClass(), getServiceNames(), listeners);
+        return Objects.hash(getClass(), getServiceNames());
     }
 
     protected class AddressRefreshRetryTask implements Runnable {
@@ -516,7 +572,8 @@ public class ServiceInstancesChangedListener {
                 return false;
             }
             NotifyListenerWithKey that = (NotifyListenerWithKey) o;
-            return Objects.equals(protocolServiceKey, that.protocolServiceKey) && Objects.equals(notifyListener, that.notifyListener);
+            return Objects.equals(protocolServiceKey, that.protocolServiceKey)
+                    && Objects.equals(notifyListener, that.notifyListener);
         }
 
         @Override

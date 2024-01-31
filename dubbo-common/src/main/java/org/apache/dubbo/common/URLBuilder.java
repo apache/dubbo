@@ -43,9 +43,9 @@ public final class URLBuilder extends ServiceConfigURL {
 
     private String path;
 
-    private Map<String, String> parameters;
+    private final Map<String, String> parameters;
 
-    private Map<String, Object> attributes;
+    private final Map<String, Object> attributes;
 
     private Map<String, Map<String, String>> methodParameters;
 
@@ -85,24 +85,26 @@ public final class URLBuilder extends ServiceConfigURL {
         this(protocol, null, null, host, port, path, parameters);
     }
 
-    public URLBuilder(String protocol,
-                      String username,
-                      String password,
-                      String host,
-                      int port,
-                      String path,
-                      Map<String, String> parameters) {
+    public URLBuilder(
+            String protocol,
+            String username,
+            String password,
+            String host,
+            int port,
+            String path,
+            Map<String, String> parameters) {
         this(protocol, username, password, host, port, path, parameters, null);
     }
 
-    public URLBuilder(String protocol,
-                      String username,
-                      String password,
-                      String host,
-                      int port,
-                      String path,
-                      Map<String, String> parameters,
-                      Map<String, Object> attributes) {
+    public URLBuilder(
+            String protocol,
+            String username,
+            String password,
+            String host,
+            int port,
+            String path,
+            Map<String, String> parameters,
+            Map<String, Object> attributes) {
         this.protocol = protocol;
         this.username = username;
         this.password = password;
@@ -122,15 +124,7 @@ public final class URLBuilder extends ServiceConfigURL {
         String path = url.getPath();
         Map<String, String> parameters = new HashMap<>(url.getParameters());
         Map<String, Object> attributes = new HashMap<>(url.getAttributes());
-        return new URLBuilder(
-            protocol,
-            username,
-            password,
-            host,
-            port,
-            path,
-            parameters,
-            attributes);
+        return new URLBuilder(protocol, username, password, host, port, path, parameters, attributes);
     }
 
     public ServiceConfigURL build() {

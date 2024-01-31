@@ -16,18 +16,18 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
+import org.apache.dubbo.common.utils.JsonUtils;
+import org.apache.dubbo.qos.api.BaseCommand;
+import org.apache.dubbo.qos.api.Cmd;
+import org.apache.dubbo.qos.api.CommandContext;
+import org.apache.dubbo.qos.command.util.SerializeCheckUtils;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.dubbo.common.utils.JsonUtils;
-import org.apache.dubbo.qos.command.BaseCommand;
-import org.apache.dubbo.qos.command.CommandContext;
-import org.apache.dubbo.qos.command.annotation.Cmd;
-import org.apache.dubbo.qos.command.util.SerializeCheckUtils;
-import org.apache.dubbo.rpc.model.FrameworkModel;
-
-@Cmd(name = "serializeWarnedClasses",summary = "get serialize warned classes")
+@Cmd(name = "serializeWarnedClasses", summary = "get serialize warned classes")
 public class SerializeWarnedClasses implements BaseCommand {
 
     private final SerializeCheckUtils serializeCheckUtils;
@@ -41,11 +41,11 @@ public class SerializeWarnedClasses implements BaseCommand {
         if (commandContext.isHttp()) {
             Map<String, Object> result = new HashMap<>();
             result.put("warnedClasses", serializeCheckUtils.getWarnedClasses());
-            return JsonUtils.getJson().toJson(result);
+            return JsonUtils.toJson(result);
         } else {
-            return "WarnedClasses: \n" +
-                serializeCheckUtils.getWarnedClasses().stream().sorted().collect(Collectors.joining("\n")) +
-                "\n\n";
+            return "WarnedClasses: \n"
+                    + serializeCheckUtils.getWarnedClasses().stream().sorted().collect(Collectors.joining("\n"))
+                    + "\n\n";
         }
     }
 }

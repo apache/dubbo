@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.logger.Logger;
@@ -23,6 +22,8 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.exchange.HeartBeatRequest;
+import org.apache.dubbo.remoting.exchange.HeartBeatResponse;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.transport.AbstractChannelHandlerDelegate;
@@ -65,23 +66,26 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
     public void received(Channel channel, Object message) throws RemotingException {
         setReadTimestamp(channel);
         if (isHeartbeatRequest(message)) {
-            Request req = (Request) message;
+            HeartBeatRequest req = (HeartBeatRequest) message;
             if (req.isTwoWay()) {
-                Response res = new Response(req.getId(), req.getVersion());
+                HeartBeatResponse res;
+                res = new HeartBeatResponse(req.getId(), req.getVersion());
                 res.setEvent(HEARTBEAT_EVENT);
+                res.setProto(req.getProto());
                 channel.send(res);
                 if (logger.isDebugEnabled()) {
                     int heartbeat = channel.getUrl().getParameter(Constants.HEARTBEAT_KEY, 0);
                     logger.debug("Received heartbeat from remote channel " + channel.getRemoteAddress()
-                        + ", cause: The channel has no data-transmission exceeds a heartbeat period"
-                        + (heartbeat > 0 ? ": " + heartbeat + "ms" : ""));
+                            + ", cause: The channel has no data-transmission exceeds a heartbeat period"
+                            + (heartbeat > 0 ? ": " + heartbeat + "ms" : ""));
                 }
             }
             return;
         }
         if (isHeartbeatResponse(message)) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Receive heartbeat response in thread " + Thread.currentThread().getName());
+                logger.debug("Receive heartbeat response in thread "
+                        + Thread.currentThread().getName());
             }
             return;
         }
@@ -105,7 +109,7 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
     }
 
     private boolean isHeartbeatRequest(Object message) {
-        return message instanceof Request && ((Request) message).isHeartbeat();
+        return message instanceof HeartBeatRequest && ((Request) message).isHeartbeat();
     }
 
     private boolean isHeartbeatResponse(Object message) {

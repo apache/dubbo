@@ -14,11 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.destination;
 
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.BaseRule;
-
 
 public class DestinationRule extends BaseRule {
     private DestinationRuleSpec spec;
@@ -33,9 +31,6 @@ public class DestinationRule extends BaseRule {
 
     @Override
     public String toString() {
-        return "DestinationRule{" +
-                "base=" + super.toString() +
-                ", spec=" + spec +
-                '}';
+        return "DestinationRule{" + "base=" + super.toString() + ", spec=" + spec + '}';
     }
 }

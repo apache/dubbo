@@ -20,14 +20,13 @@ import java.lang.reflect.Type;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
+import com.google.gson.Gson;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
-
-import com.google.gson.Gson;
 
 public class GsonImplTest {
 
@@ -38,16 +37,18 @@ public class GsonImplTest {
 
     @BeforeAll
     static void setup() {
-        gsonMock = Mockito.mockConstruction(Gson.class,
-            (mock, context) -> {
-                gsonReference.set(mock);
-                Mockito.when(mock.toJson((Object) Mockito.any())).thenAnswer(invocation -> gson.toJson((Object) invocation.getArgument(0)));
-                Mockito.when(mock.fromJson(Mockito.anyString(), (Type) Mockito.any())).thenAnswer(invocation -> gson.fromJson((String) invocation.getArgument(0), (Type) invocation.getArgument(1)));
-                Consumer<Gson> gsonConsumer = gsonInit.get();
-                if (gsonConsumer != null) {
-                    gsonConsumer.accept(mock);
-                }
-            });
+        gsonMock = Mockito.mockConstruction(Gson.class, (mock, context) -> {
+            gsonReference.set(mock);
+            Mockito.when(mock.toJson((Object) Mockito.any()))
+                    .thenAnswer(invocation -> gson.toJson((Object) invocation.getArgument(0)));
+            Mockito.when(mock.fromJson(Mockito.anyString(), (Type) Mockito.any()))
+                    .thenAnswer(invocation ->
+                            gson.fromJson((String) invocation.getArgument(0), (Type) invocation.getArgument(1)));
+            Consumer<Gson> gsonConsumer = gsonInit.get();
+            if (gsonConsumer != null) {
+                gsonConsumer.accept(mock);
+            }
+        });
     }
 
     @AfterAll
@@ -63,7 +64,8 @@ public class GsonImplTest {
         Assertions.assertFalse(new GsonImpl().isSupport());
         gsonInit.set(null);
 
-        gsonInit.set(g -> Mockito.when(g.fromJson(Mockito.anyString(), (Type) Mockito.any())).thenThrow(new RuntimeException()));
+        gsonInit.set(g -> Mockito.when(g.fromJson(Mockito.anyString(), (Type) Mockito.any()))
+                .thenThrow(new RuntimeException()));
         Assertions.assertFalse(new GsonImpl().isSupport());
         gsonInit.set(null);
 
@@ -71,11 +73,13 @@ public class GsonImplTest {
         Assertions.assertFalse(new GsonImpl().isSupport());
         gsonInit.set(null);
 
-        gsonInit.set(g -> Mockito.when(g.fromJson(Mockito.anyString(), (Type) Mockito.any())).thenReturn(null));
+        gsonInit.set(g -> Mockito.when(g.fromJson(Mockito.anyString(), (Type) Mockito.any()))
+                .thenReturn(null));
         Assertions.assertFalse(new GsonImpl().isSupport());
         gsonInit.set(null);
 
-        gsonInit.set(g -> Mockito.when(g.fromJson(Mockito.eq("[\"gson\"]"), (Type) Mockito.any())).thenReturn(null));
+        gsonInit.set(g -> Mockito.when(g.fromJson(Mockito.eq("[\"json\"]"), (Type) Mockito.any()))
+                .thenReturn(null));
         Assertions.assertFalse(new GsonImpl().isSupport());
         gsonInit.set(null);
     }

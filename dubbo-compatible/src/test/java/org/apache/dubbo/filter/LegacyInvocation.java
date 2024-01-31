@@ -16,11 +16,12 @@
  */
 package org.apache.dubbo.filter;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -55,11 +56,11 @@ public class LegacyInvocation implements Invocation {
     }
 
     public Class<?>[] getParameterTypes() {
-        return new Class[]{String.class};
+        return new Class[] {String.class};
     }
 
     public Object[] getArguments() {
-        return new Object[]{arg0};
+        return new Object[] {arg0};
     }
 
     public Map<String, String> getAttachments() {
@@ -100,4 +101,11 @@ public class LegacyInvocation implements Invocation {
         return getAttachments().get(key);
     }
 
+    @Override
+    public void addInvokedInvoker(org.apache.dubbo.rpc.Invoker<?> invoker) {}
+
+    @Override
+    public List<org.apache.dubbo.rpc.Invoker<?>> getInvokedInvokers() {
+        return null;
+    }
 }

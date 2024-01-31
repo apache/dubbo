@@ -17,11 +17,13 @@
 package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.Version;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
+import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeClient;
 import org.apache.dubbo.remoting.transport.ClientDelegate;
 import org.apache.dubbo.rpc.AppResponse;
@@ -38,6 +40,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PAYLOAD;
 import static org.apache.dubbo.remoting.Constants.SENT_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.CALLBACK_SERVICE_KEY;
@@ -53,25 +56,37 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
     private final ExchangeClient currentClient;
 
     ChannelWrappedInvoker(Class<T> serviceType, Channel channel, URL url, String serviceKey) {
-        super(serviceType, url, new String[]{GROUP_KEY, TOKEN_KEY});
+        super(serviceType, url, new String[] {GROUP_KEY, TOKEN_KEY});
         this.channel = channel;
         this.serviceKey = serviceKey;
         this.currentClient = new HeaderExchangeClient(new ChannelWrapper(this.channel), false);
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     protected Result doInvoke(Invocation invocation) throws Throwable {
         RpcInvocation inv = (RpcInvocation) invocation;
         // use interface's name as service path to export if it's not found on client side
         inv.setAttachment(PATH_KEY, getInterface().getName());
         inv.setAttachment(CALLBACK_SERVICE_KEY, serviceKey);
 
+        Integer payload = getUrl().getParameter(PAYLOAD, Integer.class);
+
+        Request request = new Request();
+        if (payload != null) {
+            request.setPayload(payload);
+        }
+        request.setData(inv);
+        request.setVersion(Version.getProtocolVersion());
+
         try {
             if (RpcUtils.isOneway(getUrl(), inv)) { // may have concurrency issue
-                currentClient.send(inv, getUrl().getMethodParameter(invocation.getMethodName(), SENT_KEY, false));
+                currentClient.send(
+                        request, getUrl().getMethodParameter(RpcUtils.getMethodName(invocation), SENT_KEY, false));
                 return AsyncRpcResult.newDefaultAsyncResult(invocation);
             } else {
-                CompletableFuture<AppResponse> appResponseFuture = currentClient.request(inv).thenApply(obj -> (AppResponse) obj);
+                CompletableFuture<AppResponse> appResponseFuture =
+                        currentClient.request(request).thenApply(AppResponse.class::cast);
                 return new AsyncRpcResult(appResponseFuture, inv);
             }
         } catch (RpcException e) {
@@ -87,12 +102,12 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
 
     @Override
     public void destroy() {
-//        super.destroy();
-//        try {
-//            channel.close();
-//        } catch (Throwable t) {
-//            logger.warn(t.getMessage(), t);
-//        }
+        //        super.destroy();
+        //        try {
+        //            channel.close();
+        //        } catch (Throwable t) {
+        //            logger.warn(t.getMessage(), t);
+        //        }
     }
 
     public static class ChannelWrapper extends ClientDelegate {
@@ -166,9 +181,7 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
         }
 
         @Override
-        public void reconnect() throws RemotingException {
-
-        }
+        public void reconnect() throws RemotingException {}
 
         @Override
         public void send(Object message) throws RemotingException {

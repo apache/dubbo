@@ -18,73 +18,73 @@ package org.apache.dubbo.config.bootstrap.builders;
 
 import org.apache.dubbo.config.MonitorConfig;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class MonitorBuilderTest {
 
     @Test
     void protocol() {
-        MonitorBuilder builder = new MonitorBuilder();
+        MonitorBuilder builder = MonitorBuilder.newBuilder();
         builder.protocol("protocol");
         Assertions.assertEquals("protocol", builder.build().getProtocol());
     }
 
     @Test
     void address() {
-        MonitorBuilder builder = new MonitorBuilder();
+        MonitorBuilder builder = MonitorBuilder.newBuilder();
         builder.address("address");
         Assertions.assertEquals("address", builder.build().getAddress());
     }
 
     @Test
     void username() {
-        MonitorBuilder builder = new MonitorBuilder();
+        MonitorBuilder builder = MonitorBuilder.newBuilder();
         builder.username("username");
         Assertions.assertEquals("username", builder.build().getUsername());
     }
 
     @Test
     void password() {
-        MonitorBuilder builder = new MonitorBuilder();
+        MonitorBuilder builder = MonitorBuilder.newBuilder();
         builder.password("password");
         Assertions.assertEquals("password", builder.build().getPassword());
     }
 
     @Test
     void group() {
-        MonitorBuilder builder = new MonitorBuilder();
+        MonitorBuilder builder = MonitorBuilder.newBuilder();
         builder.group("group");
         Assertions.assertEquals("group", builder.build().getGroup());
     }
 
     @Test
     void version() {
-        MonitorBuilder builder = new MonitorBuilder();
+        MonitorBuilder builder = MonitorBuilder.newBuilder();
         builder.version("version");
         Assertions.assertEquals("version", builder.build().getVersion());
     }
 
     @Test
     void interval() {
-        MonitorBuilder builder = new MonitorBuilder();
+        MonitorBuilder builder = MonitorBuilder.newBuilder();
         builder.interval("interval");
         Assertions.assertEquals("interval", builder.build().getInterval());
     }
 
     @Test
     void isDefault() {
-        MonitorBuilder builder = new MonitorBuilder();
+        MonitorBuilder builder = MonitorBuilder.newBuilder();
         builder.isDefault(true);
         Assertions.assertTrue(builder.build().isDefault());
     }
 
     @Test
     void appendParameter() {
-        MonitorBuilder builder = new MonitorBuilder();
+        MonitorBuilder builder = MonitorBuilder.newBuilder();
         builder.appendParameter("default.num", "one").appendParameter("num", "ONE");
 
         Map<String, String> parameters = builder.build().getParameters();
@@ -99,7 +99,7 @@ class MonitorBuilderTest {
         source.put("default.num", "one");
         source.put("num", "ONE");
 
-        MonitorBuilder builder = new MonitorBuilder();
+        MonitorBuilder builder = MonitorBuilder.newBuilder();
         builder.appendParameters(source);
 
         Map<String, String> parameters = builder.build().getParameters();
@@ -110,10 +110,17 @@ class MonitorBuilderTest {
 
     @Test
     void build() {
-        MonitorBuilder builder = new MonitorBuilder();
-        builder.protocol("protocol").address("address").group("group").interval("interval").isDefault(true)
-                .password("password").username("username").version("version")
-                .appendParameter("default.num", "one").id("id");
+        MonitorBuilder builder = MonitorBuilder.newBuilder();
+        builder.protocol("protocol")
+                .address("address")
+                .group("group")
+                .interval("interval")
+                .isDefault(true)
+                .password("password")
+                .username("username")
+                .version("version")
+                .appendParameter("default.num", "one")
+                .id("id");
 
         MonitorConfig config = builder.build();
         MonitorConfig config2 = builder.build();

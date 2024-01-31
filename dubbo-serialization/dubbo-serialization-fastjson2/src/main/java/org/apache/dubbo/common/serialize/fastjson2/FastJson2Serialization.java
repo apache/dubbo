@@ -16,16 +16,18 @@
  */
 package org.apache.dubbo.common.serialize.fastjson2;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Optional;
-
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Optional;
 
 import static org.apache.dubbo.common.serialize.Constants.FASTJSON2_SERIALIZATION_ID;
 
@@ -37,6 +39,19 @@ import static org.apache.dubbo.common.serialize.Constants.FASTJSON2_SERIALIZATIO
  * </pre>
  */
 public class FastJson2Serialization implements Serialization {
+    private static final Logger logger = LoggerFactory.getLogger(FastJson2Serialization.class);
+
+    static {
+        Class<?> aClass = null;
+        try {
+            aClass = com.alibaba.fastjson2.JSONB.class;
+        } catch (Throwable ignored) {
+        }
+        if (aClass == null) {
+            logger.info("Failed to load com.alibaba.fastjson2.JSONB, fastjson2 serialization will be disabled.");
+            throw new IllegalStateException("The fastjson2 is not in classpath.");
+        }
+    }
 
     @Override
     public byte getContentTypeId() {
@@ -51,13 +66,15 @@ public class FastJson2Serialization implements Serialization {
     @Override
     public ObjectOutput serialize(URL url, OutputStream output) throws IOException {
         Fastjson2CreatorManager fastjson2CreatorManager = Optional.ofNullable(url)
-            .map(URL::getOrDefaultFrameworkModel)
-            .orElse(FrameworkModel.defaultModel())
-            .getBeanFactory().getBean(Fastjson2CreatorManager.class);
+                .map(URL::getOrDefaultFrameworkModel)
+                .orElseGet(FrameworkModel::defaultModel)
+                .getBeanFactory()
+                .getBean(Fastjson2CreatorManager.class);
         Fastjson2SecurityManager fastjson2SecurityManager = Optional.ofNullable(url)
-            .map(URL::getOrDefaultFrameworkModel)
-            .orElse(FrameworkModel.defaultModel())
-            .getBeanFactory().getBean(Fastjson2SecurityManager.class);
+                .map(URL::getOrDefaultFrameworkModel)
+                .orElseGet(FrameworkModel::defaultModel)
+                .getBeanFactory()
+                .getBean(Fastjson2SecurityManager.class);
 
         return new FastJson2ObjectOutput(fastjson2CreatorManager, fastjson2SecurityManager, output);
     }
@@ -65,15 +82,16 @@ public class FastJson2Serialization implements Serialization {
     @Override
     public ObjectInput deserialize(URL url, InputStream input) throws IOException {
         Fastjson2CreatorManager fastjson2CreatorManager = Optional.ofNullable(url)
-            .map(URL::getOrDefaultFrameworkModel)
-            .orElse(FrameworkModel.defaultModel())
-            .getBeanFactory().getBean(Fastjson2CreatorManager.class);
+                .map(URL::getOrDefaultFrameworkModel)
+                .orElseGet(FrameworkModel::defaultModel)
+                .getBeanFactory()
+                .getBean(Fastjson2CreatorManager.class);
         Fastjson2SecurityManager fastjson2SecurityManager = Optional.ofNullable(url)
-            .map(URL::getOrDefaultFrameworkModel)
-            .orElse(FrameworkModel.defaultModel())
-            .getBeanFactory().getBean(Fastjson2SecurityManager.class);
+                .map(URL::getOrDefaultFrameworkModel)
+                .orElseGet(FrameworkModel::defaultModel)
+                .getBeanFactory()
+                .getBean(Fastjson2SecurityManager.class);
 
         return new FastJson2ObjectInput(fastjson2CreatorManager, fastjson2SecurityManager, input);
     }
-
 }

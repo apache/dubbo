@@ -32,7 +32,6 @@ import static org.apache.dubbo.common.utils.PathUtils.normalize;
  * <ul>
  *     <li>{@link FileSystemDynamicConfiguration "file"}</li>
  *     <li>{@link org.apache.dubbo.configcenter.support.zookeeper.ZookeeperDynamicConfiguration "zookeeper"}</li>
- *     <li>{@link org.apache.dubbo.configcenter.consul.ConsulDynamicConfiguration "consul"}</li>
  * </ul>
  *
  * @see DynamicConfiguration
@@ -63,12 +62,13 @@ public abstract class TreePathDynamicConfiguration extends AbstractDynamicConfig
         this.rootPath = getRootPath(url);
     }
 
-    public TreePathDynamicConfiguration(String rootPath,
-                                        String threadPoolPrefixName,
-                                        int threadPoolSize,
-                                        long keepAliveTime,
-                                        String group,
-                                        long timeout) {
+    public TreePathDynamicConfiguration(
+            String rootPath,
+            String threadPoolPrefixName,
+            int threadPoolSize,
+            long keepAliveTime,
+            String group,
+            long timeout) {
         super(threadPoolPrefixName, threadPoolSize, keepAliveTime, group, timeout);
         this.rootPath = rootPath;
     }

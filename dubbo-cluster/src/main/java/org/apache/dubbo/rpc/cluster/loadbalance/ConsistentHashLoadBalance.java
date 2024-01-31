@@ -28,7 +28,6 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 
 /**
@@ -47,7 +46,8 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
      */
     public static final String HASH_ARGUMENTS = "hash.arguments";
 
-    private final ConcurrentMap<String, ConsistentHashSelector<?>> selectors = new ConcurrentHashMap<String, ConsistentHashSelector<?>>();
+    private final ConcurrentMap<String, ConsistentHashSelector<?>> selectors =
+            new ConcurrentHashMap<String, ConsistentHashSelector<?>>();
 
     @SuppressWarnings("unchecked")
     @Override
@@ -97,10 +97,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         }
 
         public Invoker<T> select(Invocation invocation) {
-            boolean isGeneric = invocation.getMethodName().equals($INVOKE);
-            String key = toKey(invocation.getArguments(),isGeneric);
-
-            byte[] digest = Bytes.getMD5(key);
+            byte[] digest = Bytes.getMD5(RpcUtils.getMethodName(invocation));
             return selectForKey(hash(digest, 0));
         }
 
@@ -128,11 +125,10 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
 
         private long hash(byte[] digest, int number) {
             return (((long) (digest[3 + number * 4] & 0xFF) << 24)
-                    | ((long) (digest[2 + number * 4] & 0xFF) << 16)
-                    | ((long) (digest[1 + number * 4] & 0xFF) << 8)
-                    | (digest[number * 4] & 0xFF))
+                            | ((long) (digest[2 + number * 4] & 0xFF) << 16)
+                            | ((long) (digest[1 + number * 4] & 0xFF) << 8)
+                            | (digest[number * 4] & 0xFF))
                     & 0xFFFFFFFFL;
         }
     }
-
 }

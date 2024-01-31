@@ -24,12 +24,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-
 class DubboConfigDefaultPropertyValueBeanPostProcessorTest {
 
     @Test
     void test() {
-        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ProviderConfiguration.class);
+        AnnotationConfigApplicationContext context =
+                new AnnotationConfigApplicationContext(ProviderConfiguration.class);
         try {
             context.start();
             ApplicationConfig applicationConfig = context.getBean(ApplicationConfig.class);
@@ -41,5 +41,4 @@ class DubboConfigDefaultPropertyValueBeanPostProcessorTest {
             context.close();
         }
     }
-
 }

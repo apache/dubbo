@@ -61,7 +61,7 @@ public class ClassPathServiceRestMetadataReader implements ServiceRestMetadataRe
                 URL resource = resources.nextElement();
                 InputStream inputStream = resource.openStream();
                 String json = IOUtils.read(inputStream, METADATA_ENCODING);
-                serviceRestMetadataList.addAll(JsonUtils.getJson().toJavaList(json, ServiceRestMetadata.class));
+                serviceRestMetadataList.addAll(JsonUtils.toJavaList(json, ServiceRestMetadata.class));
             }
         });
 

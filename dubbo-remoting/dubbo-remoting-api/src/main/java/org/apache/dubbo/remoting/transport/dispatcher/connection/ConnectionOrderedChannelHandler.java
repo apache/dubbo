@@ -49,12 +49,14 @@ public class ConnectionOrderedChannelHandler extends WrappedChannelHandler {
     public ConnectionOrderedChannelHandler(ChannelHandler handler, URL url) {
         super(handler, url);
         String threadName = url.getParameter(THREAD_NAME_KEY, DEFAULT_THREAD_NAME);
-        connectionExecutor = new ThreadPoolExecutor(1, 1,
-            0L, TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<>(url.getPositiveParameter(CONNECT_QUEUE_CAPACITY, Integer.MAX_VALUE)),
-            new NamedThreadFactory(threadName, true),
-            new AbortPolicyWithReport(threadName, url)
-        );  // FIXME There's no place to release connectionExecutor!
+        connectionExecutor = new ThreadPoolExecutor(
+                1,
+                1,
+                0L,
+                TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<>(url.getPositiveParameter(CONNECT_QUEUE_CAPACITY, Integer.MAX_VALUE)),
+                new NamedThreadFactory(threadName, true),
+                new AbortPolicyWithReport(threadName, url)); // FIXME There's no place to release connectionExecutor!
         queueWarningLimit = url.getParameter(CONNECT_QUEUE_WARNING_SIZE, DEFAULT_CONNECT_QUEUE_WARNING_SIZE);
     }
 
@@ -64,7 +66,8 @@ public class ConnectionOrderedChannelHandler extends WrappedChannelHandler {
             checkQueueLength();
             connectionExecutor.execute(new ChannelEventRunnable(channel, handler, ChannelState.CONNECTED));
         } catch (Throwable t) {
-            throw new ExecutionException("connect event", channel, getClass() + " error when process connected event .", t);
+            throw new ExecutionException(
+                    "connect event", channel, getClass() + " error when process connected event .", t);
         }
     }
 
@@ -74,7 +77,8 @@ public class ConnectionOrderedChannelHandler extends WrappedChannelHandler {
             checkQueueLength();
             connectionExecutor.execute(new ChannelEventRunnable(channel, handler, ChannelState.DISCONNECTED));
         } catch (Throwable t) {
-            throw new ExecutionException("disconnected event", channel, getClass() + " error when process disconnected event .", t);
+            throw new ExecutionException(
+                    "disconnected event", channel, getClass() + " error when process disconnected event .", t);
         }
     }
 
@@ -104,7 +108,13 @@ public class ConnectionOrderedChannelHandler extends WrappedChannelHandler {
 
     private void checkQueueLength() {
         if (connectionExecutor.getQueue().size() > queueWarningLimit) {
-            logger.warn(TRANSPORT_CONNECTION_LIMIT_EXCEED, "", "", "connectionordered channel handler queue size: " + connectionExecutor.getQueue().size() + " exceed the warning limit number :" + queueWarningLimit);
+            logger.warn(
+                    TRANSPORT_CONNECTION_LIMIT_EXCEED,
+                    "",
+                    "",
+                    "connectionordered channel handler queue size: "
+                            + connectionExecutor.getQueue().size() + " exceed the warning limit number :"
+                            + queueWarningLimit);
         }
     }
 }

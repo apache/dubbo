@@ -55,5 +55,4 @@ public class CompactedJavaSerialization implements Serialization {
     public ObjectInput deserialize(URL url, InputStream is) throws IOException {
         return new JavaObjectInput(is, true);
     }
-
 }

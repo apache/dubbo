@@ -16,18 +16,13 @@
  */
 package org.apache.dubbo.metadata.definition.protobuf;
 
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metadata.definition.TypeDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.builder.TypeBuilder;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
-
-import com.google.protobuf.ByteString;
-import com.google.protobuf.Descriptors;
-import com.google.protobuf.GeneratedMessageV3;
-import com.google.protobuf.ProtocolStringList;
-import com.google.protobuf.UnknownFieldSet;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -37,6 +32,13 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.protobuf.ByteString;
+import com.google.protobuf.Descriptors;
+import com.google.protobuf.GeneratedMessageV3;
+import com.google.protobuf.ProtocolStringList;
+import com.google.protobuf.UnknownFieldSet;
+
+@Activate(onClass = "com.google.protobuf.GeneratedMessageV3")
 public class ProtobufTypeBuilder implements TypeBuilder, Prioritized {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private static final Pattern MAP_PATTERN = Pattern.compile("^java\\.util\\.Map<(\\S+), (\\S+)>$");
@@ -48,11 +50,27 @@ public class ProtobufTypeBuilder implements TypeBuilder, Prioritized {
      */
     private static Type STRING_LIST_TYPE;
 
+    private final boolean protobufExist;
+
     static {
         try {
-            STRING_LIST_TYPE = ProtobufTypeBuilder.class.getDeclaredField("LIST").getGenericType();
+            STRING_LIST_TYPE =
+                    ProtobufTypeBuilder.class.getDeclaredField("LIST").getGenericType();
         } catch (NoSuchFieldException e) {
             // do nothing
+        }
+    }
+
+    public ProtobufTypeBuilder() {
+        protobufExist = checkProtobufExist();
+    }
+
+    private boolean checkProtobufExist() {
+        try {
+            Class.forName("com.google.protobuf.GeneratedMessageV3");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
         }
     }
 
@@ -64,6 +82,10 @@ public class ProtobufTypeBuilder implements TypeBuilder, Prioritized {
     @Override
     public boolean accept(Class<?> clazz) {
         if (clazz == null) {
+            return false;
+        }
+
+        if (!protobufExist) {
             return false;
         }
 
@@ -93,7 +115,8 @@ public class ProtobufTypeBuilder implements TypeBuilder, Prioritized {
         return (GeneratedMessageV3.Builder) method.invoke(null, null);
     }
 
-    private TypeDefinition buildProtobufTypeDefinition(Class<?> clazz, GeneratedMessageV3.Builder builder, Map<String, TypeDefinition> typeCache) {
+    private TypeDefinition buildProtobufTypeDefinition(
+            Class<?> clazz, GeneratedMessageV3.Builder builder, Map<String, TypeDefinition> typeCache) {
         String canonicalName = clazz.getCanonicalName();
         TypeDefinition td = new TypeDefinition(canonicalName);
         if (builder == null) {
@@ -107,7 +130,8 @@ public class ProtobufTypeBuilder implements TypeBuilder, Prioritized {
 
             if (isSimplePropertySettingMethod(method)) {
                 // property of custom type or primitive type
-                TypeDefinition fieldTd = TypeDefinitionBuilder.build(method.getGenericParameterTypes()[0], method.getParameterTypes()[0], typeCache);
+                TypeDefinition fieldTd = TypeDefinitionBuilder.build(
+                        method.getGenericParameterTypes()[0], method.getParameterTypes()[0], typeCache);
                 properties.put(generateSimpleFiledName(methodName), fieldTd.getType());
             } else if (isMapPropertySettingMethod(method)) {
                 // property of map
@@ -150,8 +174,8 @@ public class ProtobufTypeBuilder implements TypeBuilder, Prioritized {
     private void validateMapType(String fieldName, String typeName) {
         Matcher matcher = MAP_PATTERN.matcher(typeName);
         if (!matcher.matches()) {
-            throw new IllegalArgumentException("Map protobuf property " + fieldName + "of Type " +
-                    typeName + " can't be parsed.The type name should mathch[" + MAP_PATTERN.toString() + "].");
+            throw new IllegalArgumentException("Map protobuf property " + fieldName + "of Type " + typeName
+                    + " can't be parsed.The type name should mathch[" + MAP_PATTERN.toString() + "].");
         }
     }
 
@@ -187,7 +211,6 @@ public class ProtobufTypeBuilder implements TypeBuilder, Prioritized {
     private String generateListFieldName(String methodName) {
         return toCamelCase(methodName.substring(3, methodName.length() - 4));
     }
-
 
     private String toCamelCase(String nameString) {
         char[] chars = nameString.toCharArray();
@@ -239,13 +262,8 @@ public class ProtobufTypeBuilder implements TypeBuilder, Prioritized {
         // Enum property has two setting method.
         // skip setXXXValue(int value)
         // parse setXXX(SomeEnum value)
-        if (methodName.endsWith("Value") && types[0] == int.class) {
-            return false;
-        }
-
-        return true;
+        return !methodName.endsWith("Value") || types[0] != int.class;
     }
-
 
     /**
      * judge List property</br>
@@ -259,7 +277,6 @@ public class ProtobufTypeBuilder implements TypeBuilder, Prioritized {
         String methodName = method.getName();
         Class<?> type = method.getReturnType();
 
-
         if (!methodName.startsWith("get") || !methodName.endsWith("List")) {
             return false;
         }
@@ -270,11 +287,7 @@ public class ProtobufTypeBuilder implements TypeBuilder, Prioritized {
         }
 
         // if field name end with List, should skip
-        if (!List.class.isAssignableFrom(type)) {
-            return false;
-        }
-
-        return true;
+        return List.class.isAssignableFrom(type);
     }
 
     /**
@@ -288,10 +301,6 @@ public class ProtobufTypeBuilder implements TypeBuilder, Prioritized {
     private boolean isMapPropertySettingMethod(Method methodTemp) {
         String methodName = methodTemp.getName();
         Class[] parameters = methodTemp.getParameterTypes();
-        if (methodName.startsWith("putAll") && parameters.length == 1 && Map.class.isAssignableFrom(parameters[0])) {
-            return true;
-        }
-
-        return false;
+        return methodName.startsWith("putAll") && parameters.length == 1 && Map.class.isAssignableFrom(parameters[0]);
     }
 }

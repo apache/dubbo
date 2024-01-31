@@ -36,5 +36,4 @@ public class JValidationNew extends AbstractValidation {
     protected Validator createValidator(URL url) {
         return new JValidatorNew(url);
     }
-
 }

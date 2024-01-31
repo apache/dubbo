@@ -50,29 +50,22 @@ public class DubboServiceProviderBootstrap {
 
         RegistryConfig serviceRegistry = new RegistryConfig();
         serviceRegistry.setId("serviceRegistry");
-        serviceRegistry.setAddress(ZookeeperRegistryCenterConfig.getConnectionAddress()+"?registry-type=service");
+        serviceRegistry.setAddress(ZookeeperRegistryCenterConfig.getConnectionAddress() + "?registry-type=service");
 
         ServiceConfig<EchoService> echoService = new ServiceConfig<>();
         echoService.setInterface(EchoService.class.getName());
         echoService.setRef(new EchoServiceImpl());
-//        echoService.setRegistries(Arrays.asList(interfaceRegistry, serviceRegistry));
 
         ServiceConfig<UserService> userService = new ServiceConfig<>();
         userService.setInterface(UserService.class.getName());
         userService.setRef(new UserServiceImpl());
         userService.setProtocol(restProtocol);
-//        userService.setRegistries(Arrays.asList(interfaceRegistry, serviceRegistry));
 
         ApplicationConfig applicationConfig = new ApplicationConfig("dubbo-provider-demo");
         applicationConfig.setMetadataType("remote");
         DubboBootstrap.getInstance()
                 .application(applicationConfig)
-                // Zookeeper in service registry type
-//                .registry("zookeeper", builder -> builder.address("zookeeper://127.0.0.1:2181?registry.type=service"))
-                // Nacos
-//                .registry("zookeeper", builder -> builder.address("nacos://127.0.0.1:8848?registry.type=service"))
                 .registries(Arrays.asList(interfaceRegistry, serviceRegistry))
-//                .registry(RegistryBuilder.newBuilder().address("consul://127.0.0.1:8500?registry.type=service").build())
                 .protocol(builder -> builder.port(-1).name("dubbo"))
                 .metadataReport(new MetadataReportConfig(ZookeeperRegistryCenterConfig.getConnectionAddress()))
                 .service(echoService)
@@ -81,16 +74,9 @@ public class DubboServiceProviderBootstrap {
                 .await();
     }
 
-    private static void testSCCallDubbo() {
+    private static void testSCCallDubbo() {}
 
-    }
+    private static void testDubboCallSC() {}
 
-    private static void testDubboCallSC() {
-
-    }
-
-    private static void testDubboTansormation() {
-
-    }
-
+    private static void testDubboTansormation() {}
 }

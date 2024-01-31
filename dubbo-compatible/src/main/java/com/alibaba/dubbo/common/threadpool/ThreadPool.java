@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.common.threadpool;
 
 import org.apache.dubbo.common.URL;
@@ -28,6 +27,6 @@ public interface ThreadPool extends org.apache.dubbo.common.threadpool.ThreadPoo
 
     @Override
     default Executor getExecutor(URL url) {
-        return getExecutor(new com.alibaba.dubbo.common.URL(url));
+        return getExecutor(new com.alibaba.dubbo.common.DelegateURL(url));
     }
 }

@@ -26,8 +26,8 @@ import java.util.Collection;
 
 @Activate
 public class ProviderReadinessProbe implements ReadinessProbe {
-    private FrameworkModel frameworkModel;
-    private FrameworkServiceRepository serviceRepository;
+    private final FrameworkModel frameworkModel;
+    private final FrameworkServiceRepository serviceRepository;
 
     public ProviderReadinessProbe(FrameworkModel frameworkModel) {
         if (frameworkModel != null) {
@@ -51,9 +51,9 @@ public class ProviderReadinessProbe implements ReadinessProbe {
                 continue;
             }
             hasService = true;
-            anyOnline = anyOnline ||
-                providerModel.getStatedUrl().isEmpty() ||
-                providerModel.getStatedUrl().stream().anyMatch(ProviderModel.RegisterStatedURL::isRegistered);
+            anyOnline = anyOnline
+                    || providerModel.getStatedUrl().isEmpty()
+                    || providerModel.getStatedUrl().stream().anyMatch(ProviderModel.RegisterStatedURL::isRegistered);
         }
 
         // no service => check pass

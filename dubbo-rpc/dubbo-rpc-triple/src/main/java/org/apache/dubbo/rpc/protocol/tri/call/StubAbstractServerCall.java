@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.URL;
@@ -25,32 +24,35 @@ import org.apache.dubbo.rpc.model.StubMethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
 import org.apache.dubbo.rpc.stub.StubSuppliers;
 
-import java.io.IOException;
 import java.util.concurrent.Executor;
 
 public class StubAbstractServerCall extends AbstractServerCall {
 
-    public StubAbstractServerCall(Invoker<?> invoker,
-        ServerStream serverStream,
-        FrameworkModel frameworkModel,
-        String acceptEncoding,
-        String serviceName,
-        String methodName,
-        Executor executor) {
-        super(invoker, serverStream, frameworkModel,
-            getServiceDescriptor(invoker.getUrl(), serviceName),
-            acceptEncoding, serviceName, methodName, executor);
-        this.methodDescriptor = serviceDescriptor.getMethods(methodName)
-            .get(0);
+    public StubAbstractServerCall(
+            Invoker<?> invoker,
+            ServerStream serverStream,
+            FrameworkModel frameworkModel,
+            String acceptEncoding,
+            String serviceName,
+            String methodName,
+            Executor executor) {
+        super(
+                invoker,
+                serverStream,
+                frameworkModel,
+                getServiceDescriptor(invoker.getUrl(), serviceName),
+                acceptEncoding,
+                serviceName,
+                methodName,
+                executor);
+        this.methodDescriptor = serviceDescriptor.getMethods(methodName).get(0);
         this.packableMethod = (StubMethodDescriptor) methodDescriptor;
     }
 
     private static ServiceDescriptor getServiceDescriptor(URL url, String serviceName) {
         ServiceDescriptor serviceDescriptor;
         if (url.getServiceModel() != null) {
-            serviceDescriptor = url
-                .getServiceModel()
-                .getServiceModel();
+            serviceDescriptor = url.getServiceModel().getServiceModel();
         } else {
             serviceDescriptor = StubSuppliers.getServiceDescriptor(serviceName);
         }
@@ -58,8 +60,7 @@ public class StubAbstractServerCall extends AbstractServerCall {
     }
 
     @Override
-    protected Object parseSingleMessage(byte[] data) throws IOException, ClassNotFoundException {
+    protected Object parseSingleMessage(byte[] data) throws Exception {
         return packableMethod.parseRequest(data);
     }
-
 }

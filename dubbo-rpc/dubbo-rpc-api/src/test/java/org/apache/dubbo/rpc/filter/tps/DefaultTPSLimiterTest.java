@@ -20,12 +20,12 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.support.MockInvocation;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.rpc.Constants.TPS_LIMIT_INTERVAL_KEY;
@@ -37,7 +37,7 @@ class DefaultTPSLimiterTest {
     private final DefaultTPSLimiter defaultTPSLimiter = new DefaultTPSLimiter();
 
     @Test
-    void testIsAllowable() throws Exception {
+    void testIsAllowable() {
         Invocation invocation = new MockInvocation();
         URL url = URL.valueOf("test://test");
         url = url.addParameter(INTERFACE_KEY, "org.apache.dubbo.rpc.file.TpsService");
@@ -49,7 +49,7 @@ class DefaultTPSLimiterTest {
     }
 
     @Test
-    void testIsNotAllowable() throws Exception {
+    void testIsNotAllowable() {
         Invocation invocation = new MockInvocation();
         URL url = URL.valueOf("test://test");
         url = url.addParameter(INTERFACE_KEY, "org.apache.dubbo.rpc.file.TpsService");
@@ -65,7 +65,7 @@ class DefaultTPSLimiterTest {
     }
 
     @Test
-    void testTPSLimiterForMethodLevelConfig() throws Exception {
+    void testTPSLimiterForMethodLevelConfig() {
         Invocation invocation = new MockInvocation();
         URL url = URL.valueOf("test://test");
         url = url.addParameter(INTERFACE_KEY, "org.apache.dubbo.rpc.file.TpsService");
@@ -83,7 +83,7 @@ class DefaultTPSLimiterTest {
     }
 
     @Test
-    void testConfigChange() throws Exception {
+    void testConfigChange() {
         Invocation invocation = new MockInvocation();
         URL url = URL.valueOf("test://test");
         url = url.addParameter(INTERFACE_KEY, "org.apache.dubbo.rpc.file.TpsService");
@@ -115,12 +115,12 @@ class DefaultTPSLimiterTest {
         CountDownLatch startLatch = new CountDownLatch(1);
         for (int i = 0; i < threadNum; i++) {
             taskList.add(new Task(defaultTPSLimiter, url, invocation, startLatch, stopLatch));
-
         }
         startLatch.countDown();
         stopLatch.await();
 
-        Assertions.assertEquals(taskList.stream().map(Task::getCount).reduce(Integer::sum).get(), 100);
+        Assertions.assertEquals(
+                taskList.stream().map(Task::getCount).reduce(Integer::sum).get(), 100);
     }
 
     static class Task implements Runnable {
@@ -131,7 +131,12 @@ class DefaultTPSLimiterTest {
         private final CountDownLatch stopLatch;
         private int count;
 
-        public Task(DefaultTPSLimiter defaultTPSLimiter, URL url, Invocation invocation, CountDownLatch startLatch, CountDownLatch stopLatch) {
+        public Task(
+                DefaultTPSLimiter defaultTPSLimiter,
+                URL url,
+                Invocation invocation,
+                CountDownLatch startLatch,
+                CountDownLatch stopLatch) {
             this.defaultTPSLimiter = defaultTPSLimiter;
             this.url = url;
             this.invocation = invocation;

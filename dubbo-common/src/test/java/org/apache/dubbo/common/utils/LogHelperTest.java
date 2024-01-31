@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.common.logger.Logger;
@@ -28,7 +27,7 @@ import static org.mockito.Mockito.when;
 class LogHelperTest {
 
     @Test
-    void testTrace() throws Exception {
+    void testTrace() {
         Logger logger = Mockito.mock(Logger.class);
         when(logger.isTraceEnabled()).thenReturn(true);
         LogHelper.trace(logger, "trace");
@@ -41,7 +40,7 @@ class LogHelperTest {
     }
 
     @Test
-    void testDebug() throws Exception {
+    void testDebug() {
         Logger logger = Mockito.mock(Logger.class);
         when(logger.isDebugEnabled()).thenReturn(true);
         LogHelper.debug(logger, "debug");
@@ -54,7 +53,7 @@ class LogHelperTest {
     }
 
     @Test
-    void testInfo() throws Exception {
+    void testInfo() {
         Logger logger = Mockito.mock(Logger.class);
         when(logger.isInfoEnabled()).thenReturn(true);
         LogHelper.info(logger, "info");
@@ -67,7 +66,7 @@ class LogHelperTest {
     }
 
     @Test
-    void testWarn() throws Exception {
+    void testWarn() {
         Logger logger = Mockito.mock(Logger.class);
         when(logger.isWarnEnabled()).thenReturn(true);
         LogHelper.warn(logger, "warn");
@@ -80,7 +79,7 @@ class LogHelperTest {
     }
 
     @Test
-    void testError() throws Exception {
+    void testError() {
         Logger logger = Mockito.mock(Logger.class);
         when(logger.isErrorEnabled()).thenReturn(true);
         LogHelper.error(logger, "error");

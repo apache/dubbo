@@ -82,6 +82,8 @@ java.util.Calendar
 java.util.Collections$EmptyList
 java.util.Collections$EmptyMap
 java.util.Collections$SingletonSet
+java.util.Collections$SingletonList
+java.util.Collections$SingletonMap
 java.util.Collections$UnmodifiableCollection
 java.util.Collections$UnmodifiableList
 java.util.Collections$UnmodifiableMap
@@ -107,6 +109,8 @@ java.util.concurrent.TimeUnit
 java.util.Currency
 java.util.Date
 java.util.EnumSet
+java.util.RegularEnumSet
+java.util.JumboEnumSet
 java.util.HashMap
 java.util.HashSet
 java.util.Hashtable
@@ -122,5 +126,13 @@ java.util.TreeMap
 java.util.TreeSet
 java.util.UUID
 java.util.WeakHashMap
-org.apache.dubbo
-com.alibaba.com.caucho.hessian.io.java8
+org.apache.dubbo.metadata.MetadataInfo
+com.alibaba.com.caucho.hessian.io
+com.alibaba.dubbo.rpc.service.GenericException
+org.apache.dubbo.rpc.service.GenericException
+org.apache.dubbo.rpc.RpcException
+org.apache.dubbo.common.url.component.ServiceConfigURL
+org.apache.dubbo.common.URL
+org.apache.dubbo.common.url.component.URLAddress
+org.apache.dubbo.common.url.component.URLPlainParam
+org.apache.dubbo.common.url.component.PathURLAddress

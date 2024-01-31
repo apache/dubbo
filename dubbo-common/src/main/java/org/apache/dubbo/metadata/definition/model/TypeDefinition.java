@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.metadata.definition.model;
 
-import com.google.gson.annotations.SerializedName;
-
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
@@ -37,7 +35,7 @@ public class TypeDefinition implements Serializable {
      * the name of type
      *
      * @see Class#getCanonicalName()
-     * @see org.apache.dubbo.metadata.definition.util.ClassUtils#getCanonicalNameForParameterizedType(ParameterizedType) 
+     * @see org.apache.dubbo.metadata.definition.util.ClassUtils#getCanonicalNameForParameterizedType(ParameterizedType)
      */
     private String type;
 
@@ -46,7 +44,6 @@ public class TypeDefinition implements Serializable {
      * <p>
      * if this type is not ParameterizedType, the items is null or empty
      */
-    @SerializedName("items")
     private List<String> items;
 
     /**
@@ -54,7 +51,6 @@ public class TypeDefinition implements Serializable {
      * <p>
      * If this type is not enum, enums is null or empty
      */
-    @SerializedName("enum")
     private List<String> enums;
 
     /**
@@ -63,8 +59,7 @@ public class TypeDefinition implements Serializable {
      */
     private Map<String, String> properties;
 
-    public TypeDefinition() {
-    }
+    public TypeDefinition() {}
 
     public TypeDefinition(String type) {
         this.setType(type);
@@ -170,10 +165,10 @@ public class TypeDefinition implements Serializable {
             return false;
         }
         TypeDefinition that = (TypeDefinition) o;
-        return Objects.equals(getType(), that.getType()) &&
-                Objects.equals(getItems(), that.getItems()) &&
-                Objects.equals(getEnums(), that.getEnums()) &&
-                Objects.equals(getProperties(), that.getProperties());
+        return Objects.equals(getType(), that.getType())
+                && Objects.equals(getItems(), that.getItems())
+                && Objects.equals(getEnums(), that.getEnums())
+                && Objects.equals(getProperties(), that.getProperties());
     }
 
     @Override

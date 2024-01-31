@@ -24,18 +24,16 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.health.AbstractHealthIndicator;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.HealthIndicator;
-import org.springframework.util.StringUtils;
-
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.health.AbstractHealthIndicator;
+import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.util.StringUtils;
 
 /**
  * Dubbo {@link HealthIndicator}
@@ -48,10 +46,10 @@ public class DubboHealthIndicator extends AbstractHealthIndicator {
     @Autowired
     private DubboHealthIndicatorProperties dubboHealthIndicatorProperties;
 
-    //@Autowired(required = false)
+    // @Autowired(required = false)
     private Map<String, ProtocolConfig> protocolConfigs = Collections.emptyMap();
 
-    //@Autowired(required = false)
+    // @Autowired(required = false)
     private Map<String, ProviderConfig> providerConfigs = Collections.emptyMap();
 
     @Autowired
@@ -63,7 +61,7 @@ public class DubboHealthIndicator extends AbstractHealthIndicator {
     @Override
     protected void doHealthCheck(Health.Builder builder) throws Exception {
 
-        ExtensionLoader<StatusChecker> extensionLoader = getExtensionLoader(StatusChecker.class);
+        ExtensionLoader<StatusChecker> extensionLoader = applicationModel.getExtensionLoader(StatusChecker.class);
 
         Map<String, String> statusCheckerNamesMap = resolveStatusCheckerNamesMap();
 
@@ -102,10 +100,7 @@ public class DubboHealthIndicator extends AbstractHealthIndicator {
             detail.put("status", status);
 
             builder.withDetail(statusCheckerName, detail);
-
         }
-
-
     }
 
     /**
@@ -124,32 +119,26 @@ public class DubboHealthIndicator extends AbstractHealthIndicator {
         statusCheckerNamesMap.putAll(resolveStatusCheckerNamesMapFromProviderConfig());
 
         return statusCheckerNamesMap;
-
     }
 
     private Map<String, String> resolveStatusCheckerNamesMapFromDubboHealthIndicatorProperties() {
 
-        DubboHealthIndicatorProperties.Status status =
-                dubboHealthIndicatorProperties.getStatus();
+        DubboHealthIndicatorProperties.Status status = dubboHealthIndicatorProperties.getStatus();
 
         Map<String, String> statusCheckerNamesMap = new LinkedHashMap<>();
 
         for (String statusName : status.getDefaults()) {
 
             statusCheckerNamesMap.put(statusName, DubboHealthIndicatorProperties.PREFIX + ".status.defaults");
-
         }
 
         for (String statusName : status.getExtras()) {
 
             statusCheckerNamesMap.put(statusName, DubboHealthIndicatorProperties.PREFIX + ".status.extras");
-
         }
 
         return statusCheckerNamesMap;
-
     }
-
 
     private Map<String, String> resolveStatusCheckerNamesMapFromProtocolConfigs() {
 
@@ -172,13 +161,10 @@ public class DubboHealthIndicator extends AbstractHealthIndicator {
                 String source = buildSource(beanName, protocolConfig);
 
                 statusCheckerNamesMap.put(statusCheckerName, source);
-
             }
-
         }
 
         return statusCheckerNamesMap;
-
     }
 
     private Map<String, String> resolveStatusCheckerNamesMapFromProviderConfig() {
@@ -205,13 +191,10 @@ public class DubboHealthIndicator extends AbstractHealthIndicator {
                 String source = buildSource(beanName, providerConfig);
 
                 statusCheckerNamesMap.put(statusCheckerName, source);
-
             }
-
         }
 
         return statusCheckerNamesMap;
-
     }
 
     private Set<String> getStatusCheckerNames(ProtocolConfig protocolConfig) {
@@ -227,5 +210,4 @@ public class DubboHealthIndicator extends AbstractHealthIndicator {
     private String buildSource(String beanName, Object bean) {
         return beanName + "@" + bean.getClass().getSimpleName() + ".getStatus()";
     }
-
 }

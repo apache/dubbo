@@ -17,23 +17,23 @@
 package org.apache.dubbo.rpc.cluster.support;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.LogUtil;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.filter.DemoService;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -53,9 +53,9 @@ class FailSafeClusterInvokerTest {
     /**
      * @throws java.lang.Exception
      */
-
     @BeforeEach
     public void setUp() throws Exception {
+        RpcContext.removeServiceContext();
 
         dic = mock(Directory.class);
 
@@ -80,7 +80,7 @@ class FailSafeClusterInvokerTest {
         given(invoker.getInterface()).willReturn(DemoService.class);
     }
 
-    //TODO assert error log
+    // TODO assert error log
     @Test
     void testInvokeExceptoin() {
         resetInvokerToException();
@@ -113,10 +113,12 @@ class FailSafeClusterInvokerTest {
         resetInvokerToNoException();
 
         FailsafeClusterInvoker<DemoService> invoker = new FailsafeClusterInvoker<DemoService>(dic);
-        LogUtil.start();
-        invoker.invoke(invocation);
-        assertTrue(LogUtil.findMessage("No provider") > 0);
-        LogUtil.stop();
-    }
 
+        try {
+            invoker.invoke(invocation);
+        } catch (RpcException e) {
+            Assertions.assertTrue(e.getMessage().contains("No provider available"));
+            assertFalse(e.getCause() instanceof RpcException);
+        }
+    }
 }

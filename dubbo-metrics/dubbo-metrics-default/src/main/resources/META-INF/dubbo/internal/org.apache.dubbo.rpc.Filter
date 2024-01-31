@@ -1,0 +1,2 @@
+metrics-provider=org.apache.dubbo.metrics.filter.MetricsProviderFilter
+observationreceiver=org.apache.dubbo.metrics.observation.ObservationReceiverFilter

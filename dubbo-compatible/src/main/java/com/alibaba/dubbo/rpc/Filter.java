@@ -14,8 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.rpc;
+
+import org.apache.dubbo.rpc.AsyncRpcResult;
+import org.apache.dubbo.rpc.AttachmentsAdapter;
+
+import java.util.Map;
 
 @Deprecated
 public interface Filter extends org.apache.dubbo.rpc.Filter {
@@ -23,11 +27,25 @@ public interface Filter extends org.apache.dubbo.rpc.Filter {
     Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException;
 
     @Override
-    default org.apache.dubbo.rpc.Result invoke(org.apache.dubbo.rpc.Invoker<?> invoker,
-                                               org.apache.dubbo.rpc.Invocation invocation)
+    default org.apache.dubbo.rpc.Result invoke(
+            org.apache.dubbo.rpc.Invoker<?> invoker, org.apache.dubbo.rpc.Invocation invocation)
             throws org.apache.dubbo.rpc.RpcException {
-        Result.CompatibleResult result = (Result.CompatibleResult) invoke(new Invoker.CompatibleInvoker<>(invoker),
-                new Invocation.CompatibleInvocation(invocation));
-        return result.getDelegate();
+        Result invokeResult =
+                invoke(new Invoker.CompatibleInvoker<>(invoker), new Invocation.CompatibleInvocation(invocation));
+
+        if (invokeResult instanceof Result.CompatibleResult) {
+            return ((Result.CompatibleResult) invokeResult).getDelegate();
+        }
+
+        AsyncRpcResult asyncRpcResult = AsyncRpcResult.newDefaultAsyncResult(invocation);
+        asyncRpcResult.setValue(invokeResult.getValue());
+        asyncRpcResult.setException(invokeResult.getException());
+        Map<String, String> attachments = invokeResult.getAttachments();
+        if (!(attachments instanceof AttachmentsAdapter.ObjectToStringMap)) {
+            asyncRpcResult.setAttachments(attachments);
+        }
+        asyncRpcResult.setObjectAttachments(invokeResult.getObjectAttachments());
+
+        return asyncRpcResult;
     }
 }

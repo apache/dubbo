@@ -87,6 +87,21 @@ public interface RestMetadataConstants {
          * The annotation class name of @QueryParam
          */
         String QUERY_PARAM_ANNOTATION_CLASS_NAME = "javax.ws.rs.QueryParam";
+
+        /**
+         * The annotation class name of @Body
+         */
+        String REST_EASY_BODY_ANNOTATION_CLASS_NAME = "org.jboss.resteasy.annotations.Body";
+
+        /**
+         * The annotation class name of @Form
+         */
+        String REST_EASY_FORM_BODY_ANNOTATION_CLASS_NAME = "org.jboss.resteasy.annotations.Form";
+
+        /**
+         * The annotation class name of @PathParam
+         */
+        String PATH_PARAM_ANNOTATION_CLASS_NAME = "javax.ws.rs.PathParam";
     }
 
     /**
@@ -115,18 +130,30 @@ public interface RestMetadataConstants {
         String REQUEST_PARAM_ANNOTATION_CLASS_NAME = "org.springframework.web.bind.annotation.RequestParam";
 
         /**
+         * The annotation class name of @RequestBody
+         */
+        String REQUEST_BODY_ANNOTATION_CLASS_NAME = "org.springframework.web.bind.annotation.RequestBody";
+
+        /**
+         * The annotation class name of @PathVariable
+         */
+        String PATH_VARIABLE_ANNOTATION_CLASS_NAME = "org.springframework.web.bind.annotation.PathVariable";
+
+        /**
          * The class of @Controller
          *
          * @since 2.7.9
          */
-        Class<? extends Annotation> CONTROLLER_ANNOTATION_CLASS = (Class<? extends Annotation>) resolveClass(CONTROLLER_ANNOTATION_CLASS_NAME, getClassLoader());
+        Class<? extends Annotation> CONTROLLER_ANNOTATION_CLASS =
+                (Class<? extends Annotation>) resolveClass(CONTROLLER_ANNOTATION_CLASS_NAME, getClassLoader());
 
         /**
          * The class of @RequestMapping
          *
          * @since 2.7.9
          */
-        Class<? extends Annotation> REQUEST_MAPPING_ANNOTATION_CLASS = (Class<? extends Annotation>) resolveClass(REQUEST_MAPPING_ANNOTATION_CLASS_NAME, getClassLoader());
+        Class<? extends Annotation> REQUEST_MAPPING_ANNOTATION_CLASS =
+                (Class<? extends Annotation>) resolveClass(REQUEST_MAPPING_ANNOTATION_CLASS_NAME, getClassLoader());
 
         /**
          * The annotation class name of AnnotatedElementUtils

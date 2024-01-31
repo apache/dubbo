@@ -22,13 +22,13 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("rawtypes")
 class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
@@ -42,21 +42,20 @@ class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
         Invoker genericHitted = findHitted(genericInvokeCounter);
         Invoker hitted = findHitted(invokeCounter);
 
-        Assertions.assertEquals(hitted,
-            genericHitted, "hitted should equals to genericHitted");
+        Assertions.assertEquals(hitted, genericHitted, "hitted should equals to genericHitted");
     }
 
-    private Invoker findHitted(Map<Invoker,AtomicLong> invokerCounter) {
+    private Invoker findHitted(Map<Invoker, AtomicLong> invokerCounter) {
         Invoker invoker = null;
 
-        for (Map.Entry<Invoker,AtomicLong> entry : invokerCounter.entrySet()) {
+        for (Map.Entry<Invoker, AtomicLong> entry : invokerCounter.entrySet()) {
             if (entry.getValue().longValue() > 0) {
                 invoker = entry.getKey();
                 break;
             }
         }
 
-        Assertions.assertNotNull(invoker,"invoker should be found");
+        Assertions.assertNotNull(invoker, "invoker should be found");
 
         return null;
     }
@@ -77,11 +76,13 @@ class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
             }
         }
 
-        Assertions.assertEquals(counter.size() - 1,
-            unHitedInvokerCount, "the number of unHitedInvoker should be counter.size() - 1");
+        Assertions.assertEquals(
+                counter.size() - 1, unHitedInvokerCount, "the number of unHitedInvoker should be counter.size() - 1");
         Assertions.assertEquals(1, hitedInvokers.size(), "the number of hitedInvoker should be 1");
-        Assertions.assertEquals(runs,
-            hitedInvokers.values().iterator().next().intValue(), "the number of hited count should be the number of runs");
+        Assertions.assertEquals(
+                runs,
+                hitedInvokers.values().iterator().next().intValue(),
+                "the number of hited count should be the number of runs");
     }
 
     // https://github.com/apache/dubbo/issues/5429
@@ -93,8 +94,10 @@ class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
         Invoker<LoadBalanceBaseTest> result = lb.select(invokers, url, invocation);
 
         for (int i = 0; i < 100; i++) {
-            routerChain.setInvokers(new BitList<>(invokers));
-            List<Invoker<LoadBalanceBaseTest>> routeInvokers = routerChain.route(url, new BitList<>(invokers), invocation);
+            routerChain.setInvokers(new BitList<>(invokers), () -> {});
+            List<Invoker<LoadBalanceBaseTest>> routeInvokers = routerChain
+                    .getSingleChain(url, new BitList<>(invokers), invocation)
+                    .route(url, new BitList<>(invokers), invocation);
             Invoker<LoadBalanceBaseTest> finalInvoker = lb.select(routeInvokers, url, invocation);
             Assertions.assertEquals(result, finalInvoker);
         }

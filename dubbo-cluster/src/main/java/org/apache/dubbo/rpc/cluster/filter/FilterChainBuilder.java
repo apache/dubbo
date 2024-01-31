@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -36,6 +37,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_EXECUTE_FILTER_EXCEPTION;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
 
 @SPI(value = "default", scope = APPLICATION)
@@ -90,7 +92,8 @@ public interface FilterChainBuilder {
         public Result invoke(Invocation invocation) throws RpcException {
             Result asyncResult;
             try {
-                InvocationProfilerUtils.enterDetailProfiler(invocation, () -> "Filter " + filter.getClass().getName() + " invoke.");
+                InvocationProfilerUtils.enterDetailProfiler(
+                        invocation, () -> "Filter " + filter.getClass().getName() + " invoke.");
                 asyncResult = filter.invoke(nextNode, invocation);
             } catch (Exception e) {
                 InvocationProfilerUtils.releaseDetailProfiler(invocation);
@@ -157,11 +160,10 @@ public interface FilterChainBuilder {
      * @param <TYPE>
      */
     class ClusterFilterChainNode<T, TYPE extends ClusterInvoker<T>, FILTER extends BaseFilter>
-        extends FilterChainNode<T, TYPE, FILTER> implements ClusterInvoker<T> {
+            extends FilterChainNode<T, TYPE, FILTER> implements ClusterInvoker<T> {
         public ClusterFilterChainNode(TYPE originalInvoker, Invoker<T> nextNode, FILTER filter) {
             super(originalInvoker, nextNode, filter);
         }
-
 
         @Override
         public URL getRegistryUrl() {
@@ -180,7 +182,8 @@ public interface FilterChainBuilder {
     }
 
     class CallbackRegistrationInvoker<T, FILTER extends BaseFilter> implements Invoker<T> {
-        static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(CallbackRegistrationInvoker.class);
+        private static final ErrorTypeAwareLogger LOGGER =
+                LoggerFactory.getErrorTypeAwareLogger(CallbackRegistrationInvoker.class);
         final Invoker<T> filterInvoker;
         final List<FILTER> filters;
 
@@ -221,9 +224,20 @@ public interface FilterChainBuilder {
                             }
                         }
                     } catch (RuntimeException runtimeException) {
-                        LOGGER.error(CLUSTER_EXECUTE_FILTER_EXCEPTION, "the custom filter is abnormal", "", String.format("Exception occurred while executing the %s filter named %s.", i, filter.getClass().getSimpleName()));
+                        LOGGER.error(
+                                CLUSTER_EXECUTE_FILTER_EXCEPTION,
+                                "the custom filter is abnormal",
+                                "",
+                                String.format(
+                                        "Exception occurred while executing the %s filter named %s.",
+                                        i, filter.getClass().getSimpleName()));
                         if (LOGGER.isDebugEnabled()) {
-                            LOGGER.debug(String.format("Whole filter list is: %s", filters.stream().map(tmpFilter -> tmpFilter.getClass().getSimpleName()).collect(Collectors.toList())));
+                            LOGGER.debug(String.format(
+                                    "Whole filter list is: %s",
+                                    filters.stream()
+                                            .map(tmpFilter ->
+                                                    tmpFilter.getClass().getSimpleName())
+                                            .collect(Collectors.toList())));
                         }
                         filterRuntimeException = runtimeException;
                         t = runtimeException;
@@ -235,6 +249,10 @@ public interface FilterChainBuilder {
             });
 
             return asyncResult;
+        }
+
+        public Invoker<T> getFilterInvoker() {
+            return filterInvoker;
         }
 
         @Override
@@ -258,11 +276,12 @@ public interface FilterChainBuilder {
         }
     }
 
-    class ClusterCallbackRegistrationInvoker<T, FILTER extends BaseFilter> extends CallbackRegistrationInvoker<T, FILTER>
-        implements ClusterInvoker<T> {
+    class ClusterCallbackRegistrationInvoker<T, FILTER extends BaseFilter>
+            extends CallbackRegistrationInvoker<T, FILTER> implements ClusterInvoker<T> {
         private ClusterInvoker<T> originalInvoker;
 
-        public ClusterCallbackRegistrationInvoker(ClusterInvoker<T> originalInvoker, Invoker<T> filterInvoker, List<FILTER> filters) {
+        public ClusterCallbackRegistrationInvoker(
+                ClusterInvoker<T> originalInvoker, Invoker<T> filterInvoker, List<FILTER> filters) {
             super(filterInvoker, filters);
             this.originalInvoker = originalInvoker;
         }
@@ -287,9 +306,11 @@ public interface FilterChainBuilder {
         }
     }
 
-
-    @Experimental("Works for the same purpose as FilterChainNode, replace FilterChainNode with this one when proved stable enough")
+    @Experimental(
+            "Works for the same purpose as FilterChainNode, replace FilterChainNode with this one when proved stable enough")
     class CopyOfFilterChainNode<T, TYPE extends Invoker<T>, FILTER extends BaseFilter> implements Invoker<T> {
+        private static final ErrorTypeAwareLogger LOGGER =
+                LoggerFactory.getErrorTypeAwareLogger(CopyOfFilterChainNode.class);
         TYPE originalInvoker;
         Invoker<T> nextNode;
         FILTER filter;
@@ -323,8 +344,17 @@ public interface FilterChainBuilder {
         public Result invoke(Invocation invocation) throws RpcException {
             Result asyncResult;
             try {
-                InvocationProfilerUtils.enterDetailProfiler(invocation, () -> "Filter " + filter.getClass().getName() + " invoke.");
+                InvocationProfilerUtils.enterDetailProfiler(
+                        invocation, () -> "Filter " + filter.getClass().getName() + " invoke.");
                 asyncResult = filter.invoke(nextNode, invocation);
+                if (!(asyncResult instanceof AsyncRpcResult)) {
+                    String msg =
+                            "The result of filter invocation must be AsyncRpcResult. (If you want to recreate a result, please use AsyncRpcResult.newDefaultAsyncResult.) "
+                                    + "Filter class: " + filter.getClass().getName() + ". Result class: "
+                                    + asyncResult.getClass().getName() + ".";
+                    LOGGER.error(INTERNAL_ERROR, "", "", msg);
+                    throw new RpcException(msg);
+                }
             } catch (Exception e) {
                 InvocationProfilerUtils.releaseDetailProfiler(invocation);
                 if (filter instanceof ListenableFilter) {
@@ -359,13 +389,13 @@ public interface FilterChainBuilder {
         }
     }
 
-    @Experimental("Works for the same purpose as ClusterFilterChainNode, replace ClusterFilterChainNode with this one when proved stable enough")
+    @Experimental(
+            "Works for the same purpose as ClusterFilterChainNode, replace ClusterFilterChainNode with this one when proved stable enough")
     class CopyOfClusterFilterChainNode<T, TYPE extends ClusterInvoker<T>, FILTER extends BaseFilter>
-        extends CopyOfFilterChainNode<T, TYPE, FILTER> implements ClusterInvoker<T> {
+            extends CopyOfFilterChainNode<T, TYPE, FILTER> implements ClusterInvoker<T> {
         public CopyOfClusterFilterChainNode(TYPE originalInvoker, Invoker<T> nextNode, FILTER filter) {
             super(originalInvoker, nextNode, filter);
         }
-
 
         @Override
         public URL getRegistryUrl() {

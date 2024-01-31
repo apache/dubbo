@@ -16,23 +16,12 @@
  */
 package org.apache.dubbo.registry.client;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -50,7 +39,18 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.service.Destroyable;
 
-import com.alibaba.fastjson.JSONObject;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_NOTIFY_EVENT;
 
@@ -62,7 +62,8 @@ public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
      * Echo check if consumer is still work
      * echo task may take a lot of time when consumer offline, create a new ScheduledThreadPool
      */
-    private final ScheduledExecutorService echoCheckExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("Dubbo-Registry-EchoCheck-Consumer"));
+    private final ScheduledExecutorService echoCheckExecutor =
+            Executors.newScheduledThreadPool(1, new NamedThreadFactory("Dubbo-Registry-EchoCheck-Consumer"));
 
     // =================================== Provider side =================================== //
     /**
@@ -103,33 +104,39 @@ public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
 
     public ReflectionBasedServiceDiscovery(ApplicationModel applicationModel, URL registryURL) {
         super(applicationModel, registryURL);
-        long echoPollingCycle = registryURL.getParameter(Constants.ECHO_POLLING_CYCLE_KEY, Constants.DEFAULT_ECHO_POLLING_CYCLE);
+        long echoPollingCycle =
+                registryURL.getParameter(Constants.ECHO_POLLING_CYCLE_KEY, Constants.DEFAULT_ECHO_POLLING_CYCLE);
 
         this.metadataService = applicationModel.getBeanFactory().getOrRegisterBean(MetadataServiceDelegation.class);
 
         // Echo check: test if consumer is offline, remove MetadataChangeListener,
         // reduce the probability of failure when metadata update
-        echoCheckExecutor.scheduleAtFixedRate(() -> {
-            Map<String, InstanceMetadataChangedListener> listenerMap = metadataService.getInstanceMetadataChangedListenerMap();
-            Iterator<Map.Entry<String, InstanceMetadataChangedListener>> iterator = listenerMap.entrySet().iterator();
+        echoCheckExecutor.scheduleAtFixedRate(
+                () -> {
+                    Map<String, InstanceMetadataChangedListener> listenerMap =
+                            metadataService.getInstanceMetadataChangedListenerMap();
+                    Iterator<Map.Entry<String, InstanceMetadataChangedListener>> iterator =
+                            listenerMap.entrySet().iterator();
 
-            while (iterator.hasNext()) {
-                Map.Entry<String, InstanceMetadataChangedListener> entry = iterator.next();
-                try {
-                    entry.getValue().echo(CommonConstants.DUBBO);
-                } catch (RpcException e) {
-                    if (logger.isInfoEnabled()) {
-                        logger.info("Send echo message to consumer error. Possible cause: consumer is offline.");
+                    while (iterator.hasNext()) {
+                        Map.Entry<String, InstanceMetadataChangedListener> entry = iterator.next();
+                        try {
+                            entry.getValue().echo(CommonConstants.DUBBO);
+                        } catch (RpcException e) {
+                            if (logger.isInfoEnabled()) {
+                                logger.info(
+                                        "Send echo message to consumer error. Possible cause: consumer is offline.");
+                            }
+                            iterator.remove();
+                        }
                     }
-                    iterator.remove();
-                }
-            }
-        }, echoPollingCycle, echoPollingCycle, TimeUnit.MILLISECONDS);
+                },
+                echoPollingCycle,
+                echoPollingCycle,
+                TimeUnit.MILLISECONDS);
     }
 
-    public void doInitialize(URL registryURL) {
-
-    }
+    public void doInitialize(URL registryURL) {}
 
     @Override
     public void doDestroy() throws Exception {
@@ -139,7 +146,7 @@ public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     private void updateInstanceMetadata(ServiceInstance serviceInstance) {
-        String metadataString = JSONObject.toJSONString(serviceInstance.getMetadata());
+        String metadataString = JsonUtils.toJson(serviceInstance.getMetadata());
         String metadataRevision = RevisionResolver.calRevision(metadataString);
 
         // check if metadata updated
@@ -154,8 +161,10 @@ public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
             metadataService.exportInstanceMetadata(metadataString);
 
             // notify to consumer
-            Map<String, InstanceMetadataChangedListener> listenerMap = metadataService.getInstanceMetadataChangedListenerMap();
-            Iterator<Map.Entry<String, InstanceMetadataChangedListener>> iterator = listenerMap.entrySet().iterator();
+            Map<String, InstanceMetadataChangedListener> listenerMap =
+                    metadataService.getInstanceMetadataChangedListenerMap();
+            Iterator<Map.Entry<String, InstanceMetadataChangedListener>> iterator =
+                    listenerMap.entrySet().iterator();
 
             while (iterator.hasNext()) {
                 Map.Entry<String, InstanceMetadataChangedListener> entry = iterator.next();
@@ -165,8 +174,11 @@ public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
                     // 1-7 - Failed to notify registry event.
                     // The updating of metadata to consumer is a type of registry event.
 
-                    logger.warn(REGISTRY_FAILED_NOTIFY_EVENT, "consumer is offline", "",
-                        "Notify to consumer error, removing listener.");
+                    logger.warn(
+                            REGISTRY_FAILED_NOTIFY_EVENT,
+                            "consumer is offline",
+                            "",
+                            "Notify to consumer error, removing listener.");
 
                     // remove listener if consumer is offline
                     iterator.remove();
@@ -196,41 +208,44 @@ public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
             // Metadata will be updated by provider callback
 
             String metadataString = metadataMap.get(hostId);
-            serviceInstance.setMetadata(JSONObject.parseObject(metadataString, Map.class));
+            serviceInstance.setMetadata(JsonUtils.toJavaObject(metadataString, Map.class));
         } else {
             // refer from MetadataUtils, this proxy is different from the one used to refer exportedURL
             MetadataService metadataService = getMetadataServiceProxy(serviceInstance);
 
-            String consumerId = ScopeModelUtil.getApplicationModel(registryURL.getScopeModel()).getApplicationName() + NetUtils.getLocalHost();
-            String metadata = metadataService.getAndListenInstanceMetadata(
-                consumerId, metadataString -> {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Receive callback: " + metadataString + serviceInstance);
-                    }
-                    if (StringUtils.isEmpty(metadataString)) {
-                        // provider is shutdown
-                        metadataMap.remove(hostId);
-                    } else {
-                        metadataMap.put(hostId, metadataString);
-                    }
-                });
+            String consumerId = ScopeModelUtil.getApplicationModel(registryURL.getScopeModel())
+                            .getApplicationName()
+                    + NetUtils.getLocalHost();
+            String metadata = metadataService.getAndListenInstanceMetadata(consumerId, metadataString -> {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Receive callback: " + metadataString + serviceInstance);
+                }
+                if (StringUtils.isEmpty(metadataString)) {
+                    // provider is shutdown
+                    metadataMap.remove(hostId);
+                } else {
+                    metadataMap.put(hostId, metadataString);
+                }
+            });
             metadataMap.put(hostId, metadata);
-            serviceInstance.setMetadata(JSONObject.parseObject(metadata, Map.class));
+            serviceInstance.setMetadata(JsonUtils.toJavaObject(metadata, Map.class));
         }
     }
 
-    public final void notifyListener(String serviceName, ServiceInstancesChangedListener listener, List<ServiceInstance> instances) {
-        String serviceInstanceRevision = RevisionResolver.calRevision(JSONObject.toJSONString(instances));
+    public final void notifyListener(
+            String serviceName, ServiceInstancesChangedListener listener, List<ServiceInstance> instances) {
+        String serviceInstanceRevision = RevisionResolver.calRevision(JsonUtils.toJson(instances));
         boolean changed = !serviceInstanceRevision.equalsIgnoreCase(
-            serviceInstanceRevisionMap.put(serviceName, serviceInstanceRevision));
+                serviceInstanceRevisionMap.put(serviceName, serviceInstanceRevision));
 
         if (logger.isDebugEnabled()) {
-            logger.debug("Service changed event received (possibly because of DNS polling). " +
-                "Service Instance changed: " + changed + " Service Name: " + serviceName);
+            logger.debug("Service changed event received (possibly because of DNS polling). "
+                    + "Service Instance changed: " + changed + " Service Name: " + serviceName);
         }
 
         if (changed) {
-            List<ServiceInstance> oldServiceInstances = cachedServiceInstances.getOrDefault(serviceName, new LinkedList<>());
+            List<ServiceInstance> oldServiceInstances =
+                    cachedServiceInstances.getOrDefault(serviceName, new LinkedList<>());
 
             // remove expired invoker
             Set<ServiceInstance> allServiceInstances = new HashSet<>(oldServiceInstances.size() + instances.size());
@@ -257,12 +272,14 @@ public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     private String computeKey(ServiceInstance serviceInstance) {
-        return serviceInstance.getServiceName() + "##" + serviceInstance.getAddress() + "##" +
-            ServiceInstanceMetadataUtils.getExportedServicesRevision(serviceInstance);
+        return serviceInstance.getServiceName() + "##" + serviceInstance.getAddress() + "##"
+                + ServiceInstanceMetadataUtils.getExportedServicesRevision(serviceInstance);
     }
 
     private synchronized MetadataService getMetadataServiceProxy(ServiceInstance instance) {
-        return metadataServiceProxies.computeIfAbsent(computeKey(instance), k -> MetadataUtils.referProxy(instance).getProxy());
+        return ConcurrentHashMapUtils.computeIfAbsent(
+                metadataServiceProxies, computeKey(instance), k -> MetadataUtils.referProxy(instance)
+                        .getProxy());
     }
 
     private synchronized void destroyMetadataServiceProxy(ServiceInstance instance) {

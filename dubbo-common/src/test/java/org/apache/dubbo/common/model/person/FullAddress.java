@@ -36,11 +36,9 @@ public class FullAddress implements Serializable {
 
     private String zipCode;
 
-    public FullAddress() {
-    }
+    public FullAddress() {}
 
-    public FullAddress(String countryId, String provinceName, String cityId, String streetAddress,
-                       String zipCode) {
+    public FullAddress(String countryId, String provinceName, String cityId, String streetAddress, String zipCode) {
         this.countryId = countryId;
         this.countryName = countryId;
         this.provinceName = provinceName;
@@ -50,8 +48,14 @@ public class FullAddress implements Serializable {
         this.zipCode = zipCode;
     }
 
-    public FullAddress(String countryId, String countryName, String provinceName, String cityId,
-                       String cityName, String streetAddress, String zipCode) {
+    public FullAddress(
+            String countryId,
+            String countryName,
+            String provinceName,
+            String cityId,
+            String cityName,
+            String streetAddress,
+            String zipCode) {
         this.countryId = countryId;
         this.countryName = countryName;
         this.provinceName = provinceName;
@@ -133,48 +137,31 @@ public class FullAddress implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
         FullAddress other = (FullAddress) obj;
         if (cityId == null) {
-            if (other.cityId != null)
-                return false;
-        } else if (!cityId.equals(other.cityId))
-            return false;
+            if (other.cityId != null) return false;
+        } else if (!cityId.equals(other.cityId)) return false;
         if (cityName == null) {
-            if (other.cityName != null)
-                return false;
-        } else if (!cityName.equals(other.cityName))
-            return false;
+            if (other.cityName != null) return false;
+        } else if (!cityName.equals(other.cityName)) return false;
         if (countryId == null) {
-            if (other.countryId != null)
-                return false;
-        } else if (!countryId.equals(other.countryId))
-            return false;
+            if (other.countryId != null) return false;
+        } else if (!countryId.equals(other.countryId)) return false;
         if (countryName == null) {
-            if (other.countryName != null)
-                return false;
-        } else if (!countryName.equals(other.countryName))
-            return false;
+            if (other.countryName != null) return false;
+        } else if (!countryName.equals(other.countryName)) return false;
         if (provinceName == null) {
-            if (other.provinceName != null)
-                return false;
-        } else if (!provinceName.equals(other.provinceName))
-            return false;
+            if (other.provinceName != null) return false;
+        } else if (!provinceName.equals(other.provinceName)) return false;
         if (streetAddress == null) {
-            if (other.streetAddress != null)
-                return false;
-        } else if (!streetAddress.equals(other.streetAddress))
-            return false;
+            if (other.streetAddress != null) return false;
+        } else if (!streetAddress.equals(other.streetAddress)) return false;
         if (zipCode == null) {
-            if (other.zipCode != null)
-                return false;
-        } else if (!zipCode.equals(other.zipCode))
-            return false;
+            if (other.zipCode != null) return false;
+        } else if (!zipCode.equals(other.zipCode)) return false;
         return true;
     }
 
@@ -198,5 +185,4 @@ public class FullAddress implements Serializable {
         }
         return sb.toString();
     }
-
 }

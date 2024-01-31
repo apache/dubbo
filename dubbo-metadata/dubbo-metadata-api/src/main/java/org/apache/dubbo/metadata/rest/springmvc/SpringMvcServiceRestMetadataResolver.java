@@ -18,6 +18,7 @@ package org.apache.dubbo.metadata.rest.springmvc;
 
 import org.apache.dubbo.metadata.rest.AbstractServiceRestMetadataResolver;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadataResolver;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
@@ -38,6 +39,7 @@ import static org.apache.dubbo.common.utils.PathUtils.buildPath;
 import static org.apache.dubbo.metadata.rest.RestMetadataConstants.SPRING_MVC.ANNOTATED_ELEMENT_UTILS_CLASS;
 import static org.apache.dubbo.metadata.rest.RestMetadataConstants.SPRING_MVC.CONTROLLER_ANNOTATION_CLASS;
 import static org.apache.dubbo.metadata.rest.RestMetadataConstants.SPRING_MVC.REQUEST_MAPPING_ANNOTATION_CLASS;
+import static org.apache.dubbo.metadata.rest.RestMetadataConstants.SPRING_MVC.REQUEST_MAPPING_ANNOTATION_CLASS_NAME;
 
 /**
  * {@link ServiceRestMetadataResolver}
@@ -48,15 +50,23 @@ public class SpringMvcServiceRestMetadataResolver extends AbstractServiceRestMet
 
     private static final int FIRST_ELEMENT_INDEX = 0;
 
+    public SpringMvcServiceRestMetadataResolver(ApplicationModel applicationModel) {
+        super(applicationModel);
+    }
+
     @Override
     protected boolean supports0(Class<?> serviceType) {
-        return isAnnotationPresent(serviceType, CONTROLLER_ANNOTATION_CLASS);
+        // class @Controller or @RequestMapping
+        return isAnnotationPresent(serviceType, CONTROLLER_ANNOTATION_CLASS)
+                || isAnnotationPresent(serviceType, REQUEST_MAPPING_ANNOTATION_CLASS)
+                // method @RequestMapping
+                || isServiceMethodAnnotationPresent(serviceType, REQUEST_MAPPING_ANNOTATION_CLASS_NAME);
     }
 
     @Override
     protected boolean isRestCapableMethod(Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass) {
-        return isAnnotationPresent(serviceType, REQUEST_MAPPING_ANNOTATION_CLASS) ||
-                isAnnotationPresent(serviceMethod, REQUEST_MAPPING_ANNOTATION_CLASS);
+        // method only match @RequestMapping
+        return isAnnotationPresent(serviceMethod, REQUEST_MAPPING_ANNOTATION_CLASS);
     }
 
     @Override
@@ -82,13 +92,19 @@ public class SpringMvcServiceRestMetadataResolver extends AbstractServiceRestMet
     }
 
     @Override
-    protected void processProduces(Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass, Set<String> produces) {
+    protected void processProduces(
+            Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass, Set<String> produces) {
         addMediaTypes(serviceMethod, "produces", produces);
+        addMediaTypes(serviceType, "produces", produces);
+        addMediaTypes(serviceInterfaceClass, "produces", produces);
     }
 
     @Override
-    protected void processConsumes(Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass, Set<String> consumes) {
+    protected void processConsumes(
+            Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass, Set<String> consumes) {
         addMediaTypes(serviceMethod, "consumes", consumes);
+        addMediaTypes(serviceType, "consumes", consumes);
+        addMediaTypes(serviceInterfaceClass, "consumes", consumes);
     }
 
     private String resolveRequestPath(AnnotatedElement annotatedElement) {
@@ -119,6 +135,17 @@ public class SpringMvcServiceRestMetadataResolver extends AbstractServiceRestMet
         }
     }
 
+    private void addMediaTypes(Class serviceType, String annotationAttributeName, Set<String> mediaTypesSet) {
+
+        Annotation mappingAnnotation = getRequestMapping(serviceType);
+
+        String[] mediaTypes = getAttribute(mappingAnnotation, annotationAttributeName);
+
+        if (isNotEmpty(mediaTypes)) {
+            of(mediaTypes).forEach(mediaTypesSet::add);
+        }
+    }
+
     private Annotation getRequestMapping(AnnotatedElement annotatedElement) {
         // try "@RequestMapping" first
         Annotation requestMapping = findAnnotation(annotatedElement, REQUEST_MAPPING_ANNOTATION_CLASS);
@@ -128,10 +155,12 @@ public class SpringMvcServiceRestMetadataResolver extends AbstractServiceRestMet
             // because of "@GetMapping" alias for ("@AliasFor") "@RequestMapping" , both of them belongs to
             // the artifact "spring-web" which depends on "spring-core", thus Spring core's
             // AnnotatedElementUtils.findMergedAnnotation(AnnotatedElement, Class) must be involved.
-            Method method = findMethod(ANNOTATED_ELEMENT_UTILS_CLASS, "findMergedAnnotation", AnnotatedElement.class, Class.class);
+            Method method = findMethod(
+                    ANNOTATED_ELEMENT_UTILS_CLASS, "findMergedAnnotation", AnnotatedElement.class, Class.class);
             if (method != null) {
                 try {
-                    requestMapping = (Annotation) method.invoke(null, annotatedElement, REQUEST_MAPPING_ANNOTATION_CLASS);
+                    requestMapping =
+                            (Annotation) method.invoke(null, annotatedElement, REQUEST_MAPPING_ANNOTATION_CLASS);
                 } catch (Exception ignored) {
                 }
             }

@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,12 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -27,21 +31,18 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class ProtocolConfigTest {
 
     @BeforeEach
     public void setUp() {
         DubboBootstrap.reset();
+        //        FrameworkModel.defaultModel().getBeanFactory().registerBean(TestPreferSerializationProvider.class);
     }
 
     @AfterEach
@@ -232,14 +233,14 @@ class ProtocolConfigTest {
     void testMetaData() {
         ProtocolConfig config = new ProtocolConfig();
         Map<String, String> metaData = config.getMetaData();
-        Assertions.assertEquals(0, metaData.size(), "actual: "+metaData);
+        Assertions.assertEquals(0, metaData.size(), "actual: " + metaData);
     }
 
     @Test
     void testOverrideEmptyConfig() {
         int port = NetUtils.getAvailablePort();
-        //dubbo.protocol.name=rest
-        //dubbo.protocol.port=port
+        // dubbo.protocol.name=rest
+        // dubbo.protocol.port=port
         SysProps.setProperty("dubbo.protocol.name", "rest");
         SysProps.setProperty("dubbo.protocol.port", String.valueOf(port));
 
@@ -283,7 +284,7 @@ class ProtocolConfigTest {
     void testOverrideConfigById() {
         int port = NetUtils.getAvailablePort();
         SysProps.setProperty("dubbo.protocols.rest1.name", "rest");
-        SysProps.setProperty("dubbo.protocols.rest1.port",  String.valueOf(port));
+        SysProps.setProperty("dubbo.protocols.rest1.port", String.valueOf(port));
 
         try {
             ProtocolConfig protocolConfig = new ProtocolConfig();
@@ -314,8 +315,7 @@ class ProtocolConfigTest {
         try {
 
             DubboBootstrap bootstrap = DubboBootstrap.getInstance();
-            bootstrap.application("test-app")
-                    .initialize();
+            bootstrap.application("test-app").initialize();
 
             ConfigManager configManager = bootstrap.getConfigManager();
             Collection<ProtocolConfig> protocols = configManager.getProtocols();
@@ -341,8 +341,7 @@ class ProtocolConfigTest {
         try {
 
             DubboBootstrap bootstrap = DubboBootstrap.getInstance();
-            bootstrap.application("test-app")
-                    .initialize();
+            bootstrap.application("test-app").initialize();
 
             ConfigManager configManager = bootstrap.getConfigManager();
             Collection<ProtocolConfig> protocols = configManager.getProtocols();
@@ -368,8 +367,7 @@ class ProtocolConfigTest {
         try {
 
             DubboBootstrap bootstrap = DubboBootstrap.getInstance();
-            bootstrap.application("test-app")
-                    .initialize();
+            bootstrap.application("test-app").initialize();
 
             ConfigManager configManager = bootstrap.getConfigManager();
             Collection<ProtocolConfig> protocols = configManager.getProtocols();
@@ -385,4 +383,35 @@ class ProtocolConfigTest {
         }
     }
 
+    @Test
+    void testPreferSerializationDefault1() throws Exception {
+        ProtocolConfig protocolConfig = new ProtocolConfig();
+        assertNull(protocolConfig.getPreferSerialization());
+
+        protocolConfig.checkDefault();
+        assertThat(protocolConfig.getPreferSerialization(), equalTo("fastjson2,hessian2"));
+
+        protocolConfig = new ProtocolConfig();
+        protocolConfig.setSerialization("x-serialization");
+        assertNull(protocolConfig.getPreferSerialization());
+
+        protocolConfig.checkDefault();
+        assertThat(protocolConfig.getPreferSerialization(), equalTo("x-serialization"));
+    }
+
+    @Test
+    void testPreferSerializationDefault2() throws Exception {
+        ProtocolConfig protocolConfig = new ProtocolConfig();
+        assertNull(protocolConfig.getPreferSerialization());
+
+        protocolConfig.refresh();
+        assertThat(protocolConfig.getPreferSerialization(), equalTo("fastjson2,hessian2"));
+
+        protocolConfig = new ProtocolConfig();
+        protocolConfig.setSerialization("x-serialization");
+        assertNull(protocolConfig.getPreferSerialization());
+
+        protocolConfig.refresh();
+        assertThat(protocolConfig.getPreferSerialization(), equalTo("x-serialization"));
+    }
 }

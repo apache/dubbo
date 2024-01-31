@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.filter.tps.DefaultTPSLimiter;
 import org.apache.dubbo.rpc.filter.tps.TPSLimiter;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import static org.apache.dubbo.rpc.Constants.TPS_LIMIT_RATE_KEY;
 
@@ -35,7 +36,7 @@ import static org.apache.dubbo.rpc.Constants.TPS_LIMIT_RATE_KEY;
  * as it limit checker. If a provider service method is configured with <b>tps</b>(optionally with <b>tps.interval</b>),then
  * if invocation count exceed the configured <b>tps</b> value (default is -1 which means unlimited) then invocation will get
  * RpcException.
- * */
+ */
 @Activate(group = CommonConstants.PROVIDER, value = TPS_LIMIT_RATE_KEY)
 public class TpsLimitFilter implements Filter {
 
@@ -45,15 +46,13 @@ public class TpsLimitFilter implements Filter {
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
 
         if (!tpsLimiter.isAllowable(invoker.getUrl(), invocation)) {
-            throw new RpcException(
-                    "Failed to invoke service " +
-                            invoker.getInterface().getName() +
-                            "." +
-                            invocation.getMethodName() +
-                            " because exceed max service tps.");
+            return AsyncRpcResult.newDefaultAsyncResult(
+                    new RpcException(
+                            "Failed to invoke service " + invoker.getInterface().getName() + "."
+                                    + RpcUtils.getMethodName(invocation) + " because exceed max service tps."),
+                    invocation);
         }
 
         return invoker.invoke(invocation);
     }
-
 }

@@ -52,10 +52,10 @@ import java.util.concurrent.ThreadLocalRandom;
  * @param <E>
  * @since 3.0
  */
-public class BitList<E> extends AbstractList<E> {
+public class BitList<E> extends AbstractList<E> implements Cloneable {
     private final BitSet rootSet;
     private volatile List<E> originList;
-    private final static BitList emptyList = new BitList(Collections.emptyList());
+    private static final BitList emptyList = new BitList(Collections.emptyList());
     private volatile List<E> tailList = null;
 
     public BitList(List<E> originList) {
@@ -118,10 +118,13 @@ public class BitList<E> extends AbstractList<E> {
      * TailList in source bitList will be totally saved even if it is not appeared in the target bitList.
      *
      * @param target target bitList
-     * @return a new bitList only contains those elements contain in both two list and source bitList's tailList
+     * @return this bitList only contains those elements contain in both two list and source bitList's tailList
      */
     public BitList<E> and(BitList<E> target) {
         rootSet.and(target.rootSet);
+        if (target.getTailList() != null) {
+            target.getTailList().forEach(this::addToTailList);
+        }
         return this;
     }
 
@@ -364,7 +367,8 @@ public class BitList<E> extends AbstractList<E> {
                 copiedTailList = null;
                 resultSet.set(toIndex, resultSet.length(), false);
             } else {
-                copiedTailList = copiedTailList == null ? null : copiedTailList.subList(0, toIndex - rootSet.cardinality());
+                copiedTailList =
+                        copiedTailList == null ? null : copiedTailList.subList(0, toIndex - rootSet.cardinality());
             }
         }
         if (fromIndex > 0) {
@@ -372,7 +376,9 @@ public class BitList<E> extends AbstractList<E> {
                 resultSet.set(0, fromIndex, false);
             } else {
                 resultSet.clear();
-                copiedTailList = copiedTailList == null ? null : copiedTailList.subList(fromIndex - rootSet.cardinality(), copiedTailList.size());
+                copiedTailList = copiedTailList == null
+                        ? null
+                        : copiedTailList.subList(fromIndex - rootSet.cardinality(), copiedTailList.size());
             }
         }
         return new BitList<>(originList, resultSet, copiedTailList);
@@ -548,6 +554,7 @@ public class BitList<E> extends AbstractList<E> {
 
     @Override
     public BitList<E> clone() {
-        return new BitList<>(originList, (BitSet) rootSet.clone(), tailList == null ? null : new LinkedList<>(tailList));
+        return new BitList<>(
+                originList, (BitSet) rootSet.clone(), tailList == null ? null : new LinkedList<>(tailList));
     }
 }

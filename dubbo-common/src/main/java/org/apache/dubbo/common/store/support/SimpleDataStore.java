@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.store.support;
 
 import org.apache.dubbo.common.store.DataStore;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,17 +27,16 @@ import java.util.concurrent.ConcurrentMap;
 public class SimpleDataStore implements DataStore {
 
     // <component name or id, <data-name, data-value>>
-    private ConcurrentMap<String, ConcurrentMap<String, Object>> data =
-            new ConcurrentHashMap<String, ConcurrentMap<String, Object>>();
+    private final ConcurrentMap<String, ConcurrentMap<String, Object>> data = new ConcurrentHashMap<>();
 
     @Override
     public Map<String, Object> get(String componentName) {
         ConcurrentMap<String, Object> value = data.get(componentName);
         if (value == null) {
-            return new HashMap<String, Object>();
+            return new HashMap<>();
         }
 
-        return new HashMap<String, Object>(value);
+        return new HashMap<>(value);
     }
 
     @Override
@@ -50,7 +49,8 @@ public class SimpleDataStore implements DataStore {
 
     @Override
     public void put(String componentName, String key, Object value) {
-        Map<String, Object> componentData = data.computeIfAbsent(componentName, k -> new ConcurrentHashMap<>());
+        Map<String, Object> componentData =
+                ConcurrentHashMapUtils.computeIfAbsent(data, componentName, k -> new ConcurrentHashMap<>());
         componentData.put(key, value);
     }
 
@@ -61,5 +61,4 @@ public class SimpleDataStore implements DataStore {
         }
         data.get(componentName).remove(key);
     }
-
 }

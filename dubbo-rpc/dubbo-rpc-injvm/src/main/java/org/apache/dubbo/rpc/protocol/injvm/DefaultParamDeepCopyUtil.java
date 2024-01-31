@@ -22,25 +22,32 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
-import org.apache.dubbo.common.serialize.support.DefaultSerializationSelector;
-import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.common.utils.ProtobufUtils;
+import org.apache.dubbo.remoting.utils.UrlUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Type;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_DESERIALIZE;
 
 public class DefaultParamDeepCopyUtil implements ParamDeepCopyUtil {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DefaultParamDeepCopyUtil.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(DefaultParamDeepCopyUtil.class);
 
-    public final static String NAME = "default";
+    public static final String NAME = "default";
 
     @Override
     @SuppressWarnings({"unchecked"})
-    public <T> T copy(URL url, Object src, Class<T> targetClass) {
-        Serialization serialization = url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(
-            url.getParameter(Constants.SERIALIZATION_KEY, DefaultSerializationSelector.getDefaultRemotingSerialization()));
+    public <T> T copy(URL url, Object src, Class<T> targetClass, Type type) {
+        // TODO: maybe we have better way to do this
+        if (src != null && ProtobufUtils.isProtobufClass(src.getClass())) {
+            return (T) src;
+        }
+        Serialization serialization = url.getOrDefaultFrameworkModel()
+                .getExtensionLoader(Serialization.class)
+                .getExtension(UrlUtils.serializationOrDefault(url));
 
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             ObjectOutput objectOutput = serialization.serialize(url, outputStream);
@@ -49,7 +56,11 @@ public class DefaultParamDeepCopyUtil implements ParamDeepCopyUtil {
 
             try (ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray())) {
                 ObjectInput objectInput = serialization.deserialize(url, inputStream);
-                return objectInput.readObject(targetClass);
+                if (type != null) {
+                    return objectInput.readObject(targetClass, type);
+                } else {
+                    return objectInput.readObject(targetClass);
+                }
             } catch (ClassNotFoundException | IOException e) {
                 logger.error(PROTOCOL_ERROR_DESERIALIZE, "", "", "Unable to deep copy parameter to target class.", e);
             }
@@ -57,7 +68,6 @@ public class DefaultParamDeepCopyUtil implements ParamDeepCopyUtil {
         } catch (Throwable e) {
             logger.error(PROTOCOL_ERROR_DESERIALIZE, "", "", "Unable to deep copy parameter to target class.", e);
         }
-
 
         if (src.getClass().equals(targetClass)) {
             return (T) src;

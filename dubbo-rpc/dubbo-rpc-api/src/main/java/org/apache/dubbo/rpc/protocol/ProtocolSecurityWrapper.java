@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol;
 
-import java.util.List;
-import java.util.Optional;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -35,13 +32,17 @@ import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.model.ServiceModel;
 
+import java.util.List;
+import java.util.Optional;
+
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 
 @Activate(order = 200)
 public class ProtocolSecurityWrapper implements Protocol {
     private final Protocol protocol;
-    
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ProtocolSecurityWrapper.class);
+
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(ProtocolSecurityWrapper.class);
 
     public ProtocolSecurityWrapper(Protocol protocol) {
         if (protocol == null) {
@@ -61,19 +62,22 @@ public class ProtocolSecurityWrapper implements Protocol {
             ServiceModel serviceModel = invoker.getUrl().getServiceModel();
             ScopeModel scopeModel = invoker.getUrl().getScopeModel();
             SerializeSecurityConfigurator serializeSecurityConfigurator = ScopeModelUtil.getModuleModel(scopeModel)
-                .getBeanFactory().getBean(SerializeSecurityConfigurator.class);
+                    .getBeanFactory()
+                    .getBean(SerializeSecurityConfigurator.class);
             serializeSecurityConfigurator.refreshStatus();
             serializeSecurityConfigurator.refreshCheck();
 
-            Optional.ofNullable(serviceModel)
-                .map(ServiceModel::getServiceModel)
-                .map(ServiceDescriptor::getServiceInterfaceClass)
-                .ifPresent(serializeSecurityConfigurator::registerInterface);
+            Optional.ofNullable(invoker.getInterface()).ifPresent(serializeSecurityConfigurator::registerInterface);
 
             Optional.ofNullable(serviceModel)
-                .map(ServiceModel::getServiceMetadata)
-                .map(ServiceMetadata::getServiceType)
-                .ifPresent(serializeSecurityConfigurator::registerInterface);
+                    .map(ServiceModel::getServiceModel)
+                    .map(ServiceDescriptor::getServiceInterfaceClass)
+                    .ifPresent(serializeSecurityConfigurator::registerInterface);
+
+            Optional.ofNullable(serviceModel)
+                    .map(ServiceModel::getServiceMetadata)
+                    .map(ServiceMetadata::getServiceType)
+                    .ifPresent(serializeSecurityConfigurator::registerInterface);
         } catch (Throwable t) {
             logger.error(INTERNAL_ERROR, "", "", "Failed to register interface for security check", t);
         }
@@ -86,19 +90,20 @@ public class ProtocolSecurityWrapper implements Protocol {
             ServiceModel serviceModel = url.getServiceModel();
             ScopeModel scopeModel = url.getScopeModel();
             SerializeSecurityConfigurator serializeSecurityConfigurator = ScopeModelUtil.getModuleModel(scopeModel)
-                .getBeanFactory().getBean(SerializeSecurityConfigurator.class);
+                    .getBeanFactory()
+                    .getBean(SerializeSecurityConfigurator.class);
             serializeSecurityConfigurator.refreshStatus();
             serializeSecurityConfigurator.refreshCheck();
 
             Optional.ofNullable(serviceModel)
-                .map(ServiceModel::getServiceModel)
-                .map(ServiceDescriptor::getServiceInterfaceClass)
-                .ifPresent(serializeSecurityConfigurator::registerInterface);
+                    .map(ServiceModel::getServiceModel)
+                    .map(ServiceDescriptor::getServiceInterfaceClass)
+                    .ifPresent(serializeSecurityConfigurator::registerInterface);
 
             Optional.ofNullable(serviceModel)
-                .map(ServiceModel::getServiceMetadata)
-                .map(ServiceMetadata::getServiceType)
-                .ifPresent(serializeSecurityConfigurator::registerInterface);
+                    .map(ServiceModel::getServiceMetadata)
+                    .map(ServiceMetadata::getServiceType)
+                    .ifPresent(serializeSecurityConfigurator::registerInterface);
             serializeSecurityConfigurator.registerInterface(type);
         } catch (Throwable t) {
             logger.error(INTERNAL_ERROR, "", "", "Failed to register interface for security check", t);

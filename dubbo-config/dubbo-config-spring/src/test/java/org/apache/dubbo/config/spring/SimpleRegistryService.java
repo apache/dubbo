@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
@@ -37,16 +38,19 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class SimpleRegistryService extends AbstractRegistryService {
 
-    private final static Logger logger = LoggerFactory.getLogger(SimpleRegistryService.class);
-    private final ConcurrentMap<String, ConcurrentMap<String, URL>> remoteRegistered = new ConcurrentHashMap<String, ConcurrentMap<String, URL>>();
-    private final ConcurrentMap<String, ConcurrentMap<String, NotifyListener>> remoteListeners = new ConcurrentHashMap<String, ConcurrentMap<String, NotifyListener>>();
+    private static final Logger logger = LoggerFactory.getLogger(SimpleRegistryService.class);
+    private final ConcurrentMap<String, ConcurrentMap<String, URL>> remoteRegistered =
+            new ConcurrentHashMap<String, ConcurrentMap<String, URL>>();
+    private final ConcurrentMap<String, ConcurrentMap<String, NotifyListener>> remoteListeners =
+            new ConcurrentHashMap<String, ConcurrentMap<String, NotifyListener>>();
     private List<String> registries;
 
     @Override
     public void register(String service, URL url) {
         super.register(service, url);
         String client = RpcContext.getServiceContext().getRemoteAddressString();
-        Map<String, URL> urls = remoteRegistered.computeIfAbsent(client, k -> new ConcurrentHashMap<>());
+        Map<String, URL> urls =
+                ConcurrentHashMapUtils.computeIfAbsent(remoteRegistered, client, k -> new ConcurrentHashMap<>());
         urls.put(service, url);
         notify(service, getRegistered().get(service));
     }
@@ -69,13 +73,15 @@ public class SimpleRegistryService extends AbstractRegistryService {
             logger.info("[subscribe] service: " + service + ",client:" + client);
         }
         List<URL> urls = getRegistered().get(service);
-        if ((RegistryService.class.getName() + ":0.0.0").equals(service)
-                && CollectionUtils.isEmpty(urls)) {
-            register(service, new ServiceConfigURL("dubbo",
-                    NetUtils.getLocalHost(),
-                    RpcContext.getServiceContext().getLocalPort(),
-                    RegistryService.class.getName(),
-                    url.getParameters()));
+        if ((RegistryService.class.getName() + ":0.0.0").equals(service) && CollectionUtils.isEmpty(urls)) {
+            register(
+                    service,
+                    new ServiceConfigURL(
+                            "dubbo",
+                            NetUtils.getLocalHost(),
+                            RpcContext.getServiceContext().getLocalPort(),
+                            RegistryService.class.getName(),
+                            url.getParameters()));
             List<String> rs = registries;
             if (rs != null && rs.size() > 0) {
                 for (String registry : rs) {
@@ -85,14 +91,13 @@ public class SimpleRegistryService extends AbstractRegistryService {
         }
         super.subscribe(service, url, listener);
 
-        Map<String, NotifyListener> listeners = remoteListeners.computeIfAbsent(client, k -> new ConcurrentHashMap<>());
+        Map<String, NotifyListener> listeners =
+                ConcurrentHashMapUtils.computeIfAbsent(remoteListeners, client, k -> new ConcurrentHashMap<>());
         listeners.put(service, listener);
         urls = getRegistered().get(service);
         if (urls != null && urls.size() > 0) {
             listener.notify(urls);
         }
-
-
     }
 
     @Override
@@ -124,10 +129,15 @@ public class SimpleRegistryService extends AbstractRegistryService {
         if (listeners != null && listeners.size() > 0) {
             for (Map.Entry<String, NotifyListener> entry : listeners.entrySet()) {
                 String service = entry.getKey();
-                super.unsubscribe(service, new ServiceConfigURL("subscribe",
-                        RpcContext.getServiceContext().getRemoteHost(),
-                        RpcContext.getServiceContext().getRemotePort(),
-                        RegistryService.class.getName(), getSubscribed(service)), entry.getValue());
+                super.unsubscribe(
+                        service,
+                        new ServiceConfigURL(
+                                "subscribe",
+                                RpcContext.getServiceContext().getRemoteHost(),
+                                RpcContext.getServiceContext().getRemotePort(),
+                                RegistryService.class.getName(),
+                                getSubscribed(service)),
+                        entry.getValue());
             }
         }
     }
@@ -139,5 +149,4 @@ public class SimpleRegistryService extends AbstractRegistryService {
     public void setRegistries(List<String> registries) {
         this.registries = registries;
     }
-
 }

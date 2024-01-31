@@ -20,11 +20,11 @@ import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.spring.boot.actuate.endpoint.metadata.AbstractDubboMetadata;
 import org.apache.dubbo.spring.boot.actuate.endpoint.metadata.DubboServicesMetadata;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
 import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
-
-import java.util.Map;
 
 /**
  * {@link DubboService} Metadata {@link Endpoint}

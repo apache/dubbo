@@ -16,7 +16,8 @@
  */
 package org.apache.dubbo.rpc.model;
 
-import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.ArrayList;
@@ -35,16 +36,13 @@ import static org.apache.dubbo.common.BaseServiceMetadata.versionFromServiceKey;
  */
 public class FrameworkServiceRepository {
 
-    private FrameworkModel frameworkModel;
+    private final FrameworkModel frameworkModel;
 
     // useful to find a provider model quickly with group/serviceInterfaceName:version
-    private ConcurrentMap<String, ProviderModel> providers = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ProviderModel> providers = new ConcurrentHashMap<>();
 
     // useful to find a provider model quickly with serviceInterfaceName:version
-    private ConcurrentMap<String, List<ProviderModel>> providersWithoutGroup = new ConcurrentHashMap<>();
-
-    // useful to find a url quickly with serviceInterfaceName:version
-    private ConcurrentMap<String, List<URL>> providerUrlsWithoutGroup = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, List<ProviderModel>> providersWithoutGroup = new ConcurrentHashMap<>();
 
     public FrameworkServiceRepository(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
@@ -58,14 +56,15 @@ public class FrameworkServiceRepository {
             // throw new IllegalStateException("Register duplicate provider for key: " + key);
         }
         String keyWithoutGroup = keyWithoutGroup(key);
-        providersWithoutGroup.computeIfAbsent(keyWithoutGroup, (k) -> new CopyOnWriteArrayList<>()).add(providerModel);
+        ConcurrentHashMapUtils.computeIfAbsent(
+                        providersWithoutGroup, keyWithoutGroup, (k) -> new CopyOnWriteArrayList<>())
+                .add(providerModel);
     }
 
     public void unregisterProvider(ProviderModel providerModel) {
         providers.remove(providerModel.getServiceKey());
         String keyWithoutGroup = keyWithoutGroup(providerModel.getServiceKey());
         providersWithoutGroup.remove(keyWithoutGroup);
-        providerUrlsWithoutGroup.remove(keyWithoutGroup);
     }
 
     public ProviderModel lookupExportedServiceWithoutGroup(String key) {
@@ -81,16 +80,8 @@ public class FrameworkServiceRepository {
         return providersWithoutGroup.get(key);
     }
 
-    public void registerProviderUrl(URL url) {
-        providerUrlsWithoutGroup.computeIfAbsent(keyWithoutGroup(url.getServiceKey()), (k) -> new CopyOnWriteArrayList<>()).add(url);
-    }
-
     public ProviderModel lookupExportedService(String serviceKey) {
         return providers.get(serviceKey);
-    }
-
-    public List<URL> lookupRegisteredProviderUrlsWithoutGroup(String key) {
-        return providerUrlsWithoutGroup.get(key);
     }
 
     public List<ProviderModel> allProviderModels() {
@@ -99,8 +90,10 @@ public class FrameworkServiceRepository {
 
     public List<ConsumerModel> allConsumerModels() {
         List<ConsumerModel> consumerModels = new LinkedList<>();
-        frameworkModel.getApplicationModels().forEach(applicationModel ->
-            consumerModels.addAll(applicationModel.getApplicationServiceRepository().allConsumerModels()));
+        frameworkModel
+                .getApplicationModels()
+                .forEach(applicationModel -> consumerModels.addAll(
+                        applicationModel.getApplicationServiceRepository().allConsumerModels()));
         return Collections.unmodifiableList(consumerModels);
     }
 
@@ -110,7 +103,6 @@ public class FrameworkServiceRepository {
         if (StringUtils.isEmpty(version)) {
             return interfaceName;
         }
-        return interfaceName + ":" + version;
+        return interfaceName + CommonConstants.GROUP_CHAR_SEPARATOR + version;
     }
-
 }

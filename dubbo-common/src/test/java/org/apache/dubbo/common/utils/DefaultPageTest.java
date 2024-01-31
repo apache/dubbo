@@ -16,10 +16,10 @@
  */
 package org.apache.dubbo.common.utils;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 import static java.util.Arrays.asList;
 

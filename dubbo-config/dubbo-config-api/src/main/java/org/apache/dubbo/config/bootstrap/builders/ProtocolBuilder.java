@@ -164,7 +164,7 @@ public class ProtocolBuilder extends AbstractBuilder<ProtocolConfig, ProtocolBui
     /**
      * whether it is a persistent connection
      */
-    //TODO add this to provider config
+    // TODO add this to provider config
     private Boolean keepAlive;
 
     // TODO add this to provider config
@@ -179,6 +179,13 @@ public class ProtocolBuilder extends AbstractBuilder<ProtocolConfig, ProtocolBui
      * The customized parameters
      */
     private Map<String, String> parameters;
+
+    private Boolean sslEnabled;
+
+    /*
+     * Extra Protocol for this service, using Port Unification Server
+     */
+    private String extProtocol;
 
     /**
      * If it's default
@@ -375,11 +382,22 @@ public class ProtocolBuilder extends AbstractBuilder<ProtocolConfig, ProtocolBui
         return getThis();
     }
 
+    public ProtocolBuilder isSslEnabled(Boolean sslEnabled) {
+        this.sslEnabled = sslEnabled;
+        return getThis();
+    }
+
+    public ProtocolBuilder extProtocol(String extProtocol) {
+        this.extProtocol = extProtocol;
+        return getThis();
+    }
+
     public ProtocolBuilder isDefault(Boolean isDefault) {
         this.isDefault = isDefault;
         return getThis();
     }
 
+    @Override
     public ProtocolConfig build() {
         ProtocolConfig protocolConfig = new ProtocolConfig();
         super.build(protocolConfig);
@@ -416,6 +434,8 @@ public class ProtocolBuilder extends AbstractBuilder<ProtocolConfig, ProtocolBui
         protocolConfig.setThreadpool(threadpool);
         protocolConfig.setThreads(threads);
         protocolConfig.setTransporter(transporter);
+        protocolConfig.setSslEnabled(sslEnabled);
+        protocolConfig.setExtProtocol(extProtocol);
 
         return protocolConfig;
     }

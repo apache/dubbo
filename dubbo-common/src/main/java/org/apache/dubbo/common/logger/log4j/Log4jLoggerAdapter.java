@@ -20,15 +20,16 @@ import org.apache.dubbo.common.logger.Level;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerAdapter;
 
+import java.io.File;
+import java.util.Enumeration;
+
 import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.LogManager;
 
-import java.io.File;
-import java.util.Enumeration;
-
 public class Log4jLoggerAdapter implements LoggerAdapter {
 
+    public static final String NAME = "log4j";
     private File file;
 
     @SuppressWarnings("unchecked")
@@ -49,7 +50,8 @@ public class Log4jLoggerAdapter implements LoggerAdapter {
                     }
                 }
             }
-        } catch (Throwable t) {
+        } catch (Exception t) {
+            // ignore
         }
     }
 
@@ -126,7 +128,32 @@ public class Log4jLoggerAdapter implements LoggerAdapter {
 
     @Override
     public void setFile(File file) {
-
+        // ignore
     }
 
+    @Override
+    public boolean isConfigured() {
+        boolean hasAppender = false;
+        try {
+            org.apache.log4j.Logger logger = LogManager.getRootLogger();
+            if (logger != null) {
+                Enumeration<Appender> appenders = logger.getAllAppenders();
+                if (appenders != null) {
+                    while (appenders.hasMoreElements()) {
+                        hasAppender = true;
+                        Appender appender = appenders.nextElement();
+                        if (appender instanceof FileAppender) {
+                            FileAppender fileAppender = (FileAppender) appender;
+                            String filename = fileAppender.getFile();
+                            file = new File(filename);
+                            break;
+                        }
+                    }
+                }
+            }
+        } catch (Exception t) {
+            // ignore
+        }
+        return hasAppender;
+    }
 }

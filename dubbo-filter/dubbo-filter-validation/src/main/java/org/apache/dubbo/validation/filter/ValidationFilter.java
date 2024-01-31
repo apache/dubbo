@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.validation.filter;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.rpc.AsyncRpcResult;
@@ -58,7 +59,10 @@ import static org.apache.dubbo.common.constants.FilterConstants.VALIDATION_KEY;
  * @see Filter
  * @see org.apache.dubbo.validation.support.AbstractValidation
  */
-@Activate(group = {CONSUMER, PROVIDER}, value = VALIDATION_KEY, order = 10000)
+@Activate(
+        group = {CONSUMER, PROVIDER},
+        value = VALIDATION_KEY,
+        order = 10000)
 public class ValidationFilter implements Filter {
 
     private Validation validation;
@@ -82,12 +86,12 @@ public class ValidationFilter implements Filter {
      */
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        if (validation != null && !invocation.getMethodName().startsWith("$")
-            && ConfigUtils.isNotEmpty(invoker.getUrl().getMethodParameter(invocation.getMethodName(), VALIDATION_KEY))) {
+        if (needValidate(invoker.getUrl(), invocation.getMethodName())) {
             try {
                 Validator validator = validation.getValidator(invoker.getUrl());
                 if (validator != null) {
-                    validator.validate(invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
+                    validator.validate(
+                            invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
                 }
             } catch (RpcException e) {
                 throw e;
@@ -98,4 +102,9 @@ public class ValidationFilter implements Filter {
         return invoker.invoke(invocation);
     }
 
+    private boolean needValidate(URL url, String methodName) {
+        return validation != null
+                && !methodName.startsWith("$")
+                && ConfigUtils.isNotEmpty(url.getMethodParameter(methodName, VALIDATION_KEY));
+    }
 }

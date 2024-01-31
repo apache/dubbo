@@ -16,14 +16,14 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
-import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.qos.api.Cmd;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
 
-@Cmd(name = "offline", summary = "offline dubbo", example = {
-        "offline dubbo",
-        "offline xx.xx.xxx.service"
-})
+@Cmd(
+        name = "offline",
+        summary = "offline dubbo",
+        example = {"offline dubbo", "offline xx.xx.xxx.service"})
 public class Offline extends BaseOffline {
 
     public Offline(FrameworkModel frameworkModel) {

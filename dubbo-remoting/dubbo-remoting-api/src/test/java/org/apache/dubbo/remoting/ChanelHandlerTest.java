@@ -22,6 +22,7 @@ import org.apache.dubbo.common.serialize.support.DefaultSerializationSelector;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.Test;
 
@@ -48,8 +49,11 @@ class ChanelHandlerTest {
                 exchangeClient = Exchangers.connect(url, handler);
             } catch (Throwable t) {
 
-                if (t != null && t.getCause() != null && t.getCause().getClass() != null && (t.getCause().getClass() == java.net.ConnectException.class
-                    || t.getCause().getClass() == java.net.ConnectException.class)) {
+                if (t != null
+                        && t.getCause() != null
+                        && t.getCause().getClass() != null
+                        && (t.getCause().getClass() == java.net.ConnectException.class
+                                || t.getCause().getClass() == java.net.ConnectException.class)) {
 
                 } else {
                     t.printStackTrace();
@@ -82,12 +86,15 @@ class ChanelHandlerTest {
             return;
         }
         final String server = System.getProperty("server", "127.0.0.1:9911");
-        final String transporter = PerformanceUtils.getProperty(Constants.TRANSPORTER_KEY, Constants.DEFAULT_TRANSPORTER);
-        final String serialization = PerformanceUtils.getProperty(Constants.SERIALIZATION_KEY, DefaultSerializationSelector.getDefaultRemotingSerialization());
+        final String transporter =
+                PerformanceUtils.getProperty(Constants.TRANSPORTER_KEY, Constants.DEFAULT_TRANSPORTER);
+        final String serialization = PerformanceUtils.getProperty(
+                Constants.SERIALIZATION_KEY, DefaultSerializationSelector.getDefaultRemotingSerialization());
         final int timeout = PerformanceUtils.getIntProperty(TIMEOUT_KEY, DEFAULT_TIMEOUT);
         int sleep = PerformanceUtils.getIntProperty("sleep", 60 * 1000 * 60);
 
-        final String url = "exchange://" + server + "?transporter=" + transporter + "&serialization=" + serialization + "&timeout=" + timeout;
+        final String url = "exchange://" + server + "?transporter=" + transporter + "&serialization=" + serialization
+                + "&timeout=" + timeout;
         ExchangeClient exchangeClient = initClient(url);
         Thread.sleep(sleep);
         closeClient(exchangeClient);
@@ -100,6 +107,7 @@ class ChanelHandlerTest {
          * @param url
          */
         public PeformanceTestHandler(String url) {
+            super(FrameworkModel.defaultModel());
             this.url = url;
         }
 
@@ -119,9 +127,7 @@ class ChanelHandlerTest {
          */
         @Override
         public void caught(Channel channel, Throwable exception) throws RemotingException {
-//            System.out.println("caught event:"+exception);
+            //            System.out.println("caught event:"+exception);
         }
-
-
     }
 }

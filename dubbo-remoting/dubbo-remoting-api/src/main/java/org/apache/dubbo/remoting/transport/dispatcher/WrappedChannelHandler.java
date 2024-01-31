@@ -28,26 +28,31 @@ import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 import org.apache.dubbo.remoting.transport.ChannelHandlerDelegate;
+import org.apache.dubbo.rpc.executor.ExecutorSupport;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
 public class WrappedChannelHandler implements ChannelHandlerDelegate {
 
-    protected static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(WrappedChannelHandler.class);
+    protected static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(WrappedChannelHandler.class);
 
     protected final ChannelHandler handler;
 
     protected final URL url;
 
+    protected final ExecutorSupport executorSupport;
+
     public WrappedChannelHandler(ChannelHandler handler, URL url) {
         this.handler = handler;
         this.url = url;
+        this.executorSupport = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel())
+                .getExecutorSupport(url);
     }
 
-    public void close() {
-
-    }
+    public void close() {}
 
     @Override
     public void connected(Channel channel) throws RemotingException {
@@ -80,8 +85,8 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
             return;
         }
 
-        String msg = "Server side(" + url.getIp() + "," + url.getPort()
-                + ") thread pool is exhausted, detail msg:" + t.getMessage();
+        String msg = "Server side(" + url.getIp() + "," + url.getPort() + ") thread pool is exhausted, detail msg:"
+                + t.getMessage();
 
         Response response = new Response(request.getId(), request.getVersion());
         response.setStatus(Response.SERVER_THREADPOOL_EXHAUSTED_ERROR);
@@ -115,19 +120,29 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
         if (msg instanceof Response) {
             Response response = (Response) msg;
             DefaultFuture responseFuture = DefaultFuture.getFuture(response.getId());
-            // a typical scenario is the response returned after timeout, the timeout response may have completed the future
+            // a typical scenario is the response returned after timeout, the timeout response may have completed the
+            // future
             if (responseFuture == null) {
                 return getSharedExecutorService();
             } else {
                 ExecutorService executor = responseFuture.getExecutor();
                 if (executor == null || executor.isShutdown()) {
-                    executor = getSharedExecutorService();
+                    executor = getSharedExecutorService(msg);
                 }
                 return executor;
             }
         } else {
-            return getSharedExecutorService();
+            return getSharedExecutorService(msg);
         }
+    }
+
+    /**
+     * @param msg  msg is the network message body, executorSupport.getExecutor needs it, and gets important information from it to get executor
+     * @return
+     */
+    public ExecutorService getSharedExecutorService(Object msg) {
+        Executor executor = executorSupport.getExecutor(msg);
+        return executor != null ? (ExecutorService) executor : getSharedExecutorService();
     }
 
     /**
@@ -145,8 +160,7 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
         // note: url.getOrDefaultApplicationModel() may create new application model
         ApplicationModel applicationModel = url.getOrDefaultApplicationModel();
 
-        ExecutorRepository executorRepository =
-                applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+        ExecutorRepository executorRepository = ExecutorRepository.getInstance(applicationModel);
 
         ExecutorService executor = executorRepository.getExecutor(url);
 
@@ -161,5 +175,4 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
     public ExecutorService getExecutorService() {
         return getSharedExecutorService();
     }
-
 }

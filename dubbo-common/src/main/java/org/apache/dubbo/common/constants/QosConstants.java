@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.constants;
 
 /**
@@ -24,6 +23,8 @@ public interface QosConstants {
 
     String QOS_ENABLE = "qos.enable";
 
+    String QOS_CHECK = "qos.check";
+
     String QOS_HOST = "qos.host";
 
     String QOS_PORT = "qos.port";
@@ -31,6 +32,10 @@ public interface QosConstants {
     String ACCEPT_FOREIGN_IP = "qos.accept.foreign.ip";
 
     String ACCEPT_FOREIGN_IP_WHITELIST = "qos.accept.foreign.ip.whitelist";
+
+    String ANONYMOUS_ACCESS_PERMISSION_LEVEL = "qos.anonymous.access.permission.level";
+
+    String ANONYMOUS_ACCESS_ALLOW_COMMANDS = "qos.anonymous.access.allow.commands";
 
     String QOS_ENABLE_COMPATIBLE = "qos-enable";
 
@@ -41,4 +46,6 @@ public interface QosConstants {
     String ACCEPT_FOREIGN_IP_COMPATIBLE = "qos-accept-foreign-ip";
 
     String ACCEPT_FOREIGN_IP_WHITELIST_COMPATIBLE = "qos-accept-foreign-ip-whitelist";
+
+    String ANONYMOUS_ACCESS_PERMISSION_LEVEL_COMPATIBLE = "qos-anonymous-access-permission-level";
 }

@@ -25,7 +25,7 @@ public class Ring<T> {
 
     AtomicInteger count = new AtomicInteger();
 
-    private List<T> itemList = new CopyOnWriteArrayList<T>();
+    private final List<T> itemList = new CopyOnWriteArrayList<>();
 
     public void addItem(T t) {
         if (t != null) {

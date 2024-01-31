@@ -25,19 +25,23 @@ import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 public class Hessian2ScopeModelInitializer implements ScopeModelInitializer {
     @Override
     public void initializeFrameworkModel(FrameworkModel frameworkModel) {
-        ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
-        beanFactory.registerBean(Hessian2FactoryManager.class);
+        Class<?> aClass = null;
+        try {
+            aClass = com.alibaba.com.caucho.hessian.io.Hessian2Output.class;
+        } catch (Throwable ignored) {
+        }
 
-        frameworkModel.addClassLoaderListener(new Hessian2ClassLoaderListener());
+        if (aClass != null) {
+            ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
+            beanFactory.registerBean(Hessian2FactoryManager.class);
+
+            frameworkModel.addClassLoaderListener(new Hessian2ClassLoaderListener());
+        }
     }
 
     @Override
-    public void initializeApplicationModel(ApplicationModel applicationModel) {
-
-    }
+    public void initializeApplicationModel(ApplicationModel applicationModel) {}
 
     @Override
-    public void initializeModuleModel(ModuleModel moduleModel) {
-
-    }
+    public void initializeModuleModel(ModuleModel moduleModel) {}
 }

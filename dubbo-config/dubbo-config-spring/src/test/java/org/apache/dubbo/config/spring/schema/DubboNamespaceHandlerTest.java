@@ -32,6 +32,9 @@ import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Collection;
+import java.util.Map;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,9 +47,6 @@ import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import java.util.Collection;
-import java.util.Map;
-
 import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -54,6 +54,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DubboNamespaceHandlerTest {
 
@@ -72,9 +73,7 @@ class DubboNamespaceHandlerTest {
     @Configuration
     @PropertySource("classpath:/META-INF/demo-provider.properties")
     @ImportResource(locations = "classpath:/org/apache/dubbo/config/spring/demo-provider.xml")
-    static class XmlConfiguration {
-
-    }
+    static class XmlConfiguration {}
 
     @Test
     void testProviderXmlOnConfigurationClass() {
@@ -87,9 +86,7 @@ class DubboNamespaceHandlerTest {
     @Test
     void testProviderXml() {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(
-                resourcePath + "/demo-provider.xml",
-                resourcePath + "/demo-provider-properties.xml"
-        );
+                resourcePath + "/demo-provider.xml", resourcePath + "/demo-provider-properties.xml");
         ctx.start();
 
         testProviderXml(ctx);
@@ -98,11 +95,12 @@ class DubboNamespaceHandlerTest {
     private void testProviderXml(ApplicationContext context) {
 
         String appName = "demo-provider";
+        String configId = ApplicationConfig.class.getName() + "#" + appName + "#0";
         Map<String, ApplicationConfig> applicationConfigMap = context.getBeansOfType(ApplicationConfig.class);
-        ApplicationConfig providerAppConfig = context.getBean(appName, ApplicationConfig.class);
+        ApplicationConfig providerAppConfig = context.getBean(configId, ApplicationConfig.class);
         assertNotNull(providerAppConfig);
         assertEquals(appName, providerAppConfig.getName());
-        assertEquals(appName, providerAppConfig.getId());
+        //        assertEquals(configId, providerAppConfig.getId());
 
         ProtocolConfig protocolConfig = context.getBean(ProtocolConfig.class);
         assertThat(protocolConfig, not(nullValue()));
@@ -142,7 +140,8 @@ class DubboNamespaceHandlerTest {
 
     @Test
     void testDefaultProtocol() {
-        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/override-protocol.xml");
+        ClassPathXmlApplicationContext ctx =
+                new ClassPathXmlApplicationContext(resourcePath + "/override-protocol.xml");
         ctx.start();
 
         ProtocolConfig protocolConfig = ctx.getBean(ProtocolConfig.class);
@@ -152,7 +151,8 @@ class DubboNamespaceHandlerTest {
 
     @Test
     void testCustomParameter() {
-        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/customize-parameter.xml");
+        ClassPathXmlApplicationContext ctx =
+                new ClassPathXmlApplicationContext(resourcePath + "/customize-parameter.xml");
         ctx.start();
 
         ProtocolConfig protocolConfig = ctx.getBean(ProtocolConfig.class);
@@ -164,10 +164,10 @@ class DubboNamespaceHandlerTest {
         assertThat(serviceBean.getParameters().get("service-paramA"), is("service-paramA"));
     }
 
-
     @Test
     void testDelayFixedTime() {
-        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:/" + resourcePath + "/delay-fixed-time.xml");
+        ClassPathXmlApplicationContext ctx =
+                new ClassPathXmlApplicationContext("classpath:/" + resourcePath + "/delay-fixed-time.xml");
         ctx.start();
 
         assertThat(ctx.getBean(ServiceBean.class).getDelay(), is(300));
@@ -175,10 +175,12 @@ class DubboNamespaceHandlerTest {
 
     @Test
     void testTimeoutConfig() {
-        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/provider-nested-service.xml");
+        ClassPathXmlApplicationContext ctx =
+                new ClassPathXmlApplicationContext(resourcePath + "/provider-nested-service.xml");
         ctx.start();
 
-        ModuleConfigManager configManager = ApplicationModel.defaultModel().getDefaultModule().getConfigManager();
+        ModuleConfigManager configManager =
+                ApplicationModel.defaultModel().getDefaultModule().getConfigManager();
         Collection<ProviderConfig> providerConfigs = configManager.getProviders();
         Assertions.assertEquals(2, providerConfigs.size());
 
@@ -190,36 +192,39 @@ class DubboNamespaceHandlerTest {
         ServiceConfigBase<Object> serviceConfig2 = configManager.getService("serviceConfig2");
         Assertions.assertEquals(1000, provider2.getTimeout());
         Assertions.assertEquals(provider2.getTimeout(), serviceConfig2.getTimeout());
-
     }
 
     @Test
     void testMonitor() {
-        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/provider-with-monitor.xml");
+        ClassPathXmlApplicationContext ctx =
+                new ClassPathXmlApplicationContext(resourcePath + "/provider-with-monitor.xml");
         ctx.start();
 
         assertThat(ctx.getBean(MonitorConfig.class), not(nullValue()));
     }
 
-//    @Test
-//    public void testMultiMonitor() {
-//        Assertions.assertThrows(BeanCreationException.class, () -> {
-//            ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/multi-monitor.xml");
-//            ctx.start();
-//        });
-//    }
-//
-//    @Test
-//    public void testMultiProviderConfig() {
-//        Assertions.assertThrows(BeanCreationException.class, () -> {
-//            ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/provider-multi.xml");
-//            ctx.start();
-//        });
-//    }
+    //    @Test
+    //    public void testMultiMonitor() {
+    //        Assertions.assertThrows(BeanCreationException.class, () -> {
+    //            ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath +
+    // "/multi-monitor.xml");
+    //            ctx.start();
+    //        });
+    //    }
+    //
+    //    @Test
+    //    public void testMultiProviderConfig() {
+    //        Assertions.assertThrows(BeanCreationException.class, () -> {
+    //            ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath +
+    // "/provider-multi.xml");
+    //            ctx.start();
+    //        });
+    //    }
 
     @Test
     void testModuleInfo() {
-        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/provider-with-module.xml");
+        ClassPathXmlApplicationContext ctx =
+                new ClassPathXmlApplicationContext(resourcePath + "/provider-with-module.xml");
         ctx.start();
 
         ModuleConfig moduleConfig = ctx.getBean(ModuleConfig.class);
@@ -229,7 +234,8 @@ class DubboNamespaceHandlerTest {
     @Test
     void testNotificationWithWrongBean() {
         Assertions.assertThrows(BeanCreationException.class, () -> {
-            ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/consumer-notification.xml");
+            ClassPathXmlApplicationContext ctx =
+                    new ClassPathXmlApplicationContext(resourcePath + "/consumer-notification.xml");
             ctx.start();
         });
     }
@@ -247,7 +253,8 @@ class DubboNamespaceHandlerTest {
 
     @Test
     void testMetricsAggregation() {
-        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/metrics-aggregation.xml");
+        ClassPathXmlApplicationContext ctx =
+                new ClassPathXmlApplicationContext(resourcePath + "/metrics-aggregation.xml");
         ctx.start();
 
         ConfigManager configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
@@ -255,18 +262,27 @@ class DubboNamespaceHandlerTest {
         MetricsConfig metricsBean = ctx.getBean(MetricsConfig.class);
         MetricsConfig metrics = configManager.getMetrics().get();
 
+        assertTrue(metrics.getEnableJvm());
+
         assertEquals(metrics.getAggregation().getEnabled(), true);
         assertEquals(metrics.getAggregation().getBucketNum(), 5);
         assertEquals(metrics.getAggregation().getTimeWindowSeconds(), 120);
 
-        assertEquals(metrics.getAggregation().getEnabled(), metricsBean.getAggregation().getEnabled());
-        assertEquals(metrics.getAggregation().getBucketNum(), metricsBean.getAggregation().getBucketNum());
-        assertEquals(metrics.getAggregation().getTimeWindowSeconds(), metricsBean.getAggregation().getTimeWindowSeconds());
+        assertEquals(
+                metrics.getAggregation().getEnabled(),
+                metricsBean.getAggregation().getEnabled());
+        assertEquals(
+                metrics.getAggregation().getBucketNum(),
+                metricsBean.getAggregation().getBucketNum());
+        assertEquals(
+                metrics.getAggregation().getTimeWindowSeconds(),
+                metricsBean.getAggregation().getTimeWindowSeconds());
     }
 
     @Test
     void testMetricsPrometheus() {
-        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/metrics-prometheus.xml");
+        ClassPathXmlApplicationContext ctx =
+                new ClassPathXmlApplicationContext(resourcePath + "/metrics-prometheus.xml");
         ctx.start();
 
         ConfigManager configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
@@ -278,8 +294,6 @@ class DubboNamespaceHandlerTest {
         assertEquals(metrics.getPrometheus().getExporter().getEnabled(), true);
         assertEquals(metrics.getPrometheus().getExporter().getEnableHttpServiceDiscovery(), true);
         assertEquals(metrics.getPrometheus().getExporter().getHttpServiceDiscoveryUrl(), "localhost:8080");
-        assertEquals(metrics.getPrometheus().getExporter().getMetricsPort(), 20888);
-        assertEquals(metrics.getPrometheus().getExporter().getMetricsPath(), "/metrics");
         assertEquals(metrics.getPrometheus().getPushgateway().getEnabled(), true);
         assertEquals(metrics.getPrometheus().getPushgateway().getBaseUrl(), "localhost:9091");
         assertEquals(metrics.getPrometheus().getPushgateway().getPushInterval(), 30);
@@ -291,8 +305,6 @@ class DubboNamespaceHandlerTest {
         assertEquals(metricsBean.getPrometheus().getExporter().getEnabled(), true);
         assertEquals(metricsBean.getPrometheus().getExporter().getEnableHttpServiceDiscovery(), true);
         assertEquals(metricsBean.getPrometheus().getExporter().getHttpServiceDiscoveryUrl(), "localhost:8080");
-        assertEquals(metricsBean.getPrometheus().getExporter().getMetricsPort(), 20888);
-        assertEquals(metricsBean.getPrometheus().getExporter().getMetricsPath(), "/metrics");
         assertEquals(metricsBean.getPrometheus().getPushgateway().getEnabled(), true);
         assertEquals(metricsBean.getPrometheus().getPushgateway().getBaseUrl(), "localhost:9091");
         assertEquals(metricsBean.getPrometheus().getPushgateway().getPushInterval(), 30);

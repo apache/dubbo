@@ -23,6 +23,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.TypeElement;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -47,13 +48,14 @@ public class ServiceDefinitionMetadataAnnotationProcessor extends AbstractServic
 
         if (roundEnv.processingOver()) {
             ClassPathMetadataStorage writer = new ClassPathMetadataStorage(processingEnv);
-            writer.write(() -> JsonUtils.getJson().toJson(serviceDefinitions), "META-INF/dubbo/service-definitions.json");
+            writer.write(() -> JsonUtils.toJson(serviceDefinitions), "META-INF/dubbo/service-definitions.json");
         }
 
         return false;
     }
 
-    private void process(ProcessingEnvironment processingEnv, TypeElement serviceType, Set<? extends TypeElement> annotations) {
+    private void process(
+            ProcessingEnvironment processingEnv, TypeElement serviceType, Set<? extends TypeElement> annotations) {
         serviceDefinitions.add(build(processingEnv, serviceType));
     }
 }

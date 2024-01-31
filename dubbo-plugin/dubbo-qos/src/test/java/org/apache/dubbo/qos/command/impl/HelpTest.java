@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
-import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,7 @@ import static org.hamcrest.Matchers.containsString;
 
 class HelpTest {
     @Test
-    void testMainHelp() throws Exception {
+    void testMainHelp() {
         Help help = new Help(FrameworkModel.defaultModel());
         String output = help.execute(Mockito.mock(CommandContext.class), null);
         assertThat(output, containsString("greeting"));
@@ -39,9 +39,9 @@ class HelpTest {
     }
 
     @Test
-    void testGreeting() throws Exception {
+    void testGreeting() {
         Help help = new Help(FrameworkModel.defaultModel());
-        String output = help.execute(Mockito.mock(CommandContext.class), new String[]{"greeting"});
+        String output = help.execute(Mockito.mock(CommandContext.class), new String[] {"greeting"});
         assertThat(output, containsString("COMMAND NAME"));
         assertThat(output, containsString("greeting"));
         assertThat(output, containsString("EXAMPLE"));
