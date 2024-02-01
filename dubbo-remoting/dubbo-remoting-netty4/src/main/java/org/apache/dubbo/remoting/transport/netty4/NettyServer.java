@@ -222,6 +222,7 @@ public class NettyServer extends AbstractServer {
         } catch (Throwable e) {
             logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }
+        NettyChannel.clear();
     }
 
     private void closeBootstrap() {

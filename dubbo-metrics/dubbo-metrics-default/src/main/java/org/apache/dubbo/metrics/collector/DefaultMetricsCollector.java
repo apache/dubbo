@@ -18,6 +18,7 @@ package org.apache.dubbo.metrics.collector;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.resource.Disposable;
 import org.apache.dubbo.metrics.DefaultConstants;
 import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.collector.sample.ErrorCodeSampler;
@@ -55,7 +56,7 @@ import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUESTS_SERV
  * Default implementation of {@link MetricsCollector}
  */
 @Activate
-public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> {
+public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> implements Disposable {
 
     private boolean collectEnabled = false;
 
@@ -240,5 +241,10 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
             changed = sampler.calSamplesChanged() || changed;
         }
         return changed;
+    }
+
+    @Override
+    public void destroy() {
+        errorCodeSampler.destroy();
     }
 }

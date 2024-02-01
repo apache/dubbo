@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
@@ -44,7 +45,7 @@ public class FailsafeErrorTypeAwareLogger extends FailsafeLogger implements List
     /**
      * Listeners that listened to all Loggers.
      */
-    private static final List<LogListener> GLOBAL_LISTENERS = Collections.synchronizedList(new ArrayList<>());
+    private static final List<LogListener> GLOBAL_LISTENERS = new CopyOnWriteArrayList<>();
 
     /**
      *  Listeners that listened to this listener.
@@ -148,6 +149,10 @@ public class FailsafeErrorTypeAwareLogger extends FailsafeLogger implements List
 
     public static void registerGlobalListen(LogListener listener) {
         GLOBAL_LISTENERS.add(listener);
+    }
+
+    public static void unregisterGlobalListen(LogListener listener) {
+        GLOBAL_LISTENERS.remove(listener);
     }
 
     @Override

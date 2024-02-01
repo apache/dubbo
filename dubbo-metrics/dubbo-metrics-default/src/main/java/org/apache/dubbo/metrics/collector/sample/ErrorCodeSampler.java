@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metrics.collector.sample;
 
+import org.apache.dubbo.common.resource.Disposable;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.model.ErrorCodeMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
@@ -30,7 +31,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * This sampler is used to count the number of occurrences of each error code.
  */
-public class ErrorCodeSampler extends MetricsNameCountSampler<String, String, ErrorCodeMetric> {
+public class ErrorCodeSampler extends MetricsNameCountSampler<String, String, ErrorCodeMetric> implements Disposable {
 
     private final ErrorCodeMetricsListenRegister register;
 
@@ -68,5 +69,10 @@ public class ErrorCodeSampler extends MetricsNameCountSampler<String, String, Er
             }
             return metric;
         });
+    }
+
+    @Override
+    public void destroy() {
+        register.destroy();
     }
 }

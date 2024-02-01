@@ -149,6 +149,12 @@ final class NettyChannel extends AbstractChannel {
         }
     }
 
+    static void clear() {
+        for (NettyChannel channel : CHANNEL_MAP.values()) {
+            removeChannel(channel.getNioChannel());
+        }
+    }
+
     @Override
     public InetSocketAddress getLocalAddress() {
         return (InetSocketAddress) channel.localAddress();

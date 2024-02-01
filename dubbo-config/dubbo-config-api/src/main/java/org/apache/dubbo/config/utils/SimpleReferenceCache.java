@@ -276,6 +276,7 @@ public class SimpleReferenceCache implements ReferenceCache {
      */
     @Override
     public void destroyAll() {
+        CACHE_HOLDER.remove(name);
         if (CollectionUtils.isEmptyMap(referenceKeyMap)) {
             return;
         }

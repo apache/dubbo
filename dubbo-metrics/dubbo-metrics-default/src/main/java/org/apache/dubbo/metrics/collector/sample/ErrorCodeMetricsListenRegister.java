@@ -18,12 +18,13 @@ package org.apache.dubbo.metrics.collector.sample;
 
 import org.apache.dubbo.common.logger.LogListener;
 import org.apache.dubbo.common.logger.support.FailsafeErrorTypeAwareLogger;
+import org.apache.dubbo.common.resource.Disposable;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 
 /**
  * Listen the log of all {@link FailsafeErrorTypeAwareLogger} instances, and add error code count to {@link ErrorCodeSampler}.
  */
-public class ErrorCodeMetricsListenRegister implements LogListener {
+public class ErrorCodeMetricsListenRegister implements LogListener, Disposable {
 
     private final ErrorCodeSampler errorCodeSampler;
 
@@ -36,5 +37,10 @@ public class ErrorCodeMetricsListenRegister implements LogListener {
     @Override
     public void onMessage(String code, String msg) {
         errorCodeSampler.inc(code, MetricsKey.ERROR_CODE_COUNT.getName());
+    }
+
+    @Override
+    public void destroy() {
+        FailsafeErrorTypeAwareLogger.unregisterGlobalListen(this);
     }
 }
