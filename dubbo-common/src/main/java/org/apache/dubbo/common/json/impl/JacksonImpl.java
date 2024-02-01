@@ -59,6 +59,17 @@ public class JacksonImpl extends AbstractJsonUtilImpl {
         }
     }
 
+    @Override
+    public Object convertObject(Object obj, Type type) {
+        JsonMapper mapper = getJackson();
+        return mapper.convertValue(obj, mapper.constructType(type));
+    }
+
+    @Override
+    public Object convertObject(Object obj, Class<?> clazz) {
+        return getJackson().convertValue(obj, clazz);
+    }
+
     private JsonMapper getJackson() {
         if (jacksonCache == null || !(jacksonCache instanceof JsonMapper)) {
             synchronized (this) {

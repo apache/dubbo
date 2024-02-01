@@ -29,5 +29,7 @@ public interface HttpChannel {
 
     SocketAddress remoteAddress();
 
+    SocketAddress localAddress();
+
     void flush();
 }

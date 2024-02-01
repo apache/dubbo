@@ -16,26 +16,45 @@
  */
 package org.apache.dubbo.remoting.http12.message;
 
-import java.nio.charset.Charset;
-import java.util.Collections;
-import java.util.Map;
+public final class MediaType {
 
-public class MediaType {
+    public static final String WILDCARD = "*";
 
-    public static final MediaType ALL_VALUE = new MediaType("*", "*");
+    public static final MediaType ALL = new MediaType(WILDCARD, WILDCARD);
 
-    public static final MediaType APPLICATION_JSON_VALUE = new MediaType("application", "json");
-
-    public static final MediaType TEXT_EVENT_STREAM_VALUE = new MediaType("text", "event-stream");
-
-    public static final MediaType MULTIPART_FORM_DATA = new MediaType("multipart", "form-data");
-
-    public static final MediaType APPLICATION_X_WWW_FROM_URLENCODED =
-            new MediaType("application", "x-www-form-urlencoded");
+    public static final MediaType APPLICATION_JSON = new MediaType("application", "json");
 
     public static final MediaType APPLICATION_XML = new MediaType("application", "xml");
 
+    public static final MediaType APPLICATION_YAML = new MediaType("application", "yaml");
+
+    public static final MediaType APPLICATION_JAVASCRIPT = new MediaType("application", "javascript");
+
+    public static final MediaType APPLICATION_OCTET_STREAM = new MediaType("application", "octet-stream");
+
+    public static final MediaType APPLICATION_GRPC = new MediaType("application", "grpc");
+
+    public static final MediaType APPLICATION_GRPC_PROTO = new MediaType("application", "grpc+proto");
+
+    public static final MediaType APPLICATION_FROM_URLENCODED = new MediaType("application", "x-www-form-urlencoded");
+
+    public static final MediaType MULTIPART_FORM_DATA = new MediaType("multipart", "form-data");
+
+    public static final MediaType TEXT_JSON = new MediaType("text", "json");
+
+    public static final MediaType TEXT_XML = new MediaType("text", "xml");
+
+    public static final MediaType TEXT_YAML = new MediaType("text", "yaml");
+
+    public static final MediaType TEXT_CSS = new MediaType("text", "css");
+
+    public static final MediaType TEXT_JAVASCRIPT = new MediaType("text", "javascript");
+
+    public static final MediaType TEXT_HTML = new MediaType("text", "html");
+
     public static final MediaType TEXT_PLAIN = new MediaType("text", "plain");
+
+    public static final MediaType TEXT_EVENT_STREAM = new MediaType("text", "event-stream");
 
     private final String name;
 
@@ -43,17 +62,10 @@ public class MediaType {
 
     private final String subType;
 
-    private final Charset charset;
-
     public MediaType(String type, String subType) {
-        this(type, subType, Collections.singletonMap("charset", "UTF-8"));
-    }
-
-    public MediaType(String type, String subType, Map<String, String> parameters) {
         this.type = type;
         this.subType = subType;
-        this.name = type + "/" + subType;
-        this.charset = Charset.forName(parameters.getOrDefault("charset", "UTF-8"));
+        this.name = type + '/' + subType;
     }
 
     public String getName() {
@@ -68,7 +80,7 @@ public class MediaType {
         return subType;
     }
 
-    public Charset getCharset() {
-        return charset;
+    public boolean isPureText() {
+        return this == TEXT_HTML || this == TEXT_PLAIN;
     }
 }

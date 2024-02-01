@@ -61,5 +61,10 @@ public class NettyHttp1Channel implements HttpChannel {
     }
 
     @Override
+    public SocketAddress localAddress() {
+        return channel.localAddress();
+    }
+
+    @Override
     public void flush() {}
 }

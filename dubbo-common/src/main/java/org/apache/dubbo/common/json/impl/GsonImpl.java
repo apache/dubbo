@@ -42,6 +42,18 @@ public class GsonImpl extends AbstractJsonUtilImpl {
         return getGson().toJson(obj);
     }
 
+    @Override
+    public Object convertObject(Object obj, Type type) {
+        Gson gson = getGson();
+        return gson.fromJson(gson.toJsonTree(obj), type);
+    }
+
+    @Override
+    public Object convertObject(Object obj, Class<?> clazz) {
+        Gson gson = getGson();
+        return gson.fromJson(gson.toJsonTree(obj), clazz);
+    }
+
     private Gson getGson() {
         if (gsonCache == null || !(gsonCache instanceof Gson)) {
             synchronized (this) {

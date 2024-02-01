@@ -56,7 +56,7 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
                     && key.length() > TripleConstant.HEADER_BIN_SUFFIX.length()) {
                 try {
                     String realKey = key.substring(0, key.length() - TripleConstant.HEADER_BIN_SUFFIX.length());
-                    byte[] value = StreamUtils.decodeASCIIByte(header.getValue());
+                    byte[] value = StreamUtils.decodeASCIIByte(header.getValue().toString());
                     attachments.put(realKey, value);
                 } catch (Exception e) {
                     LOGGER.error(PROTOCOL_FAILED_PARSE, "", "", "Failed to parse response attachment key=" + key, e);

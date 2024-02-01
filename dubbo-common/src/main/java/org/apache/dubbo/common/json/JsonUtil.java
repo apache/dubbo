@@ -40,6 +40,10 @@ public interface JsonUtil {
 
     Map<String, ?> getObject(Map<String, ?> obj, String key);
 
+    Object convertObject(Object obj, Type type);
+
+    Object convertObject(Object obj, Class<?> clazz);
+
     Double getNumberAsDouble(Map<String, ?> obj, String key);
 
     Integer getNumberAsInteger(Map<String, ?> obj, String key);

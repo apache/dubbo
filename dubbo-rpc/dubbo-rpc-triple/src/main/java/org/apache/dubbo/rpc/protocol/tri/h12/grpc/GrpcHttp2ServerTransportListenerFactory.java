@@ -33,6 +33,6 @@ public class GrpcHttp2ServerTransportListenerFactory implements Http2ServerTrans
 
     @Override
     public boolean supportContentType(String contentType) {
-        return contentType.startsWith(CONTENT_TYPE);
+        return contentType != null && contentType.startsWith(CONTENT_TYPE);
     }
 }

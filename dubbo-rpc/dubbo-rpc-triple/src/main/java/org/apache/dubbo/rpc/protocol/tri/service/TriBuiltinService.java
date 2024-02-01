@@ -34,8 +34,8 @@ import io.grpc.health.v1.DubboHealthTriple;
 import io.grpc.health.v1.Health;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_BUILTIN_SERVICE_INIT;
 import static org.apache.dubbo.rpc.Constants.PROXY_KEY;
-import static org.apache.dubbo.rpc.Constants.TRI_BUILTIN_SERVICE_INIT;
 
 /**
  * tri internal service like grpc internal service
@@ -77,7 +77,7 @@ public class TriBuiltinService {
     }
 
     public boolean enable() {
-        return config.getBoolean(TRI_BUILTIN_SERVICE_INIT, false);
+        return config.getBoolean(H2_SETTINGS_BUILTIN_SERVICE_INIT, false);
     }
 
     private <T> void addSingleBuiltinService(String serviceName, T impl, Class<T> interfaceClass) {

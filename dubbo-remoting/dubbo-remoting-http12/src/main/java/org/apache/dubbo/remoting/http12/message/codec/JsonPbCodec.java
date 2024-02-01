@@ -16,77 +16,61 @@
  */
 package org.apache.dubbo.remoting.http12.message.codec;
 
+import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
-import org.apache.dubbo.remoting.http12.message.MediaType;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 
-public class JsonPbCodec extends JsonCodec {
+public final class JsonPbCodec extends JsonCodec {
 
     @Override
-    public MediaType mediaType() {
-        return MediaType.APPLICATION_JSON_VALUE;
-    }
-
-    @Override
-    public void encode(OutputStream outputStream, Object unSerializedBody) throws EncodeException {
+    public void encode(OutputStream os, Object data, Charset charset) throws EncodeException {
         try {
-            if (unSerializedBody instanceof Message) {
-                String jsonString = JsonFormat.printer().print((Message) unSerializedBody);
-                outputStream.write(jsonString.getBytes(StandardCharsets.UTF_8));
+            if (data instanceof Message) {
+                String jsonString = JsonFormat.printer().print((Message) data);
+                os.write(jsonString.getBytes(charset));
                 return;
             }
         } catch (IOException e) {
-            throw new EncodeException(e);
+            throw new EncodeException("Error encoding jsonPb", e);
         }
-        super.encode(outputStream, unSerializedBody);
+        super.encode(os, data, charset);
     }
 
     @Override
-    public void encode(OutputStream outputStream, Object[] data) throws EncodeException {
-        super.encode(outputStream, data);
-    }
-
-    @Override
-    public Object decode(InputStream body, Class<?> targetType) throws DecodeException {
+    public Object decode(InputStream is, Class<?> targetType, Charset charset) throws DecodeException {
         try {
             if (isProtobuf(targetType)) {
-                int len;
-                byte[] data = new byte[4096];
-                StringBuilder builder = new StringBuilder(4096);
-                while ((len = body.read(data)) != -1) {
-                    builder.append(new String(data, 0, len));
-                }
                 Message.Builder newBuilder = (Message.Builder)
                         MethodUtils.findMethod(targetType, "newBuilder").invoke(null);
-                JsonFormat.parser().ignoringUnknownFields().merge(builder.toString(), newBuilder);
+                JsonFormat.parser().ignoringUnknownFields().merge(StreamUtils.toString(is, charset), newBuilder);
                 return newBuilder.build();
             }
         } catch (Throwable e) {
-            throw new DecodeException(e);
+            throw new DecodeException("Error decoding jsonPb", e);
         }
-        return super.decode(body, targetType);
+        return super.decode(is, targetType, charset);
     }
 
     @Override
-    public Object[] decode(InputStream dataInputStream, Class<?>[] targetTypes) throws DecodeException {
+    public Object[] decode(InputStream is, Class<?>[] targetTypes, Charset charset) throws DecodeException {
         try {
             if (hasProtobuf(targetTypes)) {
                 // protobuf only support one parameter
-                return new Object[] {decode(dataInputStream, targetTypes[0])};
+                return new Object[] {decode(is, targetTypes[0], charset)};
             }
         } catch (Throwable e) {
-            throw new DecodeException(e);
+            throw new DecodeException("Error decoding jsonPb", e);
         }
-        return super.decode(dataInputStream, targetTypes);
+        return super.decode(is, targetTypes, charset);
     }
 
     private static boolean isProtobuf(Class<?> targetType) {

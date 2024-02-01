@@ -22,6 +22,7 @@ import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 
 public class CompressibleEncoder implements HttpMessageEncoder {
 
@@ -37,12 +38,12 @@ public class CompressibleEncoder implements HttpMessageEncoder {
         this.compressor = compressor;
     }
 
-    public void encode(OutputStream outputStream, Object data) throws EncodeException {
-        delegate.encode(compressor.decorate(outputStream), data);
+    public void encode(OutputStream outputStream, Object data, Charset charset) throws EncodeException {
+        delegate.encode(compressor.decorate(outputStream), data, charset);
     }
 
-    public void encode(OutputStream outputStream, Object[] data) throws EncodeException {
-        delegate.encode(outputStream, data);
+    public void encode(OutputStream outputStream, Object[] data, Charset charset) throws EncodeException {
+        delegate.encode(outputStream, data, charset);
     }
 
     @Override

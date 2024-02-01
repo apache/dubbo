@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.convert.ConverterUtil;
+import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
@@ -25,6 +26,8 @@ import org.apache.dubbo.remoting.http12.message.MediaType;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -39,7 +42,7 @@ public class UrlEncodeFormCodec implements HttpMessageCodec {
     }
 
     @Override
-    public void encode(OutputStream outputStream, Object data) throws EncodeException {
+    public void encode(OutputStream outputStream, Object data, Charset charset) throws EncodeException {
         try {
             if (data instanceof String) {
                 outputStream.write(((String) data).getBytes());
@@ -48,11 +51,14 @@ public class UrlEncodeFormCodec implements HttpMessageCodec {
                 for (Map.Entry<?, ?> e : ((Map<?, ?>) data).entrySet()) {
                     String k = e.getKey().toString();
                     String v = e.getValue().toString();
-                    toWrite.append(k).append("=").append(v).append("&");
+                    toWrite.append(k)
+                            .append("=")
+                            .append(URLEncoder.encode(v, StandardCharsets.UTF_8.name()))
+                            .append("&");
                 }
                 if (toWrite.length() > 1) {
                     outputStream.write(
-                            toWrite.substring(0, toWrite.length() - 1).getBytes());
+                            toWrite.substring(0, toWrite.length() - 1).getBytes(charset));
                 }
             } else {
                 throw new EncodeException("UrlEncodeFrom media-type only supports String or Map as return type.");
@@ -63,13 +69,13 @@ public class UrlEncodeFormCodec implements HttpMessageCodec {
     }
 
     @Override
-    public Object decode(InputStream inputStream, Class<?> targetType) throws DecodeException {
-        Object[] res = decode(inputStream, new Class[] {targetType});
+    public Object decode(InputStream inputStream, Class<?> targetType, Charset charset) throws DecodeException {
+        Object[] res = decode(inputStream, new Class[] {targetType}, charset);
         return res.length > 1 ? res : res[0];
     }
 
     @Override
-    public Object[] decode(InputStream inputStream, Class<?>[] targetTypes) throws DecodeException {
+    public Object[] decode(InputStream inputStream, Class<?>[] targetTypes, Charset charset) throws DecodeException {
         try {
             boolean toMap;
             // key=value&key2=value2 -> method(map<keys,values>)
@@ -85,7 +91,7 @@ public class UrlEncodeFormCodec implements HttpMessageCodec {
                         "For x-www-form-urlencoded MIME type, please use Map/String/base-types as method param.");
             }
             String decoded = URLDecoder.decode(
-                            CodecUtils.toByteArrayStream(inputStream).toString(), StandardCharsets.UTF_8.name())
+                            StreamUtils.toString(inputStream, charset), StandardCharsets.UTF_8.name())
                     .trim();
             Map<String, Object> res = toMap(decoded, targetTypes, toMap);
             if (toMap) {
@@ -123,6 +129,6 @@ public class UrlEncodeFormCodec implements HttpMessageCodec {
 
     @Override
     public MediaType mediaType() {
-        return MediaType.APPLICATION_X_WWW_FROM_URLENCODED;
+        return MediaType.APPLICATION_FROM_URLENCODED;
     }
 }

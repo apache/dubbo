@@ -18,21 +18,20 @@ package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.convert.ConverterUtil;
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.HttpMessageDecoderFactory;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoderFactory;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-public class UrlEncodeFormCodecFactory implements HttpMessageEncoderFactory, HttpMessageDecoderFactory {
-
-    private final ConverterUtil converterUtil;
+@Activate
+public final class UrlEncodeFormCodecFactory implements HttpMessageEncoderFactory, HttpMessageDecoderFactory {
 
     private final UrlEncodeFormCodec instance;
 
     public UrlEncodeFormCodecFactory(FrameworkModel frameworkModel) {
-        this.converterUtil = frameworkModel.getBeanFactory().getBean(ConverterUtil.class);
-        this.instance = new UrlEncodeFormCodec(this.converterUtil);
+        instance = new UrlEncodeFormCodec(frameworkModel.getBeanFactory().getBean(ConverterUtil.class));
     }
 
     @Override
@@ -42,6 +41,6 @@ public class UrlEncodeFormCodecFactory implements HttpMessageEncoderFactory, Htt
 
     @Override
     public MediaType mediaType() {
-        return MediaType.APPLICATION_X_WWW_FROM_URLENCODED;
+        return MediaType.APPLICATION_FROM_URLENCODED;
     }
 }

@@ -19,11 +19,12 @@ package org.apache.dubbo.rpc.protocol.tri.h12.http2;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
-import org.apache.dubbo.remoting.http12.RequestMetadata;
+import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessage;
+import org.apache.dubbo.remoting.http12.h2.Http2InputMessageFrame;
 import org.apache.dubbo.remoting.http12.h2.Http2ServerChannelObserver;
 import org.apache.dubbo.remoting.http12.h2.Http2TransportListener;
 import org.apache.dubbo.remoting.http12.message.DefaultListeningDecoder;
@@ -31,6 +32,7 @@ import org.apache.dubbo.remoting.http12.message.ListeningDecoder;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.remoting.http12.message.NoOpStreamingDecoder;
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
+import org.apache.dubbo.remoting.http12.message.codec.JsonCodec;
 import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
@@ -39,6 +41,7 @@ import org.apache.dubbo.rpc.executor.ExecutorSupport;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.ReflectionPackableMethod;
+import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext;
 import org.apache.dubbo.rpc.protocol.tri.h12.AbstractServerTransportListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.BiStreamServerCallListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.HttpMessageListener;
@@ -47,36 +50,66 @@ import org.apache.dubbo.rpc.protocol.tri.h12.ServerStreamServerCallListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.UnaryServerCallListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.grpc.StreamingHttpMessageListener;
 
+import java.io.ByteArrayInputStream;
 import java.util.concurrent.Executor;
 
 public class GenericHttp2ServerTransportListener extends AbstractServerTransportListener<Http2Header, Http2InputMessage>
         implements Http2TransportListener {
 
-    private final Http2ServerChannelObserver serverChannelObserver;
-
-    private final H2StreamChannel h2StreamChannel;
+    private static final Http2InputMessage EMPTY_MESSAGE =
+            new Http2InputMessageFrame(new ByteArrayInputStream(new byte[0]), true);
 
     private final ExecutorSupport executorSupport;
-
     private final StreamingDecoder streamingDecoder;
+    private final Http2ServerChannelObserver serverChannelObserver;
 
     private ServerCallListener serverCallListener;
 
     public GenericHttp2ServerTransportListener(
             H2StreamChannel h2StreamChannel, URL url, FrameworkModel frameworkModel) {
         super(frameworkModel, url, h2StreamChannel);
-        this.h2StreamChannel = h2StreamChannel;
-        this.executorSupport = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel())
+        executorSupport = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel())
                 .getExecutorSupport(url);
-        this.streamingDecoder = newStreamingDecoder();
-        this.serverChannelObserver = new Http2ServerCallToObserverAdapter(frameworkModel, h2StreamChannel);
-        this.serverChannelObserver.setStreamingDecoder(streamingDecoder);
+        streamingDecoder = newStreamingDecoder();
+        serverChannelObserver = new Http2ServerCallToObserverAdapter(frameworkModel, h2StreamChannel);
+        serverChannelObserver.setResponseEncoder(JsonCodec.INSTANCE);
+        serverChannelObserver.setStreamingDecoder(streamingDecoder);
+    }
+
+    protected StreamingDecoder newStreamingDecoder() {
+        // default no op
+        return new NoOpStreamingDecoder();
     }
 
     @Override
     protected Executor initializeExecutor(Http2Header metadata) {
-        Executor executor = executorSupport.getExecutor(metadata);
-        return new SerializingExecutor(executor);
+        return new SerializingExecutor(executorSupport.getExecutor(metadata));
+    }
+
+    protected void doOnMetadata(Http2Header metadata) {
+        if (metadata.isEndStream()) {
+            if (!HttpMethods.supportBody(metadata.method())) {
+                super.doOnMetadata(metadata);
+                doOnData(EMPTY_MESSAGE);
+            }
+            return;
+        }
+        super.doOnMetadata(metadata);
+    }
+
+    @Override
+    protected HttpMessageListener buildHttpMessageListener() {
+        RpcInvocationBuildContext context = getContext();
+        RpcInvocation rpcInvocation = buildRpcInvocation(context);
+
+        serverCallListener = startListener(rpcInvocation, context.getMethodDescriptor(), context.getInvoker());
+
+        DefaultListeningDecoder listeningDecoder = new DefaultListeningDecoder(
+                context.getHttpMessageDecoder(), context.getMethodMetadata().getActualRequestTypes());
+        listeningDecoder.setListener(new Http2StreamingDecodeListener(serverCallListener));
+        streamingDecoder.setFragmentListener(new StreamingDecoder.DefaultFragmentListener(listeningDecoder));
+        getServerChannelObserver().setStreamingDecoder(streamingDecoder);
+        return new StreamingHttpMessageListener(streamingDecoder);
     }
 
     private ServerCallListener startListener(
@@ -86,14 +119,13 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
         responseObserver.setCancellationContext(cancellationContext);
         switch (methodDescriptor.getRpcType()) {
             case UNARY:
-                Http2Header httpMetadata = getHttpMetadata();
-                boolean hasStub = getPathResolver().hasNativeStub(httpMetadata.path());
                 boolean applyCustomizeException = false;
-                if (!hasStub) {
+                if (!getContext().isHasStub()) {
+                    MethodMetadata methodMetadata = getContext().getMethodMetadata();
                     applyCustomizeException = ReflectionPackableMethod.needWrap(
                             methodDescriptor,
-                            getMethodMetadata().getActualRequestTypes(),
-                            getMethodMetadata().getActualResponseType());
+                            methodMetadata.getActualRequestTypes(),
+                            methodMetadata.getActualResponseType());
                 }
                 UnaryServerCallListener unaryServerCallListener = startUnary(invocation, invoker, responseObserver);
                 unaryServerCallListener.setApplyCustomizeException(applyCustomizeException);
@@ -105,106 +137,6 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
                 return startBiStreaming(invocation, invoker, responseObserver);
             default:
                 throw new IllegalStateException("Can not reach here");
-        }
-    }
-
-    public Http2ServerChannelObserver getServerChannelObserver() {
-        return serverChannelObserver;
-    }
-
-    @Override
-    public void cancelByRemote(long errorCode) {
-        this.serverChannelObserver.cancel(new HttpStatusException((int) errorCode));
-        this.serverCallListener.onCancel(errorCode);
-    }
-
-    protected StreamingDecoder newStreamingDecoder() {
-        // default no op
-        return new NoOpStreamingDecoder();
-    }
-
-    protected void doOnMetadata(Http2Header metadata) {
-        if (metadata.isEndStream()) {
-            return;
-        }
-        super.doOnMetadata(metadata);
-    }
-
-    @Override
-    protected HttpMessageListener newHttpMessageListener() {
-        RequestMetadata httpMetadata = getHttpMetadata();
-        String path = httpMetadata.path();
-        String[] parts = path.split("/");
-        String originalMethodName = parts[2];
-        MethodDescriptor methodDescriptor = getMethodDescriptor();
-        if (methodDescriptor == null) {
-            methodDescriptor = findMethodDescriptor(getServiceDescriptor(), originalMethodName, isHasStub());
-            setMethodDescriptor(methodDescriptor);
-        }
-        MethodMetadata methodMetadata = getMethodMetadata();
-        if (methodMetadata == null) {
-            methodMetadata = MethodMetadata.fromMethodDescriptor(getMethodDescriptor());
-            setMethodMetadata(methodMetadata);
-        }
-        RpcInvocation rpcInvocation = getRpcInvocation();
-        if (rpcInvocation == null) {
-            setRpcInvocation(buildRpcInvocation(getInvoker(), getServiceDescriptor(), methodDescriptor));
-        }
-        initializeServerCallListener();
-        DefaultListeningDecoder defaultListeningDecoder = new DefaultListeningDecoder(
-                getHttpMessageDecoder(), getMethodMetadata().getActualRequestTypes());
-        defaultListeningDecoder.setListener(new Http2StreamingDecodeListener(serverCallListener));
-        streamingDecoder.setFragmentListener(new StreamingDecoder.DefaultFragmentListener(defaultListeningDecoder));
-        getServerChannelObserver().setStreamingDecoder(streamingDecoder);
-        return new StreamingHttpMessageListener(streamingDecoder);
-    }
-
-    @Override
-    protected void onMetadataCompletion(Http2Header metadata) {
-        super.onMetadataCompletion(metadata);
-        this.serverChannelObserver.setResponseEncoder(
-                getCodecUtils().determineHttpMessageEncoder(getFrameworkModel(), metadata.headers(), getUrl()));
-        this.serverChannelObserver.request(1);
-    }
-
-    @Override
-    protected void onDataCompletion(Http2InputMessage message) {
-        if (message.isEndStream()) {
-            serverCallListener.onComplete();
-        }
-    }
-
-    @Override
-    protected void onError(Throwable throwable) {
-        serverChannelObserver.onError(throwable);
-    }
-
-    protected StreamingDecoder getStreamingDecoder() {
-        return this.streamingDecoder;
-    }
-
-    private static class Http2StreamingDecodeListener implements ListeningDecoder.Listener {
-
-        private final ServerCallListener serverCallListener;
-
-        private Http2StreamingDecodeListener(ServerCallListener serverCallListener) {
-            this.serverCallListener = serverCallListener;
-        }
-
-        @Override
-        public void onMessage(Object message) {
-            this.serverCallListener.onMessage(message);
-        }
-
-        @Override
-        public void onClose() {
-            this.serverCallListener.onComplete();
-        }
-    }
-
-    private void initializeServerCallListener() {
-        if (serverCallListener == null) {
-            this.serverCallListener = startListener(getRpcInvocation(), getMethodDescriptor(), getInvoker());
         }
     }
 
@@ -223,7 +155,54 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
         return new BiStreamServerCallListener(invocation, invoker, responseObserver);
     }
 
-    protected ServerCallListener getServerCallListener() {
-        return serverCallListener;
+    @Override
+    protected void onMetadataCompletion(Http2Header metadata) {
+        serverChannelObserver.setResponseEncoder(getContext().getHttpMessageEncoder());
+        serverChannelObserver.request(1);
+    }
+
+    @Override
+    protected void onDataCompletion(Http2InputMessage message) {
+        if (message.isEndStream()) {
+            serverCallListener.onComplete();
+        }
+    }
+
+    @Override
+    protected void onError(Throwable throwable) {
+        serverChannelObserver.onError(throwable);
+    }
+
+    @Override
+    public void cancelByRemote(long errorCode) {
+        serverChannelObserver.cancel(new HttpStatusException((int) errorCode));
+        serverCallListener.onCancel(errorCode);
+    }
+
+    protected StreamingDecoder getStreamingDecoder() {
+        return streamingDecoder;
+    }
+
+    protected final Http2ServerChannelObserver getServerChannelObserver() {
+        return serverChannelObserver;
+    }
+
+    private static class Http2StreamingDecodeListener implements ListeningDecoder.Listener {
+
+        private final ServerCallListener serverCallListener;
+
+        private Http2StreamingDecodeListener(ServerCallListener serverCallListener) {
+            this.serverCallListener = serverCallListener;
+        }
+
+        @Override
+        public void onMessage(Object message) {
+            serverCallListener.onMessage(message);
+        }
+
+        @Override
+        public void onClose() {
+            serverCallListener.onComplete();
+        }
     }
 }

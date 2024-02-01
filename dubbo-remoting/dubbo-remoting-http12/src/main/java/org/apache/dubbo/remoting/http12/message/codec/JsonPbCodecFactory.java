@@ -24,8 +24,8 @@ import org.apache.dubbo.remoting.http12.message.HttpMessageEncoderFactory;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-@Activate
-public class JsonPbCodecFactory implements HttpMessageEncoderFactory, HttpMessageDecoderFactory {
+@Activate(order = -100, onClass = "com.google.protobuf.Message")
+public final class JsonPbCodecFactory implements HttpMessageEncoderFactory, HttpMessageDecoderFactory {
 
     private final JsonPbCodec instance = new JsonPbCodec();
 
@@ -36,6 +36,11 @@ public class JsonPbCodecFactory implements HttpMessageEncoderFactory, HttpMessag
 
     @Override
     public MediaType mediaType() {
-        return MediaType.APPLICATION_JSON_VALUE;
+        return MediaType.APPLICATION_JSON;
+    }
+
+    @Override
+    public boolean supports(String mediaType) {
+        return mediaType.startsWith(mediaType().getName()) || mediaType.startsWith(MediaType.TEXT_JSON.getName());
     }
 }

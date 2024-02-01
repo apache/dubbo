@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.http12.message.codec;
 
-import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -380,20 +379,12 @@ public class CodecTest {
         Assertions.assertEquals("Hello, world", res);
 
         in = new ByteArrayInputStream(utf8Bytes);
-        codec = new PlainTextCodec("text/plain; charset=UTF-8");
-        res = (String) codec.decode(in, String.class);
+        codec = new PlainTextCodec();
+        res = (String) codec.decode(in, String.class, Charsets.UTF_8);
         Assertions.assertEquals("你好，世界", res);
 
         in = new ByteArrayInputStream(utf16Bytes);
-        codec = new PlainTextCodec("text/plain; charset=UTF-16");
-        res = (String) codec.decode(in, String.class);
+        res = (String) codec.decode(in, String.class, Charsets.UTF_16);
         Assertions.assertEquals("你好，世界", res);
-    }
-
-    @Test
-    void testUnsupportedCharset() {
-        HttpMessageCodec codec = new PlainTextCodec("text/plain; charset=unsupported");
-        Assertions.assertThrows(
-                DecodeException.class, () -> codec.decode(new ByteArrayInputStream(new byte[] {}), String.class));
     }
 }

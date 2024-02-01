@@ -76,6 +76,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DESTROY_INVOKER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
+import static org.apache.dubbo.remoting.http12.message.MediaType.APPLICATION_GRPC_PROTO;
 import static org.apache.dubbo.rpc.Constants.COMPRESSOR_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.rpc.model.MethodDescriptor.RpcType.UNARY;
@@ -289,7 +290,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             meta.packableMethod = (PackableMethod) methodDescriptor;
         } else {
             meta.packableMethod = packableMethodCache.computeIfAbsent(
-                    methodDescriptor, (md) -> packableMethodFactory.create(md, url, TripleConstant.CONTENT_PROTO));
+                    methodDescriptor, (md) -> packableMethodFactory.create(md, url, APPLICATION_GRPC_PROTO.getName()));
         }
         meta.convertNoLowerHeader = TripleProtocol.CONVERT_NO_LOWER_HEADER;
         meta.ignoreDefaultVersion = TripleProtocol.IGNORE_1_0_0_VERSION;
