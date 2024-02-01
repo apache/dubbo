@@ -21,7 +21,6 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.InmemoryConfiguration;
-import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
@@ -54,7 +53,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NO_METHOD_FOUND;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 
 /**
  * AbstractDefaultConfig
@@ -264,23 +262,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         map.put(TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
         if (ConfigUtils.getPid() > 0) {
             map.put(PID_KEY, String.valueOf(ConfigUtils.getPid()));
-        }
-    }
-
-    /**
-     * @deprecated After metrics config is refactored.
-     * This method should no longer use and will be deleted in the future.
-     */
-    @Deprecated
-    protected void appendMetricsCompatible(Map<String, String> map) {
-        MetricsConfig metricsConfig = getConfigManager().getMetrics().orElse(null);
-        if (metricsConfig != null) {
-            String protocol = Optional.ofNullable(metricsConfig.getProtocol()).orElse(PROTOCOL_PROMETHEUS);
-            if (!StringUtils.isEquals(protocol, PROTOCOL_PROMETHEUS)) {
-                Assert.notEmptyString(metricsConfig.getPort(), "Metrics port cannot be null");
-                map.put("metrics.protocol", protocol);
-                map.put("metrics.port", metricsConfig.getPort());
-            }
         }
     }
 
