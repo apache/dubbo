@@ -1103,12 +1103,6 @@
             </xsd:annotation>
         </xsd:attribute>
 
-        <xsd:attribute name="port" type="xsd:string">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[ Deprecated. No longer use. ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-
         <xsd:attribute name="enable-rpc" type="xsd:boolean" default="true">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Enable record rpc metrics. ]]></xsd:documentation>

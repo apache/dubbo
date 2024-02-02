@@ -663,7 +663,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         AbstractConfig.appendParameters(map, provider);
         AbstractConfig.appendParameters(map, protocolConfig);
         AbstractConfig.appendParameters(map, this);
-        appendMetricsCompatible(map);
 
         // append params with method configs,
         if (CollectionUtils.isNotEmpty(getMethods())) {
