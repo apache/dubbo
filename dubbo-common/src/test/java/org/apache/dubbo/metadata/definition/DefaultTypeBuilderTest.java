@@ -19,20 +19,25 @@ package org.apache.dubbo.metadata.definition;
 import org.apache.dubbo.metadata.definition.builder.DefaultTypeBuilder;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.util.HashMap;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.HashMap;
 
 public class DefaultTypeBuilderTest {
     @Test
     void testInnerClass() {
         TypeDefinitionBuilder.initBuilders(FrameworkModel.defaultModel());
 
-        Assertions.assertEquals(String.class.getName(), DefaultTypeBuilder.build(String.class, new HashMap<>()).getType());
+        Assertions.assertEquals(
+                String.class.getName(),
+                DefaultTypeBuilder.build(String.class, new HashMap<>()).getType());
 
         DefaultTypeBuilderTest innerObject = new DefaultTypeBuilderTest() {};
-        Assertions.assertEquals(DefaultTypeBuilderTest.class.getName() + "$1", DefaultTypeBuilder.build(innerObject.getClass(), new HashMap<>()).getType());
+        Assertions.assertEquals(
+                DefaultTypeBuilderTest.class.getName() + "$1",
+                DefaultTypeBuilder.build(innerObject.getClass(), new HashMap<>())
+                        .getType());
 
         TypeDefinitionBuilder.BUILDERS = null;
     }
