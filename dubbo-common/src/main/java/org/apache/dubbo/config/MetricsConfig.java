@@ -77,13 +77,6 @@ public class MetricsConfig extends AbstractConfig {
     private Integer collectorSyncPeriod;
 
     /**
-     * @deprecated After metrics config is refactored.
-     * This parameter should no longer use and will be deleted in the future.
-     */
-    @Deprecated
-    private String port;
-
-    /**
      * The prometheus metrics config
      */
     @Nested
@@ -164,14 +157,6 @@ public class MetricsConfig extends AbstractConfig {
 
     public void setEnableRegistry(Boolean enableRegistry) {
         this.enableRegistry = enableRegistry;
-    }
-
-    public String getPort() {
-        return port;
-    }
-
-    public void setPort(String port) {
-        this.port = port;
     }
 
     public PrometheusConfig getPrometheus() {
