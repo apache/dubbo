@@ -858,17 +858,6 @@
         <artifactId>compiler</artifactId>
         <version>${mustache_version}</version>
       </dependency>
-      <dependency>
-        <groupId>io.fabric8</groupId>
-        <artifactId>kubernetes-client</artifactId>
-        <version>${fabric8_kubernetes_version}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.fabric8</groupId>
-        <artifactId>kubernetes-server-mock</artifactId>
-        <version>${fabric8_kubernetes_version}</version>
-        <scope>test</scope>
-      </dependency>
       <!-- tri compress support-->
       <dependency>
         <groupId>org.apache.commons</groupId>
