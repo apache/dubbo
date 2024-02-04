@@ -29,20 +29,21 @@ import org.springframework.aot.hint.TypeReference;
 
 public class AotUtils {
 
-    private static final Set<Class<?>> serializationTypeCache = new LinkedHashSet<>();
-
     private AotUtils() {}
 
     public static void registerSerializationForService(Class<?> serviceType, RuntimeHints hints) {
+        Set<Class<?>> serializationTypeCache = new LinkedHashSet<>();
         Arrays.stream(serviceType.getMethods()).forEach((method) -> {
             Arrays.stream(method.getParameterTypes())
-                    .forEach((parameterType) -> registerSerializationType(parameterType, hints));
+                    .forEach(
+                            (parameterType) -> registerSerializationType(parameterType, hints, serializationTypeCache));
 
-            registerSerializationType(method.getReturnType(), hints);
+            registerSerializationType(method.getReturnType(), hints, serializationTypeCache);
         });
     }
 
-    private static void registerSerializationType(Class<?> registerType, RuntimeHints hints) {
+    private static void registerSerializationType(
+            Class<?> registerType, RuntimeHints hints, Set<Class<?>> serializationTypeCache) {
         if (isPrimitive(registerType)) {
             hints.serialization().registerType(TypeReference.of(ClassUtils.getBoxedClass(registerType)));
             serializationTypeCache.add(registerType);
@@ -53,12 +54,12 @@ public class AotUtils {
 
                 Arrays.stream(registerType.getDeclaredFields()).forEach((field -> {
                     if (!serializationTypeCache.contains(field.getType())) {
-                        registerSerializationType(field.getType(), hints);
+                        registerSerializationType(field.getType(), hints, serializationTypeCache);
                         serializationTypeCache.add(field.getType());
                     }
                 }));
 
-                registerSerializationType(registerType.getSuperclass(), hints);
+                registerSerializationType(registerType.getSuperclass(), hints, serializationTypeCache);
             }
         }
     }
