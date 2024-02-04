@@ -18,14 +18,13 @@ package org.apache.dubbo.remoting.api.pu;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.WireProtocol;
 import org.apache.dubbo.remoting.transport.AbstractServer;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -57,8 +56,8 @@ public abstract class AbstractPortUnificationServer extends AbstractServer {
     public AbstractPortUnificationServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
         ExtensionLoader<WireProtocol> loader = url.getOrDefaultFrameworkModel().getExtensionLoader(WireProtocol.class);
-        Map<String, WireProtocol> protocols = extensionLoader.getActivateExtension(url, new String[0]).stream()
-                .collect(Collectors.toConcurrentMap(extensionLoader::getExtensionName, Function.identity()))
+        Map<String, WireProtocol> protocols = loader.getActivateExtension(url, new String[0]).stream()
+                .collect(Collectors.toConcurrentMap(loader::getExtensionName, Function.identity()));
         // load extra protocols
         String extraProtocols = url.getParameter(EXT_PROTOCOL);
         if (StringUtils.isNotEmpty(extraProtocols)) {
