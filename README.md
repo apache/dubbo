@@ -1,7 +1,7 @@
 # Apache Dubbo Project
 
 [![Build and Test For PR](https://github.com/apache/dubbo/actions/workflows/build-and-test-pr.yml/badge.svg)](https://github.com/apache/dubbo/actions/workflows/build-and-test-pr.yml)
-[![Codecov](https://codecov.io/gh/apache/dubbo/branch/3.2/graph/badge.svg)](https://codecov.io/gh/apache/dubbo)
+[![Codecov](https://codecov.io/gh/apache/dubbo/branch/3.3/graph/badge.svg)](https://codecov.io/gh/apache/dubbo)
 ![Maven](https://img.shields.io/maven-central/v/org.apache.dubbo/dubbo.svg)
 ![License](https://img.shields.io/github/license/alibaba/dubbo.svg)
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/apache/dubbo.svg)](http://isitmaintained.com/project/apache/dubbo "Average time to resolve an issue")
@@ -86,9 +86,9 @@ See [CONTRIBUTING](https://github.com/apache/dubbo/blob/master/CONTRIBUTING.md) 
 * Fix bugs reported on [issues](https://github.com/apache/dubbo/issues), and send us a pull request.
 * Review the existing [pull request](https://github.com/apache/dubbo/pulls).
 * Improve the [website](https://github.com/apache/dubbo-website), typically we need
-  * blog post
-  * translation on documentation
-  * use cases around the integration of Dubbo in enterprise systems.
+    * blog post
+    * translation on documentation
+    * use cases around the integration of Dubbo in enterprise systems.
 * Improve the [dubbo-admin/dubbo-monitor](https://github.com/apache/dubbo-admin).
 * Contribute to the projects listed in [ecosystem](https://github.com/dubbo).
 * Other forms of contribution not explicitly enumerated above.

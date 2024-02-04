@@ -18,7 +18,6 @@ package org.apache.dubbo.remoting.api.pu;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.WireProtocol;
@@ -29,12 +28,18 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.EXT_PROTOCOL;
 
 public abstract class AbstractPortUnificationServer extends AbstractServer {
-    private final List<WireProtocol> protocols;
+
+    /**
+     * extension name -> activate WireProtocol
+     */
+    private final Map<String, WireProtocol> protocols;
 
     /*
     protocol name --> URL object
@@ -52,20 +57,19 @@ public abstract class AbstractPortUnificationServer extends AbstractServer {
     public AbstractPortUnificationServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
         ExtensionLoader<WireProtocol> loader = url.getOrDefaultFrameworkModel().getExtensionLoader(WireProtocol.class);
-        List<WireProtocol> extProtocols = new ArrayList<>();
-        // load main protocol
-        extProtocols.add(loader.getExtension(url.getProtocol()));
+        Map<String, WireProtocol> protocols = extensionLoader.getActivateExtension(url, new String[0]).stream()
+                .collect(Collectors.toConcurrentMap(extensionLoader::getExtensionName, Function.identity()))
         // load extra protocols
         String extraProtocols = url.getParameter(EXT_PROTOCOL);
         if (StringUtils.isNotEmpty(extraProtocols)) {
             Arrays.stream(extraProtocols.split(COMMA_SEPARATOR)).forEach(p -> {
-                extProtocols.add(loader.getExtension(p));
+                protocols.put(p, loader.getExtension(p));
             });
         }
-        this.protocols = extProtocols;
+        this.protocols = protocols;
     }
 
-    public List<WireProtocol> getProtocols() {
+    public Map<String, WireProtocol> getProtocols() {
         return protocols;
     }
 
