@@ -24,7 +24,7 @@ import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 @Activate
-public class MultipartDecoderFactory implements HttpMessageDecoderFactory {
+public final class MultipartDecoderFactory implements HttpMessageDecoderFactory {
 
     private CodecUtils codecUtils;
 

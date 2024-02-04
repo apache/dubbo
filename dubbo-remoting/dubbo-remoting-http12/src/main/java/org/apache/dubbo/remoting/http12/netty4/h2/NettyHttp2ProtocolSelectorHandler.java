@@ -17,7 +17,6 @@
 package org.apache.dubbo.remoting.http12.netty4.h2;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
@@ -38,16 +37,11 @@ import io.netty.handler.codec.http2.Http2StreamChannel;
 
 public class NettyHttp2ProtocolSelectorHandler extends SimpleChannelInboundHandler<HttpMetadata> {
 
-    private Http2ServerTransportListenerFactory defaultHttp2ServerTransportListenerFactory;
-
     private final URL url;
 
     private final FrameworkModel frameworkModel;
 
-    public NettyHttp2ProtocolSelectorHandler(URL url, FrameworkModel frameworkModel) {
-        this.url = url;
-        this.frameworkModel = frameworkModel;
-    }
+    private final Http2ServerTransportListenerFactory defaultHttp2ServerTransportListenerFactory;
 
     public NettyHttp2ProtocolSelectorHandler(
             URL url,
@@ -62,11 +56,7 @@ public class NettyHttp2ProtocolSelectorHandler extends SimpleChannelInboundHandl
     protected void channelRead0(ChannelHandlerContext ctx, HttpMetadata metadata) {
         HttpHeaders headers = metadata.headers();
         String contentType = headers.getFirst(HttpHeaderNames.CONTENT_TYPE.getName());
-        // 415
-        if (!StringUtils.hasText(contentType)) {
-            throw new UnsupportedMediaTypeException(contentType);
-        }
-        Http2ServerTransportListenerFactory factory = adaptHttp2ServerTransportListenerFactory(contentType);
+        Http2ServerTransportListenerFactory factory = determineHttp2ServerTransportListenerFactory(contentType);
         if (factory == null) {
             throw new UnsupportedMediaTypeException(contentType);
         }
@@ -84,7 +74,7 @@ public class NettyHttp2ProtocolSelectorHandler extends SimpleChannelInboundHandl
         ctx.fireChannelRead(metadata);
     }
 
-    private Http2ServerTransportListenerFactory adaptHttp2ServerTransportListenerFactory(String contentType) {
+    private Http2ServerTransportListenerFactory determineHttp2ServerTransportListenerFactory(String contentType) {
         Set<Http2ServerTransportListenerFactory> http2ServerTransportListenerFactories = frameworkModel
                 .getExtensionLoader(Http2ServerTransportListenerFactory.class)
                 .getSupportedExtensionInstances();

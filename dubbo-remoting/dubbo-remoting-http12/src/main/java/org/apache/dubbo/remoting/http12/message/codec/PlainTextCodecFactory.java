@@ -24,16 +24,23 @@ import org.apache.dubbo.remoting.http12.message.HttpMessageEncoderFactory;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-@Activate
-public class PlainTextCodecFactory implements HttpMessageEncoderFactory, HttpMessageDecoderFactory {
+@Activate(order = 10000)
+public final class PlainTextCodecFactory implements HttpMessageEncoderFactory, HttpMessageDecoderFactory {
+
+    private final PlainTextCodec instance = new PlainTextCodec();
 
     @Override
     public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String mediaType) {
-        return new PlainTextCodec(mediaType);
+        return instance;
     }
 
     @Override
     public MediaType mediaType() {
         return MediaType.TEXT_PLAIN;
+    }
+
+    @Override
+    public boolean supports(String mediaType) {
+        return mediaType.startsWith("text/");
     }
 }

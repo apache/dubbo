@@ -20,16 +20,14 @@ import org.apache.dubbo.remoting.api.ProtocolDetector;
 import org.apache.dubbo.remoting.buffer.ByteBufferBackedChannelBuffer;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 import org.apache.dubbo.remoting.buffer.ChannelBuffers;
+import org.apache.dubbo.remoting.http12.HttpMethods;
 
 import io.netty.handler.codec.http2.Http2CodecUtil;
-
-import static java.lang.Math.min;
 
 public class TripleProtocolDetector implements ProtocolDetector {
 
     public static final String HTTP_VERSION = "HTTP_VERSION";
-
-    private final ChannelBuffer clientPrefaceString = new ByteBufferBackedChannelBuffer(
+    private static final ChannelBuffer CLIENT_PREFACE_STRING = new ByteBufferBackedChannelBuffer(
             Http2CodecUtil.connectionPrefaceBuf().nioBuffer());
 
     @Override
@@ -38,8 +36,8 @@ public class TripleProtocolDetector implements ProtocolDetector {
         if (in.readableBytes() < 2) {
             return Result.needMoreData();
         }
-        byte[] magics = new byte[5];
-        in.getBytes(in.readerIndex(), magics, 0, 5);
+        byte[] magics = new byte[7];
+        in.getBytes(in.readerIndex(), magics, 0, 7);
         if (isHttp(magics)) {
             Result recognized = Result.recognized();
             recognized.setAttribute(HTTP_VERSION, HttpVersion.HTTP1.getVersion());
@@ -48,9 +46,9 @@ public class TripleProtocolDetector implements ProtocolDetector {
         in.resetReaderIndex();
 
         // http2
-        int prefaceLen = clientPrefaceString.readableBytes();
-        int bytesRead = min(in.readableBytes(), prefaceLen);
-        if (bytesRead == 0 || !ChannelBuffers.prefixEquals(in, clientPrefaceString, bytesRead)) {
+        int prefaceLen = CLIENT_PREFACE_STRING.readableBytes();
+        int bytesRead = Math.min(in.readableBytes(), prefaceLen);
+        if (bytesRead == 0 || !ChannelBuffers.prefixEquals(in, CLIENT_PREFACE_STRING, bytesRead)) {
             return Result.unrecognized();
         }
         if (bytesRead == prefaceLen) {
@@ -62,16 +60,22 @@ public class TripleProtocolDetector implements ProtocolDetector {
     }
 
     private static boolean isHttp(byte[] magic) {
-        if (magic[0] == 'G' && magic[1] == 'E' && magic[2] == 'T') {
-            return true;
-        }
-        if (magic[0] == 'P' && magic[1] == 'O' && magic[2] == 'S' && magic[3] == 'T') {
-            return true;
+        for (int i = 0; i < 8; i++) {
+            byte[] methodBytes = HttpMethods.HTTP_METHODS_BYTES[i];
+            int end = methodBytes.length - 1;
+            for (int j = 0; j <= end; j++) {
+                if (magic[j] != methodBytes[j]) {
+                    break;
+                }
+                if (j == end) {
+                    return true;
+                }
+            }
         }
         return false;
     }
 
-    public static enum HttpVersion {
+    public enum HttpVersion {
         HTTP1("http1"),
         HTTP2("http2");
 

@@ -14,17 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.exception;
+package org.apache.dubbo.remoting.http12.message;
 
-public class IllegalPathException extends RuntimeException {
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.remoting.http12.HttpChannel;
+import org.apache.dubbo.remoting.http12.HttpMetadata;
+import org.apache.dubbo.remoting.http12.HttpResponse;
 
-    public IllegalPathException() {}
+@Activate
+public final class DefaultHttpMessageAdapterFactory
+        implements HttpMessageAdapterFactory<DefaultHttpRequest, HttpMetadata, Void> {
 
-    public IllegalPathException(String message) {
-        super(message);
+    @Override
+    public DefaultHttpRequest adaptRequest(HttpMetadata rawRequest, HttpChannel channel) {
+        return new DefaultHttpRequest(rawRequest, channel);
     }
 
-    public String getPath() {
-        return super.getMessage();
+    @Override
+    public HttpResponse adaptResponse(DefaultHttpRequest request, HttpMetadata rawRequest, Void rawResponse) {
+        return new DefaultHttpResponse();
     }
 }

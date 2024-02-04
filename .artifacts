@@ -120,3 +120,7 @@ dubbo-tracing
 dubbo-xds
 dubbo-plugin-proxy-bytebuddy
 dubbo-plugin-loom
+dubbo-rest-jaxrs
+dubbo-rest-servlet
+dubbo-rest-spring
+

@@ -327,6 +327,10 @@ public class ClassUtils {
         return type != null && (type.isPrimitive() || isSimpleType(type));
     }
 
+    public static boolean isPrimitiveWrapper(Class<?> type) {
+        return PRIMITIVE_WRAPPER_TYPE_MAP.containsKey(type);
+    }
+
     /**
      * The specified type is simple type or not
      *

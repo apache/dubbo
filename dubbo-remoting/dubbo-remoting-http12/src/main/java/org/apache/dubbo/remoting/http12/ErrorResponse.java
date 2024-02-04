@@ -16,9 +16,13 @@
  */
 package org.apache.dubbo.remoting.http12;
 
+import org.apache.dubbo.common.utils.ToStringUtils;
+
 import java.io.Serializable;
 
 public class ErrorResponse implements Serializable {
+
+    private static final long serialVersionUID = 6828386002146790334L;
 
     private String status;
 
@@ -38,5 +42,10 @@ public class ErrorResponse implements Serializable {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringUtils.printToString(this);
     }
 }

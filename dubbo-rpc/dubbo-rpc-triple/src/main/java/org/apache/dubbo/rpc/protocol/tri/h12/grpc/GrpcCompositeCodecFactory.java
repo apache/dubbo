@@ -28,11 +28,9 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 @Activate
 public class GrpcCompositeCodecFactory implements HttpMessageEncoderFactory, HttpMessageDecoderFactory {
 
-    private static final MediaType MEDIA_TYPE = new MediaType("application", "grpc");
-
     @Override
     public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String mediaType) {
-        final String serializeName = UrlUtils.serializationOrDefault(url);
+        String serializeName = UrlUtils.serializationOrDefault(url);
         WrapperHttpMessageCodec wrapperHttpMessageCodec = new WrapperHttpMessageCodec(url, frameworkModel);
         wrapperHttpMessageCodec.setSerializeType(serializeName);
         ProtobufHttpMessageCodec protobufHttpMessageCodec = new ProtobufHttpMessageCodec();
@@ -41,6 +39,6 @@ public class GrpcCompositeCodecFactory implements HttpMessageEncoderFactory, Htt
 
     @Override
     public MediaType mediaType() {
-        return MEDIA_TYPE;
+        return MediaType.APPLICATION_GRPC;
     }
 }

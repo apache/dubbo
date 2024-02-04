@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.http12.message.codec;
 
+import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
@@ -24,94 +25,68 @@ import org.apache.dubbo.remoting.http12.message.MediaType;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import java.nio.charset.Charset;
 import java.util.List;
-
-import com.alibaba.fastjson2.JSONObject;
 
 public class JsonCodec implements HttpMessageCodec {
 
+    public static final JsonCodec INSTANCE = new JsonCodec();
+
+    public void encode(OutputStream os, Object data, Charset charset) throws EncodeException {
+        try {
+            os.write(JsonUtils.toJson(data).getBytes(charset));
+        } catch (Throwable t) {
+            throw new EncodeException("Error encoding json", t);
+        }
+    }
+
+    public void encode(OutputStream os, Object[] data, Charset charset) throws EncodeException {
+        try {
+            os.write(JsonUtils.toJson(data).getBytes(charset));
+        } catch (Throwable t) {
+            throw new EncodeException("Error encoding json", t);
+        }
+    }
+
+    @Override
+    public Object decode(InputStream is, Class<?> targetType, Charset charset) throws DecodeException {
+        try {
+            return JsonUtils.toJavaObject(StreamUtils.toString(is, charset), targetType);
+        } catch (Throwable t) {
+            throw new DecodeException("Error decoding json", t);
+        }
+    }
+
+    @Override
+    public Object[] decode(InputStream is, Class<?>[] targetTypes, Charset charset) throws DecodeException {
+        try {
+            int len = targetTypes.length;
+            Object obj = JsonUtils.toJavaObject(StreamUtils.toString(is, charset), Object.class);
+            if (obj instanceof List) {
+                List<?> list = (List<?>) obj;
+                if (list.size() == len) {
+                    Object[] results = new Object[len];
+                    for (int i = 0; i < len; i++) {
+                        results[i] = JsonUtils.convertObject(list.get(i), targetTypes[i]);
+                    }
+                    return results;
+                }
+                throw new DecodeException(
+                        "Json array size [" + list.size() + "] must equals arguments count [" + len + "]");
+            }
+            if (len == 1) {
+                return new Object[] {JsonUtils.convertObject(obj, targetTypes[0])};
+            }
+            throw new DecodeException("Json must be array");
+        } catch (DecodeException e) {
+            throw e;
+        } catch (Throwable t) {
+            throw new DecodeException("Error decoding json", t);
+        }
+    }
+
     @Override
     public MediaType mediaType() {
-        return MediaType.APPLICATION_JSON_VALUE;
-    }
-
-    public void encode(OutputStream outputStream, Object unSerializedBody) throws EncodeException {
-        try {
-            try {
-                String jsonString = JsonUtils.toJson(unSerializedBody);
-                outputStream.write(jsonString.getBytes(StandardCharsets.UTF_8));
-            } finally {
-                outputStream.flush();
-            }
-        } catch (Throwable e) {
-            throw new EncodeException(e);
-        }
-    }
-
-    public void encode(OutputStream outputStream, Object[] data) throws EncodeException {
-        try {
-            try {
-                String jsonString = JsonUtils.toJson(data);
-                outputStream.write(jsonString.getBytes(StandardCharsets.UTF_8));
-            } finally {
-                outputStream.flush();
-            }
-        } catch (Throwable e) {
-            throw new EncodeException(e);
-        }
-    }
-
-    @Override
-    public Object decode(InputStream body, Class<?> targetType) throws DecodeException {
-        try {
-            try {
-                int len;
-                byte[] data = new byte[4096];
-                StringBuilder builder = new StringBuilder(4096);
-                while ((len = body.read(data)) != -1) {
-                    builder.append(new String(data, 0, len));
-                }
-                return JsonUtils.toJavaObject(builder.toString(), targetType);
-            } finally {
-                body.close();
-            }
-        } catch (Throwable e) {
-            throw new DecodeException(e);
-        }
-    }
-
-    @Override
-    public Object[] decode(InputStream dataInputStream, Class<?>[] targetTypes) throws DecodeException {
-        List<Object> result = new ArrayList<>();
-        try {
-            try {
-                int len;
-                byte[] data = new byte[4096];
-                StringBuilder builder = new StringBuilder(4096);
-                while ((len = dataInputStream.read(data)) != -1) {
-                    builder.append(new String(data, 0, len));
-                }
-                String jsonString = builder.toString();
-                List<Object> jsonObjects = JsonUtils.toJavaList(jsonString, Object.class);
-
-                for (int i = 0; i < targetTypes.length; i++) {
-                    Object jsonObject = jsonObjects.get(i);
-                    Class<?> type = targetTypes[i];
-                    if (jsonObject instanceof JSONObject) {
-                        Object o = ((JSONObject) jsonObject).toJavaObject(type);
-                        result.add(o);
-                    } else {
-                        result.add(jsonObject);
-                    }
-                }
-                return result.toArray();
-            } finally {
-                dataInputStream.close();
-            }
-        } catch (Throwable e) {
-            throw new DecodeException(e);
-        }
+        return MediaType.APPLICATION_JSON;
     }
 }

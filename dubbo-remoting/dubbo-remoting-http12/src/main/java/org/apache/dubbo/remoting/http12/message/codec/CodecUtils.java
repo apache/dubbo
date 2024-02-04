@@ -17,132 +17,74 @@
 package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.http12.HttpHeaders;
+import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.remoting.http12.exception.UnsupportedMediaTypeException;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
 import org.apache.dubbo.remoting.http12.message.HttpMessageDecoderFactory;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoderFactory;
-import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import io.netty.handler.codec.CodecException;
+public final class CodecUtils {
 
-public class CodecUtils {
-
-    private final FrameworkModel frameworkModel;
-
-    private final List<HttpMessageDecoderFactory> decoders;
-
-    private final List<HttpMessageEncoderFactory> encoders;
-
-    private final Map<String, HttpMessageEncoderFactory> encoderCache;
-
-    private final Map<String, HttpMessageDecoderFactory> decoderCache;
+    private final List<HttpMessageDecoderFactory> decoderFactories;
+    private final List<HttpMessageEncoderFactory> encoderFactories;
+    private final Map<String, Optional<HttpMessageEncoderFactory>> encoderCache = new ConcurrentHashMap<>();
+    private final Map<String, Optional<HttpMessageDecoderFactory>> decoderCache = new ConcurrentHashMap<>();
 
     public CodecUtils(FrameworkModel frameworkModel) {
-        this.encoderCache = new ConcurrentHashMap<>(1);
-        this.decoderCache = new ConcurrentHashMap<>(1);
-        this.frameworkModel = frameworkModel;
-        this.decoders = frameworkModel
-                .getExtensionLoader(HttpMessageDecoderFactory.class)
-                .getActivateExtensions();
-        this.encoders = frameworkModel
-                .getExtensionLoader(HttpMessageEncoderFactory.class)
-                .getActivateExtensions();
-        decoders.forEach(
-                decoderFactory -> decoderCache.put(decoderFactory.mediaType().getName(), decoderFactory));
-        encoders.forEach(
-                encoderFactory -> encoderCache.put(encoderFactory.mediaType().getName(), encoderFactory));
+        decoderFactories = frameworkModel.getActivateExtensions(HttpMessageDecoderFactory.class);
+        encoderFactories = frameworkModel.getActivateExtensions(HttpMessageEncoderFactory.class);
+        decoderFactories.forEach(factory -> decoderCache.put(factory.mediaType().getName(), Optional.of(factory)));
+        encoderFactories.forEach(factory -> encoderCache.put(factory.mediaType().getName(), Optional.of(factory)));
     }
 
-    public HttpMessageDecoder determineHttpMessageDecoder(FrameworkModel frameworkModel, String contentType, URL url) {
-        return determineHttpMessageDecoderFactory(contentType).createCodec(url, frameworkModel, contentType);
+    public HttpMessageDecoder determineHttpMessageDecoder(URL url, FrameworkModel frameworkModel, String mediaType) {
+        return determineHttpMessageDecoderFactory(mediaType)
+                .orElseThrow(() -> new UnsupportedMediaTypeException(mediaType))
+                .createCodec(url, frameworkModel, mediaType);
     }
 
-    public HttpMessageEncoder determineHttpMessageEncoder(FrameworkModel frameworkModel, HttpHeaders headers, URL url) {
-        String mediaType = getEncodeMediaType(headers);
-        return determineHttpMessageEncoderFactory(mediaType).createCodec(url, frameworkModel, mediaType);
+    public HttpMessageEncoder determineHttpMessageEncoder(URL url, FrameworkModel frameworkModel, String mediaType) {
+        return determineHttpMessageEncoderFactory(mediaType)
+                .orElseThrow(() -> new UnsupportedMediaTypeException(mediaType))
+                .createCodec(url, frameworkModel, mediaType);
     }
 
-    public HttpMessageDecoderFactory determineHttpMessageDecoderFactory(String mediaType) {
-        HttpMessageDecoderFactory factory = decoderCache.computeIfAbsent(mediaType, k -> {
-            for (HttpMessageDecoderFactory decoderFactory : decoders) {
-                if (decoderFactory.supports(mediaType)) {
-                    return decoderFactory;
+    public Optional<HttpMessageDecoderFactory> determineHttpMessageDecoderFactory(String mediaType) {
+        Assert.notNull(mediaType, "mediaType must not be null");
+        return decoderCache.computeIfAbsent(mediaType, k -> {
+            for (HttpMessageDecoderFactory decoderFactory : decoderFactories) {
+                if (decoderFactory.supports(k)) {
+                    return Optional.of(decoderFactory);
                 }
             }
-            return new UnsupportedCodecFactory();
+            return Optional.empty();
         });
-        if (factory instanceof UnsupportedCodecFactory) {
-            throw new UnsupportedMediaTypeException(mediaType);
-        }
-        return factory;
     }
 
-    public HttpMessageEncoderFactory determineHttpMessageEncoderFactory(String mediaType) {
-        HttpMessageEncoderFactory factory = encoderCache.computeIfAbsent(mediaType, k -> {
-            for (HttpMessageEncoderFactory encoderFactory : encoders) {
-                if (encoderFactory.supports(mediaType)) {
-                    return encoderFactory;
+    public Optional<HttpMessageEncoderFactory> determineHttpMessageEncoderFactory(String mediaType) {
+        Assert.notNull(mediaType, "mediaType must not be null");
+        return encoderCache.computeIfAbsent(mediaType, k -> {
+            for (HttpMessageEncoderFactory encoderFactory : encoderFactories) {
+                if (encoderFactory.supports(k)) {
+                    return Optional.of(encoderFactory);
                 }
             }
-            return new UnsupportedCodecFactory();
+            return Optional.empty();
         });
-        if (factory instanceof UnsupportedCodecFactory) {
-            throw new UnsupportedMediaTypeException(mediaType);
-        }
-        return factory;
     }
 
-    public List<HttpMessageDecoderFactory> getDecoders() {
-        return decoders;
+    public List<HttpMessageDecoderFactory> getDecoderFactories() {
+        return decoderFactories;
     }
 
-    public List<HttpMessageEncoderFactory> getEncoders() {
-        return encoders;
-    }
-
-    static class UnsupportedCodecFactory implements HttpMessageEncoderFactory, HttpMessageDecoderFactory {
-        @Override
-        public MediaType mediaType() {
-            throw new CodecException();
-        }
-
-        @Override
-        public boolean supports(String mediaType) {
-            throw new CodecException();
-        }
-
-        @Override
-        public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String mediaType) {
-            throw new CodecException();
-        }
-    }
-
-    public static String getEncodeMediaType(HttpHeaders headers) {
-        String mediaType = headers.getAccept();
-        if (mediaType == null) {
-            mediaType = headers.getContentType();
-        }
-        return mediaType;
-    }
-
-    public static ByteArrayOutputStream toByteArrayStream(InputStream in) throws IOException {
-        ByteArrayOutputStream result = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024];
-        int length;
-        while ((length = in.read(buffer)) != -1) {
-            result.write(buffer, 0, length);
-        }
-        return result;
+    public List<HttpMessageEncoderFactory> getEncoderFactories() {
+        return encoderFactories;
     }
 }

@@ -1218,6 +1218,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     // cannot change to pending from other state
                     // setPending();
                     break;
+                default:
             }
         }
     }

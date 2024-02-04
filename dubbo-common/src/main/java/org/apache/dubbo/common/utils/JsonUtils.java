@@ -53,6 +53,7 @@ public class JsonUtils {
                                 case "jackson":
                                     instance = new JacksonImpl();
                                     break;
+                                default:
                             }
                             if (instance != null && instance.isSupport()) {
                                 jsonUtil = instance;
@@ -121,6 +122,14 @@ public class JsonUtils {
 
     public static Map<String, ?> getObject(Map<String, ?> obj, String key) {
         return getJson().getObject(obj, key);
+    }
+
+    public static Object convertObject(Object obj, Type targetType) {
+        return getJson().convertObject(obj, targetType);
+    }
+
+    public static Object convertObject(Object obj, Class<?> targetType) {
+        return getJson().convertObject(obj, targetType);
     }
 
     public static Double getNumberAsDouble(Map<String, ?> obj, String key) {

@@ -1,0 +1,1 @@
+spring-interceptor=org.apache.dubbo.rpc.protocol.tri.rest.support.spring.HandlerInterceptorAdapter

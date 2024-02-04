@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.http12.message.codec;
 
+import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
@@ -25,54 +26,39 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 
-public class PlainTextCodec implements HttpMessageCodec {
-
-    private final String contentType;
-
-    public PlainTextCodec(String contentType) {
-        this.contentType = contentType;
-    }
+public final class PlainTextCodec implements HttpMessageCodec {
 
     @Override
-    public void encode(OutputStream outputStream, Object data) throws EncodeException {
-        if (!(data instanceof String)) {
-            throw new EncodeException("PlainText media-type only supports String as return type.");
+    public void encode(OutputStream os, Object data, Charset charset) throws EncodeException {
+        if (data == null) {
+            return;
         }
         try {
-            outputStream.write(((String) data).getBytes());
+            if (data instanceof CharSequence) {
+                os.write((data.toString()).getBytes(charset));
+                return;
+            }
         } catch (IOException e) {
             throw new EncodeException(e);
         }
+        throw new EncodeException("'text/plain' media-type only supports String as return type.");
+    }
+
+    @Override
+    public Object decode(InputStream is, Class<?> targetType, Charset charset) throws DecodeException {
+        try {
+            if (targetType == String.class) {
+                return StreamUtils.toString(is, charset);
+            }
+        } catch (Exception e) {
+            throw new DecodeException(e);
+        }
+        throw new DecodeException("'text/plain' media-type only supports String as method param.");
     }
 
     @Override
     public MediaType mediaType() {
         return MediaType.TEXT_PLAIN;
-    }
-
-    @Override
-    public Object decode(InputStream inputStream, Class<?> targetType) throws DecodeException {
-        try {
-            if (!String.class.equals(targetType)) {
-                throw new DecodeException("Plain text content only supports String as method param.");
-            }
-            Charset charset;
-            if (contentType.contains("charset=")) {
-                try {
-                    charset = Charset.forName(contentType.substring(contentType.indexOf("charset=") + 8));
-                } catch (Exception e) {
-                    throw new DecodeException("Unsupported charset:" + e.getMessage());
-                }
-                if (!charset.equals(StandardCharsets.UTF_8) && !charset.equals(StandardCharsets.US_ASCII)) {
-                    String origin = CodecUtils.toByteArrayStream(inputStream).toString(charset.name());
-                    return new String(origin.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
-                }
-            }
-            return CodecUtils.toByteArrayStream(inputStream).toString(StandardCharsets.UTF_8.name());
-        } catch (Exception e) {
-            throw new DecodeException(e);
-        }
     }
 }

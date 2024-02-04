@@ -17,13 +17,15 @@
 package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.HttpMessageDecoderFactory;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoderFactory;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-public class XmlCodecFactory implements HttpMessageEncoderFactory, HttpMessageDecoderFactory {
+@Activate(onClass = "javax.xml.bind.Marshaller")
+public final class XmlCodecFactory implements HttpMessageEncoderFactory, HttpMessageDecoderFactory {
 
     private final HttpMessageCodec instance = new XmlCodec();
 
@@ -35,5 +37,10 @@ public class XmlCodecFactory implements HttpMessageEncoderFactory, HttpMessageDe
     @Override
     public MediaType mediaType() {
         return MediaType.APPLICATION_XML;
+    }
+
+    @Override
+    public boolean supports(String mediaType) {
+        return mediaType.startsWith(mediaType().getName()) || mediaType.startsWith(MediaType.TEXT_XML.getName());
     }
 }
