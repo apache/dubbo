@@ -365,8 +365,6 @@ public final class NetUtils {
     }
 
     private static InetAddress getLocalAddress0() {
-        InetAddress localAddress = null;
-
         // @since 2.7.6, choose the {@link NetworkInterface} first
         try {
             NetworkInterface networkInterface = findNetworkInterface();
@@ -387,19 +385,11 @@ public final class NetUtils {
             logger.warn(e);
         }
 
-        try {
-            localAddress = InetAddress.getLocalHost();
-            Optional<InetAddress> addressOp = toValidAddress(localAddress);
-            if (addressOp.isPresent()) {
-                return addressOp.get();
-            }
-        } catch (Throwable e) {
-            logger.warn(e);
-        }
-
-        localAddress = getLocalAddressV6();
-
-        return localAddress;
+        InetAddress localAddress = getLocalAddressV6();
+        if (localAddress != null) {
+            return localAddress;
+        } else
+            return InetAddress.getLocalHost();
     }
 
     private static Inet6Address getLocalAddress0V6() {
