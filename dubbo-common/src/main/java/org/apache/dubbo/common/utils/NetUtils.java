@@ -388,8 +388,15 @@ public final class NetUtils {
         InetAddress localAddress = getLocalAddressV6();
         if (localAddress != null) {
             return localAddress;
-        } else
+        }
+
+        try {
             return InetAddress.getLocalHost();
+        } catch (Throwable e) {
+            logger.warn(e);
+        }
+
+        return null;
     }
 
     private static Inet6Address getLocalAddress0V6() {
