@@ -271,7 +271,8 @@ public final class NetUtils {
             return HOST_ADDRESS;
         }
 
-        return LOCALHOST_VALUE;
+        HOST_ADDRESS = LOCALHOST_VALUE;
+        return HOST_ADDRESS;
     }
 
     public static String getLocalHostV6() {
