@@ -6,3 +6,4 @@ provider-app=org.apache.dubbo.rpc.cluster.router.condition.config.ProviderAppSta
 standard-mesh-rule=org.apache.dubbo.rpc.cluster.router.mesh.route.StandardMeshRuleRouterFactory
 script-app=org.apache.dubbo.rpc.cluster.router.script.config.AppScriptRouterFactory
 tag=org.apache.dubbo.rpc.cluster.router.tag.TagStateRouterFactory
+xds=org.apache.dubbo.rpc.cluster.xds.router.XdsRouterFactory

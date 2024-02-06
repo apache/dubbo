@@ -22,13 +22,22 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.rpc.Exporter;
+import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.cluster.Directory;
+import org.apache.dubbo.rpc.cluster.directory.XdsDirectory;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
+import org.apache.dubbo.rpc.cluster.xds.PilotExchanger;
+import org.apache.dubbo.rpc.cluster.xds.resource.XdsCluster;
+import org.apache.dubbo.rpc.cluster.xds.resource.XdsVirtualHost;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -36,8 +45,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
+import static org.mockito.Mockito.when;
 
 /**
  * Check available status for dubboInvoker
@@ -151,6 +162,43 @@ class DubboInvokerAvailableTest {
         Assertions.assertTrue(invoker.isAvailable());
         exchangeClient.setAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY, Boolean.TRUE);
         Assertions.assertFalse(invoker.isAvailable());
+    }
+
+    @Test
+    public void testXdsRouterInitial() throws InterruptedException {
+
+        URL url = URL.valueOf("xds://localhost:15010/?secure=plaintext");
+
+        PilotExchanger.initialize(url);
+
+        Directory directory = Mockito.spy(Directory.class);
+        when(directory.getConsumerUrl()).thenReturn(URL.valueOf("dubbo://0.0.0.0:15010/DemoService?providedBy=dubbo-samples-xds-provider"));
+        when(directory.getInterface()).thenReturn(IDemoService.class);
+        when(directory.getProtocol()).thenReturn(protocol);
+
+        XdsDirectory xdsDirectory = new XdsDirectory(directory);
+
+        // xdsDirectory.setProtocol(protocol);
+
+        // BitList<Invoker> invokers = new BitList<>(Arrays.asList(createInvoker("dubbo-samples-xds-provider", "10.1.0.177:50051"),
+        //         createInvoker("dubbo-samples-xds-provider", "10.1.0.174:50051"),
+        //         createInvoker("dubbo-samples-xds-provider", "10.1.0.181:50051")));
+
+        Invocation invocation = Mockito.mock(Invocation.class);
+        Invoker invoker = Mockito.mock(Invoker.class);
+        URL url1 = URL.valueOf("consumer://0.0.0.0:15010/DemoService?providedBy=dubbo-samples-xds-provider");
+        when(invoker.getUrl()).thenReturn(url1);
+        when(invocation.getInvoker()).thenReturn(invoker);
+
+        while(true) {
+            Map<String, XdsVirtualHost> xdsVirtualHostMap = xdsDirectory.getXdsVirtualHostMap();
+            Map<String, XdsCluster> xdsClusterMap = xdsDirectory.getXdsClusterMap();
+            if (!xdsVirtualHostMap.isEmpty() && !xdsClusterMap.isEmpty()) {
+                // xdsRouterDemo.route(invokers, url, invocation, false, null);
+                xdsDirectory.list(invocation);
+            }
+            Thread.yield();
+        }
     }
 
     /**

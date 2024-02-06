@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.List;
@@ -98,4 +99,6 @@ public interface Directory<T> extends Node {
     default boolean isNotificationReceived() {
         return false;
     }
+
+    default Protocol getProtocol() { return null; }
 }
