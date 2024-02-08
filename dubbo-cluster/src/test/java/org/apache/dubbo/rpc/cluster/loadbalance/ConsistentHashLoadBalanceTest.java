@@ -76,7 +76,6 @@ class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
         for (Invoker invoker : invokers) {
             Assertions.assertTrue(counter.get(invoker).get() > 0);
         }
-
     }
 
     private Invoker findHitted(Map<Invoker, AtomicLong> invokerCounter) {
