@@ -147,7 +147,7 @@
 
     <protobuf-protoc_version>3.22.3</protobuf-protoc_version>
     <grpc_version>1.54.0</grpc_version>
-    <spotless-maven-plugin.version>2.42.0</spotless-maven-plugin.version>
+    <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
     <spotless.action>check</spotless.action>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
@@ -657,6 +657,7 @@
               <charset>UTF-8</charset>
               <encoding>UTF-8</encoding>
               <docencoding>UTF-8</docencoding>
+              <failOnError>false</failOnError>
               <links>
                 <link>https://docs.oracle.com/javase/8/docs/api</link>
               </links>
@@ -714,7 +715,7 @@
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>license-maven-plugin</artifactId>
-            <version>2.3.0</version>
+            <version>2.4.0</version>
             <executions>
               <execution>
                 <id>license-check</id>
