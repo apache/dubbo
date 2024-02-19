@@ -95,7 +95,7 @@
     <javassist_version>3.30.2-GA</javassist_version>
     <bytebuddy.version>1.14.11</bytebuddy.version>
     <netty_version>3.2.10.Final</netty_version>
-    <netty4_version>4.1.106.Final</netty4_version>
+    <netty4_version>4.1.107.Final</netty4_version>
     <httpclient_version>4.5.14</httpclient_version>
     <httpcore_version>4.4.16</httpcore_version>
     <fastjson_version>1.2.83</fastjson_version>
