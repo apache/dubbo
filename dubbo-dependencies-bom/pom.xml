@@ -93,7 +93,7 @@
     <spring_version>5.3.25</spring_version>
     <spring_security_version>5.8.9</spring_security_version>
     <javassist_version>3.30.2-GA</javassist_version>
-    <bytebuddy.version>1.14.11</bytebuddy.version>
+    <bytebuddy.version>1.14.12</bytebuddy.version>
     <netty_version>3.2.10.Final</netty_version>
     <netty4_version>4.1.106.Final</netty4_version>
     <httpclient_version>4.5.14</httpclient_version>
