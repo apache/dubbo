@@ -148,7 +148,7 @@
     <maven_compiler_version>3.12.1</maven_compiler_version>
     <maven_source_version>3.3.0</maven_source_version>
     <maven_javadoc_version>3.6.3</maven_javadoc_version>
-    <maven_jetty_version>9.4.53.v20231009</maven_jetty_version>
+    <maven_jetty_version>9.4.54.v20240208</maven_jetty_version>
     <maven_checkstyle_version>3.3.1</maven_checkstyle_version>
     <maven_jacoco_version>0.8.11</maven_jacoco_version>
     <maven_flatten_version>1.6.0</maven_flatten_version>
