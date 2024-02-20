@@ -356,11 +356,14 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                                 }
                                 invokersToReconnect.remove(tInvoker);
                             }
+
+                            // 4. refresh valid invokers list
+                            refreshInvoker();
                         } finally {
                             checkConnectivityPermit.release();
                         }
 
-                        // 4. submit new task if it has more to recover
+                        // 5. submit new task if it has more to recover
                         if (!invokersToReconnect.isEmpty()) {
                             checkConnectivity();
                         }
