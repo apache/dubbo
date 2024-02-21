@@ -372,6 +372,13 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                                     invokersToReconnect.remove(tInvoker);
                                 }
                             });
+                        } catch (Throwable t) {
+                            logger.error(
+                                    LoggerCodeConstants.INTERNAL_ERROR,
+                                    "",
+                                    "",
+                                    "Error occurred when check connectivity. ",
+                                    t);
                         } finally {
                             checkConnectivityPermit.release();
                         }
