@@ -298,17 +298,18 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     @Override
     public void addInvalidateInvoker(Invoker<T> invoker) {
-        // 1. remove this invoker from validInvokers list, this invoker will not be listed in the next time
-        if (removeValidInvoker(invoker)) {
-            // 2. add this invoker to reconnect list
-            invokersToReconnect.add(invoker);
-            // 3. try start check connectivity task
-            checkConnectivity();
+        LockUtils.safeLock(invokerRefreshLock, 60_000, () -> {
+            // 1. remove this invoker from validInvokers list, this invoker will not be listed in the next time
+            if (removeValidInvoker(invoker)) {
+                // 2. add this invoker to reconnect list
+                invokersToReconnect.add(invoker);
+                // 3. try start check connectivity task
+                checkConnectivity();
 
-            logger.info("The invoker " + invoker.getUrl()
-                    + " has been added to invalidate list due to connectivity problem. "
-                    + "Will trying to reconnect to it in the background.");
-        }
+                logger.info("The invoker " + invoker.getUrl() + " has been added to invalidate list due to connectivity problem. "
+                        + "Will trying to reconnect to it in the background.");
+            }
+        });
     }
 
     public void checkConnectivity() {
@@ -398,9 +399,11 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
      * 4. all the invokers disappeared from total invokers should be removed in the disabled invokers list
      */
     public void refreshInvoker() {
-        if (invokersInitialized) {
-            refreshInvokerInternal();
-        }
+        LockUtils.safeLock(invokerRefreshLock, 60_000, () -> {
+                    if (invokersInitialized) {
+                        refreshInvokerInternal();
+                    }
+                });
         MetricsEventBus.publish(
                 RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
     }
