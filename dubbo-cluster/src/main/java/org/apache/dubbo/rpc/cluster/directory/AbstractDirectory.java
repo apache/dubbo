@@ -368,6 +368,10 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                                         addValidInvoker(tInvoker);
                                         logger.info("Recover service address: " + tInvoker.getUrl()
                                                 + "  from invalid list.");
+                                    } else {
+                                        logger.info(
+                                                "The invoker " + tInvoker.getUrl()
+                                                        + " has been removed from invokers list. Will remove it in reconnect list.");
                                     }
                                     invokersToReconnect.remove(tInvoker);
                                 }
