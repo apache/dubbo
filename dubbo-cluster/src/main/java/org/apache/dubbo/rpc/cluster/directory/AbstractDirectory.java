@@ -298,7 +298,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     @Override
     public void addInvalidateInvoker(Invoker<T> invoker) {
-        LockUtils.safeLock(invokerRefreshLock, 60_000, () -> {
+        LockUtils.safeLock(invokerRefreshLock, LockUtils.DEFAULT_TIMEOUT, () -> {
             // 1. remove this invoker from validInvokers list, this invoker will not be listed in the next time
             if (removeValidInvoker(invoker)) {
                 // 2. add this invoker to reconnect list
@@ -329,7 +329,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                             // 1. pick invokers from invokersToReconnect
                             // limit max reconnectTaskTryCount, prevent this task hang up all the connectivityExecutor
                             // for long time
-                            LockUtils.safeLock(invokerRefreshLock, 60_000, () -> {
+                            LockUtils.safeLock(invokerRefreshLock, LockUtils.DEFAULT_TIMEOUT, () -> {
                                 if (invokersToReconnect.size() < reconnectTaskTryCount) {
                                     invokersToTry.addAll(invokersToReconnect);
                                 } else {
@@ -348,7 +348,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                             // 2. try to check the invoker's status
                             for (Invoker<T> invoker : invokersToTry) {
                                 AtomicBoolean invokerExist = new AtomicBoolean(false);
-                                LockUtils.safeLock(invokerRefreshLock, 60_000, () -> {
+                                LockUtils.safeLock(invokerRefreshLock, LockUtils.DEFAULT_TIMEOUT, () -> {
                                     invokerExist.set(invokers.contains(invoker));
                                 });
                                 // Should not lock here, `invoker.isAvailable` may need some time to check
@@ -362,7 +362,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                             }
 
                             // 3. recover valid invoker
-                            LockUtils.safeLock(invokerRefreshLock, 60_000, () -> {
+                            LockUtils.safeLock(invokerRefreshLock, LockUtils.DEFAULT_TIMEOUT, () -> {
                                 for (Invoker<T> tInvoker : needDeleteList) {
                                     if (invokers.contains(tInvoker)) {
                                         addValidInvoker(tInvoker);
@@ -388,7 +388,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                         }
 
                         // 4. submit new task if it has more to recover
-                        LockUtils.safeLock(invokerRefreshLock, 60_000, () -> {
+                        LockUtils.safeLock(invokerRefreshLock, LockUtils.DEFAULT_TIMEOUT, () -> {
                             if (!invokersToReconnect.isEmpty()) {
                                 checkConnectivity();
                             }
@@ -411,7 +411,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
      * 4. all the invokers disappeared from total invokers should be removed in the disabled invokers list
      */
     public void refreshInvoker() {
-        LockUtils.safeLock(invokerRefreshLock, 60_000, () -> {
+        LockUtils.safeLock(invokerRefreshLock, LockUtils.DEFAULT_TIMEOUT, () -> {
             if (invokersInitialized) {
                 refreshInvokerInternal();
             }
@@ -424,7 +424,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         return Collections.emptyMap();
     }
 
-    private synchronized void refreshInvokerInternal() {
+    private void refreshInvokerInternal() {
         BitList<Invoker<T>> copiedInvokers = invokers.clone();
         refreshInvokers(copiedInvokers, invokersToReconnect);
         refreshInvokers(copiedInvokers, disabledInvokers);
@@ -445,7 +445,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     @Override
     public void addDisabledInvoker(Invoker<T> invoker) {
-        LockUtils.safeLock(invokerRefreshLock, 60_000, () -> {
+        LockUtils.safeLock(invokerRefreshLock, LockUtils.DEFAULT_TIMEOUT, () -> {
             if (invokers.contains(invoker)) {
                 disabledInvokers.add(invoker);
                 removeValidInvoker(invoker);
@@ -458,7 +458,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     @Override
     public void recoverDisabledInvoker(Invoker<T> invoker) {
-        LockUtils.safeLock(invokerRefreshLock, 60_000, () -> {
+        LockUtils.safeLock(invokerRefreshLock, LockUtils.DEFAULT_TIMEOUT, () -> {
             if (disabledInvokers.remove(invoker)) {
                 try {
                     addValidInvoker(invoker);
@@ -526,7 +526,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     }
 
     protected void setInvokers(BitList<Invoker<T>> invokers) {
-        LockUtils.safeLock(invokerRefreshLock, 60_000, () -> {
+        LockUtils.safeLock(invokerRefreshLock, LockUtils.DEFAULT_TIMEOUT, () -> {
             this.invokers = invokers;
             refreshInvokerInternal();
             this.invokersInitialized = true;
@@ -538,7 +538,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     protected void destroyInvokers() {
         // set empty instead of clearing to support concurrent access.
-        LockUtils.safeLock(invokerRefreshLock, 60_000, () -> {
+        LockUtils.safeLock(invokerRefreshLock, LockUtils.DEFAULT_TIMEOUT, () -> {
             this.invokers = BitList.emptyList();
             this.validInvokers = BitList.emptyList();
             this.invokersInitialized = false;
@@ -547,7 +547,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     private boolean addValidInvoker(Invoker<T> invoker) {
         AtomicBoolean result = new AtomicBoolean(false);
-        LockUtils.safeLock(invokerRefreshLock, 60_000, () -> {
+        LockUtils.safeLock(invokerRefreshLock, LockUtils.DEFAULT_TIMEOUT, () -> {
             result.set(this.validInvokers.add(invoker));
         });
         MetricsEventBus.publish(
@@ -557,7 +557,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     private boolean removeValidInvoker(Invoker<T> invoker) {
         AtomicBoolean result = new AtomicBoolean(false);
-        LockUtils.safeLock(invokerRefreshLock, 60_000, () -> {
+        LockUtils.safeLock(invokerRefreshLock, LockUtils.DEFAULT_TIMEOUT, () -> {
             result.set(this.validInvokers.remove(invoker));
         });
         MetricsEventBus.publish(

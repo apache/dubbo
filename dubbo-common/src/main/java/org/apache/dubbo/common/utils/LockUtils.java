@@ -27,6 +27,8 @@ import java.util.concurrent.locks.Lock;
 public class LockUtils {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(LockUtils.class);
 
+    public static final int DEFAULT_TIMEOUT = 60_000;
+
     public static void safeLock(Lock lock, int timeout, Runnable runnable) {
         try {
             if (!lock.tryLock(timeout, TimeUnit.MILLISECONDS)) {
