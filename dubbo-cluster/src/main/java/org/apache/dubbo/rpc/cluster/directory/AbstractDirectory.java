@@ -306,7 +306,8 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                 // 3. try start check connectivity task
                 checkConnectivity();
 
-                logger.info("The invoker " + invoker.getUrl() + " has been added to invalidate list due to connectivity problem. "
+                logger.info("The invoker " + invoker.getUrl()
+                        + " has been added to invalidate list due to connectivity problem. "
                         + "Will trying to reconnect to it in the background.");
             }
         });
@@ -400,10 +401,10 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
      */
     public void refreshInvoker() {
         LockUtils.safeLock(invokerRefreshLock, 60_000, () -> {
-                    if (invokersInitialized) {
-                        refreshInvokerInternal();
-                    }
-                });
+            if (invokersInitialized) {
+                refreshInvokerInternal();
+            }
+        });
         MetricsEventBus.publish(
                 RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
     }
