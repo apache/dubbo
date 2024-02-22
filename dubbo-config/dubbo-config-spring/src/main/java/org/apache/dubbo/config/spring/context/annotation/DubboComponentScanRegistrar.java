@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.spring.context.annotation;
 
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationPostProcessor;
@@ -39,6 +38,7 @@ import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.StringUtils;
 
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 
@@ -103,9 +103,7 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
                 value = value.substring(2, value.length() - 1);
                 String scanPackage = environment.getProperty(value);
                 if (StringUtils.hasText(scanPackage)) {
-                    packagesToScan = Arrays.stream(scanPackage.split(","))
-                            .map(String::trim)
-                            .collect(Collectors.toSet());
+                    packagesToScan = StringUtils.commaDelimitedListToSet(scanPackage);
                 }
             }
         }
