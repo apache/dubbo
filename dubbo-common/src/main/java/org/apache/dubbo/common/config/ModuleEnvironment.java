@@ -93,9 +93,6 @@ public class ModuleEnvironment extends Environment implements ModuleExt {
 
     @Override
     public Configuration getDynamicGlobalConfiguration() {
-        if (dynamicConfiguration == null) {
-            return applicationDelegate.getDynamicGlobalConfiguration();
-        }
         if (dynamicGlobalConfiguration == null) {
             if (dynamicConfiguration == null) {
                 if (logger.isWarnEnabled()) {
