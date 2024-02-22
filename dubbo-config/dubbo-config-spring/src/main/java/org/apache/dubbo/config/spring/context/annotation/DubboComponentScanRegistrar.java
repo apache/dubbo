@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.context.annotation;
 
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationPostProcessor;
@@ -25,14 +26,17 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.ClassUtils;
 
@@ -48,7 +52,9 @@ import static org.springframework.beans.factory.support.BeanDefinitionBuilder.ro
  * @see ReferenceAnnotationBeanPostProcessor
  * @since 2.5.7
  */
-public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistrar {
+public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistrar, EnvironmentAware {
+
+    private Environment environment;
 
     @Override
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
@@ -91,6 +97,18 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
         if (packagesToScan.isEmpty()) {
             return Collections.singleton(ClassUtils.getPackageName(metadata.getClassName()));
         }
+        if (packagesToScan.size() == 1) {
+            String value = packagesToScan.iterator().next();
+            if (value.startsWith("${") && value.endsWith("}")) {
+                value = value.substring(2, value.length() - 1);
+                String scanPackage = environment.getProperty(value);
+                if (StringUtils.hasText(scanPackage)) {
+                    packagesToScan = Arrays.stream(scanPackage.split(","))
+                            .map(String::trim)
+                            .collect(Collectors.toSet());
+                }
+            }
+        }
         return packagesToScan;
     }
 
@@ -121,5 +139,10 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
             packagesToScan.addAll(Arrays.asList(value));
         }
         return packagesToScan;
+    }
+
+    @Override
+    public void setEnvironment(Environment environment) {
+        this.environment = environment;
     }
 }
