@@ -30,8 +30,6 @@ import java.util.List;
 
 public class JsonCodec implements HttpMessageCodec {
 
-    public static final JsonCodec INSTANCE = new JsonCodec();
-
     public void encode(OutputStream os, Object data, Charset charset) throws EncodeException {
         try {
             os.write(JsonUtils.toJson(data).getBytes(charset));

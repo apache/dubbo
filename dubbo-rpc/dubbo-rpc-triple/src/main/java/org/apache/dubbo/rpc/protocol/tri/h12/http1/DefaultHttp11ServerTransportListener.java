@@ -29,7 +29,7 @@ import org.apache.dubbo.remoting.http12.h1.Http1ServerStreamChannelObserver;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerTransportListener;
 import org.apache.dubbo.remoting.http12.message.DefaultListeningDecoder;
 import org.apache.dubbo.remoting.http12.message.MediaType;
-import org.apache.dubbo.remoting.http12.message.codec.JsonCodec;
+import org.apache.dubbo.remoting.http12.message.codec.JsonCodecFactory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.executor.ExecutorSupport;
@@ -59,7 +59,7 @@ public class DefaultHttp11ServerTransportListener
                 .getExecutorSupport(url);
         this.httpChannel = httpChannel;
         serverChannelObserver = new Http1ServerChannelObserver(httpChannel);
-        serverChannelObserver.setResponseEncoder(JsonCodec.INSTANCE);
+        serverChannelObserver.setResponseEncoder(JsonCodecFactory.instance);
     }
 
     @Override

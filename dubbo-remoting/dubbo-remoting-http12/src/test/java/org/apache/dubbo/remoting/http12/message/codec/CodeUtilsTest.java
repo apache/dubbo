@@ -29,7 +29,7 @@ import java.util.Collections;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class CodeUtilsTest {
+class CodeUtilsTest {
 
     @Test
     void testDetermineHttpCodec() {

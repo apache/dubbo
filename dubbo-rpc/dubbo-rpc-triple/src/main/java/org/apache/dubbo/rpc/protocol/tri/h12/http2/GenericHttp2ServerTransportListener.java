@@ -32,7 +32,7 @@ import org.apache.dubbo.remoting.http12.message.ListeningDecoder;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.remoting.http12.message.NoOpStreamingDecoder;
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
-import org.apache.dubbo.remoting.http12.message.codec.JsonCodec;
+import org.apache.dubbo.remoting.http12.message.codec.JsonCodecFactory;
 import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
@@ -72,7 +72,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
                 .getExecutorSupport(url);
         streamingDecoder = newStreamingDecoder();
         serverChannelObserver = new Http2ServerCallToObserverAdapter(frameworkModel, h2StreamChannel);
-        serverChannelObserver.setResponseEncoder(JsonCodec.INSTANCE);
+        serverChannelObserver.setResponseEncoder(JsonCodecFactory.instance);
         serverChannelObserver.setStreamingDecoder(streamingDecoder);
     }
 
@@ -86,6 +86,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
         return new SerializingExecutor(executorSupport.getExecutor(metadata));
     }
 
+    @Override
     protected void doOnMetadata(Http2Header metadata) {
         if (metadata.isEndStream()) {
             if (!HttpMethods.supportBody(metadata.method())) {

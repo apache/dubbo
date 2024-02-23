@@ -27,11 +27,11 @@ import org.apache.dubbo.remoting.http12.exception.UnimplementedException;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
 import org.apache.dubbo.remoting.http12.h2.Http2TransportListener;
-import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorUtils;
 import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
@@ -40,7 +40,6 @@ import org.apache.dubbo.rpc.protocol.tri.h12.HttpMessageListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.http2.GenericHttp2ServerTransportListener;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -77,7 +76,9 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
 
     @Override
     protected HttpMessageListener buildHttpMessageListener() {
-        return getContext().isHasStub() ? super.buildHttpMessageListener() : new LazyFindMethodListener();
+        return getContext().isHasStub() || getContext().getMethodDescriptor() != null
+                ? super.buildHttpMessageListener()
+                : new LazyFindMethodListener();
     }
 
     @Override
@@ -146,38 +147,30 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
     private class DetermineMethodDescriptorListener implements StreamingDecoder.FragmentListener {
 
         @Override
-        public void onFragmentMessage(InputStream rawMessage) {}
-
-        @Override
         public void onClose() {
             getStreamingDecoder().close();
         }
 
         @Override
-        public void onFragmentMessage(InputStream dataHeader, InputStream rawMessage) {
+        public void onFragmentMessage(InputStream rawMessage) {
             try {
-                ByteArrayOutputStream merged =
-                        new ByteArrayOutputStream(dataHeader.available() + rawMessage.available());
-                StreamUtils.copy(dataHeader, merged);
-                byte[] data = StreamUtils.readBytes(rawMessage);
-
                 RpcInvocationBuildContext context = getContext();
                 if (null == context.getMethodDescriptor()) {
-                    context.setMethodDescriptor(DescriptorUtils.findTripleMethodDescriptor(
-                            context.getServiceDescriptor(), context.getMethodName(), data));
+                    byte[] data = StreamUtils.readBytes(rawMessage);
+                    MethodDescriptor methodDescriptor = DescriptorUtils.findTripleMethodDescriptor(
+                            context.getServiceDescriptor(), context.getMethodName(), data);
+                    context.setMethodDescriptor(methodDescriptor);
 
                     setHttpMessageListener(GrpcHttp2ServerTransportListener.super.buildHttpMessageListener());
 
                     // replace decoder
                     GrpcCompositeCodec grpcCompositeCodec = (GrpcCompositeCodec) context.getHttpMessageDecoder();
-                    MethodMetadata methodMetadata = context.getMethodMetadata();
-                    grpcCompositeCodec.setDecodeTypes(methodMetadata.getActualRequestTypes());
-                    grpcCompositeCodec.setEncodeTypes(new Class[] {methodMetadata.getActualResponseType()});
+                    grpcCompositeCodec.loadPackableMethod(methodDescriptor);
                     getServerChannelObserver().setResponseEncoder(grpcCompositeCodec);
+                    rawMessage = new ByteArrayInputStream(data);
                 }
 
-                merged.write(data);
-                getHttpMessageListener().onMessage(new ByteArrayInputStream(merged.toByteArray()));
+                getStreamingDecoder().invokeListener(rawMessage);
             } catch (IOException e) {
                 throw new DecodeException(e);
             }
