@@ -1,0 +1,30 @@
+syntax = "proto3";
+package org.apache.dubbo.metadata;
+
+option go_package = "dubbo.apache.org/dubbo-go/v3/metadata/triple_api";
+option java_package = "org.apache.dubbo.metadata";
+option java_multiple_files = true;
+
+service MetadataServiceV2{
+    rpc GetMetadataInfo(RevisionV2) returns (MetadataInfoV2);
+}
+
+message RevisionV2{
+    string value = 1;
+}
+
+message MetadataInfoV2{
+    string app = 1;
+    string version = 2;
+    map<string,ServiceInfoV2> services = 3;
+}
+
+message ServiceInfoV2{
+    string name = 1;
+    string group = 2;
+    string version = 3;
+    string protocol = 4;
+    int32 port = 5;
+    string path = 6;
+    map<string,string> params = 7;
+}

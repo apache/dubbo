@@ -26,7 +26,9 @@ import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.builders.InternalServiceConfigBuilder;
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.MetadataServiceV2;
 import org.apache.dubbo.registry.client.metadata.MetadataServiceDelegation;
+import org.apache.dubbo.registry.client.metadata.MetadataServiceDelegationV2;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collections;
@@ -36,6 +38,7 @@ import java.util.concurrent.ExecutorService;
 import static java.util.Collections.emptyList;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TRIPLE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_METADATA_SERVICE_EXPORTED;
 
 /**
@@ -47,7 +50,12 @@ public class ConfigurableMetadataServiceExporter {
 
     private MetadataServiceDelegation metadataService;
 
+    private MetadataServiceDelegationV2 metadataServiceV2;
+
     private volatile ServiceConfig<MetadataService> serviceConfig;
+
+    private volatile ServiceConfig<MetadataServiceV2> serviceConfigV2;
+
     private final ApplicationModel applicationModel;
 
     public ConfigurableMetadataServiceExporter(
@@ -58,27 +66,10 @@ public class ConfigurableMetadataServiceExporter {
 
     public synchronized ConfigurableMetadataServiceExporter export() {
         if (serviceConfig == null || !isExported()) {
-            ExecutorService internalServiceExecutor = applicationModel
-                    .getFrameworkModel()
-                    .getBeanFactory()
-                    .getBean(FrameworkExecutorRepository.class)
-                    .getInternalServiceExecutor();
-            this.serviceConfig = InternalServiceConfigBuilder.<MetadataService>newBuilder(applicationModel)
-                    .interfaceClass(MetadataService.class)
-                    .protocol(getApplicationConfig().getMetadataServiceProtocol(), METADATA_SERVICE_PROTOCOL_KEY)
-                    .port(getApplicationConfig().getMetadataServicePort(), METADATA_SERVICE_PORT_KEY)
-                    .registryId("internal-metadata-registry")
-                    .executor(internalServiceExecutor)
-                    .ref(metadataService)
-                    .build(configConsumer -> configConsumer.setMethods(generateMethodConfig()));
 
-            // export
-            serviceConfig.export();
+                exportV1();
 
-            metadataService.setMetadataURL(serviceConfig.getExportedUrls().get(0));
-            if (logger.isInfoEnabled()) {
-                logger.info("The MetadataService exports urls : " + serviceConfig.getExportedUrls());
-            }
+                exportV2();
         } else {
             if (logger.isWarnEnabled()) {
                 logger.warn(
@@ -92,16 +83,67 @@ public class ConfigurableMetadataServiceExporter {
         return this;
     }
 
+    private void exportV1(){
+        ExecutorService internalServiceExecutor = applicationModel
+                .getFrameworkModel()
+                .getBeanFactory()
+                .getBean(FrameworkExecutorRepository.class)
+                .getInternalServiceExecutor();
+        this.serviceConfig = InternalServiceConfigBuilder.<MetadataService>newBuilder(applicationModel)
+                .interfaceClass(MetadataService.class)
+                .protocol(getApplicationConfig().getMetadataServiceProtocol(), METADATA_SERVICE_PROTOCOL_KEY)
+                .port(getApplicationConfig().getMetadataServicePort(), METADATA_SERVICE_PORT_KEY)
+                .registryId("internal-metadata-registry")
+                .executor(internalServiceExecutor)
+                .ref(metadataService)
+                .build(configConsumer -> configConsumer.setMethods(generateMethodConfig()));
+
+        // export
+        serviceConfig.export();
+
+        metadataService.setMetadataURL(serviceConfig.getExportedUrls().get(0));
+        if (logger.isInfoEnabled()) {
+            logger.info("The MetadataService exports urls : " + serviceConfig.getExportedUrls());
+        }
+    }
+
+    private void exportV2(){
+        ExecutorService internalServiceExecutor = applicationModel
+                .getFrameworkModel()
+                .getBeanFactory()
+                .getBean(FrameworkExecutorRepository.class)
+                .getInternalServiceExecutor();
+        this.serviceConfigV2 = InternalServiceConfigBuilder.<MetadataServiceV2>newBuilder(applicationModel)
+                .interfaceClass(MetadataServiceV2.class)
+                .protocol(TRIPLE, METADATA_SERVICE_PROTOCOL_KEY)
+                .port(getApplicationConfig().getMetadataServicePort(), METADATA_SERVICE_PORT_KEY)
+                .registryId("internal-metadata-registry")
+                .executor(internalServiceExecutor)
+                .ref(metadataServiceV2)
+                .build(configConsumer -> configConsumer.setMethods(generateMethodConfig()));
+
+        serviceConfigV2.export();
+    }
+
     public ConfigurableMetadataServiceExporter unexport() {
         if (isExported()) {
             serviceConfig.unexport();
+            serviceConfigV2.unexport();
             metadataService.setMetadataURL(null);
         }
         return this;
     }
 
-    public boolean isExported() {
+    private boolean v1Exported(){
         return serviceConfig != null && serviceConfig.isExported() && !serviceConfig.isUnexported();
+    }
+
+    private boolean v2Exported(){
+        return serviceConfigV2 != null && serviceConfigV2.isExported() && !serviceConfigV2.isUnexported();
+    }
+
+    public boolean isExported() {
+        return v1Exported() && v2Exported();
     }
 
     private ApplicationConfig getApplicationConfig() {

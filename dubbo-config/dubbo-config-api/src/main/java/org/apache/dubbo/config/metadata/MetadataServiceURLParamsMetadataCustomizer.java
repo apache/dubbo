@@ -59,9 +59,11 @@ public class MetadataServiceURLParamsMetadataCustomizer implements ServiceInstan
     private String resolveMetadataPropertyValue(ApplicationModel applicationModel) {
         ModuleServiceRepository serviceRepository =
                 applicationModel.getInternalModule().getServiceRepository();
-        String key = BaseServiceMetadata.buildServiceKey(
+
+        String v1Key = BaseServiceMetadata.buildServiceKey(
+                //这里是V1的接口
                 MetadataService.class.getName(), applicationModel.getApplicationName(), MetadataService.VERSION);
-        ProviderModel providerModel = serviceRepository.lookupExportedService(key);
+        ProviderModel providerModel = serviceRepository.lookupExportedService(v1Key);
         String metadataValue = "";
         if (providerModel != null) {
             List<URL> metadataURLs = providerModel.getServiceUrls();

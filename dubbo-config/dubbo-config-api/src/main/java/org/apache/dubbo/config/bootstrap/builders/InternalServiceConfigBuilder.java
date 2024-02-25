@@ -304,7 +304,6 @@ public class InternalServiceConfigBuilder<T> {
         if (null != configConsumer) {
             configConsumer.accept(serviceConfig);
         }
-
         return serviceConfig;
     }
 

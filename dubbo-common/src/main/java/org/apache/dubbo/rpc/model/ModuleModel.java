@@ -188,7 +188,8 @@ public class ModuleModel extends ScopeModel {
         this.moduleEnvironment = moduleEnvironment;
     }
 
-    public ConsumerModel registerInternalConsumer(Class<?> internalService, URL url) {
+    public ConsumerModel registerInternalConsumer(
+            Class<?> internalService, URL url, ServiceDescriptor serviceDescriptor) {
         ServiceMetadata serviceMetadata = new ServiceMetadata();
         serviceMetadata.setVersion(url.getVersion());
         serviceMetadata.setGroup(url.getGroup());
@@ -201,7 +202,10 @@ public class ModuleModel extends ScopeModel {
         ConsumerModel consumerModel = new ConsumerModel(
                 serviceMetadata.getServiceKey(),
                 "jdk",
-                serviceRepository.lookupService(serviceMetadata.getServiceInterfaceName()),
+                serviceDescriptor == null
+                        //TODO internal service不通过config导出 所以没有判是否是 stub descriptor的操作，需要手动设置
+                        ? serviceRepository.lookupService(serviceMetadata.getServiceInterfaceName())
+                        : serviceDescriptor,
                 this,
                 serviceMetadata,
                 new HashMap<>(0),
@@ -210,6 +214,10 @@ public class ModuleModel extends ScopeModel {
         logger.info("Dynamically registering consumer model " + serviceKey + " into model " + this.getDesc());
         serviceRepository.registerConsumer(consumerModel);
         return consumerModel;
+    }
+
+    public ConsumerModel registerInternalConsumer(Class<?> internalService, URL url) {
+        return registerInternalConsumer(internalService, url, null);
     }
 
     public boolean isLifeCycleManagedExternally() {

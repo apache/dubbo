@@ -20,10 +20,14 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.Disposable;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.InstanceMetadataChangedListener;
 import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.metadata.MetadataInfoV2;
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.MetadataServiceV2;
+import org.apache.dubbo.metadata.RevisionV2;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -37,8 +41,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
 
 import static java.util.Collections.emptySortedSet;
 import static java.util.Collections.unmodifiableSortedSet;
@@ -46,11 +52,12 @@ import static org.apache.dubbo.common.URL.buildKey;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_LOAD_METADATA;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
+import static org.apache.dubbo.metadata.util.MetadataVersionConvertor.toV2;
 
 /**
  * Implementation providing remote RPC service to facilitate the query of metadata information.
  */
-public class MetadataServiceDelegation implements MetadataService, Disposable {
+public class MetadataServiceDelegation implements MetadataService, MetadataServiceV2, Disposable {
     ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     private final ApplicationModel applicationModel;
@@ -60,6 +67,8 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
     private URL url;
     // works only for DNS service discovery
     private String instanceMetadata;
+
+    public static final String VERSION = "2.0.0";
 
     public MetadataServiceDelegation(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
@@ -193,6 +202,24 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
             logger.warn(REGISTRY_FAILED_LOAD_METADATA, "", "", "metadata not found for revision: " + revision);
         }
         return null;
+    }
+
+    @Override
+    public org.apache.dubbo.metadata.MetadataInfoV2 getMetadataInfo(org.apache.dubbo.metadata.RevisionV2 revisionV2) {
+        return toV2(getMetadataInfo(revisionV2.getValue()));
+    }
+
+    @Override
+    public CompletableFuture<MetadataInfoV2> getMetadataInfoAsync(RevisionV2 request) {
+        //TODO
+        ExecutorService internalServiceExecutor = applicationModel
+                .getFrameworkModel()
+                .getBeanFactory()
+                .getBean(FrameworkExecutorRepository.class)
+                .getInternalServiceExecutor();
+        CompletableFuture<MetadataInfoV2> completableFuture = new CompletableFuture<>();
+        internalServiceExecutor.submit(() -> completableFuture.complete(getMetadataInfo(request)));
+        return completableFuture;
     }
 
     @Override

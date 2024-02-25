@@ -39,6 +39,9 @@ import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.service.Destroyable;
+import org.apache.dubbo.rpc.stub.StubSuppliers;
+
+import org.checkerframework.checker.units.qual.C;
 
 import java.util.HashMap;
 import java.util.List;
@@ -46,9 +49,11 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERNAL_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROXY_CLASS_REF;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.CommonConstants.TRIPLE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_CREATE_INSTANCE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_LOAD_METADATA;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
@@ -59,7 +64,7 @@ public class MetadataUtils {
 
     public static void publishServiceDefinition(
             URL url, ServiceDescriptor serviceDescriptor, ApplicationModel applicationModel) {
-        if (getMetadataReports(applicationModel).size() == 0) {
+        if (getMetadataReports(applicationModel).isEmpty()) {
             String msg =
                     "Remote Metadata Report Server is not provided or unavailable, will stop registering service definition to remote center!";
             logger.warn(REGISTRY_FAILED_LOAD_METADATA, "", "", msg);
@@ -137,10 +142,29 @@ public class MetadataUtils {
 
         URL url = urls.get(0);
 
+        url.getProtocol()
+
         // Simply rely on the first metadata url, as stated in MetadataServiceURLBuilder.
         ApplicationModel applicationModel = instance.getApplicationModel();
         ModuleModel internalModel = applicationModel.getInternalModule();
-        ConsumerModel consumerModel =
+
+        // dubbo.metadata-service.url-params 通过这个传v1 v2
+        String metadataServiceVersion = metadata.get(INTERNAL_VERSION_KEY);
+        ConsumerModel consumerModel;
+
+        //服务端支持v2，且用Triple，走新服务
+        if (MetadataServiceDelegationV2.VERSION.equals(metadataServiceVersion) && TRIPLE.equals(url.getProtocol())) {
+        }
+        else {
+            consumerModel = applicationModel
+                    .getInternalModule()
+                    .registerInternalConsumer(
+                            MetadataService.class,
+                            url,
+                            StubSuppliers.getServiceDescriptor(MetadataService.class.getName()));
+        }
+        //不支持v2/非Triple 老逻辑
+        consumerModel =
                 applicationModel.getInternalModule().registerInternalConsumer(MetadataService.class, url);
 
         Protocol protocol = applicationModel.getExtensionLoader(Protocol.class).getExtension(url.getProtocol(), false);

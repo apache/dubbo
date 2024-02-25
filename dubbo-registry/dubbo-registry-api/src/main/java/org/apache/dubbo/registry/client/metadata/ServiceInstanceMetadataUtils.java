@@ -46,6 +46,7 @@ import java.util.Optional;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERNAL_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
@@ -117,6 +118,7 @@ public class ServiceInstanceMetadataUtils {
         setDefaultParams(params, providerURL);
         params.put(PORT_KEY, String.valueOf(providerURL.getPort()));
         params.put(PROTOCOL_KEY, providerURL.getProtocol());
+        params.put(INTERNAL_VERSION_KEY, MetadataServiceDelegationV2.VERSION);
         return params;
     }
 

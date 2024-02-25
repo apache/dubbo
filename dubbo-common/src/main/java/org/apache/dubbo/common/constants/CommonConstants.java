@@ -224,6 +224,11 @@ public interface CommonConstants {
 
     String VERSION_KEY = "version";
 
+    /**
+     * Version of Dubbo internal service
+     */
+    String INTERNAL_VERSION_KEY = "internal.version";
+
     String REVISION_KEY = "revision";
 
     String METADATA_KEY = "metadata-type";
