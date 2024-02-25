@@ -28,7 +28,7 @@ import java.nio.charset.StandardCharsets;
 /**
  *  body is string
  */
-@Activate("string")
+@Activate(value = "string", order = 200)
 public class StringCodec implements HttpMessageCodec<byte[], OutputStream> {
 
     @Override
