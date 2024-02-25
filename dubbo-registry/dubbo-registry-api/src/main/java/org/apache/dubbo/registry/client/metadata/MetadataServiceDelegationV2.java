@@ -31,7 +31,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_LOAD_METADATA;
-import static org.apache.dubbo.metadata.util.MetadataVersionConvertor.toV2;
+import static org.apache.dubbo.metadata.util.MetadataReportVersionUtils.toV2;
 
 /**
  * Implementation of MetadataServiceV2. Available in : metadata.

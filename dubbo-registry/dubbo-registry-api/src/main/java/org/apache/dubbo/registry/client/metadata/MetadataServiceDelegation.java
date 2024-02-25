@@ -52,7 +52,7 @@ import static org.apache.dubbo.common.URL.buildKey;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_LOAD_METADATA;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
-import static org.apache.dubbo.metadata.util.MetadataVersionConvertor.toV2;
+import static org.apache.dubbo.metadata.util.MetadataReportVersionUtils.toV2;
 
 /**
  * Implementation providing remote RPC service to facilitate the query of metadata information.

@@ -138,6 +138,26 @@ public class MetadataReportConfig extends AbstractConfig {
      */
     private Boolean reportDefinition;
 
+    /**
+     * Only use the new version of metadataService.
+     * <br>  If set to false (default):
+     * <br>  1. Your services are using triple protocol, and metadata-report.protocol is not set
+     * <br>     - Dubbo will export both MetadataService and MetadataServiceV2 with triple
+     * <br>  2. Set metadata-report.protocol = tri
+     * <br>     - Dubbo will export both MetadataService and MetadataServiceV2 with triple
+     * <br>  3. Set metadata-report.protocol != tri
+     * <br>     - Dubbo will only export MetadataService
+     * <br>  4. Your services are not using triple protocol, and metadata-report.protocol is not set
+     * <br>     - Dubbo will only export MetadataService
+     * <br>
+     * <br>  If set to true, Dubbo will try to only use MetadataServiceV2.
+     * <br>  It only activates when meet one of the following cases:
+     * <br>     1. Manually set metadata-report.protocol = tri
+     * <br>     2. Your services are using triple protocol
+     * <br>
+     */
+    private Boolean onlyUseMetadataV2;
+
     public MetadataReportConfig() {}
 
     public MetadataReportConfig(ApplicationModel applicationModel) {
@@ -295,6 +315,15 @@ public class MetadataReportConfig extends AbstractConfig {
     @Parameter(excluded = true, attribute = false)
     public boolean isValid() {
         return StringUtils.isNotEmpty(address);
+    }
+
+    @Parameter(excluded = true)
+    public Boolean getOnlyUseMetadataV2() {
+        return onlyUseMetadataV2;
+    }
+
+    public void setOnlyUseMetadataV2(Boolean onlyUseMetadataV2) {
+        this.onlyUseMetadataV2 = onlyUseMetadataV2;
     }
 
     public String getGroup() {

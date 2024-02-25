@@ -19,9 +19,14 @@ package org.apache.dubbo.config.metadata;
 import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.config.MetadataReportConfig;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.MetadataServiceV2;
+import org.apache.dubbo.metadata.util.MetadataReportVersionUtils;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
+import org.apache.dubbo.registry.client.metadata.MetadataServiceDelegationV2;
 import org.apache.dubbo.registry.client.metadata.SpringCloudMetadataServiceURLBuilder;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
@@ -29,7 +34,9 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import static org.apache.dubbo.common.constants.CommonConstants.TRIPLE;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataServiceParameter;
@@ -41,7 +48,6 @@ public class MetadataServiceURLParamsMetadataCustomizer implements ServiceInstan
 
     @Override
     public void customize(ServiceInstance serviceInstance, ApplicationModel applicationModel) {
-
         Map<String, String> metadata = serviceInstance.getMetadata();
 
         String propertyName = resolveMetadataPropertyName(serviceInstance);
@@ -60,10 +66,17 @@ public class MetadataServiceURLParamsMetadataCustomizer implements ServiceInstan
         ModuleServiceRepository serviceRepository =
                 applicationModel.getInternalModule().getServiceRepository();
 
-        String v1Key = BaseServiceMetadata.buildServiceKey(
-                //这里是V1的接口
-                MetadataService.class.getName(), applicationModel.getApplicationName(), MetadataService.VERSION);
-        ProviderModel providerModel = serviceRepository.lookupExportedService(v1Key);
+        String key;
+
+        if(MetadataReportVersionUtils.onlyUseV2(applicationModel)){
+            key = BaseServiceMetadata.buildServiceKey(
+                    MetadataServiceV2.class.getName(), applicationModel.getApplicationName(), MetadataServiceDelegationV2.VERSION);
+        }else {
+            //If MetadataService and MetadataServiceV2 are both exported, use v1 path for capacity
+            key = BaseServiceMetadata.buildServiceKey(
+                    MetadataService.class.getName(), applicationModel.getApplicationName(), MetadataService.VERSION);
+        }
+        ProviderModel providerModel = serviceRepository.lookupExportedService(key);
         String metadataValue = "";
         if (providerModel != null) {
             List<URL> metadataURLs = providerModel.getServiceUrls();

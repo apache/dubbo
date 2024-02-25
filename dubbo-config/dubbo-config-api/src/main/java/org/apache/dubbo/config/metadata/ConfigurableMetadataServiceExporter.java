@@ -40,6 +40,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TRIPLE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_METADATA_SERVICE_EXPORTED;
+import static org.apache.dubbo.metadata.util.MetadataReportVersionUtils.enableV1;
+import static org.apache.dubbo.metadata.util.MetadataReportVersionUtils.enableV2;
 
 /**
  * Export metadata service
@@ -49,8 +51,6 @@ public class ConfigurableMetadataServiceExporter {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     private MetadataServiceDelegation metadataService;
-
-    private MetadataServiceDelegationV2 metadataServiceV2;
 
     private volatile ServiceConfig<MetadataService> serviceConfig;
 
@@ -66,10 +66,12 @@ public class ConfigurableMetadataServiceExporter {
 
     public synchronized ConfigurableMetadataServiceExporter export() {
         if (serviceConfig == null || !isExported()) {
-
-                exportV1();
-
-                exportV2();
+                if(enableV1(applicationModel)) {
+                    exportV1();
+                }
+                if(enableV2(applicationModel)) {
+                    exportV2();
+                }
         } else {
             if (logger.isWarnEnabled()) {
                 logger.warn(
@@ -119,7 +121,7 @@ public class ConfigurableMetadataServiceExporter {
                 .port(getApplicationConfig().getMetadataServicePort(), METADATA_SERVICE_PORT_KEY)
                 .registryId("internal-metadata-registry")
                 .executor(internalServiceExecutor)
-                .ref(metadataServiceV2)
+                .ref(metadataService)
                 .build(configConsumer -> configConsumer.setMethods(generateMethodConfig()));
 
         serviceConfigV2.export();
