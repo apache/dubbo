@@ -27,11 +27,9 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 @Activate
 public final class JsonCodecFactory implements HttpMessageEncoderFactory, HttpMessageDecoderFactory {
 
-    public static final JsonCodec instance = new JsonCodec();
-
     @Override
     public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String mediaType) {
-        return instance;
+        return JsonCodec.INSTANCE;
     }
 
     @Override
