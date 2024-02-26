@@ -144,7 +144,7 @@ public class PojoUtils {
     }
 
     @SuppressWarnings("unchecked")
-    private static Object generalize(Object pojo, Map<Object, Object> history, boolean genericWithClz){
+    private static Object generalize(Object pojo, Map<Object, Object> history, boolean genericWithClz) {
         if (pojo == null) {
             return null;
         }
@@ -205,7 +205,9 @@ public class PojoUtils {
             Map<Object, Object> dest = createMap(src);
             history.put(pojo, dest);
             for (Map.Entry<Object, Object> obj : src.entrySet()) {
-                dest.put(generalize(obj.getKey(), history, genericWithClz), generalize(obj.getValue(), history, genericWithClz));
+                dest.put(
+                        generalize(obj.getKey(), history, genericWithClz),
+                        generalize(obj.getValue(), history, genericWithClz));
             }
             return dest;
         }

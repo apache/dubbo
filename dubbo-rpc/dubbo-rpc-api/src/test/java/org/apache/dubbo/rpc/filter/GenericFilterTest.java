@@ -167,16 +167,18 @@ class GenericFilterTest {
         person.put("name", "dubbo");
         person.put("age", 10);
 
-        RpcInvocation invocation = new RpcInvocation($INVOKE, GenericService.class.getName(), "", genericInvoke.getParameterTypes(),
-            new Object[]{"getPerson", new String[]{Person.class.getCanonicalName()}, new Object[]{person}});
+        RpcInvocation invocation = new RpcInvocation(
+                $INVOKE, GenericService.class.getName(), "", genericInvoke.getParameterTypes(), new Object[] {
+                    "getPerson", new String[] {Person.class.getCanonicalName()}, new Object[] {person}
+                });
 
-        URL url = URL.valueOf("test://test:11/org.apache.dubbo.rpc.support.DemoService?" +
-            "accesslog=true&group=dubbo&version=1.1");
+        URL url = URL.valueOf(
+                "test://test:11/org.apache.dubbo.rpc.support.DemoService?" + "accesslog=true&group=dubbo&version=1.1");
         Invoker invoker = Mockito.mock(Invoker.class);
-        when(invoker.invoke(any(Invocation.class))).thenReturn(AsyncRpcResult.newDefaultAsyncResult(new Person("person", 10), invocation));
+        when(invoker.invoke(any(Invocation.class)))
+                .thenReturn(AsyncRpcResult.newDefaultAsyncResult(new Person("person", 10), invocation));
         when(invoker.getUrl()).thenReturn(url);
         when(invoker.getInterface()).thenReturn(DemoService.class);
-
 
         Result asyncResult = genericFilter.invoke(invoker, invocation);
 
@@ -184,12 +186,12 @@ class GenericFilterTest {
         genericFilter.onResponse(appResponse, invoker, invocation);
         Assertions.assertTrue(((HashMap) appResponse.getValue()).containsKey("class"));
 
-        when(invoker.invoke(any(Invocation.class))).thenReturn(AsyncRpcResult.newDefaultAsyncResult(new Person("person", 10), invocation));
+        when(invoker.invoke(any(Invocation.class)))
+                .thenReturn(AsyncRpcResult.newDefaultAsyncResult(new Person("person", 10), invocation));
         invocation.setObjectAttachment(CommonConstants.GENERIC_WITH_CLZ_KEY, "false");
         asyncResult = genericFilter.invoke(invoker, invocation);
         appResponse = (AppResponse) asyncResult.get();
         genericFilter.onResponse(appResponse, invoker, invocation);
         Assertions.assertFalse(((HashMap) appResponse.getValue()).containsKey("class"));
     }
-
 }
