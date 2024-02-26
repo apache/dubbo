@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.convert.jsr310;
 
-
 import org.apache.dubbo.common.utils.CollectionUtils;
 
 import java.time.format.DateTimeFormatter;
@@ -49,7 +48,8 @@ public abstract class AbstractTemporalAccessorConverter {
         return accessor.toString();
     }
 
-    public <T extends TemporalAccessor> T realize(Object obj, BiFunction<String, DateTimeFormatter, T> parse, DateTimeFormatter defaultDateTimeFormatter) {
+    public <T extends TemporalAccessor> T realize(
+            Object obj, BiFunction<String, DateTimeFormatter, T> parse, DateTimeFormatter defaultDateTimeFormatter) {
         String text = obj.toString();
         if (CollectionUtils.isNotEmpty(dateTimeFormatterList)) {
             for (DateTimeFormatter dateTimeFormatter : dateTimeFormatterList) {
@@ -61,5 +61,4 @@ public abstract class AbstractTemporalAccessorConverter {
         }
         return parse.apply(text, defaultDateTimeFormatter);
     }
-
 }

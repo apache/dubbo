@@ -16,15 +16,13 @@
  */
 package org.apache.dubbo.common.convert.jsr310;
 
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class DefaultLocalDateTimeConverter extends AbstractTemporalAccessorConverter implements LocalDateTimeConverter {
 
-    public DefaultLocalDateTimeConverter() {
-    }
+    public DefaultLocalDateTimeConverter() {}
 
     public DefaultLocalDateTimeConverter(List<DateTimeFormatter> dateTimeFormatterSet) {
         super(dateTimeFormatterSet);
@@ -39,5 +37,4 @@ public class DefaultLocalDateTimeConverter extends AbstractTemporalAccessorConve
     public LocalDateTime realize(Object obj) {
         return super.realize(obj, LocalDateTime::parse, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
     }
-
 }

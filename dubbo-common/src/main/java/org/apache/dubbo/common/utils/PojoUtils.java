@@ -108,9 +108,15 @@ public class PojoUtils {
     private static final Map<Class<?>, Jsr310Converter> JSR_310_CONVERTER_CACHE = new ConcurrentHashMap<>();
 
     static {
-        registerJsr310Converter(LocalDateTime.class, ExtensionLoader.getExtensionLoader(LocalDateTimeConverter.class).getDefaultExtension());
-        registerJsr310Converter(LocalDate.class, ExtensionLoader.getExtensionLoader(LocalDateConverter.class).getDefaultExtension());
-        registerJsr310Converter(LocalTime.class, ExtensionLoader.getExtensionLoader(LocalTimeConverter.class).getDefaultExtension());
+        registerJsr310Converter(
+                LocalDateTime.class,
+                ExtensionLoader.getExtensionLoader(LocalDateTimeConverter.class).getDefaultExtension());
+        registerJsr310Converter(
+                LocalDate.class,
+                ExtensionLoader.getExtensionLoader(LocalDateConverter.class).getDefaultExtension());
+        registerJsr310Converter(
+                LocalTime.class,
+                ExtensionLoader.getExtensionLoader(LocalTimeConverter.class).getDefaultExtension());
     }
 
     public static Object[] generalize(Object[] objs) {
@@ -926,5 +932,4 @@ public class PojoUtils {
     public static <T> void registerJsr310Converter(Class<T> clazz, Jsr310Converter<T> jsr310Converter) {
         JSR_310_CONVERTER_CACHE.put(clazz, jsr310Converter);
     }
-
 }

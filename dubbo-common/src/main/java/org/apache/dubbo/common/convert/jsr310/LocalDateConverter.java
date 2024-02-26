@@ -21,6 +21,4 @@ import org.apache.dubbo.common.extension.SPI;
 import java.time.LocalDate;
 
 @SPI("default")
-public interface LocalDateConverter extends Jsr310Converter<LocalDate> {
-
-}
+public interface LocalDateConverter extends Jsr310Converter<LocalDate> {}

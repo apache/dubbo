@@ -16,18 +16,11 @@
  */
 package org.apache.dubbo.spring.boot.context.event;
 
-
 import org.apache.dubbo.common.convert.jsr310.DefaultLocalDateConverter;
 import org.apache.dubbo.common.convert.jsr310.DefaultLocalDateTimeConverter;
 import org.apache.dubbo.common.convert.jsr310.DefaultLocalTimeConverter;
 import org.apache.dubbo.common.utils.PojoUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-
-import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Role;
-import org.springframework.core.env.ConfigurableEnvironment;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -37,6 +30,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+
+import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Role;
+import org.springframework.core.env.ConfigurableEnvironment;
 
 import static org.springframework.beans.factory.config.BeanDefinition.ROLE_INFRASTRUCTURE;
 
@@ -60,25 +59,31 @@ public class Jsr310ConverterApplicationListener implements ApplicationListener<A
 
             String localDateTimeFormat = environment.resolvePlaceholders("${dubbo.generic.local-date-time-format:}");
             if (StringUtils.isNotEmpty(localDateTimeFormat)) {
-                List<DateTimeFormatter> localDateTimeFormatterList = Arrays.stream(localDateTimeFormat.split(DOUBLE_HYPHEN))
-                    .map(DateTimeFormatter::ofPattern).collect(Collectors.toList());
-                PojoUtils.registerJsr310Converter(LocalDateTime.class, new DefaultLocalDateTimeConverter(localDateTimeFormatterList));
+                List<DateTimeFormatter> localDateTimeFormatterList = Arrays.stream(
+                                localDateTimeFormat.split(DOUBLE_HYPHEN))
+                        .map(DateTimeFormatter::ofPattern)
+                        .collect(Collectors.toList());
+                PojoUtils.registerJsr310Converter(
+                        LocalDateTime.class, new DefaultLocalDateTimeConverter(localDateTimeFormatterList));
             }
 
             String localDateFormat = environment.resolvePlaceholders("${dubbo.generic.local-date-format:}");
             if (StringUtils.isNotEmpty(localDateFormat)) {
                 List<DateTimeFormatter> localDateFormatterList = Arrays.stream(localDateFormat.split(DOUBLE_HYPHEN))
-                    .map(DateTimeFormatter::ofPattern).collect(Collectors.toList());
-                PojoUtils.registerJsr310Converter(LocalDate.class, new DefaultLocalDateConverter(localDateFormatterList));
+                        .map(DateTimeFormatter::ofPattern)
+                        .collect(Collectors.toList());
+                PojoUtils.registerJsr310Converter(
+                        LocalDate.class, new DefaultLocalDateConverter(localDateFormatterList));
             }
 
             String localTimeFormat = environment.resolvePlaceholders("${dubbo.generic.local-time-format:}");
             if (StringUtils.isNotEmpty(localTimeFormat)) {
                 List<DateTimeFormatter> localTimeFormatterList = Arrays.stream(localTimeFormat.split(DOUBLE_HYPHEN))
-                    .map(DateTimeFormatter::ofPattern).collect(Collectors.toList());
-                PojoUtils.registerJsr310Converter(LocalTime.class, new DefaultLocalTimeConverter(localTimeFormatterList));
+                        .map(DateTimeFormatter::ofPattern)
+                        .collect(Collectors.toList());
+                PojoUtils.registerJsr310Converter(
+                        LocalTime.class, new DefaultLocalTimeConverter(localTimeFormatterList));
             }
         }
     }
-
 }

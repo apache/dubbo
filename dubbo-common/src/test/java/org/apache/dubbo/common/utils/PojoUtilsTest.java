@@ -1073,11 +1073,14 @@ class PojoUtilsTest {
     @Test
     public void testJava8TimeWithCustomFormat() {
         String localDateTimeFormat = "yyyy-MM-dd HH:mm:ss";
-        List<DateTimeFormatter> dateTimeFormatterList = Collections.singletonList(DateTimeFormatter.ofPattern(localDateTimeFormat));
-        PojoUtils.registerJsr310Converter(LocalDateTime.class, new DefaultLocalDateTimeConverter(dateTimeFormatterList));
+        List<DateTimeFormatter> dateTimeFormatterList =
+                Collections.singletonList(DateTimeFormatter.ofPattern(localDateTimeFormat));
+        PojoUtils.registerJsr310Converter(
+                LocalDateTime.class, new DefaultLocalDateTimeConverter(dateTimeFormatterList));
 
         String localTimeFormat = "HH:mm:ss";
-        List<DateTimeFormatter> localTimeFormatterList = Collections.singletonList(DateTimeFormatter.ofPattern(localTimeFormat));
+        List<DateTimeFormatter> localTimeFormatterList =
+                Collections.singletonList(DateTimeFormatter.ofPattern(localTimeFormat));
         PojoUtils.registerJsr310Converter(LocalTime.class, new DefaultLocalTimeConverter(localTimeFormatterList));
 
         LocalDateTime now = LocalDateTime.now();
@@ -1093,7 +1096,8 @@ class PojoUtilsTest {
         assertEquals(localTimeGen.toString().length(), localTimeFormat.length());
 
         // revert to default
-        PojoUtils.registerJsr310Converter(LocalDateTime.class, new DefaultLocalDateTimeConverter(Collections.emptyList()));
+        PojoUtils.registerJsr310Converter(
+                LocalDateTime.class, new DefaultLocalDateTimeConverter(Collections.emptyList()));
         PojoUtils.registerJsr310Converter(LocalTime.class, new DefaultLocalTimeConverter(Collections.emptyList()));
     }
 

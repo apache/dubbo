@@ -19,6 +19,9 @@ package org.apache.dubbo.spring.boot.context.event;
 import org.apache.dubbo.common.utils.PojoUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -26,9 +29,6 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -43,12 +43,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @RunWith(SpringRunner.class)
 @TestPropertySource(
         properties = {
-                "dubbo.generic.local-date-time-format = yyyy-MM-dd HH:mm:ss.SSS",
-                "dubbo.generic.local-time-format = HH:mm:ss||HH:mm:ss.SSS"}
-)
-@SpringBootTest(
-        classes = {Jsr310ConverterApplicationListener.class}
-)
+            "dubbo.generic.local-date-time-format = yyyy-MM-dd HH:mm:ss.SSS",
+            "dubbo.generic.local-time-format = HH:mm:ss||HH:mm:ss.SSS"
+        })
+@SpringBootTest(classes = {Jsr310ConverterApplicationListener.class})
 public class Jsr310ConverterApplicationListenerTest {
 
     @BeforeClass
@@ -79,5 +77,4 @@ public class Jsr310ConverterApplicationListenerTest {
         assertTrue(localTime instanceof LocalTime);
         assertEquals(localTime.toString().length(), 12);
     }
-
 }
