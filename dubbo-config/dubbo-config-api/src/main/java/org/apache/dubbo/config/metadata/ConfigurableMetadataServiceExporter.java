@@ -27,8 +27,8 @@ import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.builders.InternalServiceConfigBuilder;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceV2;
+import org.apache.dubbo.metadata.util.MetadataReportVersionUtils;
 import org.apache.dubbo.registry.client.metadata.MetadataServiceDelegation;
-import org.apache.dubbo.registry.client.metadata.MetadataServiceDelegationV2;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collections;
@@ -40,8 +40,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TRIPLE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_METADATA_SERVICE_EXPORTED;
-import static org.apache.dubbo.metadata.util.MetadataReportVersionUtils.enableV1;
-import static org.apache.dubbo.metadata.util.MetadataReportVersionUtils.enableV2;
 
 /**
  * Export metadata service
@@ -66,10 +64,10 @@ public class ConfigurableMetadataServiceExporter {
 
     public synchronized ConfigurableMetadataServiceExporter export() {
         if (serviceConfig == null || !isExported()) {
-                if(enableV1(applicationModel)) {
+                if(MetadataReportVersionUtils.needExportV1(applicationModel)) {
                     exportV1();
                 }
-                if(enableV2(applicationModel)) {
+                if(MetadataReportVersionUtils.needExportV2(applicationModel)) {
                     exportV2();
                 }
         } else {

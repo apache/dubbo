@@ -25,6 +25,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.MetadataServiceV2;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
@@ -142,30 +143,30 @@ public class MetadataUtils {
 
         URL url = urls.get(0);
 
-        url.getProtocol()
-
         // Simply rely on the first metadata url, as stated in MetadataServiceURLBuilder.
         ApplicationModel applicationModel = instance.getApplicationModel();
         ModuleModel internalModel = applicationModel.getInternalModule();
 
-        // dubbo.metadata-service.url-params 通过这个传v1 v2
-        String metadataServiceVersion = metadata.get(INTERNAL_VERSION_KEY);
         ConsumerModel consumerModel;
+        String version = metadata.get(INTERNAL_VERSION_KEY);
 
-        //服务端支持v2，且用Triple，走新服务
-        if (MetadataServiceDelegationV2.VERSION.equals(metadataServiceVersion) && TRIPLE.equals(url.getProtocol())) {
+        if (MetadataServiceDelegationV2.VERSION.equals(version) && TRIPLE.equals(url.getProtocol())) {
+            //If provider export both MetadataService & MetadataServiceV2, it still uses MetadataService as path.
+            //Else if provider only export MetadataServiceV2, it uses MetadataServiceV2 as path.
+            //In v2 provider and consumer, we use MetadataServiceV2 in priority
+            url.setPath(MetadataServiceV2.class.getName());
+            consumerModel = applicationModel
+                    .getInternalModule()
+                    .registerInternalConsumer(
+                            MetadataServiceV2.class,
+                            url,
+                            StubSuppliers.getServiceDescriptor(MetadataService.class.getName()));
         }
         else {
             consumerModel = applicationModel
                     .getInternalModule()
-                    .registerInternalConsumer(
-                            MetadataService.class,
-                            url,
-                            StubSuppliers.getServiceDescriptor(MetadataService.class.getName()));
+                    .registerInternalConsumer(MetadataService.class,url);
         }
-        //不支持v2/非Triple 老逻辑
-        consumerModel =
-                applicationModel.getInternalModule().registerInternalConsumer(MetadataService.class, url);
 
         Protocol protocol = applicationModel.getExtensionLoader(Protocol.class).getExtension(url.getProtocol(), false);
 
