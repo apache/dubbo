@@ -62,29 +62,33 @@ public class MetadataReportVersionUtils {
                 .build();
     }
 
-    public static boolean needExportV1(ApplicationModel applicationModel){
+    public static boolean needExportV1(ApplicationModel applicationModel) {
         return !onlyExportV2(applicationModel);
     }
 
-    public static boolean needExportV2(ApplicationModel applicationModel){
+    public static boolean needExportV2(ApplicationModel applicationModel) {
         Optional<MetadataReportConfig> metadataConfigManager = getMetadataReportConfig(applicationModel);
 
-        return onlyExportV2(applicationModel) ||
-                metadataConfigManager.isPresent() && TRIPLE.equals(metadataConfigManager.get().getProtocol());
+        return onlyExportV2(applicationModel)
+                || metadataConfigManager.isPresent()
+                        && TRIPLE.equals(metadataConfigManager.get().getProtocol());
     }
 
-    public static boolean onlyExportV2(ApplicationModel applicationModel){
+    public static boolean onlyExportV2(ApplicationModel applicationModel) {
         Optional<MetadataReportConfig> metadataReportConfig = getMetadataReportConfig(applicationModel);
 
-        return metadataReportConfig.filter(config -> config.getOnlyUseMetadataV2() &&
-                TRIPLE.equals(config.getProtocol())).isPresent();
+        return metadataReportConfig
+                .filter(config -> config.getOnlyUseMetadataV2() && TRIPLE.equals(config.getProtocol()))
+                .isPresent();
     }
 
-    public static Optional<MetadataReportConfig> getMetadataReportConfig(ApplicationModel applicationModel){
+    public static Optional<MetadataReportConfig> getMetadataReportConfig(ApplicationModel applicationModel) {
         Optional<ConfigManager> configManager = Optional.ofNullable(applicationModel.getApplicationConfigManager());
 
-        if(configManager.isPresent() &&  CollectionUtils.isNotEmpty(configManager.get().getMetadataConfigs())) {
-            return Optional.of(configManager.get().getMetadataConfigs().iterator().next());
+        if (configManager.isPresent()
+                && CollectionUtils.isNotEmpty(configManager.get().getMetadataConfigs())) {
+            return Optional.of(
+                    configManager.get().getMetadataConfigs().iterator().next());
         }
         return Optional.empty();
     }

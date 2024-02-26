@@ -64,11 +64,13 @@ public class MetadataServiceURLParamsMetadataCustomizer implements ServiceInstan
 
         String key;
 
-        if(MetadataReportVersionUtils.onlyExportV2(applicationModel)){
+        if (MetadataReportVersionUtils.onlyExportV2(applicationModel)) {
             key = BaseServiceMetadata.buildServiceKey(
-                    MetadataServiceV2.class.getName(), applicationModel.getApplicationName(), MetadataServiceDelegationV2.VERSION);
-        }else {
-            //If MetadataService and MetadataServiceV2 are both exported, use v1 path for capacity
+                    MetadataServiceV2.class.getName(),
+                    applicationModel.getApplicationName(),
+                    MetadataServiceDelegationV2.VERSION);
+        } else {
+            // If MetadataService and MetadataServiceV2 are both exported, use v1 path for capacity
             key = BaseServiceMetadata.buildServiceKey(
                     MetadataService.class.getName(), applicationModel.getApplicationName(), MetadataService.VERSION);
         }

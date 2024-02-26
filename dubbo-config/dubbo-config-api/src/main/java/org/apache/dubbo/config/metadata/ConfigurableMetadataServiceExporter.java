@@ -64,12 +64,12 @@ public class ConfigurableMetadataServiceExporter {
 
     public synchronized ConfigurableMetadataServiceExporter export() {
         if (serviceConfig == null || !isExported()) {
-                if(MetadataReportVersionUtils.needExportV1(applicationModel)) {
-                    exportV1();
-                }
-                if(MetadataReportVersionUtils.needExportV2(applicationModel)) {
-                    exportV2();
-                }
+            if (MetadataReportVersionUtils.needExportV1(applicationModel)) {
+                exportV1();
+            }
+            if (MetadataReportVersionUtils.needExportV2(applicationModel)) {
+                exportV2();
+            }
         } else {
             if (logger.isWarnEnabled()) {
                 logger.warn(
@@ -83,7 +83,7 @@ public class ConfigurableMetadataServiceExporter {
         return this;
     }
 
-    private void exportV1(){
+    private void exportV1() {
         ExecutorService internalServiceExecutor = applicationModel
                 .getFrameworkModel()
                 .getBeanFactory()
@@ -107,7 +107,7 @@ public class ConfigurableMetadataServiceExporter {
         }
     }
 
-    private void exportV2(){
+    private void exportV2() {
         ExecutorService internalServiceExecutor = applicationModel
                 .getFrameworkModel()
                 .getBeanFactory()
@@ -134,11 +134,11 @@ public class ConfigurableMetadataServiceExporter {
         return this;
     }
 
-    private boolean v1Exported(){
+    private boolean v1Exported() {
         return serviceConfig != null && serviceConfig.isExported() && !serviceConfig.isUnexported();
     }
 
-    private boolean v2Exported(){
+    private boolean v2Exported() {
         return serviceConfigV2 != null && serviceConfigV2.isExported() && !serviceConfigV2.isUnexported();
     }
 

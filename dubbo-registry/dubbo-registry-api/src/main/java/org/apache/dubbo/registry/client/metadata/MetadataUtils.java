@@ -42,8 +42,6 @@ import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.service.Destroyable;
 import org.apache.dubbo.rpc.stub.StubSuppliers;
 
-import org.checkerframework.checker.units.qual.C;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -151,9 +149,9 @@ public class MetadataUtils {
         String version = metadata.get(INTERNAL_VERSION_KEY);
 
         if (MetadataServiceDelegationV2.VERSION.equals(version) && TRIPLE.equals(url.getProtocol())) {
-            //If provider export both MetadataService & MetadataServiceV2, it still uses MetadataService as path.
-            //Else if provider only export MetadataServiceV2, it uses MetadataServiceV2 as path.
-            //In v2 provider and consumer, we use MetadataServiceV2 in priority
+            // If provider export both MetadataService & MetadataServiceV2, it still uses MetadataService as path.
+            // Else if provider only export MetadataServiceV2, it uses MetadataServiceV2 as path.
+            // In v2 provider and consumer, we use MetadataServiceV2 in priority
             url.setPath(MetadataServiceV2.class.getName());
             consumerModel = applicationModel
                     .getInternalModule()
@@ -161,11 +159,8 @@ public class MetadataUtils {
                             MetadataServiceV2.class,
                             url,
                             StubSuppliers.getServiceDescriptor(MetadataService.class.getName()));
-        }
-        else {
-            consumerModel = applicationModel
-                    .getInternalModule()
-                    .registerInternalConsumer(MetadataService.class,url);
+        } else {
+            consumerModel = applicationModel.getInternalModule().registerInternalConsumer(MetadataService.class, url);
         }
 
         Protocol protocol = applicationModel.getExtensionLoader(Protocol.class).getExtension(url.getProtocol(), false);

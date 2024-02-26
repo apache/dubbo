@@ -211,7 +211,7 @@ public class MetadataServiceDelegation implements MetadataService, MetadataServi
 
     @Override
     public CompletableFuture<MetadataInfoV2> getMetadataInfoAsync(RevisionV2 request) {
-        //TODO
+        // TODO
         ExecutorService internalServiceExecutor = applicationModel
                 .getFrameworkModel()
                 .getBeanFactory()

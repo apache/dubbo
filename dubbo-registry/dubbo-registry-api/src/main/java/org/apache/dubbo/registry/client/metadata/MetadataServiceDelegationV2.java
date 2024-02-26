@@ -36,8 +36,7 @@ import static org.apache.dubbo.metadata.util.MetadataReportVersionUtils.toV2;
 /**
  * Implementation of MetadataServiceV2. Available in : metadata.
  */
-public class MetadataServiceDelegationV2
-        implements org.apache.dubbo.metadata.MetadataServiceV2{
+public class MetadataServiceDelegationV2 implements org.apache.dubbo.metadata.MetadataServiceV2 {
 
     ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
@@ -75,7 +74,7 @@ public class MetadataServiceDelegationV2
 
     @Override
     public CompletableFuture<MetadataInfoV2> getMetadataInfoAsync(RevisionV2 request) {
-        //TODO
+        // TODO
         ExecutorService internalServiceExecutor = applicationModel
                 .getFrameworkModel()
                 .getBeanFactory()
@@ -85,5 +84,4 @@ public class MetadataServiceDelegationV2
         internalServiceExecutor.submit(() -> completableFuture.complete(getMetadataInfo(request)));
         return completableFuture;
     }
-
 }

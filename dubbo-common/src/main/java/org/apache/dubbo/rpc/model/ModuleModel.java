@@ -203,7 +203,6 @@ public class ModuleModel extends ScopeModel {
                 serviceMetadata.getServiceKey(),
                 "jdk",
                 serviceDescriptor == null
-                        //TODO internal service不通过config导出 所以没有判是否是 stub descriptor的操作，需要手动设置
                         ? serviceRepository.lookupService(serviceMetadata.getServiceInterfaceName())
                         : serviceDescriptor,
                 this,
