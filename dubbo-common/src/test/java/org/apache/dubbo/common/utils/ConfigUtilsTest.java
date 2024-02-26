@@ -22,17 +22,17 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -44,15 +44,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ConfigUtilsTest {
     private Properties properties;
-    
+
     @BeforeEach
     public void setUp() throws Exception {
         properties = ConfigUtils.getProperties(Collections.emptySet());
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
-    }
+    public void tearDown() throws Exception {}
 
     @Test
     void testIsNotEmpty() throws Exception {
@@ -82,27 +81,41 @@ class ConfigUtilsTest {
 
     @Test
     void testMergeValues() {
-        List<String> merged = ConfigUtils.mergeValues(ApplicationModel.defaultModel().getExtensionDirector(), ThreadPool.class, "aaa,bbb,default.custom",
+        List<String> merged = ConfigUtils.mergeValues(
+                ApplicationModel.defaultModel().getExtensionDirector(),
+                ThreadPool.class,
+                "aaa,bbb,default.custom",
                 asList("fixed", "default.limited", "cached"));
         assertEquals(asList("fixed", "cached", "aaa", "bbb", "default.custom"), merged);
     }
 
     @Test
     void testMergeValuesAddDefault() {
-        List<String> merged = ConfigUtils.mergeValues(ApplicationModel.defaultModel().getExtensionDirector(), ThreadPool.class, "aaa,bbb,default,zzz",
+        List<String> merged = ConfigUtils.mergeValues(
+                ApplicationModel.defaultModel().getExtensionDirector(),
+                ThreadPool.class,
+                "aaa,bbb,default,zzz",
                 asList("fixed", "default.limited", "cached"));
         assertEquals(asList("aaa", "bbb", "fixed", "cached", "zzz"), merged);
     }
 
     @Test
     void testMergeValuesDeleteDefault() {
-        List<String> merged = ConfigUtils.mergeValues(ApplicationModel.defaultModel().getExtensionDirector(), ThreadPool.class, "-default", asList("fixed", "default.limited", "cached"));
+        List<String> merged = ConfigUtils.mergeValues(
+                ApplicationModel.defaultModel().getExtensionDirector(),
+                ThreadPool.class,
+                "-default",
+                asList("fixed", "default.limited", "cached"));
         assertEquals(Collections.emptyList(), merged);
     }
 
     @Test
     void testMergeValuesDeleteDefault_2() {
-        List<String> merged = ConfigUtils.mergeValues(ApplicationModel.defaultModel().getExtensionDirector(), ThreadPool.class, "-default,aaa", asList("fixed", "default.limited", "cached"));
+        List<String> merged = ConfigUtils.mergeValues(
+                ApplicationModel.defaultModel().getExtensionDirector(),
+                ThreadPool.class,
+                "-default,aaa",
+                asList("fixed", "default.limited", "cached"));
         assertEquals(asList("aaa"), merged);
     }
 
@@ -111,14 +124,18 @@ class ConfigUtilsTest {
      */
     @Test
     void testMergeValuesDelete() {
-        List<String> merged = ConfigUtils.mergeValues(ApplicationModel.defaultModel().getExtensionDirector(), ThreadPool.class, "-fixed,aaa", asList("fixed", "default.limited", "cached"));
+        List<String> merged = ConfigUtils.mergeValues(
+                ApplicationModel.defaultModel().getExtensionDirector(),
+                ThreadPool.class,
+                "-fixed,aaa",
+                asList("fixed", "default.limited", "cached"));
         assertEquals(asList("cached", "aaa"), merged);
     }
 
     @Test
     void testReplaceProperty() throws Exception {
         String s = ConfigUtils.replaceProperty("1${a.b.c}2${a.b.c}3", Collections.singletonMap("a.b.c", "ABC"));
-        assertEquals( "1ABC2ABC3", s);
+        assertEquals("1ABC2ABC3", s);
         s = ConfigUtils.replaceProperty("1${a.b.c}2${a.b.c}3", Collections.<String, String>emptyMap());
         assertEquals("1${a.b.c}2${a.b.c}3", s);
     }
@@ -136,7 +153,8 @@ class ConfigUtilsTest {
         compositeConfiguration.addConfiguration(configuration1);
         compositeConfiguration.addConfiguration(configuration2);
 
-        String s = ConfigUtils.replaceProperty("zookeeper://${zookeeper.address}:${zookeeper.port}", compositeConfiguration);
+        String s = ConfigUtils.replaceProperty(
+                "zookeeper://${zookeeper.address}:${zookeeper.port}", compositeConfiguration);
         assertEquals("zookeeper://127.0.0.1:2181", s);
 
         // should not replace inner class name
@@ -198,7 +216,7 @@ class ConfigUtilsTest {
     @Test
     void testLoadProperties() throws Exception {
         Properties p = ConfigUtils.loadProperties(Collections.emptySet(), "dubbo.properties");
-        assertThat((String)p.get("dubbo"), equalTo("properties"));
+        assertThat((String) p.get("dubbo"), equalTo("properties"));
     }
 
     @Test
@@ -227,7 +245,8 @@ class ConfigUtilsTest {
 
     @Test
     void testLoadPropertiesOneFileNotRootPath() throws Exception {
-        Properties p = ConfigUtils.loadProperties(Collections.emptySet(), "META-INF/dubbo/internal/org.apache.dubbo.common.threadpool.ThreadPool", false);
+        Properties p = ConfigUtils.loadProperties(
+                Collections.emptySet(), "META-INF/dubbo/internal/org.apache.dubbo.common.threadpool.ThreadPool", false);
 
         Properties expected = new Properties();
         expected.put("fixed", "org.apache.dubbo.common.threadpool.support.fixed.FixedThreadPool");
@@ -238,22 +257,26 @@ class ConfigUtilsTest {
         assertEquals(expected, p);
     }
 
-
     @Disabled("Not know why disabled, the original link explaining this was reachable.")
     @Test
     void testLoadPropertiesMultiFileNotRootPathException() throws Exception {
         try {
-            ConfigUtils.loadProperties(Collections.emptySet(), "META-INF/services/org.apache.dubbo.common.status.StatusChecker", false);
+            ConfigUtils.loadProperties(
+                    Collections.emptySet(), "META-INF/services/org.apache.dubbo.common.status.StatusChecker", false);
             Assertions.fail();
         } catch (IllegalStateException expected) {
-            assertThat(expected.getMessage(), containsString("only 1 META-INF/services/org.apache.dubbo.common.status.StatusChecker file is expected, but 2 dubbo.properties files found on class path:"));
+            assertThat(
+                    expected.getMessage(),
+                    containsString(
+                            "only 1 META-INF/services/org.apache.dubbo.common.status.StatusChecker file is expected, but 2 dubbo.properties files found on class path:"));
         }
     }
 
     @Test
     void testLoadPropertiesMultiFileNotRootPath() throws Exception {
 
-        Properties p = ConfigUtils.loadProperties(Collections.emptySet(), "META-INF/dubbo/internal/org.apache.dubbo.common.status.StatusChecker", true);
+        Properties p = ConfigUtils.loadProperties(
+                Collections.emptySet(), "META-INF/dubbo/internal/org.apache.dubbo.common.status.StatusChecker", true);
 
         Properties expected = new Properties();
         expected.put("memory", "org.apache.dubbo.common.status.support.MemoryStatusChecker");

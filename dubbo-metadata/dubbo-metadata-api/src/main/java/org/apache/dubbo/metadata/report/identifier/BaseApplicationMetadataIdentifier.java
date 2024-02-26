@@ -34,7 +34,7 @@ public class BaseApplicationMetadataIdentifier {
     }
 
     protected String getIdentifierKey(String... params) {
-        return KeyTypeEnum.UNIQUE_KEY.build(application,params);
+        return KeyTypeEnum.UNIQUE_KEY.build(application, params);
     }
 
     private String getFilePathKey(String... params) {
@@ -45,5 +45,4 @@ public class BaseApplicationMetadataIdentifier {
         String prefix = KeyTypeEnum.PATH.build(pathTag, application);
         return KeyTypeEnum.PATH.build(prefix, params);
     }
-
 }

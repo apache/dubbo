@@ -20,12 +20,12 @@ import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.rpc.support.DemoService;
 import org.apache.dubbo.rpc.support.DemoServiceImpl;
 
+import java.util.List;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 /**
  * {@link ModuleServiceRepository}
@@ -55,7 +55,8 @@ class ModuleServiceRepositoryTest {
         ModuleServiceRepository repository = moduleModel.getServiceRepository();
 
         // 1.test service
-        ServiceMetadata serviceMetadata = new ServiceMetadata(DemoService.class.getName(), null, null, DemoService.class);
+        ServiceMetadata serviceMetadata =
+                new ServiceMetadata(DemoService.class.getName(), null, null, DemoService.class);
         ServiceDescriptor serviceDescriptor = repository.registerService(DemoService.class);
 
         ServiceDescriptor lookupServiceResult = repository.lookupService(DemoService.class.getName());
@@ -65,14 +66,19 @@ class ModuleServiceRepositoryTest {
         Assertions.assertEquals(1, allServices.size());
         Assertions.assertEquals(allServices.get(0), serviceDescriptor);
 
-        ServiceDescriptor serviceDescriptor1 = repository.registerService(DemoService.class.getSimpleName(), DemoService.class);
+        ServiceDescriptor serviceDescriptor1 =
+                repository.registerService(DemoService.class.getSimpleName(), DemoService.class);
         Assertions.assertEquals(serviceDescriptor1, serviceDescriptor);
-
 
         // 2.test consumerModule
         ConsumerModel consumerModel = new ConsumerModel(
-            serviceMetadata.getServiceKey(), new DemoServiceImpl(), serviceDescriptor,
-            moduleModel, serviceMetadata, null, ClassUtils.getClassLoader(DemoService.class));
+                serviceMetadata.getServiceKey(),
+                new DemoServiceImpl(),
+                serviceDescriptor,
+                moduleModel,
+                serviceMetadata,
+                null,
+                ClassUtils.getClassLoader(DemoService.class));
         repository.registerConsumer(consumerModel);
 
         List<ConsumerModel> allReferredServices = repository.getReferredServices();
@@ -83,15 +89,18 @@ class ModuleServiceRepositoryTest {
         Assertions.assertEquals(1, referredServices.size());
         Assertions.assertEquals(referredServices.get(0), consumerModel);
 
-        ConsumerModel referredService = repository.lookupReferredServices(DemoService.class.getName()).get(0);
+        ConsumerModel referredService =
+                repository.lookupReferredServices(DemoService.class.getName()).get(0);
         Assertions.assertEquals(referredService, consumerModel);
 
         // 3.test providerModel
-        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(),
-            new DemoServiceImpl(),
-            serviceDescriptor,
-            moduleModel,
-            serviceMetadata, ClassUtils.getClassLoader(DemoService.class));
+        ProviderModel providerModel = new ProviderModel(
+                DemoService.class.getName(),
+                new DemoServiceImpl(),
+                serviceDescriptor,
+                moduleModel,
+                serviceMetadata,
+                ClassUtils.getClassLoader(DemoService.class));
         repository.registerProvider(providerModel);
         List<ProviderModel> allExportedServices = repository.getExportedServices();
         Assertions.assertEquals(1, allExportedServices.size());
@@ -100,7 +109,8 @@ class ModuleServiceRepositoryTest {
         ProviderModel exportedService = repository.lookupExportedService(DemoService.class.getName());
         Assertions.assertEquals(exportedService, providerModel);
 
-        List<ProviderModel> providerModels = frameworkModel.getServiceRepository().allProviderModels();
+        List<ProviderModel> providerModels =
+                frameworkModel.getServiceRepository().allProviderModels();
         Assertions.assertEquals(1, providerModels.size());
         Assertions.assertEquals(providerModels.get(0), providerModel);
 
@@ -109,6 +119,7 @@ class ModuleServiceRepositoryTest {
         Assertions.assertTrue(repository.getAllServices().isEmpty());
         Assertions.assertTrue(repository.getReferredServices().isEmpty());
         Assertions.assertTrue(repository.getExportedServices().isEmpty());
-        Assertions.assertTrue(frameworkModel.getServiceRepository().allProviderModels().isEmpty());
+        Assertions.assertTrue(
+                frameworkModel.getServiceRepository().allProviderModels().isEmpty());
     }
 }

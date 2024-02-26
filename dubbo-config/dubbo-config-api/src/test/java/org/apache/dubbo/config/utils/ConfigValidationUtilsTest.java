@@ -24,14 +24,14 @@ import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.mock.GreetingMock1;
 import org.apache.dubbo.config.mock.GreetingMock2;
 
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-
-import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CLASS_NOT_FOUND;
 import static org.mockito.ArgumentMatchers.any;
@@ -40,9 +40,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-
 class ConfigValidationUtilsTest {
-
 
     @Test
     void checkMock1() {
@@ -50,7 +48,6 @@ class ConfigValidationUtilsTest {
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.setMock("return {a, b}");
             ConfigValidationUtils.checkMock(Greeting.class, interfaceConfig);
-
         });
     }
 
@@ -99,8 +96,10 @@ class ConfigValidationUtilsTest {
 
     @Test
     void testValidateApplicationConfig() throws Exception {
-        try (MockedStatic<ConfigValidationUtils> mockedStatic = Mockito.mockStatic(ConfigValidationUtils.class);) {
-            mockedStatic.when(() -> ConfigValidationUtils.validateApplicationConfig(any())).thenCallRealMethod();
+        try (MockedStatic<ConfigValidationUtils> mockedStatic = Mockito.mockStatic(ConfigValidationUtils.class); ) {
+            mockedStatic
+                    .when(() -> ConfigValidationUtils.validateApplicationConfig(any()))
+                    .thenCallRealMethod();
             ApplicationConfig config = new ApplicationConfig();
             Assertions.assertThrows(IllegalStateException.class, () -> {
                 ConfigValidationUtils.validateApplicationConfig(config);
@@ -116,15 +115,21 @@ class ConfigValidationUtilsTest {
             map.put("k2", "v2");
             config.setParameters(map);
             ConfigValidationUtils.validateApplicationConfig(config);
-            mockedStatic.verify(() -> {
-                ConfigValidationUtils.checkName(any(), any());
-            }, times(4));
-            mockedStatic.verify(() -> {
-                ConfigValidationUtils.checkMultiName(any(), any());
-            }, times(1));
-            mockedStatic.verify(() -> {
-                ConfigValidationUtils.checkParameterName(any());
-            }, times(1));
+            mockedStatic.verify(
+                    () -> {
+                        ConfigValidationUtils.checkName(any(), any());
+                    },
+                    times(4));
+            mockedStatic.verify(
+                    () -> {
+                        ConfigValidationUtils.checkMultiName(any(), any());
+                    },
+                    times(1));
+            mockedStatic.verify(
+                    () -> {
+                        ConfigValidationUtils.checkParameterName(any());
+                    },
+                    times(1));
         }
     }
 
@@ -141,7 +146,14 @@ class ConfigValidationUtilsTest {
 
         config.setQosEnable(true);
         mock.validateApplicationConfig(config);
-        verify(loggerMock).warn(eq(COMMON_CLASS_NOT_FOUND), eq(""), eq(""), eq("No QosProtocolWrapper class was found. Please check the dependency of dubbo-qos whether was imported correctly."), any());
+        verify(loggerMock)
+                .warn(
+                        eq(COMMON_CLASS_NOT_FOUND),
+                        eq(""),
+                        eq(""),
+                        eq(
+                                "No QosProtocolWrapper class was found. Please check the dependency of dubbo-qos whether was imported correctly."),
+                        any());
     }
 
     private void injectField(Field field, Object newValue) throws Exception {
@@ -149,8 +161,5 @@ class ConfigValidationUtilsTest {
         field.set(null, newValue);
     }
 
-    public static class InterfaceConfig extends AbstractInterfaceConfig {
-
-    }
-
+    public static class InterfaceConfig extends AbstractInterfaceConfig {}
 }

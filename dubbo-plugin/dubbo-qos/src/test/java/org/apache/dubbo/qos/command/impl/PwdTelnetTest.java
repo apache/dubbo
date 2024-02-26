@@ -44,7 +44,8 @@ class PwdTelnetTest {
         mockChannel = mock(Channel.class);
         mockCommandContext = mock(CommandContext.class);
         given(mockCommandContext.getRemote()).willReturn(mockChannel);
-        given(mockChannel.attr(ChangeTelnet.SERVICE_KEY)).willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
+        given(mockChannel.attr(ChangeTelnet.SERVICE_KEY))
+                .willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
     }
 
     @AfterEach
@@ -56,7 +57,9 @@ class PwdTelnetTest {
 
     @Test
     void testService() throws RemotingException {
-        defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService");
+        defaultAttributeMap
+                .attr(ChangeTelnet.SERVICE_KEY)
+                .set("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService");
         String result = pwdTelnet.execute(mockCommandContext, new String[0]);
         assertEquals("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", result);
     }
@@ -71,7 +74,7 @@ class PwdTelnetTest {
     @Test
     void testMessageError() throws RemotingException {
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(null);
-        String result = pwdTelnet.execute(mockCommandContext, new String[]{"test"});
+        String result = pwdTelnet.execute(mockCommandContext, new String[] {"test"});
         assertEquals("Unsupported parameter [test] for pwd.", result);
     }
 }

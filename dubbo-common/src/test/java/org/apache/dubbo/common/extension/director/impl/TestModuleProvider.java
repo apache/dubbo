@@ -21,8 +21,5 @@ import org.apache.dubbo.common.extension.director.FooModuleProvider;
 
 public class TestModuleProvider implements FooModuleProvider {
 
-    public void process(URL url) {
-
-    }
-
+    public void process(URL url) {}
 }

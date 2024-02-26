@@ -27,15 +27,18 @@ import java.util.Arrays;
 /**
  *  resolve method args  by args info
  */
-@Activate(value = "paramparse",order = 5)
+@Activate(value = "paramparse", order = 5)
 public class ParamParseIntercept implements HttpConnectionPreBuildIntercept {
 
     @Override
     public void intercept(HttpConnectionCreateContext connectionCreateContext) {
 
-        ConsumerParseContext consumerParseContext = new ConsumerParseContext(connectionCreateContext.getRequestTemplate());
-        consumerParseContext.setArgInfos(connectionCreateContext.getRestMethodMetadata().getArgInfos());
-        consumerParseContext.setArgs(Arrays.asList(connectionCreateContext.getInvocation().getArguments()));
+        ConsumerParseContext consumerParseContext =
+                new ConsumerParseContext(connectionCreateContext.getRequestTemplate());
+        consumerParseContext.setArgInfos(
+                connectionCreateContext.getRestMethodMetadata().getArgInfos());
+        consumerParseContext.setArgs(
+                Arrays.asList(connectionCreateContext.getInvocation().getArguments()));
         ParamParserManager.consumerParamParse(consumerParseContext);
     }
 }

@@ -21,6 +21,7 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.lang.Prioritized;
 
 import javax.lang.model.element.VariableElement;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -40,7 +41,6 @@ public interface AnnotatedMethodParameterProcessor extends Prioritized {
      */
     String getAnnotationName();
 
-
     /**
      * The string presenting the annotation type
      *
@@ -59,8 +59,14 @@ public interface AnnotatedMethodParameterProcessor extends Prioritized {
      * @param serviceInterfaceClass The type of Dubbo Service interface
      * @param restMethodMetadata    {@link RestMethodMetadata the metadata is used to update}
      */
-    void process(Annotation annotation, Parameter parameter, int parameterIndex, Method method,
-                 Class<?> serviceType, Class<?> serviceInterfaceClass, RestMethodMetadata restMethodMetadata);
+    void process(
+            Annotation annotation,
+            Parameter parameter,
+            int parameterIndex,
+            Method method,
+            Class<?> serviceType,
+            Class<?> serviceInterfaceClass,
+            RestMethodMetadata restMethodMetadata);
 
     /**
      * Build the default value
@@ -71,5 +77,4 @@ public interface AnnotatedMethodParameterProcessor extends Prioritized {
     static String buildDefaultValue(int parameterIndex) {
         return "{" + parameterIndex + "}";
     }
-
 }

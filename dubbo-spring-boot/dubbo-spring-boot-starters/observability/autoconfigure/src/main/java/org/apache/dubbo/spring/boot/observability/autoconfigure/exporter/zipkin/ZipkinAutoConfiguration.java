@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.spring.boot.observability.autoconfigure.exporter.zipkin;
 
 import org.apache.dubbo.spring.boot.observability.autoconfigure.annotation.ConditionalOnDubboTracingEnable;
@@ -37,7 +36,7 @@ import zipkin2.codec.SpanBytesEncoder;
 import zipkin2.reporter.Sender;
 
 import static org.apache.dubbo.spring.boot.observability.autoconfigure.ObservabilityUtils.DUBBO_TRACING_ZIPKIN_CONFIG_PREFIX;
-
+import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_PREFIX;
 
 /**
  * {@link EnableAutoConfiguration Auto-configuration} for Zipkin.
@@ -48,11 +47,17 @@ import static org.apache.dubbo.spring.boot.observability.autoconfigure.Observabi
  *
  * @since 3.2.1
  */
-@AutoConfiguration(after = RestTemplateAutoConfiguration.class, afterName = "org.springframework.boot.actuate.autoconfigure.tracing.zipkin")
+@ConditionalOnProperty(prefix = DUBBO_PREFIX, name = "enabled", matchIfMissing = true)
+@AutoConfiguration(
+        after = RestTemplateAutoConfiguration.class,
+        afterName = "org.springframework.boot.actuate.autoconfigure.tracing.zipkin")
 @ConditionalOnClass(Sender.class)
-@Import({SenderConfiguration.class,
-        ReporterConfiguration.class, BraveConfiguration.class,
-        OpenTelemetryConfiguration.class})
+@Import({
+    SenderConfiguration.class,
+    ReporterConfiguration.class,
+    BraveConfiguration.class,
+    OpenTelemetryConfiguration.class
+})
 @ConditionalOnDubboTracingEnable
 public class ZipkinAutoConfiguration {
 
@@ -62,5 +67,4 @@ public class ZipkinAutoConfiguration {
     public BytesEncoder<Span> spanBytesEncoder() {
         return SpanBytesEncoder.JSON_V2;
     }
-
 }

@@ -21,6 +21,7 @@ import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.transport.MultiMessageHandler;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

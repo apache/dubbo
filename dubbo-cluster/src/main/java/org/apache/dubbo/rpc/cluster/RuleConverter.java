@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster;
 
 import org.apache.dubbo.common.URL;
@@ -26,5 +25,4 @@ import java.util.List;
 public interface RuleConverter {
 
     List<URL> convert(URL subscribeUrl, Object source);
-
 }

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc;
 
 import java.util.Collection;
@@ -152,9 +151,12 @@ public class RpcServerContextAttachment extends RpcContextAttachment {
         }
 
         private Map<String, Object> getAttachments() {
-            Map<String, Object> clientResponse = RpcContext.getClientResponseContext().getObjectAttachments();
-            Map<String, Object> serverResponse = RpcContext.getServerResponseContext().getObjectAttachments();
-            Map<String, Object> result = new HashMap<>((int) (clientResponse.size() + serverResponse.size() / 0.75) + 1);
+            Map<String, Object> clientResponse =
+                    RpcContext.getClientResponseContext().getObjectAttachments();
+            Map<String, Object> serverResponse =
+                    RpcContext.getServerResponseContext().getObjectAttachments();
+            Map<String, Object> result =
+                    new HashMap<>((int) (clientResponse.size() + serverResponse.size() / 0.75) + 1);
             result.putAll(clientResponse);
             result.putAll(serverResponse);
             return result;
@@ -167,20 +169,26 @@ public class RpcServerContextAttachment extends RpcContextAttachment {
 
         @Override
         public boolean isEmpty() {
-            return RpcContext.getClientResponseContext().getObjectAttachments().isEmpty() &&
-                RpcContext.getServerResponseContext().getObjectAttachments().isEmpty();
+            return RpcContext.getClientResponseContext().getObjectAttachments().isEmpty()
+                    && RpcContext.getServerResponseContext()
+                            .getObjectAttachments()
+                            .isEmpty();
         }
 
         @Override
         public boolean containsKey(Object key) {
-            return RpcContext.getClientResponseContext().getObjectAttachments().containsKey(key) ||
-                RpcContext.getServerResponseContext().getObjectAttachments().containsKey(key);
+            return RpcContext.getClientResponseContext().getObjectAttachments().containsKey(key)
+                    || RpcContext.getServerResponseContext()
+                            .getObjectAttachments()
+                            .containsKey(key);
         }
 
         @Override
         public boolean containsValue(Object value) {
-            return RpcContext.getClientResponseContext().getObjectAttachments().containsValue(value) ||
-                RpcContext.getServerResponseContext().getObjectAttachments().containsValue(value);
+            return RpcContext.getClientResponseContext().getObjectAttachments().containsValue(value)
+                    || RpcContext.getServerResponseContext()
+                            .getObjectAttachments()
+                            .containsValue(value);
         }
 
         @Override

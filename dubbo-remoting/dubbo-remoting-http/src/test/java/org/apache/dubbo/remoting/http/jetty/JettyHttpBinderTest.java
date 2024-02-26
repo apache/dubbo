@@ -23,12 +23,13 @@ import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.http.HttpHandler;
 import org.apache.dubbo.remoting.http.HttpServer;
 
-import org.apache.http.client.fluent.Request;
-import org.junit.jupiter.api.Test;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
+
+import org.apache.http.client.fluent.Request;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -37,16 +38,17 @@ class JettyHttpBinderTest {
     @Test
     void shouldAbleHandleRequestForJettyBinder() throws Exception {
         int port = NetUtils.getAvailablePort();
-        URL url = new ServiceConfigURL("http", "localhost", port,
-                new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});
-        HttpServer httpServer = new JettyHttpServer(url, new HttpHandler<HttpServletRequest,HttpServletResponse>() {
+        URL url = new ServiceConfigURL(
+                "http", "localhost", port, new String[] {Constants.BIND_PORT_KEY, String.valueOf(port)});
+        HttpServer httpServer = new JettyHttpServer(url, new HttpHandler<HttpServletRequest, HttpServletResponse>() {
             @Override
             public void handle(HttpServletRequest request, HttpServletResponse response) throws IOException {
                 response.getWriter().write("Jetty");
             }
         });
 
-        String response = Request.Get(url.toJavaURL().toURI()).execute().returnContent().asString();
+        String response =
+                Request.Get(url.toJavaURL().toURI()).execute().returnContent().asString();
 
         assertThat(response, is("Jetty"));
 

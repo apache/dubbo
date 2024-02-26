@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.command;
+
+import org.apache.dubbo.rpc.protocol.tri.stream.TripleStreamChannelFuture;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import io.netty.handler.codec.http2.Http2Headers;
-import org.apache.dubbo.rpc.protocol.tri.stream.TripleStreamChannelFuture;
 
 public class HeaderQueueCommand extends StreamQueueCommand {
 
@@ -35,11 +35,13 @@ public class HeaderQueueCommand extends StreamQueueCommand {
         this.endStream = endStream;
     }
 
-    public static HeaderQueueCommand createHeaders(TripleStreamChannelFuture streamChannelFuture, Http2Headers headers) {
+    public static HeaderQueueCommand createHeaders(
+            TripleStreamChannelFuture streamChannelFuture, Http2Headers headers) {
         return new HeaderQueueCommand(streamChannelFuture, headers, false);
     }
 
-    public static HeaderQueueCommand createHeaders(TripleStreamChannelFuture streamChannelFuture, Http2Headers headers, boolean endStream) {
+    public static HeaderQueueCommand createHeaders(
+            TripleStreamChannelFuture streamChannelFuture, Http2Headers headers, boolean endStream) {
         return new HeaderQueueCommand(streamChannelFuture, headers, endStream);
     }
 

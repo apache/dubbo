@@ -20,7 +20,6 @@ import org.apache.dubbo.cache.Cache;
 import org.apache.dubbo.cache.support.AbstractCacheFactory;
 import org.apache.dubbo.common.URL;
 
-
 /**
  * Implement {@link org.apache.dubbo.cache.CacheFactory} by extending {@link AbstractCacheFactory} and provide
  * instance of new {@link ExpiringCache}.
@@ -29,7 +28,6 @@ import org.apache.dubbo.common.URL;
  * @see ExpiringCache
  * @see Cache
  */
-
 public class ExpiringCacheFactory extends AbstractCacheFactory {
 
     /**

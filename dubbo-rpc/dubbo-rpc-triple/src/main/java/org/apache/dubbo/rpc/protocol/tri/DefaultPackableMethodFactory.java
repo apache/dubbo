@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
@@ -28,5 +27,4 @@ public class DefaultPackableMethodFactory implements PackableMethodFactory {
     public PackableMethod create(MethodDescriptor methodDescriptor, URL url, String contentType) {
         return ReflectionPackableMethod.init(methodDescriptor, url);
     }
-
 }

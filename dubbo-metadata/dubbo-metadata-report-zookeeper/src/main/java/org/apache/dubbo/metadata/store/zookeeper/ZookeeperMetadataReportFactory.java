@@ -46,5 +46,4 @@ public class ZookeeperMetadataReportFactory extends AbstractMetadataReportFactor
     public MetadataReport createMetadataReport(URL url) {
         return new ZookeeperMetadataReport(url, zookeeperTransporter);
     }
-
 }

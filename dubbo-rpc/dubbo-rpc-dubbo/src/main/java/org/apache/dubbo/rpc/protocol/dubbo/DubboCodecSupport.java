@@ -33,7 +33,9 @@ public class DubboCodecSupport {
         if (serializationTypeObj != null) {
             return CodecSupport.getSerializationById((byte) serializationTypeObj);
         }
-        return url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(UrlUtils.serializationOrDefault(url));
+        return url.getOrDefaultFrameworkModel()
+                .getExtensionLoader(Serialization.class)
+                .getExtension(UrlUtils.serializationOrDefault(url));
     }
 
     public static Serialization getResponseSerialization(URL url, AppResponse appResponse) {
@@ -45,6 +47,8 @@ public class DubboCodecSupport {
                 return CodecSupport.getSerializationById((byte) serializationTypeObj);
             }
         }
-        return url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(UrlUtils.serializationOrDefault(url));
+        return url.getOrDefaultFrameworkModel()
+                .getExtensionLoader(Serialization.class)
+                .getExtension(UrlUtils.serializationOrDefault(url));
     }
 }

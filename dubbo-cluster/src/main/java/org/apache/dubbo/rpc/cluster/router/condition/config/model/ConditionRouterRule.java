@@ -34,15 +34,14 @@ public class ConditionRouterRule extends AbstractRouterRule {
 
         Object conditions = map.get(CONDITIONS_KEY);
         if (conditions != null && List.class.isAssignableFrom(conditions.getClass())) {
-            conditionRouterRule.setConditions(((List<Object>) conditions).stream()
-                    .map(String::valueOf).collect(Collectors.toList()));
+            conditionRouterRule.setConditions(
+                    ((List<Object>) conditions).stream().map(String::valueOf).collect(Collectors.toList()));
         }
 
         return conditionRouterRule;
     }
 
-    public ConditionRouterRule() {
-    }
+    public ConditionRouterRule() {}
 
     public List<String> getConditions() {
         return conditions;

@@ -16,10 +16,10 @@
  */
 package org.apache.dubbo.metadata.annotation.processing;
 
-
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.tools.FileObject;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
@@ -74,13 +74,15 @@ public class ClassPathMetadataStorage {
     }
 
     private Reader getReader(String resourceName) {
-        return getResource(resourceName).map(fileObject -> {
-            try {
-                return fileObject.openReader(false);
-            } catch (IOException e) {
-            }
-            return null;
-        }).orElse(null);
+        return getResource(resourceName)
+                .map(fileObject -> {
+                    try {
+                        return fileObject.openReader(false);
+                    } catch (IOException e) {
+                    }
+                    return null;
+                })
+                .orElse(null);
     }
 
     private FileObject createResource(String resourceName) throws IOException {
@@ -99,7 +101,9 @@ public class ClassPathMetadataStorage {
 
     private Writer getWriter(String resourceName) throws IOException {
         FileObject fileObject = createResource(resourceName);
-        info("The resource[path : %s , deleted : %s] will be written", fileObject.toUri().getPath(), fileObject.delete());
+        info(
+                "The resource[path : %s , deleted : %s] will be written",
+                fileObject.toUri().getPath(), fileObject.delete());
         return fileObject.openWriter();
     }
 }

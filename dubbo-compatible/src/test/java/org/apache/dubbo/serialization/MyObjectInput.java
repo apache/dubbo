@@ -14,16 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.serialization;
-
-import com.alibaba.dubbo.common.serialize.ObjectInput;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
+
+import com.alibaba.dubbo.common.serialize.ObjectInput;
 
 public class MyObjectInput implements ObjectInput {
 

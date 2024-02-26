@@ -16,14 +16,14 @@
  */
 package org.apache.dubbo.test.check;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.support.descriptor.ClassSource;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * The abstract implementation provides the basic methods. <p></p>
@@ -67,10 +67,11 @@ public abstract class AbstractRegistryCenterTestExecutionListener implements Tes
      */
     public boolean needRegistryCenter(TestPlan testPlan) {
         return testPlan.getRoots().stream()
-            .flatMap(testIdentifier -> testPlan.getChildren(testIdentifier).stream())
-            .filter(testIdentifier -> testIdentifier.getSource().isPresent())
-            .filter(testIdentifier -> supportEmbeddedZookeeper(testIdentifier))
-            .count() > 0;
+                        .flatMap(testIdentifier -> testPlan.getChildren(testIdentifier).stream())
+                        .filter(testIdentifier -> testIdentifier.getSource().isPresent())
+                        .filter(testIdentifier -> supportEmbeddedZookeeper(testIdentifier))
+                        .count()
+                > 0;
     }
 
     /**
@@ -89,7 +90,8 @@ public abstract class AbstractRegistryCenterTestExecutionListener implements Tes
         }
         TestSource testSource = testIdentifier.getSource().orElse(null);
         if (testSource instanceof ClassSource) {
-            String packageName = ((ClassSource) testSource).getJavaClass().getPackage().getName();
+            String packageName =
+                    ((ClassSource) testSource).getJavaClass().getPackage().getName();
             for (String pkgName : PACKAGE_NAME) {
                 if (packageName.contains(pkgName)) {
                     return true;

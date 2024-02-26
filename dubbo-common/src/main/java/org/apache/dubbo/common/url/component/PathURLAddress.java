@@ -34,7 +34,8 @@ public class PathURLAddress extends URLAddress {
         this(protocol, username, password, path, host, port, null);
     }
 
-    public PathURLAddress(String protocol, String username, String password, String path, String host, int port, String rawAddress) {
+    public PathURLAddress(
+            String protocol, String username, String password, String path, String host, int port, String rawAddress) {
         super(host, port, rawAddress);
 
         this.protocol = protocol;
@@ -130,12 +131,12 @@ public class PathURLAddress extends URLAddress {
         if (this == obj) return true;
         if (!(obj instanceof URLAddress)) return false;
         URLAddress that = (URLAddress) obj;
-        return Objects.equals(this.getProtocol(), that.getProtocol()) &&
-                Objects.equals(this.getUsername(), that.getUsername()) &&
-                Objects.equals(this.getPassword(), that.getPassword()) &&
-                Objects.equals(this.getPath(), that.getPath()) &&
-                Objects.equals(this.getHost(), that.getHost()) &&
-                Objects.equals(this.getPort(), that.getPort());
+        return Objects.equals(this.getProtocol(), that.getProtocol())
+                && Objects.equals(this.getUsername(), that.getUsername())
+                && Objects.equals(this.getPassword(), that.getPassword())
+                && Objects.equals(this.getPath(), that.getPath())
+                && Objects.equals(this.getHost(), that.getHost())
+                && Objects.equals(this.getPort(), that.getPort());
     }
 
     @Override
@@ -149,15 +150,15 @@ public class PathURLAddress extends URLAddress {
             buf.append(protocol);
             buf.append("://");
         }
-//
-//        if (StringUtils.isNotEmpty(username)) {
-//            buf.append(username);
-//            if (StringUtils.isNotEmpty(password)) {
-//                buf.append(":");
-//                buf.append(password);
-//            }
-//            buf.append("@");
-//        }
+        //
+        //        if (StringUtils.isNotEmpty(username)) {
+        //            buf.append(username);
+        //            if (StringUtils.isNotEmpty(password)) {
+        //                buf.append(":");
+        //                buf.append(password);
+        //            }
+        //            buf.append("@");
+        //        }
 
         if (StringUtils.isNotEmpty(host)) {
             buf.append(host);
@@ -174,5 +175,4 @@ public class PathURLAddress extends URLAddress {
 
         return buf.toString();
     }
-
 }

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc;
 
 import java.io.Closeable;
@@ -29,26 +28,20 @@ public class CancellationContext implements Closeable {
     private Throwable cancellationCause;
     private boolean cancelled;
 
-    public void addListener(
-            final CancellationListener cancellationListener, final Executor executor) {
+    public void addListener(final CancellationListener cancellationListener, final Executor executor) {
         addListener(cancellationListener, executor, null);
     }
 
-    public void addListener(
-            final CancellationListener cancellationListener) {
+    public void addListener(final CancellationListener cancellationListener) {
         addListener(cancellationListener, Runnable::run, null);
     }
 
-    public void addListener(
-            final CancellationListener cancellationListener,
-            final RpcServiceContext context) {
+    public void addListener(final CancellationListener cancellationListener, final RpcServiceContext context) {
         addListener(cancellationListener, Runnable::run, context);
     }
 
     public void addListener(
-            final CancellationListener cancellationListener,
-            final Executor executor,
-            final RpcServiceContext context) {
+            final CancellationListener cancellationListener, final Executor executor, final RpcServiceContext context) {
         addListenerInternal(new ExecutableListener(executor, cancellationListener, context));
     }
 

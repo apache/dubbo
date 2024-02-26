@@ -39,5 +39,4 @@ class ResponseTest {
         Assertions.assertEquals(response.getResult(), HEARTBEAT_EVENT);
         Assertions.assertEquals(response.getErrorMessage(), "errorMsg");
     }
-
 }

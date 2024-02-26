@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.remoting.exchange;
 
 @Deprecated
-public interface Exchanger extends org.apache.dubbo.remoting.exchange.Exchanger {
-}
+public interface Exchanger extends org.apache.dubbo.remoting.exchange.Exchanger {}

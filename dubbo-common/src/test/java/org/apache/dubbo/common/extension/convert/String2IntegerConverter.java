@@ -24,5 +24,4 @@ import org.apache.dubbo.common.convert.StringToIntegerConverter;
  *
  * @since 2.7.7
  */
-public class String2IntegerConverter extends StringToIntegerConverter {
-}
+public class String2IntegerConverter extends StringToIntegerConverter {}

@@ -29,5 +29,4 @@ public class JTestMetadataReportFactory4Test extends AbstractMetadataReportFacto
     public MetadataReport createMetadataReport(URL url) {
         return new JTestMetadataReport4Test(url);
     }
-
 }

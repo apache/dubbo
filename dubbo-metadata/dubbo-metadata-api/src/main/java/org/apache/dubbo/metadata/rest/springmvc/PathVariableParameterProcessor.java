@@ -34,10 +34,8 @@ public class PathVariableParameterProcessor extends AbstractAnnotatedMethodParam
         return PATH_VARIABLE_ANNOTATION_CLASS_NAME;
     }
 
-
     @Override
     protected String getDefaultValue(Annotation annotation, Parameter parameter, int parameterIndex) {
         return null;
     }
 }
-

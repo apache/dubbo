@@ -14,13 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.collector.sample;
 
 import org.apache.dubbo.metrics.model.sample.MetricSample;
+
 import java.util.List;
 
 public interface MetricsSampler {
 
     List<MetricSample> sample();
+
+    /**
+     * Check if samples have been changed.
+     * Note that this method will reset the changed flag to false using CAS.
+     *
+     * @return true if samples have been changed
+     */
+    boolean calSamplesChanged();
 }

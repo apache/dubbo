@@ -48,8 +48,8 @@ public class JAXRSServiceRestMetadataResolver extends AbstractServiceRestMetadat
     @Override
     protected boolean supports0(Class<?> serviceType) {
         return isAnnotationPresent(serviceType, PATH_ANNOTATION_CLASS_NAME)
-            // method @Path
-            || isServiceMethodAnnotationPresent(serviceType,PATH_ANNOTATION_CLASS_NAME);
+                // method @Path
+                || isServiceMethodAnnotationPresent(serviceType, PATH_ANNOTATION_CLASS_NAME);
     }
 
     @Override
@@ -84,16 +84,16 @@ public class JAXRSServiceRestMetadataResolver extends AbstractServiceRestMetadat
     }
 
     @Override
-    protected void processProduces(Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass,
-                                   Set<String> produces) {
+    protected void processProduces(
+            Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass, Set<String> produces) {
         addAnnotationValues(serviceMethod, PRODUCES_ANNOTATION_CLASS_NAME, produces);
         addAnnotationValues(serviceType, PRODUCES_ANNOTATION_CLASS_NAME, produces);
         addAnnotationValues(serviceInterfaceClass, PRODUCES_ANNOTATION_CLASS_NAME, produces);
     }
 
     @Override
-    protected void processConsumes(Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass,
-                                   Set<String> consumes) {
+    protected void processConsumes(
+            Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass, Set<String> consumes) {
         addAnnotationValues(serviceMethod, CONSUMES_ANNOTATION_CLASS_NAME, consumes);
         addAnnotationValues(serviceType, CONSUMES_ANNOTATION_CLASS_NAME, consumes);
         addAnnotationValues(serviceInterfaceClass, CONSUMES_ANNOTATION_CLASS_NAME, consumes);

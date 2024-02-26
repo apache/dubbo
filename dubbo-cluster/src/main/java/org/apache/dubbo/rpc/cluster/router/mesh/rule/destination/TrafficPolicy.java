@@ -14,11 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.destination;
 
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.loadbalance.LoadBalancerSettings;
-
 
 public class TrafficPolicy {
     private LoadBalancerSettings loadBalancer;
@@ -33,8 +31,6 @@ public class TrafficPolicy {
 
     @Override
     public String toString() {
-        return "TrafficPolicy{" +
-                "loadBalancer=" + loadBalancer +
-                '}';
+        return "TrafficPolicy{" + "loadBalancer=" + loadBalancer + '}';
     }
 }

@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.config.spring.util;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.util.ClassUtils;
-
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 
 /**
  * Generic {@link BeanPostProcessor} Adapter
@@ -78,7 +78,6 @@ public abstract class GenericBeanPostProcessorAdapter<T> implements BeanPostProc
         processBeforeInitialization(bean, beanName);
 
         return bean;
-
     }
 
     /**
@@ -95,7 +94,6 @@ public abstract class GenericBeanPostProcessorAdapter<T> implements BeanPostProc
         processAfterInitialization(bean, beanName);
 
         return bean;
-
     }
 
     /**
@@ -107,8 +105,7 @@ public abstract class GenericBeanPostProcessorAdapter<T> implements BeanPostProc
      * @param beanName Bean Name
      * @throws BeansException  in case of errors
      */
-    protected void processBeforeInitialization(T bean, String beanName) throws BeansException {
-    }
+    protected void processBeforeInitialization(T bean, String beanName) throws BeansException {}
 
     /**
      * Process {@link T Bean} with name without return value after initialization,
@@ -119,7 +116,5 @@ public abstract class GenericBeanPostProcessorAdapter<T> implements BeanPostProc
      * @param beanName Bean Name
      * @throws BeansException  in case of errors
      */
-    protected void processAfterInitialization(T bean, String beanName) throws BeansException {
-    }
-
+    protected void processAfterInitialization(T bean, String beanName) throws BeansException {}
 }

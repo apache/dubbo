@@ -26,14 +26,13 @@ public class ExporterFactory {
     private final Map<String, ReferenceCountExporter<?>> exporters = new ConcurrentHashMap<>();
 
     protected ReferenceCountExporter<?> createExporter(String providerKey, Callable<Exporter<?>> exporterProducer) {
-        return exporters.computeIfAbsent(providerKey,
-            key -> {
-                try {
-                    return new ReferenceCountExporter<>(exporterProducer.call(), key, this);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            });
+        return exporters.computeIfAbsent(providerKey, key -> {
+            try {
+                return new ReferenceCountExporter<>(exporterProducer.call(), key, this);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     protected void remove(String key, ReferenceCountExporter<?> exporter) {

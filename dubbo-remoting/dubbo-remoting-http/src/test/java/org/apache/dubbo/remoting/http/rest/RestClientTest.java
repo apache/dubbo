@@ -26,17 +26,19 @@ import org.apache.dubbo.remoting.http.jetty.JettyHttpServer;
 import org.apache.dubbo.remoting.http.restclient.HttpClientRestClient;
 import org.apache.dubbo.remoting.http.restclient.OKHttpRestClient;
 import org.apache.dubbo.remoting.http.restclient.URLConnectionRestClient;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -46,8 +48,8 @@ public class RestClientTest {
     @Test
     public void testRestClient() throws Exception {
         int port = NetUtils.getAvailablePort();
-        URL url = new ServiceConfigURL("http", "localhost", port,
-            new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});
+        URL url = new ServiceConfigURL(
+                "http", "localhost", port, new String[] {Constants.BIND_PORT_KEY, String.valueOf(port)});
         HttpServer httpServer = new JettyHttpServer(url, new HttpHandler<HttpServletRequest, HttpServletResponse>() {
             @Override
             public void handle(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -75,9 +77,7 @@ public class RestClientTest {
 
         RestResult restResult = send.get();
 
-
         assertThat(new String(restResult.getBody()), is("Jetty"));
-
 
         restClient = new HttpClientRestClient(new HttpClientConfig());
 
@@ -98,12 +98,11 @@ public class RestClientTest {
         httpServer.close();
     }
 
-
     @Test
     public void testError() throws Exception {
         int port = NetUtils.getAvailablePort();
-        URL url = new ServiceConfigURL("http", "localhost", port,
-            new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});
+        URL url = new ServiceConfigURL(
+                "http", "localhost", port, new String[] {Constants.BIND_PORT_KEY, String.valueOf(port)});
         HttpServer httpServer = new JettyHttpServer(url, new HttpHandler<HttpServletRequest, HttpServletResponse>() {
             @Override
             public void handle(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -126,8 +125,7 @@ public class RestClientTest {
 
         CompletableFuture<RestResult> send = restClient.send(requestTemplate);
 
-        String error = "Server Error\n" +
-            " error info is: server error";
+        String error = "Server Error\n" + " error info is: server error";
         RestResult restResult = send.get();
 
         String contentType = "text/html;charset=iso-8859-1";
@@ -143,13 +141,11 @@ public class RestClientTest {
         send = restClient.send(requestTemplate);
         restResult = send.get();
 
-
         Assertions.assertEquals(500, restResult.getResponseCode());
         Assertions.assertEquals(error, restResult.getMessage());
         Assertions.assertEquals(contentType, restResult.getContentType());
 
         restClient.close();
-
 
         restClient = new URLConnectionRestClient(new HttpClientConfig());
         send = restClient.send(requestTemplate);
@@ -159,7 +155,6 @@ public class RestClientTest {
         Assertions.assertEquals(error, restResult.getMessage());
         Assertions.assertEquals(contentType, restResult.getContentType());
         restClient.close();
-
 
         httpServer.close();
     }
@@ -171,29 +166,28 @@ public class RestClientTest {
 
         requestTemplate.body(new Object(), Object.class);
 
-        Assertions.assertEquals(requestTemplate.getBodyType(),Object.class);
+        Assertions.assertEquals(requestTemplate.getBodyType(), Object.class);
 
-
-        requestTemplate.addHeader("Content-Length",1);
+        requestTemplate.addHeader("Content-Length", 1);
 
         Integer contentLength = requestTemplate.getContentLength();
 
-        Assertions.assertEquals(1,contentLength);
+        Assertions.assertEquals(1, contentLength);
 
         List<String> strings = Arrays.asList("h1", "h2");
 
-        requestTemplate.addHeaders("header",strings);
+        requestTemplate.addHeaders("header", strings);
 
+        Assertions.assertArrayEquals(
+                strings.toArray(new String[0]),
+                requestTemplate.getHeaders("header").toArray(new String[0]));
 
-        Assertions.assertArrayEquals(strings.toArray(new String[0]),requestTemplate.getHeaders("header").toArray(new String[0]));
+        strings = Arrays.asList("p1", "p2");
 
-         strings = Arrays.asList("p1", "p2");
+        requestTemplate.addParams("param", strings);
 
-        requestTemplate.addParams("param",strings);
-
-        Assertions.assertArrayEquals(strings.toArray(new String[0]),requestTemplate.getParam("param").toArray(new String[0]));
-
-
-
+        Assertions.assertArrayEquals(
+                strings.toArray(new String[0]),
+                requestTemplate.getParam("param").toArray(new String[0]));
     }
 }

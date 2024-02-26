@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.extension.resteasy.intercept;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
@@ -26,25 +25,33 @@ import org.apache.dubbo.rpc.protocol.rest.filter.RestResponseInterceptor;
 import org.apache.dubbo.rpc.protocol.rest.filter.context.RestInterceptContext;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
+
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.ext.WriterInterceptor;
+
+import java.io.ByteArrayOutputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.List;
+
+import org.apache.commons.io.IOUtils;
 import org.jboss.resteasy.core.interception.AbstractWriterInterceptorContext;
 import org.jboss.resteasy.plugins.server.netty.NettyHttpRequest;
 import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.WriterInterceptor;
-import java.io.ByteArrayOutputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-import java.util.List;
-
-@Activate(value = "resteasy", onClass = {"javax.ws.rs.ext.WriterInterceptorContext", "org.jboss.resteasy.plugins.server.netty.NettyHttpRequest", "org.jboss.resteasy.plugins.server.netty.NettyHttpResponse"})
+@Activate(
+        value = "resteasy",
+        onClass = {
+            "javax.ws.rs.ext.WriterInterceptorContext",
+            "org.jboss.resteasy.plugins.server.netty.NettyHttpRequest",
+            "org.jboss.resteasy.plugins.server.netty.NettyHttpResponse"
+        })
 public class ResteasyWriterInterceptorAdapter implements RestResponseInterceptor, ResteasyContext {
 
     private ResteasyProviderFactory resteasyProviderFactory = getResteasyProviderFactory();
-
 
     @Override
     public void intercept(RestInterceptContext restResponseInterceptor) throws Exception {
@@ -56,7 +63,6 @@ public class ResteasyWriterInterceptorAdapter implements RestResponseInterceptor
         Object result = restResponseInterceptor.getResult();
 
         Class<?> type = rpcInvocation.getReturnType();
-
 
         List<WriterInterceptor> extension = serviceDeployer.getExtensions(WriterInterceptor.class);
 
@@ -78,7 +84,8 @@ public class ResteasyWriterInterceptorAdapter implements RestResponseInterceptor
 
             MediaType mediaType = MediaType.valueOf(value);
 
-            AbstractWriterInterceptorContext writerContext = getAbstractWriterInterceptorContext(restRequest, extension, result, type, type, mediaType, os, headers);
+            AbstractWriterInterceptorContext writerContext = getAbstractWriterInterceptorContext(
+                    restRequest, extension, result, type, type, mediaType, os, headers);
 
             writerContext.proceed();
             ByteArrayOutputStream outputStream = (ByteArrayOutputStream) writerContext.getOutputStream();
@@ -100,27 +107,32 @@ public class ResteasyWriterInterceptorAdapter implements RestResponseInterceptor
         } finally {
             IOUtils.close(os);
         }
-
     }
 
-
-    private AbstractWriterInterceptorContext getAbstractWriterInterceptorContext(HttpRequest request,
-                                                                                 List<WriterInterceptor> extension,
-                                                                                 Object entity,
-                                                                                 Class type,
-                                                                                 Type genericType,
-                                                                                 MediaType mediaType,
-                                                                                 ByteArrayOutputStream os,
-                                                                                 MultivaluedMap<String, Object> headers) {
-        AbstractWriterInterceptorContext writerContext = new DubboServerWriterInterceptorContext(extension.toArray(new WriterInterceptor[0]),
-            resteasyProviderFactory, entity, type, genericType, new Annotation[0], mediaType,
-            headers, os, request);
+    private AbstractWriterInterceptorContext getAbstractWriterInterceptorContext(
+            HttpRequest request,
+            List<WriterInterceptor> extension,
+            Object entity,
+            Class type,
+            Type genericType,
+            MediaType mediaType,
+            ByteArrayOutputStream os,
+            MultivaluedMap<String, Object> headers) {
+        AbstractWriterInterceptorContext writerContext = new DubboServerWriterInterceptorContext(
+                extension.toArray(new WriterInterceptor[0]),
+                resteasyProviderFactory,
+                entity,
+                type,
+                genericType,
+                new Annotation[0],
+                mediaType,
+                headers,
+                os,
+                request);
         return writerContext;
     }
 
     protected ResteasyProviderFactory getResteasyProviderFactory() {
         return new ResteasyProviderFactory();
     }
-
-
 }

@@ -50,23 +50,27 @@ public class ConfigurableMetadataServiceExporter {
     private volatile ServiceConfig<MetadataService> serviceConfig;
     private final ApplicationModel applicationModel;
 
-    public ConfigurableMetadataServiceExporter(ApplicationModel applicationModel, MetadataServiceDelegation metadataService) {
+    public ConfigurableMetadataServiceExporter(
+            ApplicationModel applicationModel, MetadataServiceDelegation metadataService) {
         this.applicationModel = applicationModel;
         this.metadataService = metadataService;
     }
 
     public synchronized ConfigurableMetadataServiceExporter export() {
         if (serviceConfig == null || !isExported()) {
-            ExecutorService internalServiceExecutor = applicationModel.getFrameworkModel().getBeanFactory()
-                .getBean(FrameworkExecutorRepository.class).getInternalServiceExecutor();
+            ExecutorService internalServiceExecutor = applicationModel
+                    .getFrameworkModel()
+                    .getBeanFactory()
+                    .getBean(FrameworkExecutorRepository.class)
+                    .getInternalServiceExecutor();
             this.serviceConfig = InternalServiceConfigBuilder.<MetadataService>newBuilder(applicationModel)
-                .interfaceClass(MetadataService.class)
-                .protocol(getApplicationConfig().getMetadataServiceProtocol(), METADATA_SERVICE_PROTOCOL_KEY)
-                .port(getApplicationConfig().getMetadataServicePort(), METADATA_SERVICE_PORT_KEY)
-                .registryId("internal-metadata-registry")
-                .executor(internalServiceExecutor)
-                .ref(metadataService)
-                .build(configConsumer -> configConsumer.setMethods(generateMethodConfig()));
+                    .interfaceClass(MetadataService.class)
+                    .protocol(getApplicationConfig().getMetadataServiceProtocol(), METADATA_SERVICE_PROTOCOL_KEY)
+                    .port(getApplicationConfig().getMetadataServicePort(), METADATA_SERVICE_PORT_KEY)
+                    .registryId("internal-metadata-registry")
+                    .executor(internalServiceExecutor)
+                    .ref(metadataService)
+                    .build(configConsumer -> configConsumer.setMethods(generateMethodConfig()));
 
             // export
             serviceConfig.export();
@@ -77,7 +81,11 @@ public class ConfigurableMetadataServiceExporter {
             }
         } else {
             if (logger.isWarnEnabled()) {
-                logger.warn(CONFIG_METADATA_SERVICE_EXPORTED, "", "", "The MetadataService has been exported : " + serviceConfig.getExportedUrls());
+                logger.warn(
+                        CONFIG_METADATA_SERVICE_EXPORTED,
+                        "",
+                        "",
+                        "The MetadataService has been exported : " + serviceConfig.getExportedUrls());
             }
         }
 

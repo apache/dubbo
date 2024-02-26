@@ -25,11 +25,6 @@ import org.apache.dubbo.metrics.model.ThreadPoolMetric;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -38,6 +33,12 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
@@ -167,7 +168,7 @@ public class ThreadPoolMetricsSamplerTest {
 
         Field f = ThreadPoolMetricsSampler.class.getDeclaredField("sampleThreadPoolExecutor");
         f.setAccessible(true);
-        Map<String,ThreadPoolExecutor> executors = (Map<String, ThreadPoolExecutor>) f.get(sampler2);
+        Map<String, ThreadPoolExecutor> executors = (Map<String, ThreadPoolExecutor>) f.get(sampler2);
 
         Assertions.assertEquals(3, executors.size());
         Assertions.assertTrue(executors.containsKey("DubboServerHandler-server1"));

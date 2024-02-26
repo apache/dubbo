@@ -18,5 +18,4 @@ package demo;
 
 import java.io.Serializable;
 
-public class MultiClassLoaderServiceResult implements Serializable {
-}
+public class MultiClassLoaderServiceResult implements Serializable {}

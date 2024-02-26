@@ -22,6 +22,7 @@ import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.type.TypeMirror;
+
 import java.util.Map;
 
 @SPI

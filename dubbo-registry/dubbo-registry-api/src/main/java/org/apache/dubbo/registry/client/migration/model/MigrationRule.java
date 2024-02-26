@@ -22,11 +22,6 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.ServiceNameMapping;
 
-import org.yaml.snakeyaml.LoaderOptions;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
-import org.yaml.snakeyaml.constructor.SafeConstructor;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +29,11 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import org.yaml.snakeyaml.LoaderOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 import static org.apache.dubbo.registry.Constants.MIGRATION_DELAY_KEY;
 import static org.apache.dubbo.registry.Constants.MIGRATION_FORCE_KEY;
@@ -127,21 +127,20 @@ public class MigrationRule {
 
         Object interfaces = map.get(MIGRATION_RULE_INTERFACES_KEY);
         if (interfaces != null && List.class.isAssignableFrom(interfaces.getClass())) {
-            migrationRule.setInterfaces(((List<Map<String, Object>>) interfaces).stream()
-                    .map(SubMigrationRule::parseFromMap).collect(Collectors.toList()));
+            migrationRule.setInterfaces(((List<Map<String, Object>>) interfaces)
+                    .stream().map(SubMigrationRule::parseFromMap).collect(Collectors.toList()));
         }
 
         Object applications = map.get(MIGRATION_RULE_APPLICATIONS_KEY);
         if (applications != null && List.class.isAssignableFrom(applications.getClass())) {
-            migrationRule.setApplications(((List<Map<String, Object>>) applications).stream()
-                .map(SubMigrationRule::parseFromMap).collect(Collectors.toList()));
+            migrationRule.setApplications(((List<Map<String, Object>>) applications)
+                    .stream().map(SubMigrationRule::parseFromMap).collect(Collectors.toList()));
         }
 
         return migrationRule;
     }
 
-    public MigrationRule() {
-    }
+    public MigrationRule() {}
 
     public MigrationRule(String key) {
         this.key = key;
@@ -166,19 +165,22 @@ public class MigrationRule {
          */
         if (step == null) {
             // initial step : APPLICATION_FIRST
-            step = MigrationStep.APPLICATION_FIRST;
-            step = Enum.valueOf(MigrationStep.class,
-                consumerURL.getParameter(MIGRATION_STEP_KEY, getDefaultStep(consumerURL, step.name())));
+            return Enum.valueOf(
+                    MigrationStep.class,
+                    consumerURL.getParameter(
+                            MIGRATION_STEP_KEY, getDefaultStep(consumerURL, MigrationStep.APPLICATION_FIRST.name())));
         }
 
         return step;
     }
 
     private String getDefaultStep(URL consumerURL, String defaultStep) {
-        String globalDefaultStep = ConfigurationUtils.getCachedDynamicProperty(consumerURL.getScopeModel(), DUBBO_SERVICEDISCOVERY_MIGRATION, null);
+        String globalDefaultStep = ConfigurationUtils.getCachedDynamicProperty(
+                consumerURL.getScopeModel(), DUBBO_SERVICEDISCOVERY_MIGRATION, null);
         if (StringUtils.isEmpty(globalDefaultStep)) {
             // check 'dubbo.application.service-discovery.migration' for compatibility
-            globalDefaultStep = ConfigurationUtils.getCachedDynamicProperty(consumerURL.getScopeModel(), "dubbo.application.service-discovery.migration", defaultStep);
+            globalDefaultStep = ConfigurationUtils.getCachedDynamicProperty(
+                    consumerURL.getScopeModel(), "dubbo.application.service-discovery.migration", defaultStep);
         }
         return globalDefaultStep;
     }
@@ -337,11 +339,30 @@ public class MigrationRule {
             return false;
         }
         MigrationRule that = (MigrationRule) o;
-        return Objects.equals(key, that.key) && step == that.step && Objects.equals(threshold, that.threshold) && Objects.equals(proportion, that.proportion) && Objects.equals(delay, that.delay) && Objects.equals(force, that.force) && Objects.equals(interfaces, that.interfaces) && Objects.equals(applications, that.applications) && Objects.equals(interfaceRules, that.interfaceRules) && Objects.equals(applicationRules, that.applicationRules);
+        return Objects.equals(key, that.key)
+                && step == that.step
+                && Objects.equals(threshold, that.threshold)
+                && Objects.equals(proportion, that.proportion)
+                && Objects.equals(delay, that.delay)
+                && Objects.equals(force, that.force)
+                && Objects.equals(interfaces, that.interfaces)
+                && Objects.equals(applications, that.applications)
+                && Objects.equals(interfaceRules, that.interfaceRules)
+                && Objects.equals(applicationRules, that.applicationRules);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(key, step, threshold, proportion, delay, force, interfaces, applications, interfaceRules, applicationRules);
+        return Objects.hash(
+                key,
+                step,
+                threshold,
+                proportion,
+                delay,
+                force,
+                interfaces,
+                applications,
+                interfaceRules,
+                applicationRules);
     }
 }

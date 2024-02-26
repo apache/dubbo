@@ -18,12 +18,12 @@ package org.apache.dubbo.common.config.configcenter;
 
 import org.apache.dubbo.common.URL;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.config.configcenter.AbstractDynamicConfiguration.DEFAULT_THREAD_POOL_KEEP_ALIVE_TIME;
 import static org.apache.dubbo.common.config.configcenter.AbstractDynamicConfiguration.DEFAULT_THREAD_POOL_PREFIX;
@@ -57,9 +57,7 @@ class AbstractDynamicConfigurationTest {
             }
 
             @Override
-            protected void doClose() {
-
-            }
+            protected void doClose() {}
 
             @Override
             protected boolean doRemoveConfig(String key, String group) {
@@ -98,9 +96,7 @@ class AbstractDynamicConfigurationTest {
             }
 
             @Override
-            protected void doClose() {
-
-            }
+            protected void doClose() {}
 
             @Override
             protected boolean doRemoveConfig(String key, String group) {
@@ -111,8 +107,7 @@ class AbstractDynamicConfigurationTest {
         ThreadPoolExecutor threadPoolExecutor = configuration.getWorkersThreadPool();
         ThreadFactory threadFactory = threadPoolExecutor.getThreadFactory();
 
-        Thread thread = threadFactory.newThread(() -> {
-        });
+        Thread thread = threadFactory.newThread(() -> {});
 
         assertEquals(10, threadPoolExecutor.getCorePoolSize());
         assertEquals(10, threadPoolExecutor.getMaximumPoolSize());
@@ -125,11 +120,11 @@ class AbstractDynamicConfigurationTest {
         assertFalse(configuration.publishConfig(null, null));
         assertFalse(configuration.publishConfig(null, null, null));
     }
-//
-//    @Test
-//    public void testGetConfigKeys() {
-//        assertTrue(configuration.getConfigKeys(null).isEmpty());
-//    }
+    //
+    //    @Test
+    //    public void testGetConfigKeys() {
+    //        assertTrue(configuration.getConfigKeys(null).isEmpty());
+    //    }
 
     @Test
     void testGetConfig() {

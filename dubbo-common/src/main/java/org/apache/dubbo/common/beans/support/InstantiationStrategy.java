@@ -74,9 +74,9 @@ public class InstantiationStrategy {
 
         Constructor<?> targetConstructor;
         if (matchedConstructors.size() > 1) {
-            throw new IllegalArgumentException("Expect only one but found " +
-                matchedConstructors.size() + " matched constructors for type: " + type.getName() +
-                ", matched constructors: " + matchedConstructors);
+            throw new IllegalArgumentException("Expect only one but found " + matchedConstructors.size()
+                    + " matched constructors for type: " + type.getName() + ", matched constructors: "
+                    + matchedConstructors);
         } else if (matchedConstructors.size() == 1) {
             targetConstructor = matchedConstructors.get(0);
         } else if (defaultConstructor != null) {
@@ -122,5 +122,4 @@ public class InstantiationStrategy {
         }
         return null;
     }
-
 }

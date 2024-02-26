@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.threadpool;
 
 import org.apache.dubbo.common.concurrent.DiscardPolicy;
@@ -37,7 +36,7 @@ public class MemorySafeLinkedBlockingQueue<E> extends LinkedBlockingQueue<E> {
 
     public static int THE_256_MB = 256 * 1024 * 1024;
 
-    private int maxFreeMemory;
+    private long maxFreeMemory;
 
     private Rejector<E> rejector;
 
@@ -45,18 +44,17 @@ public class MemorySafeLinkedBlockingQueue<E> extends LinkedBlockingQueue<E> {
         this(THE_256_MB);
     }
 
-    public MemorySafeLinkedBlockingQueue(final int maxFreeMemory) {
+    public MemorySafeLinkedBlockingQueue(final long maxFreeMemory) {
         super(Integer.MAX_VALUE);
         this.maxFreeMemory = maxFreeMemory;
-        //default as DiscardPolicy to ensure compatibility with the old version
+        // default as DiscardPolicy to ensure compatibility with the old version
         this.rejector = new DiscardPolicy<>();
     }
 
-    public MemorySafeLinkedBlockingQueue(final Collection<? extends E> c,
-                                         final int maxFreeMemory) {
+    public MemorySafeLinkedBlockingQueue(final Collection<? extends E> c, final int maxFreeMemory) {
         super(c);
         this.maxFreeMemory = maxFreeMemory;
-        //default as DiscardPolicy to ensure compatibility with the old version
+        // default as DiscardPolicy to ensure compatibility with the old version
         this.rejector = new DiscardPolicy<>();
     }
 
@@ -74,7 +72,7 @@ public class MemorySafeLinkedBlockingQueue<E> extends LinkedBlockingQueue<E> {
      *
      * @return the max free memory limit
      */
-    public int getMaxFreeMemory() {
+    public long getMaxFreeMemory() {
         return maxFreeMemory;
     }
 

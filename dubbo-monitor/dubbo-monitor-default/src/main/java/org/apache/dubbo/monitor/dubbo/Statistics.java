@@ -213,5 +213,4 @@ public class Statistics implements Serializable {
     public String toString() {
         return url.toString();
     }
-
 }

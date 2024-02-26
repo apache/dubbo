@@ -22,6 +22,7 @@ public class UnSupportContentTypeException extends MediaTypeUnSupportException {
 
     public UnSupportContentTypeException(String message) {
 
-        super("Current Support content type: " + MediaType.getAllContentType() + "; Do not support  content type" + message);
+        super("Current Support content type: " + MediaType.getAllContentType() + "; Do not support  content type"
+                + message);
     }
 }

@@ -14,11 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.rule;
 
 import java.util.Map;
-
 
 public class BaseRule {
     private String apiVersion;
@@ -51,10 +49,9 @@ public class BaseRule {
 
     @Override
     public String toString() {
-        return "BaseRule{" +
-            "apiVersion='" + apiVersion + '\'' +
-            ", kind='" + kind + '\'' +
-            ", metadata=" + metadata +
-            '}';
+        return "BaseRule{" + "apiVersion='"
+                + apiVersion + '\'' + ", kind='"
+                + kind + '\'' + ", metadata="
+                + metadata + '}';
     }
 }

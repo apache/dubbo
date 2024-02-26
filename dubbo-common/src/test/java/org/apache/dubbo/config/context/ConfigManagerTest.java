@@ -28,12 +28,12 @@ import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Collection;
+import java.util.Optional;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.Collection;
-import java.util.Optional;
 
 import static java.util.Arrays.asList;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
@@ -194,13 +194,13 @@ class ConfigManagerTest {
         assertFalse(configManager.getDefaultProtocols().isEmpty());
         assertEquals(configs, moduleConfigManager.getProtocols());
         assertNotEquals(20881, config.getPort());
-        assertNotEquals(config.getSerialization(),"fastjson2");
+        assertNotEquals(config.getSerialization(), "fastjson2");
         ProtocolConfig defaultConfig = new ProtocolConfig();
         defaultConfig.setPort(20881);
         defaultConfig.setSerialization("fastjson2");
         config.mergeProtocol(defaultConfig);
-        assertEquals(config.getPort(),20881);
-        assertEquals(config.getSerialization(),"fastjson2");
+        assertEquals(config.getPort(), 20881);
+        assertEquals(config.getSerialization(), "fastjson2");
     }
 
     // Test RegistryConfig correlative methods
@@ -306,7 +306,6 @@ class ConfigManagerTest {
             configManager.addConfig(applicationConfig2);
             assertEquals(applicationConfig2, configManager.getApplicationOrElseThrow());
 
-
             // test ignore mode
             System.setProperty(DUBBO_CONFIG_MODE, ConfigMode.IGNORE.name());
             ApplicationModel.reset();
@@ -332,7 +331,9 @@ class ConfigManagerTest {
 
             assertEquals(applicationConfig11, configManager.getApplicationOrElseThrow());
             assertEquals(applicationConfig11.getName(), "app22");
-            assertEquals(applicationConfig11.getParameters(), CollectionUtils.toStringMap("k1", "v11", "k2", "v22", "k3", "v3"));
+            assertEquals(
+                    applicationConfig11.getParameters(),
+                    CollectionUtils.toStringMap("k1", "v11", "k2", "v22", "k3", "v3"));
 
             // test OVERRIDE_IF_ABSENT mode
             System.setProperty(DUBBO_CONFIG_MODE, ConfigMode.OVERRIDE_IF_ABSENT.name());
@@ -349,7 +350,9 @@ class ConfigManagerTest {
 
             assertEquals(applicationConfig33, configManager.getApplicationOrElseThrow());
             assertEquals("app33", applicationConfig33.getName());
-            assertEquals(CollectionUtils.toStringMap("k1", "v1", "k2", "v2", "k3", "v3"), applicationConfig33.getParameters());
+            assertEquals(
+                    CollectionUtils.toStringMap("k1", "v1", "k2", "v2", "k3", "v3"),
+                    applicationConfig33.getParameters());
         } finally {
             System.clearProperty(DUBBO_CONFIG_MODE);
         }
@@ -360,7 +363,8 @@ class ConfigManagerTest {
         RegistryConfig registryConfig = new RegistryConfig();
         registryConfig.setId("registryID_1");
         configManager.addRegistry(registryConfig);
-        Optional<RegistryConfig> registryConfigOptional = configManager.getConfig(RegistryConfig.class, registryConfig.getId());
+        Optional<RegistryConfig> registryConfigOptional =
+                configManager.getConfig(RegistryConfig.class, registryConfig.getId());
 
         if (registryConfigOptional.isPresent()) {
             Assertions.assertEquals(registryConfigOptional.get(), registryConfig);
@@ -370,7 +374,8 @@ class ConfigManagerTest {
 
         ProtocolConfig protocolConfig = new ProtocolConfig("dubbo");
         configManager.addProtocol(protocolConfig);
-        Optional<ProtocolConfig> protocolConfigOptional = configManager.getConfig(ProtocolConfig.class, protocolConfig.getName());
+        Optional<ProtocolConfig> protocolConfigOptional =
+                configManager.getConfig(ProtocolConfig.class, protocolConfig.getName());
 
         if (protocolConfigOptional.isPresent()) {
             Assertions.assertEquals(protocolConfigOptional.get(), protocolConfig);
@@ -387,15 +392,18 @@ class ConfigManagerTest {
             Assertions.fail();
         } catch (Exception e) {
             Assertions.assertTrue(e instanceof IllegalStateException);
-            Assertions.assertEquals(e.getMessage(), "Found more than one config by name: dubbo, instances: " +
-                "[<dubbo:protocol port=\"9103\" name=\"dubbo\" />, <dubbo:protocol name=\"dubbo\" />]. " +
-                "Please remove redundant configs or get config by id.");
+            Assertions.assertEquals(
+                    e.getMessage(),
+                    "Found more than one config by name: dubbo, instances: "
+                            + "[<dubbo:protocol port=\"9103\" name=\"dubbo\" />, <dubbo:protocol name=\"dubbo\" />]. "
+                            + "Please remove redundant configs or get config by id.");
         }
 
         ModuleConfig moduleConfig = new ModuleConfig();
         moduleConfig.setId("moduleID_1");
         moduleConfigManager.setModule(moduleConfig);
-        Optional<ModuleConfig> moduleConfigOptional = moduleConfigManager.getConfig(ModuleConfig.class, moduleConfig.getId());
+        Optional<ModuleConfig> moduleConfigOptional =
+                moduleConfigManager.getConfig(ModuleConfig.class, moduleConfig.getId());
         Assertions.assertEquals(moduleConfig, moduleConfigOptional.get());
 
         Optional<RegistryConfig> config = moduleConfigManager.getConfig(RegistryConfig.class, registryConfig.getId());
@@ -435,7 +443,6 @@ class ConfigManagerTest {
             System.clearProperty("dubbo.applications.app1.name");
             System.clearProperty("dubbo.applications.app2.name");
         }
-
     }
 
     @Test
@@ -466,6 +473,5 @@ class ConfigManagerTest {
         Assertions.assertTrue(moduleConfigManager.getModule().isPresent());
         Assertions.assertFalse(moduleConfigManager.getProviders().isEmpty());
         Assertions.assertFalse(moduleConfigManager.getConsumers().isEmpty());
-
     }
 }

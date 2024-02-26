@@ -23,11 +23,11 @@ import io.envoyproxy.envoy.config.core.v3.Node;
 
 public class NodeBuilder {
 
-    private final static String SVC_CLUSTER_LOCAL = ".svc.cluster.local";
+    private static final String SVC_CLUSTER_LOCAL = ".svc.cluster.local";
 
     public static Node build() {
-//        String podName = System.getenv("metadata.name");
-//        String podNamespace = System.getenv("metadata.namespace");
+        //        String podName = System.getenv("metadata.name");
+        //        String podNamespace = System.getenv("metadata.namespace");
 
         String podName = IstioEnv.getInstance().getPodName();
         String podNamespace = IstioEnv.getInstance().getWorkloadNameSpace();
@@ -36,8 +36,8 @@ public class NodeBuilder {
         // id -> sidecar~ip~{POD_NAME}~{NAMESPACE_NAME}.svc.cluster.local
         // cluster -> {SVC_NAME}
         return Node.newBuilder()
-            .setId("sidecar~" + NetUtils.getLocalHost() + "~" +podName + "~" + podNamespace + SVC_CLUSTER_LOCAL)
-            .setCluster(svcName)
-            .build();
+                .setId("sidecar~" + NetUtils.getLocalHost() + "~" + podName + "~" + podNamespace + SVC_CLUSTER_LOCAL)
+                .setCluster(svcName)
+                .build();
     }
 }

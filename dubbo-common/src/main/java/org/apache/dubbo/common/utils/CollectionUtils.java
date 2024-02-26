@@ -63,8 +63,7 @@ public class CollectionUtils {
         return s1.compareToIgnoreCase(s2);
     };
 
-    private CollectionUtils() {
-    }
+    private CollectionUtils() {}
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static <T> List<T> sort(List<T> list) {
@@ -98,9 +97,7 @@ public class CollectionUtils {
         if (set.size() != map.size()) {
             throw new IllegalArgumentException("The map value must be unique.");
         }
-        return map.entrySet()
-                .stream()
-                .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
+        return map.entrySet().stream().collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
     }
 
     public static Map<String, Map<String, String>> splitAll(Map<String, List<String>> list, String separator) {
@@ -249,7 +246,7 @@ public class CollectionUtils {
                 field.setAccessible(true);
                 Object value = field.get(object);
                 if (value != null) {
-                    ret.put((K)field.getName(), (V)value);
+                    ret.put((K) field.getName(), (V) value);
                 }
             }
         }
@@ -423,5 +420,4 @@ public class CollectionUtils {
         }
         return set;
     }
-
 }

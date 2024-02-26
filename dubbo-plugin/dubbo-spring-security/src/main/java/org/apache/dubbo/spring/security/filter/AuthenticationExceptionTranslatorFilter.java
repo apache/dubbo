@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.spring.security.filter;
 
 import org.apache.dubbo.common.constants.CommonConstants;
@@ -30,12 +29,22 @@ import org.springframework.security.core.AuthenticationException;
 
 import static org.apache.dubbo.rpc.RpcException.AUTHORIZATION_EXCEPTION;
 import static org.apache.dubbo.spring.security.utils.SecurityNames.CORE_JACKSON_2_MODULE_CLASS_NAME;
+import static org.apache.dubbo.spring.security.utils.SecurityNames.JAVA_TIME_MODULE_CLASS_NAME;
 import static org.apache.dubbo.spring.security.utils.SecurityNames.OBJECT_MAPPER_CLASS_NAME;
 import static org.apache.dubbo.spring.security.utils.SecurityNames.SECURITY_CONTEXT_HOLDER_CLASS_NAME;
+import static org.apache.dubbo.spring.security.utils.SecurityNames.SIMPLE_MODULE_CLASS_NAME;
 
-@Activate(group = CommonConstants.PROVIDER, order = Integer.MAX_VALUE, onClass = {SECURITY_CONTEXT_HOLDER_CLASS_NAME, CORE_JACKSON_2_MODULE_CLASS_NAME, OBJECT_MAPPER_CLASS_NAME})
+@Activate(
+        group = CommonConstants.PROVIDER,
+        order = Integer.MAX_VALUE,
+        onClass = {
+            SECURITY_CONTEXT_HOLDER_CLASS_NAME,
+            CORE_JACKSON_2_MODULE_CLASS_NAME,
+            OBJECT_MAPPER_CLASS_NAME,
+            JAVA_TIME_MODULE_CLASS_NAME,
+            SIMPLE_MODULE_CLASS_NAME
+        })
 public class AuthenticationExceptionTranslatorFilter implements Filter, Filter.Listener {
-
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -54,16 +63,13 @@ public class AuthenticationExceptionTranslatorFilter implements Filter, Filter.L
     }
 
     @Override
-    public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-    }
+    public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {}
 
     private boolean isTranslate(Result result) {
 
         Throwable exception = result.getException();
 
         return result.hasException()
-            && (exception instanceof AuthenticationException || exception instanceof AccessDeniedException);
-
+                && (exception instanceof AuthenticationException || exception instanceof AccessDeniedException);
     }
-
 }

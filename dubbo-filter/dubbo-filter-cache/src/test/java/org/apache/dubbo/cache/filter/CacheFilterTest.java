@@ -27,12 +27,12 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
 
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import java.util.stream.Stream;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -51,8 +51,7 @@ class CacheFilterTest {
                 Arguments.of("lru", new LruCacheFactory()),
                 Arguments.of("jcache", new JCacheFactory()),
                 Arguments.of("threadlocal", new ThreadLocalCacheFactory()),
-                Arguments.of("expiring", new ExpiringCacheFactory())
-        );
+                Arguments.of("expiring", new ExpiringCacheFactory()));
     }
 
     public void setUp(String cacheType, CacheFactory cacheFactory) {
@@ -70,7 +69,8 @@ class CacheFilterTest {
         given(invoker2.invoke(invocation)).willReturn(AsyncRpcResult.newDefaultAsyncResult("value2", invocation));
         given(invoker2.getUrl()).willReturn(url);
 
-        given(invoker3.invoke(invocation)).willReturn(AsyncRpcResult.newDefaultAsyncResult(new RuntimeException(), invocation));
+        given(invoker3.invoke(invocation))
+                .willReturn(AsyncRpcResult.newDefaultAsyncResult(new RuntimeException(), invocation));
         given(invoker3.getUrl()).willReturn(url);
 
         given(invoker4.invoke(invocation)).willReturn(AsyncRpcResult.newDefaultAsyncResult(invocation));
@@ -82,8 +82,8 @@ class CacheFilterTest {
     public void testNonArgsMethod(String cacheType, CacheFactory cacheFactory) {
         setUp(cacheType, cacheFactory);
         invocation.setMethodName("echo");
-        invocation.setParameterTypes(new Class<?>[]{});
-        invocation.setArguments(new Object[]{});
+        invocation.setParameterTypes(new Class<?>[] {});
+        invocation.setArguments(new Object[] {});
 
         cacheFilter.invoke(invoker, invocation);
         cacheFilter.invoke(invoker, invocation);
@@ -98,8 +98,8 @@ class CacheFilterTest {
     public void testMethodWithArgs(String cacheType, CacheFactory cacheFactory) {
         setUp(cacheType, cacheFactory);
         invocation.setMethodName("echo1");
-        invocation.setParameterTypes(new Class<?>[]{String.class});
-        invocation.setArguments(new Object[]{"arg1"});
+        invocation.setParameterTypes(new Class<?>[] {String.class});
+        invocation.setArguments(new Object[] {"arg1"});
 
         cacheFilter.invoke(invoker, invocation);
         cacheFilter.invoke(invoker, invocation);
@@ -114,8 +114,8 @@ class CacheFilterTest {
     public void testException(String cacheType, CacheFactory cacheFactory) {
         setUp(cacheType, cacheFactory);
         invocation.setMethodName("echo1");
-        invocation.setParameterTypes(new Class<?>[]{String.class});
-        invocation.setArguments(new Object[]{"arg2"});
+        invocation.setParameterTypes(new Class<?>[] {String.class});
+        invocation.setArguments(new Object[] {"arg2"});
 
         cacheFilter.invoke(invoker3, invocation);
         cacheFilter.invoke(invoker3, invocation);
@@ -128,8 +128,8 @@ class CacheFilterTest {
     public void testNull(String cacheType, CacheFactory cacheFactory) {
         setUp(cacheType, cacheFactory);
         invocation.setMethodName("echo1");
-        invocation.setParameterTypes(new Class<?>[]{String.class});
-        invocation.setArguments(new Object[]{"arg3"});
+        invocation.setParameterTypes(new Class<?>[] {String.class});
+        invocation.setArguments(new Object[] {"arg3"});
 
         cacheFilter.invoke(invoker4, invocation);
         cacheFilter.invoke(invoker4, invocation);

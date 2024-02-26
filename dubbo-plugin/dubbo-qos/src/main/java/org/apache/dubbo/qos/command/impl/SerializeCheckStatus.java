@@ -16,18 +16,18 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
+import org.apache.dubbo.common.utils.JsonUtils;
+import org.apache.dubbo.qos.api.BaseCommand;
+import org.apache.dubbo.qos.api.Cmd;
+import org.apache.dubbo.qos.api.CommandContext;
+import org.apache.dubbo.qos.command.util.SerializeCheckUtils;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.dubbo.common.utils.JsonUtils;
-import org.apache.dubbo.qos.api.BaseCommand;
-import org.apache.dubbo.qos.api.CommandContext;
-import org.apache.dubbo.qos.api.Cmd;
-import org.apache.dubbo.qos.command.util.SerializeCheckUtils;
-import org.apache.dubbo.rpc.model.FrameworkModel;
-
-@Cmd(name = "serializeCheckStatus",summary = "get serialize check status")
+@Cmd(name = "serializeCheckStatus", summary = "get serialize check status")
 public class SerializeCheckStatus implements BaseCommand {
 
     private final SerializeCheckUtils serializeCheckUtils;
@@ -47,14 +47,15 @@ public class SerializeCheckStatus implements BaseCommand {
 
             return JsonUtils.toJson(result);
         } else {
-            return "CheckStatus: " + serializeCheckUtils.getStatus() + "\n\n" +
-                "CheckSerializable: " + serializeCheckUtils.isCheckSerializable() + "\n\n" +
-                "AllowedPrefix:" + "\n" +
-                serializeCheckUtils.getAllowedList().stream().sorted().collect(Collectors.joining("\n")) +
-                "\n\n" +
-                "DisAllowedPrefix:" + "\n" +
-                serializeCheckUtils.getDisAllowedList().stream().sorted().collect(Collectors.joining("\n")) +
-                "\n\n";
+            return "CheckStatus: " + serializeCheckUtils.getStatus() + "\n\n" + "CheckSerializable: "
+                    + serializeCheckUtils.isCheckSerializable() + "\n\n" + "AllowedPrefix:"
+                    + "\n"
+                    + serializeCheckUtils.getAllowedList().stream().sorted().collect(Collectors.joining("\n"))
+                    + "\n\n"
+                    + "DisAllowedPrefix:"
+                    + "\n"
+                    + serializeCheckUtils.getDisAllowedList().stream().sorted().collect(Collectors.joining("\n"))
+                    + "\n\n";
         }
     }
 }

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.data;
 
 import org.apache.dubbo.metrics.collector.MetricsCollector;
@@ -33,7 +32,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-
 /**
  * As a data aggregator, use internal data containers calculates and classifies
  * the registry data collected by {@link MetricsCollector MetricsCollector}, and
@@ -47,14 +45,12 @@ public abstract class BaseStatComposite implements MetricsExport {
     private MethodStatComposite methodStatComposite;
     private RtStatComposite rtStatComposite;
 
-
     public BaseStatComposite(ApplicationModel applicationModel) {
         init(new ApplicationStatComposite(applicationModel));
         init(new ServiceStatComposite(applicationModel));
         init(new MethodStatComposite(applicationModel));
         init(new RtStatComposite(applicationModel));
     }
-
 
     protected void init(ApplicationStatComposite applicationStatComposite) {
         this.applicationStatComposite = applicationStatComposite;
@@ -73,11 +69,13 @@ public abstract class BaseStatComposite implements MetricsExport {
     }
 
     public void calcApplicationRt(String registryOpType, Long responseTime) {
-        rtStatComposite.calcServiceKeyRt(registryOpType, responseTime, new ApplicationMetric(rtStatComposite.getApplicationModel()));
+        rtStatComposite.calcServiceKeyRt(
+                registryOpType, responseTime, new ApplicationMetric(rtStatComposite.getApplicationModel()));
     }
 
     public void calcServiceKeyRt(String serviceKey, String registryOpType, Long responseTime) {
-        rtStatComposite.calcServiceKeyRt(registryOpType, responseTime, new ServiceKeyMetric(rtStatComposite.getApplicationModel(), serviceKey));
+        rtStatComposite.calcServiceKeyRt(
+                registryOpType, responseTime, new ServiceKeyMetric(rtStatComposite.getApplicationModel(), serviceKey));
     }
 
     public void calcServiceKeyRt(Invocation invocation, String registryOpType, Long responseTime) {
@@ -104,7 +102,8 @@ public abstract class BaseStatComposite implements MetricsExport {
         serviceStatComposite.incrementServiceKey(metricsKeyWrapper, attServiceKey, size);
     }
 
-    public void incrementServiceKey(MetricsKeyWrapper metricsKeyWrapper, String attServiceKey, Map<String, String> extra, int size) {
+    public void incrementServiceKey(
+            MetricsKeyWrapper metricsKeyWrapper, String attServiceKey, Map<String, String> extra, int size) {
         serviceStatComposite.incrementExtraServiceKey(metricsKeyWrapper, attServiceKey, extra, size);
     }
 
@@ -132,5 +131,15 @@ public abstract class BaseStatComposite implements MetricsExport {
 
     public RtStatComposite getRtStatComposite() {
         return rtStatComposite;
+    }
+
+    @Override
+    public boolean calSamplesChanged() {
+        // Should ensure that all the composite's samplesChanged have been compareAndSet, and cannot flip the `or` logic
+        boolean changed = applicationStatComposite.calSamplesChanged();
+        changed = rtStatComposite.calSamplesChanged() || changed;
+        changed = serviceStatComposite.calSamplesChanged() || changed;
+        changed = methodStatComposite.calSamplesChanged() || changed;
+        return changed;
     }
 }

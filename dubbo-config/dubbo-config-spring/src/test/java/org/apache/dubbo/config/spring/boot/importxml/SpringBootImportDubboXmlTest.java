@@ -30,26 +30,20 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 
 @SpringBootTest(
-        properties = {
-                "dubbo.registry.protocol=zookeeper",
-                "dubbo.registry.address=localhost:2181"
-        },
-        classes = {
-                SpringBootImportDubboXmlTest.class
-        }
-)
+        properties = {"dubbo.registry.protocol=zookeeper", "dubbo.registry.address=localhost:2181"},
+        classes = {SpringBootImportDubboXmlTest.class})
 @Configuration
 @ComponentScan
 @ImportResource("classpath:/org/apache/dubbo/config/spring/boot/importxml/consumer/dubbo-consumer.xml")
 class SpringBootImportDubboXmlTest {
 
     @BeforeAll
-    public static void beforeAll(){
+    public static void beforeAll() {
         DubboBootstrap.reset();
     }
 
     @AfterAll
-    public static void afterAll(){
+    public static void afterAll() {
         DubboBootstrap.reset();
     }
 
@@ -67,5 +61,4 @@ class SpringBootImportDubboXmlTest {
             Assertions.assertTrue(s.contains("service org.apache.dubbo.config.spring.api.HelloService"), s);
         }
     }
-
 }

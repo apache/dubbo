@@ -27,9 +27,12 @@ import org.apache.dubbo.spring.boot.actuate.endpoint.condition.CompatibleConditi
 import org.springframework.boot.actuate.autoconfigure.endpoint.condition.ConditionalOnAvailableEndpoint;
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+
+import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_PREFIX;
 
 /**
  * Dubbo {@link Endpoint @Endpoint} Auto-{@link Configuration} for Spring Boot Actuator 2.0
@@ -38,6 +41,7 @@ import org.springframework.context.annotation.PropertySource;
  * @see Configuration
  * @since 2.7.0
  */
+@ConditionalOnProperty(prefix = DUBBO_PREFIX, name = "enabled", matchIfMissing = true)
 @Configuration
 @PropertySource(
         name = "Dubbo Endpoints Default Properties",
@@ -91,5 +95,4 @@ public class DubboEndpointAnnotationAutoConfiguration {
     public DubboShutdownEndpoint dubboShutdownEndpoint() {
         return new DubboShutdownEndpoint();
     }
-
 }

@@ -20,6 +20,12 @@ import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.support.MergedBeanDefinitionPostProcessor;
@@ -27,12 +33,6 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.annotation.CommonAnnotationBeanPostProcessor;
 import org.springframework.core.Ordered;
 import org.springframework.core.PriorityOrdered;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 
 import static org.apache.dubbo.config.spring.util.SpringCompatUtils.getPropertyValue;
 import static org.springframework.util.ClassUtils.getUserClass;
@@ -48,7 +48,8 @@ import static org.springframework.util.ClassUtils.isAssignable;
  * @since 2.7.7
  * @deprecated
  */
-public class ServiceBeanIdConflictProcessor implements MergedBeanDefinitionPostProcessor, DisposableBean, PriorityOrdered {
+public class ServiceBeanIdConflictProcessor
+        implements MergedBeanDefinitionPostProcessor, DisposableBean, PriorityOrdered {
 
     /**
      * The key is the class names of interfaces that were exported by {@link ServiceBean}
@@ -85,7 +86,6 @@ public class ServiceBeanIdConflictProcessor implements MergedBeanDefinitionPostP
                 // Set id as the bean name
                 serviceConfig.setId(beanName);
             }
-
         }
         return bean;
     }

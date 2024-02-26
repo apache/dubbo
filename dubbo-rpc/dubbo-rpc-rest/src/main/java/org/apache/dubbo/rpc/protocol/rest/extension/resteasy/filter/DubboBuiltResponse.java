@@ -33,7 +33,6 @@ public class DubboBuiltResponse extends BuiltResponse {
         this.status = status;
     }
 
-
     @Override
     public void setEntity(Object entity) {
         if (entity == null) {

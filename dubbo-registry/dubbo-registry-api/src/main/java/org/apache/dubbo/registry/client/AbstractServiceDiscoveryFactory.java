@@ -59,5 +59,4 @@ public abstract class AbstractServiceDiscoveryFactory implements ServiceDiscover
     }
 
     protected abstract ServiceDiscovery createDiscovery(URL registryURL);
-
 }

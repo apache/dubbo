@@ -64,5 +64,4 @@ public class SpringContainer implements Container {
             logger.error(CONFIG_STOP_DUBBO_ERROR, "", "", e.getMessage(), e);
         }
     }
-
 }

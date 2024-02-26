@@ -26,10 +26,11 @@ import org.apache.dubbo.rpc.RpcException;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 
-@Activate(group = {PROVIDER}, order = Integer.MIN_VALUE + 100)
+@Activate(
+        group = {PROVIDER},
+        order = Integer.MIN_VALUE + 100)
 public class MetricsProviderFilter extends MetricsFilter implements Filter, BaseFilter.Listener {
-    public MetricsProviderFilter() {
-    }
+    public MetricsProviderFilter() {}
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {

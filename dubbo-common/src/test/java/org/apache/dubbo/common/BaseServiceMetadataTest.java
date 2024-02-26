@@ -30,7 +30,8 @@ class BaseServiceMetadataTest {
         baseServiceMetadata.setGroup("group1");
         baseServiceMetadata.setServiceInterfaceName("org.apache.dubbo.common.TestInterface");
         baseServiceMetadata.setVersion("1.0.0");
-        baseServiceMetadata.setServiceKey(BaseServiceMetadata.buildServiceKey("org.apache.dubbo.common.TestInterface", "group1", "1.0.0"));
+        baseServiceMetadata.setServiceKey(
+                BaseServiceMetadata.buildServiceKey("org.apache.dubbo.common.TestInterface", "group1", "1.0.0"));
 
         assertEquals(baseServiceMetadata.getGroup(), "group1");
         assertEquals(baseServiceMetadata.getServiceInterfaceName(), "org.apache.dubbo.common.TestInterface");
@@ -38,29 +39,43 @@ class BaseServiceMetadataTest {
         assertEquals(baseServiceMetadata.getServiceKey(), "group1/org.apache.dubbo.common.TestInterface:1.0.0");
         assertEquals(baseServiceMetadata.getDisplayServiceKey(), "org.apache.dubbo.common.TestInterface:1.0.0");
 
-        baseServiceMetadata.setServiceKey(BaseServiceMetadata.buildServiceKey("org.apache.dubbo.common.TestInterface", null, null));
+        baseServiceMetadata.setServiceKey(
+                BaseServiceMetadata.buildServiceKey("org.apache.dubbo.common.TestInterface", null, null));
         assertEquals(baseServiceMetadata.getServiceKey(), "org.apache.dubbo.common.TestInterface");
-        baseServiceMetadata.setServiceKey(BaseServiceMetadata.buildServiceKey("org.apache.dubbo.common.TestInterface", "", ""));
+        baseServiceMetadata.setServiceKey(
+                BaseServiceMetadata.buildServiceKey("org.apache.dubbo.common.TestInterface", "", ""));
         assertEquals(baseServiceMetadata.getServiceKey(), "org.apache.dubbo.common.TestInterface");
-
 
         baseServiceMetadata.setVersion("2.0.0");
         baseServiceMetadata.generateServiceKey();
         assertEquals(baseServiceMetadata.getServiceKey(), "group1/org.apache.dubbo.common.TestInterface:2.0.0");
 
-        assertEquals(BaseServiceMetadata.versionFromServiceKey("group1/org.apache.dubbo.common.TestInterface:1.0.0"), "1.0.0");
-        assertEquals(BaseServiceMetadata.groupFromServiceKey("group1/org.apache.dubbo.common.TestInterface:1.0.0"), "group1");
-        assertEquals(BaseServiceMetadata.interfaceFromServiceKey("group1/org.apache.dubbo.common.TestInterface:1.0.0"), "org.apache.dubbo.common.TestInterface");
+        assertEquals(
+                BaseServiceMetadata.versionFromServiceKey("group1/org.apache.dubbo.common.TestInterface:1.0.0"),
+                "1.0.0");
+        assertEquals(
+                BaseServiceMetadata.groupFromServiceKey("group1/org.apache.dubbo.common.TestInterface:1.0.0"),
+                "group1");
+        assertEquals(
+                BaseServiceMetadata.interfaceFromServiceKey("group1/org.apache.dubbo.common.TestInterface:1.0.0"),
+                "org.apache.dubbo.common.TestInterface");
 
         assertEquals(DEFAULT_VERSION, BaseServiceMetadata.versionFromServiceKey(""));
         assertNull(BaseServiceMetadata.groupFromServiceKey(""));
         assertEquals(BaseServiceMetadata.interfaceFromServiceKey(""), "");
 
-        assertEquals(BaseServiceMetadata.revertDisplayServiceKey("org.apache.dubbo.common.TestInterface:1.0.0").getDisplayServiceKey(),
+        assertEquals(
+                BaseServiceMetadata.revertDisplayServiceKey("org.apache.dubbo.common.TestInterface:1.0.0")
+                        .getDisplayServiceKey(),
                 "org.apache.dubbo.common.TestInterface:1.0.0");
-        assertEquals(BaseServiceMetadata.revertDisplayServiceKey("org.apache.dubbo.common.TestInterface").getDisplayServiceKey(),
+        assertEquals(
+                BaseServiceMetadata.revertDisplayServiceKey("org.apache.dubbo.common.TestInterface")
+                        .getDisplayServiceKey(),
                 "org.apache.dubbo.common.TestInterface:null");
-        assertEquals(BaseServiceMetadata.revertDisplayServiceKey(null).getDisplayServiceKey(),"null:null");
-        assertEquals(BaseServiceMetadata.revertDisplayServiceKey("org.apache.dubbo.common.TestInterface:1.0.0:1").getDisplayServiceKey(),"null:null");
+        assertEquals(BaseServiceMetadata.revertDisplayServiceKey(null).getDisplayServiceKey(), "null:null");
+        assertEquals(
+                BaseServiceMetadata.revertDisplayServiceKey("org.apache.dubbo.common.TestInterface:1.0.0:1")
+                        .getDisplayServiceKey(),
+                "null:null");
     }
 }

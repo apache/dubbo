@@ -23,12 +23,12 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 
+import java.util.HashMap;
+import java.util.List;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import java.util.HashMap;
-import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.WEIGHT_KEY;
@@ -71,10 +71,12 @@ class AbstractLoadBalanceTest {
         URL url1 = new ServiceConfigURL("", "", 0, "DemoService", new HashMap<>());
         given(invoker1.getUrl()).willReturn(url1);
 
-        ClusterInvoker invoker2 = mock(ClusterInvoker.class, Mockito.withSettings().stubOnly());
+        ClusterInvoker invoker2 =
+                mock(ClusterInvoker.class, Mockito.withSettings().stubOnly());
         URL url2 = new ServiceConfigURL("", "", 0, "org.apache.dubbo.registry.RegistryService", new HashMap<>());
         url2 = url2.addParameter(WEIGHT_KEY, 20);
-        URL registryUrl2 = new ServiceConfigURL("", "", 0, "org.apache.dubbo.registry.RegistryService", new HashMap<>());
+        URL registryUrl2 =
+                new ServiceConfigURL("", "", 0, "org.apache.dubbo.registry.RegistryService", new HashMap<>());
         registryUrl2 = registryUrl2.addParameter(WEIGHT_KEY, 30);
         given(invoker2.getUrl()).willReturn(url2);
         given(invoker2.getRegistryUrl()).willReturn(registryUrl2);

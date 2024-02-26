@@ -24,5 +24,4 @@ package org.apache.dubbo.config.spring.registry.nacos.demo.service;
 public interface DemoService {
 
     String sayName(String name);
-
 }

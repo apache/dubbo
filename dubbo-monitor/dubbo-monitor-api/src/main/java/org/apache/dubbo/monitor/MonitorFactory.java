@@ -35,5 +35,4 @@ public interface MonitorFactory {
      */
     @Adaptive(CommonConstants.PROTOCOL_KEY)
     Monitor getMonitor(URL url);
-
 }

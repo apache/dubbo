@@ -82,16 +82,18 @@ import static org.apache.dubbo.metadata.report.support.Constants.USER_HOME;
 
 public abstract class AbstractMetadataReport implements MetadataReport {
 
-    protected final static String DEFAULT_ROOT = "dubbo";
+    protected static final String DEFAULT_ROOT = "dubbo";
 
     private static final int ONE_DAY_IN_MILLISECONDS = 60 * 24 * 60 * 1000;
     private static final int FOUR_HOURS_IN_MILLISECONDS = 60 * 4 * 60 * 1000;
     // Log output
     protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
-    // Local disk cache, where the special key value.registries records the list of metadata centers, and the others are the list of notified service providers
+    // Local disk cache, where the special key value.registries records the list of metadata centers, and the others are
+    // the list of notified service providers
     final Properties properties = new Properties();
-    private final ExecutorService reportCacheExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("DubboSaveMetadataReport", true));
+    private final ExecutorService reportCacheExecutor =
+            Executors.newFixedThreadPool(1, new NamedThreadFactory("DubboSaveMetadataReport", true));
     final Map<MetadataIdentifier, Object> allMetadataReports = new ConcurrentHashMap<>(4);
 
     private final AtomicLong lastCacheChanged = new AtomicLong();
@@ -114,16 +116,19 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
         boolean localCacheEnabled = reportServerURL.getParameter(REGISTRY_LOCAL_FILE_CACHE_ENABLED, true);
         // Start file save timer
-        String defaultFilename = System.getProperty(USER_HOME) + DUBBO_METADATA +
-            reportServerURL.getApplication() + "-" +
-            replace(reportServerURL.getAddress(), ":", "-") + CACHE;
+        String defaultFilename = System.getProperty(USER_HOME) + DUBBO_METADATA + reportServerURL.getApplication()
+                + "-" + replace(reportServerURL.getAddress(), ":", "-")
+                + CACHE;
         String filename = reportServerURL.getParameter(FILE_KEY, defaultFilename);
         File file = null;
         if (localCacheEnabled && ConfigUtils.isNotEmpty(filename)) {
             file = new File(filename);
-            if (!file.exists() && file.getParentFile() != null && !file.getParentFile().exists()) {
+            if (!file.exists()
+                    && file.getParentFile() != null
+                    && !file.getParentFile().exists()) {
                 if (!file.getParentFile().mkdirs()) {
-                    throw new IllegalArgumentException("Invalid service store file " + file + ", cause: Failed to create directory " + file.getParentFile() + "!");
+                    throw new IllegalArgumentException("Invalid service store file " + file
+                            + ", cause: Failed to create directory " + file.getParentFile() + "!");
                 }
             }
             // if this file exists, firstly delete it.
@@ -134,12 +139,15 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         this.file = file;
         loadProperties();
         syncReport = reportServerURL.getParameter(SYNC_REPORT_KEY, false);
-        metadataReportRetry = new MetadataReportRetry(reportServerURL.getParameter(RETRY_TIMES_KEY, DEFAULT_METADATA_REPORT_RETRY_TIMES),
-            reportServerURL.getParameter(RETRY_PERIOD_KEY, DEFAULT_METADATA_REPORT_RETRY_PERIOD));
+        metadataReportRetry = new MetadataReportRetry(
+                reportServerURL.getParameter(RETRY_TIMES_KEY, DEFAULT_METADATA_REPORT_RETRY_TIMES),
+                reportServerURL.getParameter(RETRY_PERIOD_KEY, DEFAULT_METADATA_REPORT_RETRY_PERIOD));
         // cycle report the data switch
         if (reportServerURL.getParameter(CYCLE_REPORT_KEY, DEFAULT_METADATA_REPORT_CYCLE_REPORT)) {
-            reportTimerScheduler = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboMetadataReportTimer", true));
-            reportTimerScheduler.scheduleAtFixedRate(this::publishAll, calculateStartTime(), ONE_DAY_IN_MILLISECONDS, TimeUnit.MILLISECONDS);
+            reportTimerScheduler = Executors.newSingleThreadScheduledExecutor(
+                    new NamedThreadFactory("DubboMetadataReportTimer", true));
+            reportTimerScheduler.scheduleAtFixedRate(
+                    this::publishAll, calculateStartTime(), ONE_DAY_IN_MILLISECONDS, TimeUnit.MILLISECONDS);
         }
 
         this.reportMetadata = reportServerURL.getParameter(REPORT_METADATA_KEY, false);
@@ -171,10 +179,12 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                 lockfile.createNewFile();
             }
             try (RandomAccessFile raf = new RandomAccessFile(lockfile, "rw");
-                 FileChannel channel = raf.getChannel()) {
+                    FileChannel channel = raf.getChannel()) {
                 FileLock lock = channel.tryLock();
                 if (lock == null) {
-                    throw new IOException("Can not lock the metadataReport cache file " + file.getAbsolutePath() + ", ignore and retry later, maybe multi java process use the file, please config: dubbo.metadata.file=xxx.properties");
+                    throw new IOException(
+                            "Can not lock the metadataReport cache file " + file.getAbsolutePath()
+                                    + ", ignore and retry later, maybe multi java process use the file, please config: dubbo.metadata.file=xxx.properties");
                 }
                 // Save
                 try {
@@ -210,7 +220,12 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             } else {
                 reportCacheExecutor.execute(new SaveProperties(lastCacheChanged.incrementAndGet()));
             }
-            logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "Failed to save service store file, cause: " + e.getMessage(), e);
+            logger.warn(
+                    COMMON_UNEXPECTED_EXCEPTION,
+                    "",
+                    "",
+                    "Failed to save service store file, cause: " + e.getMessage(),
+                    e);
         }
     }
 
@@ -269,7 +284,8 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     }
 
     @Override
-    public void storeProviderMetadata(MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition) {
+    public void storeProviderMetadata(
+            MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition) {
         if (syncReport) {
             storeProviderMetadataTask(providerMetadataIdentifier, serviceDefinition);
         } else {
@@ -277,47 +293,60 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
-    private void storeProviderMetadataTask(MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition) {
+    private void storeProviderMetadataTask(
+            MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition) {
 
-        MetadataEvent metadataEvent = MetadataEvent.toServiceSubscribeEvent(applicationModel, providerMetadataIdentifier.getUniqueServiceName());
-        MetricsEventBus.post(metadataEvent, () ->
-            {
-                boolean result = true;
-                try {
-                    if (logger.isInfoEnabled()) {
-                        logger.info("store provider metadata. Identifier : " + providerMetadataIdentifier + "; definition: " + serviceDefinition);
+        MetadataEvent metadataEvent = MetadataEvent.toServiceSubscribeEvent(
+                applicationModel, providerMetadataIdentifier.getUniqueServiceName());
+        MetricsEventBus.post(
+                metadataEvent,
+                () -> {
+                    boolean result = true;
+                    try {
+                        if (logger.isInfoEnabled()) {
+                            logger.info("store provider metadata. Identifier : " + providerMetadataIdentifier
+                                    + "; definition: " + serviceDefinition);
+                        }
+                        allMetadataReports.put(providerMetadataIdentifier, serviceDefinition);
+                        failedReports.remove(providerMetadataIdentifier);
+                        String data = JsonUtils.toJson(serviceDefinition);
+                        doStoreProviderMetadata(providerMetadataIdentifier, data);
+                        saveProperties(providerMetadataIdentifier, data, true, !syncReport);
+                    } catch (Exception e) {
+                        // retry again. If failed again, throw exception.
+                        failedReports.put(providerMetadataIdentifier, serviceDefinition);
+                        metadataReportRetry.startRetryTask();
+                        logger.error(
+                                PROXY_FAILED_EXPORT_SERVICE,
+                                "",
+                                "",
+                                "Failed to put provider metadata " + providerMetadataIdentifier + " in  "
+                                        + serviceDefinition + ", cause: " + e.getMessage(),
+                                e);
+                        result = false;
                     }
-                    allMetadataReports.put(providerMetadataIdentifier, serviceDefinition);
-                    failedReports.remove(providerMetadataIdentifier);
-                    String data = JsonUtils.toJson(serviceDefinition);
-                    doStoreProviderMetadata(providerMetadataIdentifier, data);
-                    saveProperties(providerMetadataIdentifier, data, true, !syncReport);
-                } catch (Exception e) {
-                    // retry again. If failed again, throw exception.
-                    failedReports.put(providerMetadataIdentifier, serviceDefinition);
-                    metadataReportRetry.startRetryTask();
-                    logger.error(PROXY_FAILED_EXPORT_SERVICE, "", "", "Failed to put provider metadata " + providerMetadataIdentifier + " in  " + serviceDefinition + ", cause: " + e.getMessage(), e);
-                    result = false;
-                }
-                return result;
-            }, aBoolean -> aBoolean
-        );
-
+                    return result;
+                },
+                aBoolean -> aBoolean);
     }
 
     @Override
-    public void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {
+    public void storeConsumerMetadata(
+            MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {
         if (syncReport) {
             storeConsumerMetadataTask(consumerMetadataIdentifier, serviceParameterMap);
         } else {
-            reportCacheExecutor.execute(() -> storeConsumerMetadataTask(consumerMetadataIdentifier, serviceParameterMap));
+            reportCacheExecutor.execute(
+                    () -> storeConsumerMetadataTask(consumerMetadataIdentifier, serviceParameterMap));
         }
     }
 
-    protected void storeConsumerMetadataTask(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {
+    protected void storeConsumerMetadataTask(
+            MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {
         try {
             if (logger.isInfoEnabled()) {
-                logger.info("store consumer metadata. Identifier : " + consumerMetadataIdentifier + "; definition: " + serviceParameterMap);
+                logger.info("store consumer metadata. Identifier : " + consumerMetadataIdentifier + "; definition: "
+                        + serviceParameterMap);
             }
             allMetadataReports.put(consumerMetadataIdentifier, serviceParameterMap);
             failedReports.remove(consumerMetadataIdentifier);
@@ -329,7 +358,13 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             // retry again. If failed again, throw exception.
             failedReports.put(consumerMetadataIdentifier, serviceParameterMap);
             metadataReportRetry.startRetryTask();
-            logger.error(PROXY_FAILED_EXPORT_SERVICE, "", "", "Failed to put consumer metadata " + consumerMetadataIdentifier + ";  " + serviceParameterMap + ", cause: " + e.getMessage(), e);
+            logger.error(
+                    PROXY_FAILED_EXPORT_SERVICE,
+                    "",
+                    "",
+                    "Failed to put consumer metadata " + consumerMetadataIdentifier + ";  " + serviceParameterMap
+                            + ", cause: " + e.getMessage(),
+                    e);
         }
     }
 
@@ -376,10 +411,10 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         if (syncReport) {
             doSaveSubscriberData(subscriberMetadataIdentifier, JsonUtils.toJson(urls));
         } else {
-            reportCacheExecutor.execute(() -> doSaveSubscriberData(subscriberMetadataIdentifier, JsonUtils.toJson(urls)));
+            reportCacheExecutor.execute(
+                    () -> doSaveSubscriberData(subscriberMetadataIdentifier, JsonUtils.toJson(urls)));
         }
     }
-
 
     @Override
     public List<String> getSubscribedURLs(SubscriberMetadataIdentifier subscriberMetadataIdentifier) {
@@ -414,7 +449,8 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         if (metadataMap.isEmpty()) {
             return true;
         }
-        Iterator<Map.Entry<MetadataIdentifier, Object>> iterable = metadataMap.entrySet().iterator();
+        Iterator<Map.Entry<MetadataIdentifier, Object>> iterable =
+                metadataMap.entrySet().iterator();
         while (iterable.hasNext()) {
             Map.Entry<MetadataIdentifier, Object> item = iterable.next();
             if (PROVIDER_SIDE.equals(item.getKey().getSide())) {
@@ -422,7 +458,6 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             } else if (CONSUMER_SIDE.equals(item.getKey().getSide())) {
                 this.storeConsumerMetadata(item.getKey(), (Map) item.getValue());
             }
-
         }
         return false;
     }
@@ -448,13 +483,16 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
         long subtract = calendar.getTimeInMillis() + ONE_DAY_IN_MILLISECONDS - nowMill;
-        return subtract + (FOUR_HOURS_IN_MILLISECONDS / 2) + ThreadLocalRandom.current().nextInt(FOUR_HOURS_IN_MILLISECONDS);
+        return subtract
+                + (FOUR_HOURS_IN_MILLISECONDS / 2)
+                + ThreadLocalRandom.current().nextInt(FOUR_HOURS_IN_MILLISECONDS);
     }
 
     class MetadataReportRetry {
         protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
-        final ScheduledExecutorService retryExecutor = Executors.newScheduledThreadPool(0, new NamedThreadFactory("DubboMetadataReportRetryTimer", true));
+        final ScheduledExecutorService retryExecutor =
+                Executors.newScheduledThreadPool(0, new NamedThreadFactory("DubboMetadataReportRetryTimer", true));
         volatile ScheduledFuture retryScheduledFuture;
         final AtomicInteger retryCounter = new AtomicInteger(0);
         // retry task schedule period
@@ -473,21 +511,30 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             if (retryScheduledFuture == null) {
                 synchronized (retryCounter) {
                     if (retryScheduledFuture == null) {
-                        retryScheduledFuture = retryExecutor.scheduleWithFixedDelay(() -> {
-                            // Check and connect to the metadata
-                            try {
-                                int times = retryCounter.incrementAndGet();
-                                logger.info("start to retry task for metadata report. retry times:" + times);
-                                if (retry() && times > retryTimesIfNonFail) {
-                                    cancelRetryTask();
-                                }
-                                if (times > retryLimit) {
-                                    cancelRetryTask();
-                                }
-                            } catch (Throwable t) { // Defensive fault tolerance
-                                logger.error(COMMON_UNEXPECTED_EXCEPTION, "", "", "Unexpected error occur at failed retry, cause: " + t.getMessage(), t);
-                            }
-                        }, 500, retryPeriod, TimeUnit.MILLISECONDS);
+                        retryScheduledFuture = retryExecutor.scheduleWithFixedDelay(
+                                () -> {
+                                    // Check and connect to the metadata
+                                    try {
+                                        int times = retryCounter.incrementAndGet();
+                                        logger.info("start to retry task for metadata report. retry times:" + times);
+                                        if (retry() && times > retryTimesIfNonFail) {
+                                            cancelRetryTask();
+                                        }
+                                        if (times > retryLimit) {
+                                            cancelRetryTask();
+                                        }
+                                    } catch (Throwable t) { // Defensive fault tolerance
+                                        logger.error(
+                                                COMMON_UNEXPECTED_EXCEPTION,
+                                                "",
+                                                "",
+                                                "Unexpected error occur at failed retry, cause: " + t.getMessage(),
+                                                t);
+                                    }
+                                },
+                                500,
+                                retryPeriod,
+                                TimeUnit.MILLISECONDS);
                     }
                 }
             }
@@ -524,9 +571,11 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         doSaveSubscriberData(subscriberMetadataIdentifier, encodedUrlList);
     }
 
-    protected abstract void doStoreProviderMetadata(MetadataIdentifier providerMetadataIdentifier, String serviceDefinitions);
+    protected abstract void doStoreProviderMetadata(
+            MetadataIdentifier providerMetadataIdentifier, String serviceDefinitions);
 
-    protected abstract void doStoreConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, String serviceParameterString);
+    protected abstract void doStoreConsumerMetadata(
+            MetadataIdentifier consumerMetadataIdentifier, String serviceParameterString);
 
     protected abstract void doSaveMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url);
 
@@ -534,7 +583,8 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
     protected abstract List<String> doGetExportedURLs(ServiceMetadataIdentifier metadataIdentifier);
 
-    protected abstract void doSaveSubscriberData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, String urlListStr);
+    protected abstract void doSaveSubscriberData(
+            SubscriberMetadataIdentifier subscriberMetadataIdentifier, String urlListStr);
 
     protected abstract String doGetSubscribedURLs(SubscriberMetadataIdentifier subscriberMetadataIdentifier);
 

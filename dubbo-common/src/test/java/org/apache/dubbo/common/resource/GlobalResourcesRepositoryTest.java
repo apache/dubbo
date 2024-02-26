@@ -16,10 +16,10 @@
  */
 package org.apache.dubbo.common.resource;
 
+import java.util.concurrent.ExecutorService;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.ExecutorService;
 
 /**
  * {@link GlobalResourcesRepository}
@@ -43,8 +43,10 @@ class GlobalResourcesRepositoryTest {
         Assertions.assertTrue(globalExecutorService.isShutdown());
         Assertions.assertTrue(globalDisposable.isDestroyed());
         Assertions.assertTrue(oneOffDisposable.isDestroyed());
-        Assertions.assertTrue(!GlobalResourcesRepository.getGlobalReusedDisposables().isEmpty());
-        Assertions.assertTrue(GlobalResourcesRepository.getGlobalReusedDisposables().contains(globalDisposable));
+        Assertions.assertTrue(
+                !GlobalResourcesRepository.getGlobalReusedDisposables().isEmpty());
+        Assertions.assertTrue(
+                GlobalResourcesRepository.getGlobalReusedDisposables().contains(globalDisposable));
         Assertions.assertTrue(repository.getOneoffDisposables().isEmpty());
     }
 

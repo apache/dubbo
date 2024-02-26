@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.aot.generate;
 
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
 import java.util.Arrays;
@@ -33,9 +32,13 @@ public class ExecutableDescriber extends MemberDescriber {
 
     private final ExecutableMode mode;
 
-
     public ExecutableDescriber(Constructor<?> constructor, ExecutableMode mode) {
-        this("<init>", Arrays.stream(constructor.getParameterTypes()).map(Class::getName).collect(Collectors.toList()),mode);
+        this(
+                "<init>",
+                Arrays.stream(constructor.getParameterTypes())
+                        .map(Class::getName)
+                        .collect(Collectors.toList()),
+                mode);
     }
 
     public ExecutableDescriber(String name, List<String> parameterTypes, ExecutableMode mode) {
@@ -43,7 +46,6 @@ public class ExecutableDescriber extends MemberDescriber {
         this.parameterTypes = parameterTypes;
         this.mode = mode;
     }
-
 
     public List<String> getParameterTypes() {
         return parameterTypes;

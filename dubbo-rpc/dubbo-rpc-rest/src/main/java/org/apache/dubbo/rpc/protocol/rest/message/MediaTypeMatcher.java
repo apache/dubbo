@@ -22,22 +22,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public enum MediaTypeMatcher {
-
-
     MULTI_VALUE(createMediaList(MediaType.APPLICATION_FORM_URLENCODED_VALUE)),
     APPLICATION_JSON(createMediaList(MediaType.APPLICATION_JSON_VALUE)),
     TEXT_PLAIN(createMediaList(MediaType.TEXT_PLAIN, MediaType.OCTET_STREAM)),
     TEXT_XML(createMediaList(MediaType.TEXT_XML)),
-
     ;
 
     private List<MediaType> mediaTypes;
 
-
     MediaTypeMatcher(List<MediaType> mediaTypes) {
         this.mediaTypes = mediaTypes;
     }
-
 
     private static List<MediaType> createMediaList(MediaType... mediaTypes) {
         List<MediaType> mediaTypeList = getDefaultList();
@@ -58,6 +53,4 @@ public enum MediaTypeMatcher {
     public boolean mediaSupport(MediaType mediaType) {
         return mediaTypes.contains(mediaType);
     }
-
-
 }

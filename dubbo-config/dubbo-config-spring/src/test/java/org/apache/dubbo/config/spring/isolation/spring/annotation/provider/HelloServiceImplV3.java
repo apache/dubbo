@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.isolation.spring.annotation.provider;
 
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.spring.api.HelloService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,5 +30,4 @@ public class HelloServiceImplV3 implements HelloService {
     public String sayHello(String name) {
         return "server hello";
     }
-
 }

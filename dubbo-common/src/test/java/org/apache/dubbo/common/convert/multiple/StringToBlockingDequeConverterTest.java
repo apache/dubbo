@@ -17,9 +17,7 @@
 package org.apache.dubbo.common.convert.multiple;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.apache.dubbo.common.utils.JRE;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -37,6 +35,9 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TransferQueue;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static java.util.Arrays.asList;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
@@ -93,7 +94,8 @@ class StringToBlockingDequeConverterTest {
 
         BlockingQueue<Integer> values = new LinkedBlockingDeque(asList(1, 2, 3));
 
-        BlockingDeque<Integer> result = (BlockingDeque<Integer>) converter.convert("1,2,3", BlockingDeque.class, Integer.class);
+        BlockingDeque<Integer> result =
+                (BlockingDeque<Integer>) converter.convert("1,2,3", BlockingDeque.class, Integer.class);
 
         assertTrue(CollectionUtils.equals(values, result));
 
@@ -105,7 +107,6 @@ class StringToBlockingDequeConverterTest {
 
         assertNull(converter.convert(null, Collection.class, null));
         assertNull(converter.convert("", Collection.class, null));
-
     }
 
     @Test
@@ -115,6 +116,9 @@ class StringToBlockingDequeConverterTest {
 
     @Test
     void testGetPriority() {
-        assertEquals(Integer.MAX_VALUE - 5, converter.getPriority());
+        // Since JDK21, add SequencedCollection
+        assertEquals(
+                Integer.MAX_VALUE - (JRE.currentVersion().compareTo(JRE.JAVA_21) >= 0 ? 6 : 5),
+                converter.getPriority());
     }
 }

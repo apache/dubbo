@@ -51,8 +51,7 @@ public abstract class AbstractJSONImpl implements JSON {
         }
         Object value = obj.get(key);
         if (!(value instanceof List)) {
-            throw new ClassCastException(
-                String.format("value '%s' for key '%s' in '%s' is not List", value, key, obj));
+            throw new ClassCastException(String.format("value '%s' for key '%s' in '%s' is not List", value, key, obj));
         }
         return (List<?>) value;
     }
@@ -102,7 +101,7 @@ public abstract class AbstractJSONImpl implements JSON {
         Object value = obj.get(key);
         if (!(value instanceof Map)) {
             throw new ClassCastException(
-                String.format("value '%s' for key '%s' in '%s' is not object", value, key, obj));
+                    String.format("value '%s' for key '%s' in '%s' is not object", value, key, obj));
         }
         return (Map<String, ?>) value;
     }
@@ -127,11 +126,11 @@ public abstract class AbstractJSONImpl implements JSON {
                 return Double.parseDouble((String) value);
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(
-                    String.format("value '%s' for key '%s' is not a double", value, key));
+                        String.format("value '%s' for key '%s' is not a double", value, key));
             }
         }
         throw new IllegalArgumentException(
-            String.format("value '%s' for key '%s' in '%s' is not a number", value, key, obj));
+                String.format("value '%s' for key '%s' in '%s' is not a number", value, key, obj));
     }
 
     /**
@@ -159,11 +158,10 @@ public abstract class AbstractJSONImpl implements JSON {
                 return Integer.parseInt((String) value);
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(
-                    String.format("value '%s' for key '%s' is not an integer", value, key));
+                        String.format("value '%s' for key '%s' is not an integer", value, key));
             }
         }
-        throw new IllegalArgumentException(
-            String.format("value '%s' for key '%s' is not an integer", value, key));
+        throw new IllegalArgumentException(String.format("value '%s' for key '%s' is not an integer", value, key));
     }
 
     /**
@@ -192,11 +190,10 @@ public abstract class AbstractJSONImpl implements JSON {
                 return Long.parseLong((String) value);
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(
-                    String.format("value '%s' for key '%s' is not a long integer", value, key));
+                        String.format("value '%s' for key '%s' is not a long integer", value, key));
             }
         }
-        throw new IllegalArgumentException(
-            String.format("value '%s' for key '%s' is not a long integer", value, key));
+        throw new IllegalArgumentException(String.format("value '%s' for key '%s' is not a long integer", value, key));
     }
 
     /**
@@ -213,7 +210,7 @@ public abstract class AbstractJSONImpl implements JSON {
         Object value = obj.get(key);
         if (!(value instanceof String)) {
             throw new ClassCastException(
-                String.format("value '%s' for key '%s' in '%s' is not String", value, key, obj));
+                    String.format("value '%s' for key '%s' in '%s' is not String", value, key, obj));
         }
         return (String) value;
     }
@@ -229,12 +226,11 @@ public abstract class AbstractJSONImpl implements JSON {
         for (int i = 0; i < rawList.size(); i++) {
             if (!(rawList.get(i) instanceof Map)) {
                 throw new ClassCastException(
-                    String.format("value %s for idx %d in %s is not object", rawList.get(i), i, rawList));
+                        String.format("value %s for idx %d in %s is not object", rawList.get(i), i, rawList));
             }
         }
         return (List<Map<String, ?>>) rawList;
     }
-
 
     /**
      * Casts a list of unchecked JSON values to a list of String. If the given list
@@ -247,11 +243,9 @@ public abstract class AbstractJSONImpl implements JSON {
         for (int i = 0; i < rawList.size(); i++) {
             if (!(rawList.get(i) instanceof String)) {
                 throw new ClassCastException(
-                    String.format(
-                        "value '%s' for idx %d in '%s' is not string", rawList.get(i), i, rawList));
+                        String.format("value '%s' for idx %d in '%s' is not string", rawList.get(i), i, rawList));
             }
         }
         return (List<String>) rawList;
     }
-
 }

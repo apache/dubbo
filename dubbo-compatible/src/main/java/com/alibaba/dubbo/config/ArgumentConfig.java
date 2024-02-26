@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.config;
 
 @Deprecated
-public class ArgumentConfig extends org.apache.dubbo.config.ArgumentConfig {
-}
+public class ArgumentConfig extends org.apache.dubbo.config.ArgumentConfig {}

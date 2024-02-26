@@ -34,5 +34,4 @@ public class ServiceStateRouterFactory extends CacheableStateRouterFactory {
     protected <T> StateRouter<T> createRouter(Class<T> interfaceClass, URL url) {
         return new ServiceStateRouter<T>(url);
     }
-
 }

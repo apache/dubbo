@@ -22,9 +22,6 @@ import org.apache.dubbo.rpc.model.person.PersonInfo;
 import org.apache.dubbo.rpc.model.person.PersonStatus;
 import org.apache.dubbo.rpc.model.person.Phone;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -33,6 +30,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class JavaBeanSerializeUtilTest {
 
@@ -74,8 +74,8 @@ class JavaBeanSerializeUtilTest {
     @Test
     void testDeserialize_Primitive0() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(),
-                    JavaBeanDescriptor.TYPE_BEAN + 1);
+            JavaBeanDescriptor descriptor =
+                    new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_BEAN + 1);
         });
     }
 
@@ -89,8 +89,8 @@ class JavaBeanSerializeUtilTest {
     @Test
     void testDeserialize_containsProperty() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(),
-                    JavaBeanDescriptor.TYPE_PRIMITIVE);
+            JavaBeanDescriptor descriptor =
+                    new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_PRIMITIVE);
             descriptor.containsProperty(null);
         });
     }
@@ -98,13 +98,13 @@ class JavaBeanSerializeUtilTest {
     @Test
     void testSetEnumNameProperty() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
-            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(),
-                    JavaBeanDescriptor.TYPE_PRIMITIVE);
+            JavaBeanDescriptor descriptor =
+                    new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_PRIMITIVE);
             descriptor.setEnumNameProperty(JavaBeanDescriptor.class.getName());
         });
 
-        JavaBeanDescriptor descriptor = new JavaBeanDescriptor(JavaBeanDescriptor.class.getName(),
-                JavaBeanDescriptor.TYPE_ENUM);
+        JavaBeanDescriptor descriptor =
+                new JavaBeanDescriptor(JavaBeanDescriptor.class.getName(), JavaBeanDescriptor.TYPE_ENUM);
 
         String oldValueOrigin = descriptor.setEnumNameProperty(JavaBeanDescriptor.class.getName());
         Assertions.assertNull(oldValueOrigin);
@@ -116,8 +116,8 @@ class JavaBeanSerializeUtilTest {
     @Test
     void testGetEnumNameProperty() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
-            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(),
-                    JavaBeanDescriptor.TYPE_PRIMITIVE);
+            JavaBeanDescriptor descriptor =
+                    new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_PRIMITIVE);
             descriptor.getEnumPropertyName();
         });
     }
@@ -126,13 +126,13 @@ class JavaBeanSerializeUtilTest {
     void testSetClassNameProperty() {
 
         Assertions.assertThrows(IllegalStateException.class, () -> {
-            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(),
-                    JavaBeanDescriptor.TYPE_PRIMITIVE);
+            JavaBeanDescriptor descriptor =
+                    new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_PRIMITIVE);
             descriptor.setClassNameProperty(JavaBeanDescriptor.class.getName());
         });
 
-        JavaBeanDescriptor descriptor = new JavaBeanDescriptor(JavaBeanDescriptor.class.getName(),
-                JavaBeanDescriptor.TYPE_CLASS);
+        JavaBeanDescriptor descriptor =
+                new JavaBeanDescriptor(JavaBeanDescriptor.class.getName(), JavaBeanDescriptor.TYPE_CLASS);
 
         String oldValue1 = descriptor.setClassNameProperty(JavaBeanDescriptor.class.getName());
         Assertions.assertNull(oldValue1);
@@ -144,8 +144,8 @@ class JavaBeanSerializeUtilTest {
     @Test
     void testGetClassNameProperty() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
-            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(),
-                    JavaBeanDescriptor.TYPE_PRIMITIVE);
+            JavaBeanDescriptor descriptor =
+                    new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_PRIMITIVE);
             descriptor.getClassNameProperty();
         });
     }
@@ -153,8 +153,8 @@ class JavaBeanSerializeUtilTest {
     @Test
     void testSetPrimitiveProperty() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
-            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(JavaBeanDescriptor.class.getName(),
-                    JavaBeanDescriptor.TYPE_BEAN);
+            JavaBeanDescriptor descriptor =
+                    new JavaBeanDescriptor(JavaBeanDescriptor.class.getName(), JavaBeanDescriptor.TYPE_BEAN);
             descriptor.setPrimitiveProperty(JavaBeanDescriptor.class.getName());
         });
     }
@@ -162,8 +162,8 @@ class JavaBeanSerializeUtilTest {
     @Test
     void testGetPrimitiveProperty() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
-            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(JavaBeanDescriptor.class.getName(),
-                    JavaBeanDescriptor.TYPE_BEAN);
+            JavaBeanDescriptor descriptor =
+                    new JavaBeanDescriptor(JavaBeanDescriptor.class.getName(), JavaBeanDescriptor.TYPE_BEAN);
             descriptor.getPrimitiveProperty();
         });
     }
@@ -184,11 +184,10 @@ class JavaBeanSerializeUtilTest {
         Assertions.assertTrue(descriptor.isArrayType());
         Assertions.assertEquals(int.class.getName(), descriptor.getClassName());
         for (int i = 0; i < array.length; i++) {
-            Assertions.assertEquals(array[i],
-                    ((JavaBeanDescriptor) descriptor.getProperty(i)).getPrimitiveProperty());
+            Assertions.assertEquals(array[i], ((JavaBeanDescriptor) descriptor.getProperty(i)).getPrimitiveProperty());
         }
 
-        Integer[] integers = new Integer[]{1, 2, 3, 4, null, null, null};
+        Integer[] integers = new Integer[] {1, 2, 3, 4, null, null, null};
         descriptor = JavaBeanSerializeUtil.serialize(integers, JavaBeanAccessor.METHOD);
         Assertions.assertTrue(descriptor.isArrayType());
         Assertions.assertEquals(Integer.class.getName(), descriptor.getClassName());
@@ -197,8 +196,8 @@ class JavaBeanSerializeUtilTest {
             if (integers[i] == null) {
                 Assertions.assertSame(integers[i], descriptor.getProperty(i));
             } else {
-                Assertions.assertEquals(integers[i], ((JavaBeanDescriptor) descriptor.getProperty(i))
-                        .getPrimitiveProperty());
+                Assertions.assertEquals(
+                        integers[i], ((JavaBeanDescriptor) descriptor.getProperty(i)).getPrimitiveProperty());
             }
         }
 
@@ -211,11 +210,12 @@ class JavaBeanSerializeUtilTest {
                 JavaBeanDescriptor item = (((JavaBeanDescriptor) descriptor.getProperty(i)));
                 Assertions.assertTrue(item.isArrayType());
                 Assertions.assertEquals(int.class.getName(), item.getClassName());
-                Assertions.assertEquals(second[i][j], ((JavaBeanDescriptor) item.getProperty(j)).getPrimitiveProperty());
+                Assertions.assertEquals(
+                        second[i][j], ((JavaBeanDescriptor) item.getProperty(j)).getPrimitiveProperty());
             }
         }
 
-        BigPerson[] persons = new BigPerson[]{createBigPerson(), createBigPerson()};
+        BigPerson[] persons = new BigPerson[] {createBigPerson(), createBigPerson()};
         descriptor = JavaBeanSerializeUtil.serialize(persons);
         Assertions.assertTrue(descriptor.isArrayType());
         Assertions.assertEquals(BigPerson.class.getName(), descriptor.getClassName());
@@ -281,8 +281,8 @@ class JavaBeanSerializeUtilTest {
         }
 
         descriptor = new JavaBeanDescriptor(BigPerson[].class.getName(), JavaBeanDescriptor.TYPE_ARRAY);
-        JavaBeanDescriptor innerDescriptor = new JavaBeanDescriptor(BigPerson.class.getName(),
-                JavaBeanDescriptor.TYPE_ARRAY);
+        JavaBeanDescriptor innerDescriptor =
+                new JavaBeanDescriptor(BigPerson.class.getName(), JavaBeanDescriptor.TYPE_ARRAY);
         innerDescriptor.setProperty(0, JavaBeanSerializeUtil.serialize(createBigPerson(), JavaBeanAccessor.METHOD));
         descriptor.setProperty(0, innerDescriptor);
 
@@ -414,7 +414,7 @@ class JavaBeanSerializeUtilTest {
         bean.setDate(new Date());
         bean.setStatus(PersonStatus.ENABLED);
         bean.setType(Bean.class);
-        bean.setArray(new Phone[]{});
+        bean.setArray(new Phone[] {});
 
         Collection<Phone> collection = new ArrayList<Phone>();
         bean.setCollection(collection);
@@ -431,8 +431,8 @@ class JavaBeanSerializeUtilTest {
         assertEqualsPrimitive(bean.getDate(), descriptor.getProperty("date"));
         assertEqualsEnum(bean.getStatus(), descriptor.getProperty("status"));
         Assertions.assertTrue(((JavaBeanDescriptor) descriptor.getProperty("type")).isClassType());
-        Assertions.assertEquals(Bean.class.getName(), ((JavaBeanDescriptor) descriptor.getProperty("type"))
-                .getClassNameProperty());
+        Assertions.assertEquals(
+                Bean.class.getName(), ((JavaBeanDescriptor) descriptor.getProperty("type")).getClassNameProperty());
         Assertions.assertTrue(((JavaBeanDescriptor) descriptor.getProperty("array")).isArrayType());
         Assertions.assertEquals(0, ((JavaBeanDescriptor) descriptor.getProperty("array")).propertySize());
 
@@ -464,7 +464,7 @@ class JavaBeanSerializeUtilTest {
         bean.setDate(new Date());
         bean.setStatus(PersonStatus.ENABLED);
         bean.setType(Bean.class);
-        bean.setArray(new Phone[]{});
+        bean.setArray(new Phone[] {});
 
         Collection<Phone> collection = new ArrayList<Phone>();
         bean.setCollection(collection);
@@ -483,13 +483,18 @@ class JavaBeanSerializeUtilTest {
         Assertions.assertEquals(bean.getDate(), deserBean.getDate());
         Assertions.assertEquals(bean.getStatus(), deserBean.getStatus());
         Assertions.assertEquals(bean.getType(), deserBean.getType());
-        Assertions.assertEquals(bean.getCollection().size(), deserBean.getCollection().size());
-        Assertions.assertEquals(bean.getCollection().iterator().next().getClass(),
+        Assertions.assertEquals(
+                bean.getCollection().size(), deserBean.getCollection().size());
+        Assertions.assertEquals(
+                bean.getCollection().iterator().next().getClass(),
                 deserBean.getCollection().iterator().next().getClass());
-        Assertions.assertEquals(bean.getAddresses().size(), deserBean.getAddresses().size());
-        Assertions.assertEquals(bean.getAddresses().entrySet().iterator().next().getKey(),
+        Assertions.assertEquals(
+                bean.getAddresses().size(), deserBean.getAddresses().size());
+        Assertions.assertEquals(
+                bean.getAddresses().entrySet().iterator().next().getKey(),
                 deserBean.getAddresses().entrySet().iterator().next().getKey());
-        Assertions.assertEquals(bean.getAddresses().entrySet().iterator().next().getValue().getClass(),
+        Assertions.assertEquals(
+                bean.getAddresses().entrySet().iterator().next().getValue().getClass(),
                 deserBean.getAddresses().entrySet().iterator().next().getValue().getClass());
     }
 

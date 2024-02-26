@@ -24,8 +24,7 @@ import java.util.Map;
 
 public class ToStringUtils {
 
-    private ToStringUtils() {
-    }
+    private ToStringUtils() {}
 
     public static String printToString(Object obj) {
         if (obj == null) {

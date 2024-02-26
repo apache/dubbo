@@ -31,7 +31,8 @@ public class Application {
      * launch the application
      */
     public static void main(String[] args) {
-        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration.class);
+        AnnotationConfigApplicationContext context =
+                new AnnotationConfigApplicationContext(ConsumerConfiguration.class);
         context.start();
         DemoService service = context.getBean("demoServiceComponent", DemoServiceComponent.class);
         String hello = service.sayHello("world");
@@ -42,7 +43,5 @@ public class Application {
     @EnableDubbo(scanBasePackages = "org.apache.dubbo.demo.consumer.comp")
     @PropertySource("classpath:/spring/dubbo-consumer.properties")
     @ComponentScan(value = {"org.apache.dubbo.demo.consumer.comp"})
-    static class ConsumerConfiguration {
-
-    }
+    static class ConsumerConfiguration {}
 }

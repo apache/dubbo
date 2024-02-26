@@ -24,6 +24,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.TypeElement;
+
 import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -50,8 +51,8 @@ public class ServiceRestMetadataAnnotationProcessor extends AbstractServiceAnnot
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
         this.metadataProcessors = ApplicationModel.defaultModel()
-            .getExtensionLoader(ServiceRestMetadataResolver.class)
-            .getSupportedExtensionInstances();
+                .getExtensionLoader(ServiceRestMetadataResolver.class)
+                .getSupportedExtensionInstances();
         this.serviceRestMetadataWriter = new ServiceRestMetadataStorage(processingEnv);
     }
 
@@ -71,17 +72,16 @@ public class ServiceRestMetadataAnnotationProcessor extends AbstractServiceAnnot
         return false;
     }
 
-    private void process(ProcessingEnvironment processingEnv, TypeElement serviceType,
-                         Set<? extends TypeElement> annotations) {
-        metadataProcessors
-                .stream()
+    private void process(
+            ProcessingEnvironment processingEnv, TypeElement serviceType, Set<? extends TypeElement> annotations) {
+        metadataProcessors.stream()
                 .filter(processor -> supports(processor, processingEnv, serviceType))
                 .map(processor -> processor.resolve(processingEnv, serviceType, annotations))
                 .forEach(serviceRestMetadata::add);
     }
 
-    private boolean supports(ServiceRestMetadataResolver processor, ProcessingEnvironment processingEnv,
-                             TypeElement serviceType) {
+    private boolean supports(
+            ServiceRestMetadataResolver processor, ProcessingEnvironment processingEnv, TypeElement serviceType) {
         //  @Service must be present in service type
         return isServiceAnnotationPresent(serviceType) && processor.supports(processingEnv, serviceType);
     }

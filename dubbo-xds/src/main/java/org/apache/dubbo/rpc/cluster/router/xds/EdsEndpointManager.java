@@ -16,13 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.router.xds;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
@@ -32,23 +25,29 @@ import org.apache.dubbo.registry.xds.util.protocol.message.Endpoint;
 import org.apache.dubbo.registry.xds.util.protocol.message.EndpointResult;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 public class EdsEndpointManager {
 
-    private static final ConcurrentHashMap<String, Set<EdsEndpointListener>> ENDPOINT_LISTENERS = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, Set<EdsEndpointListener>> ENDPOINT_LISTENERS =
+            new ConcurrentHashMap<>();
 
     private static final ConcurrentHashMap<String, Set<Endpoint>> ENDPOINT_DATA_CACHE = new ConcurrentHashMap<>();
 
-    private static final ConcurrentHashMap<String, Consumer<Map<String, EndpointResult>>> EDS_LISTENERS = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, Consumer<Map<String, EndpointResult>>> EDS_LISTENERS =
+            new ConcurrentHashMap<>();
 
-
-    public EdsEndpointManager() {
-    }
+    public EdsEndpointManager() {}
 
     public synchronized void subscribeEds(String cluster, EdsEndpointListener listener) {
 
-        Set<EdsEndpointListener> listeners = ConcurrentHashMapUtils.computeIfAbsent(ENDPOINT_LISTENERS, cluster, key ->
-            new ConcurrentHashSet<>()
-        );
+        Set<EdsEndpointListener> listeners =
+                ConcurrentHashMapUtils.computeIfAbsent(ENDPOINT_LISTENERS, cluster, key -> new ConcurrentHashSet<>());
         if (CollectionUtils.isEmpty(listeners)) {
             doSubscribeEds(cluster);
         }
@@ -61,17 +60,19 @@ public class EdsEndpointManager {
 
     private void doSubscribeEds(String cluster) {
         ConcurrentHashMapUtils.computeIfAbsent(EDS_LISTENERS, cluster, key -> endpoints -> {
-            Set<Endpoint> result = endpoints.values()
-                .stream()
-                .map(EndpointResult::getEndpoints)
-                .flatMap(Set::stream)
-                .collect(Collectors.toSet());
+            Set<Endpoint> result = endpoints.values().stream()
+                    .map(EndpointResult::getEndpoints)
+                    .flatMap(Set::stream)
+                    .collect(Collectors.toSet());
             notifyEndpointChange(cluster, result);
         });
         Consumer<Map<String, EndpointResult>> consumer = EDS_LISTENERS.get(cluster);
         if (PilotExchanger.isEnabled()) {
-            FrameworkModel.defaultModel().getBeanFactory().getBean(FrameworkExecutorRepository.class)
-                .getSharedExecutor().submit(() -> PilotExchanger.getInstance().observeEds(Collections.singleton(cluster), consumer));
+            FrameworkModel.defaultModel()
+                    .getBeanFactory()
+                    .getBean(FrameworkExecutorRepository.class)
+                    .getSharedExecutor()
+                    .submit(() -> PilotExchanger.getInstance().observeEds(Collections.singleton(cluster), consumer));
         }
     }
 
@@ -95,7 +96,6 @@ public class EdsEndpointManager {
         }
         ENDPOINT_DATA_CACHE.remove(cluster);
     }
-
 
     public void notifyEndpointChange(String cluster, Set<Endpoint> endpoints) {
 
@@ -124,5 +124,4 @@ public class EdsEndpointManager {
     static ConcurrentHashMap<String, Consumer<Map<String, EndpointResult>>> getEdsListeners() {
         return EDS_LISTENERS;
     }
-
 }

@@ -23,6 +23,8 @@ import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.DubboComponentScan;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
 
+import java.util.Map;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -36,15 +38,15 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 
-import java.util.Map;
-
-@SpringBootTest(properties = {
-        //"dubbo.scan.base-packages=org.apache.dubbo.config.spring.boot.importxml2",
-        "dubbo.registry.address=N/A",
-        "myapp.dubbo.port=20881",
-        "myapp.name=dubbo-provider",
-        "myapp.group=test"
-}, classes = SpringBootImportAndScanTest.class)
+@SpringBootTest(
+        properties = {
+            // "dubbo.scan.base-packages=org.apache.dubbo.config.spring.boot.importxml2",
+            "dubbo.registry.address=N/A",
+            "myapp.dubbo.port=20881",
+            "myapp.name=dubbo-provider",
+            "myapp.group=test"
+        },
+        classes = SpringBootImportAndScanTest.class)
 @Configuration
 @ComponentScan
 @DubboComponentScan
@@ -76,7 +78,8 @@ class SpringBootImportAndScanTest implements ApplicationContextAware {
         Assertions.assertEquals(1, referenceBeanMap.size());
         Assertions.assertNotNull(referenceBeanMap.get("&helloService"));
 
-        ReferenceBeanManager referenceBeanManager = applicationContext.getBean(ReferenceBeanManager.BEAN_NAME, ReferenceBeanManager.class);
+        ReferenceBeanManager referenceBeanManager =
+                applicationContext.getBean(ReferenceBeanManager.BEAN_NAME, ReferenceBeanManager.class);
         Assertions.assertNotNull(referenceBeanManager.getById("helloService"));
     }
 
@@ -85,14 +88,11 @@ class SpringBootImportAndScanTest implements ApplicationContextAware {
         this.applicationContext = applicationContext;
     }
 
-
     @Configuration
     public static class ConsumerConfiguration {
 
         // Match and reuse 'helloService' reference bean definition in dubbo-provider.xml
         @DubboReference(group = "${myapp.group}")
         private HelloService helloService;
-
     }
-
 }

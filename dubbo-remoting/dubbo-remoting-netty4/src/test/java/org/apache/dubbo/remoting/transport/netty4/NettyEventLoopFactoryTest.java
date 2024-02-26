@@ -59,7 +59,8 @@ class NettyEventLoopFactoryTest {
             Class<? extends SocketChannel> socketChannelClass = NettyEventLoopFactory.socketChannelClass();
             Assertions.assertEquals(socketChannelClass, EpollSocketChannel.class);
 
-            Class<? extends ServerSocketChannel> serverSocketChannelClass = NettyEventLoopFactory.serverSocketChannelClass();
+            Class<? extends ServerSocketChannel> serverSocketChannelClass =
+                    NettyEventLoopFactory.serverSocketChannelClass();
             Assertions.assertEquals(serverSocketChannelClass, EpollServerSocketChannel.class);
 
         } else {
@@ -69,7 +70,8 @@ class NettyEventLoopFactoryTest {
             Class<? extends SocketChannel> socketChannelClass = NettyEventLoopFactory.socketChannelClass();
             Assertions.assertEquals(socketChannelClass, NioSocketChannel.class);
 
-            Class<? extends ServerSocketChannel> serverSocketChannelClass = NettyEventLoopFactory.serverSocketChannelClass();
+            Class<? extends ServerSocketChannel> serverSocketChannelClass =
+                    NettyEventLoopFactory.serverSocketChannelClass();
             Assertions.assertEquals(serverSocketChannelClass, NioServerSocketChannel.class);
         }
     }
@@ -78,5 +80,4 @@ class NettyEventLoopFactoryTest {
         String osName = System.getProperty(OS_NAME_KEY);
         return osName.toLowerCase().contains(OS_LINUX_PREFIX) && Epoll.isAvailable();
     }
-
 }

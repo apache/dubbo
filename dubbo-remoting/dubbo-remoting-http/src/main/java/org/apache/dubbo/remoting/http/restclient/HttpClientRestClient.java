@@ -21,6 +21,15 @@ import org.apache.dubbo.remoting.http.RestClient;
 import org.apache.dubbo.remoting.http.RestResult;
 import org.apache.dubbo.remoting.http.config.HttpClientConfig;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntityEnclosingRequest;
@@ -41,16 +50,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-
-
 public class HttpClientRestClient implements RestClient {
     private final CloseableHttpClient closeableHttpClient;
     private final HttpClientConfig httpClientConfig;
@@ -69,9 +68,9 @@ public class HttpClientRestClient implements RestClient {
         httpRequest = createHttpUriRequest(httpMethod, requestTemplate);
 
         if (httpRequest instanceof HttpEntityEnclosingRequest) {
-            ((HttpEntityEnclosingRequestBase) httpRequest).setEntity(new ByteArrayEntity(requestTemplate.getSerializedBody()));
+            ((HttpEntityEnclosingRequestBase) httpRequest)
+                    .setEntity(new ByteArrayEntity(requestTemplate.getSerializedBody()));
         }
-
 
         Map<String, Collection<String>> allHeaders = requestTemplate.getAllHeaders();
 
@@ -107,7 +106,8 @@ public class HttpClientRestClient implements RestClient {
 
                 @Override
                 public Map<String, List<String>> headers() {
-                    return Arrays.stream(response.getAllHeaders()).collect(Collectors.toMap(Header::getName, h -> Collections.singletonList(h.getValue())));
+                    return Arrays.stream(response.getAllHeaders())
+                            .collect(Collectors.toMap(Header::getName, h -> Collections.singletonList(h.getValue())));
                 }
 
                 @Override
@@ -122,8 +122,8 @@ public class HttpClientRestClient implements RestClient {
 
                 @Override
                 public String getMessage() throws IOException {
-                    return appendErrorMessage(response.getStatusLine().getReasonPhrase(),
-                        new String(getErrorResponse()));
+                    return appendErrorMessage(
+                            response.getStatusLine().getReasonPhrase(), new String(getErrorResponse()));
                 }
             });
         } catch (IOException e) {
@@ -148,9 +148,7 @@ public class HttpClientRestClient implements RestClient {
     }
 
     @Override
-    public void close(int timeout) {
-
-    }
+    public void close(int timeout) {}
 
     @Override
     public boolean isClosed() {
@@ -186,7 +184,5 @@ public class HttpClientRestClient implements RestClient {
             throw new IllegalArgumentException("Invalid HTTP method: " + httpMethod);
         }
         return httpUriRequest;
-
     }
-
 }

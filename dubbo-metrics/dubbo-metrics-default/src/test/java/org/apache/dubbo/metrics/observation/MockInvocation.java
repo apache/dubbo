@@ -119,9 +119,7 @@ public class MockInvocation extends RpcInvocation {
     }
 
     @Override
-    public void setServiceModel(ServiceModel serviceModel) {
-
-    }
+    public void setServiceModel(ServiceModel serviceModel) {}
 
     @Override
     public ServiceModel getServiceModel() {
@@ -164,5 +162,4 @@ public class MockInvocation extends RpcInvocation {
         }
         return result;
     }
-
 }

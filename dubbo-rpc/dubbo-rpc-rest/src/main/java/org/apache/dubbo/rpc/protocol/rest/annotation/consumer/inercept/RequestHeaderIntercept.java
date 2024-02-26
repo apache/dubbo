@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept;
 
-
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.remoting.http.RequestTemplate;
@@ -40,11 +39,9 @@ public class RequestHeaderIntercept implements HttpConnectionPreBuildIntercept {
         RestMethodMetadata restMethodMetadata = connectionCreateContext.getRestMethodMetadata();
         RequestTemplate requestTemplate = connectionCreateContext.getRequestTemplate();
 
-
         Set<String> consumes = restMethodMetadata.getRequest().getConsumes();
 
         requestTemplate.addHeaders(RestHeaderEnum.CONTENT_TYPE.getHeader(), consumes);
-
 
         Collection<String> produces = restMethodMetadata.getRequest().getProduces();
         if (produces == null || produces.isEmpty()) {
@@ -53,13 +50,10 @@ public class RequestHeaderIntercept implements HttpConnectionPreBuildIntercept {
             requestTemplate.addHeaders(RestHeaderEnum.ACCEPT.getHeader(), produces);
         }
 
-//        URL url = connectionCreateContext.getUrl();
+        //        URL url = connectionCreateContext.getUrl();
 
-
-//        requestTemplate.addKeepAliveHeader(url.getParameter(RestConstant.KEEP_ALIVE_TIMEOUT_PARAM,RestConstant.KEEP_ALIVE_TIMEOUT));
-
+        //
+        // requestTemplate.addKeepAliveHeader(url.getParameter(RestConstant.KEEP_ALIVE_TIMEOUT_PARAM,RestConstant.KEEP_ALIVE_TIMEOUT));
 
     }
-
-
 }

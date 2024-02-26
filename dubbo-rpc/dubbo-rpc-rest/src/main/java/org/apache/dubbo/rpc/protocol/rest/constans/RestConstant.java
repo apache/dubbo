@@ -47,7 +47,6 @@ public interface RestConstant {
     String DEFAULT_ACCEPT = "*/*";
     String REST_HEADER_PREFIX = "rest-service-";
 
-
     // http
     String MAX_INITIAL_LINE_LENGTH_PARAM = "max.initial.line.length";
     String MAX_HEADER_SIZE_PARAM = "max.header.size";
@@ -67,6 +66,4 @@ public interface RestConstant {
      * ServerAttachment  pathAndInvokerMapper key
      */
     String PATH_AND_INVOKER_MAPPER = "pathAndInvokerMapper";
-
-
 }

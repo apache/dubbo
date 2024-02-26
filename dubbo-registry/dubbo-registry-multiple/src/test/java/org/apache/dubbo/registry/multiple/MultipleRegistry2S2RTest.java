@@ -21,15 +21,15 @@ import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.zookeeper.ZookeeperRegistry;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
-import org.apache.dubbo.remoting.zookeeper.curator.CuratorZookeeperClient;
+import org.apache.dubbo.remoting.zookeeper.curator5.Curator5ZookeeperClient;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * 2019-04-30
@@ -47,7 +47,6 @@ class MultipleRegistry2S2RTest {
     private static ZookeeperRegistry zookeeperRegistry;
     private static ZookeeperRegistry zookeeperRegistry2;
 
-
     private static String zookeeperConnectionAddress1, zookeeperConnectionAddress2;
 
     @BeforeAll
@@ -55,16 +54,20 @@ class MultipleRegistry2S2RTest {
         zookeeperConnectionAddress1 = System.getProperty("zookeeper.connection.address.1");
         zookeeperConnectionAddress2 = System.getProperty("zookeeper.connection.address.2");
 
-        URL url = URL.valueOf("multiple://127.0.0.1?application=vic&enable-empty-protection=false&" +
-            MultipleRegistry.REGISTRY_FOR_SERVICE + "=" + zookeeperConnectionAddress1 + "," + zookeeperConnectionAddress2 + "&"
-            + MultipleRegistry.REGISTRY_FOR_REFERENCE + "=" + zookeeperConnectionAddress1 + "," + zookeeperConnectionAddress2);
+        URL url = URL.valueOf("multiple://127.0.0.1?application=vic&enable-empty-protection=false&"
+                + MultipleRegistry.REGISTRY_FOR_SERVICE
+                + "=" + zookeeperConnectionAddress1 + "," + zookeeperConnectionAddress2 + "&"
+                + MultipleRegistry.REGISTRY_FOR_REFERENCE + "=" + zookeeperConnectionAddress1 + ","
+                + zookeeperConnectionAddress2);
         multipleRegistry = (MultipleRegistry) new MultipleRegistryFactory().createRegistry(url);
 
         // for test validation
-        zookeeperClient = new CuratorZookeeperClient(URL.valueOf(zookeeperConnectionAddress1));
-        zookeeperRegistry = MultipleRegistryTestUtil.getZookeeperRegistry(multipleRegistry.getServiceRegistries().values());
-        zookeeperClient2 = new CuratorZookeeperClient(URL.valueOf(zookeeperConnectionAddress2));
-        zookeeperRegistry2 = MultipleRegistryTestUtil.getZookeeperRegistry(multipleRegistry.getServiceRegistries().values());
+        zookeeperClient = new Curator5ZookeeperClient(URL.valueOf(zookeeperConnectionAddress1));
+        zookeeperRegistry = MultipleRegistryTestUtil.getZookeeperRegistry(
+                multipleRegistry.getServiceRegistries().values());
+        zookeeperClient2 = new Curator5ZookeeperClient(URL.valueOf(zookeeperConnectionAddress2));
+        zookeeperRegistry2 = MultipleRegistryTestUtil.getZookeeperRegistry(
+                multipleRegistry.getServiceRegistries().values());
     }
 
     @Test
@@ -88,18 +91,28 @@ class MultipleRegistry2S2RTest {
 
         Assertions.assertTrue(multipleRegistry.getServiceRegistries().containsKey(zookeeperConnectionAddress1));
         Assertions.assertTrue(multipleRegistry.getServiceRegistries().containsKey(zookeeperConnectionAddress2));
-        Assertions.assertEquals(2, multipleRegistry.getServiceRegistries().values().size());
-//        java.util.Iterator<Registry> registryIterable = multipleRegistry.getServiceRegistries().values().iterator();
-//        Registry firstRegistry = registryIterable.next();
-//        Registry secondRegistry = registryIterable.next();
-        Assertions.assertNotNull(MultipleRegistryTestUtil.getZookeeperRegistry(multipleRegistry.getServiceRegistries().values()));
-        Assertions.assertNotNull(MultipleRegistryTestUtil.getZookeeperRegistry(multipleRegistry.getReferenceRegistries().values()));
+        Assertions.assertEquals(
+                2, multipleRegistry.getServiceRegistries().values().size());
+        //        java.util.Iterator<Registry> registryIterable =
+        // multipleRegistry.getServiceRegistries().values().iterator();
+        //        Registry firstRegistry = registryIterable.next();
+        //        Registry secondRegistry = registryIterable.next();
+        Assertions.assertNotNull(MultipleRegistryTestUtil.getZookeeperRegistry(
+                multipleRegistry.getServiceRegistries().values()));
+        Assertions.assertNotNull(MultipleRegistryTestUtil.getZookeeperRegistry(
+                multipleRegistry.getReferenceRegistries().values()));
 
-        Assertions.assertEquals(MultipleRegistryTestUtil.getZookeeperRegistry(multipleRegistry.getServiceRegistries().values()),
-            MultipleRegistryTestUtil.getZookeeperRegistry(multipleRegistry.getReferenceRegistries().values()));
+        Assertions.assertEquals(
+                MultipleRegistryTestUtil.getZookeeperRegistry(
+                        multipleRegistry.getServiceRegistries().values()),
+                MultipleRegistryTestUtil.getZookeeperRegistry(
+                        multipleRegistry.getReferenceRegistries().values()));
 
-        Assertions.assertEquals(MultipleRegistryTestUtil.getZookeeperRegistry(multipleRegistry.getServiceRegistries().values()),
-            MultipleRegistryTestUtil.getZookeeperRegistry(multipleRegistry.getReferenceRegistries().values()));
+        Assertions.assertEquals(
+                MultipleRegistryTestUtil.getZookeeperRegistry(
+                        multipleRegistry.getServiceRegistries().values()),
+                MultipleRegistryTestUtil.getZookeeperRegistry(
+                        multipleRegistry.getReferenceRegistries().values()));
 
         Assertions.assertEquals(multipleRegistry.getApplicationName(), "vic");
 
@@ -108,8 +121,10 @@ class MultipleRegistry2S2RTest {
 
     @Test
     void testRegistryAndUnRegistry() throws InterruptedException {
-        URL serviceUrl = URL.valueOf("http2://multiple/" + SERVICE_NAME + "?notify=false&methods=test1,test2&category=providers");
-//        URL serviceUrl2 = URL.valueOf("http2://multiple2/" + SERVICE_NAME + "?notify=false&methods=test1,test2&category=providers");
+        URL serviceUrl = URL.valueOf(
+                "http2://multiple/" + SERVICE_NAME + "?notify=false&methods=test1,test2&category=providers");
+        //        URL serviceUrl2 = URL.valueOf("http2://multiple2/" + SERVICE_NAME +
+        // "?notify=false&methods=test1,test2&category=providers");
         multipleRegistry.register(serviceUrl);
 
         String path = "/dubbo/" + SERVICE_NAME + "/providers";
@@ -139,8 +154,10 @@ class MultipleRegistry2S2RTest {
 
     @Test
     void testSubscription() throws InterruptedException {
-        URL serviceUrl = URL.valueOf("http2://multiple/" + SERVICE2_NAME + "?notify=false&methods=test1,test2&category=providers");
-//        URL serviceUrl2 = URL.valueOf("http2://multiple2/" + SERVICE_NAME + "?notify=false&methods=test1,test2&category=providers");
+        URL serviceUrl = URL.valueOf(
+                "http2://multiple/" + SERVICE2_NAME + "?notify=false&methods=test1,test2&category=providers");
+        //        URL serviceUrl2 = URL.valueOf("http2://multiple2/" + SERVICE_NAME +
+        // "?notify=false&methods=test1,test2&category=providers");
         multipleRegistry.register(serviceUrl);
 
         String path = "/dubbo/" + SERVICE2_NAME + "/providers";
@@ -159,7 +176,8 @@ class MultipleRegistry2S2RTest {
         Thread.sleep(1500);
         Assertions.assertEquals(2, list.size());
 
-        List<Registry> serviceRegistries = new ArrayList<Registry>(multipleRegistry.getServiceRegistries().values());
+        List<Registry> serviceRegistries =
+                new ArrayList<Registry>(multipleRegistry.getServiceRegistries().values());
         serviceRegistries.get(0).unregister(serviceUrl);
         Thread.sleep(1500);
         Assertions.assertEquals(1, list.size());
@@ -179,12 +197,13 @@ class MultipleRegistry2S2RTest {
     void testAggregation() {
         List<URL> result = new ArrayList<URL>();
         List<URL> listToAggregate = new ArrayList<URL>();
-        URL url1= URL.valueOf("dubbo://127.0.0.1:20880/service1");
-        URL url2= URL.valueOf("dubbo://127.0.0.1:20880/service1");
+        URL url1 = URL.valueOf("dubbo://127.0.0.1:20880/service1");
+        URL url2 = URL.valueOf("dubbo://127.0.0.1:20880/service1");
         listToAggregate.add(url1);
         listToAggregate.add(url2);
 
-        URL registryURL = URL.valueOf("mock://127.0.0.1/RegistryService?attachments=zone=hangzhou,tag=middleware&enable-empty-protection=false");
+        URL registryURL = URL.valueOf(
+                "mock://127.0.0.1/RegistryService?attachments=zone=hangzhou,tag=middleware&enable-empty-protection=false");
 
         MultipleRegistry.MultipleNotifyListenerWrapper.aggregateRegistryUrls(result, listToAggregate, registryURL);
 
@@ -193,5 +212,4 @@ class MultipleRegistry2S2RTest {
         Assertions.assertEquals("hangzhou", result.get(0).getParameter("zone"));
         Assertions.assertEquals("middleware", result.get(1).getParameter("tag"));
     }
-
 }

@@ -33,8 +33,7 @@ public class ExchangeServerDelegate implements ExchangeServer {
 
     private transient ExchangeServer server;
 
-    public ExchangeServerDelegate() {
-    }
+    public ExchangeServerDelegate() {}
 
     public ExchangeServerDelegate(ExchangeServer server) {
         setServer(server);
@@ -128,5 +127,4 @@ public class ExchangeServerDelegate implements ExchangeServer {
     public void startClose() {
         server.startClose();
     }
-
 }

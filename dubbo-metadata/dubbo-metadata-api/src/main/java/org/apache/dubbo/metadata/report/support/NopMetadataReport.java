@@ -28,13 +28,11 @@ import java.util.Map;
 import java.util.Set;
 
 public class NopMetadataReport implements MetadataReport {
-    public NopMetadataReport() {
-    }
+    public NopMetadataReport() {}
 
     @Override
-    public void storeProviderMetadata(MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition) {
-
-    }
+    public void storeProviderMetadata(
+            MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition) {}
 
     @Override
     public String getServiceDefinition(MetadataIdentifier metadataIdentifier) {
@@ -42,9 +40,8 @@ public class NopMetadataReport implements MetadataReport {
     }
 
     @Override
-    public void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {
-
-    }
+    public void storeConsumerMetadata(
+            MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {}
 
     @Override
     public List<String> getExportedURLs(ServiceMetadataIdentifier metadataIdentifier) {
@@ -52,24 +49,16 @@ public class NopMetadataReport implements MetadataReport {
     }
 
     @Override
-    public void destroy() {
-
-    }
+    public void destroy() {}
 
     @Override
-    public void saveServiceMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url) {
-
-    }
+    public void saveServiceMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url) {}
 
     @Override
-    public void removeServiceMetadata(ServiceMetadataIdentifier metadataIdentifier) {
-
-    }
+    public void removeServiceMetadata(ServiceMetadataIdentifier metadataIdentifier) {}
 
     @Override
-    public void saveSubscribedData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, Set<String> urls) {
-
-    }
+    public void saveSubscribedData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, Set<String> urls) {}
 
     @Override
     public List<String> getSubscribedURLs(SubscriberMetadataIdentifier subscriberMetadataIdentifier) {

@@ -38,8 +38,9 @@ public class ServiceRepository {
 
     private void initialize() {
         if (initialized.compareAndSet(false, true)) {
-            Set<BuiltinServiceDetector> builtinServices
-                = applicationModel.getExtensionLoader(BuiltinServiceDetector.class).getSupportedExtensionInstances();
+            Set<BuiltinServiceDetector> builtinServices = applicationModel
+                    .getExtensionLoader(BuiltinServiceDetector.class)
+                    .getSupportedExtensionInstances();
             if (CollectionUtils.isNotEmpty(builtinServices)) {
                 for (BuiltinServiceDetector service : builtinServices) {
                     applicationModel.getInternalModule().getServiceRepository().registerService(service.getService());
@@ -49,7 +50,7 @@ public class ServiceRepository {
     }
 
     public void destroy() {
-        //TODO destroy application service repository
+        // TODO destroy application service repository
     }
 
     public Collection<ConsumerModel> allConsumerModels() {
@@ -69,5 +70,4 @@ public class ServiceRepository {
         }
         return allProviderModels;
     }
-
 }

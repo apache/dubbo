@@ -17,5 +17,7 @@
 package org.apache.dubbo.common.utils.json;
 
 public enum TestEnum {
-    TYPE_A, TYPE_B, TYPE_C
+    TYPE_A,
+    TYPE_B,
+    TYPE_C
 }

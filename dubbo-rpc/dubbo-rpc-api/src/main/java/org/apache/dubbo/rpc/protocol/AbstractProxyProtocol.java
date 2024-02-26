@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol;
 
 import org.apache.dubbo.common.Parameters;
@@ -55,8 +54,7 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
 
     protected ProxyFactory proxyFactory;
 
-    public AbstractProxyProtocol() {
-    }
+    public AbstractProxyProtocol() {}
 
     public AbstractProxyProtocol(Class<?>... exceptions) {
         for (Class<?> exception : exceptions) {
@@ -87,7 +85,8 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
                 return exporter;
             }
         }
-        final Runnable runnable = doExport(proxyFactory.getProxy(invoker, true), invoker.getInterface(), invoker.getUrl());
+        final Runnable runnable =
+                doExport(proxyFactory.getProxy(invoker, true), invoker.getInterface(), invoker.getUrl());
         exporter = new AbstractExporter<T>(invoker) {
             @Override
             public void afterUnExport() {
@@ -151,8 +150,10 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
     }
 
     protected RpcException getRpcException(Class<?> type, URL url, Invocation invocation, Throwable e) {
-        RpcException re = new RpcException("Failed to invoke remote service: " + type + ", method: "
-            + invocation.getMethodName() + ", cause: " + e.getMessage(), e);
+        RpcException re = new RpcException(
+                "Failed to invoke remote service: " + type + ", method: " + invocation.getMethodName() + ", cause: "
+                        + e.getMessage(),
+                e);
         re.setCode(getErrorCode(e));
         return re;
     }
@@ -237,14 +238,10 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
         }
 
         @Override
-        public void reset(Parameters parameters) {
-
-        }
+        public void reset(Parameters parameters) {}
 
         @Override
-        public void reset(URL url) {
-
-        }
+        public void reset(URL url) {}
 
         @Override
         public URL getUrl() {
@@ -262,35 +259,23 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
         }
 
         @Override
-        public void send(Object message) throws RemotingException {
-
-        }
+        public void send(Object message) throws RemotingException {}
 
         @Override
-        public void send(Object message, boolean sent) throws RemotingException {
-
-        }
+        public void send(Object message, boolean sent) throws RemotingException {}
 
         @Override
-        public void close() {
-
-        }
+        public void close() {}
 
         @Override
-        public void close(int timeout) {
-
-        }
+        public void close(int timeout) {}
 
         @Override
-        public void startClose() {
-
-        }
+        public void startClose() {}
 
         @Override
         public boolean isClosed() {
             return false;
         }
     }
-
-
 }

@@ -38,9 +38,8 @@ public final class URLStrParser {
     private static final ThreadLocal<TempBuf> DECODE_TEMP_BUF = ThreadLocal.withInitial(() -> new TempBuf(1024));
 
     private URLStrParser() {
-        //empty
+        // empty
     }
-
 
     /**
      * @param decodedURLStr : after {@link URL#decode} string
@@ -140,7 +139,7 @@ public final class URLStrParser {
         int pwdEndIdx = lastIndexOf(decodedBody, '@', starIdx, endIdx);
         if (pwdEndIdx > 0) {
             int passwordStartIdx = indexOf(decodedBody, ':', starIdx, pwdEndIdx);
-            if (passwordStartIdx != -1) {//tolerate incomplete user pwd input, like '1234@'
+            if (passwordStartIdx != -1) { // tolerate incomplete user pwd input, like '1234@'
                 username = decodedBody.substring(starIdx, passwordStartIdx);
                 password = decodedBody.substring(passwordStartIdx + 1, pwdEndIdx);
             } else {
@@ -177,7 +176,7 @@ public final class URLStrParser {
 
     public static String[] parseRawURLToArrays(String rawURLStr, int pathEndIdx) {
         String[] parts = new String[2];
-        int paramStartIdx = pathEndIdx + 3;//skip ENCODED_QUESTION_MARK
+        int paramStartIdx = pathEndIdx + 3; // skip ENCODED_QUESTION_MARK
         if (pathEndIdx == -1) {
             pathEndIdx = rawURLStr.indexOf('?');
             if (pathEndIdx == -1) {
@@ -191,7 +190,7 @@ public final class URLStrParser {
             parts[0] = rawURLStr.substring(0, pathEndIdx);
             parts[1] = rawURLStr.substring(paramStartIdx);
         } else {
-            parts = new String[]{rawURLStr};
+            parts = new String[] {rawURLStr};
         }
         return parts;
     }
@@ -210,14 +209,14 @@ public final class URLStrParser {
      */
     public static URL parseEncodedStr(String encodedURLStr) {
         Map<String, String> parameters = null;
-        int pathEndIdx = encodedURLStr.toUpperCase().indexOf("%3F");// '?'
+        int pathEndIdx = encodedURLStr.toUpperCase().indexOf("%3F"); // '?'
         if (pathEndIdx >= 0) {
             parameters = parseEncodedParams(encodedURLStr, pathEndIdx + 3);
         } else {
             pathEndIdx = encodedURLStr.length();
         }
 
-        //decodedBody format: [protocol://][username:password@][host:port]/[path]
+        // decodedBody format: [protocol://][username:password@][host:port]/[path]
         String decodedBody = decodeComponent(encodedURLStr, 0, pathEndIdx, false, DECODE_TEMP_BUF.get());
         return parseURLBody(encodedURLStr, decodedBody, parameters);
     }
@@ -264,8 +263,14 @@ public final class URLStrParser {
         return params;
     }
 
-    private static boolean addParam(String str, boolean isEncoded, int nameStart, int valueStart, int valueEnd, Map<String, String> params,
-                                    TempBuf tempBuf) {
+    private static boolean addParam(
+            String str,
+            boolean isEncoded,
+            int nameStart,
+            int valueStart,
+            int valueEnd,
+            Map<String, String> params,
+            TempBuf tempBuf) {
         if (nameStart >= valueEnd) {
             return false;
         }
@@ -282,7 +287,7 @@ public final class URLStrParser {
             } else {
                 value = decodeComponent(str, valueStart, valueEnd, false, tempBuf);
             }
-            URLItemCache.putParams(params,name, value);
+            URLItemCache.putParams(params, name, value);
             // compatible with lower versions registering "default." keys
             if (name.startsWith(DEFAULT_KEY_PREFIX)) {
                 params.putIfAbsent(name.substring(DEFAULT_KEY_PREFIX.length()), value);
@@ -332,8 +337,8 @@ public final class URLStrParser {
         return decodeUtf8Component(s, firstEscaped, toExcluded, isPath, buf, charBuf, charBufIdx);
     }
 
-    private static String decodeUtf8Component(String str, int firstEscaped, int toExcluded, boolean isPath, byte[] buf,
-                                              char[] charBuf, int charBufIdx) {
+    private static String decodeUtf8Component(
+            String str, int firstEscaped, int toExcluded, boolean isPath, byte[] buf, char[] charBuf, int charBufIdx) {
         int bufIdx;
         for (int i = firstEscaped; i < toExcluded; i++) {
             char c = str.charAt(i);

@@ -29,5 +29,4 @@ public interface EchoService {
      * @return message.
      */
     Object $echo(Object message);
-
 }

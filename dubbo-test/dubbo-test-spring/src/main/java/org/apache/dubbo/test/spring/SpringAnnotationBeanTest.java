@@ -39,13 +39,14 @@ public class SpringAnnotationBeanTest {
     }
 
     @AfterAll
-    public static void afterAll(){
+    public static void afterAll() {
         DubboBootstrap.reset();
     }
 
     @Test
     public void test() {
-        AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(TestConfiguration.class);
+        AnnotationConfigApplicationContext applicationContext =
+                new AnnotationConfigApplicationContext(TestConfiguration.class);
         TestService testService = applicationContext.getBean(TestService.class);
         testService.test();
 

@@ -56,7 +56,7 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
     private final ExchangeClient currentClient;
 
     ChannelWrappedInvoker(Class<T> serviceType, Channel channel, URL url, String serviceKey) {
-        super(serviceType, url, new String[]{GROUP_KEY, TOKEN_KEY});
+        super(serviceType, url, new String[] {GROUP_KEY, TOKEN_KEY});
         this.channel = channel;
         this.serviceKey = serviceKey;
         this.currentClient = new HeaderExchangeClient(new ChannelWrapper(this.channel), false);
@@ -81,10 +81,12 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
 
         try {
             if (RpcUtils.isOneway(getUrl(), inv)) { // may have concurrency issue
-                currentClient.send(request, getUrl().getMethodParameter(RpcUtils.getMethodName(invocation), SENT_KEY, false));
+                currentClient.send(
+                        request, getUrl().getMethodParameter(RpcUtils.getMethodName(invocation), SENT_KEY, false));
                 return AsyncRpcResult.newDefaultAsyncResult(invocation);
             } else {
-                CompletableFuture<AppResponse> appResponseFuture = currentClient.request(request).thenApply(AppResponse.class::cast);
+                CompletableFuture<AppResponse> appResponseFuture =
+                        currentClient.request(request).thenApply(AppResponse.class::cast);
                 return new AsyncRpcResult(appResponseFuture, inv);
             }
         } catch (RpcException e) {
@@ -100,12 +102,12 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
 
     @Override
     public void destroy() {
-//        super.destroy();
-//        try {
-//            channel.close();
-//        } catch (Throwable t) {
-//            logger.warn(t.getMessage(), t);
-//        }
+        //        super.destroy();
+        //        try {
+        //            channel.close();
+        //        } catch (Throwable t) {
+        //            logger.warn(t.getMessage(), t);
+        //        }
     }
 
     public static class ChannelWrapper extends ClientDelegate {
@@ -179,9 +181,7 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
         }
 
         @Override
-        public void reconnect() throws RemotingException {
-
-        }
+        public void reconnect() throws RemotingException {}
 
         @Override
         public void send(Object message) throws RemotingException {

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.event;
 
 import org.apache.dubbo.config.ApplicationConfig;
@@ -39,7 +38,7 @@ public class SimpleMetricsEventMulticasterTest {
     @BeforeEach
     public void setup() {
         eventMulticaster = new SimpleMetricsEventMulticaster();
-        objects = new Object[]{obj};
+        objects = new Object[] {obj};
         eventMulticaster.addListener(new AbstractMetricsListener<MetricsEvent>() {
             @Override
             public void onEvent(MetricsEvent event) {
@@ -53,19 +52,17 @@ public class SimpleMetricsEventMulticasterTest {
         ConfigManager configManager = new ConfigManager(applicationModel);
         configManager.setApplication(applicationConfig);
         applicationModel.setConfigManager(configManager);
-        requestEvent = new TimeCounterEvent(applicationModel,null) {
-        };
+        requestEvent = new TimeCounterEvent(applicationModel, null) {};
     }
-
 
     @Test
     void testPublishFinishEvent() {
 
-        //do nothing with no MetricsLifeListener
+        // do nothing with no MetricsLifeListener
         eventMulticaster.publishFinishEvent(requestEvent);
         Assertions.assertSame(obj, objects[0]);
 
-        //do onEventFinish with MetricsLifeListener
+        // do onEventFinish with MetricsLifeListener
         eventMulticaster.addListener((new MetricsLifeListener<TimeCounterEvent>() {
 
             @Override
@@ -74,9 +71,7 @@ public class SimpleMetricsEventMulticasterTest {
             }
 
             @Override
-            public void onEvent(TimeCounterEvent event) {
-
-            }
+            public void onEvent(TimeCounterEvent event) {}
 
             @Override
             public void onEventFinish(TimeCounterEvent event) {
@@ -84,13 +79,9 @@ public class SimpleMetricsEventMulticasterTest {
             }
 
             @Override
-            public void onEventError(TimeCounterEvent event) {
-
-            }
+            public void onEventError(TimeCounterEvent event) {}
         }));
         eventMulticaster.publishFinishEvent(requestEvent);
         Assertions.assertNotSame(obj, objects[0]);
-
     }
-
 }

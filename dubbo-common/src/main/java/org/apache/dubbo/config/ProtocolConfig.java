@@ -95,7 +95,6 @@ public class ProtocolConfig extends AbstractConfig {
      */
     private Integer queues;
 
-
     /**
      * Thread pool exhausted listeners
      */
@@ -206,7 +205,7 @@ public class ProtocolConfig extends AbstractConfig {
     /**
      * whether it is a persistent connection
      */
-    //TODO add this to provider config
+    // TODO add this to provider config
     private Boolean keepAlive;
 
     // TODO add this to provider config
@@ -229,8 +228,7 @@ public class ProtocolConfig extends AbstractConfig {
      */
     private String extProtocol;
 
-    public ProtocolConfig() {
-    }
+    public ProtocolConfig() {}
 
     public ProtocolConfig(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -617,20 +615,20 @@ public class ProtocolConfig extends AbstractConfig {
         try {
             Map<String, Object> protocolConfigMap = CollectionUtils.objToMap(sourceConfig);
             for (Field targetField : targetFields) {
-                Optional.ofNullable(protocolConfigMap.get(targetField.getName())).ifPresent(value -> {
-                    try {
-                        targetField.setAccessible(true);
-                        if (targetField.get(this) == null) {
-                            targetField.set(this, value);
-                        }
-                    } catch (IllegalAccessException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+                Optional.ofNullable(protocolConfigMap.get(targetField.getName()))
+                        .ifPresent(value -> {
+                            try {
+                                targetField.setAccessible(true);
+                                if (targetField.get(this) == null) {
+                                    targetField.set(this, value);
+                                }
+                            } catch (IllegalAccessException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
             }
         } catch (Exception e) {
             logger.error(COMMON_UNEXPECTED_EXCEPTION, "", "", "merge protocol config fail, error: ", e);
         }
     }
-
 }

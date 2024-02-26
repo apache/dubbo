@@ -28,12 +28,12 @@ import java.util.Map;
 public class Test3TypeBuilder implements TypeBuilder {
     // it is smaller than the implements of TypeBuilder
     @Override
-    public int getPriority(){
+    public int getPriority() {
         return 10;
     }
 
     @Override
-    public boolean accept (Class<?> clazz) {
+    public boolean accept(Class<?> clazz) {
         return false;
     }
 

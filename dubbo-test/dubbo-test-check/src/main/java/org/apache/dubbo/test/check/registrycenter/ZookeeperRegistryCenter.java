@@ -27,9 +27,9 @@ import org.apache.dubbo.test.check.registrycenter.initializer.ConfigZookeeperIni
 import org.apache.dubbo.test.check.registrycenter.initializer.DownloadZookeeperInitializer;
 import org.apache.dubbo.test.check.registrycenter.initializer.UnpackZookeeperInitializer;
 import org.apache.dubbo.test.check.registrycenter.initializer.ZookeeperInitializer;
+import org.apache.dubbo.test.check.registrycenter.processor.ResetZookeeperProcessor;
 import org.apache.dubbo.test.check.registrycenter.processor.StartZookeeperUnixProcessor;
 import org.apache.dubbo.test.check.registrycenter.processor.StartZookeeperWindowsProcessor;
-import org.apache.dubbo.test.check.registrycenter.processor.ResetZookeeperProcessor;
 import org.apache.dubbo.test.check.registrycenter.processor.StopZookeeperUnixProcessor;
 import org.apache.dubbo.test.check.registrycenter.processor.StopZookeeperWindowsProcessor;
 
@@ -37,9 +37,9 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -136,22 +136,21 @@ class ZookeeperRegistryCenter implements RegistryCenter {
         String directory;
         // Use System.getProperty({@link #CONFIG_EMBEDDED_ZOOKEEPER_DIRECTORY})
         directory = System.getProperty(CONFIG_EMBEDDED_ZOOKEEPER_DIRECTORY);
-        logger.info(String.format("The customized directory is %s to store zookeeper binary archive.",directory));
+        logger.info(String.format("The customized directory is %s to store zookeeper binary archive.", directory));
         if (StringUtils.isNotEmpty(directory)) {
             return directory;
         }
         // Use System.getProperty(user.home)
-        logger.info(String.format("The user home is %s to store zookeeper binary archive.",directory));
+        logger.info(String.format("The user home is %s to store zookeeper binary archive.", directory));
         directory = System.getProperty("user.home");
-        logger.info(String.format("user.home is %s",directory));
+        logger.info(String.format("user.home is %s", directory));
         if (StringUtils.isEmpty(directory)) {
             // Use default temporary directory
             directory = System.getProperty("java.io.tmpdir");
-            logger.info(String.format("The temporary directory is %s to store zookeeper binary archive.",directory));
+            logger.info(String.format("The temporary directory is %s to store zookeeper binary archive.", directory));
         }
         Assert.notEmptyString(directory, "The directory to store zookeeper binary archive cannot be null or empty.");
         return directory + File.separator + ".tmp" + File.separator + "zookeeper";
-
     }
 
     /**

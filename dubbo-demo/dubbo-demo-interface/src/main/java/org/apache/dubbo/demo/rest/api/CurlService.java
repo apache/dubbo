@@ -16,19 +16,15 @@
  */
 package org.apache.dubbo.demo.rest.api;
 
-
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
 @Path("/curl")
 public interface CurlService {
-     // curl -X GET http://localhost:8888/services/curl
-     // http://localhost:8888/services/curl
+    // curl -X GET http://localhost:8888/services/curl
+    // http://localhost:8888/services/curl
     @GET
     @Consumes({javax.ws.rs.core.MediaType.TEXT_PLAIN})
     String curl();
-
 }
-

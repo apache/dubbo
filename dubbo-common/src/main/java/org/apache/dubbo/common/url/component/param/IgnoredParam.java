@@ -28,5 +28,4 @@ public class IgnoredParam {
     static boolean ignore(String key) {
         return IGNORED.contains(key);
     }
-
 }

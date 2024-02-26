@@ -16,6 +16,13 @@
  */
 package com.service;
 
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+
 import com.pojo.Demo1;
 import com.pojo.Demo2;
 import com.pojo.Demo4;
@@ -25,13 +32,6 @@ import com.pojo.Demo7;
 import com.pojo.Demo8;
 import com.pojo.DemoException1;
 import com.pojo.DemoException3;
-
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
 
 public interface DemoService1<T extends Demo8> {
     Demo1 getDemo1();

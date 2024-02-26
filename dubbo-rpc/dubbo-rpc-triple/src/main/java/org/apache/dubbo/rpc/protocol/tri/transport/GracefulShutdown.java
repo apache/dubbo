@@ -14,8 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.transport;
+
+import java.util.concurrent.TimeUnit;
 
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.ChannelHandlerContext;
@@ -26,8 +27,6 @@ import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2GoAwayFrame;
 import io.netty.handler.codec.http2.Http2PingFrame;
 import io.netty.util.concurrent.Future;
-
-import java.util.concurrent.TimeUnit;
 
 public class GracefulShutdown {
     static final long GRACEFUL_SHUTDOWN_PING = 0x97ACEF001L;
@@ -45,14 +44,12 @@ public class GracefulShutdown {
     }
 
     public void gracefulShutdown() {
-        Http2GoAwayFrame goAwayFrame = new DefaultHttp2GoAwayFrame(Http2Error.NO_ERROR, ByteBufUtil
-            .writeAscii(ctx.alloc(), goAwayMessage));
+        Http2GoAwayFrame goAwayFrame =
+                new DefaultHttp2GoAwayFrame(Http2Error.NO_ERROR, ByteBufUtil.writeAscii(ctx.alloc(), goAwayMessage));
         goAwayFrame.setExtraStreamIds(Integer.MAX_VALUE);
         ctx.writeAndFlush(goAwayFrame);
-        pingFuture = ctx.executor().schedule(
-            () -> secondGoAwayAndClose(ctx),
-            GRACEFUL_SHUTDOWN_PING_TIMEOUT_NANOS,
-            TimeUnit.NANOSECONDS);
+        pingFuture = ctx.executor()
+                .schedule(() -> secondGoAwayAndClose(ctx), GRACEFUL_SHUTDOWN_PING_TIMEOUT_NANOS, TimeUnit.NANOSECONDS);
 
         Http2PingFrame pingFrame = new DefaultHttp2PingFrame(GRACEFUL_SHUTDOWN_PING, false);
         ctx.writeAndFlush(pingFrame);
@@ -67,10 +64,10 @@ public class GracefulShutdown {
         pingFuture.cancel(false);
 
         try {
-            Http2GoAwayFrame goAwayFrame = new DefaultHttp2GoAwayFrame(Http2Error.NO_ERROR,
-                ByteBufUtil.writeAscii(this.ctx.alloc(), this.goAwayMessage));
+            Http2GoAwayFrame goAwayFrame = new DefaultHttp2GoAwayFrame(
+                    Http2Error.NO_ERROR, ByteBufUtil.writeAscii(this.ctx.alloc(), this.goAwayMessage));
             ctx.writeAndFlush(goAwayFrame);
-            //TODO support customize graceful shutdown timeout mills
+            // TODO support customize graceful shutdown timeout mills
             ctx.close(originPromise);
         } catch (Exception e) {
             ctx.fireExceptionCaught(e);

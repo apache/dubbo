@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc;
 
 public class StatusRpcException extends RpcException {
@@ -26,8 +25,7 @@ public class StatusRpcException extends RpcException {
     private final TriRpcStatus status;
 
     public StatusRpcException(TriRpcStatus status) {
-        super(TriRpcStatus.triCodeToDubboCode(status.code), status.toMessageWithoutCause(),
-            status.cause);
+        super(TriRpcStatus.triCodeToDubboCode(status.code), status.toMessageWithoutCause(), status.cause);
         this.status = status;
     }
 }

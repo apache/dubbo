@@ -16,17 +16,17 @@
  */
 package org.apache.dubbo.common.config;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class PrefixedConfigurationTest {
 
     @Test
     void testPrefixedConfiguration() {
-        Map<String,String> props = new LinkedHashMap<>();
+        Map<String, String> props = new LinkedHashMap<>();
         props.put("dubbo.protocol.name", "dubbo");
         props.put("dubbo.protocol.port", "1234");
         props.put("dubbo.protocols.rest.port", "2345");
@@ -34,7 +34,8 @@ class PrefixedConfigurationTest {
         inmemoryConfiguration.addProperties(props);
 
         // prefixed over InmemoryConfiguration
-        PrefixedConfiguration prefixedConfiguration = new PrefixedConfiguration(inmemoryConfiguration, "dubbo.protocol");
+        PrefixedConfiguration prefixedConfiguration =
+                new PrefixedConfiguration(inmemoryConfiguration, "dubbo.protocol");
         Assertions.assertEquals("dubbo", prefixedConfiguration.getProperty("name"));
         Assertions.assertEquals("1234", prefixedConfiguration.getProperty("port"));
 
@@ -46,6 +47,5 @@ class PrefixedConfigurationTest {
         compositeConfiguration.addConfiguration(inmemoryConfiguration);
         prefixedConfiguration = new PrefixedConfiguration(compositeConfiguration, "dubbo.protocols.rest");
         Assertions.assertEquals("2345", prefixedConfiguration.getProperty("port"));
-
     }
 }

@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
+
 import java.util.Map;
 
 /**
@@ -39,7 +40,8 @@ public interface TypeDefinitionBuilder<T extends TypeMirror> extends Prioritized
      * @param element       {@link Element source element}
      * @return non-null
      */
-    static TypeDefinition build(ProcessingEnvironment processingEnv, Element element, Map<String, TypeDefinition> typeCache) {
+    static TypeDefinition build(
+            ProcessingEnvironment processingEnv, Element element, Map<String, TypeDefinition> typeCache) {
         TypeDefinition typeDefinition = build(processingEnv, element.asType(), typeCache);
         // Comment this code for the compatibility
         // typeDefinition.set$ref(element.toString());
@@ -53,20 +55,23 @@ public interface TypeDefinitionBuilder<T extends TypeMirror> extends Prioritized
      * @param type          {@link TypeMirror type}
      * @return non-null
      */
-    static TypeDefinition build(ProcessingEnvironment processingEnv, TypeMirror type, Map<String, TypeDefinition> typeCache) {
+    static TypeDefinition build(
+            ProcessingEnvironment processingEnv, TypeMirror type, Map<String, TypeDefinition> typeCache) {
         // Build by all instances of TypeDefinitionBuilder that were loaded By Java SPI
 
-        TypeDefinition typeDefinition = ApplicationModel.defaultModel()
-                .getExtensionLoader(TypeBuilder.class)
-                .getSupportedExtensionInstances()
-                .stream()
-//        load(TypeDefinitionBuilder.class, TypeDefinitionBuilder.class.getClassLoader())
-                .filter(builder -> builder.accept(processingEnv, type))
-                .findFirst()
-                .map(builder -> {
-                    return builder.build(processingEnv, type, typeCache);
-                    // typeDefinition.setTypeBuilderName(builder.getClass().getName());
-                }).orElse(null);
+        TypeDefinition typeDefinition =
+                ApplicationModel.defaultModel()
+                        .getExtensionLoader(TypeBuilder.class)
+                        .getSupportedExtensionInstances()
+                        .stream()
+                        //        load(TypeDefinitionBuilder.class, TypeDefinitionBuilder.class.getClassLoader())
+                        .filter(builder -> builder.accept(processingEnv, type))
+                        .findFirst()
+                        .map(builder -> {
+                            return builder.build(processingEnv, type, typeCache);
+                            // typeDefinition.setTypeBuilderName(builder.getClass().getName());
+                        })
+                        .orElse(null);
 
         if (typeDefinition != null) {
             typeCache.put(typeDefinition.getType(), typeDefinition);

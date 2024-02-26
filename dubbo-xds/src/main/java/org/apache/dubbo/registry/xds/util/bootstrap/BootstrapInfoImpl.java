@@ -16,12 +16,13 @@
  */
 package org.apache.dubbo.registry.xds.util.bootstrap;
 
-import io.envoyproxy.envoy.config.core.v3.Node;
-
 import javax.annotation.Nullable;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import io.envoyproxy.envoy.config.core.v3.Node;
 
 public final class BootstrapInfoImpl extends Bootstrapper.BootstrapInfo {
 
@@ -33,7 +34,11 @@ public final class BootstrapInfoImpl extends Bootstrapper.BootstrapInfo {
 
     private final Node node;
 
-    BootstrapInfoImpl(List<Bootstrapper.ServerInfo> servers, String serverListenerResourceNameTemplate, Map<String, Bootstrapper.CertificateProviderInfo> certProviders, Node node) {
+    BootstrapInfoImpl(
+            List<Bootstrapper.ServerInfo> servers,
+            String serverListenerResourceNameTemplate,
+            Map<String, Bootstrapper.CertificateProviderInfo> certProviders,
+            Node node) {
         this.servers = servers;
         this.serverListenerResourceNameTemplate = serverListenerResourceNameTemplate;
         this.certProviders = certProviders;
@@ -62,10 +67,10 @@ public final class BootstrapInfoImpl extends Bootstrapper.BootstrapInfo {
     @Override
     public String toString() {
         return "BootstrapInfo{"
-            + "servers=" + servers + ", "
-            + "serverListenerResourceNameTemplate=" + serverListenerResourceNameTemplate + ", "
-            + "node=" + node + ", "
-            + "}";
+                + "servers=" + servers + ", "
+                + "serverListenerResourceNameTemplate=" + serverListenerResourceNameTemplate + ", "
+                + "node=" + node + ", "
+                + "}";
     }
 
     public static final class Builder extends Bootstrapper.BootstrapInfo.Builder {
@@ -75,8 +80,9 @@ public final class BootstrapInfoImpl extends Bootstrapper.BootstrapInfo {
         private Map<String, Bootstrapper.CertificateProviderInfo> certProviders;
 
         private String serverListenerResourceNameTemplate;
-        Builder() {
-        }
+
+        Builder() {}
+
         @Override
         Bootstrapper.BootstrapInfo.Builder servers(List<Bootstrapper.ServerInfo> servers) {
             this.servers = new LinkedList<>(servers);
@@ -93,21 +99,22 @@ public final class BootstrapInfoImpl extends Bootstrapper.BootstrapInfo {
         }
 
         @Override
-        Bootstrapper.BootstrapInfo.Builder certProviders(@Nullable Map<String, Bootstrapper.CertificateProviderInfo> certProviders) {
+        Bootstrapper.BootstrapInfo.Builder certProviders(
+                @Nullable Map<String, Bootstrapper.CertificateProviderInfo> certProviders) {
             this.certProviders = certProviders;
             return this;
         }
 
         @Override
-        Bootstrapper.BootstrapInfo.Builder serverListenerResourceNameTemplate(@Nullable String serverListenerResourceNameTemplate) {
+        Bootstrapper.BootstrapInfo.Builder serverListenerResourceNameTemplate(
+                @Nullable String serverListenerResourceNameTemplate) {
             this.serverListenerResourceNameTemplate = serverListenerResourceNameTemplate;
             return this;
         }
 
         @Override
         Bootstrapper.BootstrapInfo build() {
-            if (this.servers == null
-                || this.node == null) {
+            if (this.servers == null || this.node == null) {
                 StringBuilder missing = new StringBuilder();
                 if (this.servers == null) {
                     missing.append(" servers");
@@ -118,12 +125,7 @@ public final class BootstrapInfoImpl extends Bootstrapper.BootstrapInfo {
                 throw new IllegalStateException("Missing required properties:" + missing);
             }
             return new BootstrapInfoImpl(
-                this.servers,
-                this.serverListenerResourceNameTemplate,
-                this.certProviders,
-                this.node);
+                    this.servers, this.serverListenerResourceNameTemplate, this.certProviders, this.node);
         }
     }
-
 }
-

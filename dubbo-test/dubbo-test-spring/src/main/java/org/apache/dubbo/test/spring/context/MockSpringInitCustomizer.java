@@ -20,6 +20,10 @@ import org.apache.dubbo.config.spring.context.DubboSpringInitContext;
 import org.apache.dubbo.config.spring.context.DubboSpringInitCustomizer;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
@@ -27,10 +31,6 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 public class MockSpringInitCustomizer implements DubboSpringInitCustomizer {
 
@@ -41,9 +41,9 @@ public class MockSpringInitCustomizer implements DubboSpringInitCustomizer {
         this.contexts.add(context);
 
         // register post-processor bean, expecting the bean is loaded and invoked by spring container
-        AbstractBeanDefinition beanDefinition = BeanDefinitionBuilder
-            .rootBeanDefinition(CustomBeanFactoryPostProcessor.class)
-            .getBeanDefinition();
+        AbstractBeanDefinition beanDefinition = BeanDefinitionBuilder.rootBeanDefinition(
+                        CustomBeanFactoryPostProcessor.class)
+                .getBeanDefinition();
         context.getRegistry().registerBeanDefinition(CustomBeanFactoryPostProcessor.class.getName(), beanDefinition);
     }
 
@@ -62,8 +62,8 @@ public class MockSpringInitCustomizer implements DubboSpringInitCustomizer {
 
     public static void checkCustomizer(ConfigurableApplicationContext applicationContext) {
         Set<DubboSpringInitCustomizer> customizers = FrameworkModel.defaultModel()
-            .getExtensionLoader(DubboSpringInitCustomizer.class)
-            .getSupportedExtensionInstances();
+                .getExtensionLoader(DubboSpringInitCustomizer.class)
+                .getSupportedExtensionInstances();
 
         MockSpringInitCustomizer mockCustomizer = null;
         for (DubboSpringInitCustomizer customizer : customizers) {
@@ -86,7 +86,8 @@ public class MockSpringInitCustomizer implements DubboSpringInitCustomizer {
         Assertions.assertEquals(true, foundInitContext);
 
         // expect CustomBeanFactoryPostProcessor is loaded and invoked
-        CustomBeanFactoryPostProcessor customBeanFactoryPostProcessor = applicationContext.getBean(CustomBeanFactoryPostProcessor.class);
+        CustomBeanFactoryPostProcessor customBeanFactoryPostProcessor =
+                applicationContext.getBean(CustomBeanFactoryPostProcessor.class);
         Assertions.assertEquals(applicationContext.getBeanFactory(), customBeanFactoryPostProcessor.beanFactory);
     }
 }

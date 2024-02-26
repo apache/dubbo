@@ -14,22 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.model;
 
 import org.apache.dubbo.common.utils.ConfigUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
-import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_PID;
+
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_THREAD_NAME;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_HOSTNAME;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_IP;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_PID;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_THREAD_NAME;
+import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
+import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
 
-public class ThreadPoolRejectMetric implements Metric{
+public class ThreadPoolRejectMetric implements Metric {
     private String applicationName;
 
     private String threadPoolName;
@@ -60,8 +61,8 @@ public class ThreadPoolRejectMetric implements Metric{
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ThreadPoolRejectMetric that = (ThreadPoolRejectMetric) o;
-        return Objects.equals(applicationName, that.applicationName) &&
-            Objects.equals(threadPoolName, that.threadPoolName);
+        return Objects.equals(applicationName, that.applicationName)
+                && Objects.equals(threadPoolName, that.threadPoolName);
     }
 
     @Override
@@ -72,11 +73,10 @@ public class ThreadPoolRejectMetric implements Metric{
     public Map<String, String> getTags() {
         Map<String, String> tags = new HashMap<>();
         tags.put(TAG_IP, getLocalHost());
-        tags.put(TAG_PID, ConfigUtils.getPid()+"");
+        tags.put(TAG_PID, ConfigUtils.getPid() + "");
         tags.put(TAG_HOSTNAME, getLocalHostName());
         tags.put(TAG_APPLICATION_NAME, applicationName);
         tags.put(TAG_THREAD_NAME, threadPoolName);
         return tags;
     }
-
 }

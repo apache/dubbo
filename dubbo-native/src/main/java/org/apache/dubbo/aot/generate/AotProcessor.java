@@ -34,21 +34,21 @@ public class AotProcessor {
         NativeConfigurationWriter writer = new NativeConfigurationWriter(Paths.get(args[2]), args[4], args[5]);
 
         ResourceConfigMetadataRepository resourceRepository = new ResourceConfigMetadataRepository();
-        resourceRepository.registerIncludesPatterns(ResourceScanner.INSTANCE.distinctSpiResource().toArray(new String[]{}));
-        resourceRepository.registerIncludesPatterns(ResourceScanner.INSTANCE.distinctSecurityResource().toArray(new String[]{}));
+        resourceRepository.registerIncludesPatterns(
+                ResourceScanner.INSTANCE.distinctSpiResource().toArray(new String[] {}));
+        resourceRepository.registerIncludesPatterns(
+                ResourceScanner.INSTANCE.distinctSecurityResource().toArray(new String[] {}));
         writer.writeResourceConfig(resourceRepository);
-
 
         ReflectConfigMetadataRepository reflectRepository = new ReflectConfigMetadataRepository();
         reflectRepository
-            .registerSpiExtensionType(new ArrayList<>(ClassSourceScanner.INSTANCE.distinctSpiExtensionClasses(ResourceScanner.INSTANCE.distinctSpiResource()).values()))
-            .registerAdaptiveType(new ArrayList<>(ClassSourceScanner.INSTANCE.adaptiveClasses().values()))
-            .registerBeanType(ClassSourceScanner.INSTANCE.scopeModelInitializer())
-            .registerConfigType(ClassSourceScanner.INSTANCE.configClasses());
+                .registerSpiExtensionType(new ArrayList<>(ClassSourceScanner.INSTANCE
+                        .distinctSpiExtensionClasses(ResourceScanner.INSTANCE.distinctSpiResource())
+                        .values()))
+                .registerAdaptiveType(new ArrayList<>(
+                        ClassSourceScanner.INSTANCE.adaptiveClasses().values()))
+                .registerBeanType(ClassSourceScanner.INSTANCE.scopeModelInitializer())
+                .registerConfigType(ClassSourceScanner.INSTANCE.configClasses());
         writer.writeReflectionConfig(reflectRepository);
-
-
     }
-
-
 }

@@ -18,12 +18,12 @@ package org.apache.dubbo.remoting.telnet;
 
 import org.apache.dubbo.remoting.telnet.support.TelnetUtils;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class TelnetUtilsTest {
 
@@ -35,9 +35,9 @@ class TelnetUtilsTest {
     @Test
     void testToList() {
         List<List<String>> table = new LinkedList<>();
-        table.add(Arrays.asList("abc","abc","abc"));
-        table.add(Arrays.asList("1","2","3"));
-        table.add(Arrays.asList("x","y","z"));
+        table.add(Arrays.asList("abc", "abc", "abc"));
+        table.add(Arrays.asList("1", "2", "3"));
+        table.add(Arrays.asList("x", "y", "z"));
 
         String toList = TelnetUtils.toList(table);
 
@@ -58,11 +58,11 @@ class TelnetUtilsTest {
     @Test
     void testToTable() {
         List<List<String>> table = new LinkedList<>();
-        table.add(Arrays.asList("abc","abc","abc"));
-        table.add(Arrays.asList("1","2","3"));
-        table.add(Arrays.asList("x","y","z"));
+        table.add(Arrays.asList("abc", "abc", "abc"));
+        table.add(Arrays.asList("1", "2", "3"));
+        table.add(Arrays.asList("x", "y", "z"));
 
-        String toTable = TelnetUtils.toTable(new String[]{"A","B","C"},table);
+        String toTable = TelnetUtils.toTable(new String[] {"A", "B", "C"}, table);
 
         Assertions.assertTrue(toTable.contains("| A   | B   | C   |"));
         Assertions.assertTrue(toTable.contains("| abc | abc | abc |"));

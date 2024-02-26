@@ -23,5 +23,4 @@ package org.apache.dubbo.common.convert;
  * @since 2.7.6
  */
 @FunctionalInterface
-public interface StringConverter<T> extends Converter<String, T> {
-}
+public interface StringConverter<T> extends Converter<String, T> {}

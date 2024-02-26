@@ -35,7 +35,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERR
 
 public class PortUnificationExchanger {
 
-    private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(PortUnificationExchanger.class);
+    private static final ErrorTypeAwareLogger log =
+            LoggerFactory.getErrorTypeAwareLogger(PortUnificationExchanger.class);
     private static final ConcurrentMap<String, RemotingServer> servers = new ConcurrentHashMap<>();
 
     public static RemotingServer bind(URL url, ChannelHandler handler) {
@@ -85,8 +86,8 @@ public class PortUnificationExchanger {
     }
 
     public static PortUnificationTransporter getTransporter(URL url) {
-        return url.getOrDefaultFrameworkModel().getExtensionLoader(PortUnificationTransporter.class)
-            .getAdaptiveExtension();
+        return url.getOrDefaultFrameworkModel()
+                .getExtensionLoader(PortUnificationTransporter.class)
+                .getAdaptiveExtension();
     }
-
 }

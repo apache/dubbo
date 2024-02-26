@@ -36,7 +36,8 @@ class ClearTelnetHandlerTest {
         Assertions.assertEquals(buf.toString(), telnetHandler.telnet(Mockito.mock(Channel.class), "50"));
 
         // Illegal Input
-        Assertions.assertTrue(telnetHandler.telnet(Mockito.mock(Channel.class), "Illegal").contains("Illegal"));
+        Assertions.assertTrue(
+                telnetHandler.telnet(Mockito.mock(Channel.class), "Illegal").contains("Illegal"));
 
         for (int i = 0; i < 50; i++) {
             buf.append("\r\n");

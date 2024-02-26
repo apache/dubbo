@@ -56,11 +56,11 @@ public class LegacyInvocation implements Invocation {
     }
 
     public Class<?>[] getParameterTypes() {
-        return new Class[]{String.class};
+        return new Class[] {String.class};
     }
 
     public Object[] getArguments() {
-        return new Object[]{arg0};
+        return new Object[] {arg0};
     }
 
     public Map<String, String> getAttachments() {
@@ -102,9 +102,7 @@ public class LegacyInvocation implements Invocation {
     }
 
     @Override
-    public void addInvokedInvoker(org.apache.dubbo.rpc.Invoker<?> invoker) {
-
-    }
+    public void addInvokedInvoker(org.apache.dubbo.rpc.Invoker<?> invoker) {}
 
     @Override
     public List<org.apache.dubbo.rpc.Invoker<?>> getInvokedInvokers() {

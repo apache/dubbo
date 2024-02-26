@@ -27,11 +27,11 @@ import org.apache.dubbo.rpc.support.MockInvocation;
 import org.apache.dubbo.rpc.support.MyInvoker;
 import org.apache.dubbo.rpc.support.RuntimeExceptionInvoker;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
@@ -106,7 +106,8 @@ class ActiveLimitFilterTest {
         AtomicInteger count = new AtomicInteger(0);
         final CountDownLatch latch = new CountDownLatch(1);
         final CountDownLatch latchBlocking = new CountDownLatch(totalThread);
-        URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives=" + maxActives + "&timeout=" + timeout);
+        URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives=" + maxActives
+                + "&timeout=" + timeout);
         final Invoker<ActiveLimitFilterTest> invoker = new BlockMyInvoker<ActiveLimitFilterTest>(url, blockTime);
         final Invocation invocation = new MockInvocation();
         RpcStatus.removeStatus(url);
@@ -150,12 +151,13 @@ class ActiveLimitFilterTest {
     void testInvokeNotTimeOut() {
         int totalThread = 100;
         int maxActives = 10;
-        long timeout = 1000;
+        long timeout = 100000;
         long blockTime = 0;
         AtomicInteger count = new AtomicInteger(0);
         final CountDownLatch latch = new CountDownLatch(1);
         final CountDownLatch latchBlocking = new CountDownLatch(totalThread);
-        URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives=" + maxActives + "&timeout=" + timeout);
+        URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives=" + maxActives
+                + "&timeout=" + timeout);
         final Invoker<ActiveLimitFilterTest> invoker = new BlockMyInvoker<ActiveLimitFilterTest>(url, blockTime);
         final Invocation invocation = new MockInvocation();
         for (int i = 0; i < totalThread; i++) {
@@ -204,7 +206,10 @@ class ActiveLimitFilterTest {
             int beforeExceptionActiveCount = count.getActive();
             activeLimitFilter.invoke(invoker, invocation);
             int afterExceptionActiveCount = count.getActive();
-            assertEquals(beforeExceptionActiveCount, afterExceptionActiveCount, "After exception active count should be same");
+            assertEquals(
+                    beforeExceptionActiveCount,
+                    afterExceptionActiveCount,
+                    "After exception active count should be same");
         });
     }
 
@@ -220,7 +225,10 @@ class ActiveLimitFilterTest {
         } catch (RuntimeException ex) {
             activeLimitFilter.onError(ex, invoker, invocation);
             int afterExceptionActiveCount = count.getActive();
-            assertEquals(beforeExceptionActiveCount, afterExceptionActiveCount, "After exception active count should be same");
+            assertEquals(
+                    beforeExceptionActiveCount,
+                    afterExceptionActiveCount,
+                    "After exception active count should be same");
         }
     }
 }

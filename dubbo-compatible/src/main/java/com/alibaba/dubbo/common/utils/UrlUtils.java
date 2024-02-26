@@ -16,13 +16,13 @@
  */
 package com.alibaba.dubbo.common.utils;
 
-import com.alibaba.dubbo.common.DelegateURL;
-import com.alibaba.dubbo.common.URL;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import com.alibaba.dubbo.common.DelegateURL;
+import com.alibaba.dubbo.common.URL;
 
 /**
  * 2019-04-17
@@ -35,7 +35,9 @@ public class UrlUtils {
     }
 
     public static List<URL> parseURLs(String address, Map<String, String> defaults) {
-        return org.apache.dubbo.common.utils.UrlUtils.parseURLs(address, defaults).stream().map(e -> new DelegateURL(e)).collect(Collectors.toList());
+        return org.apache.dubbo.common.utils.UrlUtils.parseURLs(address, defaults).stream()
+                .map(e -> new DelegateURL(e))
+                .collect(Collectors.toList());
     }
 
     public static Map<String, Map<String, String>> convertRegister(Map<String, Map<String, String>> register) {
@@ -58,9 +60,10 @@ public class UrlUtils {
         return org.apache.dubbo.common.utils.UrlUtils.revertNotify(notify);
     }
 
-    //compatible for dubbo-2.0.0
+    // compatible for dubbo-2.0.0
     public static List<String> revertForbid(List<String> forbid, Set<URL> subscribed) {
-        Set<org.apache.dubbo.common.URL> urls = subscribed.stream().map(e -> e.getOriginalURL()).collect(Collectors.toSet());
+        Set<org.apache.dubbo.common.URL> urls =
+                subscribed.stream().map(e -> e.getOriginalURL()).collect(Collectors.toSet());
         return org.apache.dubbo.common.utils.UrlUtils.revertForbid(forbid, urls);
     }
 
@@ -73,7 +76,8 @@ public class UrlUtils {
     }
 
     public static boolean isMatch(URL consumerUrl, URL providerUrl) {
-        return org.apache.dubbo.common.utils.UrlUtils.isMatch(consumerUrl.getOriginalURL(), providerUrl.getOriginalURL());
+        return org.apache.dubbo.common.utils.UrlUtils.isMatch(
+                consumerUrl.getOriginalURL(), providerUrl.getOriginalURL());
     }
 
     public static boolean isMatchGlobPattern(String pattern, String value, URL param) {
@@ -85,9 +89,9 @@ public class UrlUtils {
     }
 
     public static boolean isServiceKeyMatch(URL pattern, URL value) {
-        return org.apache.dubbo.common.utils.UrlUtils.isServiceKeyMatch(pattern.getOriginalURL(), value.getOriginalURL());
+        return org.apache.dubbo.common.utils.UrlUtils.isServiceKeyMatch(
+                pattern.getOriginalURL(), value.getOriginalURL());
     }
-
 
     public static boolean isConfigurator(URL url) {
         return org.apache.dubbo.common.utils.UrlUtils.isConfigurator(url.getOriginalURL());

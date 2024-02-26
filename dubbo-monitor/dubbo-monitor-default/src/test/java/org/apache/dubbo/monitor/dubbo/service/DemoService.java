@@ -25,6 +25,4 @@ public interface DemoService {
     void throwDemoException() throws Exception;
 
     int echo(int i);
-
-
 }

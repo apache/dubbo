@@ -50,5 +50,4 @@ public interface Compiler {
     default Class<?> compile(Class<?> neighbor, String code, ClassLoader classLoader) {
         return compile(code, classLoader);
     }
-
 }

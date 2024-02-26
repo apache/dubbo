@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.model;
 
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -54,7 +53,6 @@ public class ServiceKeyMetric extends ApplicationMetric {
         return serviceKey.equals(that.serviceKey) && Objects.equals(extraInfo, that.extraInfo);
     }
 
-
     private volatile int hashCode = 0;
 
     @Override
@@ -67,9 +65,8 @@ public class ServiceKeyMetric extends ApplicationMetric {
 
     @Override
     public String toString() {
-        return "ServiceKeyMetric{" +
-                "applicationName='" + getApplicationName() + '\'' +
-                ", serviceKey='" + serviceKey + '\'' +
-                '}';
+        return "ServiceKeyMetric{" + "applicationName='"
+                + getApplicationName() + '\'' + ", serviceKey='"
+                + serviceKey + '\'' + '}';
     }
 }

@@ -29,8 +29,7 @@ public class RejectException extends RuntimeException {
      * Constructs a {@code RejectException} with no detail message. The cause is not initialized, and may subsequently be initialized by a
      * call to {@link #initCause(Throwable) initCause}.
      */
-    public RejectException() {
-    }
+    public RejectException() {}
 
     /**
      * Constructs a {@code RejectException} with the specified detail message. The cause is not initialized, and may subsequently be

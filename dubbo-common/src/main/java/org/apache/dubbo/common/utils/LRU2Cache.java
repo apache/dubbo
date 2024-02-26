@@ -157,5 +157,4 @@ public class LRU2Cache<K, V> extends LinkedHashMap<K, V> {
             this.maxCapacity = maxCapacity;
         }
     }
-
 }

@@ -14,18 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.stub;
 
 import org.apache.dubbo.common.stream.StreamObserver;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -39,25 +38,20 @@ class ServerStreamMethodHandlerTest {
         AtomicInteger completeCounter = new AtomicInteger();
         AtomicInteger errorCounter = new AtomicInteger();
         StreamObserver<String> responseObserver = Mockito.mock(StreamObserver.class);
-        doAnswer(o -> nextCounter.incrementAndGet())
-            .when(responseObserver).onNext(anyString());
-        doAnswer(o -> completeCounter.incrementAndGet())
-            .when(responseObserver).onCompleted();
-        doAnswer(o -> errorCounter.incrementAndGet())
-            .when(responseObserver).onError(any(Throwable.class));
+        doAnswer(o -> nextCounter.incrementAndGet()).when(responseObserver).onNext(anyString());
+        doAnswer(o -> completeCounter.incrementAndGet()).when(responseObserver).onCompleted();
+        doAnswer(o -> errorCounter.incrementAndGet()).when(responseObserver).onError(any(Throwable.class));
         BiConsumer<String, StreamObserver<String>> consumer = (s, stringStreamObserver) -> {
             for (int i = 0; i < 10; i++) {
                 stringStreamObserver.onNext(s + i);
             }
             stringStreamObserver.onCompleted();
         };
-        ServerStreamMethodHandler<String, String> handler = new ServerStreamMethodHandler<>(
-            consumer);
-        CompletableFuture<?> future = handler.invoke(new Object[]{"test", responseObserver});
+        ServerStreamMethodHandler<String, String> handler = new ServerStreamMethodHandler<>(consumer);
+        CompletableFuture<?> future = handler.invoke(new Object[] {"test", responseObserver});
         Assertions.assertTrue(future.isDone());
         Assertions.assertEquals(10, nextCounter.get());
         Assertions.assertEquals(0, errorCounter.get());
         Assertions.assertEquals(1, completeCounter.get());
     }
-
 }

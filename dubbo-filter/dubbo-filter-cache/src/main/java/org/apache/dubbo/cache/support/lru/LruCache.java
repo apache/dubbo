@@ -76,5 +76,4 @@ public class LruCache implements Cache {
     public Object get(Object key) {
         return store.get(key);
     }
-
 }

@@ -22,5 +22,4 @@ import org.apache.dubbo.common.extension.SPI;
 public interface Merger<T> {
 
     T merge(T... items);
-
 }

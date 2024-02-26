@@ -37,8 +37,6 @@ import org.apache.dubbo.remoting.zookeeper.EventType;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
-import org.apache.zookeeper.data.Stat;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -47,6 +45,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import org.apache.zookeeper.data.Stat;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ZOOKEEPER_EXCEPTION;
@@ -58,14 +58,14 @@ import static org.apache.dubbo.metadata.ServiceNameMapping.getAppNames;
  */
 public class ZookeeperMetadataReport extends AbstractMetadataReport {
 
-    private final static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ZookeeperMetadataReport.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(ZookeeperMetadataReport.class);
 
     private final String root;
 
     ZookeeperClient zkClient;
 
     private ConcurrentMap<String, MappingDataListener> casListenerMap = new ConcurrentHashMap<>();
-
 
     public ZookeeperMetadataReport(URL url, ZookeeperTransporter zookeeperTransporter) {
         super(url);
