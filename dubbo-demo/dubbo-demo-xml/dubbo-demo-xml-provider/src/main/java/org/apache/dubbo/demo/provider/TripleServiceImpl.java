@@ -24,5 +24,4 @@ public class TripleServiceImpl implements TripleService {
     public String hello() {
         return "Triple!";
     }
-
 }

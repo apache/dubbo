@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.collector.sample;
 
 import org.apache.dubbo.common.utils.Assert;
@@ -31,9 +30,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @param <K> metricsName
  * @param <M> metric
  */
-
-public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
-    implements MetricsCountSampler<S, K, M> {
+public abstract class SimpleMetricsCountSampler<S, K, M extends Metric> implements MetricsCountSampler<S, K, M> {
 
     private final ConcurrentMap<M, AtomicLong> EMPTY_COUNT = new ConcurrentHashMap<>();
     private final Map<K, ConcurrentMap<M, AtomicLong>> metricCounter = new ConcurrentHashMap<>();
@@ -45,13 +42,11 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
 
     @Override
     public Optional<ConcurrentMap<M, AtomicLong>> getCount(K metricName) {
-        return Optional.ofNullable(metricCounter.get(metricName) == null ?
-            EMPTY_COUNT :
-            metricCounter.get(metricName));
+        return Optional.ofNullable(metricCounter.get(metricName) == null ? EMPTY_COUNT : metricCounter.get(metricName));
     }
 
-    protected  void initMetricsCounter(S source, K metricsName){
-        getAtomicCounter(source,metricsName);
+    protected void initMetricsCounter(S source, K metricsName) {
+        getAtomicCounter(source, metricsName);
     }
 
     protected abstract void countConfigure(MetricsCountSampleConfigurer<S, K, M> sampleConfigure);
@@ -77,7 +72,5 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
             atomicCounter = metricAtomic.computeIfAbsent(sampleConfigure.getMetric(), k -> new AtomicLong());
         }
         return atomicCounter;
-
     }
-
 }

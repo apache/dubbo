@@ -21,7 +21,6 @@ package org.apache.dubbo.metadata.store.redis;
  */
 public interface RedisMetadata4TstService {
 
-
     int getCounter();
 
     void printResult(String var);

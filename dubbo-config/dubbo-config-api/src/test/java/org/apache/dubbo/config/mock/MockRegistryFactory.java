@@ -33,5 +33,4 @@ public class MockRegistryFactory implements RegistryFactory {
 
         return new MockRegistry();
     }
-
 }

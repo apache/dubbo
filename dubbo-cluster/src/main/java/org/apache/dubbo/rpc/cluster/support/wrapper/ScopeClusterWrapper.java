@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.support.wrapper;
 
 import org.apache.dubbo.common.extension.Wrapper;
@@ -36,8 +35,7 @@ public class ScopeClusterWrapper implements Cluster {
 
     @Override
     public <T> Invoker<T> join(Directory<T> directory, boolean buildFilterChain) throws RpcException {
-        return new ScopeClusterInvoker<>(directory,
-            this.cluster.join(directory, buildFilterChain));
+        return new ScopeClusterInvoker<>(directory, this.cluster.join(directory, buildFilterChain));
     }
 
     public Cluster getCluster() {

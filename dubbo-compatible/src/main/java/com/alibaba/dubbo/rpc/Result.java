@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.rpc;
 
 import java.util.Collections;
@@ -30,14 +29,10 @@ import java.util.function.Function;
 public interface Result extends org.apache.dubbo.rpc.Result {
 
     @Override
-    default void setValue(Object value) {
-
-    }
+    default void setValue(Object value) {}
 
     @Override
-    default void setException(Throwable t) {
-
-    }
+    default void setException(Throwable t) {}
 
     @Override
     default Map<String, Object> getObjectAttachments() {
@@ -45,14 +40,10 @@ public interface Result extends org.apache.dubbo.rpc.Result {
     }
 
     @Override
-    default void addObjectAttachments(Map<String, Object> map) {
-
-    }
+    default void addObjectAttachments(Map<String, Object> map) {}
 
     @Override
-    default void setObjectAttachments(Map<String, Object> map) {
-
-    }
+    default void setObjectAttachments(Map<String, Object> map) {}
 
     @Override
     default Object getObjectAttachment(String key) {
@@ -63,7 +54,6 @@ public interface Result extends org.apache.dubbo.rpc.Result {
     default Object getObjectAttachment(String key, Object defaultValue) {
         return null;
     }
-
 
     /**
      * @see com.alibaba.dubbo.rpc.Result#getValue()
@@ -86,7 +76,8 @@ public interface Result extends org.apache.dubbo.rpc.Result {
         }
 
         @Override
-        public org.apache.dubbo.rpc.Result whenCompleteWithContext(BiConsumer<org.apache.dubbo.rpc.Result, Throwable> fn) {
+        public org.apache.dubbo.rpc.Result whenCompleteWithContext(
+                BiConsumer<org.apache.dubbo.rpc.Result, Throwable> fn) {
             return delegate.whenCompleteWithContext(fn);
         }
 
@@ -171,7 +162,8 @@ public interface Result extends org.apache.dubbo.rpc.Result {
         }
 
         @Override
-        public org.apache.dubbo.rpc.Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        public org.apache.dubbo.rpc.Result get(long timeout, TimeUnit unit)
+                throws InterruptedException, ExecutionException, TimeoutException {
             return delegate.get(timeout, unit);
         }
     }

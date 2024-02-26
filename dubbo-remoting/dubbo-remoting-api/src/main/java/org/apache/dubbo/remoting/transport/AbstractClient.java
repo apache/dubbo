@@ -35,18 +35,17 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
+import static org.apache.dubbo.common.constants.CommonConstants.LAZY_CONNECT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.LAZY_CONNECT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CONNECT_PROVIDER;
+import static org.apache.dubbo.config.Constants.CLIENT_THREAD_POOL_NAME;
 
 /**
  * AbstractClient
  */
 public abstract class AbstractClient extends AbstractEndpoint implements Client {
-
-    protected static final String CLIENT_THREAD_POOL_NAME = "DubboClientHandler";
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractClient.class);
 
@@ -67,25 +66,35 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
             doOpen();
         } catch (Throwable t) {
             close();
-            throw new RemotingException(url.toInetSocketAddress(), null,
-                "Failed to start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress()
-                    + " connect to the server " + getRemoteAddress() + ", cause: " + t.getMessage(), t);
+            throw new RemotingException(
+                    url.toInetSocketAddress(),
+                    null,
+                    "Failed to start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress()
+                            + " connect to the server " + getRemoteAddress() + ", cause: " + t.getMessage(),
+                    t);
         }
 
         try {
             // connect.
             connect();
             if (logger.isInfoEnabled()) {
-                logger.info("Start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress() + " connect to the server " + getRemoteAddress());
+                logger.info("Start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress()
+                        + " connect to the server " + getRemoteAddress());
             }
         } catch (RemotingException t) {
             // If lazy connect client fails to establish a connection, the client instance will still be created,
             // and the reconnection will be initiated by ReconnectTask, so there is no need to throw an exception
             if (url.getParameter(LAZY_CONNECT_KEY, false)) {
-                logger.warn(TRANSPORT_FAILED_CONNECT_PROVIDER, "", "", "Failed to start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress() +
-                    " connect to the server " + getRemoteAddress() +
-                    " (the connection request is initiated by lazy connect client, ignore and retry later!), cause: " +
-                    t.getMessage(), t);
+                logger.warn(
+                        TRANSPORT_FAILED_CONNECT_PROVIDER,
+                        "",
+                        "",
+                        "Failed to start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress()
+                                + " connect to the server "
+                                + getRemoteAddress()
+                                + " (the connection request is initiated by lazy connect client, ignore and retry later!), cause: "
+                                + t.getMessage(),
+                        t);
                 return;
             }
 
@@ -93,14 +102,23 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                 close();
                 throw t;
             } else {
-                logger.warn(TRANSPORT_FAILED_CONNECT_PROVIDER, "", "", "Failed to start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress()
-                    + " connect to the server " + getRemoteAddress() + " (check == false, ignore and retry later!), cause: " + t.getMessage(), t);
+                logger.warn(
+                        TRANSPORT_FAILED_CONNECT_PROVIDER,
+                        "",
+                        "",
+                        "Failed to start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress()
+                                + " connect to the server " + getRemoteAddress()
+                                + " (check == false, ignore and retry later!), cause: " + t.getMessage(),
+                        t);
             }
         } catch (Throwable t) {
             close();
-            throw new RemotingException(url.toInetSocketAddress(), null,
-                "Failed to start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress()
-                    + " connect to the server " + getRemoteAddress() + ", cause: " + t.getMessage(), t);
+            throw new RemotingException(
+                    url.toInetSocketAddress(),
+                    null,
+                    "Failed to start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress()
+                            + " connect to the server " + getRemoteAddress() + ", cause: " + t.getMessage(),
+                    t);
         }
     }
 
@@ -114,7 +132,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
          * which means params are shared among different services. Since client is shared among services this is currently not a problem.
          */
         url = url.addParameter(THREAD_NAME_KEY, CLIENT_THREAD_POOL_NAME)
-            .addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
+                .addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
         executor = executorRepository.createExecutorIfAbsent(url);
     }
 
@@ -195,7 +213,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
             connect();
         }
         Channel channel = getChannel();
-        //TODO Can the value returned by getChannel() be null? need improvement.
+        // TODO Can the value returned by getChannel() be null? need improvement.
         if (channel == null || !channel.isConnected()) {
             throw new RemotingException(this, "message can not send, because channel is closed . url:" + getUrl());
         }
@@ -211,23 +229,32 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
             }
 
             if (isClosed() || isClosing()) {
-                logger.warn(TRANSPORT_FAILED_CONNECT_PROVIDER, "", "", "No need to connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
-                    + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion() + ", cause: client status is closed or closing.");
+                logger.warn(
+                        TRANSPORT_FAILED_CONNECT_PROVIDER,
+                        "",
+                        "",
+                        "No need to connect to server " + getRemoteAddress() + " from "
+                                + getClass().getSimpleName() + " " + NetUtils.getLocalHost() + " using dubbo version "
+                                + Version.getVersion() + ", cause: client status is closed or closing.");
                 return;
             }
 
             doConnect();
 
             if (!isConnected()) {
-                throw new RemotingException(this, "Failed to connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
-                    + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
-                    + ", cause: Connect wait timeout: " + getConnectTimeout() + "ms.");
+                throw new RemotingException(
+                        this,
+                        "Failed to connect to server " + getRemoteAddress() + " from "
+                                + getClass().getSimpleName() + " "
+                                + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
+                                + ", cause: Connect wait timeout: " + getConnectTimeout() + "ms.");
 
             } else {
                 if (logger.isInfoEnabled()) {
-                    logger.info("Successfully connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
-                        + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
-                        + ", channel is " + this.getChannel());
+                    logger.info("Successfully connect to server " + getRemoteAddress() + " from "
+                            + getClass().getSimpleName() + " "
+                            + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
+                            + ", channel is " + this.getChannel());
                 }
             }
 
@@ -235,9 +262,13 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
             throw e;
 
         } catch (Throwable e) {
-            throw new RemotingException(this, "Failed to connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
-                + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
-                + ", cause: " + e.getMessage(), e);
+            throw new RemotingException(
+                    this,
+                    "Failed to connect to server " + getRemoteAddress() + " from "
+                            + getClass().getSimpleName() + " "
+                            + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
+                            + ", cause: " + e.getMessage(),
+                    e);
 
         } finally {
             connectLock.unlock();
@@ -279,14 +310,26 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     @Override
     public void close() {
         if (isClosed()) {
-            logger.warn(TRANSPORT_FAILED_CONNECT_PROVIDER, "", "", "No need to close connection to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " " + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion() + ", cause: the client status is closed.");
+            logger.warn(
+                    TRANSPORT_FAILED_CONNECT_PROVIDER,
+                    "",
+                    "",
+                    "No need to close connection to server " + getRemoteAddress() + " from "
+                            + getClass().getSimpleName() + " " + NetUtils.getLocalHost() + " using dubbo version "
+                            + Version.getVersion() + ", cause: the client status is closed.");
             return;
         }
 
         connectLock.lock();
         try {
             if (isClosed()) {
-                logger.warn(TRANSPORT_FAILED_CONNECT_PROVIDER, "", "", "No need to close connection to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " " + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion() + ", cause: the client status is closed.");
+                logger.warn(
+                        TRANSPORT_FAILED_CONNECT_PROVIDER,
+                        "",
+                        "",
+                        "No need to close connection to server " + getRemoteAddress() + " from "
+                                + getClass().getSimpleName() + " " + NetUtils.getLocalHost() + " using dubbo version "
+                                + Version.getVersion() + ", cause: the client status is closed.");
                 return;
             }
 

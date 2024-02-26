@@ -16,16 +16,17 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
+import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.exchange.Request;
+
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.timeout.IdleStateEvent;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.url.component.ServiceConfigURL;
-import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.exchange.Request;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -78,7 +79,5 @@ class NettyClientHandlerTest {
         ArgumentCaptor<Request> requestArgumentCaptor = ArgumentCaptor.forClass(Request.class);
         Thread.sleep(500);
         Mockito.verify(channel, Mockito.times(1)).writeAndFlush(requestArgumentCaptor.capture());
-
-
     }
 }

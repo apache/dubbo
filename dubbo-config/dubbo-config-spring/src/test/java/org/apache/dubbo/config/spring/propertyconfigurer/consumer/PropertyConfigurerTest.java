@@ -20,6 +20,8 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 
+import java.net.InetSocketAddress;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -30,8 +32,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import java.net.InetSocketAddress;
 
 class PropertyConfigurerTest {
 
@@ -48,25 +48,29 @@ class PropertyConfigurerTest {
     @Test
     void testEarlyInit() {
 
-        ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext("org/apache/dubbo/config/spring/propertyconfigurer/provider/dubbo-provider.xml");
+        ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(
+                "org/apache/dubbo/config/spring/propertyconfigurer/provider/dubbo-provider.xml");
         try {
             providerContext.start();
 
-            // Resolve placeholder by PropertyPlaceholderConfigurer in dubbo-consumer.xml, without import property source.
-            AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration.class);
+            // Resolve placeholder by PropertyPlaceholderConfigurer in dubbo-consumer.xml, without import property
+            // source.
+            AnnotationConfigApplicationContext context =
+                    new AnnotationConfigApplicationContext(ConsumerConfiguration.class);
             context.start();
 
             HelloService service = (HelloService) context.getBean("demoService");
             String result = service.sayHello("world");
             System.out.println("result: " + result);
-            Assertions.assertEquals("Hello world, response from provider: " + InetSocketAddress.createUnresolved("127.0.0.1", 0), result);
+            Assertions.assertEquals(
+                    "Hello world, response from provider: " + InetSocketAddress.createUnresolved("127.0.0.1", 0),
+                    result);
 
             context.close();
 
         } finally {
             providerContext.close();
         }
-
     }
 
     @Configuration

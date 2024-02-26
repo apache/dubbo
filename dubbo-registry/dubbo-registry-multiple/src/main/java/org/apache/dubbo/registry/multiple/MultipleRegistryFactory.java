@@ -29,5 +29,4 @@ public class MultipleRegistryFactory extends AbstractRegistryFactory {
     protected Registry createRegistry(URL url) {
         return new MultipleRegistry(url);
     }
-
 }

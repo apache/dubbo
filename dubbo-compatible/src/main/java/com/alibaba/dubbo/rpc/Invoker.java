@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.rpc;
 
 import org.apache.dubbo.rpc.AsyncRpcResult;
@@ -36,7 +35,8 @@ public interface Invoker<T> extends org.apache.dubbo.rpc.Invoker<T> {
 
     // This method will never be called for a legacy invoker.
     @Override
-    default org.apache.dubbo.rpc.Result invoke(org.apache.dubbo.rpc.Invocation invocation) throws org.apache.dubbo.rpc.RpcException {
+    default org.apache.dubbo.rpc.Result invoke(org.apache.dubbo.rpc.Invocation invocation)
+            throws org.apache.dubbo.rpc.RpcException {
         return null;
     }
 
@@ -54,7 +54,8 @@ public interface Invoker<T> extends org.apache.dubbo.rpc.Invoker<T> {
         }
 
         @Override
-        public org.apache.dubbo.rpc.Result invoke(org.apache.dubbo.rpc.Invocation invocation) throws org.apache.dubbo.rpc.RpcException {
+        public org.apache.dubbo.rpc.Result invoke(org.apache.dubbo.rpc.Invocation invocation)
+                throws org.apache.dubbo.rpc.RpcException {
             return new Result.CompatibleResult(invoker.invoke(invocation));
         }
 
@@ -95,12 +96,12 @@ public interface Invoker<T> extends org.apache.dubbo.rpc.Invoker<T> {
         public org.apache.dubbo.rpc.Invoker<T> getOriginal() {
             return invoker;
         }
-        
+
         @Override
         public int hashCode() {
             return invoker.hashCode();
         }
-        
+
         @Override
         public boolean equals(Object o) {
             if (this == o) {

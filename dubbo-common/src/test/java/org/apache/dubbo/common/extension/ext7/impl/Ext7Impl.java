@@ -23,5 +23,4 @@ public class Ext7Impl implements InitErrorExt {
     public String echo(URL url, String s) {
         return "";
     }
-
 }

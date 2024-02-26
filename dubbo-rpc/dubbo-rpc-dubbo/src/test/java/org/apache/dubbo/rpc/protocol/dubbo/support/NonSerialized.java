@@ -19,6 +19,4 @@ package org.apache.dubbo.rpc.protocol.dubbo.support;
 /**
  * NonSerialized
  */
-public class NonSerialized {
-
-}
+public class NonSerialized {}

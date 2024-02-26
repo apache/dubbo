@@ -14,10 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.collector;
 
-import io.micrometer.core.instrument.Timer;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.context.ConfigManager;
@@ -38,15 +36,18 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import io.micrometer.core.instrument.Timer;
+
 import static org.apache.dubbo.metrics.model.MetricsCategory.RT;
 
-public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEvent> implements MetricsCollector<RequestEvent> {
+public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEvent>
+        implements MetricsCollector<RequestEvent> {
 
     private final ConcurrentHashMap<MethodMetric, Timer> rt = new ConcurrentHashMap<>();
     private HistogramMetricRegister metricRegister;
     private final ApplicationModel applicationModel;
 
-    private static final Integer[] DEFAULT_BUCKETS_MS = new Integer[]{100, 300, 500, 1000, 3000, 5000, 10000};
+    private static final Integer[] DEFAULT_BUCKETS_MS = new Integer[] {100, 300, 500, 1000, 3000, 5000, 10000};
 
     private boolean serviceLevel;
 
@@ -55,7 +56,10 @@ public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEv
 
         ConfigManager configManager = applicationModel.getApplicationConfigManager();
         MetricsConfig config = configManager.getMetrics().orElse(null);
-        if (config == null || config.getHistogram() == null || config.getHistogram().getEnabled() == null || Boolean.TRUE.equals(config.getHistogram().getEnabled())) {
+        if (config == null
+                || config.getHistogram() == null
+                || config.getHistogram().getEnabled() == null
+                || Boolean.TRUE.equals(config.getHistogram().getEnabled())) {
             registerListener();
 
             HistogramConfig histogram;
@@ -69,19 +73,22 @@ public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEv
                 histogram.setBucketsMs(DEFAULT_BUCKETS_MS);
             }
 
-            metricRegister = new HistogramMetricRegister(MetricsGlobalRegistry.getCompositeRegistry(applicationModel), histogram);
+            metricRegister = new HistogramMetricRegister(
+                    MetricsGlobalRegistry.getCompositeRegistry(applicationModel), histogram);
             this.serviceLevel = MethodMetric.isServiceLevel(applicationModel);
         }
     }
 
     private void registerListener() {
-        applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class).getEventMulticaster().addListener(this);
+        applicationModel
+                .getBeanFactory()
+                .getBean(DefaultMetricsCollector.class)
+                .getEventMulticaster()
+                .addListener(this);
     }
 
     @Override
-    public void onEvent(RequestEvent event) {
-
-    }
+    public void onEvent(RequestEvent event) {}
 
     @Override
     public void onEventFinish(RequestEvent event) {
@@ -95,11 +102,15 @@ public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEv
 
     private void onRTEvent(RequestEvent event) {
         if (metricRegister != null) {
-            MethodMetric metric = new MethodMetric(applicationModel, event.getAttachmentValue(MetricsConstants.INVOCATION), serviceLevel);
+            MethodMetric metric = new MethodMetric(
+                    applicationModel, event.getAttachmentValue(MetricsConstants.INVOCATION), serviceLevel);
             long responseTime = event.getTimePair().calc();
 
-            HistogramMetricSample sample = new HistogramMetricSample(MetricsKey.METRIC_RT_HISTOGRAM.getNameByType(metric.getSide()),
-                MetricsKey.METRIC_RT_HISTOGRAM.getDescription(), metric.getTags(), RT);
+            HistogramMetricSample sample = new HistogramMetricSample(
+                    MetricsKey.METRIC_RT_HISTOGRAM.getNameByType(metric.getSide()),
+                    MetricsKey.METRIC_RT_HISTOGRAM.getDescription(),
+                    metric.getTags(),
+                    RT);
 
             Timer timer = ConcurrentHashMapUtils.computeIfAbsent(rt, metric, k -> metricRegister.register(sample));
             timer.record(responseTime, TimeUnit.MILLISECONDS);
@@ -109,5 +120,11 @@ public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEv
     @Override
     public List<MetricSample> collect() {
         return new ArrayList<>();
+    }
+
+    @Override
+    public boolean calSamplesChanged() {
+        // Histogram is directly register micrometer
+        return false;
     }
 }

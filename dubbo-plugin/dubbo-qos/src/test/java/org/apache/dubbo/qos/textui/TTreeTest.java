@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,13 +29,12 @@ class TTreeTest {
         tree.begin("two").begin("TWO").end().begin("2").end().end();
         tree.begin("three").end();
         String result = tree.rendering();
-        String expected = "`---+root\n" +
-                "    +---+one\n" +
-                "    |   `---ONE\n" +
-                "    +---+two\n" +
-                "    |   +---TWO\n" +
-                "    |   `---2\n" +
-                "    `---three\n";
+        String expected = "`---+root\n" + "    +---+one\n"
+                + "    |   `---ONE\n"
+                + "    +---+two\n"
+                + "    |   +---TWO\n"
+                + "    |   `---2\n"
+                + "    `---three\n";
         assertThat(result, equalTo(expected));
         System.out.println(result);
     }

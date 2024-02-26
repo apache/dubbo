@@ -31,8 +31,7 @@ import java.util.function.Consumer;
  */
 public class CallableSafeInitializer<T> {
     /** A guard which ensures that initialize() is called only once. */
-    private final AtomicReference<CallableSafeInitializer<T>> factory =
-            new AtomicReference<>();
+    private final AtomicReference<CallableSafeInitializer<T>> factory = new AtomicReference<>();
 
     /** Holds the reference to the managed object. */
     private final AtomicReference<T> reference = new AtomicReference<>();
@@ -50,7 +49,7 @@ public class CallableSafeInitializer<T> {
      * @return lazily initialized object
      * exception
      */
-    //@Override
+    // @Override
     public final T get() {
         T result;
 

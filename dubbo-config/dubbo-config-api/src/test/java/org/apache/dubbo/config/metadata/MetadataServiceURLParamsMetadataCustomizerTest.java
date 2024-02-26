@@ -28,14 +28,14 @@ import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.io.IOException;
+import java.util.Map;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import java.io.IOException;
-import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
@@ -49,10 +49,10 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
 class MetadataServiceURLParamsMetadataCustomizerTest {
 
     public DefaultServiceInstance instance;
-    private URL metadataServiceURL = URL.valueOf("dubbo://10.225.12.124:2002/org.apache.dubbo.metadata.MetadataService" +
-        "?application=MetadataServiceURLParamsMetadataCustomizerTest&group=MetadataServiceURLParamsMetadataCustomizerTest" +
-        "&interface=org.apache.dubbo.metadata.MetadataService&side=provider&timestamp=1637573430740&version=1.0.0");
-
+    private URL metadataServiceURL = URL.valueOf(
+            "dubbo://10.225.12.124:2002/org.apache.dubbo.metadata.MetadataService"
+                    + "?application=MetadataServiceURLParamsMetadataCustomizerTest&group=MetadataServiceURLParamsMetadataCustomizerTest"
+                    + "&interface=org.apache.dubbo.metadata.MetadataService&side=provider&timestamp=1637573430740&version=1.0.0");
 
     public static DefaultServiceInstance createInstance() {
         return new DefaultServiceInstance("A", "127.0.0.1", 20880, ApplicationModel.defaultModel());
@@ -80,10 +80,10 @@ class MetadataServiceURLParamsMetadataCustomizerTest {
         applicationConfig.setMetadataType(DEFAULT_METADATA_STORAGE_TYPE);
 
         providerBootstrap
-            .application(applicationConfig)
-            .registry(new RegistryConfig("N/A"))
-            .protocol(new ProtocolConfig("dubbo", 2002))
-            .service(serviceConfig);
+                .application(applicationConfig)
+                .registry(new RegistryConfig("N/A"))
+                .protocol(new ProtocolConfig("dubbo", 2002))
+                .service(serviceConfig);
 
         // will start exporter.export()
         providerBootstrap.start();

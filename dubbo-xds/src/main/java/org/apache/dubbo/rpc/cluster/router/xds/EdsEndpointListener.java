@@ -20,9 +20,7 @@ import org.apache.dubbo.registry.xds.util.protocol.message.Endpoint;
 
 import java.util.Set;
 
-
 public interface EdsEndpointListener {
 
     void onEndPointChange(String cluster, Set<Endpoint> endpoints);
-
 }

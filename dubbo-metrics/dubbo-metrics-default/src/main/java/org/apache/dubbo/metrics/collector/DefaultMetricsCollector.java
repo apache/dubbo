@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.collector;
 
 import org.apache.dubbo.common.constants.CommonConstants;
@@ -72,6 +71,7 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
 
     private final AtomicBoolean initialized = new AtomicBoolean();
 
+    private final AtomicBoolean samplesChanged = new AtomicBoolean();
 
     public DefaultMetricsCollector(ApplicationModel applicationModel) {
         super(new BaseStatComposite(applicationModel) {
@@ -84,18 +84,21 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
             @Override
             protected void init(RtStatComposite rtStatComposite) {
                 super.init(rtStatComposite);
-                rtStatComposite.init(MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD),
-                    MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD));
+                rtStatComposite.init(
+                        MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD),
+                        MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD));
             }
         });
         super.setEventMulticaster(new DefaultSubDispatcher(this));
         samplers.add(applicationSampler);
         samplers.add(threadPoolSampler);
+        samplesChanged.set(true);
         this.applicationModel = applicationModel;
     }
 
     public void addSampler(MetricsSampler sampler) {
         samplers.add(sampler);
+        samplesChanged.set(true);
     }
 
     public void setApplicationName(String applicationName) {
@@ -165,14 +168,14 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
 
     @Override
     public void onEvent(TimeCounterEvent event) {
-        if(event instanceof MetricsInitEvent){
+        if (event instanceof MetricsInitEvent) {
             if (!metricsInitEnabled) {
                 return;
             }
-            if(initialized.compareAndSet(false,true)) {
+            if (initialized.compareAndSet(false, true)) {
                 collectors.addAll(applicationModel.getBeanFactory().getBeansOfType(MetricsCollector.class));
             }
-            collectors.stream().forEach(collector->collector.initMetrics(event));
+            collectors.stream().forEach(collector -> collector.initMetrics(event));
             return;
         }
         super.onEvent(event);
@@ -180,28 +183,54 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
 
     @Override
     public void initMetrics(MetricsEvent event) {
-        MetricsPlaceValue dynamicPlaceType = MetricsPlaceValue.of(event.getAttachmentValue(MetricsConstants.INVOCATION_SIDE), MetricsLevel.METHOD);
-        INIT_DEFAULT_METHOD_KEYS.stream().forEach(key->MetricsSupport.init(key, dynamicPlaceType, (MethodMetricsCollector) this, event));
-        MetricsSupport.init(METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD), (MethodMetricsCollector) this, event);
+        MetricsPlaceValue dynamicPlaceType =
+                MetricsPlaceValue.of(event.getAttachmentValue(MetricsConstants.INVOCATION_SIDE), MetricsLevel.METHOD);
+        INIT_DEFAULT_METHOD_KEYS.stream()
+                .forEach(key -> MetricsSupport.init(key, dynamicPlaceType, (MethodMetricsCollector) this, event));
+        MetricsSupport.init(
+                METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED,
+                MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD),
+                (MethodMetricsCollector) this,
+                event);
     }
 
-    public SimpleMetricsCountSampler<String, MetricsEvent.Type, ApplicationMetric> applicationSampler = new SimpleMetricsCountSampler<String, MetricsEvent.Type, ApplicationMetric>() {
-        @Override
-        public List<MetricSample> sample() {
-            List<MetricSample> samples = new ArrayList<>();
-            this.getCount(MetricsEvent.Type.APPLICATION_INFO).filter(e -> !e.isEmpty())
-                .ifPresent(map -> map.forEach((k, v) ->
-                    samples.add(new CounterMetricSample<>(APPLICATION_METRIC_INFO.getName(),
-                        APPLICATION_METRIC_INFO.getDescription(),
-                        k.getTags(), APPLICATION, v)))
-                );
-            return samples;
-        }
+    public SimpleMetricsCountSampler<String, MetricsEvent.Type, ApplicationMetric> applicationSampler =
+            new SimpleMetricsCountSampler<String, MetricsEvent.Type, ApplicationMetric>() {
+                @Override
+                public List<MetricSample> sample() {
+                    List<MetricSample> samples = new ArrayList<>();
+                    this.getCount(MetricsEvent.Type.APPLICATION_INFO)
+                            .filter(e -> !e.isEmpty())
+                            .ifPresent(map -> map.forEach((k, v) -> samples.add(new CounterMetricSample<>(
+                                    APPLICATION_METRIC_INFO.getName(),
+                                    APPLICATION_METRIC_INFO.getDescription(),
+                                    k.getTags(),
+                                    APPLICATION,
+                                    v))));
+                    return samples;
+                }
 
-        @Override
-        protected void countConfigure(
-            MetricsCountSampleConfigurer<String, MetricsEvent.Type, ApplicationMetric> sampleConfigure) {
-            sampleConfigure.configureMetrics(configure -> new ApplicationMetric(applicationModel));
+                @Override
+                protected void countConfigure(
+                        MetricsCountSampleConfigurer<String, MetricsEvent.Type, ApplicationMetric> sampleConfigure) {
+                    sampleConfigure.configureMetrics(configure -> new ApplicationMetric(applicationModel));
+                }
+
+                @Override
+                public boolean calSamplesChanged() {
+                    return false;
+                }
+            };
+
+    @Override
+    public boolean calSamplesChanged() {
+        // CAS to get and reset the flag in an atomic operation
+        boolean changed = samplesChanged.compareAndSet(true, false);
+        // Should ensure that all the sampler's samplesChanged have been compareAndSet, and cannot flip the `or` logic
+        changed = stats.calSamplesChanged() || changed;
+        for (MetricsSampler sampler : samplers) {
+            changed = sampler.calSamplesChanged() || changed;
         }
-    };
+        return changed;
+    }
 }

@@ -16,13 +16,13 @@
  */
 package org.apache.dubbo.qos.command.util;
 
-import java.util.Collections;
-import java.util.Set;
-
 import org.apache.dubbo.common.utils.AllowClassNotifyListener;
 import org.apache.dubbo.common.utils.SerializeCheckStatus;
 import org.apache.dubbo.common.utils.SerializeSecurityManager;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import java.util.Collections;
+import java.util.Set;
 
 public class SerializeCheckUtils implements AllowClassNotifyListener {
     private final SerializeSecurityManager manager;

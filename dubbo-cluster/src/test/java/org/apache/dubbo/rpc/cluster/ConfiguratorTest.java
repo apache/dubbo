@@ -21,12 +21,12 @@ import org.apache.dubbo.rpc.cluster.configurator.absent.AbsentConfigurator;
 import org.apache.dubbo.rpc.cluster.configurator.override.OverrideConfigurator;
 import org.apache.dubbo.rpc.cluster.configurator.parser.ConfigParser;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * {@link Configurator}
@@ -39,16 +39,17 @@ class ConfiguratorTest {
         Optional<List<Configurator>> emptyOptional = Configurator.toConfigurators(Collections.emptyList());
         Assertions.assertEquals(Optional.empty(), emptyOptional);
 
-        String configData = "[\"override://0.0.0.0/com.xx.Service?category=configurators&timeout=6666&disabled=true&dynamic=false&enabled=true&group=dubbo&priority=2&version=1.0\"" +
-            ", \"absent://0.0.0.0/com.xx.Service?category=configurators&timeout=6666&disabled=true&dynamic=false&enabled=true&group=dubbo&priority=1&version=1.0\" ]";
+        String configData =
+                "[\"override://0.0.0.0/com.xx.Service?category=configurators&timeout=6666&disabled=true&dynamic=false&enabled=true&group=dubbo&priority=2&version=1.0\""
+                        + ", \"absent://0.0.0.0/com.xx.Service?category=configurators&timeout=6666&disabled=true&dynamic=false&enabled=true&group=dubbo&priority=1&version=1.0\" ]";
         List<URL> urls = ConfigParser.parseConfigurators(configData);
         Optional<List<Configurator>> optionalList = Configurator.toConfigurators(urls);
         Assertions.assertTrue(optionalList.isPresent());
         List<Configurator> configurators = optionalList.get();
         Assertions.assertEquals(configurators.size(), 2);
-        // The hosts of AbsentConfigurator and OverrideConfigurator are equal, but the priority of OverrideConfigurator is higher
+        // The hosts of AbsentConfigurator and OverrideConfigurator are equal, but the priority of OverrideConfigurator
+        // is higher
         Assertions.assertTrue(configurators.get(0) instanceof AbsentConfigurator);
         Assertions.assertTrue(configurators.get(1) instanceof OverrideConfigurator);
     }
-
 }

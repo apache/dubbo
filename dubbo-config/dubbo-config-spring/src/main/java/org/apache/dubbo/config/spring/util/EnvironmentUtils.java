@@ -16,6 +16,12 @@
  */
 package org.apache.dubbo.config.spring.util;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
 import org.springframework.core.env.CompositePropertySource;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.EnumerablePropertySource;
@@ -23,12 +29,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
 import org.springframework.util.ObjectUtils;
-
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 /**
  * The utilities class for {@link Environment}
@@ -81,15 +81,11 @@ public abstract class EnvironmentUtils {
                     if (!properties.containsKey(propertyName)) { // put If absent
                         properties.put(propertyName, propertySource.getProperty(propertyName));
                     }
-
                 }
-
             }
-
         }
 
         return properties;
-
     }
 
     private static Map<String, PropertySource<?>> doGetPropertySources(ConfigurableEnvironment environment) {
@@ -101,11 +97,9 @@ public abstract class EnvironmentUtils {
         return map;
     }
 
-    private static void extract(String root, Map<String, PropertySource<?>> map,
-                                PropertySource<?> source) {
+    private static void extract(String root, Map<String, PropertySource<?>> map, PropertySource<?> source) {
         if (source instanceof CompositePropertySource) {
-            for (PropertySource<?> nest : ((CompositePropertySource) source)
-                    .getPropertySources()) {
+            for (PropertySource<?> nest : ((CompositePropertySource) source).getPropertySources()) {
                 extract(source.getName() + ":", map, nest);
             }
         } else {
@@ -128,9 +122,10 @@ public abstract class EnvironmentUtils {
         for (Map.Entry<String, Object> entry : properties.entrySet()) {
             String propertyName = entry.getKey();
 
-            if (propertyName.startsWith(DUBBO_PREFIX + PROPERTY_NAME_SEPARATOR)
-                    && entry.getValue() != null) {
-                dubboProperties.put(propertyName, environment.resolvePlaceholders(entry.getValue().toString()));
+            if (propertyName.startsWith(DUBBO_PREFIX + PROPERTY_NAME_SEPARATOR) && entry.getValue() != null) {
+                dubboProperties.put(
+                        propertyName,
+                        environment.resolvePlaceholders(entry.getValue().toString()));
             }
         }
 

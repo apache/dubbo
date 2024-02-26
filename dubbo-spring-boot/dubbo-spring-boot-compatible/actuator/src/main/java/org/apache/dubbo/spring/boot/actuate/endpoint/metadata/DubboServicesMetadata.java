@@ -19,10 +19,10 @@ package org.apache.dubbo.spring.boot.actuate.endpoint.metadata;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.spring.ServiceBean;
 
-import org.springframework.stereotype.Component;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import org.springframework.stereotype.Component;
 
 /**
  *  {@link DubboService} Metadata
@@ -54,11 +54,9 @@ public class DubboServicesMetadata extends AbstractDubboMetadata {
             }
 
             servicesMetadata.put(serviceBeanName, serviceBeanMetadata);
-
         }
 
         return servicesMetadata;
-
     }
 
     private Object resolveServiceBean(String serviceBeanName, ServiceBean serviceBean) {
@@ -74,11 +72,8 @@ public class DubboServicesMetadata extends AbstractDubboMetadata {
             if (applicationContext.containsBean(serviceName)) {
                 return applicationContext.getBean(serviceName, interfaceClass);
             }
-
         }
 
         return null;
-
     }
-
 }

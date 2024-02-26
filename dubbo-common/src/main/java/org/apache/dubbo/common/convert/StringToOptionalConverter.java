@@ -32,7 +32,6 @@ public class StringToOptionalConverter implements StringConverter<Optional> {
         return ofNullable(source);
     }
 
-
     @Override
     public int getPriority() {
         return MIN_PRIORITY;

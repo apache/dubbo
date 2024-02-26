@@ -42,15 +42,19 @@ class AdaptiveExtensionInjectorTest {
         ExtensionInjector scopeExtensionInjector = extensionLoader.getExtension("scopeBean");
         ExtensionInjector spiExtensionInjector = extensionLoader.getExtension("spi");
 
-        FooFrameworkProvider testFrameworkProvider = adaptiveExtensionInjector.getInstance(FooFrameworkProvider.class, "testFrameworkProvider");
+        FooFrameworkProvider testFrameworkProvider =
+                adaptiveExtensionInjector.getInstance(FooFrameworkProvider.class, "testFrameworkProvider");
         Assertions.assertNotNull(testFrameworkProvider);
         Assertions.assertTrue(testFrameworkProvider.getClass().getName().endsWith("$Adaptive"));
-        Assertions.assertEquals(spiExtensionInjector.getInstance(FooFrameworkProvider.class, "testFrameworkProvider"), testFrameworkProvider);
+        Assertions.assertEquals(
+                spiExtensionInjector.getInstance(FooFrameworkProvider.class, "testFrameworkProvider"),
+                testFrameworkProvider);
 
         ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
         AdaptiveExtensionInjectorTest obj = new AdaptiveExtensionInjectorTest();
         beanFactory.registerBean("bean", obj);
-        AdaptiveExtensionInjectorTest bean = adaptiveExtensionInjector.getInstance(AdaptiveExtensionInjectorTest.class, "bean");
+        AdaptiveExtensionInjectorTest bean =
+                adaptiveExtensionInjector.getInstance(AdaptiveExtensionInjectorTest.class, "bean");
         Assertions.assertEquals(bean, obj);
         Assertions.assertEquals(scopeExtensionInjector.getInstance(AdaptiveExtensionInjectorTest.class, "bean"), bean);
 

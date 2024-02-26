@@ -16,22 +16,22 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
-import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.ChannelPromise;
-import io.netty.channel.EventLoop;
-import io.netty.util.concurrent.GenericFutureListener;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 
+import java.net.InetSocketAddress;
+
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelPromise;
+import io.netty.channel.EventLoop;
+import io.netty.util.concurrent.GenericFutureListener;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-
-import java.net.InetSocketAddress;
 
 class NettyChannelTest {
     private Channel channel = Mockito.mock(Channel.class);
@@ -63,7 +63,6 @@ class NettyChannelTest {
         nettyChannel = NettyChannel.getOrAddChannel(channel, url, channelHandler);
         nettyChannel.markActive(true);
         Assertions.assertTrue(nettyChannel.isActive());
-
     }
 
     @Test
@@ -94,15 +93,21 @@ class NettyChannelTest {
         Exception exception = Mockito.mock(Exception.class);
         Mockito.when(exception.getMessage()).thenReturn("future cause");
         Mockito.when(future.cause()).thenReturn(exception);
-        Assertions.assertThrows(RemotingException.class, () -> {
-            finalNettyChannel.send("msg", true);
-        }, "future cause");
+        Assertions.assertThrows(
+                RemotingException.class,
+                () -> {
+                    finalNettyChannel.send("msg", true);
+                },
+                "future cause");
 
         Mockito.when(future.await(1000)).thenReturn(false);
         Mockito.when(future.cause()).thenReturn(null);
-        Assertions.assertThrows(RemotingException.class, () -> {
-            finalNettyChannel.send("msg", true);
-        }, "in timeout(1000ms) limit");
+        Assertions.assertThrows(
+                RemotingException.class,
+                () -> {
+                    finalNettyChannel.send("msg", true);
+                },
+                "in timeout(1000ms) limit");
 
         ChannelPromise channelPromise = Mockito.mock(ChannelPromise.class);
         Mockito.when(channel.newPromise()).thenReturn(channelPromise);
@@ -110,7 +115,8 @@ class NettyChannelTest {
         Mockito.when(channelPromise.cause()).thenReturn(null);
         Mockito.when(channelPromise.addListener(Mockito.any())).thenReturn(channelPromise);
         finalNettyChannel.send("msg", true);
-        ArgumentCaptor<GenericFutureListener> listenerArgumentCaptor = ArgumentCaptor.forClass(GenericFutureListener.class);
+        ArgumentCaptor<GenericFutureListener> listenerArgumentCaptor =
+                ArgumentCaptor.forClass(GenericFutureListener.class);
         Mockito.verify(channelPromise, Mockito.times(1)).addListener(listenerArgumentCaptor.capture());
     }
 

@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metadata;
 
-
 public interface MetadataConstants {
     String KEY_SEPARATOR = ":";
     String DEFAULT_PATH_TAG = "metadata";

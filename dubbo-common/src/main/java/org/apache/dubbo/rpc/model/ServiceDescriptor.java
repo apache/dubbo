@@ -53,5 +53,4 @@ public interface ServiceDescriptor {
     MethodDescriptor getMethod(String methodName, Class<?>[] paramTypes);
 
     List<MethodDescriptor> getMethods(String methodName);
-
 }

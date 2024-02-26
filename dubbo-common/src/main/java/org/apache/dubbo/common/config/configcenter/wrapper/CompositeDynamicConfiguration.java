@@ -35,7 +35,8 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
 
     public static final String NAME = "COMPOSITE";
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(CompositeDynamicConfiguration.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(CompositeDynamicConfiguration.class);
 
     private final Set<DynamicConfiguration> configurations = new HashSet<>();
 
@@ -48,7 +49,6 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
     public Set<DynamicConfiguration> getInnerConfigurations() {
         return configurations;
     }
-
 
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
@@ -92,7 +92,13 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
             try {
                 configuration.close();
             } catch (Exception e) {
-                logger.warn(INTERNAL_ERROR, "unknown error in configuration-center related code in common module", "", "close dynamic configuration " + configuration.getClass().getName() + "failed: " + e.getMessage(), e);
+                logger.warn(
+                        INTERNAL_ERROR,
+                        "unknown error in configuration-center related code in common module",
+                        "",
+                        "close dynamic configuration "
+                                + configuration.getClass().getName() + "failed: " + e.getMessage(),
+                        e);
             }
         }
         configurations.clear();

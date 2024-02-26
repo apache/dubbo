@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.handler;
 
-
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
@@ -27,16 +26,16 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 import org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeHandler;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.HEARTBEAT_EVENT;
 import static org.apache.dubbo.common.constants.CommonConstants.READONLY_EVENT;
 
-//TODO response test
+// TODO response test
 class HeaderExchangeHandlerTest {
 
     @Test
@@ -221,7 +220,7 @@ class HeaderExchangeHandlerTest {
         headerExchangeHandler.received(mockChannel, response);
 
         Object result = future.get();
-        Assertions.assertEquals(result.toString(),"MOCK_DATA");
+        Assertions.assertEquals(result.toString(), "MOCK_DATA");
     }
 
     private class BizException extends RuntimeException {

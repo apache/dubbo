@@ -71,19 +71,21 @@ class InvokeTelnetTest {
     @Test
     void testInvokeWithoutServicePrefixAndWithoutDefaultService() throws RemotingException {
         registerProvider(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
-        String result = invoke.execute(mockCommandContext, new String[]{"echo(\"ok\")"});
-        assertTrue(result.contains("If you want to invoke like [invoke sayHello(\"xxxx\")], please execute cd command first," +
-            " or you can execute it like [invoke IHelloService.sayHello(\"xxxx\")]"));
+        String result = invoke.execute(mockCommandContext, new String[] {"echo(\"ok\")"});
+        assertTrue(result.contains(
+                "If you want to invoke like [invoke sayHello(\"xxxx\")], please execute cd command first,"
+                        + " or you can execute it like [invoke IHelloService.sayHello(\"xxxx\")]"));
     }
 
     @Test
     void testInvokeDefaultService() throws RemotingException {
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(DemoService.class.getName());
         defaultAttributeMap.attr(SelectTelnet.SELECT_KEY).set(null);
-        given(mockChannel.attr(ChangeTelnet.SERVICE_KEY)).willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
+        given(mockChannel.attr(ChangeTelnet.SERVICE_KEY))
+                .willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
         given(mockChannel.attr(SelectTelnet.SELECT_KEY)).willReturn(defaultAttributeMap.attr(SelectTelnet.SELECT_KEY));
         registerProvider(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
-        String result = invoke.execute(mockCommandContext, new String[]{"echo(\"ok\")"});
+        String result = invoke.execute(mockCommandContext, new String[] {"echo(\"ok\")"});
         assertTrue(result.contains("result: \"ok\""));
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).remove();
         defaultAttributeMap.attr(SelectTelnet.SELECT_KEY).remove();
@@ -94,11 +96,12 @@ class InvokeTelnetTest {
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(null);
         defaultAttributeMap.attr(SelectTelnet.SELECT_KEY).set(null);
 
-        given(mockChannel.attr(ChangeTelnet.SERVICE_KEY)).willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
+        given(mockChannel.attr(ChangeTelnet.SERVICE_KEY))
+                .willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
         given(mockChannel.attr(SelectTelnet.SELECT_KEY)).willReturn(defaultAttributeMap.attr(SelectTelnet.SELECT_KEY));
 
         registerProvider(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
-        String result = invoke.execute(mockCommandContext, new String[]{"DemoService.echo(\"ok\")"});
+        String result = invoke.execute(mockCommandContext, new String[] {"DemoService.echo(\"ok\")"});
         assertTrue(result.contains("result: \"ok\""));
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).remove();
         defaultAttributeMap.attr(SelectTelnet.SELECT_KEY).remove();
@@ -108,12 +111,13 @@ class InvokeTelnetTest {
     void testInvokeByPassingNullValue() {
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(DemoService.class.getName());
         defaultAttributeMap.attr(SelectTelnet.SELECT_KEY).set(null);
-        given(mockChannel.attr(ChangeTelnet.SERVICE_KEY)).willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
+        given(mockChannel.attr(ChangeTelnet.SERVICE_KEY))
+                .willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
         given(mockChannel.attr(SelectTelnet.SELECT_KEY)).willReturn(defaultAttributeMap.attr(SelectTelnet.SELECT_KEY));
 
         registerProvider(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
         try {
-            invoke.execute(mockCommandContext, new String[]{"sayHello(null)"});
+            invoke.execute(mockCommandContext, new String[] {"sayHello(null)"});
         } catch (Exception ex) {
             assertTrue(ex instanceof NullPointerException);
         }
@@ -127,12 +131,13 @@ class InvokeTelnetTest {
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(DemoService.class.getName());
         defaultAttributeMap.attr(SelectTelnet.SELECT_KEY).set(null);
 
-        given(mockChannel.attr(ChangeTelnet.SERVICE_KEY)).willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
+        given(mockChannel.attr(ChangeTelnet.SERVICE_KEY))
+                .willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
         given(mockChannel.attr(SelectTelnet.SELECT_KEY)).willReturn(defaultAttributeMap.attr(SelectTelnet.SELECT_KEY));
 
         registerProvider(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
 
-        String result = invoke.execute(mockCommandContext, new String[]{"getType(\"High\")"});
+        String result = invoke.execute(mockCommandContext, new String[] {"getType(\"High\")"});
         assertTrue(result.contains("result: \"High\""));
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).remove();
         defaultAttributeMap.attr(SelectTelnet.SELECT_KEY).remove();
@@ -142,13 +147,15 @@ class InvokeTelnetTest {
     void testOverriddenMethodWithSpecifyParamType() throws RemotingException {
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(DemoService.class.getName());
         defaultAttributeMap.attr(SelectTelnet.SELECT_KEY).set(null);
-        given(mockChannel.attr(ChangeTelnet.SERVICE_KEY)).willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
+        given(mockChannel.attr(ChangeTelnet.SERVICE_KEY))
+                .willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
         given(mockChannel.attr(SelectTelnet.SELECT_KEY)).willReturn(defaultAttributeMap.attr(SelectTelnet.SELECT_KEY));
 
         registerProvider(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
 
-        String result = invoke.execute(mockCommandContext,
-            new String[]{"getPerson({\"name\":\"zhangsan\",\"age\":12,\"class\":\"org.apache.dubbo.qos.legacy.service.Person\"})"});
+        String result = invoke.execute(mockCommandContext, new String[] {
+            "getPerson({\"name\":\"zhangsan\",\"age\":12,\"class\":\"org.apache.dubbo.qos.legacy.service.Person\"})"
+        });
         assertTrue(result.contains("result: 12"));
 
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).remove();
@@ -164,22 +171,28 @@ class InvokeTelnetTest {
         defaultAttributeMap.attr(InvokeTelnet.INVOKE_METHOD_LIST_KEY).set(null);
         defaultAttributeMap.attr(InvokeTelnet.INVOKE_MESSAGE_KEY).set(null);
 
-        given(mockChannel.attr(ChangeTelnet.SERVICE_KEY)).willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
+        given(mockChannel.attr(ChangeTelnet.SERVICE_KEY))
+                .willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
         given(mockChannel.attr(SelectTelnet.SELECT_KEY)).willReturn(defaultAttributeMap.attr(SelectTelnet.SELECT_KEY));
-        given(mockChannel.attr(SelectTelnet.SELECT_METHOD_KEY)).willReturn(defaultAttributeMap.attr(SelectTelnet.SELECT_METHOD_KEY));
-        given(mockChannel.attr(InvokeTelnet.INVOKE_METHOD_PROVIDER_KEY)).willReturn(defaultAttributeMap.attr(InvokeTelnet.INVOKE_METHOD_PROVIDER_KEY));
-        given(mockChannel.attr(InvokeTelnet.INVOKE_METHOD_LIST_KEY)).willReturn(defaultAttributeMap.attr(InvokeTelnet.INVOKE_METHOD_LIST_KEY));
-        given(mockChannel.attr(InvokeTelnet.INVOKE_MESSAGE_KEY)).willReturn(defaultAttributeMap.attr(InvokeTelnet.INVOKE_MESSAGE_KEY));
+        given(mockChannel.attr(SelectTelnet.SELECT_METHOD_KEY))
+                .willReturn(defaultAttributeMap.attr(SelectTelnet.SELECT_METHOD_KEY));
+        given(mockChannel.attr(InvokeTelnet.INVOKE_METHOD_PROVIDER_KEY))
+                .willReturn(defaultAttributeMap.attr(InvokeTelnet.INVOKE_METHOD_PROVIDER_KEY));
+        given(mockChannel.attr(InvokeTelnet.INVOKE_METHOD_LIST_KEY))
+                .willReturn(defaultAttributeMap.attr(InvokeTelnet.INVOKE_METHOD_LIST_KEY));
+        given(mockChannel.attr(InvokeTelnet.INVOKE_MESSAGE_KEY))
+                .willReturn(defaultAttributeMap.attr(InvokeTelnet.INVOKE_MESSAGE_KEY));
 
         registerProvider(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
 
         String param = "{\"name\":\"Dubbo\",\"age\":8}";
-        String result = invoke.execute(mockCommandContext, new String[]{"getPerson(" + param + ")"});
-        assertTrue(result.contains("Please use the select command to select the method you want to invoke. eg: select 1"));
-        result = select.execute(mockCommandContext, new String[]{"1"});
-        //result dependent on method order.
+        String result = invoke.execute(mockCommandContext, new String[] {"getPerson(" + param + ")"});
+        assertTrue(
+                result.contains("Please use the select command to select the method you want to invoke. eg: select 1"));
+        result = select.execute(mockCommandContext, new String[] {"1"});
+        // result dependent on method order.
         assertTrue(result.contains("result: 8") || result.contains("result: \"Dubbo\""));
-        result = select.execute(mockCommandContext, new String[]{"2"});
+        result = select.execute(mockCommandContext, new String[] {"2"});
         assertTrue(result.contains("result: 8") || result.contains("result: \"Dubbo\""));
 
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).remove();
@@ -195,13 +208,14 @@ class InvokeTelnetTest {
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(DemoService.class.getName());
         defaultAttributeMap.attr(SelectTelnet.SELECT_KEY).set(null);
 
-        given(mockChannel.attr(ChangeTelnet.SERVICE_KEY)).willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
+        given(mockChannel.attr(ChangeTelnet.SERVICE_KEY))
+                .willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
         given(mockChannel.attr(SelectTelnet.SELECT_KEY)).willReturn(defaultAttributeMap.attr(SelectTelnet.SELECT_KEY));
 
         registerProvider(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
 
         String param = "{1:\"Dubbo\",2:\"test\"}";
-        String result = invoke.execute(mockCommandContext, new String[]{"getMap(" + param + ")"});
+        String result = invoke.execute(mockCommandContext, new String[] {"getMap(" + param + ")"});
         assertTrue(result.contains("result: {1:\"Dubbo\",2:\"test\"}"));
 
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).remove();
@@ -213,13 +227,14 @@ class InvokeTelnetTest {
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(DemoService.class.getName());
         defaultAttributeMap.attr(SelectTelnet.SELECT_KEY).set(null);
 
-        given(mockChannel.attr(ChangeTelnet.SERVICE_KEY)).willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
+        given(mockChannel.attr(ChangeTelnet.SERVICE_KEY))
+                .willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
         given(mockChannel.attr(SelectTelnet.SELECT_KEY)).willReturn(defaultAttributeMap.attr(SelectTelnet.SELECT_KEY));
 
         registerProvider(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
 
         String param = "{\"name\":\"Dubbo\",\"age\":8},{\"name\":\"Apache\",\"age\":20}";
-        String result = invoke.execute(mockCommandContext, new String[]{"getPerson(" + param + ")"});
+        String result = invoke.execute(mockCommandContext, new String[] {"getPerson(" + param + ")"});
         assertTrue(result.contains("result: 28"));
 
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).remove();
@@ -231,12 +246,14 @@ class InvokeTelnetTest {
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(null);
         defaultAttributeMap.attr(SelectTelnet.SELECT_KEY).set(null);
 
-        given(mockChannel.attr(ChangeTelnet.SERVICE_KEY)).willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
+        given(mockChannel.attr(ChangeTelnet.SERVICE_KEY))
+                .willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
         given(mockChannel.attr(SelectTelnet.SELECT_KEY)).willReturn(defaultAttributeMap.attr(SelectTelnet.SELECT_KEY));
 
         String result = invoke.execute(mockCommandContext, new String[0]);
-        assertEquals("Please input method name, eg: \r\ninvoke xxxMethod(1234, \"abcd\", {\"prop\" : \"value\"})\r\ninvoke XxxService.xxxMethod(1234, \"abcd\", {\"prop\" : \"value\"})\r\ninvoke com.xxx.XxxService.xxxMethod(1234, \"abcd\", {\"prop\" : \"value\"})",
-            result);
+        assertEquals(
+                "Please input method name, eg: \r\ninvoke xxxMethod(1234, \"abcd\", {\"prop\" : \"value\"})\r\ninvoke XxxService.xxxMethod(1234, \"abcd\", {\"prop\" : \"value\"})\r\ninvoke com.xxx.XxxService.xxxMethod(1234, \"abcd\", {\"prop\" : \"value\"})",
+                result);
 
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).remove();
         defaultAttributeMap.attr(SelectTelnet.SELECT_KEY).remove();
@@ -247,10 +264,11 @@ class InvokeTelnetTest {
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(null);
         defaultAttributeMap.attr(SelectTelnet.SELECT_KEY).set(null);
 
-        given(mockChannel.attr(ChangeTelnet.SERVICE_KEY)).willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
+        given(mockChannel.attr(ChangeTelnet.SERVICE_KEY))
+                .willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
         given(mockChannel.attr(SelectTelnet.SELECT_KEY)).willReturn(defaultAttributeMap.attr(SelectTelnet.SELECT_KEY));
 
-        String result = invoke.execute(mockCommandContext, new String[]{"("});
+        String result = invoke.execute(mockCommandContext, new String[] {"("});
         assertEquals("Invalid parameters, format: service.method(args)", result);
 
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).remove();
@@ -259,12 +277,6 @@ class InvokeTelnetTest {
 
     private void registerProvider(String key, Object impl, Class<?> interfaceClass) {
         ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
-        repository.registerProvider(
-            key,
-            impl,
-            serviceDescriptor,
-            null,
-            null
-        );
+        repository.registerProvider(key, impl, serviceDescriptor, null, null);
     }
 }

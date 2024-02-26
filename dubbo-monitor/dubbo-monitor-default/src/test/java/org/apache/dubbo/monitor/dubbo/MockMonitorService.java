@@ -40,5 +40,4 @@ public class MockMonitorService implements MonitorService {
     public List<URL> lookup(URL query) {
         return statistics;
     }
-
 }

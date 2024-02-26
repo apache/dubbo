@@ -18,12 +18,12 @@ package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.rpc.Invoker;
 
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 
 class LeastActiveBalanceTest extends LoadBalanceBaseTest {
     @Disabled
@@ -35,7 +35,8 @@ class LeastActiveBalanceTest extends LoadBalanceBaseTest {
             Long count = entry.getValue().get();
             //            System.out.println(count);
             Assertions.assertTrue(
-                    Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()), "abs diff should < avg");
+                    Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()),
+                    "abs diff should < avg");
         }
     }
 
@@ -57,7 +58,8 @@ class LeastActiveBalanceTest extends LoadBalanceBaseTest {
                 sumInvoker2++;
             }
             // never select invoker3 because it's active is more than invoker1 and invoker2
-            Assertions.assertTrue(!selected.getUrl().getProtocol().equals("test3"), "select is not the least active one");
+            Assertions.assertTrue(
+                    !selected.getUrl().getProtocol().equals("test3"), "select is not the least active one");
         }
 
         // the sumInvoker1 : sumInvoker2 approximately equal to 1: 9

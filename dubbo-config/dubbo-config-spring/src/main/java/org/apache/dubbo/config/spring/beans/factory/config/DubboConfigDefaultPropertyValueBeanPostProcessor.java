@@ -21,6 +21,12 @@ import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.config.spring.util.GenericBeanPostProcessorAdapter;
 import org.apache.dubbo.config.spring.util.ObjectUtils;
 
+import javax.annotation.PostConstruct;
+
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -29,11 +35,6 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.annotation.CommonAnnotationBeanPostProcessor;
 import org.springframework.core.Ordered;
 import org.springframework.core.PriorityOrdered;
-
-import javax.annotation.PostConstruct;
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Method;
-import java.util.Arrays;
 
 import static org.springframework.aop.support.AopUtils.getTargetClass;
 import static org.springframework.beans.BeanUtils.getPropertyDescriptor;
@@ -60,7 +61,7 @@ public class DubboConfigDefaultPropertyValueBeanPostProcessor extends GenericBea
             setPropertyIfAbsent(dubboConfigBean, Constants.ID, beanName);
 
             // beanName should not be used as config name, fix https://github.com/apache/dubbo/pull/7624
-            //setPropertyIfAbsent(dubboConfigBean, "name", beanName);
+            // setPropertyIfAbsent(dubboConfigBean, "name", beanName);
         }
     }
 
@@ -91,13 +92,13 @@ public class DubboConfigDefaultPropertyValueBeanPostProcessor extends GenericBea
 
             Method setterMethod = propertyDescriptor.getWriteMethod();
             if (setterMethod != null) { // the getter and setter methods are present
-                if (Arrays.equals(ObjectUtils.of(String.class), setterMethod.getParameterTypes())) { // the param type is String
+                if (Arrays.equals(
+                        ObjectUtils.of(String.class), setterMethod.getParameterTypes())) { // the param type is String
                     // set bean name to the value of the property
                     invokeMethod(setterMethod, bean, beanName);
                 }
             }
         }
-
     }
 
     /**

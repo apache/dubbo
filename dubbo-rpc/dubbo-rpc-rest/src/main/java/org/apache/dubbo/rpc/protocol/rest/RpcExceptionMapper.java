@@ -21,9 +21,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionHandler;
 import org.apache.dubbo.rpc.protocol.rest.util.ConstraintViolationExceptionConvert;
 
-
 public class RpcExceptionMapper implements ExceptionHandler<RpcException> {
-
 
     @Override
     public Object result(RpcException e) {
@@ -40,6 +38,7 @@ public class RpcExceptionMapper implements ExceptionHandler<RpcException> {
     }
 
     private boolean violationDependency() {
-        return ClassUtils.isPresent("javax.validation.ConstraintViolationException", RpcExceptionMapper.class.getClassLoader());
+        return ClassUtils.isPresent(
+                "javax.validation.ConstraintViolationException", RpcExceptionMapper.class.getClassLoader());
     }
 }

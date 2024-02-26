@@ -24,6 +24,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+
 import java.util.Map;
 import java.util.Objects;
 
@@ -45,15 +46,16 @@ public class MapTypeDefinitionBuilder implements DeclaredTypeDefinitionBuilder {
     }
 
     @Override
-    public TypeDefinition build(ProcessingEnvironment processingEnv, DeclaredType type, Map<String, TypeDefinition> typeCache) {
+    public TypeDefinition build(
+            ProcessingEnvironment processingEnv, DeclaredType type, Map<String, TypeDefinition> typeCache) {
         TypeDefinition typeDefinition = new TypeDefinition(type.toString());
         // Generic Type arguments
-        type.getTypeArguments()
-                .stream()
-                .map(typeArgument -> TypeDefinitionBuilder.build(processingEnv, typeArgument, typeCache)) // build the TypeDefinition from typeArgument
+        type.getTypeArguments().stream()
+                .map(typeArgument -> TypeDefinitionBuilder.build(
+                        processingEnv, typeArgument, typeCache)) // build the TypeDefinition from typeArgument
                 .filter(Objects::nonNull)
                 .map(TypeDefinition::getType)
-                .forEach(typeDefinition.getItems()::add);                              // Add into the declared TypeDefinition
+                .forEach(typeDefinition.getItems()::add); // Add into the declared TypeDefinition
         return typeDefinition;
     }
 

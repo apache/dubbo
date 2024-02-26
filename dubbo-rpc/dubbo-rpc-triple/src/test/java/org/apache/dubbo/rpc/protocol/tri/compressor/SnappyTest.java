@@ -43,18 +43,20 @@ class SnappyTest {
     @ValueSource(strings = {"snappy"})
     @ParameterizedTest
     void compression(String compressorName) {
-        Compressor compressor = ApplicationModel.defaultModel().getDefaultModule()
-            .getExtensionLoader(Compressor.class)
-            .getExtension(compressorName);
-        String loadByStatic = Compressor.getCompressor(new FrameworkModel(), compressorName)
-            .getMessageEncoding();
+        Compressor compressor = ApplicationModel.defaultModel()
+                .getDefaultModule()
+                .getExtensionLoader(Compressor.class)
+                .getExtension(compressorName);
+        String loadByStatic =
+                Compressor.getCompressor(new FrameworkModel(), compressorName).getMessageEncoding();
         Assertions.assertEquals(loadByStatic, compressor.getMessageEncoding());
 
         byte[] compressedByteArr = compressor.compress(TEST_STR.getBytes());
 
-        DeCompressor deCompressor = ApplicationModel.defaultModel().getDefaultModule()
-            .getExtensionLoader(DeCompressor.class)
-            .getExtension(compressorName);
+        DeCompressor deCompressor = ApplicationModel.defaultModel()
+                .getDefaultModule()
+                .getExtensionLoader(DeCompressor.class)
+                .getExtension(compressorName);
 
         byte[] decompressedByteArr = deCompressor.decompress(compressedByteArr);
         Assertions.assertEquals(new String(decompressedByteArr), TEST_STR);

@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.config.spring.registry.nacos.demo.provider;
 
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import java.io.IOException;
+
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * {@link org.apache.dubbo.config.spring.registry.nacos.demo.service.DemoService} provider demo XML bootstrap

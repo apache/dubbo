@@ -29,7 +29,6 @@ import static org.apache.dubbo.metrics.config.ConfigCenterMetricsConstants.ATTAC
 import static org.apache.dubbo.metrics.config.ConfigCenterMetricsConstants.ATTACHMENT_KEY_CONFIG_GROUP;
 import static org.apache.dubbo.metrics.config.ConfigCenterMetricsConstants.ATTACHMENT_KEY_CONFIG_PROTOCOL;
 
-
 public final class ConfigCenterSubDispatcher extends SimpleMetricsEventMulticaster {
 
     public ConfigCenterSubDispatcher(ConfigCenterMetricsCollector collector) {
@@ -43,16 +42,12 @@ public final class ConfigCenterSubDispatcher extends SimpleMetricsEventMulticast
             @Override
             public void onEvent(TimeCounterEvent event) {
                 collector.increase(
-                    event.getAttachmentValue(ATTACHMENT_KEY_CONFIG_FILE),
-                    event.getAttachmentValue(ATTACHMENT_KEY_CONFIG_GROUP),
-                    event.getAttachmentValue(ATTACHMENT_KEY_CONFIG_PROTOCOL),
-                    event.getAttachmentValue(ATTACHMENT_KEY_CHANGE_TYPE),
-                    event.getAttachmentValue(ATTACHMENT_KEY_SIZE)
-                );
+                        event.getAttachmentValue(ATTACHMENT_KEY_CONFIG_FILE),
+                        event.getAttachmentValue(ATTACHMENT_KEY_CONFIG_GROUP),
+                        event.getAttachmentValue(ATTACHMENT_KEY_CONFIG_PROTOCOL),
+                        event.getAttachmentValue(ATTACHMENT_KEY_CHANGE_TYPE),
+                        event.getAttachmentValue(ATTACHMENT_KEY_SIZE));
             }
         });
-
     }
-
-
 }

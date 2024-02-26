@@ -35,7 +35,8 @@ class StringToCharArrayConverterTest {
 
     @BeforeEach
     public void init() {
-        converter =  (StringToCharArrayConverter) getExtensionLoader(Converter.class).getExtension("string-to-char-array");
+        converter =
+                (StringToCharArrayConverter) getExtensionLoader(Converter.class).getExtension("string-to-char-array");
     }
 
     @Test
@@ -45,7 +46,7 @@ class StringToCharArrayConverterTest {
 
     @Test
     void testConvert() {
-        assertArrayEquals(new char[]{'1', '2', '3'}, converter.convert("123"));
+        assertArrayEquals(new char[] {'1', '2', '3'}, converter.convert("123"));
         assertNull(converter.convert(null));
     }
 }

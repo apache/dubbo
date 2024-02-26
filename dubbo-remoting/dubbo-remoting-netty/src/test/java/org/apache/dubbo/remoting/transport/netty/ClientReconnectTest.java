@@ -75,10 +75,10 @@ class ClientReconnectTest {
         }
     }
 
-
     public Client startClient(int port, int heartbeat) throws RemotingException {
-        URL url = URL.valueOf("exchange://127.0.0.1:" + port + "/client.reconnect.test?check=false&codec=exchange&client=netty3&" +
-            Constants.HEARTBEAT_KEY + "=" + heartbeat + "&" + LEAST_RECONNECT_DURATION_KEY + "=0");
+        URL url = URL.valueOf(
+                "exchange://127.0.0.1:" + port + "/client.reconnect.test?check=false&codec=exchange&client=netty3&"
+                        + Constants.HEARTBEAT_KEY + "=" + heartbeat + "&" + LEAST_RECONNECT_DURATION_KEY + "=0");
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
         applicationConfig.setExecutorManagementMode(EXECUTOR_MANAGEMENT_MODE_DEFAULT);
@@ -98,15 +98,12 @@ class ClientReconnectTest {
         }
 
         @Override
-        public void connected(Channel channel) throws RemotingException {
-        }
+        public void connected(Channel channel) throws RemotingException {}
 
         @Override
-        public void disconnected(Channel channel) throws RemotingException {
-        }
+        public void disconnected(Channel channel) throws RemotingException {}
 
         @Override
-        public void caught(Channel channel, Throwable exception) throws RemotingException {
-        }
+        public void caught(Channel channel, Throwable exception) throws RemotingException {}
     }
 }

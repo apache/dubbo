@@ -22,15 +22,24 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
+
+import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_PREFIX;
 
 /**
  * copy from {@link org.springframework.boot.actuate.autoconfigure.tracing.MicrometerTracingAutoConfiguration}
  * this class is available starting from Boot 3.0. It's not available if you're using Boot < 3.0
  */
+@ConditionalOnProperty(prefix = DUBBO_PREFIX, name = "enabled", matchIfMissing = true)
 @ConditionalOnDubboTracingEnable
-@ConditionalOnClass(name = {"io.micrometer.observation.Observation", "io.micrometer.tracing.Tracer", "io.micrometer.tracing.propagation.Propagator"})
+@ConditionalOnClass(
+        name = {
+            "io.micrometer.observation.Observation",
+            "io.micrometer.tracing.Tracer",
+            "io.micrometer.tracing.propagation.Propagator"
+        })
 @AutoConfigureAfter(name = "org.springframework.boot.actuate.autoconfigure.tracing.MicrometerTracingAutoConfiguration")
 public class DubboMicrometerTracingAutoConfiguration {
 
@@ -49,7 +58,8 @@ public class DubboMicrometerTracingAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnBean(io.micrometer.tracing.Tracer.class)
-    public io.micrometer.tracing.handler.DefaultTracingObservationHandler defaultTracingObservationHandler(io.micrometer.tracing.Tracer tracer) {
+    public io.micrometer.tracing.handler.DefaultTracingObservationHandler defaultTracingObservationHandler(
+            io.micrometer.tracing.Tracer tracer) {
         return new io.micrometer.tracing.handler.DefaultTracingObservationHandler(tracer);
     }
 
@@ -57,8 +67,9 @@ public class DubboMicrometerTracingAutoConfiguration {
     @ConditionalOnMissingBean
     @ConditionalOnBean({io.micrometer.tracing.Tracer.class, io.micrometer.tracing.propagation.Propagator.class})
     @Order(SENDER_TRACING_OBSERVATION_HANDLER_ORDER)
-    public io.micrometer.tracing.handler.PropagatingSenderTracingObservationHandler<?> propagatingSenderTracingObservationHandler(io.micrometer.tracing.Tracer tracer,
-                                                                                                                                  io.micrometer.tracing.propagation.Propagator propagator) {
+    public io.micrometer.tracing.handler.PropagatingSenderTracingObservationHandler<?>
+            propagatingSenderTracingObservationHandler(
+                    io.micrometer.tracing.Tracer tracer, io.micrometer.tracing.propagation.Propagator propagator) {
         return new io.micrometer.tracing.handler.PropagatingSenderTracingObservationHandler<>(tracer, propagator);
     }
 
@@ -66,9 +77,9 @@ public class DubboMicrometerTracingAutoConfiguration {
     @ConditionalOnMissingBean
     @ConditionalOnBean({io.micrometer.tracing.Tracer.class, io.micrometer.tracing.propagation.Propagator.class})
     @Order(RECEIVER_TRACING_OBSERVATION_HANDLER_ORDER)
-    public io.micrometer.tracing.handler.PropagatingReceiverTracingObservationHandler<?> propagatingReceiverTracingObservationHandler(io.micrometer.tracing.Tracer tracer,
-                                                                                                                                      io.micrometer.tracing.propagation.Propagator propagator) {
+    public io.micrometer.tracing.handler.PropagatingReceiverTracingObservationHandler<?>
+            propagatingReceiverTracingObservationHandler(
+                    io.micrometer.tracing.Tracer tracer, io.micrometer.tracing.propagation.Propagator propagator) {
         return new io.micrometer.tracing.handler.PropagatingReceiverTracingObservationHandler<>(tracer, propagator);
     }
-
 }

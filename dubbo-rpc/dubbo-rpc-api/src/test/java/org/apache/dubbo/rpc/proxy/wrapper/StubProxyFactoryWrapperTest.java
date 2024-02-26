@@ -52,6 +52,5 @@ class StubProxyFactoryWrapperTest {
         DemoService proxy = stubProxyFactoryWrapper.getProxy(invoker, false);
         Assertions.assertTrue(proxy instanceof DemoServiceStub);
         Mockito.verify(protocol, Mockito.times(1)).export(Mockito.any());
-
     }
 }

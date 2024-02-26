@@ -41,5 +41,4 @@ public class ScriptStateRouterFactory implements StateRouterFactory {
     public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url) {
         return new ScriptStateRouter<>(url);
     }
-
 }

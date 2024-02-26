@@ -17,9 +17,7 @@
 package org.apache.dubbo.common.convert.multiple;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.apache.dubbo.common.utils.JRE;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -36,6 +34,9 @@ import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.TransferQueue;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static java.util.Arrays.asList;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
@@ -112,6 +113,9 @@ class StringToSortedSetConverterTest {
 
     @Test
     void testGetPriority() {
-        assertEquals(Integer.MAX_VALUE - 3, converter.getPriority());
+        // Since JDK21, add SequencedCollection, SequencedSet
+        assertEquals(
+                Integer.MAX_VALUE - (JRE.currentVersion().compareTo(JRE.JAVA_21) >= 0 ? 5 : 3),
+                converter.getPriority());
     }
 }

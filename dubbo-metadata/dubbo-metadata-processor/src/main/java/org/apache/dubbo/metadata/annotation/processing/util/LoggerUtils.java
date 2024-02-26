@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metadata.annotation.processing.util;
 
-
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 

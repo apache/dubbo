@@ -65,7 +65,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_UNABL
  */
 public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> implements ModuleDeployer {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DefaultModuleDeployer.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(DefaultModuleDeployer.class);
 
     private final List<CompletableFuture<?>> asyncExportingFutures = new ArrayList<>();
 
@@ -90,18 +91,22 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     private CompletableFuture<?> exportFuture;
     private CompletableFuture<?> referFuture;
 
-
     public DefaultModuleDeployer(ModuleModel moduleModel) {
         super(moduleModel);
         this.moduleModel = moduleModel;
         configManager = moduleModel.getConfigManager();
-        frameworkExecutorRepository = moduleModel.getApplicationModel().getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
+        frameworkExecutorRepository = moduleModel
+                .getApplicationModel()
+                .getFrameworkModel()
+                .getBeanFactory()
+                .getBean(FrameworkExecutorRepository.class);
         executorRepository = ExecutorRepository.getInstance(moduleModel.getApplicationModel());
         referenceCache = SimpleReferenceCache.newCache();
         applicationDeployer = DefaultApplicationDeployer.get(moduleModel);
 
-        //load spi listener
-        Set<ModuleDeployListener> listeners = moduleModel.getExtensionLoader(ModuleDeployListener.class).getSupportedExtensionInstances();
+        // load spi listener
+        Set<ModuleDeployListener> listeners =
+                moduleModel.getExtensionLoader(ModuleDeployListener.class).getSupportedExtensionInstances();
         for (ModuleDeployListener listener : listeners) {
             this.addDeployListener(listener);
         }
@@ -122,7 +127,10 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             loadConfigs();
 
             // read ModuleConfig
-            ModuleConfig moduleConfig = moduleModel.getConfigManager().getModule().orElseThrow(() -> new IllegalStateException("Default module config is not initialized"));
+            ModuleConfig moduleConfig = moduleModel
+                    .getConfigManager()
+                    .getModule()
+                    .orElseThrow(() -> new IllegalStateException("Default module config is not initialized"));
             exportAsync = Boolean.TRUE.equals(moduleConfig.getExportAsync());
             referAsync = Boolean.TRUE.equals(moduleConfig.getReferAsync());
 
@@ -159,7 +167,6 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             }
 
             onModuleStarting();
-
 
             initialize();
 
@@ -205,7 +212,12 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                         // check reference config
                         checkReferences();
                     } catch (Throwable e) {
-                        logger.warn(CONFIG_FAILED_WAIT_EXPORT_REFER, "", "", "wait for export/refer services occurred an exception", e);
+                        logger.warn(
+                                CONFIG_FAILED_WAIT_EXPORT_REFER,
+                                "",
+                                "",
+                                "wait for export/refer services occurred an exception",
+                                e);
                         onModuleFailed(getIdentifier() + " start failed: " + e, e);
                     } finally {
                         // complete module start future after application state changed
@@ -259,13 +271,17 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                 }
             }
         } catch (Throwable t) {
-            logger.error(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Exceptions occurred when unregister services.", t);
+            logger.error(
+                    LoggerCodeConstants.INTERNAL_ERROR, "", "", "Exceptions occurred when unregister services.", t);
         }
     }
 
     private void doOffline(ProviderModel.RegisterStatedURL statedURL) {
-        RegistryFactory registryFactory =
-            statedURL.getRegistryUrl().getOrDefaultApplicationModel().getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
+        RegistryFactory registryFactory = statedURL
+                .getRegistryUrl()
+                .getOrDefaultApplicationModel()
+                .getExtensionLoader(RegistryFactory.class)
+                .getAdaptiveExtension();
         Registry registry = registryFactory.getRegistry(statedURL.getRegistryUrl());
         registry.unregister(statedURL.getProviderUrl());
         statedURL.setRegistered(false);
@@ -289,7 +305,12 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                         consumerModel.getDestroyRunner().run();
                     }
                 } catch (Throwable t) {
-                    logger.error(CONFIG_UNABLE_DESTROY_MODEL, "there are problems with the custom implementation.", "", "Unable to destroy model: consumerModel.", t);
+                    logger.error(
+                            CONFIG_UNABLE_DESTROY_MODEL,
+                            "there are problems with the custom implementation.",
+                            "",
+                            "Unable to destroy model: consumerModel.",
+                            t);
                 }
             }
 
@@ -300,7 +321,12 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                         providerModel.getDestroyRunner().run();
                     }
                 } catch (Throwable t) {
-                    logger.error(CONFIG_UNABLE_DESTROY_MODEL, "there are problems with the custom implementation.", "", "Unable to destroy model: providerModel.", t);
+                    logger.error(
+                            CONFIG_UNABLE_DESTROY_MODEL,
+                            "there are problems with the custom implementation.",
+                            "",
+                            "Unable to destroy model: providerModel.",
+                            t);
                 }
             }
             serviceRepository.destroy();
@@ -313,7 +339,12 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             try {
                 listener.onInitialize(moduleModel);
             } catch (Throwable e) {
-                logger.error(CONFIG_FAILED_START_MODEL, "", "", getIdentifier() + " an exception occurred when handle initialize event", e);
+                logger.error(
+                        CONFIG_FAILED_START_MODEL,
+                        "",
+                        "",
+                        getIdentifier() + " an exception occurred when handle initialize event",
+                        e);
             }
         }
     }
@@ -326,11 +357,11 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     }
 
     private void onModuleStarted() {
-            if (isStarting()) {
-                setStarted();
-                logger.info(getIdentifier() + " has started.");
-                applicationDeployer.notifyModuleChanged(moduleModel, DeployState.STARTED);
-            }
+        if (isStarting()) {
+            setStarted();
+            logger.info(getIdentifier() + " has started.");
+            applicationDeployer.notifyModuleChanged(moduleModel, DeployState.STARTED);
+        }
     }
 
     private void onModuleFailed(String msg, Throwable ex) {
@@ -421,16 +452,24 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         }
         if (exportAsync || sc.shouldExportAsync()) {
             ExecutorService executor = executorRepository.getServiceExportExecutor();
-            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-                try {
-                    if (!sc.isExported()) {
-                        sc.export();
-                        exportedServices.add(sc);
-                    }
-                } catch (Throwable t) {
-                    logger.error(CONFIG_FAILED_EXPORT_SERVICE, "", "", "Failed to async export service config: " + getIdentifier() + " , catch error : " + t.getMessage(), t);
-                }
-            }, executor);
+            CompletableFuture<Void> future = CompletableFuture.runAsync(
+                    () -> {
+                        try {
+                            if (!sc.isExported()) {
+                                sc.export();
+                                exportedServices.add(sc);
+                            }
+                        } catch (Throwable t) {
+                            logger.error(
+                                    CONFIG_FAILED_EXPORT_SERVICE,
+                                    "",
+                                    "",
+                                    "Failed to async export service config: " + getIdentifier() + " , catch error : "
+                                            + t.getMessage(),
+                                    t);
+                        }
+                    },
+                    executor);
 
             asyncExportingFutures.add(future);
         } else {
@@ -482,13 +521,21 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                 if (rc.shouldInit()) {
                     if (referAsync || rc.shouldReferAsync()) {
                         ExecutorService executor = executorRepository.getServiceReferExecutor();
-                        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-                            try {
-                                referenceCache.get(rc, false);
-                            } catch (Throwable t) {
-                                logger.error(CONFIG_FAILED_EXPORT_SERVICE, "", "", "Failed to async export service config: " + getIdentifier() + " , catch error : " + t.getMessage(), t);
-                            }
-                        }, executor);
+                        CompletableFuture<Void> future = CompletableFuture.runAsync(
+                                () -> {
+                                    try {
+                                        referenceCache.get(rc, false);
+                                    } catch (Throwable t) {
+                                        logger.error(
+                                                CONFIG_FAILED_EXPORT_SERVICE,
+                                                "",
+                                                "",
+                                                "Failed to async export service config: " + getIdentifier()
+                                                        + " , catch error : " + t.getMessage(),
+                                                t);
+                                    }
+                                },
+                                executor);
 
                         asyncReferringFutures.add(future);
                     } else {
@@ -496,7 +543,12 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                     }
                 }
             } catch (Throwable t) {
-                logger.error(CONFIG_FAILED_REFERENCE_MODEL, "", "", "Model reference failed: " + getIdentifier() + " , catch error : " + t.getMessage(), t);
+                logger.error(
+                        CONFIG_FAILED_REFERENCE_MODEL,
+                        "",
+                        "",
+                        "Model reference failed: " + getIdentifier() + " , catch error : " + t.getMessage(),
+                        t);
                 referenceCache.destroy(rc);
                 throw t;
             }
@@ -525,7 +577,11 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             exportFuture = CompletableFuture.allOf(asyncExportingFutures.toArray(new CompletableFuture[0]));
             exportFuture.get();
         } catch (Throwable e) {
-            logger.warn(CONFIG_FAILED_EXPORT_SERVICE, "", "", getIdentifier() + " export services occurred an exception: " + e.toString());
+            logger.warn(
+                    CONFIG_FAILED_EXPORT_SERVICE,
+                    "",
+                    "",
+                    getIdentifier() + " export services occurred an exception: " + e.toString());
         } finally {
             logger.info(getIdentifier() + " export services finished.");
             asyncExportingFutures.clear();
@@ -538,7 +594,11 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             referFuture = CompletableFuture.allOf(asyncReferringFutures.toArray(new CompletableFuture[0]));
             referFuture.get();
         } catch (Throwable e) {
-            logger.warn(CONFIG_FAILED_REFER_SERVICE, "", "", getIdentifier() + " refer services occurred an exception: " + e.toString());
+            logger.warn(
+                    CONFIG_FAILED_REFER_SERVICE,
+                    "",
+                    "",
+                    getIdentifier() + " refer services occurred an exception: " + e.toString());
         } finally {
             logger.info(getIdentifier() + " refer services finished.");
             asyncReferringFutures.clear();
@@ -551,17 +611,15 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     }
 
     private boolean isExportBackground() {
-        return moduleModel.getConfigManager().getProviders()
-            .stream()
-            .map(ProviderConfig::getExportBackground)
-            .anyMatch(k -> k != null && k);
+        return moduleModel.getConfigManager().getProviders().stream()
+                .map(ProviderConfig::getExportBackground)
+                .anyMatch(k -> k != null && k);
     }
 
     private boolean isReferBackground() {
-        return moduleModel.getConfigManager().getConsumers()
-            .stream()
-            .map(ConsumerConfig::getReferBackground)
-            .anyMatch(k -> k != null && k);
+        return moduleModel.getConfigManager().getConsumers().stream()
+                .map(ConsumerConfig::getReferBackground)
+                .anyMatch(k -> k != null && k);
     }
 
     @Override
@@ -577,5 +635,4 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         applicationDeployer.initialize();
         this.initialize();
     }
-
 }

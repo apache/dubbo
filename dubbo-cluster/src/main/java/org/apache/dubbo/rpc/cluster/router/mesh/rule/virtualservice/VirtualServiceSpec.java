@@ -14,11 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice;
 
 import java.util.List;
-
 
 public class VirtualServiceSpec {
     private List<String> hosts;
@@ -42,9 +40,6 @@ public class VirtualServiceSpec {
 
     @Override
     public String toString() {
-        return "VirtualServiceSpec{" +
-                "hosts=" + hosts +
-                ", dubbo=" + dubbo +
-                '}';
+        return "VirtualServiceSpec{" + "hosts=" + hosts + ", dubbo=" + dubbo + '}';
     }
 }

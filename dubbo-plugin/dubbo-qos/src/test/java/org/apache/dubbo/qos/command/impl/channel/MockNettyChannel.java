@@ -18,6 +18,15 @@ package org.apache.dubbo.qos.command.impl.channel;
 
 import org.apache.dubbo.common.URL;
 
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelConfig;
@@ -35,15 +44,6 @@ import io.netty.util.DefaultAttributeMap;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 public class MockNettyChannel implements Channel {
 
     InetSocketAddress localAddress;
@@ -52,7 +52,7 @@ public class MockNettyChannel implements Channel {
     private List<Object> receivedObjects = new LinkedList<>();
     public static final String ERROR_WHEN_SEND = "error_when_send";
     private CountDownLatch latch;
-    private AttributeMap attributeMap =  new DefaultAttributeMap();
+    private AttributeMap attributeMap = new DefaultAttributeMap();
 
     public MockNettyChannel(URL remoteUrl, CountDownLatch latch) {
         this.remoteUrl = remoteUrl;
@@ -222,7 +222,8 @@ public class MockNettyChannel implements Channel {
             }
 
             @Override
-            public Void get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            public Void get(long timeout, TimeUnit unit)
+                    throws InterruptedException, ExecutionException, TimeoutException {
                 return null;
             }
         };

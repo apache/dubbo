@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metrics.prometheus;
 
-import com.sun.net.httpserver.HttpServer;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
@@ -25,14 +24,6 @@ import org.apache.dubbo.metrics.collector.sample.ThreadRejectMetricsCountSampler
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -45,6 +36,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.sun.net.httpserver.HttpServer;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_HOSTNAME;
@@ -52,7 +53,6 @@ import static org.apache.dubbo.common.constants.MetricsConstants.TAG_IP;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_THREAD_NAME;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
-
 
 public class PrometheusMetricsThreadPoolTest {
 
@@ -94,20 +94,22 @@ public class PrometheusMetricsThreadPoolTest {
         metricsCollector.collectApplication();
         PrometheusMetricsReporter reporter = new PrometheusMetricsReporter(metricsConfig.toUrl(), applicationModel);
         reporter.init();
-        exportHttpServer(reporter,port);
+        exportHttpServer(reporter, port);
         try {
             Thread.sleep(5000);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        if(metricsConfig.getEnableThreadpool()) {
+        if (metricsConfig.getEnableThreadpool()) {
             metricsCollector.registryDefaultSample();
         }
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             HttpGet request = new HttpGet("http://localhost:" + port + "/metrics");
             CloseableHttpResponse response = client.execute(request);
             InputStream inputStream = response.getEntity().getContent();
-            String text = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n"));
+            String text = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+                    .lines()
+                    .collect(Collectors.joining("\n"));
             Assertions.assertTrue(text.contains("dubbo_thread_pool_core_size"));
             Assertions.assertTrue(text.contains("dubbo_thread_pool_thread_count"));
         } catch (Exception e) {
@@ -117,12 +119,11 @@ public class PrometheusMetricsThreadPoolTest {
         }
     }
 
-
     private void exportHttpServer(PrometheusMetricsReporter reporter, int port) {
         try {
             HttpServer prometheusExporterHttpServer = HttpServer.create(new InetSocketAddress(port), 0);
             prometheusExporterHttpServer.createContext("/metrics", httpExchange -> {
-                reporter.refreshData();
+                reporter.resetIfSamplesChanged();
                 String response = reporter.getPrometheusRegistry().scrape();
                 httpExchange.sendResponseHeaders(200, response.getBytes().length);
                 try (OutputStream os = httpExchange.getResponseBody()) {
@@ -136,17 +137,16 @@ public class PrometheusMetricsThreadPoolTest {
         }
     }
 
-
-
     @Test
     @SuppressWarnings("rawtypes")
     void testThreadPoolRejectMetrics() {
         DefaultMetricsCollector collector = new DefaultMetricsCollector(applicationModel);
         collector.setCollectEnabled(true);
         collector.setApplicationName(applicationModel.getApplicationName());
-        String threadPoolExecutorName="DubboServerHandler-20816";
-        ThreadRejectMetricsCountSampler threadRejectMetricsCountSampler=new ThreadRejectMetricsCountSampler(collector);
-        threadRejectMetricsCountSampler.inc(threadPoolExecutorName,threadPoolExecutorName);
+        String threadPoolExecutorName = "DubboServerHandler-20816";
+        ThreadRejectMetricsCountSampler threadRejectMetricsCountSampler =
+                new ThreadRejectMetricsCountSampler(collector);
+        threadRejectMetricsCountSampler.inc(threadPoolExecutorName, threadPoolExecutorName);
         threadRejectMetricsCountSampler.addMetricName(threadPoolExecutorName);
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
@@ -160,5 +160,4 @@ public class PrometheusMetricsThreadPoolTest {
             Assertions.assertEquals(gaugeSample.applyAsLong(), 1);
         }
     }
-
 }

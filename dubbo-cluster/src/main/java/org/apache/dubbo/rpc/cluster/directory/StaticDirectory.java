@@ -55,7 +55,12 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
     }
 
     public StaticDirectory(URL url, List<Invoker<T>> invokers, RouterChain<T> routerChain) {
-        super(url == null && CollectionUtils.isNotEmpty(invokers) ? invokers.get(0).getUrl() : url, routerChain, false);
+        super(
+                url == null && CollectionUtils.isNotEmpty(invokers)
+                        ? invokers.get(0).getUrl()
+                        : url,
+                routerChain,
+                false);
         if (CollectionUtils.isEmpty(invokers)) {
             throw new IllegalArgumentException("invokers == null");
         }
@@ -101,28 +106,34 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
 
     public void buildRouterChain() {
         RouterChain<T> routerChain = RouterChain.buildChain(getInterface(), getUrl());
-        routerChain.setInvokers(getInvokers(), () -> {
-        });
+        routerChain.setInvokers(getInvokers(), () -> {});
         this.setRouterChain(routerChain);
     }
 
     public void notify(List<Invoker<T>> invokers) {
         BitList<Invoker<T>> bitList = new BitList<>(invokers);
         if (routerChain != null) {
-            refreshRouter(bitList.clone(),  () -> this.setInvokers(bitList));
+            refreshRouter(bitList.clone(), () -> this.setInvokers(bitList));
         } else {
             this.setInvokers(bitList);
         }
     }
 
     @Override
-    protected List<Invoker<T>> doList(SingleRouterChain<T> singleRouterChain, BitList<Invoker<T>> invokers, Invocation invocation) throws RpcException {
+    protected List<Invoker<T>> doList(
+            SingleRouterChain<T> singleRouterChain, BitList<Invoker<T>> invokers, Invocation invocation)
+            throws RpcException {
         if (singleRouterChain != null) {
             try {
                 List<Invoker<T>> finalInvokers = singleRouterChain.route(getConsumerUrl(), invokers, invocation);
                 return finalInvokers == null ? BitList.emptyList() : finalInvokers;
             } catch (Throwable t) {
-                logger.error(CLUSTER_FAILED_SITE_SELECTION, "Failed to execute router", "", "Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
+                logger.error(
+                        CLUSTER_FAILED_SITE_SELECTION,
+                        "Failed to execute router",
+                        "",
+                        "Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(),
+                        t);
                 return BitList.emptyList();
             }
         }

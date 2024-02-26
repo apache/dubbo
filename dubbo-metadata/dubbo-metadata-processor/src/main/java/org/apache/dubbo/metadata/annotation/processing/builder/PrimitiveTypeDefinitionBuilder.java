@@ -21,6 +21,7 @@ import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeMirror;
+
 import java.util.Map;
 
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.isPrimitiveType;
@@ -38,7 +39,8 @@ public class PrimitiveTypeDefinitionBuilder implements TypeBuilder<PrimitiveType
     }
 
     @Override
-    public TypeDefinition build(ProcessingEnvironment processingEnv, PrimitiveType type, Map<String, TypeDefinition> typeCache) {
+    public TypeDefinition build(
+            ProcessingEnvironment processingEnv, PrimitiveType type, Map<String, TypeDefinition> typeCache) {
         TypeDefinition typeDefinition = new TypeDefinition(type.toString());
         return typeDefinition;
     }

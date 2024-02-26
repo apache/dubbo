@@ -50,9 +50,9 @@ public class HelpTelnetHandler implements TelnetHandler {
     @Override
     public String telnet(Channel channel, String message) {
         if (message.length() > 0) {
-            return processedTable.computeIfAbsent(message, commandName ->  generateForOneCommand(commandName));
+            return processedTable.computeIfAbsent(message, commandName -> generateForOneCommand(commandName));
         } else {
-            return processedTable.computeIfAbsent(MAIN_HELP, commandName ->  generateForAllCommand(channel));
+            return processedTable.computeIfAbsent(MAIN_HELP, commandName -> generateForAllCommand(channel));
         }
     }
 
@@ -79,14 +79,15 @@ public class HelpTelnetHandler implements TelnetHandler {
             for (TelnetHandler handler : handlers) {
                 Help help = handler.getClass().getAnnotation(Help.class);
                 List<String> row = new ArrayList<String>();
-                String parameter = " " + extensionLoader.getExtensionName(handler) + " " + (help != null ? help.parameter().replace("\r\n", " ").replace("\n", " ") : "");
+                String parameter = " " + extensionLoader.getExtensionName(handler) + " "
+                        + (help != null ? help.parameter().replace("\r\n", " ").replace("\n", " ") : "");
                 row.add(parameter.length() > 55 ? parameter.substring(0, 55) + "..." : parameter);
-                String summary = help != null ? help.summary().replace("\r\n", " ").replace("\n", " ") : "";
+                String summary =
+                        help != null ? help.summary().replace("\r\n", " ").replace("\n", " ") : "";
                 row.add(summary.length() > 55 ? summary.substring(0, 55) + "..." : summary);
                 table.add(row);
             }
         }
         return "Please input \"help [command]\" show detail.\r\n" + TelnetUtils.toList(table);
     }
-
 }

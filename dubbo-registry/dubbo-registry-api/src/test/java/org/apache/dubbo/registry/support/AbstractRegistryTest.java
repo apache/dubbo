@@ -20,13 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.registry.NotifyListener;
 
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -34,6 +27,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 
@@ -52,7 +52,7 @@ class AbstractRegistryTest {
     @BeforeEach
     public void init() {
         URL url = URL.valueOf("dubbo://192.168.0.2:2233");
-        //sync update cache file
+        // sync update cache file
         url = url.addParameter("save.file", true);
         testUrl = URL.valueOf("http://192.168.0.3:9090/registry?check=false&file=N/A&interface=com.test");
         mockUrl = new ServiceConfigURL("dubbo", "192.168.0.1", 2200);
@@ -93,10 +93,10 @@ class AbstractRegistryTest {
      */
     @Test
     void testRegister() {
-        //test one url
+        // test one url
         abstractRegistry.register(mockUrl);
         assert abstractRegistry.getRegistered().contains(mockUrl);
-        //test multiple urls
+        // test multiple urls
         for (URL url : abstractRegistry.getRegistered()) {
             abstractRegistry.unregister(url);
         }
@@ -122,12 +122,13 @@ class AbstractRegistryTest {
      */
     @Test
     void testUnregister() {
-        //test one unregister
+        // test one unregister
         URL url = new ServiceConfigURL("dubbo", "192.168.0.1", 2200);
         abstractRegistry.register(url);
         abstractRegistry.unregister(url);
-        MatcherAssert.assertThat(false, Matchers.equalTo(abstractRegistry.getRegistered().contains(url)));
-        //test multiple unregisters
+        MatcherAssert.assertThat(
+                false, Matchers.equalTo(abstractRegistry.getRegistered().contains(url)));
+        // test multiple unregisters
         for (URL u : abstractRegistry.getRegistered()) {
             abstractRegistry.unregister(u);
         }
@@ -138,7 +139,8 @@ class AbstractRegistryTest {
         for (URL urlSub : urlList) {
             abstractRegistry.unregister(urlSub);
         }
-        MatcherAssert.assertThat(0, Matchers.equalTo(abstractRegistry.getRegistered().size()));
+        MatcherAssert.assertThat(
+                0, Matchers.equalTo(abstractRegistry.getRegistered().size()));
     }
 
     @Test
@@ -154,16 +156,18 @@ class AbstractRegistryTest {
      */
     @Test
     void testSubscribeAndUnsubscribe() {
-        //test subscribe
+        // test subscribe
         final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
         NotifyListener listener = urls -> notified.set(Boolean.TRUE);
         URL url = new ServiceConfigURL("dubbo", "192.168.0.1", 2200);
         abstractRegistry.subscribe(url, listener);
-        Set<NotifyListener> subscribeListeners = abstractRegistry.getSubscribed().get(url);
+        Set<NotifyListener> subscribeListeners =
+                abstractRegistry.getSubscribed().get(url);
         MatcherAssert.assertThat(true, Matchers.equalTo(subscribeListeners.contains(listener)));
-        //test unsubscribe
+        // test unsubscribe
         abstractRegistry.unsubscribe(url, listener);
-        Set<NotifyListener> unsubscribeListeners = abstractRegistry.getSubscribed().get(url);
+        Set<NotifyListener> unsubscribeListeners =
+                abstractRegistry.getSubscribed().get(url);
         MatcherAssert.assertThat(false, Matchers.equalTo(unsubscribeListeners.contains(listener)));
     }
 
@@ -287,7 +291,6 @@ class AbstractRegistryTest {
         Assertions.assertTrue(abstractRegistry.getRegistered().contains(testUrl));
         Assertions.assertNotNull(abstractRegistry.getSubscribed().get(testUrl));
         Assertions.assertTrue(abstractRegistry.getSubscribed().get(testUrl).contains(listener));
-
     }
 
     @Test
@@ -400,7 +403,6 @@ class AbstractRegistryTest {
         });
     }
 
-
     /**
      * Test method for
      * {@link org.apache.dubbo.registry.support.AbstractRegistry#notify(URL, NotifyListener, List)}.
@@ -471,9 +473,7 @@ class AbstractRegistryTest {
         // check if the output equals the input urls
         testUrls.add(testUrl);
         Assertions.assertEquals(AbstractRegistry.filterEmpty(testUrl, testUrls), testUrls);
-
     }
-
 
     @Test
     void lookupTest() {
@@ -492,7 +492,6 @@ class AbstractRegistryTest {
         abstractRegistry.notify(urls);
         List<URL> urlList2 = abstractRegistry.lookup(testUrl);
         Assertions.assertTrue(urlList2.contains(testUrl));
-
     }
 
     @Test
@@ -546,7 +545,7 @@ class AbstractRegistryTest {
         abstractRegistry.notify(testUrl, listener, urls);
         Assertions.assertTrue(notifySuccess);
         List<URL> cacheUrl = abstractRegistry.getCacheUrls(testUrl);
-        Assertions.assertEquals(1,cacheUrl.size());
+        Assertions.assertEquals(1, cacheUrl.size());
         URL nullUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A&interface=com.testa");
         cacheUrl = abstractRegistry.getCacheUrls(nullUrl);
         Assertions.assertTrue(Objects.isNull(cacheUrl));

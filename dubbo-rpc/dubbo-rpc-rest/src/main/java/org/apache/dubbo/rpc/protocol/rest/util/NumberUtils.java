@@ -47,16 +47,14 @@ public class NumberUtils {
             return (T) new BigDecimal(trimmed);
         } else {
             throw new IllegalArgumentException(
-                "Cannot convert String [" + text + "] to target class [" + targetClass.getName() + "]");
+                    "Cannot convert String [" + text + "] to target class [" + targetClass.getName() + "]");
         }
     }
-
 
     private static boolean isHexNumber(String value) {
         int index = (value.startsWith("-") ? 1 : 0);
         return (value.startsWith("0x", index) || value.startsWith("0X", index) || value.startsWith("#", index));
     }
-
 
     private static BigInteger decodeBigInteger(String value) {
         int radix = 10;
@@ -101,7 +99,6 @@ public class NumberUtils {
         return sb.toString();
     }
 
-
     public static Object numberToBytes(Number number) {
 
         if (number instanceof Byte) {
@@ -122,8 +119,5 @@ public class NumberUtils {
         }
 
         return number;
-
-
     }
-
 }

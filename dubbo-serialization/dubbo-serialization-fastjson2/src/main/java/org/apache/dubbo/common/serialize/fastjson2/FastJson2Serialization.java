@@ -51,13 +51,15 @@ public class FastJson2Serialization implements Serialization {
     @Override
     public ObjectOutput serialize(URL url, OutputStream output) throws IOException {
         Fastjson2CreatorManager fastjson2CreatorManager = Optional.ofNullable(url)
-            .map(URL::getOrDefaultFrameworkModel)
-            .orElseGet(FrameworkModel::defaultModel)
-            .getBeanFactory().getBean(Fastjson2CreatorManager.class);
+                .map(URL::getOrDefaultFrameworkModel)
+                .orElseGet(FrameworkModel::defaultModel)
+                .getBeanFactory()
+                .getBean(Fastjson2CreatorManager.class);
         Fastjson2SecurityManager fastjson2SecurityManager = Optional.ofNullable(url)
-            .map(URL::getOrDefaultFrameworkModel)
-            .orElseGet(FrameworkModel::defaultModel)
-            .getBeanFactory().getBean(Fastjson2SecurityManager.class);
+                .map(URL::getOrDefaultFrameworkModel)
+                .orElseGet(FrameworkModel::defaultModel)
+                .getBeanFactory()
+                .getBean(Fastjson2SecurityManager.class);
 
         return new FastJson2ObjectOutput(fastjson2CreatorManager, fastjson2SecurityManager, output);
     }
@@ -65,15 +67,16 @@ public class FastJson2Serialization implements Serialization {
     @Override
     public ObjectInput deserialize(URL url, InputStream input) throws IOException {
         Fastjson2CreatorManager fastjson2CreatorManager = Optional.ofNullable(url)
-            .map(URL::getOrDefaultFrameworkModel)
-            .orElseGet(FrameworkModel::defaultModel)
-            .getBeanFactory().getBean(Fastjson2CreatorManager.class);
+                .map(URL::getOrDefaultFrameworkModel)
+                .orElseGet(FrameworkModel::defaultModel)
+                .getBeanFactory()
+                .getBean(Fastjson2CreatorManager.class);
         Fastjson2SecurityManager fastjson2SecurityManager = Optional.ofNullable(url)
-            .map(URL::getOrDefaultFrameworkModel)
-            .orElseGet(FrameworkModel::defaultModel)
-            .getBeanFactory().getBean(Fastjson2SecurityManager.class);
+                .map(URL::getOrDefaultFrameworkModel)
+                .orElseGet(FrameworkModel::defaultModel)
+                .getBeanFactory()
+                .getBean(Fastjson2SecurityManager.class);
 
         return new FastJson2ObjectInput(fastjson2CreatorManager, fastjson2SecurityManager, input);
     }
-
 }

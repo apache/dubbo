@@ -27,5 +27,4 @@ import org.apache.dubbo.rpc.protocol.rest.filter.context.RestInterceptContext;
 public interface RestResponseInterceptor {
 
     void intercept(RestInterceptContext restResponseInterceptor) throws Exception;
-
 }

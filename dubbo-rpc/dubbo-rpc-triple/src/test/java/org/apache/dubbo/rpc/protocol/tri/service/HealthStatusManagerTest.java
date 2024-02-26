@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.service;
 
 import org.apache.dubbo.rpc.StatusRpcException;
@@ -41,9 +40,9 @@ class HealthStatusManagerTest {
     void setStatus() {
         String service = "serv0";
         manager.setStatus(service, ServingStatus.SERVING);
-        ServingStatus stored = manager.getHealthService().check(HealthCheckRequest.newBuilder()
-            .setService(service)
-            .build()).getStatus();
+        ServingStatus stored = manager.getHealthService()
+                .check(HealthCheckRequest.newBuilder().setService(service).build())
+                .getStatus();
         Assertions.assertEquals(ServingStatus.SERVING, stored);
     }
 
@@ -51,15 +50,14 @@ class HealthStatusManagerTest {
     void clearStatus() {
         String service = "serv1";
         manager.setStatus(service, ServingStatus.SERVING);
-        ServingStatus stored = manager.getHealthService().check(HealthCheckRequest.newBuilder()
-            .setService(service)
-            .build()).getStatus();
+        ServingStatus stored = manager.getHealthService()
+                .check(HealthCheckRequest.newBuilder().setService(service).build())
+                .getStatus();
         Assertions.assertEquals(ServingStatus.SERVING, stored);
         manager.clearStatus(service);
         try {
-            manager.getHealthService().check(HealthCheckRequest.newBuilder()
-                .setService(service)
-                .build());
+            manager.getHealthService()
+                    .check(HealthCheckRequest.newBuilder().setService(service).build());
             fail();
         } catch (StatusRpcException e) {
             Assertions.assertEquals(Code.NOT_FOUND, e.getStatus().code);
@@ -70,14 +68,14 @@ class HealthStatusManagerTest {
     void enterTerminalState() {
         String service = "serv2";
         manager.setStatus(service, ServingStatus.SERVING);
-        ServingStatus stored = manager.getHealthService().check(HealthCheckRequest.newBuilder()
-            .setService(service)
-            .build()).getStatus();
+        ServingStatus stored = manager.getHealthService()
+                .check(HealthCheckRequest.newBuilder().setService(service).build())
+                .getStatus();
         Assertions.assertEquals(ServingStatus.SERVING, stored);
         manager.enterTerminalState();
-        ServingStatus stored2 = manager.getHealthService().check(HealthCheckRequest.newBuilder()
-            .setService(service)
-            .build()).getStatus();
+        ServingStatus stored2 = manager.getHealthService()
+                .check(HealthCheckRequest.newBuilder().setService(service).build())
+                .getStatus();
         Assertions.assertEquals(ServingStatus.NOT_SERVING, stored2);
     }
 }

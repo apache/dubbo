@@ -29,10 +29,11 @@ class SpringContainerTest {
 
     @Test
     void testContainer() {
-        SpringContainer container = (SpringContainer) ExtensionLoader.getExtensionLoader(Container.class).getExtension("spring");
+        SpringContainer container = (SpringContainer)
+                ExtensionLoader.getExtensionLoader(Container.class).getExtension("spring");
         container.start();
-        Assertions.assertEquals(SpringContainer.class, container.context.getBean("container").getClass());
+        Assertions.assertEquals(
+                SpringContainer.class, container.context.getBean("container").getClass());
         container.stop();
     }
-
 }

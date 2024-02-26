@@ -28,15 +28,20 @@ public class ObservabilityUtils {
 
     public static final String DUBBO_TRACING_PREFIX = DUBBO_PREFIX + PROPERTY_NAME_SEPARATOR + "tracing";
 
-    public static final String DUBBO_TRACING_PROPAGATION = DUBBO_TRACING_PREFIX + PROPERTY_NAME_SEPARATOR + "propagation";
+    public static final String DUBBO_TRACING_PROPAGATION =
+            DUBBO_TRACING_PREFIX + PROPERTY_NAME_SEPARATOR + "propagation";
 
     public static final String DUBBO_TRACING_BAGGAGE = DUBBO_TRACING_PREFIX + PROPERTY_NAME_SEPARATOR + "baggage";
 
-    public static final String DUBBO_TRACING_BAGGAGE_CORRELATION = DUBBO_TRACING_BAGGAGE + PROPERTY_NAME_SEPARATOR + "correlation";
+    public static final String DUBBO_TRACING_BAGGAGE_CORRELATION =
+            DUBBO_TRACING_BAGGAGE + PROPERTY_NAME_SEPARATOR + "correlation";
 
-    public static final String DUBBO_TRACING_BAGGAGE_ENABLED = DUBBO_TRACING_BAGGAGE + PROPERTY_NAME_SEPARATOR + "enabled";
+    public static final String DUBBO_TRACING_BAGGAGE_ENABLED =
+            DUBBO_TRACING_BAGGAGE + PROPERTY_NAME_SEPARATOR + "enabled";
 
-    public static final String DUBBO_TRACING_ZIPKIN_CONFIG_PREFIX = DUBBO_TRACING_PREFIX + PROPERTY_NAME_SEPARATOR + "tracing-exporter.zipkin-config";
+    public static final String DUBBO_TRACING_ZIPKIN_CONFIG_PREFIX =
+            DUBBO_TRACING_PREFIX + PROPERTY_NAME_SEPARATOR + "tracing-exporter.zipkin-config";
 
-    public static final String DUBBO_TRACING_OTLP_CONFIG_PREFIX = DUBBO_TRACING_PREFIX + PROPERTY_NAME_SEPARATOR + "tracing-exporter.otlp-config";
+    public static final String DUBBO_TRACING_OTLP_CONFIG_PREFIX =
+            DUBBO_TRACING_PREFIX + PROPERTY_NAME_SEPARATOR + "tracing-exporter.otlp-config";
 }

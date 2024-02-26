@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.rest.exception.mapper;
 import org.apache.dubbo.rpc.protocol.rest.util.ReflectUtils;
 
 import javax.ws.rs.core.Response;
+
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +31,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RestEasyExceptionMapper extends ExceptionMapper {
 
     private final Map<Class<?>, javax.ws.rs.ext.ExceptionMapper> exceptionMappers = new ConcurrentHashMap<>();
-
 
     protected List<Method> getExceptionHandlerMethods(Class<?> exceptionHandler) {
         if (!javax.ws.rs.ext.ExceptionMapper.class.isAssignableFrom(exceptionHandler)) {
@@ -58,6 +58,4 @@ public class RestEasyExceptionMapper extends ExceptionMapper {
 
         return ExceptionHandlerResult.build().setStatus(response.getStatus()).setEntity(response.getEntity());
     }
-
-
 }

@@ -24,23 +24,32 @@ import org.apache.dubbo.rpc.protocol.rest.filter.RestResponseFilter;
 import org.apache.dubbo.rpc.protocol.rest.filter.context.RestFilterContext;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
-import org.jboss.resteasy.spi.HttpResponse;
 
 import javax.ws.rs.container.ContainerResponseFilter;
+
 import java.util.List;
 
-@Activate(value = "resteasy", order = Integer.MAX_VALUE - 1000, onClass = {"org.jboss.resteasy.specimpl.BuiltResponse", "javax.ws.rs.container.ContainerResponseFilter", "org.jboss.resteasy.spi.HttpResponse", "org.jboss.resteasy.plugins.server.netty.NettyHttpResponse"})
+import org.jboss.resteasy.spi.HttpResponse;
+
+@Activate(
+        value = "resteasy",
+        order = Integer.MAX_VALUE - 1000,
+        onClass = {
+            "org.jboss.resteasy.specimpl.BuiltResponse",
+            "javax.ws.rs.container.ContainerResponseFilter",
+            "org.jboss.resteasy.spi.HttpResponse",
+            "org.jboss.resteasy.plugins.server.netty.NettyHttpResponse"
+        })
 public class ResteasyResponseContainerFilterAdapter implements RestResponseFilter, ResteasyContext {
     @Override
     public void filter(RestFilterContext restFilterContext) throws Exception {
-
 
         ServiceDeployer serviceDeployer = restFilterContext.getServiceDeployer();
         RequestFacade requestFacade = restFilterContext.getRequestFacade();
         NettyHttpResponse response = restFilterContext.getResponse();
         URL url = restFilterContext.getUrl();
-        List<ContainerResponseFilter> containerRequestFilters = getExtension(serviceDeployer, ContainerResponseFilter.class);
-
+        List<ContainerResponseFilter> containerRequestFilters =
+                getExtension(serviceDeployer, ContainerResponseFilter.class);
 
         if (containerRequestFilters.isEmpty()) {
             return;
@@ -48,12 +57,17 @@ public class ResteasyResponseContainerFilterAdapter implements RestResponseFilte
 
         // response filter entity first
 
-
         // build jaxrsResponse from rest netty response
-        DubboBuiltResponse dubboBuiltResponse = new DubboBuiltResponse(response.getResponseBody(), response.getStatus(), response.getEntityClass());
+        DubboBuiltResponse dubboBuiltResponse =
+                new DubboBuiltResponse(response.getResponseBody(), response.getStatus(), response.getEntityClass());
         // NettyHttpResponse wrapper
         HttpResponse httpResponse = new ResteasyNettyHttpResponse(response);
-        DubboContainerResponseContextImpl containerResponseContext = createContainerResponseContext(restFilterContext.getOriginRequest(),requestFacade, httpResponse, dubboBuiltResponse, containerRequestFilters.toArray(new ContainerResponseFilter[0]));
+        DubboContainerResponseContextImpl containerResponseContext = createContainerResponseContext(
+                restFilterContext.getOriginRequest(),
+                requestFacade,
+                httpResponse,
+                dubboBuiltResponse,
+                containerRequestFilters.toArray(new ContainerResponseFilter[0]));
         containerResponseContext.filter();
 
         // user reset entity
@@ -65,8 +79,5 @@ public class ResteasyResponseContainerFilterAdapter implements RestResponseFilte
         addResponseHeaders(response, httpResponse.getOutputHeaders());
 
         restFilterContext.setComplete(true);
-
     }
-
-
 }

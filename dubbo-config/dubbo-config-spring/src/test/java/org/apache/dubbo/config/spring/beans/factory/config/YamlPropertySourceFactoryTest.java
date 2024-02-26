@@ -36,7 +36,10 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
  * @since 2.6.5
  */
 @ExtendWith(SpringExtension.class)
-@PropertySource(name = "yaml-source", value = {"classpath:/META-INF/dubbo.yml"}, factory = YamlPropertySourceFactory.class)
+@PropertySource(
+        name = "yaml-source",
+        value = {"classpath:/META-INF/dubbo.yml"},
+        factory = YamlPropertySourceFactory.class)
 @Configuration
 @ContextConfiguration(classes = YamlPropertySourceFactoryTest.class)
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)

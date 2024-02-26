@@ -191,7 +191,7 @@ public abstract class AbstractMethodBuilder<T extends AbstractMethodConfig, B ex
         if (!StringUtils.isEmpty(merger)) {
             instance.setMerger(merger);
         }
-        if(!StringUtils.isEmpty(mock)) {
+        if (!StringUtils.isEmpty(mock)) {
             instance.setMock(mock);
         }
         if (retries != null) {

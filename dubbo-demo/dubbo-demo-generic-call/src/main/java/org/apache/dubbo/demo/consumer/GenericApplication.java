@@ -32,7 +32,6 @@ public class GenericApplication {
         runWithBootstrap(args);
     }
 
-
     private static void runWithBootstrap(String[] args) {
         ReferenceConfig<GenericService> reference = new ReferenceConfig<>();
         reference.setInterface("org.apache.dubbo.demo.DemoService");
@@ -52,18 +51,19 @@ public class GenericApplication {
         metadataReportConfig.setAddress("zookeeper://127.0.0.1:2181");
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
-        bootstrap.application(applicationConfig)
-            .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
-            .protocol(new ProtocolConfig(CommonConstants.DUBBO, -1))
-            .reference(reference)
-            .start();
+        bootstrap
+                .application(applicationConfig)
+                .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
+                .protocol(new ProtocolConfig(CommonConstants.DUBBO, -1))
+                .reference(reference)
+                .start();
 
         // generic invoke
         GenericService genericService = bootstrap.getCache().get(reference);
         while (true) {
             try {
-                Object genericInvokeResult = genericService.$invoke("sayHello", new String[]{String.class.getName()},
-                    new Object[]{param});
+                Object genericInvokeResult =
+                        genericService.$invoke("sayHello", new String[] {String.class.getName()}, new Object[] {param});
                 System.out.println(genericInvokeResult);
                 Thread.sleep(1000);
             } catch (Exception e) {
@@ -71,5 +71,4 @@ public class GenericApplication {
             }
         }
     }
-
 }

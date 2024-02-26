@@ -45,7 +45,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
  * @see org.apache.dubbo.rpc.Filter
  * @see org.apache.dubbo.rpc.RpcContext
  */
-@Activate(group = CONSUMER, order = -200000, value = {"loadbalance:adaptive"})
+@Activate(
+        group = CONSUMER,
+        order = -200000,
+        value = {"loadbalance:adaptive"})
 public class AdaptiveLoadBalanceFilter implements Filter, Filter.Listener {
 
     /**
@@ -59,12 +62,18 @@ public class AdaptiveLoadBalanceFilter implements Filter, Filter.Listener {
         adaptiveMetrics = scopeModel.getBeanFactory().getBean(AdaptiveMetrics.class);
     }
 
-    private ThreadPoolExecutor getExecutor(){
+    private ThreadPoolExecutor getExecutor() {
         if (null == executor) {
             synchronized (this) {
                 if (null == executor) {
-                    executor = new ThreadPoolExecutor(1, 1, 0L,TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(1024),
-                        new NamedInternalThreadFactory("Dubbo-framework-loadbalance-adaptive", true), new ThreadPoolExecutor.DiscardOldestPolicy());
+                    executor = new ThreadPoolExecutor(
+                            1,
+                            1,
+                            0L,
+                            TimeUnit.MILLISECONDS,
+                            new LinkedBlockingQueue<>(1024),
+                            new NamedInternalThreadFactory("Dubbo-framework-loadbalance-adaptive", true),
+                            new ThreadPoolExecutor.DiscardOldestPolicy());
                     GlobalResourcesRepository.getInstance().registerDisposable(() -> this.executor.shutdown());
                 }
             }
@@ -77,21 +86,21 @@ public class AdaptiveLoadBalanceFilter implements Filter, Filter.Listener {
         return invoker.invoke(invocation);
     }
 
-    private String buildServiceKey(Invocation invocation){
+    private String buildServiceKey(Invocation invocation) {
         StringBuilder sb = new StringBuilder(128);
         sb.append(invocation.getInvoker().getUrl().getAddress()).append(":").append(invocation.getProtocolServiceKey());
         return sb.toString();
     }
 
-    private String getServiceKey(Invocation invocation){
+    private String getServiceKey(Invocation invocation) {
 
         String key = (String) invocation.getAttributes().get(invocation.getInvoker());
-        if (StringUtils.isNotEmpty(key)){
+        if (StringUtils.isNotEmpty(key)) {
             return key;
         }
 
         key = buildServiceKey(invocation);
-        invocation.getAttributes().put(invocation.getInvoker(),key);
+        invocation.getAttributes().put(invocation.getInvoker(), key);
         return key;
     }
 
@@ -100,8 +109,7 @@ public class AdaptiveLoadBalanceFilter implements Filter, Filter.Listener {
 
         try {
             String loadBalance = (String) invocation.getAttributes().get(LOADBALANCE_KEY);
-            if (StringUtils.isEmpty(loadBalance)
-                || !LoadbalanceRules.ADAPTIVE.equals(loadBalance)) {
+            if (StringUtils.isEmpty(loadBalance) || !LoadbalanceRules.ADAPTIVE.equals(loadBalance)) {
                 return;
             }
             adaptiveMetrics.addConsumerSuccess(getServiceKey(invocation));
@@ -129,23 +137,18 @@ public class AdaptiveLoadBalanceFilter implements Filter, Filter.Listener {
                     adaptiveMetrics.setProviderMetrics(getServiceKey(invocation), metricsMap);
                 });
             }
-        }
-        finally {
+        } finally {
             appResponse.getAttachments().remove(Constants.ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY);
         }
-
     }
 
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
         String loadBalance = (String) invocation.getAttributes().get(LOADBALANCE_KEY);
-        if (StringUtils.isNotEmpty(loadBalance)
-            && LoadbalanceRules.ADAPTIVE.equals(loadBalance)) {
+        if (StringUtils.isNotEmpty(loadBalance) && LoadbalanceRules.ADAPTIVE.equals(loadBalance)) {
             getExecutor().execute(() -> {
                 adaptiveMetrics.addErrorReq(getServiceKey(invocation));
             });
         }
     }
-
-
 }

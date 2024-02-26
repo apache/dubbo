@@ -14,19 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.StatusRpcException;
 import org.apache.dubbo.rpc.TriRpcStatus;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
 import io.netty.util.concurrent.ImmediateEventExecutor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 class DeadlineFutureTest {
 
@@ -35,15 +34,14 @@ class DeadlineFutureTest {
         String service = "service";
         String method = "method";
         String address = "localhost:12201";
-        DeadlineFuture timeout = DeadlineFuture.newFuture(service, method, address, 10,
-            ImmediateEventExecutor.INSTANCE);
+        DeadlineFuture timeout =
+                DeadlineFuture.newFuture(service, method, address, 10, ImmediateEventExecutor.INSTANCE);
         TimeUnit.MILLISECONDS.sleep(20);
         AppResponse timeoutResponse = timeout.get();
         Assertions.assertTrue(timeoutResponse.getException() instanceof StatusRpcException);
 
-
-        DeadlineFuture success = DeadlineFuture.newFuture(service, method, address, 1000,
-            ImmediateEventExecutor.INSTANCE);
+        DeadlineFuture success =
+                DeadlineFuture.newFuture(service, method, address, 1000, ImmediateEventExecutor.INSTANCE);
         AppResponse response = new AppResponse();
         success.received(TriRpcStatus.OK, response);
         AppResponse response1 = success.get();

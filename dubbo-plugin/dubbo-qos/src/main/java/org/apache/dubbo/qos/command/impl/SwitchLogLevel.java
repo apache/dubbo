@@ -19,14 +19,15 @@ package org.apache.dubbo.qos.command.impl;
 import org.apache.dubbo.common.logger.Level;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.qos.api.BaseCommand;
-import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.qos.api.Cmd;
+import org.apache.dubbo.qos.api.CommandContext;
 
 import java.util.Locale;
 
-@Cmd(name = "switchLogLevel", summary = "Switch log level", example = {
-    "switchLogLevel info"
-})
+@Cmd(
+        name = "switchLogLevel",
+        summary = "Switch log level",
+        example = {"switchLogLevel info"})
 public class SwitchLogLevel implements BaseCommand {
     @Override
     public String execute(CommandContext commandContext, String[] args) {

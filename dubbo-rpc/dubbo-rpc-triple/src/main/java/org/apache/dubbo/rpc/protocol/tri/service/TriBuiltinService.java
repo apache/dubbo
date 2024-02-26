@@ -28,10 +28,10 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import io.grpc.health.v1.DubboHealthTriple;
 import io.grpc.health.v1.Health;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.rpc.Constants.PROXY_KEY;
@@ -52,8 +52,7 @@ public class TriBuiltinService {
 
     private ReflectionV1AlphaService reflectionServiceV1Alpha;
     private HealthStatusManager healthStatusManager;
-    private Configuration config = ConfigurationUtils.getGlobalConfiguration(
-        ApplicationModel.defaultModel());
+    private Configuration config = ConfigurationUtils.getGlobalConfiguration(ApplicationModel.defaultModel());
 
     private final AtomicBoolean init = new AtomicBoolean();
 
@@ -72,22 +71,20 @@ public class TriBuiltinService {
             proxyFactory = frameworkModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
             pathResolver = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
             addSingleBuiltinService(DubboHealthTriple.SERVICE_NAME, healthService, Health.class);
-            addSingleBuiltinService(ReflectionV1AlphaService.SERVICE_NAME, reflectionServiceV1Alpha,
-                ReflectionV1AlphaService.class);
+            addSingleBuiltinService(
+                    ReflectionV1AlphaService.SERVICE_NAME, reflectionServiceV1Alpha, ReflectionV1AlphaService.class);
         }
     }
 
-    public boolean enable(){
+    public boolean enable() {
         return config.getBoolean(TRI_BUILTIN_SERVICE_INIT, false);
     }
 
-
     private <T> void addSingleBuiltinService(String serviceName, T impl, Class<T> interfaceClass) {
         ModuleModel internalModule = ApplicationModel.defaultModel().getInternalModule();
-        URL url = new ServiceConfigURL(CommonConstants.TRIPLE, null, null, ANYHOST_VALUE, 0,
-            serviceName)
-            .addParameter(PROXY_KEY, CommonConstants.NATIVE_STUB)
-            .setScopeModel(internalModule);
+        URL url = new ServiceConfigURL(CommonConstants.TRIPLE, null, null, ANYHOST_VALUE, 0, serviceName)
+                .addParameter(PROXY_KEY, CommonConstants.NATIVE_STUB)
+                .setScopeModel(internalModule);
         Invoker<?> invoker = proxyFactory.getInvoker(impl, interfaceClass, url);
         pathResolver.add(serviceName, invoker);
         internalModule.addDestroyListener(scopeModel -> pathResolver.remove(serviceName));

@@ -41,15 +41,14 @@ public class Dubbo3Generator extends AbstractGenerator {
     }
 
     @Override
-    protected String getTemplateFileName () {
+    protected String getTemplateFileName() {
         return "Dubbo3Stub.mustache";
     }
 
     @Override
-    protected String getInterfaceTemplateFileName () {
+    protected String getInterfaceTemplateFileName() {
         return "Dubbo3InterfaceStub.mustache";
     }
-
 
     @Override
     protected String getSingleTemplateFileName() {

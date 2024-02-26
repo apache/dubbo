@@ -31,5 +31,4 @@ public class SimpleExtImpl2 implements SimpleExt {
     public String bang(URL url, int i) {
         return "bang2";
     }
-
 }

@@ -22,19 +22,19 @@ import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 import org.apache.dubbo.metadata.definition.service.ComplexObject;
 import org.apache.dubbo.metadata.definition.service.DemoService;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * 2018/11/6
  */
 class ServiceDefinitionBuilderTest {
-
 
     private static FrameworkModel frameworkModel;
 
@@ -56,11 +56,15 @@ class ServiceDefinitionBuilderTest {
         checkComplexObjectAsParam(fullServiceDefinition);
     }
 
-
     void checkComplexObjectAsParam(FullServiceDefinition fullServiceDefinition) {
-        Assertions.assertTrue(fullServiceDefinition.getAnnotations().contains("@org.apache.dubbo.metadata.definition.service.annotation.MockTypeAnnotation(value=666)")
-            // JDK 17 style
-            || fullServiceDefinition.getAnnotations().contains("@org.apache.dubbo.metadata.definition.service.annotation.MockTypeAnnotation(666)"));
+        Assertions.assertTrue(fullServiceDefinition
+                        .getAnnotations()
+                        .contains(
+                                "@org.apache.dubbo.metadata.definition.service.annotation.MockTypeAnnotation(value=666)")
+                // JDK 17 style
+                || fullServiceDefinition
+                        .getAnnotations()
+                        .contains("@org.apache.dubbo.metadata.definition.service.annotation.MockTypeAnnotation(666)"));
 
         List<MethodDefinition> methodDefinitions = fullServiceDefinition.getMethods();
         MethodDefinition complexCompute = null;
@@ -75,22 +79,36 @@ class ServiceDefinitionBuilderTest {
                 testAnnotation = methodDefinition;
             }
         }
-        Assertions.assertTrue(Arrays.equals(complexCompute.getParameterTypes(), new String[]{String.class.getName(), ComplexObject.class.getName()}));
+        Assertions.assertTrue(Arrays.equals(
+                complexCompute.getParameterTypes(),
+                new String[] {String.class.getName(), ComplexObject.class.getName()}));
         Assertions.assertEquals(complexCompute.getReturnType(), String.class.getName());
 
-        Assertions.assertTrue(Arrays.equals(findComplexObject.getParameterTypes(), new String[]{String.class.getName(), "int", "long",
-            String[].class.getCanonicalName(), "java.util.List<java.lang.Integer>", ComplexObject.TestEnum.class.getCanonicalName()}));
+        Assertions.assertTrue(Arrays.equals(findComplexObject.getParameterTypes(), new String[] {
+            String.class.getName(),
+            "int",
+            "long",
+            String[].class.getCanonicalName(),
+            "java.util.List<java.lang.Integer>",
+            ComplexObject.TestEnum.class.getCanonicalName()
+        }));
         Assertions.assertEquals(findComplexObject.getReturnType(), ComplexObject.class.getCanonicalName());
 
-        Assertions.assertTrue(testAnnotation.getAnnotations().equals(Arrays.asList(
-            "@org.apache.dubbo.metadata.definition.service.annotation.MockMethodAnnotation(value=777)",
-            "@org.apache.dubbo.metadata.definition.service.annotation.MockMethodAnnotation2(value=888)"))
-            // JDK 17 style
-            || testAnnotation.getAnnotations().equals(Arrays.asList(
-            "@org.apache.dubbo.metadata.definition.service.annotation.MockMethodAnnotation(777)",
-            "@org.apache.dubbo.metadata.definition.service.annotation.MockMethodAnnotation2(888)")));
+        Assertions.assertTrue(
+                testAnnotation
+                                .getAnnotations()
+                                .equals(
+                                        Arrays.asList(
+                                                "@org.apache.dubbo.metadata.definition.service.annotation.MockMethodAnnotation(value=777)",
+                                                "@org.apache.dubbo.metadata.definition.service.annotation.MockMethodAnnotation2(value=888)"))
+                        // JDK 17 style
+                        || testAnnotation
+                                .getAnnotations()
+                                .equals(
+                                        Arrays.asList(
+                                                "@org.apache.dubbo.metadata.definition.service.annotation.MockMethodAnnotation(777)",
+                                                "@org.apache.dubbo.metadata.definition.service.annotation.MockMethodAnnotation2(888)")));
         Assertions.assertEquals(testAnnotation.getReturnType(), "void");
-
 
         List<TypeDefinition> typeDefinitions = fullServiceDefinition.getTypes();
 
@@ -113,23 +131,39 @@ class ServiceDefinitionBuilderTest {
             }
         }
         Assertions.assertEquals("long", topTypeDefinition.getProperties().get("v"));
-        Assertions.assertEquals("java.util.Map<java.lang.String,java.lang.String>", topTypeDefinition.getProperties().get("maps"));
-        Assertions.assertEquals(ComplexObject.InnerObject.class.getCanonicalName(), topTypeDefinition.getProperties().get("innerObject"));
-        Assertions.assertEquals("java.util.List<java.lang.Integer>", topTypeDefinition.getProperties().get("intList"));
-        Assertions.assertEquals("java.lang.String[]", topTypeDefinition.getProperties().get("strArrays"));
-        Assertions.assertEquals("org.apache.dubbo.metadata.definition.service.ComplexObject.InnerObject3[]", topTypeDefinition.getProperties().get("innerObject3"));
-        Assertions.assertEquals("org.apache.dubbo.metadata.definition.service.ComplexObject.TestEnum", topTypeDefinition.getProperties().get("testEnum"));
-        Assertions.assertEquals("java.util.Set<org.apache.dubbo.metadata.definition.service.ComplexObject.InnerObject2>", topTypeDefinition.getProperties().get("innerObject2"));
+        Assertions.assertEquals(
+                "java.util.Map<java.lang.String,java.lang.String>",
+                topTypeDefinition.getProperties().get("maps"));
+        Assertions.assertEquals(
+                ComplexObject.InnerObject.class.getCanonicalName(),
+                topTypeDefinition.getProperties().get("innerObject"));
+        Assertions.assertEquals(
+                "java.util.List<java.lang.Integer>",
+                topTypeDefinition.getProperties().get("intList"));
+        Assertions.assertEquals(
+                "java.lang.String[]", topTypeDefinition.getProperties().get("strArrays"));
+        Assertions.assertEquals(
+                "org.apache.dubbo.metadata.definition.service.ComplexObject.InnerObject3[]",
+                topTypeDefinition.getProperties().get("innerObject3"));
+        Assertions.assertEquals(
+                "org.apache.dubbo.metadata.definition.service.ComplexObject.TestEnum",
+                topTypeDefinition.getProperties().get("testEnum"));
+        Assertions.assertEquals(
+                "java.util.Set<org.apache.dubbo.metadata.definition.service.ComplexObject.InnerObject2>",
+                topTypeDefinition.getProperties().get("innerObject2"));
 
-        Assertions.assertSame("java.lang.String", innerTypeDefinition.getProperties().get("innerA"));
+        Assertions.assertSame(
+                "java.lang.String", innerTypeDefinition.getProperties().get("innerA"));
         Assertions.assertSame("int", innerTypeDefinition.getProperties().get("innerB"));
 
-        Assertions.assertSame("java.lang.String", inner2TypeDefinition.getProperties().get("innerA2"));
+        Assertions.assertSame(
+                "java.lang.String", inner2TypeDefinition.getProperties().get("innerA2"));
         Assertions.assertSame("int", inner2TypeDefinition.getProperties().get("innerB2"));
 
-        Assertions.assertSame("java.lang.String", inner3TypeDefinition.getProperties().get("innerA3"));
+        Assertions.assertSame(
+                "java.lang.String", inner3TypeDefinition.getProperties().get("innerA3"));
 
-        Assertions.assertEquals(Integer.class.getCanonicalName(), listTypeDefinition.getItems().get(0));
+        Assertions.assertEquals(
+                Integer.class.getCanonicalName(), listTypeDefinition.getItems().get(0));
     }
-
 }

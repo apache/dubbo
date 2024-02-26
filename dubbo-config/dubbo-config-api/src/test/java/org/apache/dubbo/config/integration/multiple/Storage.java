@@ -20,7 +20,7 @@ package org.apache.dubbo.config.integration.multiple;
  * This interface to store the given type instance in multiple registry center.
  * @param <T> The type to store
  */
-public interface Storage <T>{
+public interface Storage<T> {
 
     /**
      * Gets the stored instance with the given host and port.

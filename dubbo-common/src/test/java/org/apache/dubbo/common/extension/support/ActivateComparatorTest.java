@@ -18,13 +18,13 @@ package org.apache.dubbo.common.extension.support;
 
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class ActivateComparatorTest {
 
@@ -32,30 +32,28 @@ class ActivateComparatorTest {
 
     @BeforeEach
     public void setup() {
-        activateComparator = new ActivateComparator(ApplicationModel.defaultModel().getExtensionDirector());
+        activateComparator =
+                new ActivateComparator(ApplicationModel.defaultModel().getExtensionDirector());
     }
 
     @Test
-    void testActivateComparator(){
+    void testActivateComparator() {
         Filter1 f1 = new Filter1();
         Filter2 f2 = new Filter2();
         Filter3 f3 = new Filter3();
         Filter4 f4 = new Filter4();
-        OldFilter5 f5 = new OldFilter5();
         List<Class<?>> filters = new ArrayList<>();
         filters.add(f1.getClass());
         filters.add(f2.getClass());
         filters.add(f3.getClass());
         filters.add(f4.getClass());
-        filters.add(f5.getClass());
 
         Collections.sort(filters, activateComparator);
 
         Assertions.assertEquals(f4.getClass(), filters.get(0));
-        Assertions.assertEquals(f5.getClass(), filters.get(1));
-        Assertions.assertEquals(f3.getClass(), filters.get(2));
-        Assertions.assertEquals(f2.getClass(), filters.get(3));
-        Assertions.assertEquals(f1.getClass(), filters.get(4));
+        Assertions.assertEquals(f3.getClass(), filters.get(1));
+        Assertions.assertEquals(f2.getClass(), filters.get(2));
+        Assertions.assertEquals(f1.getClass(), filters.get(3));
     }
 
     @Test

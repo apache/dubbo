@@ -18,6 +18,13 @@ package org.apache.dubbo.registry.nacos;
 
 import org.apache.dubbo.common.URL;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
@@ -26,13 +33,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.alibaba.nacos.client.constant.Constants.HealthCheck.DOWN;
 import static com.alibaba.nacos.client.constant.Constants.HealthCheck.UP;
@@ -102,7 +102,9 @@ public class NacosConnectionsManagerTest {
                     return atomicInteger.incrementAndGet() > 10 ? UP : DOWN;
                 }
             };
-            nacosFactoryMockedStatic.when(() -> NacosFactory.createNamingService((Properties) any())).thenReturn(mock);
+            nacosFactoryMockedStatic
+                    .when(() -> NacosFactory.createNamingService((Properties) any()))
+                    .thenReturn(mock);
 
             URL url = URL.valueOf("nacos://127.0.0.1:8848");
             Assertions.assertThrows(IllegalStateException.class, () -> new NacosConnectionManager(url, true, 5, 10));
@@ -114,6 +116,7 @@ public class NacosConnectionsManagerTest {
             }
         }
     }
+
     @Test
     void testNoCheck() {
         try (MockedStatic<NacosFactory> nacosFactoryMockedStatic = Mockito.mockStatic(NacosFactory.class)) {
@@ -123,7 +126,9 @@ public class NacosConnectionsManagerTest {
                     return DOWN;
                 }
             };
-            nacosFactoryMockedStatic.when(() -> NacosFactory.createNamingService((Properties) any())).thenReturn(mock);
+            nacosFactoryMockedStatic
+                    .when(() -> NacosFactory.createNamingService((Properties) any()))
+                    .thenReturn(mock);
 
             URL url = URL.valueOf("nacos://127.0.0.1:8848");
 
@@ -144,13 +149,14 @@ public class NacosConnectionsManagerTest {
                     return DOWN;
                 }
             };
-            nacosFactoryMockedStatic.when(() -> NacosFactory.createNamingService((Properties) any())).thenReturn(mock);
-
+            nacosFactoryMockedStatic
+                    .when(() -> NacosFactory.createNamingService((Properties) any()))
+                    .thenReturn(mock);
 
             URL url = URL.valueOf("nacos://127.0.0.1:8848")
-                .addParameter("nacos.retry", 5)
-                .addParameter("nacos.retry-wait", 10)
-                .addParameter("nacos.check", "false");
+                    .addParameter("nacos.retry", 5)
+                    .addParameter("nacos.retry-wait", 10)
+                    .addParameter("nacos.check", "false");
             try {
                 new NacosConnectionManager(url, false, 5, 10);
             } catch (Throwable t) {
@@ -178,12 +184,13 @@ public class NacosConnectionsManagerTest {
                     return UP;
                 }
             };
-            nacosFactoryMockedStatic.when(() -> NacosFactory.createNamingService((Properties) any())).thenReturn(mock);
-
+            nacosFactoryMockedStatic
+                    .when(() -> NacosFactory.createNamingService((Properties) any()))
+                    .thenReturn(mock);
 
             URL url = URL.valueOf("nacos://127.0.0.1:8848")
-                .addParameter("nacos.retry", 5)
-                .addParameter("nacos.retry-wait", 10);
+                    .addParameter("nacos.retry", 5)
+                    .addParameter("nacos.retry-wait", 10);
             Assertions.assertThrows(IllegalStateException.class, () -> new NacosConnectionManager(url, true, 5, 10));
 
             try {

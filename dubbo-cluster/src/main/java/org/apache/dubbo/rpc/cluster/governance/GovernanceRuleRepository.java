@@ -36,7 +36,6 @@ public interface GovernanceRuleRepository {
         addListener(key, DEFAULT_GROUP, listener);
     }
 
-
     /**
      * {@link #removeListener(String, String, ConfigurationListener)}
      *

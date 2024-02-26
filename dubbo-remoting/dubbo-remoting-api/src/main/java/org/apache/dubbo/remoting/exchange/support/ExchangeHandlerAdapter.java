@@ -36,5 +36,4 @@ public abstract class ExchangeHandlerAdapter extends TelnetHandlerAdapter implem
     public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) throws RemotingException {
         return null;
     }
-
 }

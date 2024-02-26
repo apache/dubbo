@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.threadpool.support.eager;
 
 import java.util.concurrent.RejectedExecutionException;
@@ -28,12 +27,14 @@ import java.util.concurrent.TimeUnit;
  */
 public class EagerThreadPoolExecutor extends ThreadPoolExecutor {
 
-    public EagerThreadPoolExecutor(int corePoolSize,
-                                   int maximumPoolSize,
-                                   long keepAliveTime,
-                                   TimeUnit unit, TaskQueue<Runnable> workQueue,
-                                   ThreadFactory threadFactory,
-                                   RejectedExecutionHandler handler) {
+    public EagerThreadPoolExecutor(
+            int corePoolSize,
+            int maximumPoolSize,
+            long keepAliveTime,
+            TimeUnit unit,
+            TaskQueue<Runnable> workQueue,
+            ThreadFactory threadFactory,
+            RejectedExecutionHandler handler) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, handler);
     }
 

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.prometheus;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -38,7 +37,8 @@ import java.util.Optional;
 @Cmd(name = "metrics", summary = "reuse qos report")
 public class PrometheusMetricsReporterCmd implements BaseCommand {
 
-    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(PrometheusMetricsReporterCmd.class);
+    private final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(PrometheusMetricsReporterCmd.class);
 
     public FrameworkModel frameworkModel;
 
@@ -85,7 +85,9 @@ public class PrometheusMetricsReporterCmd implements BaseCommand {
     }
 
     private String specifySingleApplication(String appName, List<ApplicationModel> models) {
-        Optional<ApplicationModel> modelOptional = models.stream().filter(applicationModel -> appName.equals(applicationModel.getApplicationName())).findFirst();
+        Optional<ApplicationModel> modelOptional = models.stream()
+                .filter(applicationModel -> appName.equals(applicationModel.getApplicationName()))
+                .findFirst();
         if (modelOptional.isPresent()) {
             return getResponseByApplication(modelOptional.get());
         } else {
@@ -116,17 +118,15 @@ public class PrometheusMetricsReporterCmd implements BaseCommand {
                 logger.debug("scrape begin");
             }
 
-            metricsReporter.refreshData();
+            metricsReporter.resetIfSamplesChanged();
 
             if (logger.isDebugEnabled()) {
                 logger.debug(String.format("scrape end,Elapsed Time：%s", System.currentTimeMillis() - begin));
             }
             response = metricsReporter.getResponse();
-
         }
         return response;
     }
-
 
     private static long getLineNumber(String content) {
 
@@ -138,5 +138,4 @@ public class PrometheusMetricsReporterCmd implements BaseCommand {
         }
         return lnr.getLineNumber();
     }
-
 }

@@ -16,13 +16,6 @@
  */
 package org.apache.dubbo.registry.nacos;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.function.ThrowableFunction;
@@ -37,6 +30,13 @@ import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedLi
 import org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.listener.Event;
@@ -78,8 +78,10 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
         super(applicationModel, registryURL);
         this.namingService = createNamingService(registryURL);
         // backward compatibility for 3.0.x
-        this.group = Boolean.parseBoolean(ConfigurationUtils.getProperty(applicationModel, NACOS_SD_USE_DEFAULT_GROUP_KEY, "false")) ?
-                DEFAULT_GROUP : getGroup(registryURL);
+        this.group = Boolean.parseBoolean(
+                        ConfigurationUtils.getProperty(applicationModel, NACOS_SD_USE_DEFAULT_GROUP_KEY, "false"))
+                ? DEFAULT_GROUP
+                : getGroup(registryURL);
     }
 
     @Override
@@ -105,15 +107,17 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     @Override
-    protected void doUpdate(ServiceInstance oldServiceInstance, ServiceInstance newServiceInstance) throws RuntimeException {
+    protected void doUpdate(ServiceInstance oldServiceInstance, ServiceInstance newServiceInstance)
+            throws RuntimeException {
         if (EMPTY_REVISION.equals(getExportedServicesRevision(newServiceInstance))
-                || EMPTY_REVISION.equals(oldServiceInstance.getMetadata().get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME))) {
+                || EMPTY_REVISION.equals(
+                        oldServiceInstance.getMetadata().get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME))) {
             super.doUpdate(oldServiceInstance, newServiceInstance);
             return;
         }
 
-        if (!Objects.equals(newServiceInstance.getHost(), oldServiceInstance.getHost()) ||
-                !Objects.equals(newServiceInstance.getPort(), oldServiceInstance.getPort())) {
+        if (!Objects.equals(newServiceInstance.getHost(), oldServiceInstance.getHost())
+                || !Objects.equals(newServiceInstance.getPort(), oldServiceInstance.getPort())) {
             // Ignore if id changed. Should unregister first.
             super.doUpdate(oldServiceInstance, newServiceInstance);
             return;
@@ -144,11 +148,10 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
 
     @Override
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
-        return ThrowableFunction.execute(namingService, service ->
-                service.selectInstances(serviceName, group, true)
-                        .stream().map((i) -> NacosNamingServiceUtils.toServiceInstance(registryURL, i))
-                        .collect(Collectors.toList())
-        );
+        return ThrowableFunction.execute(
+                namingService, service -> service.selectInstances(serviceName, group, true).stream()
+                        .map((i) -> NacosNamingServiceUtils.toServiceInstance(registryURL, i))
+                        .collect(Collectors.toList()));
     }
 
     @Override
@@ -169,14 +172,16 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
                     namingService.subscribe(serviceName, group, nacosEventListener);
                     eventListeners.put(serviceName, nacosEventListener);
                 } catch (NacosException e) {
-                    logger.error(REGISTRY_NACOS_EXCEPTION, "", "", "add nacos service instances changed listener fail ", e);
+                    logger.error(
+                            REGISTRY_NACOS_EXCEPTION, "", "", "add nacos service instances changed listener fail ", e);
                 }
             }
         }
     }
 
     @Override
-    public void removeServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws IllegalArgumentException {
+    public void removeServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
+            throws IllegalArgumentException {
         if (!instanceListeners.remove(listener)) {
             return;
         }
@@ -189,7 +194,12 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
                     try {
                         namingService.unsubscribe(serviceName, group, nacosEventListener);
                     } catch (NacosException e) {
-                        logger.error(REGISTRY_NACOS_EXCEPTION, "", "", "remove nacos service instances changed listener fail ", e);
+                        logger.error(
+                                REGISTRY_NACOS_EXCEPTION,
+                                "",
+                                "",
+                                "remove nacos service instances changed listener fail ",
+                                e);
                     }
                 }
             }
@@ -229,8 +239,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
 
     private void handleEvent(NamingEvent event, ServiceInstancesChangedListener listener) {
         String serviceName = event.getServiceName();
-        List<ServiceInstance> serviceInstances = event.getInstances()
-                .stream()
+        List<ServiceInstance> serviceInstances = event.getInstances().stream()
                 .map((i) -> NacosNamingServiceUtils.toServiceInstance(registryURL, i))
                 .collect(Collectors.toList());
         listener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));

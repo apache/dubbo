@@ -19,5 +19,4 @@ package org.apache.dubbo.rpc.service;
 public interface Destroyable {
 
     void $destroy();
-
 }

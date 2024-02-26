@@ -24,5 +24,4 @@ import org.apache.dubbo.common.convert.StringToDoubleConverter;
  *
  * @since 2.7.7
  */
-public class String2DoubleConverter extends StringToDoubleConverter {
-}
+public class String2DoubleConverter extends StringToDoubleConverter {}

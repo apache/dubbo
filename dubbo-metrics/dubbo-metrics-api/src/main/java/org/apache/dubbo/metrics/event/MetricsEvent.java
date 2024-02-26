@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.event;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
@@ -35,7 +34,8 @@ public abstract class MetricsEvent {
     /**
      * Metric object. (eg. {@link MethodMetric})
      */
-    protected transient final ApplicationModel source;
+    protected final transient ApplicationModel source;
+
     private boolean available = true;
     private final TypeWrapper typeWrapper;
     private final String appName;
@@ -47,7 +47,8 @@ public abstract class MetricsEvent {
         this(source, null, null, typeWrapper);
     }
 
-    public MetricsEvent(ApplicationModel source, String appName, MetricsDispatcher metricsDispatcher, TypeWrapper typeWrapper) {
+    public MetricsEvent(
+            ApplicationModel source, String appName, MetricsDispatcher metricsDispatcher, TypeWrapper typeWrapper) {
         this.typeWrapper = typeWrapper;
         if (source == null) {
             this.source = ApplicationModel.defaultModel();
@@ -106,10 +107,7 @@ public abstract class MetricsEvent {
         return available;
     }
 
-
-    public void customAfterPost(Object postResult) {
-
-    }
+    public void customAfterPost(Object postResult) {}
 
     public ApplicationModel getSource() {
         return source;
@@ -160,7 +158,6 @@ public abstract class MetricsEvent {
         public final String getNameByType(String type) {
             return String.format(name, type);
         }
-
 
         Type(String name) {
             this.name = name;

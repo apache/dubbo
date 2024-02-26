@@ -34,8 +34,8 @@ import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.qos.api.BaseCommand;
-import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.qos.api.Cmd;
+import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.qos.api.PermissionLevel;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -46,10 +46,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-@Cmd(name = "getConfig",
-    summary = "Get current running config.",
-    example = {"getConfig ReferenceConfig com.example.DemoService", "getConfig ApplicationConfig"},
-    requiredPermissionLevel = PermissionLevel.PRIVATE)
+@Cmd(
+        name = "getConfig",
+        summary = "Get current running config.",
+        example = {"getConfig ReferenceConfig com.example.DemoService", "getConfig ApplicationConfig"},
+        requiredPermissionLevel = PermissionLevel.PRIVATE)
 public class GetConfig implements BaseCommand {
     private final FrameworkModel frameworkModel;
 
@@ -76,9 +77,10 @@ public class GetConfig implements BaseCommand {
         for (ApplicationModel applicationModel : frameworkModel.getApplicationModels()) {
             Map<String, Object> applicationMap = new HashMap<>();
             frameworkMap.put(applicationModel.getDesc(), applicationMap);
-            plainOutput.append("ApplicationModel: ")
-                .append(applicationModel.getDesc())
-                .append("\n");
+            plainOutput
+                    .append("ApplicationModel: ")
+                    .append(applicationModel.getDesc())
+                    .append("\n");
 
             ConfigManager configManager = applicationModel.getApplicationConfigManager();
 
@@ -86,9 +88,15 @@ public class GetConfig implements BaseCommand {
         }
     }
 
-    private static void appendApplicationConfigs(String[] args, StringBuilder plainOutput, ApplicationModel applicationModel, Map<String, Object> applicationMap, ConfigManager configManager) {
+    private static void appendApplicationConfigs(
+            String[] args,
+            StringBuilder plainOutput,
+            ApplicationModel applicationModel,
+            Map<String, Object> applicationMap,
+            ConfigManager configManager) {
         Optional<ApplicationConfig> applicationConfig = configManager.getApplication();
-        applicationConfig.ifPresent(config -> appendConfig("ApplicationConfig", config.getName(), config, plainOutput, applicationMap, args));
+        applicationConfig.ifPresent(config ->
+                appendConfig("ApplicationConfig", config.getName(), config, plainOutput, applicationMap, args));
 
         for (ProtocolConfig protocol : configManager.getProtocols()) {
             appendConfigs("ProtocolConfig", protocol.getName(), protocol, plainOutput, applicationMap, args);
@@ -99,7 +107,8 @@ public class GetConfig implements BaseCommand {
         }
 
         for (MetadataReportConfig metadataConfig : configManager.getMetadataConfigs()) {
-            appendConfigs("MetadataReportConfig", metadataConfig.getId(), metadataConfig, plainOutput, applicationMap, args);
+            appendConfigs(
+                    "MetadataReportConfig", metadataConfig.getId(), metadataConfig, plainOutput, applicationMap, args);
         }
 
         for (ConfigCenterConfig configCenter : configManager.getConfigCenters()) {
@@ -107,23 +116,25 @@ public class GetConfig implements BaseCommand {
         }
 
         Optional<MetricsConfig> metricsConfig = configManager.getMetrics();
-        metricsConfig.ifPresent(config -> appendConfig("MetricsConfig", config.getId(), config, plainOutput, applicationMap, args));
+        metricsConfig.ifPresent(
+                config -> appendConfig("MetricsConfig", config.getId(), config, plainOutput, applicationMap, args));
 
         Optional<TracingConfig> tracingConfig = configManager.getTracing();
-        tracingConfig.ifPresent(config -> appendConfig("TracingConfig", config.getId(), config, plainOutput, applicationMap, args));
+        tracingConfig.ifPresent(
+                config -> appendConfig("TracingConfig", config.getId(), config, plainOutput, applicationMap, args));
 
         Optional<MonitorConfig> monitorConfig = configManager.getMonitor();
-        monitorConfig.ifPresent(config -> appendConfig("MonitorConfig", config.getId(), config, plainOutput, applicationMap, args));
+        monitorConfig.ifPresent(
+                config -> appendConfig("MonitorConfig", config.getId(), config, plainOutput, applicationMap, args));
 
         Optional<SslConfig> sslConfig = configManager.getSsl();
-        sslConfig.ifPresent(config -> appendConfig("SslConfig", config.getId(), config, plainOutput, applicationMap, args));
+        sslConfig.ifPresent(
+                config -> appendConfig("SslConfig", config.getId(), config, plainOutput, applicationMap, args));
 
         for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
             Map<String, Object> moduleMap = new HashMap<>();
             applicationMap.put(moduleModel.getDesc(), moduleMap);
-            plainOutput.append("ModuleModel: ")
-                .append(moduleModel.getDesc())
-                .append("\n");
+            plainOutput.append("ModuleModel: ").append(moduleModel.getDesc()).append("\n");
 
             ModuleConfigManager moduleConfigManager = moduleModel.getConfigManager();
 
@@ -131,7 +142,11 @@ public class GetConfig implements BaseCommand {
         }
     }
 
-    private static void appendModuleConfigs(String[] args, StringBuilder plainOutput, Map<String, Object> moduleMap, ModuleConfigManager moduleConfigManager) {
+    private static void appendModuleConfigs(
+            String[] args,
+            StringBuilder plainOutput,
+            Map<String, Object> moduleMap,
+            ModuleConfigManager moduleConfigManager) {
         for (ProviderConfig provider : moduleConfigManager.getProviders()) {
             appendConfigs("ProviderConfig", provider.getId(), provider, plainOutput, moduleMap, args);
         }
@@ -141,7 +156,8 @@ public class GetConfig implements BaseCommand {
         }
 
         Optional<ModuleConfig> moduleConfig = moduleConfigManager.getModule();
-        moduleConfig.ifPresent(config -> appendConfig("ModuleConfig", config.getId(), config, plainOutput, moduleMap, args));
+        moduleConfig.ifPresent(
+                config -> appendConfig("ModuleConfig", config.getId(), config, plainOutput, moduleMap, args));
 
         for (ServiceConfigBase<?> service : moduleConfigManager.getServices()) {
             appendConfigs("ServiceConfig", service.getUniqueServiceName(), service, plainOutput, moduleMap, args);
@@ -153,31 +169,38 @@ public class GetConfig implements BaseCommand {
     }
 
     @SuppressWarnings("unchecked")
-    private static void appendConfigs(String type, String id, Object config, StringBuilder plainOutput, Map<String, Object> map, String[] args) {
+    private static void appendConfigs(
+            String type, String id, Object config, StringBuilder plainOutput, Map<String, Object> map, String[] args) {
         if (!isMatch(type, id, args)) {
             return;
         }
 
-        plainOutput.append(type).append(": ")
-            .append(id)
-            .append("\n")
-            .append(config)
-            .append("\n\n");
+        plainOutput
+                .append(type)
+                .append(": ")
+                .append(id)
+                .append("\n")
+                .append(config)
+                .append("\n\n");
 
-        Map<String, Object> typeMap = (Map<String, Object>) map.computeIfAbsent(type, k -> new HashMap<String, Object>());
+        Map<String, Object> typeMap =
+                (Map<String, Object>) map.computeIfAbsent(type, k -> new HashMap<String, Object>());
         typeMap.put(id, config);
     }
 
-    private static void appendConfig(String type, String id, Object config, StringBuilder plainOutput, Map<String, Object> map, String[] args) {
+    private static void appendConfig(
+            String type, String id, Object config, StringBuilder plainOutput, Map<String, Object> map, String[] args) {
         if (!isMatch(type, id, args)) {
             return;
         }
 
-        plainOutput.append(type).append(": ")
-            .append(id)
-            .append("\n")
-            .append(config)
-            .append("\n\n");
+        plainOutput
+                .append(type)
+                .append(": ")
+                .append(id)
+                .append("\n")
+                .append(config)
+                .append("\n\n");
 
         map.put(type, config);
     }

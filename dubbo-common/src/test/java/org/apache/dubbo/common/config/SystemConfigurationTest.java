@@ -68,8 +68,7 @@ class SystemConfigurationTest {
      */
     @Test
     void testConvert() {
-        Assertions.assertEquals(
-            MOCK_STRING_VALUE, sysConfig.convert(String.class, NOT_EXIST_KEY, MOCK_STRING_VALUE));
+        Assertions.assertEquals(MOCK_STRING_VALUE, sysConfig.convert(String.class, NOT_EXIST_KEY, MOCK_STRING_VALUE));
         System.setProperty(MOCK_KEY, String.valueOf(MOCK_BOOL_VALUE));
         Assertions.assertEquals(MOCK_BOOL_VALUE, sysConfig.convert(Boolean.class, MOCK_KEY, null));
         System.setProperty(MOCK_KEY, String.valueOf(MOCK_STRING_VALUE));
@@ -113,5 +112,4 @@ class SystemConfigurationTest {
          */
         MockTwo
     }
-
 }

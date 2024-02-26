@@ -39,12 +39,22 @@ public class ServiceModel {
 
     private final ServiceMetadata serviceMetadata;
 
-    public ServiceModel(Object proxyObject, String serviceKey, ServiceDescriptor serviceModel, ModuleModel moduleModel, ClassLoader interfaceClassLoader) {
+    public ServiceModel(
+            Object proxyObject,
+            String serviceKey,
+            ServiceDescriptor serviceModel,
+            ModuleModel moduleModel,
+            ClassLoader interfaceClassLoader) {
         this(proxyObject, serviceKey, serviceModel, moduleModel, null, interfaceClassLoader);
     }
 
-    public ServiceModel(Object proxyObject, String serviceKey, ServiceDescriptor serviceModel, ModuleModel moduleModel, ServiceMetadata serviceMetadata,
-                        ClassLoader interfaceClassLoader) {
+    public ServiceModel(
+            Object proxyObject,
+            String serviceKey,
+            ServiceDescriptor serviceModel,
+            ModuleModel moduleModel,
+            ServiceMetadata serviceMetadata,
+            ClassLoader interfaceClassLoader) {
         this.proxyObject = proxyObject;
         this.serviceKey = serviceKey;
         this.serviceModel = serviceModel;
@@ -185,11 +195,26 @@ public class ServiceModel {
             return false;
         }
         ServiceModel that = (ServiceModel) o;
-        return Objects.equals(serviceKey, that.serviceKey) && Objects.equals(proxyObject, that.proxyObject) && Objects.equals(destroyRunner, that.destroyRunner) && Objects.equals(classLoader, that.classLoader) && Objects.equals(interfaceClassLoader, that.interfaceClassLoader) && Objects.equals(moduleModel, that.moduleModel) && Objects.equals(serviceModel, that.serviceModel) && Objects.equals(serviceMetadata, that.serviceMetadata);
+        return Objects.equals(serviceKey, that.serviceKey)
+                && Objects.equals(proxyObject, that.proxyObject)
+                && Objects.equals(destroyRunner, that.destroyRunner)
+                && Objects.equals(classLoader, that.classLoader)
+                && Objects.equals(interfaceClassLoader, that.interfaceClassLoader)
+                && Objects.equals(moduleModel, that.moduleModel)
+                && Objects.equals(serviceModel, that.serviceModel)
+                && Objects.equals(serviceMetadata, that.serviceMetadata);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(serviceKey, proxyObject, destroyRunner, classLoader, interfaceClassLoader, moduleModel, serviceModel, serviceMetadata);
+        return Objects.hash(
+                serviceKey,
+                proxyObject,
+                destroyRunner,
+                classLoader,
+                interfaceClassLoader,
+                moduleModel,
+                serviceModel,
+                serviceMetadata);
     }
 }

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.service;
 
 import org.junit.jupiter.api.Assertions;
@@ -25,14 +24,15 @@ class ServiceDescriptorInternalCacheTest {
     @Test
     void genericService() {
         Assertions.assertNotNull(ServiceDescriptorInternalCache.genericService());
-        Assertions.assertEquals(GenericService.class,
-            ServiceDescriptorInternalCache.genericService().getServiceInterfaceClass());
+        Assertions.assertEquals(
+                GenericService.class,
+                ServiceDescriptorInternalCache.genericService().getServiceInterfaceClass());
     }
 
     @Test
     void echoService() {
         Assertions.assertNotNull(ServiceDescriptorInternalCache.echoService());
-        Assertions.assertEquals(EchoService.class,
-            ServiceDescriptorInternalCache.echoService().getServiceInterfaceClass());
+        Assertions.assertEquals(
+                EchoService.class, ServiceDescriptorInternalCache.echoService().getServiceInterfaceClass());
     }
 }

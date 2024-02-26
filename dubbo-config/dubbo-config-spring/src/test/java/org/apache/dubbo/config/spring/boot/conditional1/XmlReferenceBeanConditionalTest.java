@@ -19,6 +19,8 @@ package org.apache.dubbo.config.spring.boot.conditional1;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.api.HelloService;
 
+import java.util.Map;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -32,30 +34,23 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.core.annotation.Order;
 
-import java.util.Map;
-
 /**
  * issue: https://github.com/apache/dubbo-spring-boot-project/issues/779
  */
 @SpringBootTest(
-        properties = {
-                "dubbo.registry.address=N/A"
-        },
-        classes = {
-                XmlReferenceBeanConditionalTest.class
-        }
-)
+        properties = {"dubbo.registry.address=N/A"},
+        classes = {XmlReferenceBeanConditionalTest.class})
 @Configuration
-//@ComponentScan
+// @ComponentScan
 class XmlReferenceBeanConditionalTest {
 
     @BeforeAll
-    public static void beforeAll(){
+    public static void beforeAll() {
         DubboBootstrap.reset();
     }
 
     @AfterAll
-    public static void afterAll(){
+    public static void afterAll() {
         DubboBootstrap.reset();
     }
 
@@ -74,18 +69,16 @@ class XmlReferenceBeanConditionalTest {
         Assertions.assertNull(helloServiceMap.get("myHelloService"));
     }
 
-    @Order(Integer.MAX_VALUE-2)
+    @Order(Integer.MAX_VALUE - 2)
     @Configuration
     @ImportResource("classpath:/org/apache/dubbo/config/spring/boot/conditional1/consumer/dubbo-consumer.xml")
-    public static class ConsumerConfiguration {
+    public static class ConsumerConfiguration {}
 
-    }
-
-    @Order(Integer.MAX_VALUE-1)
+    @Order(Integer.MAX_VALUE - 1)
     @Configuration
     public static class ConsumerConfiguration2 {
 
-        //TEST Conditional, this bean should be ignored
+        // TEST Conditional, this bean should be ignored
         @Bean
         @ConditionalOnMissingBean
         public HelloService myHelloService() {

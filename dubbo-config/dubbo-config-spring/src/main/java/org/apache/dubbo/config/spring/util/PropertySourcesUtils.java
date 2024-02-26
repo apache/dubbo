@@ -16,6 +16,11 @@
  */
 package org.apache.dubbo.config.spring.util;
 
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Properties;
+
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.EnumerablePropertySource;
 import org.springframework.core.env.MutablePropertySources;
@@ -23,11 +28,6 @@ import org.springframework.core.env.PropertyResolver;
 import org.springframework.core.env.PropertySource;
 import org.springframework.core.env.PropertySources;
 import org.springframework.core.env.PropertySourcesPropertyResolver;
-
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Properties;
 
 import static java.util.Collections.unmodifiableMap;
 
@@ -55,7 +55,6 @@ public abstract class PropertySourcesUtils {
         }
 
         return getSubProperties(mutablePropertySources, prefix);
-
     }
 
     /**
@@ -101,7 +100,8 @@ public abstract class PropertySourcesUtils {
      * @return Map
      * @see Properties
      */
-    public static Map<String, Object> getSubProperties(PropertySources propertySources, PropertyResolver propertyResolver, String prefix) {
+    public static Map<String, Object> getSubProperties(
+            PropertySources propertySources, PropertyResolver propertyResolver, String prefix) {
 
         Map<String, Object> subProperties = new LinkedHashMap<String, Object>();
 
@@ -136,8 +136,9 @@ public abstract class PropertySourcesUtils {
      * @return non-null
      */
     public static String[] getPropertyNames(PropertySource propertySource) {
-        String[] propertyNames = propertySource instanceof EnumerablePropertySource ?
-                ((EnumerablePropertySource) propertySource).getPropertyNames() : null;
+        String[] propertyNames = propertySource instanceof EnumerablePropertySource
+                ? ((EnumerablePropertySource) propertySource).getPropertyNames()
+                : null;
 
         if (propertyNames == null) {
             propertyNames = ObjectUtils.EMPTY_STRING_ARRAY;

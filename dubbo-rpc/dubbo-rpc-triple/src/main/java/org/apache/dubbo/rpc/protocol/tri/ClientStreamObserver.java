@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri;
-
 
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
@@ -32,5 +30,4 @@ public interface ClientStreamObserver<T> extends CallStreamObserver<T> {
     default void disableAutoRequest() {
         disableAutoFlowControl();
     }
-
 }

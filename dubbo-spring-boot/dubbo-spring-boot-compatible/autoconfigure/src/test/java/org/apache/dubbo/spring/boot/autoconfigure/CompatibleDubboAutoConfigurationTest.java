@@ -36,11 +36,9 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @see DubboAutoConfiguration
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {
-        CompatibleDubboAutoConfigurationTest.class
-}, properties = {
-        "dubbo.scan.base-packages = org.apache.dubbo.spring.boot.autoconfigure"
-})
+@SpringBootTest(
+        classes = {CompatibleDubboAutoConfigurationTest.class},
+        properties = {"dubbo.scan.base-packages = org.apache.dubbo.spring.boot.autoconfigure"})
 @EnableAutoConfiguration
 @PropertySource(value = "classpath:/META-INF/dubbo.properties")
 public class CompatibleDubboAutoConfigurationTest {
@@ -56,7 +54,8 @@ public class CompatibleDubboAutoConfigurationTest {
         Assert.assertNotNull(serviceAnnotationPostProcessor);
         Assert.assertNotNull(serviceAnnotationPostProcessor.getIfAvailable());
 
-        ReferenceAnnotationBeanPostProcessor referenceAnnotationBeanPostProcessor =  DubboBeanUtils.getReferenceAnnotationBeanPostProcessor(applicationContext);
+        ReferenceAnnotationBeanPostProcessor referenceAnnotationBeanPostProcessor =
+                DubboBeanUtils.getReferenceAnnotationBeanPostProcessor(applicationContext);
         Assert.assertNotNull(referenceAnnotationBeanPostProcessor);
     }
 }

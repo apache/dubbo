@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.utils;
 
 /**
@@ -22,8 +21,7 @@ package org.apache.dubbo.common.utils;
  */
 public final class ArrayUtils {
 
-    private ArrayUtils() {
-    }
+    private ArrayUtils() {}
 
     /**
      * <p>Checks if the array is null or empty. <p/>

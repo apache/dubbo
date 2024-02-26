@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.collector;
 
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
@@ -33,4 +32,3 @@ public interface MethodMetricsCollector<E extends TimeCounterEvent> extends Metr
 
     void init(Invocation invocation, MetricsKeyWrapper wrapper);
 }
-

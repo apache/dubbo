@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
 
 import org.apache.dubbo.rpc.Invocation;
@@ -22,7 +21,6 @@ import org.apache.dubbo.rpc.cluster.router.mesh.util.TracingContextProvider;
 
 import java.util.Map;
 import java.util.Set;
-
 
 public class DubboAttachmentMatch {
     private Map<String, StringMatch> tracingContext;
@@ -49,7 +47,7 @@ public class DubboAttachmentMatch {
         if (dubboContext != null) {
             for (Map.Entry<String, StringMatch> entry : dubboContext.entrySet()) {
                 String key = entry.getKey();
-                if(!entry.getValue().isMatch(invocation.getAttachment(key))) {
+                if (!entry.getValue().isMatch(invocation.getAttachment(key))) {
                     return false;
                 }
             }

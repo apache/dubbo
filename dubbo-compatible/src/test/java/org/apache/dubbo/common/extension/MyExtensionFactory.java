@@ -29,7 +29,7 @@ public class MyExtensionFactory implements ExtensionFactory {
     }
 
     public static class InjectObject {
-        
+
         private final String name;
 
         public InjectObject(final String name) {

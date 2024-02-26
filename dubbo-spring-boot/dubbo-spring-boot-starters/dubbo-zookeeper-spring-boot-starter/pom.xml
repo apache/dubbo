@@ -15,34 +15,31 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-spring-boot-starters</artifactId>
-        <version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
-
-    <artifactId>dubbo-zookeeper-spring-boot-starter</artifactId>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.dubbo</groupId>
+    <artifactId>dubbo-spring-boot-starters</artifactId>
     <version>${revision}</version>
-    <packaging>jar</packaging>
-    <description>Apache Dubbo Zookeeper Spring Boot Starter</description>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
 
-    <properties>
-    </properties>
+  <artifactId>dubbo-zookeeper-spring-boot-starter</artifactId>
+  <version>${revision}</version>
+  <packaging>jar</packaging>
+  <description>Apache Dubbo Zookeeper Spring Boot Starter</description>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.apache.curator</groupId>
-            <artifactId>curator-x-discovery</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.zookeeper</groupId>
-            <artifactId>zookeeper</artifactId>
-        </dependency>
-    </dependencies>
+  <properties />
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.curator</groupId>
+      <artifactId>curator-x-discovery</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.zookeeper</groupId>
+      <artifactId>zookeeper</artifactId>
+    </dependency>
+  </dependencies>
 
 </project>

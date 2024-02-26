@@ -20,6 +20,7 @@ import org.apache.dubbo.common.utils.CharSequenceComparator;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+
 import java.util.Comparator;
 import java.util.List;
 
@@ -36,10 +37,9 @@ import java.util.List;
  */
 public class ExecutableElementComparator implements Comparator<ExecutableElement> {
 
-    public final static ExecutableElementComparator INSTANCE = new ExecutableElementComparator();
+    public static final ExecutableElementComparator INSTANCE = new ExecutableElementComparator();
 
-    private ExecutableElementComparator() {
-    }
+    private ExecutableElementComparator() {}
 
     @Override
     public int compare(ExecutableElement e1, ExecutableElement e2) {
@@ -60,7 +60,8 @@ public class ExecutableElementComparator implements Comparator<ExecutableElement
 
             if (value == 0) { // Step 3
                 for (int i = 0; i < ps1.size(); i++) {
-                    value = CharSequenceComparator.INSTANCE.compare(ps1.get(i).getSimpleName(), ps2.get(i).getSimpleName());
+                    value = CharSequenceComparator.INSTANCE.compare(
+                            ps1.get(i).getSimpleName(), ps2.get(i).getSimpleName());
                     if (value != 0) {
                         break;
                     }

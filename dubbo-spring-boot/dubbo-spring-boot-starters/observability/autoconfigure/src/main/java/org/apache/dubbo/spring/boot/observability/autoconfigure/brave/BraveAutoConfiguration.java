@@ -23,6 +23,10 @@ import org.apache.dubbo.spring.boot.observability.autoconfigure.DubboMicrometerT
 import org.apache.dubbo.spring.boot.observability.autoconfigure.ObservabilityUtils;
 import org.apache.dubbo.spring.boot.observability.autoconfigure.annotation.ConditionalOnDubboTracingEnable;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -34,21 +38,28 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
+import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_PREFIX;
 
 /**
  * provider Brave when you are using Boot <3.0 or you are not using spring-boot-starter-actuator
  */
-@AutoConfiguration(before = DubboMicrometerTracingAutoConfiguration.class, afterName = "org.springframework.boot.actuate.autoconfigure.tracing.BraveAutoConfiguration")
-@ConditionalOnClass(name = {"io.micrometer.tracing.Tracer", "io.micrometer.tracing.brave.bridge.BraveTracer", "io.micrometer.tracing.brave.bridge.BraveBaggageManager", "brave.Tracing"})
+@ConditionalOnProperty(prefix = DUBBO_PREFIX, name = "enabled", matchIfMissing = true)
+@AutoConfiguration(
+        before = DubboMicrometerTracingAutoConfiguration.class,
+        afterName = "org.springframework.boot.actuate.autoconfigure.tracing.BraveAutoConfiguration")
+@ConditionalOnClass(
+        name = {
+            "io.micrometer.tracing.Tracer",
+            "io.micrometer.tracing.brave.bridge.BraveTracer",
+            "io.micrometer.tracing.brave.bridge.BraveBaggageManager",
+            "brave.Tracing"
+        })
 @EnableConfigurationProperties(DubboConfigurationProperties.class)
 @ConditionalOnDubboTracingEnable
 public class BraveAutoConfiguration {
 
-    private static final io.micrometer.tracing.brave.bridge.BraveBaggageManager BRAVE_BAGGAGE_MANAGER = new io.micrometer.tracing.brave.bridge.BraveBaggageManager();
+    private static final io.micrometer.tracing.brave.bridge.BraveBaggageManager BRAVE_BAGGAGE_MANAGER =
+            new io.micrometer.tracing.brave.bridge.BraveBaggageManager();
 
     /**
      * Default value for application name if {@code spring.application.name} is not set.
@@ -64,23 +75,36 @@ public class BraveAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @Order(Ordered.HIGHEST_PRECEDENCE)
-    io.micrometer.tracing.brave.bridge.CompositeSpanHandler compositeSpanHandler(ObjectProvider<io.micrometer.tracing.exporter.SpanExportingPredicate> predicates,
-                                                                                 ObjectProvider<io.micrometer.tracing.exporter.SpanReporter> reporters, ObjectProvider<io.micrometer.tracing.exporter.SpanFilter> filters) {
-        return new io.micrometer.tracing.brave.bridge.CompositeSpanHandler(predicates.orderedStream().collect(Collectors.toList()),
+    io.micrometer.tracing.brave.bridge.CompositeSpanHandler compositeSpanHandler(
+            ObjectProvider<io.micrometer.tracing.exporter.SpanExportingPredicate> predicates,
+            ObjectProvider<io.micrometer.tracing.exporter.SpanReporter> reporters,
+            ObjectProvider<io.micrometer.tracing.exporter.SpanFilter> filters) {
+        return new io.micrometer.tracing.brave.bridge.CompositeSpanHandler(
+                predicates.orderedStream().collect(Collectors.toList()),
                 reporters.orderedStream().collect(Collectors.toList()),
                 filters.orderedStream().collect(Collectors.toList()));
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public brave.Tracing braveTracing(List<brave.handler.SpanHandler> spanHandlers,
-                                      List<brave.TracingCustomizer> tracingCustomizers, brave.propagation.CurrentTraceContext currentTraceContext,
-                                      brave.propagation.Propagation.Factory propagationFactory, brave.sampler.Sampler sampler) {
-        String applicationName = moduleModel.getApplicationModel().getApplicationConfigManager().getApplication()
+    public brave.Tracing braveTracing(
+            List<brave.handler.SpanHandler> spanHandlers,
+            List<brave.TracingCustomizer> tracingCustomizers,
+            brave.propagation.CurrentTraceContext currentTraceContext,
+            brave.propagation.Propagation.Factory propagationFactory,
+            brave.sampler.Sampler sampler) {
+        String applicationName = moduleModel
+                .getApplicationModel()
+                .getApplicationConfigManager()
+                .getApplication()
                 .map(ApplicationConfig::getName)
                 .orElse(DEFAULT_APPLICATION_NAME);
-        brave.Tracing.Builder builder = brave.Tracing.newBuilder().currentTraceContext(currentTraceContext).traceId128Bit(true)
-                .supportsJoin(false).propagationFactory(propagationFactory).sampler(sampler)
+        brave.Tracing.Builder builder = brave.Tracing.newBuilder()
+                .currentTraceContext(currentTraceContext)
+                .traceId128Bit(true)
+                .supportsJoin(false)
+                .propagationFactory(propagationFactory)
+                .sampler(sampler)
                 .localServiceName(applicationName);
         spanHandlers.forEach(builder::addSpanHandler);
         for (brave.TracingCustomizer tracingCustomizer : tracingCustomizers) {
@@ -97,11 +121,14 @@ public class BraveAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public brave.propagation.CurrentTraceContext braveCurrentTraceContext(List<brave.propagation.CurrentTraceContext.ScopeDecorator> scopeDecorators,
-                                                                          List<brave.propagation.CurrentTraceContextCustomizer> currentTraceContextCustomizers) {
-        brave.propagation.ThreadLocalCurrentTraceContext.Builder builder = brave.propagation.ThreadLocalCurrentTraceContext.newBuilder();
+    public brave.propagation.CurrentTraceContext braveCurrentTraceContext(
+            List<brave.propagation.CurrentTraceContext.ScopeDecorator> scopeDecorators,
+            List<brave.propagation.CurrentTraceContextCustomizer> currentTraceContextCustomizers) {
+        brave.propagation.ThreadLocalCurrentTraceContext.Builder builder =
+                brave.propagation.ThreadLocalCurrentTraceContext.newBuilder();
         scopeDecorators.forEach(builder::addScopeDecorator);
-        for (brave.propagation.CurrentTraceContextCustomizer currentTraceContextCustomizer : currentTraceContextCustomizers) {
+        for (brave.propagation.CurrentTraceContextCustomizer currentTraceContextCustomizer :
+                currentTraceContextCustomizers) {
             currentTraceContextCustomizer.customize(builder);
         }
         return builder.build();
@@ -110,13 +137,18 @@ public class BraveAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public brave.sampler.Sampler braveSampler(DubboConfigurationProperties properties) {
-        return brave.sampler.Sampler.create(properties.getTracing().getSampling().getProbability());
+        return brave.sampler.Sampler.create(
+                properties.getTracing().getSampling().getProbability());
     }
 
     @Bean
     @ConditionalOnMissingBean(io.micrometer.tracing.Tracer.class)
-    io.micrometer.tracing.brave.bridge.BraveTracer braveTracerBridge(brave.Tracer tracer, brave.propagation.CurrentTraceContext currentTraceContext) {
-        return new io.micrometer.tracing.brave.bridge.BraveTracer(tracer, new io.micrometer.tracing.brave.bridge.BraveCurrentTraceContext(currentTraceContext), BRAVE_BAGGAGE_MANAGER);
+    io.micrometer.tracing.brave.bridge.BraveTracer braveTracerBridge(
+            brave.Tracer tracer, brave.propagation.CurrentTraceContext currentTraceContext) {
+        return new io.micrometer.tracing.brave.bridge.BraveTracer(
+                tracer,
+                new io.micrometer.tracing.brave.bridge.BraveCurrentTraceContext(currentTraceContext),
+                BRAVE_BAGGAGE_MANAGER);
     }
 
     @Bean
@@ -147,14 +179,15 @@ public class BraveAutoConfiguration {
             String type = tracing.getTracing().getPropagation().getType();
             switch (type) {
                 case org.apache.dubbo.config.nested.PropagationConfig.B3:
-                    return brave.propagation.B3Propagation.newFactoryBuilder().injectFormat(brave.propagation.B3Propagation.Format.SINGLE_NO_PARENT).build();
+                    return brave.propagation.B3Propagation.newFactoryBuilder()
+                            .injectFormat(brave.propagation.B3Propagation.Format.SINGLE_NO_PARENT)
+                            .build();
                 case org.apache.dubbo.config.nested.PropagationConfig.W3C:
                     return new io.micrometer.tracing.brave.bridge.W3CPropagation();
                 default:
                     throw new IllegalArgumentException("UnSupport propagation type");
             }
         }
-
     }
 
     @ConditionalOnProperty(value = ObservabilityUtils.DUBBO_TRACING_BAGGAGE_ENABLED, matchIfMissing = true)
@@ -168,25 +201,36 @@ public class BraveAutoConfiguration {
 
         @Bean
         @ConditionalOnMissingBean
-        @ConditionalOnProperty(prefix = ObservabilityUtils.DUBBO_TRACING_PROPAGATION, value = "type", havingValue = "B3")
+        @ConditionalOnProperty(
+                prefix = ObservabilityUtils.DUBBO_TRACING_PROPAGATION,
+                value = "type",
+                havingValue = "B3")
         brave.baggage.BaggagePropagation.FactoryBuilder b3PropagationFactoryBuilder(
                 ObjectProvider<brave.baggage.BaggagePropagationCustomizer> baggagePropagationCustomizers) {
-            brave.propagation.Propagation.Factory delegate =
-                    brave.propagation.B3Propagation.newFactoryBuilder().injectFormat(brave.propagation.B3Propagation.Format.SINGLE_NO_PARENT).build();
+            brave.propagation.Propagation.Factory delegate = brave.propagation.B3Propagation.newFactoryBuilder()
+                    .injectFormat(brave.propagation.B3Propagation.Format.SINGLE_NO_PARENT)
+                    .build();
 
-            brave.baggage.BaggagePropagation.FactoryBuilder builder = brave.baggage.BaggagePropagation.newFactoryBuilder(delegate);
+            brave.baggage.BaggagePropagation.FactoryBuilder builder =
+                    brave.baggage.BaggagePropagation.newFactoryBuilder(delegate);
             baggagePropagationCustomizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
             return builder;
         }
 
         @Bean
         @ConditionalOnMissingBean
-        @ConditionalOnProperty(prefix = ObservabilityUtils.DUBBO_TRACING_PROPAGATION, value = "type", havingValue = "W3C", matchIfMissing = true)
+        @ConditionalOnProperty(
+                prefix = ObservabilityUtils.DUBBO_TRACING_PROPAGATION,
+                value = "type",
+                havingValue = "W3C",
+                matchIfMissing = true)
         brave.baggage.BaggagePropagation.FactoryBuilder w3cPropagationFactoryBuilder(
                 ObjectProvider<brave.baggage.BaggagePropagationCustomizer> baggagePropagationCustomizers) {
-            brave.propagation.Propagation.Factory delegate = new io.micrometer.tracing.brave.bridge.W3CPropagation(BRAVE_BAGGAGE_MANAGER, Collections.emptyList());
+            brave.propagation.Propagation.Factory delegate = new io.micrometer.tracing.brave.bridge.W3CPropagation(
+                    BRAVE_BAGGAGE_MANAGER, Collections.emptyList());
 
-            brave.baggage.BaggagePropagation.FactoryBuilder builder = brave.baggage.BaggagePropagation.newFactoryBuilder(delegate);
+            brave.baggage.BaggagePropagation.FactoryBuilder builder =
+                    brave.baggage.BaggagePropagation.newFactoryBuilder(delegate);
             baggagePropagationCustomizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
             return builder;
         }
@@ -196,16 +240,19 @@ public class BraveAutoConfiguration {
         @Order(0)
         brave.baggage.BaggagePropagationCustomizer remoteFieldsBaggagePropagationCustomizer() {
             return (builder) -> {
-                List<String> remoteFields = dubboConfigProperties.getTracing().getBaggage().getRemoteFields();
+                List<String> remoteFields =
+                        dubboConfigProperties.getTracing().getBaggage().getRemoteFields();
                 for (String fieldName : remoteFields) {
-                    builder.add(brave.baggage.BaggagePropagationConfig.SingleBaggageField.remote(brave.baggage.BaggageField.create(fieldName)));
+                    builder.add(brave.baggage.BaggagePropagationConfig.SingleBaggageField.remote(
+                            brave.baggage.BaggageField.create(fieldName)));
                 }
             };
         }
 
         @Bean
         @ConditionalOnMissingBean
-        brave.propagation.Propagation.Factory propagationFactory(brave.baggage.BaggagePropagation.FactoryBuilder factoryBuilder) {
+        brave.propagation.Propagation.Factory propagationFactory(
+                brave.baggage.BaggagePropagation.FactoryBuilder factoryBuilder) {
             return factoryBuilder.build();
         }
 
@@ -213,31 +260,39 @@ public class BraveAutoConfiguration {
         @ConditionalOnMissingBean
         brave.baggage.CorrelationScopeDecorator.Builder mdcCorrelationScopeDecoratorBuilder(
                 ObjectProvider<brave.baggage.CorrelationScopeCustomizer> correlationScopeCustomizers) {
-            brave.baggage.CorrelationScopeDecorator.Builder builder = brave.context.slf4j.MDCScopeDecorator.newBuilder();
+            brave.baggage.CorrelationScopeDecorator.Builder builder =
+                    brave.context.slf4j.MDCScopeDecorator.newBuilder();
             correlationScopeCustomizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
             return builder;
         }
 
         @Bean
         @Order(0)
-        @ConditionalOnProperty(prefix = ObservabilityUtils.DUBBO_TRACING_BAGGAGE_CORRELATION, name = "enabled",
+        @ConditionalOnProperty(
+                prefix = ObservabilityUtils.DUBBO_TRACING_BAGGAGE_CORRELATION,
+                name = "enabled",
                 matchIfMissing = true)
         brave.baggage.CorrelationScopeCustomizer correlationFieldsCorrelationScopeCustomizer() {
             return (builder) -> {
-                List<String> correlationFields = this.dubboConfigProperties.getTracing().getBaggage().getCorrelation().getFields();
+                List<String> correlationFields = this.dubboConfigProperties
+                        .getTracing()
+                        .getBaggage()
+                        .getCorrelation()
+                        .getFields();
                 for (String field : correlationFields) {
-                    builder.add(brave.baggage.CorrelationScopeConfig.SingleCorrelationField.newBuilder(brave.baggage.BaggageField.create(field))
-                            .flushOnUpdate().build());
+                    builder.add(brave.baggage.CorrelationScopeConfig.SingleCorrelationField.newBuilder(
+                                    brave.baggage.BaggageField.create(field))
+                            .flushOnUpdate()
+                            .build());
                 }
             };
         }
 
         @Bean
         @ConditionalOnMissingBean(brave.propagation.CurrentTraceContext.ScopeDecorator.class)
-        brave.propagation.CurrentTraceContext.ScopeDecorator correlationScopeDecorator(brave.baggage.CorrelationScopeDecorator.Builder builder) {
+        brave.propagation.CurrentTraceContext.ScopeDecorator correlationScopeDecorator(
+                brave.baggage.CorrelationScopeDecorator.Builder builder) {
             return builder.build();
         }
-
     }
-
 }

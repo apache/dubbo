@@ -20,9 +20,7 @@ import org.apache.dubbo.rpc.protocol.rest.User;
 
 import java.util.Map;
 
-
 public class AnotherUserRestServiceImpl implements AnotherUserRestService {
-
 
     @Override
     public User getUser(Long id) {
@@ -57,6 +55,4 @@ public class AnotherUserRestServiceImpl implements AnotherUserRestService {
     public String headerMap(Map<String, String> headers) {
         return headers.get("headers");
     }
-
-
 }

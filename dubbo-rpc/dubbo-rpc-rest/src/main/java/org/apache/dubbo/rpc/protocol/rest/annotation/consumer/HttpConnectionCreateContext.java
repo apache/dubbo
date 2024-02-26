@@ -30,14 +30,11 @@ public class HttpConnectionCreateContext {
     private Invocation invocation;
     private URL url;
 
-    public HttpConnectionCreateContext() {
-    }
-
+    public HttpConnectionCreateContext() {}
 
     public void setRequestTemplate(RequestTemplate requestTemplate) {
         this.requestTemplate = requestTemplate;
     }
-
 
     public RequestTemplate getRequestTemplate() {
         return requestTemplate;

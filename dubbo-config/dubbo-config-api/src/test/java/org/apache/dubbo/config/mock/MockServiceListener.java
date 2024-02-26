@@ -37,8 +37,7 @@ public class MockServiceListener implements ServiceListener {
     }
 
     @Override
-    public void unexported(ServiceConfig sc) {
-    }
+    public void unexported(ServiceConfig sc) {}
 
     public Map<String, ServiceConfig> getExportedServices() {
         return exportedServices;

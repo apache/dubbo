@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.report;
 
 /**
@@ -28,10 +27,10 @@ public interface MetricsReporter {
      */
     void init();
 
-    void refreshData();
+    void resetIfSamplesChanged();
 
     String getResponse();
-    
+
     default String getResponseWithName(String metricsName) {
         return null;
     }

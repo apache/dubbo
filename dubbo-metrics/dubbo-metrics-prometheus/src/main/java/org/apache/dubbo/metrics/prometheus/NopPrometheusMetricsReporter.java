@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.prometheus;
 
 import org.apache.dubbo.metrics.report.MetricsReporter;
@@ -26,14 +25,10 @@ import org.apache.dubbo.metrics.report.MetricsReporter;
 public class NopPrometheusMetricsReporter implements MetricsReporter {
 
     @Override
-    public void init() {
-
-    }
+    public void init() {}
 
     @Override
-    public void refreshData() {
-
-    }
+    public void resetIfSamplesChanged() {}
 
     @Override
     public String getResponse() {

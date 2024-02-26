@@ -31,27 +31,22 @@ public class ExporterDeployListener implements ApplicationDeployListener, Priori
     protected volatile ConfigurableMetadataServiceExporter metadataServiceExporter;
 
     @Override
-    public void onInitialize(ApplicationModel scopeModel) {
-
-    }
+    public void onInitialize(ApplicationModel scopeModel) {}
 
     @Override
-    public void onStarting(ApplicationModel scopeModel) {
-
-    }
+    public void onStarting(ApplicationModel scopeModel) {}
 
     @Override
-    public synchronized void onStarted(ApplicationModel applicationModel) {
-
-    }
+    public synchronized void onStarted(ApplicationModel applicationModel) {}
 
     @Override
-    public synchronized void onStopping(ApplicationModel scopeModel) {
-
-    }
+    public synchronized void onStopping(ApplicationModel scopeModel) {}
 
     private String getMetadataType(ApplicationModel applicationModel) {
-        String type = applicationModel.getApplicationConfigManager().getApplicationOrElseThrow().getMetadataType();
+        String type = applicationModel
+                .getApplicationConfigManager()
+                .getApplicationOrElseThrow()
+                .getMetadataType();
         if (StringUtils.isEmpty(type)) {
             type = DEFAULT_METADATA_STORAGE_TYPE;
         }
@@ -59,7 +54,10 @@ public class ExporterDeployListener implements ApplicationDeployListener, Priori
     }
 
     private String getRegisterMode(ApplicationModel applicationModel) {
-        String type = applicationModel.getApplicationConfigManager().getApplicationOrElseThrow().getRegisterMode();
+        String type = applicationModel
+                .getApplicationConfigManager()
+                .getApplicationOrElseThrow()
+                .getRegisterMode();
         if (StringUtils.isEmpty(type)) {
             type = DEFAULT_REGISTER_MODE;
         }
@@ -77,16 +75,17 @@ public class ExporterDeployListener implements ApplicationDeployListener, Priori
     @Override
     public synchronized void onModuleStarted(ApplicationModel applicationModel) {
         // start metadata service exporter
-        MetadataServiceDelegation metadataService = applicationModel.getBeanFactory().getOrRegisterBean(MetadataServiceDelegation.class);
+        MetadataServiceDelegation metadataService =
+                applicationModel.getBeanFactory().getOrRegisterBean(MetadataServiceDelegation.class);
         if (metadataServiceExporter == null) {
             metadataServiceExporter = new ConfigurableMetadataServiceExporter(applicationModel, metadataService);
             // fixme, let's disable local metadata service export at this moment
-            if (!REMOTE_METADATA_STORAGE_TYPE.equals(getMetadataType(applicationModel)) && !INTERFACE_REGISTER_MODE.equals(getRegisterMode(applicationModel))) {
+            if (!REMOTE_METADATA_STORAGE_TYPE.equals(getMetadataType(applicationModel))
+                    && !INTERFACE_REGISTER_MODE.equals(getRegisterMode(applicationModel))) {
                 metadataServiceExporter.export();
             }
         }
     }
-
 
     @Override
     public synchronized void onStopped(ApplicationModel scopeModel) {
@@ -100,9 +99,7 @@ public class ExporterDeployListener implements ApplicationDeployListener, Priori
     }
 
     @Override
-    public void onFailure(ApplicationModel scopeModel, Throwable cause) {
-
-    }
+    public void onFailure(ApplicationModel scopeModel, Throwable cause) {}
 
     @Override
     public int getPriority() {

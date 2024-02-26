@@ -30,7 +30,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.CALLBACK;
  */
 @Activate(group = CALLBACK, order = Integer.MIN_VALUE)
 public class CallbackConsumerContextFilter extends ConsumerContextFilter implements Filter {
-    
+
     public CallbackConsumerContextFilter(ApplicationModel applicationModel) {
         super(applicationModel);
     }

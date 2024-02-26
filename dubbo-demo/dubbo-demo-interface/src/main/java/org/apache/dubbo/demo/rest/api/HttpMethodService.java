@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.demo.rest.api;
 
-
-import io.swagger.jaxrs.PATCH;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -28,6 +25,8 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
+
+import io.swagger.jaxrs.PATCH;
 
 @Path("/demoService")
 public interface HttpMethodService {
@@ -66,6 +65,4 @@ public interface HttpMethodService {
     @Path("/sayOptions")
     @Consumes({javax.ws.rs.core.MediaType.TEXT_PLAIN})
     String sayHelloOptions(@QueryParam("name") String hello);
-
 }
-

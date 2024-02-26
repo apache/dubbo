@@ -27,14 +27,12 @@ public class SubscriberMetadataIdentifier extends BaseApplicationMetadataIdentif
 
     private String revision;
 
-    public SubscriberMetadataIdentifier() {
-    }
+    public SubscriberMetadataIdentifier() {}
 
     public SubscriberMetadataIdentifier(String application, String revision) {
         this.application = application;
         this.revision = revision;
     }
-
 
     public SubscriberMetadataIdentifier(URL url) {
         this.application = url.getApplication("");
@@ -64,6 +62,4 @@ public class SubscriberMetadataIdentifier extends BaseApplicationMetadataIdentif
     public void setRevision(String revision) {
         this.revision = revision;
     }
-
-
 }

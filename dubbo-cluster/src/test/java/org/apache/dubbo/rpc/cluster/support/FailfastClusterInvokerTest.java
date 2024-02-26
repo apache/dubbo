@@ -25,12 +25,12 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.Directory;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -54,7 +54,6 @@ class FailfastClusterInvokerTest {
     /**
      * @throws java.lang.Exception
      */
-
     @BeforeEach
     public void setUp() throws Exception {
 
@@ -141,5 +140,4 @@ class FailfastClusterInvokerTest {
             assertFalse(expected.getCause() instanceof RpcException);
         }
     }
-
 }

@@ -19,10 +19,6 @@ package org.apache.dubbo.rpc.cluster.merger;
 import org.apache.dubbo.rpc.cluster.Merger;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,9 +31,13 @@ import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 class ResultMergerTest {
     private MergerFactory mergerFactory;
-    
+
     @BeforeEach
     public void setup() {
         mergerFactory = new MergerFactory();
@@ -242,25 +242,31 @@ class ResultMergerTest {
      */
     @Test
     void testListMerger() {
-        List<Object> list1 = new ArrayList<Object>() {{
-            add(null);
-            add("1");
-            add("2");
-        }};
-        List<Object> list2 = new ArrayList<Object>() {{
-            add("3");
-            add("4");
-        }};
+        List<Object> list1 = new ArrayList<Object>() {
+            {
+                add(null);
+                add("1");
+                add("2");
+            }
+        };
+        List<Object> list2 = new ArrayList<Object>() {
+            {
+                add("3");
+                add("4");
+            }
+        };
 
         List result = mergerFactory.getMerger(List.class).merge(list1, list2, null);
         Assertions.assertEquals(5, result.size());
-        ArrayList<String> expected = new ArrayList<String>() {{
-            add(null);
-            add("1");
-            add("2");
-            add("3");
-            add("4");
-        }};
+        ArrayList<String> expected = new ArrayList<String>() {
+            {
+                add(null);
+                add("1");
+                add("2");
+                add("3");
+                add("4");
+            }
+        };
         Assertions.assertEquals(expected, result);
 
         result = mergerFactory.getMerger(List.class).merge(null);
@@ -275,22 +281,28 @@ class ResultMergerTest {
      */
     @Test
     void testMapArrayMerger() {
-        Map<Object, Object> mapOne = new HashMap<Object, Object>() {{
-            put("11", 222);
-            put("223", 11);
-        }};
-        Map<Object, Object> mapTwo = new HashMap<Object, Object>() {{
-            put("3333", 3232);
-            put("444", 2323);
-        }};
+        Map<Object, Object> mapOne = new HashMap<Object, Object>() {
+            {
+                put("11", 222);
+                put("223", 11);
+            }
+        };
+        Map<Object, Object> mapTwo = new HashMap<Object, Object>() {
+            {
+                put("3333", 3232);
+                put("444", 2323);
+            }
+        };
         Map<Object, Object> result = mergerFactory.getMerger(Map.class).merge(mapOne, mapTwo, null);
         Assertions.assertEquals(4, result.size());
-        Map<String, Integer> mergedResult = new HashMap<String, Integer>() {{
-            put("11", 222);
-            put("223", 11);
-            put("3333", 3232);
-            put("444", 2323);
-        }};
+        Map<String, Integer> mergedResult = new HashMap<String, Integer>() {
+            {
+                put("11", 222);
+                put("223", 11);
+                put("3333", 3232);
+                put("444", 2323);
+            }
+        };
         Assertions.assertEquals(mergedResult, result);
 
         result = mergerFactory.getMerger(Map.class).merge(null);
@@ -326,28 +338,34 @@ class ResultMergerTest {
      */
     @Test
     void testSetMerger() {
-        Set<Object> set1 = new HashSet<Object>() {{
-            add(null);
-            add("1");
-            add("2");
-        }};
-
-        Set<Object> set2 = new HashSet<Object>() {{
-            add("2");
-            add("3");
-        }};
-
-        Set result = mergerFactory.getMerger(Set.class).merge(set1, set2, null);
-
-        Assertions.assertEquals(4, result.size());
-        Assertions.assertEquals(new HashSet<String>() {
+        Set<Object> set1 = new HashSet<Object>() {
             {
                 add(null);
                 add("1");
                 add("2");
+            }
+        };
+
+        Set<Object> set2 = new HashSet<Object>() {
+            {
+                add("2");
                 add("3");
             }
-        }, result);
+        };
+
+        Set result = mergerFactory.getMerger(Set.class).merge(set1, set2, null);
+
+        Assertions.assertEquals(4, result.size());
+        Assertions.assertEquals(
+                new HashSet<String>() {
+                    {
+                        add(null);
+                        add("1");
+                        add("2");
+                        add("3");
+                    }
+                },
+                result);
 
         result = mergerFactory.getMerger(Set.class).merge(null);
         Assertions.assertEquals(0, result.size());
@@ -386,7 +404,7 @@ class ResultMergerTest {
         Merger<Integer> merger = ApplicationModel.defaultModel().getExtension(Merger.class, "intsum");
         Assertions.assertEquals(5050, merger.merge(intArr));
 
-        intArr = new Integer[]{};
+        intArr = new Integer[] {};
         Assertions.assertEquals(0, merger.merge(intArr));
     }
 
@@ -395,11 +413,12 @@ class ResultMergerTest {
      */
     @Test
     void testDoubleSumMerger() {
-        Double[] doubleArr = DoubleStream.iterate(1, v -> ++v).limit(100).boxed().toArray(Double[]::new);
+        Double[] doubleArr =
+                DoubleStream.iterate(1, v -> ++v).limit(100).boxed().toArray(Double[]::new);
         Merger<Double> merger = ApplicationModel.defaultModel().getExtension(Merger.class, "doublesum");
         Assertions.assertEquals(5050, merger.merge(doubleArr));
 
-        doubleArr = new Double[]{};
+        doubleArr = new Double[] {};
         Assertions.assertEquals(0, merger.merge(doubleArr));
     }
 
@@ -412,7 +431,7 @@ class ResultMergerTest {
         Merger<Float> merger = ApplicationModel.defaultModel().getExtension(Merger.class, "floatsum");
         Assertions.assertEquals(5050, merger.merge(floatArr));
 
-        floatArr = new Float[]{};
+        floatArr = new Float[] {};
         Assertions.assertEquals(0, merger.merge(floatArr));
     }
 
@@ -425,7 +444,7 @@ class ResultMergerTest {
         Merger<Long> merger = ApplicationModel.defaultModel().getExtension(Merger.class, "longsum");
         Assertions.assertEquals(5050, merger.merge(longArr));
 
-        longArr = new Long[]{};
+        longArr = new Long[] {};
         Assertions.assertEquals(0, merger.merge(longArr));
     }
 
@@ -438,7 +457,7 @@ class ResultMergerTest {
         Merger<Integer> merger = ApplicationModel.defaultModel().getExtension(Merger.class, "intany");
         Assertions.assertNotNull(merger.merge(intArr));
 
-        intArr = new Integer[]{};
+        intArr = new Integer[] {};
         Assertions.assertNull(merger.merge(intArr));
     }
 
@@ -451,7 +470,7 @@ class ResultMergerTest {
         Merger<Integer> merger = ApplicationModel.defaultModel().getExtension(Merger.class, "intfirst");
         Assertions.assertEquals(1, merger.merge(intArr));
 
-        intArr = new Integer[]{};
+        intArr = new Integer[] {};
         Assertions.assertNull(merger.merge(intArr));
     }
 }

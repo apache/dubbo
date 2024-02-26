@@ -30,5 +30,4 @@ public class BroadcastCluster extends AbstractCluster {
     public <T> AbstractClusterInvoker<T> doJoin(Directory<T> directory) throws RpcException {
         return new BroadcastClusterInvoker<>(directory);
     }
-
 }

@@ -19,13 +19,14 @@ package org.apache.dubbo.remoting.transport;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class ChannelHandlerDispatcherTest {
 
@@ -55,7 +56,6 @@ class ChannelHandlerDispatcherTest {
 
         channelHandlerDispatcher = channelHandlerDispatcher.removeChannelHandler(channelHandler1);
         Assertions.assertFalse(channelHandlerDispatcher.getChannelHandlers().contains(channelHandler1));
-
     }
 
     @Test
@@ -63,18 +63,23 @@ class ChannelHandlerDispatcherTest {
         ChannelHandlerDispatcher channelHandlerDispatcher = new ChannelHandlerDispatcher(null, null);
         Assertions.assertEquals(0, channelHandlerDispatcher.getChannelHandlers().size());
         ChannelHandlerDispatcher channelHandlerDispatcher1 = new ChannelHandlerDispatcher((MockChannelHandler) null);
-        Assertions.assertEquals(0, channelHandlerDispatcher1.getChannelHandlers().size());
-        ChannelHandlerDispatcher channelHandlerDispatcher2 = new ChannelHandlerDispatcher(null, new MockChannelHandler());
-        Assertions.assertEquals(1, channelHandlerDispatcher2.getChannelHandlers().size());
-        ChannelHandlerDispatcher channelHandlerDispatcher3 = new ChannelHandlerDispatcher(Collections.singleton(new MockChannelHandler()));
-        Assertions.assertEquals(1, channelHandlerDispatcher3.getChannelHandlers().size());
+        Assertions.assertEquals(
+                0, channelHandlerDispatcher1.getChannelHandlers().size());
+        ChannelHandlerDispatcher channelHandlerDispatcher2 =
+                new ChannelHandlerDispatcher(null, new MockChannelHandler());
+        Assertions.assertEquals(
+                1, channelHandlerDispatcher2.getChannelHandlers().size());
+        ChannelHandlerDispatcher channelHandlerDispatcher3 =
+                new ChannelHandlerDispatcher(Collections.singleton(new MockChannelHandler()));
+        Assertions.assertEquals(
+                1, channelHandlerDispatcher3.getChannelHandlers().size());
         Collection<ChannelHandler> mockChannelHandlers = new HashSet<>();
         mockChannelHandlers.add(new MockChannelHandler());
         mockChannelHandlers.add(null);
         ChannelHandlerDispatcher channelHandlerDispatcher4 = new ChannelHandlerDispatcher(mockChannelHandlers);
-        Assertions.assertEquals(1, channelHandlerDispatcher4.getChannelHandlers().size());
+        Assertions.assertEquals(
+                1, channelHandlerDispatcher4.getChannelHandlers().size());
     }
-
 }
 
 class MockChannelHandler extends ChannelHandlerAdapter {

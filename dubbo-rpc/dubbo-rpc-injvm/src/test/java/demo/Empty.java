@@ -16,5 +16,4 @@
  */
 package demo;
 
-public class Empty {
-}
+public class Empty {}

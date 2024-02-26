@@ -22,12 +22,12 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import java.util.Arrays;
-import java.util.List;
 
 import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
 
@@ -51,21 +51,22 @@ class MockInvokersSelectorTest {
         URL consumerURL = URL.valueOf("test://127.0.0.1");
 
         selector.notify(providers);
-        // rpcInvocation does not have an attached "invocation.need.mock" parameter, so normal invokers will be filtered out
-        List<Invoker<DemoService>> invokers = selector.route(providers.clone(), consumerURL, rpcInvocation, false, new Holder<>());
-        Assertions.assertEquals(invokers.size(),1);
+        // rpcInvocation does not have an attached "invocation.need.mock" parameter, so normal invokers will be filtered
+        // out
+        List<Invoker<DemoService>> invokers =
+                selector.route(providers.clone(), consumerURL, rpcInvocation, false, new Holder<>());
+        Assertions.assertEquals(invokers.size(), 1);
         Assertions.assertTrue(invokers.contains(invoker3));
 
-        // rpcInvocation have an attached "invocation.need.mock" parameter, so it will filter out the invoker whose protocol is mock
-        Mockito.when(rpcInvocation.getObjectAttachmentWithoutConvert(INVOCATION_NEED_MOCK)).thenReturn("true");
+        // rpcInvocation have an attached "invocation.need.mock" parameter, so it will filter out the invoker whose
+        // protocol is mock
+        Mockito.when(rpcInvocation.getObjectAttachmentWithoutConvert(INVOCATION_NEED_MOCK))
+                .thenReturn("true");
         invokers = selector.route(providers.clone(), consumerURL, rpcInvocation, false, new Holder<>());
-        Assertions.assertEquals(invokers.size(),2);
+        Assertions.assertEquals(invokers.size(), 2);
         Assertions.assertTrue(invokers.contains(invoker1));
         Assertions.assertTrue(invokers.contains(invoker2));
-
     }
 
-    class DemoService{
-
-    }
+    class DemoService {}
 }

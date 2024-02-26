@@ -16,10 +16,10 @@
  */
 package org.apache.dubbo.rpc.proxy;
 
+import java.util.Map;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
@@ -32,7 +32,8 @@ class MethodInvokerTest {
 
         MethodInvoker methodInvoker = MethodInvoker.newInstance(RemoteServiceImpl.class);
         assertInstanceOf(MethodInvoker.CompositeMethodInvoker.class, methodInvoker);
-        MethodInvoker.CompositeMethodInvoker compositeMethodInvoker = (MethodInvoker.CompositeMethodInvoker) methodInvoker;
+        MethodInvoker.CompositeMethodInvoker compositeMethodInvoker =
+                (MethodInvoker.CompositeMethodInvoker) methodInvoker;
         Map<String, MethodInvoker> invokers = compositeMethodInvoker.getInvokers();
         MethodInvoker getThreadNameMethodInvoker = invokers.get(singleMethodName);
         assertInstanceOf(MethodInvoker.SingleMethodInvoker.class, getThreadNameMethodInvoker);
@@ -40,14 +41,18 @@ class MethodInvokerTest {
         assertInstanceOf(MethodInvoker.OverloadMethodInvoker.class, sayHelloMethodInvoker);
 
         RemoteServiceImpl remoteService = Mockito.mock(RemoteServiceImpl.class);
-        //invoke success, SingleMethodInvoker does not check parameter types
+        // invoke success, SingleMethodInvoker does not check parameter types
         methodInvoker.invoke(remoteService, singleMethodName, new Class[0], new Object[0]);
-        methodInvoker.invoke(remoteService, singleMethodName, new Class[]{Object.class, Object.class, Object.class}, new Object[0]);
+        methodInvoker.invoke(
+                remoteService, singleMethodName, new Class[] {Object.class, Object.class, Object.class}, new Object[0]);
         Mockito.verify(remoteService, Mockito.times(2)).getThreadName();
 
-        methodInvoker.invoke(remoteService, overloadMethodName, new Class[]{String.class}, new Object[]{"Hello arg1"});
+        methodInvoker.invoke(
+                remoteService, overloadMethodName, new Class[] {String.class}, new Object[] {"Hello arg1"});
         Mockito.verify(remoteService, Mockito.times(1)).sayHello("Hello arg1");
-        methodInvoker.invoke(remoteService, overloadMethodName, new Class[]{String.class, String.class}, new Object[]{"Hello arg1", "Hello arg2"});
+        methodInvoker.invoke(remoteService, overloadMethodName, new Class[] {String.class, String.class}, new Object[] {
+            "Hello arg1", "Hello arg2"
+        });
         Mockito.verify(remoteService, Mockito.times(1)).sayHello("Hello arg1", "Hello arg2");
     }
 }

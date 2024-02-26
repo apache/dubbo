@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.dubbo.config;
 
 import org.apache.dubbo.config.annotation.Service;
@@ -25,8 +24,7 @@ import java.util.List;
 @Deprecated
 public class ServiceConfig<T> extends org.apache.dubbo.config.ServiceConfig<T> {
 
-    public ServiceConfig() {
-    }
+    public ServiceConfig() {}
 
     public ServiceConfig(Service service) {
         super(service);
@@ -60,8 +58,8 @@ public class ServiceConfig<T> extends org.apache.dubbo.config.ServiceConfig<T> {
         if (monitorConfig instanceof com.alibaba.dubbo.config.MonitorConfig) {
             return (com.alibaba.dubbo.config.MonitorConfig) monitorConfig;
         }
-        throw new IllegalArgumentException("Monitor has not been set with type com.alibaba.dubbo.config.MonitorConfig. " +
-            "Found " + monitorConfig.getClass().getName() + " instead.");
+        throw new IllegalArgumentException("Monitor has not been set with type com.alibaba.dubbo.config.MonitorConfig. "
+                + "Found " + monitorConfig.getClass().getName() + " instead.");
     }
 
     public void setMonitor(com.alibaba.dubbo.config.MonitorConfig monitor) {
