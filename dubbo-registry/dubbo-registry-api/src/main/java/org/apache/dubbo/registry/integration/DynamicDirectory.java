@@ -202,7 +202,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
                             + " for service " + getConsumerUrl().getServiceKey() + " on consumer "
                             + NetUtils.getLocalHost()
                             + " use dubbo version " + Version.getVersion()
-                            + ", please check status of providers(disabled, not registered or in blacklist).");
+                            + ", please check status of providers(disabled, not registered or in blocklist).");
         }
 
         if (multiGroup) {
