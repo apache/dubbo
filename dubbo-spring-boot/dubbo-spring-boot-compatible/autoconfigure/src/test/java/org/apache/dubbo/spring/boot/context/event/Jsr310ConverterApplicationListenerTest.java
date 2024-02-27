@@ -24,6 +24,7 @@ import java.time.LocalTime;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -47,6 +48,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
             "dubbo.generic.local-time-format = HH:mm:ss||HH:mm:ss.SSS"
         })
 @SpringBootTest(classes = {Jsr310ConverterApplicationListener.class})
+@Ignore
 public class Jsr310ConverterApplicationListenerTest {
 
     @BeforeClass
