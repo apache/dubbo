@@ -39,7 +39,6 @@ public class JsonCodec implements HttpMessageCodec<byte[], OutputStream> {
 
     static {
         unSupportClasses.add(byte[].class);
-        //        unSupportClasses.add(String.class);
     }
 
     public static void addUnSupportClass(Class<?> unSupportClass) {
