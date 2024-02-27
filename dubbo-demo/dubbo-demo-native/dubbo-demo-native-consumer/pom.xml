@@ -77,6 +77,10 @@
           <groupId>io.netty</groupId>
           <artifactId>netty-transport-native-epoll</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-core</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
 
@@ -176,6 +180,13 @@
         </exclusion>
       </exclusions>
     </dependency>
+
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-core</artifactId>
+      <version>1.5.0</version>
+      <scope>compile</scope>
+    </dependency>
   </dependencies>
 
   <profiles>
@@ -205,7 +216,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.11.0</version>
+            <version>3.12.1</version>
             <configuration>
               <source>1.8</source>
               <target>1.8</target>
@@ -221,7 +232,7 @@
           <plugin>
             <groupId>org.graalvm.buildtools</groupId>
             <artifactId>native-maven-plugin</artifactId>
-            <version>0.9.28</version>
+            <version>0.10.0</version>
             <configuration>
               <classesDirectory>${project.build.outputDirectory}</classesDirectory>
               <metadataRepository>

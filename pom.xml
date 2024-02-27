@@ -100,8 +100,6 @@
     <module>dubbo-spring-boot</module>
     <module>dubbo-native</module>
     <module>dubbo-test</module>
-    <module>dubbo-kubernetes</module>
-    <module>dubbo-xds</module>
     <module>dubbo-native-plugin</module>
     <module>dubbo-maven-plugin</module>
   </modules>
@@ -144,17 +142,17 @@
     <file_encoding>UTF-8</file_encoding>
     <!-- Maven plugins -->
     <maven_jar_version>3.3.0</maven_jar_version>
-    <maven_surefire_version>3.0.0</maven_surefire_version>
-    <maven_failsafe_version>3.0.0</maven_failsafe_version>
+    <maven_surefire_version>3.2.5</maven_surefire_version>
+    <maven_failsafe_version>3.2.5</maven_failsafe_version>
     <maven_deploy_version>2.8.2</maven_deploy_version>
-    <maven_compiler_version>3.11.0</maven_compiler_version>
-    <maven_source_version>3.2.1</maven_source_version>
-    <maven_javadoc_version>3.5.0</maven_javadoc_version>
-    <maven_jetty_version>9.4.53.v20231009</maven_jetty_version>
-    <maven_checkstyle_version>3.2.1</maven_checkstyle_version>
+    <maven_compiler_version>3.12.1</maven_compiler_version>
+    <maven_source_version>3.3.0</maven_source_version>
+    <maven_javadoc_version>3.6.3</maven_javadoc_version>
+    <maven_jetty_version>9.4.54.v20240208</maven_jetty_version>
+    <maven_checkstyle_version>3.3.1</maven_checkstyle_version>
     <maven_jacoco_version>0.8.11</maven_jacoco_version>
-    <maven_flatten_version>1.5.0</maven_flatten_version>
-    <maven_enforce_version>3.3.0</maven_enforce_version>
+    <maven_flatten_version>1.6.0</maven_flatten_version>
+    <maven_enforce_version>3.4.1</maven_enforce_version>
     <maven_antrun_version>3.1.0</maven_antrun_version>
     <maven_os_plugin_version>1.7.1</maven_os_plugin_version>
     <maven_protobuf_plugin_version>0.6.1</maven_protobuf_plugin_version>
@@ -167,11 +165,11 @@
     <jprotoc_version>1.2.2</jprotoc_version>
     <protobuf-java_version>3.22.3</protobuf-java_version>
     <grpc_version>1.54.0</grpc_version>
-    <spotless-maven-plugin.version>2.40.0</spotless-maven-plugin.version>
+    <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
     <spotless.action>check</spotless.action>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
-    <revision>3.2.10-SNAPSHOT</revision>
+    <revision>3.2.12-SNAPSHOT</revision>
   </properties>
 
   <dependencyManagement>
@@ -283,7 +281,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-clean-plugin</artifactId>
-          <version>3.2.0</version>
+          <version>3.3.2</version>
         </plugin>
         <plugin>
           <groupId>org.ops4j.pax.exam</groupId>
@@ -292,7 +290,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-dependency-plugin</artifactId>
-          <version>3.5.0</version>
+          <version>3.6.1</version>
         </plugin>
         <plugin>
           <!-- Do NOT upgrade -->
@@ -302,7 +300,7 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>build-helper-maven-plugin</artifactId>
-          <version>3.4.0</version>
+          <version>3.5.0</version>
         </plugin>
         <plugin>
           <groupId>org.fusesource.hawtjni</groupId>
@@ -317,7 +315,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-shade-plugin</artifactId>
-          <version>3.4.1</version>
+          <version>3.5.1</version>
           <configuration>
             <createDependencyReducedPom>false</createDependencyReducedPom>
           </configuration>
@@ -450,7 +448,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>
-        <version>3.0.0</version>
+        <version>3.0.1</version>
         <configuration>
           <autoVersionSubmodules>true</autoVersionSubmodules>
           <useReleaseProfile>false</useReleaseProfile>
@@ -748,7 +746,7 @@
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>license-maven-plugin</artifactId>
-            <version>2.3.0</version>
+            <version>2.4.0</version>
             <executions>
               <execution>
                 <id>license-check</id>
@@ -894,6 +892,7 @@
                   <exclude>src/main/java/org/apache/dubbo/aot/generate/MemberCategory.java</exclude>
                   <exclude>src/main/java/org/apache/dubbo/metrics/aggregate/DubboMergingDigest.java</exclude>
                   <exclude>src/main/java/org/apache/dubbo/metrics/aggregate/DubboAbstractTDigest.java</exclude>
+                  <exclude>**/generated-sources/**</exclude>
                 </excludes>
                 <palantirJavaFormat>
                   <version>${palantirJavaFormat.version}</version>

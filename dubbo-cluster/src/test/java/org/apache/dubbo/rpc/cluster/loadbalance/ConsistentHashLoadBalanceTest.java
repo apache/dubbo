@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.RouterChain;
@@ -25,10 +26,14 @@ import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
 @SuppressWarnings("rawtypes")
 class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
@@ -43,6 +48,34 @@ class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
         Invoker hitted = findHitted(invokeCounter);
 
         Assertions.assertEquals(hitted, genericHitted, "hitted should equals to genericHitted");
+    }
+
+    @Test
+    void testArgumentMatchAll() {
+        Map<Invoker, AtomicLong> counter = new ConcurrentHashMap<Invoker, AtomicLong>();
+        LoadBalance lb = getLoadBalance(ConsistentHashLoadBalance.NAME);
+        for (Invoker invoker : invokers) {
+            counter.put(invoker, new AtomicLong(0));
+        }
+        URL url = invokers.get(0).getUrl();
+
+        for (int i = 0; i < 1000; i++) {
+            Invocation invocation = mock(Invocation.class);
+            String methodName = "method1";
+            given(invocation.getMethodName()).willReturn("$invoke");
+            String[] paraTypes = new String[] {String.class.getName(), String.class.getName(), String.class.getName()};
+            Object[] argsObject = new Object[] {"arg" + i, "arg2", "arg3"};
+            Object[] args = new Object[] {methodName, paraTypes, argsObject};
+            given(invocation.getArguments()).willReturn(args);
+
+            for (int j = 0; j < 5; j++) {
+                Invoker sinvoker = lb.select(invokers, url, invocation);
+                counter.get(sinvoker).incrementAndGet();
+            }
+        }
+        for (Invoker invoker : invokers) {
+            Assertions.assertTrue(counter.get(invoker).get() > 0);
+        }
     }
 
     private Invoker findHitted(Map<Invoker, AtomicLong> invokerCounter) {

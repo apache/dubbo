@@ -120,13 +120,6 @@
       <version>${project.version}</version>
     </dependency>
 
-    <!-- kubernetes -->
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-kubernetes</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
     <!-- metadata -->
     <dependency>
       <groupId>org.apache.dubbo</groupId>
@@ -471,11 +464,5 @@
       <version>${project.version}</version>
     </dependency>
 
-    <!-- xds -->
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-xds</artifactId>
-      <version>${project.version}</version>
-    </dependency>
   </dependencies>
 </project>

@@ -138,6 +138,7 @@ public class ServiceBuilder<U> extends AbstractServiceBuilder<ServiceConfig<U>, 
     //        throw new IllegalArgumentException("mock doesn't support on provider side");
     //    }
 
+    @Override
     public ServiceConfig<U> build() {
         ServiceConfig<U> serviceConfig = new ServiceConfig<>();
         super.build(serviceConfig);

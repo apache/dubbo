@@ -573,6 +573,7 @@ public class NacosRegistry extends FailbackRegistry {
     }
 
     private List<URL> toUrlWithEmpty(URL consumerURL, Collection<Instance> instances) {
+        consumerURL = removeParamsFromConsumer(consumerURL);
         List<URL> urls = buildURLs(consumerURL, instances);
         // Nacos does not support configurators and routers from registry, so all notifications are of providers type.
         if (urls.size() == 0 && !getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, DEFAULT_ENABLE_EMPTY_PROTECTION)) {
