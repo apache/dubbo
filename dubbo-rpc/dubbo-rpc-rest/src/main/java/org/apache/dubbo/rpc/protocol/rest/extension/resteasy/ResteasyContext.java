@@ -169,10 +169,13 @@ public interface ResteasyContext {
         for (Map.Entry<String, List<Object>> entry : headers.entrySet()) {
 
             String key = entry.getKey();
-            if (entry.getValue() == null) {
+            List<Object> value = entry.getValue();
+            if (value == null || value.isEmpty()) {
                 continue;
             }
-            response.addOutputHeaders(key, entry.getValue().toString());
+            for (Object tmp : value) {
+                response.addOutputHeaders(key, tmp.toString());
+            }
         }
     }
 

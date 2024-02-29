@@ -42,7 +42,14 @@ public class ResteasyNettyHttpResponse implements HttpResponse {
         for (Map.Entry<String, List<String>> headers : outputHeaders.entrySet()) {
             String key = headers.getKey();
             List<String> value = headers.getValue();
-            multivaluedMap.add(key, value);
+
+            if (value == null || value.isEmpty()) {
+                continue;
+            }
+
+            for (String val : value) {
+                multivaluedMap.add(key, val);
+            }
         }
     }
 

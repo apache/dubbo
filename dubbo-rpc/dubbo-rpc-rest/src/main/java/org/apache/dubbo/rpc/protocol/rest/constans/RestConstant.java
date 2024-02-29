@@ -43,6 +43,8 @@ public interface RestConstant {
     String CONNECTION = "Connection";
     String CONTENT_TYPE = "Content-Type";
     String TEXT_PLAIN = "text/plain";
+    String ACCEPT_CHARSET = "Accept-Charset";
+    String WEIGHT_IDENTIFIER = ";q=";
     String ACCEPT = "Accept";
     String DEFAULT_ACCEPT = "*/*";
     String REST_HEADER_PREFIX = "rest-service-";
@@ -54,6 +56,7 @@ public interface RestConstant {
     String MAX_REQUEST_SIZE_PARAM = "max.request.size";
     String IDLE_TIMEOUT_PARAM = "idle.timeout";
     String KEEP_ALIVE_TIMEOUT_PARAM = "keep.alive.timeout";
+    String DEFAULT_CHARSET = "UTF-8";
 
     int MAX_REQUEST_SIZE = 1024 * 1024 * 10;
     int MAX_INITIAL_LINE_LENGTH = 4096;

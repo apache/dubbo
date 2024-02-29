@@ -235,7 +235,7 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
                         CLUSTER_CONDITIONAL_ROUTE_LIST_EMPTY,
                         "condition state router thenCondition is empty",
                         "",
-                        "The current consumer in the service blacklist. consumer: " + NetUtils.getLocalHost()
+                        "The current consumer in the service blocklist. consumer: " + NetUtils.getLocalHost()
                                 + ", service: " + url.getServiceKey());
                 if (needToPrintMessage) {
                     messageHolder.set("Empty return. Reason: ThenCondition is empty.");
