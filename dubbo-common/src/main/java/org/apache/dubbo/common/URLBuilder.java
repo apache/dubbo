@@ -375,6 +375,21 @@ public final class URLBuilder extends ServiceConfigURL {
         return this;
     }
 
+    @Override
+    public URLBuilder addParameters(String... pairs) {
+        if (ArrayUtils.isEmpty(pairs)) {
+            return this;
+        }
+        if (pairs.length % 2 != 0) {
+            throw new IllegalArgumentException("Map pairs can not be odd number.");
+        }
+        Map<String, String> map = new HashMap<>();
+        int len = pairs.length / 2;
+        for (int i = 0; i < len; i++) {
+            map.put(pairs[2 * i], pairs[2 * i + 1]);
+        }
+        return addParameters(map);
+    }
 
     @Override
     public URLBuilder addParameterString(String query) {

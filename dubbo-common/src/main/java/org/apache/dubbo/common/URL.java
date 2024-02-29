@@ -1061,7 +1061,7 @@ public /*final**/ class URL implements Serializable {
     }
 
     public URL addParameters(String... pairs) {
-        if (pairs == null || pairs.length == 0) {
+        if (ArrayUtils.isEmpty(pairs)) {
             return this;
         }
         if (pairs.length % 2 != 0) {
