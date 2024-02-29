@@ -24,7 +24,6 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorUtils;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
-import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.h12.HttpRequestHandlerMapping;
 import org.apache.dubbo.rpc.protocol.tri.route.RequestHandler;
 
@@ -46,14 +45,8 @@ public final class GrpcRequestHandlerMapping extends HttpRequestHandlerMapping {
     protected void determineHttpMessageCodec(RequestHandler handler, URL url, HttpRequest request) {
         GrpcCompositeCodec grpcCompositeCodec =
                 (GrpcCompositeCodec) CODEC_FACTORY.createCodec(url, getFrameworkModel(), request.contentType());
-        MethodDescriptor methodDescriptor;
-        if (request.hasHeader(TripleHeaderEnum.TRI_PARAM_DESC.getHeader())) {
-            methodDescriptor = handler.getServiceDescriptor()
-                    .getMethod(handler.getMethodName(), request.header(TripleHeaderEnum.TRI_PARAM_DESC.getHeader()));
-        } else {
-            methodDescriptor = DescriptorUtils.findMethodDescriptor(
-                    handler.getServiceDescriptor(), handler.getMethodName(), handler.isHasStub());
-        }
+        MethodDescriptor methodDescriptor = DescriptorUtils.findMethodDescriptor(
+                handler.getServiceDescriptor(), handler.getMethodName(), handler.isHasStub());
         if (methodDescriptor != null) {
             handler.setMethodDescriptor(methodDescriptor);
             grpcCompositeCodec.loadPackableMethod(methodDescriptor);
