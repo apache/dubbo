@@ -182,7 +182,7 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
     }
 
     protected static int bytesToInt(byte[] bytes) {
-        return (bytes[0] << 24) & 0xFF | (bytes[1] << 16) & 0xFF | (bytes[2] << 8) & 0xFF | (bytes[3]) & 0xFF;
+        return ((bytes[0] & 0xFF) << 24) | ((bytes[1] & 0xFF) << 16) | ((bytes[2] & 0xFF) << 8) | (bytes[3]) & 0xFF;
     }
 
     private enum DecodeState {
