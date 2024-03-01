@@ -22,7 +22,7 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>23</version>
+    <version>31</version>
   </parent>
 
   <groupId>org.apache.dubbo</groupId>
