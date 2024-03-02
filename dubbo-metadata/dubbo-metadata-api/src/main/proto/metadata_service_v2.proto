@@ -6,10 +6,10 @@ option java_package = "org.apache.dubbo.metadata";
 option java_multiple_files = true;
 
 service MetadataServiceV2{
-    rpc GetMetadataInfo(RevisionV2) returns (MetadataInfoV2);
+    rpc GetMetadataInfo(Revision) returns (MetadataInfoV2);
 }
 
-message RevisionV2{
+message Revision{
     string value = 1;
 }
 

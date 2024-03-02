@@ -46,7 +46,6 @@ import java.util.Optional;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.INTERNAL_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
@@ -97,6 +96,8 @@ public class ServiceInstanceMetadataUtils {
      */
     public static final String METADATA_STORAGE_TYPE_PROPERTY_NAME = "dubbo.metadata.storage-type";
 
+    public static final String METADATA_SERVICE_VERSION_NAME = "dubbo.metadata.service-version";
+
     public static final String METADATA_CLUSTER_PROPERTY_NAME = "dubbo.metadata.cluster";
 
     public static String getMetadataServiceParameter(URL url) {
@@ -118,7 +119,6 @@ public class ServiceInstanceMetadataUtils {
         setDefaultParams(params, providerURL);
         params.put(PORT_KEY, String.valueOf(providerURL.getPort()));
         params.put(PROTOCOL_KEY, providerURL.getProtocol());
-        params.put(INTERNAL_VERSION_KEY, MetadataServiceDelegationV2.VERSION);
         return params;
     }
 
@@ -164,6 +164,13 @@ public class ServiceInstanceMetadataUtils {
     public static void setMetadataStorageType(ServiceInstance serviceInstance, String metadataType) {
         Map<String, String> metadata = serviceInstance.getMetadata();
         metadata.put(METADATA_STORAGE_TYPE_PROPERTY_NAME, metadataType);
+    }
+
+    /**
+     * Indicates the version of MetadataService
+     */
+    public static void setMetadataVersion(ServiceInstance serviceInstance) {
+        serviceInstance.getMetadata().put(METADATA_SERVICE_VERSION_NAME, MetadataServiceDelegationV2.VERSION);
     }
 
     public static String getRemoteCluster(ServiceInstance serviceInstance) {

@@ -21,7 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceV2;
-import org.apache.dubbo.metadata.util.MetadataReportVersionUtils;
+import org.apache.dubbo.metadata.util.MetadataServiceVersionUtils;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 import org.apache.dubbo.registry.client.metadata.MetadataServiceDelegationV2;
@@ -64,13 +64,14 @@ public class MetadataServiceURLParamsMetadataCustomizer implements ServiceInstan
 
         String key;
 
-        if (MetadataReportVersionUtils.onlyExportV2(applicationModel)) {
+        if (MetadataServiceVersionUtils.onlyExportV2(applicationModel)) {
             key = BaseServiceMetadata.buildServiceKey(
                     MetadataServiceV2.class.getName(),
                     applicationModel.getApplicationName(),
                     MetadataServiceDelegationV2.VERSION);
         } else {
-            // If MetadataService and MetadataServiceV2 are both exported, use v1 path for capacity
+            // If MetadataService and MetadataServiceV2 are both exported, use v1 path for capacity.
+            // Client will use version and protocol to judge if it needs to refer v2 path.
             key = BaseServiceMetadata.buildServiceKey(
                     MetadataService.class.getName(), applicationModel.getApplicationName(), MetadataService.VERSION);
         }

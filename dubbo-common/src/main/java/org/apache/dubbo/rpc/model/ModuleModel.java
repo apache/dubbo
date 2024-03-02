@@ -189,7 +189,7 @@ public class ModuleModel extends ScopeModel {
     }
 
     public ConsumerModel registerInternalConsumer(
-            Class<?> internalService, URL url, ServiceDescriptor serviceDescriptor) {
+            Class<?> internalService, URL url, ServiceDescriptor serviceDescriptor, Object proxyObject) {
         ServiceMetadata serviceMetadata = new ServiceMetadata();
         serviceMetadata.setVersion(url.getVersion());
         serviceMetadata.setGroup(url.getGroup());
@@ -198,10 +198,9 @@ public class ModuleModel extends ScopeModel {
         serviceMetadata.setServiceType(internalService);
         String serviceKey = URL.buildKey(internalService.getName(), url.getGroup(), url.getVersion());
         serviceMetadata.setServiceKey(serviceKey);
-
         ConsumerModel consumerModel = new ConsumerModel(
                 serviceMetadata.getServiceKey(),
-                "jdk",
+                proxyObject,
                 serviceDescriptor == null
                         ? serviceRepository.lookupService(serviceMetadata.getServiceInterfaceName())
                         : serviceDescriptor,
@@ -215,8 +214,13 @@ public class ModuleModel extends ScopeModel {
         return consumerModel;
     }
 
+    public ConsumerModel registerInternalConsumer(
+            Class<?> internalService, URL url, ServiceDescriptor serviceDescriptor) {
+        return registerInternalConsumer(internalService, url, serviceDescriptor, null);
+    }
+
     public ConsumerModel registerInternalConsumer(Class<?> internalService, URL url) {
-        return registerInternalConsumer(internalService, url, null);
+        return registerInternalConsumer(internalService, url, null, null);
     }
 
     public boolean isLifeCycleManagedExternally() {

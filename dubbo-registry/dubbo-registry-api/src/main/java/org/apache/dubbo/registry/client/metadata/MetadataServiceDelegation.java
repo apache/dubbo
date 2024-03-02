@@ -27,7 +27,7 @@ import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataInfoV2;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceV2;
-import org.apache.dubbo.metadata.RevisionV2;
+import org.apache.dubbo.metadata.Revision;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -52,7 +52,7 @@ import static org.apache.dubbo.common.URL.buildKey;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_LOAD_METADATA;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
-import static org.apache.dubbo.metadata.util.MetadataReportVersionUtils.toV2;
+import static org.apache.dubbo.metadata.util.MetadataServiceVersionUtils.toV2;
 
 /**
  * Implementation providing remote RPC service to facilitate the query of metadata information.
@@ -105,21 +105,25 @@ public class MetadataServiceDelegation implements MetadataService, MetadataServi
         for (ServiceDiscovery sd : serviceDiscoveries) {
             MetadataInfo metadataInfo = sd.getLocalMetadata();
             Map<String, SortedSet<URL>> serviceURLs = metadataInfo.getExportedServiceURLs();
-            if (serviceURLs == null) {
-                continue;
-            }
-            for (Map.Entry<String, SortedSet<URL>> entry : serviceURLs.entrySet()) {
-                SortedSet<URL> urls = entry.getValue();
-                if (urls != null) {
-                    for (URL url : urls) {
-                        if (!MetadataService.class.getName().equals(url.getServiceInterface())) {
-                            bizURLs.add(url);
-                        }
+            joinNonMetadataServiceUrls(bizURLs, serviceURLs);
+        }
+        return MetadataService.toSortedStrings(bizURLs);
+    }
+
+    private void joinNonMetadataServiceUrls(SortedSet<URL> bizURLs, Map<String, SortedSet<URL>> serviceURLs) {
+        if (serviceURLs == null) {
+            return;
+        }
+        for (Map.Entry<String, SortedSet<URL>> entry : serviceURLs.entrySet()) {
+            SortedSet<URL> urls = entry.getValue();
+            if (urls != null) {
+                for (URL url : urls) {
+                    if (!MetadataService.class.getName().equals(url.getServiceInterface())) {
+                        bizURLs.add(url);
                     }
                 }
             }
         }
-        return MetadataService.toSortedStrings(bizURLs);
     }
 
     private SortedSet<String> getAllUnmodifiableSubscribedURLs() {
@@ -128,19 +132,7 @@ public class MetadataServiceDelegation implements MetadataService, MetadataServi
         for (ServiceDiscovery sd : serviceDiscoveries) {
             MetadataInfo metadataInfo = sd.getLocalMetadata();
             Map<String, SortedSet<URL>> serviceURLs = metadataInfo.getSubscribedServiceURLs();
-            if (serviceURLs == null) {
-                continue;
-            }
-            for (Map.Entry<String, SortedSet<URL>> entry : serviceURLs.entrySet()) {
-                SortedSet<URL> urls = entry.getValue();
-                if (urls != null) {
-                    for (URL url : urls) {
-                        if (!MetadataService.class.getName().equals(url.getServiceInterface())) {
-                            bizURLs.add(url);
-                        }
-                    }
-                }
-            }
+            joinNonMetadataServiceUrls(bizURLs, serviceURLs);
         }
         return MetadataService.toSortedStrings(bizURLs);
     }
@@ -205,12 +197,12 @@ public class MetadataServiceDelegation implements MetadataService, MetadataServi
     }
 
     @Override
-    public org.apache.dubbo.metadata.MetadataInfoV2 getMetadataInfo(org.apache.dubbo.metadata.RevisionV2 revisionV2) {
-        return toV2(getMetadataInfo(revisionV2.getValue()));
+    public org.apache.dubbo.metadata.MetadataInfoV2 getMetadataInfo(org.apache.dubbo.metadata.Revision Revision) {
+        return toV2(getMetadataInfo(Revision.getValue()));
     }
 
     @Override
-    public CompletableFuture<MetadataInfoV2> getMetadataInfoAsync(RevisionV2 request) {
+    public CompletableFuture<MetadataInfoV2> getMetadataInfoAsync(Revision request) {
         // TODO
         ExecutorService internalServiceExecutor = applicationModel
                 .getFrameworkModel()

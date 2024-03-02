@@ -16,32 +16,28 @@
  */
 package org.apache.dubbo.registry.client.metadata;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metadata.DubboMetadataServiceV2Triple.MetadataServiceV2ImplBase;
 import org.apache.dubbo.metadata.MetadataInfo;
-import org.apache.dubbo.metadata.MetadataInfoV2;
-import org.apache.dubbo.metadata.RevisionV2;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_LOAD_METADATA;
-import static org.apache.dubbo.metadata.util.MetadataReportVersionUtils.toV2;
+import static org.apache.dubbo.metadata.util.MetadataServiceVersionUtils.toV2;
 
-/**
- * Implementation of MetadataServiceV2. Available in : metadata.
- */
-public class MetadataServiceDelegationV2 implements org.apache.dubbo.metadata.MetadataServiceV2 {
+public class MetadataServiceDelegationV2 extends MetadataServiceV2ImplBase {
 
     ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     private final ApplicationModel applicationModel;
+
     private final RegistryManager registryManager;
+
+    private URL metadataUrl;
 
     public static final String VERSION = "2.0.0";
 
@@ -51,7 +47,7 @@ public class MetadataServiceDelegationV2 implements org.apache.dubbo.metadata.Me
     }
 
     @Override
-    public org.apache.dubbo.metadata.MetadataInfoV2 getMetadataInfo(org.apache.dubbo.metadata.RevisionV2 revisionV2) {
+    public org.apache.dubbo.metadata.MetadataInfoV2 getMetadataInfo(org.apache.dubbo.metadata.Revision revisionV2) {
         String revision = revisionV2.getValue();
         MetadataInfo info = null;
         if (StringUtils.isEmpty(revision)) {
@@ -72,16 +68,11 @@ public class MetadataServiceDelegationV2 implements org.apache.dubbo.metadata.Me
         return null;
     }
 
-    @Override
-    public CompletableFuture<MetadataInfoV2> getMetadataInfoAsync(RevisionV2 request) {
-        // TODO
-        ExecutorService internalServiceExecutor = applicationModel
-                .getFrameworkModel()
-                .getBeanFactory()
-                .getBean(FrameworkExecutorRepository.class)
-                .getInternalServiceExecutor();
-        CompletableFuture<MetadataInfoV2> completableFuture = new CompletableFuture<>();
-        internalServiceExecutor.submit(() -> completableFuture.complete(getMetadataInfo(request)));
-        return completableFuture;
+    public URL getMetadataUrl() {
+        return metadataUrl;
+    }
+
+    public void setMetadataUrl(URL metadataUrl) {
+        this.metadataUrl = metadataUrl;
     }
 }
