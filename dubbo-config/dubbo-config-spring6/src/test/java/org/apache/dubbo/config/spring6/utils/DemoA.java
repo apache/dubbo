@@ -14,28 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.transport.netty4.api;
+package org.apache.dubbo.config.spring6.utils;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.remoting.api.ProtocolDetector;
-import org.apache.dubbo.remoting.api.WireProtocol;
-import org.apache.dubbo.remoting.api.pu.ChannelOperator;
-import org.apache.dubbo.remoting.api.ssl.ContextOperator;
+import java.io.Serializable;
 
-@Activate
-public class EmptyWireProtocol implements WireProtocol {
-    @Override
-    public ProtocolDetector detector() {
-        return null;
-    }
-
-    @Override
-    public void configServerProtocolHandler(URL url, ChannelOperator operator) {}
-
-    @Override
-    public void configClientPipeline(URL url, ChannelOperator operator, ContextOperator contextOperator) {}
-
-    @Override
-    public void close() {}
+public class DemoA implements Serializable {
+    private DemoB b;
 }

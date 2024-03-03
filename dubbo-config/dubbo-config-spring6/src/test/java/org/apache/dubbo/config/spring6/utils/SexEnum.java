@@ -14,18 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs;
+package org.apache.dubbo.config.spring6.utils;
 
-import org.apache.dubbo.common.convert.Converter;
+public enum SexEnum {
+    BOY("boy"),
+    GIRL("girl");
 
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
+    private final String desc;
 
-@SuppressWarnings("rawtypes")
-public class MultivaluedMapCreationConverter implements Converter<Integer, MultivaluedMap> {
+    SexEnum(String desc) {
+        this.desc = desc;
+    }
 
-    @Override
-    public MultivaluedMap<?, ?> convert(Integer source) {
-        return new MultivaluedHashMap<>(source);
+    public String getDesc() {
+        return desc;
     }
 }

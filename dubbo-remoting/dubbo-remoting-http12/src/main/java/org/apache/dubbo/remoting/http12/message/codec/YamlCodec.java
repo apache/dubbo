@@ -36,12 +36,13 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.representer.Representer;
 
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class YamlCodec implements HttpMessageCodec {
 
     @Override
     public Object decode(InputStream is, Class<?> targetType, Charset charset) throws DecodeException {
         try (InputStreamReader reader = new InputStreamReader(is, charset)) {
-            return createYaml().loadAs(reader, targetType);
+            return createYaml().loadAs(reader, (Class) targetType);
         } catch (Throwable t) {
             throw new DecodeException("Error decoding yaml", t);
         }
@@ -57,7 +58,7 @@ public class YamlCodec implements HttpMessageCodec {
             for (int i = 0; i < len; i++) {
                 if (iterator.hasNext()) {
                     Object result = iterator.next();
-                    Class<?> targetType = targetTypes[i];
+                    Class targetType = targetTypes[i];
                     if (targetType.isInstance(result)) {
                         results[i] = result;
                     } else {

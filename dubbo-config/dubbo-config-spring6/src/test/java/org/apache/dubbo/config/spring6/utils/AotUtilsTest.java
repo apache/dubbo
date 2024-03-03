@@ -71,4 +71,34 @@ public class AotUtilsTest {
         Assertions.assertTrue(containHelloRequestSuper.get());
         Assertions.assertTrue(containHelloResponse.get());
     }
+
+    @Test
+    void registerSerializationForCircularDependencyFieldTest() {
+        RuntimeHints runtimeHints = new RuntimeHints();
+        AotUtils.registerSerializationForService(CircularDependencyDemoService.class, runtimeHints);
+        AtomicBoolean containDemoA = new AtomicBoolean(false);
+        runtimeHints.serialization().javaSerializationHints().forEach(s -> {
+            if (s.getType().getName().equals(DemoA.class.getName())) {
+                containDemoA.set(true);
+            }
+        });
+        AtomicBoolean containDemoB = new AtomicBoolean(false);
+        runtimeHints.serialization().javaSerializationHints().forEach(s -> {
+            if (s.getType().getName().equals(DemoB.class.getName())) {
+                containDemoB.set(true);
+            }
+        });
+
+        Assertions.assertTrue(containDemoA.get());
+        Assertions.assertTrue(containDemoB.get());
+
+        AotUtils.registerSerializationForService(DemoService.class, runtimeHints);
+        AtomicBoolean containSexEnum = new AtomicBoolean(false);
+        runtimeHints.serialization().javaSerializationHints().forEach(s -> {
+            if (s.getType().getName().equals(SexEnum.class.getName())) {
+                containSexEnum.set(true);
+            }
+        });
+        Assertions.assertTrue(containSexEnum.get());
+    }
 }
