@@ -25,7 +25,9 @@ import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
+import org.apache.dubbo.remoting.exchange.Http3Exchanger;
 import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
+import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.PathResolver;
@@ -55,6 +57,7 @@ import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_IGNORE_1_0_0_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_PASS_THROUGH_STANDARD_HTTP_HEADERS;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_RESOLVE_FALLBACK_TO_DEFAULT_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_SUPPORT_NO_LOWER_HEADER_KEY;
+import static org.apache.dubbo.rpc.Constants.H3_SETTINGS_HTTP3_ENABLE;
 
 public class TripleProtocol extends AbstractProtocol {
 
@@ -69,6 +72,7 @@ public class TripleProtocol extends AbstractProtocol {
     public static boolean IGNORE_1_0_0_VERSION = false;
     public static boolean RESOLVE_FALLBACK_TO_DEFAULT = true;
     public static boolean PASS_THROUGH_STANDARD_HTTP_HEADERS = false;
+    public static boolean HTTP3_ENABLED = false;
 
     public TripleProtocol(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
@@ -83,6 +87,7 @@ public class TripleProtocol extends AbstractProtocol {
         IGNORE_1_0_0_VERSION = conf.getBoolean(H2_SETTINGS_IGNORE_1_0_0_KEY, false);
         RESOLVE_FALLBACK_TO_DEFAULT = conf.getBoolean(H2_SETTINGS_RESOLVE_FALLBACK_TO_DEFAULT_KEY, true);
         PASS_THROUGH_STANDARD_HTTP_HEADERS = conf.getBoolean(H2_SETTINGS_PASS_THROUGH_STANDARD_HTTP_HEADERS, false);
+        HTTP3_ENABLED = conf.getBoolean(H3_SETTINGS_HTTP3_ENABLE, false);
     }
 
     @Override
@@ -160,6 +165,11 @@ public class TripleProtocol extends AbstractProtocol {
                 .createExecutorIfAbsent(ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME));
 
         PortUnificationExchanger.bind(url, new DefaultPuHandler());
+
+        if (isHttp3Enabled(url)) {
+            Http3Exchanger.bind(url);
+        }
+
         optimizeSerialization(url);
         return exporter;
     }
@@ -168,7 +178,9 @@ public class TripleProtocol extends AbstractProtocol {
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
         optimizeSerialization(url);
         ExecutorService streamExecutor = getOrCreateStreamExecutor(url.getOrDefaultApplicationModel(), url);
-        AbstractConnectionClient connectionClient = PortUnificationExchanger.connect(url, new DefaultPuHandler());
+        AbstractConnectionClient connectionClient = isHttp3Enabled(url)
+                ? Http3Exchanger.connect(url)
+                : PortUnificationExchanger.connect(url, new DefaultPuHandler());
         TripleInvoker<T> invoker =
                 new TripleInvoker<>(type, url, acceptEncodings, connectionClient, invokers, streamExecutor);
         invokers.add(invoker);
@@ -195,8 +207,13 @@ public class TripleProtocol extends AbstractProtocol {
             logger.info("Destroying protocol [" + getClass().getSimpleName() + "] ...");
         }
         PortUnificationExchanger.close();
+        Http3Exchanger.close();
         pathResolver.destroy();
         mappingRegistry.destroy();
         super.destroy();
+    }
+
+    public static boolean isHttp3Enabled(URL url) {
+        return HTTP3_ENABLED || url.getParameter(Constants.HTTP3_KEY, false);
     }
 }

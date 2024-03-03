@@ -96,6 +96,7 @@
     <byte-buddy_version>1.14.16</byte-buddy_version>
     <netty_version>3.2.10.Final</netty_version>
     <netty4_version>4.1.110.Final</netty4_version>
+    <netty_http3_version>0.0.28.Final</netty_http3_version>
     <httpclient_version>4.5.14</httpclient_version>
     <httpcore_version>4.4.16</httpcore_version>
     <fastjson_version>1.2.83</fastjson_version>
@@ -246,6 +247,11 @@
         <groupId>io.netty</groupId>
         <artifactId>netty-all</artifactId>
         <version>${netty4_version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty.incubator</groupId>
+        <artifactId>netty-incubator-codec-http3</artifactId>
+        <version>${netty_http3_version}</version>
       </dependency>
       <dependency>
         <groupId>org.javassist</groupId>

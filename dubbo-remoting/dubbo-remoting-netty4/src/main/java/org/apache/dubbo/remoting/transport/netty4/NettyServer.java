@@ -191,7 +191,7 @@ public class NettyServer extends AbstractServer {
     }
 
     @Override
-    protected void doClose() throws Throwable {
+    protected void doClose() {
         try {
             if (channel != null) {
                 // unbind.
@@ -247,10 +247,7 @@ public class NettyServer extends AbstractServer {
 
     @Override
     public Collection<Channel> getChannels() {
-        Collection<Channel> chs = new ArrayList<>(this.channels.size());
-        // pick channels from NettyServerHandler ( needless to check connectivity )
-        chs.addAll(this.channels.values());
-        return chs;
+        return new ArrayList<>(channels.values());
     }
 
     @Override

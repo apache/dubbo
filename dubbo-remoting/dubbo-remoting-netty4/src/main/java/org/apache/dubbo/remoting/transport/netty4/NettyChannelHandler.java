@@ -46,15 +46,18 @@ public class NettyChannelHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
-        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
+        io.netty.channel.Channel ch = ctx.channel();
+        NettyChannel channel = NettyChannel.getOrAddChannel(ch, url, handler);
         if (channel != null) {
-            dubboChannels.put(
-                    NetUtils.toAddressString((InetSocketAddress) ctx.channel().remoteAddress()), channel);
+            dubboChannels.put(NetUtils.toAddressString((InetSocketAddress) ch.remoteAddress()), channel);
             handler.connected(channel);
 
             if (logger.isInfoEnabled()) {
-                logger.info("The connection of " + channel.getRemoteAddress() + " -> " + channel.getLocalAddress()
-                        + " is established.");
+                logger.info(
+                        "The connection {} of {} -> {} is established.",
+                        ch,
+                        AddressUtils.getRemoteAddressKey(ch),
+                        AddressUtils.getLocalAddressKey(ch));
             }
         }
     }
@@ -62,19 +65,22 @@ public class NettyChannelHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
-        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
+        io.netty.channel.Channel ch = ctx.channel();
+        NettyChannel channel = NettyChannel.getOrAddChannel(ch, url, handler);
         try {
-            dubboChannels.remove(
-                    NetUtils.toAddressString((InetSocketAddress) ctx.channel().remoteAddress()));
+            dubboChannels.remove(NetUtils.toAddressString((InetSocketAddress) ch.remoteAddress()));
             if (channel != null) {
                 handler.disconnected(channel);
                 if (logger.isInfoEnabled()) {
-                    logger.info("The connection of " + channel.getRemoteAddress() + " -> " + channel.getLocalAddress()
-                            + " is disconnected.");
+                    logger.info(
+                            "The connection {} of {} -> {} is disconnected.",
+                            ch,
+                            AddressUtils.getRemoteAddressKey(ch),
+                            AddressUtils.getLocalAddressKey(ch));
                 }
             }
         } finally {
-            NettyChannel.removeChannel(ctx.channel());
+            NettyChannel.removeChannel(ch);
         }
     }
 }

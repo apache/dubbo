@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.nested.TripleConfig;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.api.AbstractWireProtocol;
@@ -86,7 +87,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
 
     @Override
     public void configClientPipeline(URL url, ChannelOperator operator, ContextOperator contextOperator) {
-        TripleConfig tripleConfig = getTripleConfig(url);
+        TripleConfig tripleConfig = ConfigManager.getProtocol(url).getTriple();
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forClient()
                 .gracefulShutdownTimeoutMillis(10000)
                 .initialSettings(new Http2Settings()
@@ -130,7 +131,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     }
 
     private void configurerHttp1Handlers(URL url, List<ChannelHandler> handlers) {
-        TripleConfig tripleConfig = getTripleConfig(url);
+        TripleConfig tripleConfig = ConfigManager.getProtocol(url).getTriple();
         final HttpServerCodec sourceCodec = new HttpServerCodec(new HttpDecoderConfig()
                 .setMaxChunkSize(tripleConfig.getMaxChunkSize())
                 .setMaxHeaderSize(tripleConfig.getMaxHeaderSize())
@@ -176,7 +177,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     }
 
     private void configurerHttp2Handlers(URL url, List<ChannelHandler> handlers) {
-        TripleConfig tripleConfig = getTripleConfig(url);
+        TripleConfig tripleConfig = ConfigManager.getProtocol(url).getTriple();
         final Http2FrameCodec codec = buildHttp2FrameCodec(tripleConfig);
         final Http2MultiplexHandler handler = buildHttp2MultiplexHandler(url, tripleConfig);
         handlers.add(new ChannelHandlerPretender(new HttpWriteQueueHandler()));
@@ -201,12 +202,5 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                 .frameLogger(SERVER_LOGGER)
                 .validateHeaders(false)
                 .build();
-    }
-
-    private TripleConfig getTripleConfig(URL url) {
-        return url.getOrDefaultApplicationModel()
-                .getApplicationConfigManager()
-                .getOrAddProtocol(url.getProtocol())
-                .getTriple();
     }
 }
