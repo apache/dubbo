@@ -27,7 +27,6 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.directory.XdsDirectory;
-import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.xds.PilotExchanger;
 import org.apache.dubbo.rpc.cluster.xds.resource.XdsCluster;
 import org.apache.dubbo.rpc.cluster.xds.resource.XdsVirtualHost;
@@ -35,7 +34,6 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -172,7 +170,8 @@ class DubboInvokerAvailableTest {
         PilotExchanger.initialize(url);
 
         Directory directory = Mockito.spy(Directory.class);
-        when(directory.getConsumerUrl()).thenReturn(URL.valueOf("dubbo://0.0.0.0:15010/DemoService?providedBy=dubbo-samples-xds-provider"));
+        when(directory.getConsumerUrl())
+                .thenReturn(URL.valueOf("dubbo://0.0.0.0:15010/DemoService?providedBy=dubbo-samples-xds-provider"));
         when(directory.getInterface()).thenReturn(IDemoService.class);
         when(directory.getProtocol()).thenReturn(protocol);
 
@@ -180,7 +179,8 @@ class DubboInvokerAvailableTest {
 
         // xdsDirectory.setProtocol(protocol);
 
-        // BitList<Invoker> invokers = new BitList<>(Arrays.asList(createInvoker("dubbo-samples-xds-provider", "10.1.0.177:50051"),
+        // BitList<Invoker> invokers = new BitList<>(Arrays.asList(createInvoker("dubbo-samples-xds-provider",
+        // "10.1.0.177:50051"),
         //         createInvoker("dubbo-samples-xds-provider", "10.1.0.174:50051"),
         //         createInvoker("dubbo-samples-xds-provider", "10.1.0.181:50051")));
 
@@ -190,7 +190,7 @@ class DubboInvokerAvailableTest {
         when(invoker.getUrl()).thenReturn(url1);
         when(invocation.getInvoker()).thenReturn(invoker);
 
-        while(true) {
+        while (true) {
             Map<String, XdsVirtualHost> xdsVirtualHostMap = xdsDirectory.getXdsVirtualHostMap();
             Map<String, XdsCluster> xdsClusterMap = xdsDirectory.getXdsClusterMap();
             if (!xdsVirtualHostMap.isEmpty() && !xdsClusterMap.isEmpty()) {

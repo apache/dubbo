@@ -169,7 +169,9 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         this.protocol = protocol;
     }
 
-    public Protocol getProtocol() { return this.protocol; }
+    public Protocol getProtocol() {
+        return this.protocol;
+    }
 
     public void setRegistry(Registry registry) {
         this.registry = registry;

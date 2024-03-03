@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -59,8 +58,8 @@ public class LdsProtocol extends AbstractProtocol<XdsVirtualHost> {
         return "type.googleapis.com/envoy.config.listener.v3.Listener";
     }
 
-    public void getListeners() {
-        getResource(null);
+    public void subscribeListeners() {
+        subscribeResource(null);
     }
 
     @Override

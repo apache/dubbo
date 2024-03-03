@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.dubbo.rpc.cluster.directory;
 
 import org.apache.dubbo.common.URL;
@@ -24,7 +40,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class XdsDirectory<T>  extends AbstractDirectory<T>{
+public class XdsDirectory<T> extends AbstractDirectory<T> {
 
     private final URL url;
 
@@ -58,7 +74,6 @@ public class XdsDirectory<T>  extends AbstractDirectory<T>{
 
         // 订阅资源
         pilotExchanger.subscribeRds(this.applicationName, this);
-
     }
 
     public Map<String, XdsVirtualHost> getXdsVirtualHostMap() {
@@ -82,9 +97,10 @@ public class XdsDirectory<T>  extends AbstractDirectory<T>{
         return serviceType;
     }
 
-    public List<Invoker<T>> doList(SingleRouterChain<T> singleRouterChain, BitList<Invoker<T>> invokers, Invocation invocation) {
+    public List<Invoker<T>> doList(
+            SingleRouterChain<T> singleRouterChain, BitList<Invoker<T>> invokers, Invocation invocation) {
         List<Invoker<T>> result = singleRouterChain.route(this.getConsumerUrl(), invokers, invocation);
-        return (List)(result == null ? BitList.emptyList() : result);
+        return (List) (result == null ? BitList.emptyList() : result);
     }
 
     @Override
@@ -147,7 +163,7 @@ public class XdsDirectory<T>  extends AbstractDirectory<T>{
             int port = e.getPortValue();
             URL url = new URL(this.protocolName, ip, port);
             // 设置clusterName 属性，说明该 invoker 属于哪个 cluster
-            url.addParameter("clusterName", clusterName);
+            url.addParameter("clusterID", clusterName);
             // 设置负载均衡策略
             url.addParameter("loadbalance", lbPolicy);
             //  cluster to invoker

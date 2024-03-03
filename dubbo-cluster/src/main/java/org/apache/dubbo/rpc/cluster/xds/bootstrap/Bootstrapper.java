@@ -16,16 +16,15 @@
  */
 package org.apache.dubbo.rpc.cluster.xds.bootstrap;
 
-
 import org.apache.dubbo.rpc.cluster.xds.XdsInitializationException;
-
-import io.envoyproxy.envoy.config.core.v3.Node;
-import io.grpc.ChannelCredentials;
 
 import javax.annotation.Nullable;
 
 import java.util.List;
 import java.util.Map;
+
+import io.envoyproxy.envoy.config.core.v3.Node;
+import io.grpc.ChannelCredentials;
 
 public abstract class Bootstrapper {
 

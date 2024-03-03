@@ -17,8 +17,6 @@
 package org.apache.dubbo.rpc.cluster.xds;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.rpc.cluster.directory.XdsDirectory;
 import org.apache.dubbo.rpc.cluster.xds.protocol.impl.CdsProtocol;
@@ -30,7 +28,6 @@ import org.apache.dubbo.rpc.cluster.xds.resource.XdsRouteConfiguration;
 import org.apache.dubbo.rpc.cluster.xds.resource.XdsVirtualHost;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,7 +48,6 @@ public class PilotExchanger {
 
     protected final CdsProtocol cdsProtocol;
 
-
     private final Set<String> domainObserveRequest = new ConcurrentHashSet<String>();
 
     private static PilotExchanger GLOBAL_PILOT_EXCHANGER = null;
@@ -62,9 +58,9 @@ public class PilotExchanger {
 
     private static final Map<String, XdsCluster> xdsClusterMap = new ConcurrentHashMap<>();
 
-    private final Map<String, Set<XdsDirectory>> rdsListeners = new HashMap<>();
+    private final Map<String, Set<XdsDirectory>> rdsListeners = new ConcurrentHashMap<>();
 
-    private final Map<String, Set<XdsDirectory>> cdsListeners = new HashMap<>();
+    private final Map<String, Set<XdsDirectory>> cdsListeners = new ConcurrentHashMap<>();
 
     protected PilotExchanger(URL url) {
         // xdsChannel = new XdsChannel(url);
@@ -100,30 +96,21 @@ public class PilotExchanger {
                 }
             });
         };
-
-        this.ldsProtocol = new LdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout);
         this.rdsProtocol = new RdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, rdsCallback);
         this.edsProtocol = new EdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, edsCallback);
+
+        this.ldsProtocol = new LdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout);
         this.cdsProtocol = new CdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout);
 
         // lds 回调函数，在回调函数中监听所有的 rds 资源
-        Consumer<Set<String>> ldsCallback = (routes) -> {
-            rdsProtocol.getResource(routes);
-        };
-
+        Consumer<Set<String>> ldsCallback = rdsProtocol::subscribeResource;
         ldsProtocol.setUpdateCallback(ldsCallback);
-
-        ldsProtocol.getListeners();
+        ldsProtocol.subscribeListeners();
 
         // cds 回调函数，在回调函数中监听所有的 eds 资源
-        Consumer<Set<String>> cdsCallback = (clusters) -> {
-            edsProtocol.getResource(clusters);
-        };
-
+        Consumer<Set<String>> cdsCallback = edsProtocol::subscribeResource;
         cdsProtocol.setUpdateCallback(cdsCallback);
-
-        cdsProtocol.getClusters();
-
+        cdsProtocol.subscribeClusters();
     }
 
     public static Map<String, XdsVirtualHost> getXdsVirtualHostMap() {

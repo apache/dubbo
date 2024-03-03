@@ -27,16 +27,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.envoyproxy.envoy.config.cluster.v3.Cluster;
-import io.envoyproxy.envoy.config.core.v3.HealthStatus;
 import io.envoyproxy.envoy.config.core.v3.Node;
-import io.envoyproxy.envoy.config.core.v3.SocketAddress;
 import io.envoyproxy.envoy.config.endpoint.v3.ClusterLoadAssignment;
 import io.envoyproxy.envoy.config.endpoint.v3.LbEndpoint;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
@@ -53,7 +50,8 @@ public class EdsProtocol extends AbstractProtocol<String> {
 
     private Consumer<List<XdsCluster>> updateCallback;
 
-    public EdsProtocol(AdsObserver adsObserver, Node node, int checkInterval, Consumer<List<XdsCluster>> updateCallback) {
+    public EdsProtocol(
+            AdsObserver adsObserver, Node node, int checkInterval, Consumer<List<XdsCluster>> updateCallback) {
         super(adsObserver, node, checkInterval);
         this.updateCallback = updateCallback;
     }
@@ -84,10 +82,10 @@ public class EdsProtocol extends AbstractProtocol<String> {
         }
 
         return response.getResourcesList().stream()
-            .map(EdsProtocol::unpackClusterLoadAssignment)
-            .filter(Objects::nonNull)
-            .map(this::parseCluster)
-            .collect(Collectors.toList());
+                .map(EdsProtocol::unpackClusterLoadAssignment)
+                .filter(Objects::nonNull)
+                .map(this::parseCluster)
+                .collect(Collectors.toList());
     }
 
     public XdsCluster parseCluster(ClusterLoadAssignment cluster) {
@@ -96,10 +94,10 @@ public class EdsProtocol extends AbstractProtocol<String> {
         xdsCluster.setName(cluster.getClusterName());
 
         List<XdsEndpoint> xdsEndpoints = cluster.getEndpointsList().stream()
-            .flatMap(e -> e.getLbEndpointsList().stream())
-            .map(LbEndpoint::getEndpoint)
-            .map(this::parseEndpoint)
-            .collect(Collectors.toList());
+                .flatMap(e -> e.getLbEndpointsList().stream())
+                .map(LbEndpoint::getEndpoint)
+                .map(this::parseEndpoint)
+                .collect(Collectors.toList());
 
         xdsCluster.setXdsEndpoints(xdsEndpoints);
 

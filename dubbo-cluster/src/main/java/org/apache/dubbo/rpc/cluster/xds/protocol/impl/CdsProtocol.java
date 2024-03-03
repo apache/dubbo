@@ -55,8 +55,8 @@ public class CdsProtocol extends AbstractProtocol<String> {
         return "type.googleapis.com/envoy.config.cluster.v3.Cluster";
     }
 
-    public void getClusters() {
-        getResource(null);
+    public void subscribeClusters() {
+        subscribeResource(null);
     }
 
     @Override

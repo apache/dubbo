@@ -100,5 +100,7 @@ public interface Directory<T> extends Node {
         return false;
     }
 
-    default Protocol getProtocol() { return null; }
+    default Protocol getProtocol() {
+        return null;
+    }
 }

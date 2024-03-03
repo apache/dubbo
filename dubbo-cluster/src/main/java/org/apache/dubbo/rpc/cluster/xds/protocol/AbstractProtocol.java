@@ -23,10 +23,6 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.cluster.xds.AdsObserver;
 import org.apache.dubbo.rpc.cluster.xds.XdsListener;
 
-import io.envoyproxy.envoy.config.core.v3.Node;
-import io.envoyproxy.envoy.service.discovery.v3.DiscoveryRequest;
-import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -40,6 +36,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import io.envoyproxy.envoy.config.core.v3.Node;
+import io.envoyproxy.envoy.service.discovery.v3.DiscoveryRequest;
+import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
 
 public abstract class AbstractProtocol<T> implements XdsProtocol, XdsListener {
 
@@ -104,7 +104,7 @@ public abstract class AbstractProtocol<T> implements XdsProtocol, XdsListener {
     }
 
     @Override
-    public void getResource(Set<String> resourceNames) {
+    public void subscribeResource(Set<String> resourceNames) {
         resourceNames = resourceNames == null ? Collections.emptySet() : resourceNames;
 
         if (!resourceNames.isEmpty() && isCacheExistResource(resourceNames)) {

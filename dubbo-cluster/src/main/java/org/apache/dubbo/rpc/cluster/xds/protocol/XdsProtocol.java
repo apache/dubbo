@@ -16,19 +16,17 @@
  */
 package org.apache.dubbo.rpc.cluster.xds.protocol;
 
-import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 
 public interface XdsProtocol {
     /**
-     * Gets all {@link T resource} by the specified resource name.
+     * Gets all resources by the specified resource name.
      * For LDS, the {@param resourceNames} is ignored
      *
      * @param resourceNames specified resource name
      * @return resources, null if request failed
      */
-    void getResource(Set<String> resourceNames);
+    void subscribeResource(Set<String> resourceNames);
 
     /**
      * Add a observer resource with {@link Consumer}

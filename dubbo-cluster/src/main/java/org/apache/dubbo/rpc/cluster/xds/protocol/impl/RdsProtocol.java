@@ -30,8 +30,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -53,7 +51,11 @@ public class RdsProtocol extends AbstractProtocol<String> {
 
     protected Consumer<List<XdsRouteConfiguration>> updateCallback;
 
-    public RdsProtocol(AdsObserver adsObserver, Node node, int checkInterval, Consumer<List<XdsRouteConfiguration>> updateCallback) {
+    public RdsProtocol(
+            AdsObserver adsObserver,
+            Node node,
+            int checkInterval,
+            Consumer<List<XdsRouteConfiguration>> updateCallback) {
         super(adsObserver, node, checkInterval);
         this.updateCallback = updateCallback;
     }
@@ -72,7 +74,8 @@ public class RdsProtocol extends AbstractProtocol<String> {
         //     return response.getResourcesList().stream()
         //             .map(RdsProtocol::unpackRouteConfiguration)
         //             .filter(Objects::nonNull)
-        //             .collect(Collectors.toConcurrentMap(RouteConfiguration::getName, this::decodeResourceToListener));
+        //             .collect(Collectors.toConcurrentMap(RouteConfiguration::getName,
+        // this::decodeResourceToListener));
         // }
         return new HashMap<>();
     }
@@ -84,19 +87,19 @@ public class RdsProtocol extends AbstractProtocol<String> {
         }
 
         return response.getResourcesList().stream()
-            .map(RdsProtocol::unpackRouteConfiguration)
-            .filter(Objects::nonNull)
-            .map(this::parseRouteConfiguration)
-            .collect(Collectors.toList());
+                .map(RdsProtocol::unpackRouteConfiguration)
+                .filter(Objects::nonNull)
+                .map(this::parseRouteConfiguration)
+                .collect(Collectors.toList());
     }
 
-    public XdsRouteConfiguration  parseRouteConfiguration(RouteConfiguration routeConfiguration) {
+    public XdsRouteConfiguration parseRouteConfiguration(RouteConfiguration routeConfiguration) {
         XdsRouteConfiguration xdsRouteConfiguration = new XdsRouteConfiguration();
         xdsRouteConfiguration.setName(routeConfiguration.getName());
 
         List<XdsVirtualHost> xdsVirtualHosts = routeConfiguration.getVirtualHostsList().stream()
-            .map(this::parseVirtualHost)
-            .collect(Collectors.toList());
+                .map(this::parseVirtualHost)
+                .collect(Collectors.toList());
 
         Map<String, XdsVirtualHost> xdsVirtualHostMap = new HashMap<>();
 
@@ -117,9 +120,8 @@ public class RdsProtocol extends AbstractProtocol<String> {
 
         List<String> domains = virtualHost.getDomainsList();
 
-        List<XdsRoute> xdsRoutes = virtualHost.getRoutesList().stream()
-            .map(this::parseRoute)
-            .collect(Collectors.toList());
+        List<XdsRoute> xdsRoutes =
+                virtualHost.getRoutesList().stream().map(this::parseRoute).collect(Collectors.toList());
 
         xdsVirtualHost.setName(virtualHost.getName());
         xdsVirtualHost.setRoutes(xdsRoutes);
