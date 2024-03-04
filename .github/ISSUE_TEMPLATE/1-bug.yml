@@ -24,7 +24,7 @@ body:
 - type: markdown
   attributes:
   value: |
-  <img src="https://dubbo.apache.org/imgs/nav_logo2.png" alt="Dubbo logo" height="90px" align="right" />
+      <img src="https://dubbo.apache.org/imgs/nav_logo2.png" alt="Dubbo logo" height="90px" align="right" />
 
       Thank you for finding the time to report the problem! We really appreciate the community efforts to improve Dubbo.
 
@@ -42,23 +42,23 @@ body:
   attributes:
   label: Search before asking
   description: >
-  Please make sure to search in the [issues](https://github.com/apache/dubbo/issues?q=is%3Aissue) first to see
-  whether the same issue was reported already.
+      Please make sure to search in the [issues](https://github.com/apache/dubbo/issues?q=is%3Aissue) first to see
+      whether the same issue was reported already.
   options:
   - label: >
-  I had searched in the [issues](https://github.com/apache/dubbo/issues?q=is%3Aissue) and found no similar
-  issues.
+      I had searched in the [issues](https://github.com/apache/dubbo/issues?q=is%3Aissue) and found no similar
+      issues.
   required: true
 
 - type: textarea
   attributes:
   label: Steps to reproduce this issue
   description: >
-  Describe how to reproduce this issue.If you are not able to provide a reproducible case,
-  please open a [Discussion](https://github.com/apache/dubbo/discussions) instead.
+      Describe how to reproduce this issue.If you are not able to provide a reproducible case,
+      please open a [Discussion](https://github.com/apache/dubbo/discussions) instead.
   placeholder: >
-  Please provide the context in which the problem occurred and explain what happened.
-  A [GitHub address] would be helpful for maintainers to reproduce the problem.
+      Please provide the context in which the problem occurred and explain what happened.
+      A [GitHub address] would be helpful for maintainers to reproduce the problem.
   validations:
   required: true
 
@@ -67,9 +67,9 @@ body:
   label: What you expected to happen
   description: What do you think went wrong?
   placeholder: >
-  Please explain why you think the behaviour is erroneous. It is extremely helpful if you copy and paste
-  the fragment of logs showing the exact error messages or wrong behaviour and screenshots for
-  UI problems. You can include files by dragging and dropping them here.
+      Please explain why you think the behaviour is erroneous. It is extremely helpful if you copy and paste
+      the fragment of logs showing the exact error messages or wrong behaviour and screenshots for
+      UI problems. You can include files by dragging and dropping them here.
 
       **NOTE**: please copy and paste texts instead of taking screenshots of them for easy future search.
   validations:
@@ -80,18 +80,18 @@ body:
   label: Anything else
   description: Anything else we need to know?
   placeholder: >
-  How often does this problem occur? (Once? Every time? Only when certain conditions are met?)
-  Any relevant logs to include? Put them here inside fenced
-  ``` ``` blocks or inside a collapsable details tag if it's too long:
-  <details><summary>x.log</summary> lots of stuff </details>
+      How often does this problem occur? (Once? Every time? Only when certain conditions are met?)
+      Any relevant logs to include? Put them here inside fenced
+      ``` ``` blocks or inside a collapsable details tag if it's too long:
+      <details><summary>x.log</summary> lots of stuff </details>
 
 - type: checkboxes
   attributes:
   label: Are you willing to submit a pull request to fix on your own?
   description: >
-  This is absolutely not required, but we are happy to guide you in the contribution process
-  especially if you already have a good understanding of how to implement the fix.
-  Dubbo is a totally community-driven project and we love to bring new contributors in.
+      This is absolutely not required, but we are happy to guide you in the contribution process
+      especially if you already have a good understanding of how to implement the fix.
+      Dubbo is a totally community-driven project and we love to bring new contributors in.
   options:
   - label: Yes I am willing to submit a pull request on my own!
 
@@ -101,8 +101,8 @@ body:
   description: The Code of Conduct helps create a safe space for everyone. We require that everyone agrees to it.
   options:
   - label: >
-  I agree to follow this project's
-  [Code of Conduct](https://www.apache.org/foundation/policies/conduct)
+      I agree to follow this project's
+      [Code of Conduct](https://www.apache.org/foundation/policies/conduct)
   required: true
 
 - type: markdown

@@ -24,7 +24,7 @@ body:
 - type: markdown
   attributes:
   value: |
-  <img src="https://dubbo.apache.org/imgs/nav_logo2.png" alt="Dubbo logo" height="90px" align="right" />
+      <img src="https://dubbo.apache.org/imgs/nav_logo2.png" alt="Dubbo logo" height="90px" align="right" />
 
       Thank you for finding the time to propose new feature!
 
@@ -37,12 +37,12 @@ body:
   attributes:
   label: Search before asking
   description: >
-  Please make sure to search in the [issues](https://github.com/apache/dubbo/issues?q=is%3Aissue) first to see
-  whether the same feature was requested already.
+      Please make sure to search in the [issues](https://github.com/apache/dubbo/issues?q=is%3Aissue) first to see
+      whether the same feature was requested already.
   options:
   - label: >
-  I had searched in the [issues](https://github.com/apache/dubbo/issues?q=is%3Aissue) and found no similar
-  feature requirement.
+      I had searched in the [issues](https://github.com/apache/dubbo/issues?q=is%3Aissue) and found no similar
+      feature requirement.
   required: true
 
 - type: textarea
@@ -61,9 +61,9 @@ body:
   attributes:
   label: Are you willing to submit a pull request to fix on your own?
   description: >
-  This is absolutely not required, but we are happy to guide you in the contribution process
-  especially if you already have a good understanding of how to implement the feature.
-  Dubbo is a totally community-driven project and we love to bring new contributors in.
+      This is absolutely not required, but we are happy to guide you in the contribution process
+      especially if you already have a good understanding of how to implement the feature.
+      Dubbo is a totally community-driven project and we love to bring new contributors in.
   options:
   - label: Yes I am willing to submit a pull request on my own!
 
@@ -73,8 +73,8 @@ body:
   description: The Code of Conduct helps create a safe space for everyone. We require that everyone agrees to it.
   options:
   - label: >
-  I agree to follow this project's
-  [Code of Conduct](https://www.apache.org/foundation/policies/conduct)
+      I agree to follow this project's
+      [Code of Conduct](https://www.apache.org/foundation/policies/conduct)
   required: true
 
 - type: markdown
