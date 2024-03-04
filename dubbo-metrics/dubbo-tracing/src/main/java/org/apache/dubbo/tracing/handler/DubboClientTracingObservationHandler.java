@@ -14,35 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.tracing.context;
+package org.apache.dubbo.tracing.handler;
 
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.tracing.context.DubboClientContext;
 
-import io.micrometer.observation.transport.Kind;
-import io.micrometer.observation.transport.ReceiverContext;
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.ObservationHandler;
+import io.micrometer.observation.transport.SenderContext;
+import io.micrometer.tracing.Tracer;
 
-/**
- * Consumer context for RPC.
- */
-public class DubboServerContext extends ReceiverContext<Invocation> {
+public class DubboClientTracingObservationHandler<T extends DubboClientContext> implements ObservationHandler<T> {
+    private final Tracer tracer;
 
-    private final Invoker<?> invoker;
-
-    private final Invocation invocation;
-
-    public DubboServerContext(Invoker<?> invoker, Invocation invocation) {
-        super((carrier, s) -> String.valueOf(carrier.getAttachment(s)), Kind.SERVER);
-        this.invoker = invoker;
-        this.invocation = invocation;
-        setCarrier(invocation);
+    public DubboClientTracingObservationHandler(Tracer tracer) {
+        this.tracer = tracer;
     }
 
-    public Invoker<?> getInvoker() {
-        return invoker;
-    }
+    @Override
+    public void onScopeOpened(T context) {}
 
-    public Invocation getInvocation() {
-        return invocation;
+    @Override
+    public boolean supportsContext(Observation.Context context) {
+        return context instanceof SenderContext;
     }
 }
