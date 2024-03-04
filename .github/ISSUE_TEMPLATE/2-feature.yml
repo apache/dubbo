@@ -23,7 +23,7 @@ projects: ["apache/337"]
 body:
 - type: markdown
   attributes:
-  value: |
+    value: |
       <img src="https://dubbo.apache.org/imgs/nav_logo2.png" alt="Dubbo logo" height="90px" align="right" />
 
       Thank you for finding the time to propose new feature!
