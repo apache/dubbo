@@ -70,7 +70,6 @@ public class PilotExchanger {
 
         // rds 资源回调函数，将 RdsProtocol 的资源存放起来
         Consumer<List<XdsRouteConfiguration>> rdsCallback = (xdsRouteConfigurations) -> {
-            System.out.println(xdsRouteConfigurations);
             xdsRouteConfigurations.forEach(xdsRouteConfiguration -> {
                 xdsRouteConfiguration.getVirtualHosts().forEach((serviceName, xdsVirtualHost) -> {
                     this.xdsVirtualHostMap.put(serviceName, xdsVirtualHost);
@@ -86,7 +85,6 @@ public class PilotExchanger {
 
         // eds 资源回调函数
         Consumer<List<XdsCluster>> edsCallback = (xdsClusters) -> {
-            System.out.println(xdsClusters);
             xdsClusters.forEach(xdsCluster -> {
                 this.xdsClusterMap.put(xdsCluster.getName(), xdsCluster);
                 if (cdsListeners.containsKey(xdsCluster.getName())) {

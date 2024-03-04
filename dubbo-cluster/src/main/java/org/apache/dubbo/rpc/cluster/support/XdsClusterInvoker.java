@@ -22,18 +22,16 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
-import org.apache.dubbo.rpc.cluster.directory.XdsDirectory;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.List;
 
 public class XdsClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
-    private final XdsDirectory xdsDirectory;
-
-    public XdsClusterInvoker(XdsDirectory xdsDirectory) {
-        this.xdsDirectory = xdsDirectory;
+    public XdsClusterInvoker(Directory<T> directory) {
+        super(directory);
     }
 
     @Override

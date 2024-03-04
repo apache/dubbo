@@ -1,1 +1,2 @@
 default=org.apache.dubbo.registry.client.DefaultServiceDiscoveryFactory
+xds=org.apache.dubbo.registry.client.XdsServiceDiscoveryFactory

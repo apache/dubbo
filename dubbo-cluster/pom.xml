@@ -47,12 +47,12 @@
       <version>${project.parent.version}</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-rpc-dubbo</artifactId>
-      <version>${project.parent.version}</version>
-      <scope>test</scope>
-    </dependency>
+    <!--    <dependency>-->
+    <!--      <groupId>org.apache.dubbo</groupId>-->
+    <!--      <artifactId>dubbo-rpc-dubbo</artifactId>-->
+    <!--      <version>${project.parent.version}</version>-->
+    <!--      <scope>test</scope>-->
+    <!--    </dependency>-->
     <dependency>
       <groupId>org.apache.curator</groupId>
       <artifactId>curator-framework</artifactId>
@@ -141,12 +141,6 @@
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcpkix-jdk15on</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-registry-api</artifactId>
-      <version>3.3.0-beta.2-SNAPSHOT</version>
-      <scope>compile</scope>
     </dependency>
 
   </dependencies>
