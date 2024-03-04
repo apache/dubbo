@@ -23,7 +23,7 @@ projects: ["apache/337"]
 body:
 - type: markdown
   attributes:
-  value: |
+    value: |
       <img src="https://dubbo.apache.org/imgs/nav_logo2.png" alt="Dubbo logo" height="90px" align="right" />
 
       Thank you for finding the time to propose new feature!
@@ -35,48 +35,48 @@ body:
 
 - type: checkboxes
   attributes:
-  label: Search before asking
-  description: >
+    label: Search before asking
+    description: >
       Please make sure to search in the [issues](https://github.com/apache/dubbo/issues?q=is%3Aissue) first to see
       whether the same feature was requested already.
-  options:
-  - label: >
-      I had searched in the [issues](https://github.com/apache/dubbo/issues?q=is%3Aissue) and found no similar
-      feature requirement.
+    options:
+      - label: >
+          I had searched in the [issues](https://github.com/apache/dubbo/issues?q=is%3Aissue) and found no similar
+          feature requirement.
   required: true
 
 - type: textarea
   attributes:
-  label: Descriptions
-  description: A short description of your feature
+    label: Descriptions
+    description: A short description of your feature
   validations:
-  required: true
+    required: true
 
 - type: textarea
   attributes:
-  label: Related issues
-  description: Is there currently another issue associated with this?
+    label: Related issues
+    description: Is there currently another issue associated with this?
 
 - type: checkboxes
   attributes:
-  label: Are you willing to submit a pull request to fix on your own?
-  description: >
+    label: Are you willing to submit a pull request to fix on your own?
+    description: >
       This is absolutely not required, but we are happy to guide you in the contribution process
       especially if you already have a good understanding of how to implement the feature.
       Dubbo is a totally community-driven project and we love to bring new contributors in.
-  options:
-  - label: Yes I am willing to submit a pull request on my own!
+    options:
+      - label: Yes I am willing to submit a pull request on my own!
 
 - type: checkboxes
   attributes:
-  label: Code of Conduct
-  description: The Code of Conduct helps create a safe space for everyone. We require that everyone agrees to it.
-  options:
-  - label: >
-      I agree to follow this project's
-      [Code of Conduct](https://www.apache.org/foundation/policies/conduct)
-  required: true
+    label: Code of Conduct
+    description: The Code of Conduct helps create a safe space for everyone. We require that everyone agrees to it.
+    options:
+      - label: >
+          I agree to follow this project's
+          [Code of Conduct](https://www.apache.org/foundation/policies/conduct)
+        required: true
 
 - type: markdown
   attributes:
-  value: "Thanks for completing our form!"
+    value: "Thanks for completing our form!"
