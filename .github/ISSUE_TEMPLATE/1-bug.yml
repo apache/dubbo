@@ -58,6 +58,14 @@ body:
           issues.
         required: true
 
+- type: input
+  attributes:
+    label: Dubbo Version
+    description: "Which Dubbo version, JDK version and operating system did you use?"
+    placeholder: "Example: Dubbo Java 3.2.12, OpenJDK 1.8, Ubuntu 20.04"
+  validations:
+    required: true
+
 - type: textarea
   attributes:
     label: Steps to reproduce this issue
