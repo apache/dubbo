@@ -43,7 +43,7 @@ body:
       - label: >
           I had searched in the [issues](https://github.com/apache/dubbo/issues?q=is%3Aissue) and found no similar
           feature requirement.
-  required: true
+        required: true
 
 - type: textarea
   attributes:
