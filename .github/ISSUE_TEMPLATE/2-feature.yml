@@ -21,9 +21,10 @@ title: "[Feature] "
 labels: ["status/need-triage"]
 projects: ["apache/337"]
 body:
-- type: markdown
+- type: checkboxes
   attributes:
-    value: |
+    label: Pre-check
+    description: >
       <img src="https://dubbo.apache.org/imgs/nav_logo2.png" alt="Dubbo logo" height="90px" align="right" />
 
       Thank you for finding the time to propose new feature!
@@ -32,6 +33,10 @@ body:
 
       **Dubbo is open for world wide collaboration, please make sure that all the content you provide is in English.**
       Remember that non-English issues is quite not friendly for everyone, and might unable to get the response!
+    options:
+      - label: >
+          I am sure that all the content I provide is in English.
+        required: true
 
 - type: checkboxes
   attributes:
