@@ -74,7 +74,5 @@ public class MockConfigService implements ConfigService {
     public void shutDown() throws NacosException {}
 
     @Override
-    public void addConfigFilter(IConfigFilter iConfigFilter) {
-
-    }
+    public void addConfigFilter(IConfigFilter iConfigFilter) {}
 }

@@ -72,7 +72,5 @@ public class MockConfigService implements ConfigService {
     public void shutDown() {}
 
     @Override
-    public void addConfigFilter(IConfigFilter iConfigFilter) {
-
-    }
+    public void addConfigFilter(IConfigFilter iConfigFilter) {}
 }
