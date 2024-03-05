@@ -59,7 +59,9 @@ public class AotUtils {
                     }
                 }));
 
-                registerSerializationType(registerType.getSuperclass(), hints, serializationTypeCache);
+                if (registerType.getSuperclass() != null) {
+                    registerSerializationType(registerType.getSuperclass(), hints, serializationTypeCache);
+                }
             }
         }
     }
