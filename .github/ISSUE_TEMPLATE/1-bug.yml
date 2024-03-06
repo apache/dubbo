@@ -58,7 +58,23 @@ body:
           issues.
         required: true
 
-- type: input
+- type: dropdown
+  attributes:
+    label: Apache Dubbo Component
+    description: |
+      What Apache Dubbo component are you using? Apache Dubbo has many subprojects, please make sure
+      to choose the component that you want to ask questions about.
+    multiple: false
+    options:
+      - "Java SDK (apache/dubbo)"
+      - "Java Samples (apache/dubbo-samples)"
+      - "Java Integration Cases (apache/dubbo-integration-cases)"
+      - "Java SPI Extensions (apache/dubbo-spi-extensions)"
+      - "Java Benchmark (apache/dubbo-benchmark)"
+  validations:
+    required: true
+
+- type: textarea
   attributes:
     label: Dubbo Version
     description: "Which Dubbo version, JDK version and operating system did you use?"
