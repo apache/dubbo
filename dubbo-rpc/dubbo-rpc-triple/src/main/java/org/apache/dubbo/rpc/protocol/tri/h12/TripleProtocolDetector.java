@@ -77,7 +77,8 @@ public class TripleProtocolDetector implements ProtocolDetector {
 
     public enum HttpVersion {
         HTTP1("http1"),
-        HTTP2("http2");
+        HTTP2("http2"),
+        HTTP3("http3");
 
         private final String version;
 

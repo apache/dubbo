@@ -37,6 +37,7 @@
     <module>dubbo-demo-triple</module>
     <module>dubbo-demo-native</module>
     <module>dubbo-demo-spring-boot</module>
+    <module>dubbo-demo-triple-h3</module>
   </modules>
 
   <properties>

@@ -14,30 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.demo.consumer;
-
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.ProtocolConfig;
-import org.apache.dubbo.config.ReferenceConfig;
-import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.demo.GreeterService;
-import org.apache.dubbo.demo.hello.HelloReply;
-import org.apache.dubbo.demo.hello.HelloRequest;
+package org.apache.dubbo.demo.h3;
 
 import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
-public class ApiConsumer {
+public class H3ApiConsumer {
     public static void main(String[] args) throws InterruptedException, IOException {
-        ReferenceConfig<GreeterService> referenceConfig = new ReferenceConfig<>();
+        /* ReferenceConfig<GreeterService> referenceConfig = new ReferenceConfig<>();
         referenceConfig.setInterface(GreeterService.class);
         referenceConfig.setCheck(false);
         referenceConfig.setProtocol(CommonConstants.TRIPLE);
         referenceConfig.setLazy(true);
-        referenceConfig.setTimeout(1000 * 60 * 30);
+        referenceConfig.setTimeout(1000*60*30);
         referenceConfig.setRetries(0);
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
@@ -61,6 +49,6 @@ public class ApiConsumer {
         } catch (Throwable t) {
             t.printStackTrace();
         }
-        System.in.read();
+        System.in.read();*/
     }
 }

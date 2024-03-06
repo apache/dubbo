@@ -16,24 +16,8 @@
  */
 package org.apache.dubbo.remoting.api;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.remoting.api.pu.ChannelOperator;
-import org.apache.dubbo.remoting.api.ssl.ContextOperator;
+import io.netty.channel.socket.DatagramPacket;
 
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface WireProtocol {
-
-    ProtocolDetector detector();
-
-    default DatagramProtocolDetector datagramDetector() {
-        return null;
-    }
-
-    void configServerProtocolHandler(URL url, ChannelOperator operator);
-
-    void configClientPipeline(URL url, ChannelOperator operator, ContextOperator contextOperator);
-
-    void close();
+public interface DatagramProtocolDetector extends ProtocolDetector {
+    Result detect(DatagramPacket in);
 }

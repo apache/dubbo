@@ -14,26 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.api;
+package org.apache.dubbo.rpc.protocol.tri.h3;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.remoting.api.pu.ChannelOperator;
-import org.apache.dubbo.remoting.api.ssl.ContextOperator;
+import org.apache.dubbo.remoting.api.DatagramProtocolDetector;
+import org.apache.dubbo.remoting.buffer.ChannelBuffer;
+import org.apache.dubbo.rpc.protocol.tri.h12.TripleProtocolDetector.HttpVersion;
 
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface WireProtocol {
+import io.netty.channel.socket.DatagramPacket;
 
-    ProtocolDetector detector();
+import static org.apache.dubbo.rpc.protocol.tri.h12.TripleProtocolDetector.HTTP_VERSION;
 
-    default DatagramProtocolDetector datagramDetector() {
-        return null;
+public class TripleHttp3ProtocolDetector implements DatagramProtocolDetector {
+    @Override
+    public Result detect(DatagramPacket in) {
+        Result recognized = Result.recognized();
+        recognized.setAttribute(HTTP_VERSION, HttpVersion.HTTP3.getVersion());
+        return recognized;
     }
 
-    void configServerProtocolHandler(URL url, ChannelOperator operator);
-
-    void configClientPipeline(URL url, ChannelOperator operator, ContextOperator contextOperator);
-
-    void close();
+    @Override
+    public Result detect(ChannelBuffer in) {
+        return Result.unrecognized();
+    }
 }

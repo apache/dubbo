@@ -143,9 +143,11 @@
     <maven_enforce_version>3.4.1</maven_enforce_version>
     <maven_antrun_version>3.1.0</maven_antrun_version>
     <maven_os_plugin_version>1.7.1</maven_os_plugin_version>
+    <!-- <maven_os_plugin_version>1.6.0</maven_os_plugin_version> -->
     <maven_protobuf_plugin_version>0.6.1</maven_protobuf_plugin_version>
 
     <protobuf-protoc_version>3.22.3</protobuf-protoc_version>
+    <!-- <protobuf-protoc_version>3.4.0</protobuf-protoc_version> -->
     <grpc_version>1.54.0</grpc_version>
     <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
     <spotless.action>check</spotless.action>

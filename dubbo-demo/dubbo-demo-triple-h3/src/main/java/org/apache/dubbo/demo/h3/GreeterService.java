@@ -14,26 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.api;
+package org.apache.dubbo.demo.h3;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.remoting.api.pu.ChannelOperator;
-import org.apache.dubbo.remoting.api.ssl.ContextOperator;
+/*import org.apache.dubbo.demo.h3.hello.HelloReply;
+import org.apache.dubbo.demo.h3.hello.HelloRequest;*/
 
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface WireProtocol {
+public interface GreeterService {
+    /**
+     * Sends a greeting
+     */
+    /*HelloReply sayHello(HelloRequest request);
 
-    ProtocolDetector detector();
-
-    default DatagramProtocolDetector datagramDetector() {
-        return null;
-    }
-
-    void configServerProtocolHandler(URL url, ChannelOperator operator);
-
-    void configClientPipeline(URL url, ChannelOperator operator, ContextOperator contextOperator);
-
-    void close();
+    CompletableFuture<String> sayHelloAsync(String request);*/
 }

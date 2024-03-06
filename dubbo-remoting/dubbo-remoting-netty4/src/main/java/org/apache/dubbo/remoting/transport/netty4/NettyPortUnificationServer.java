@@ -76,6 +76,8 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
     private EventLoopGroup workerGroup;
     private final Map<String, Channel> dubboChannels = new ConcurrentHashMap<>();
 
+    private NettyUdpServer udpServer;
+
     public NettyPortUnificationServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, ChannelHandlers.wrap(handler, url));
 
@@ -153,6 +155,11 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
             closeBootstrap();
             throw t;
         }
+
+        // http3
+        udpServer = new NettyUdpServer();
+        // todo: handler?
+        udpServer.doOpen(bindPort, getUrl(), getProtocols(), this, getSupportedUrls(), getSupportedHandlers());
     }
 
     private void closeBootstrap() {

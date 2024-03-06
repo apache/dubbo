@@ -90,5 +90,12 @@
       <artifactId>dubbo-native</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
+
+    <!-- for http3 -->
+    <dependency>
+      <groupId>io.netty.incubator</groupId>
+      <artifactId>netty-incubator-codec-http3</artifactId>
+      <version>0.0.25.Final</version>
+    </dependency>
   </dependencies>
 </project>

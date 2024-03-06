@@ -14,26 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.api;
+package org.apache.dubbo.remoting.http3.netty4;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.remoting.api.pu.ChannelOperator;
-import org.apache.dubbo.remoting.api.ssl.ContextOperator;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface WireProtocol {
-
-    ProtocolDetector detector();
-
-    default DatagramProtocolDetector datagramDetector() {
-        return null;
-    }
-
-    void configServerProtocolHandler(URL url, ChannelOperator operator);
-
-    void configClientPipeline(URL url, ChannelOperator operator, ContextOperator contextOperator);
-
-    void close();
-}
+public class NettyHttp3FrameHandler extends ChannelInboundHandlerAdapter {}
