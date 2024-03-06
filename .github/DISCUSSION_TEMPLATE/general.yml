@@ -15,19 +15,19 @@
 # limitations under the License.
 #
 
-title: "[Q/A][Java SDK (Component)] xxx"
+title: "[General][Java SDK (Component)] xxx"
 body:
 - type: markdown
   attributes:
     value: |
       <img src="https://dubbo.apache.org/imgs/nav_logo2.png" alt="Dubbo logo" height="90px" align="right" />
 
-      Thank you for finding the time to report the question! We really appreciate the community efforts to improve Dubbo.
+      Thank you for finding the time to share your idea! We really appreciate the community efforts to improve Dubbo.
 
       If you need to report a security issue, please visit [our security policy](https://github.com/apache/dubbo/security/policy).
 
       **Dubbo is open for world wide collaboration, please make sure that all the content you provide is in English.**
-      Remember that non-English question is quite not friendly for everyone, and might unable to get the response!
+      Remember that non-English idea is quite not friendly for everyone, and might unable to get the response!
 
 - type: checkboxes
   attributes:
@@ -69,7 +69,7 @@ body:
 - type: textarea
   attributes:
     label: Details
-    description: Anything you want to know?
+    description: Anything you want to ask?
   validations:
     required: true
 
