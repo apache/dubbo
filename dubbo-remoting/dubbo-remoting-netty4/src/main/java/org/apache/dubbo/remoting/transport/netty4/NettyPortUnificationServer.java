@@ -159,7 +159,7 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
         // http3
         udpServer = new NettyUdpServer();
         // todo: handler?
-        udpServer.doOpen(bindPort, getUrl(), getProtocols(), this, getSupportedUrls(), getSupportedHandlers());
+        udpServer.doOpen(bindPort, this);
     }
 
     private void closeBootstrap() {

@@ -36,20 +36,14 @@ public class NettyUdpServer {
     private Bootstrap bootstrap;
     private Channel channel;
 
-    public void doOpen(
-            int port,
-            URL url,
-            Map<String, WireProtocol> protocols,
-            org.apache.dubbo.remoting.ChannelHandler handler,
-            Map<String, URL> urlMapper,
-            Map<String, ChannelHandler> handlerMapper) {
+    public void doOpen(int port, NettyPortUnificationServer parentServer) {
         try {
             group = new NioEventLoopGroup(1);
             bootstrap = new Bootstrap();
             channel = bootstrap
                     .group(group)
                     .channel(NioDatagramChannel.class)
-                    .handler(new NettyUdpServerHandler(url, protocols, handler, urlMapper, handlerMapper))
+                    .handler(new NettyUdpServerHandler(parentServer))
                     .bind(new InetSocketAddress(port))
                     .sync()
                     .channel();

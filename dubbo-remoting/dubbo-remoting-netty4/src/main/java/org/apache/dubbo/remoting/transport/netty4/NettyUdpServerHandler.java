@@ -33,27 +33,21 @@ import io.netty.channel.socket.DatagramPacket;
 public class NettyUdpServerHandler extends ChannelInboundHandlerAdapter {
     private static final ErrorTypeAwareLogger LOGGER =
             LoggerFactory.getErrorTypeAwareLogger(NettyUdpServerHandler.class);
-    private final URL url;
-    private final ChannelHandler handler;
-    private final Map<String, WireProtocol> protocols;
-    private final Map<String, URL> urlMapper;
-    private final Map<String, ChannelHandler> handlerMapper;
 
-    public NettyUdpServerHandler(
-            URL url,
-            Map<String, WireProtocol> protocols,
-            ChannelHandler handler,
-            Map<String, URL> urlMapper,
-            Map<String, ChannelHandler> handlerMapper) {
-        this.url = url;
-        this.protocols = protocols;
-        this.handler = handler;
-        this.urlMapper = urlMapper;
-        this.handlerMapper = handlerMapper;
+    private final NettyPortUnificationServer parentServer;
+
+    public NettyUdpServerHandler(NettyPortUnificationServer parentServer) {
+        this.parentServer = parentServer;
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        final URL url = parentServer.getUrl();
+        final ChannelHandler handler = parentServer;
+        final Map<String, WireProtocol> protocols = parentServer.getProtocols();
+        final Map<String, URL> urlMapper = parentServer.getSupportedUrls();
+        final Map<String, ChannelHandler> handlerMapper = parentServer.getSupportedHandlers();
+
         DatagramPacket datagram = (DatagramPacket) msg;
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
 
@@ -71,8 +65,8 @@ public class NettyUdpServerHandler extends ChannelInboundHandlerAdapter {
                 case UNRECOGNIZED:
                     continue;
                 case RECOGNIZED:
-                    ChannelHandler localHandler = this.handlerMapper.getOrDefault(name, handler);
-                    URL localURL = this.urlMapper.getOrDefault(name, url);
+                    ChannelHandler localHandler = handlerMapper.getOrDefault(name, handler);
+                    URL localURL = urlMapper.getOrDefault(name, url);
                     channel.setUrl(localURL);
                     NettyConfigOperator operator = new NettyConfigOperator(channel, localHandler);
                     operator.setDetectResult(result);
