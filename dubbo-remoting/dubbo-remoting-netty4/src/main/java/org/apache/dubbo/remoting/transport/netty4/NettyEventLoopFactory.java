@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.resource.GlobalResourceInitializer;
+import org.apache.dubbo.common.threadpool.support.loom.VirtualThreadPool;
 import org.apache.dubbo.remoting.Constants;
 
 import java.util.concurrent.ThreadFactory;
@@ -51,6 +52,20 @@ public class NettyEventLoopFactory {
         return shouldEpoll()
                 ? new EpollEventLoopGroup(threads, threadFactory)
                 : new NioEventLoopGroup(threads, threadFactory);
+    }
+
+    public static EventLoopGroup eventLoopGroup(boolean useVirtualThread,int threads, String threadFactoryName) {
+        ThreadFactory threadFactory;
+        if (useVirtualThread) {
+            threadFactory = VirtualThreadPool.getVirtualThreadFactory(threadFactoryName,-1);
+            return shouldEpoll()
+                ? new EpollEventLoopGroup(threadFactory)
+                : new NioEventLoopGroup(threadFactory);
+        }
+        threadFactory = new DefaultThreadFactory(threadFactoryName, true);
+        return shouldEpoll()
+            ? new EpollEventLoopGroup(threads, threadFactory)
+            : new NioEventLoopGroup(threads, threadFactory);
     }
 
     public static Class<? extends SocketChannel> socketChannelClass() {
