@@ -21,6 +21,7 @@ import org.apache.dubbo.rpc.Invoker;
 
 import java.util.Objects;
 
+import io.micrometer.observation.transport.Kind;
 import io.micrometer.observation.transport.SenderContext;
 
 /**
@@ -33,7 +34,7 @@ public class DubboClientContext extends SenderContext<Invocation> {
     private final Invocation invocation;
 
     public DubboClientContext(Invoker<?> invoker, Invocation invocation) {
-        super((map, key, value) -> Objects.requireNonNull(map).setAttachment(key, value));
+        super((carrier, key, value) -> Objects.requireNonNull(carrier).setAttachment(key, value), Kind.CLIENT);
         this.invoker = invoker;
         this.invocation = invocation;
         setCarrier(invocation);

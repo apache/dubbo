@@ -44,9 +44,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
         onClass = "io.micrometer.observation.NoopObservationRegistry")
 public class ObservationReceiverFilter implements Filter, BaseFilter.Listener, ScopeModelAware {
 
-    private ObservationRegistry observationRegistry;
+    private final ObservationRegistry observationRegistry;
 
-    private DubboServerObservationConvention serverObservationConvention;
+    private final DubboServerObservationConvention serverObservationConvention;
 
     public ObservationReceiverFilter(ApplicationModel applicationModel) {
         observationRegistry = applicationModel.getBeanFactory().getBean(ObservationRegistry.class);
