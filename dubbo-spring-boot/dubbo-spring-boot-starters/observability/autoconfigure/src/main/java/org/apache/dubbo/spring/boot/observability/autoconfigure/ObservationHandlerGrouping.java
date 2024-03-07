@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.spring.boot.observability.autoconfigure;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -47,12 +48,13 @@ class ObservationHandlerGrouping {
     void apply(List<ObservationHandler<?>> handlers, ObservationRegistry.ObservationConfig config) {
         MultiValueMap<Class<? extends ObservationHandler>, ObservationHandler<?>> groupings =
                 new LinkedMultiValueMap<>();
+        List<ObservationHandler<?>> handlersWithoutCategory = new ArrayList<>();
         for (ObservationHandler<?> handler : handlers) {
             Class<? extends ObservationHandler> category = findCategory(handler);
             if (category != null) {
                 groupings.add(category, handler);
             } else {
-                config.observationHandler(handler);
+                handlersWithoutCategory.add(handler);
             }
         }
         for (Class<? extends ObservationHandler> category : this.categories) {
@@ -61,6 +63,9 @@ class ObservationHandlerGrouping {
                 config.observationHandler(
                         new ObservationHandler.FirstMatchingCompositeObservationHandler(handlerGroup));
             }
+        }
+        for (ObservationHandler<?> observationHandler : handlersWithoutCategory) {
+            config.observationHandler(observationHandler);
         }
     }
 
