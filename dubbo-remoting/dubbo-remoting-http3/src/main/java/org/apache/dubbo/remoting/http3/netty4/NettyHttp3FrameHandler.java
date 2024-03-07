@@ -17,30 +17,33 @@
 package org.apache.dubbo.remoting.http3.netty4;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 
-/*import io.netty.handler.codec.http2.Http2ResetFrame;
+import org.apache.dubbo.remoting.http12.h2.Http2Header;
+import org.apache.dubbo.remoting.http12.h2.Http2InputMessage;
+import org.apache.dubbo.remoting.http3.h3.Http3TransportListener;
 
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
-import org.apache.dubbo.remoting.http12.h2.Http2TransportListener;
-import org.apache.dubbo.remoting.http12.netty4.h2.NettyHttp2FrameHandler;*/
+public class NettyHttp3FrameHandler extends NettyHttp3StreamInboundHandler {
+    private final Http3TransportListener transportListener;
 
-public class NettyHttp3FrameHandler /*extends NettyHttp2FrameHandler*/ {
-//    public NettyHttp3FrameHandler(H2StreamChannel h2StreamChannel, Http2TransportListener transportListener) {
-//        super(h2StreamChannel, transportListener);
-//    }
+    public NettyHttp3FrameHandler(Http3TransportListener transportListener) {
+        this.transportListener = transportListener;
+    }
 
-//    @Override
-//    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-//        // todo: cancel
-//        // reset frame
-//        /*if (evt instanceof Http2ResetFrame) {
-//            long errorCode = ((Http2ResetFrame) evt).errorCode();
-//            transportListener.cancelByRemote(errorCode);
-//        } else {
-//            super.userEventTriggered(ctx, evt);
-//        }*/
-//    }
+    @Override
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        if (msg instanceof Http2Header) {
+            transportListener.onMetadata((Http2Header) msg);
+        } else if (msg instanceof Http2InputMessage) {
+            transportListener.onData((Http2InputMessage) msg);
+        } else {
+            super.channelRead(ctx, msg);
+        }
+    }
+
+    @Override
+    protected void channelEndStream(ChannelHandlerContext ctx) throws Exception {
+        transportListener.onDataCompletion();
+    }
+
+    // todo: userEventTriggered cancel
 }

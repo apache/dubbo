@@ -1,7 +1,5 @@
 package org.apache.dubbo.remoting.http3.netty4;
 
-public class NettyH3StreamChannel {}
-/*
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
@@ -45,4 +43,4 @@ public class NettyH3StreamChannel implements H2StreamChannel {
     public Http2OutputMessage newOutputMessage(boolean endStream) {
         return null;
     }
-}*/
+}
