@@ -29,7 +29,7 @@
   <description>The zookeeper remoting module of dubbo project</description>
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>
-    <zookeeper_version>3.4.14</zookeeper_version>
+    <zookeeper_version>3.9.1</zookeeper_version>
     <curator_version>4.3.0</curator_version>
   </properties>
   <dependencies>
