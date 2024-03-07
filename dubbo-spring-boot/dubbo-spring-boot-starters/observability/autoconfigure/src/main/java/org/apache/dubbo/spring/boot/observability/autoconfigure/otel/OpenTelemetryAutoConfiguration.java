@@ -18,8 +18,7 @@ package org.apache.dubbo.spring.boot.observability.autoconfigure.otel;
 
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.utils.ClassUtils;
-import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.spring.boot.autoconfigure.DubboConfigurationProperties;
 import org.apache.dubbo.spring.boot.observability.autoconfigure.DubboMicrometerTracingAutoConfiguration;
 import org.apache.dubbo.spring.boot.observability.autoconfigure.ObservabilityUtils;
@@ -38,6 +37,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 
 import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_PREFIX;
 
@@ -62,15 +62,12 @@ public class OpenTelemetryAutoConfiguration {
     /**
      * Default value for application name if {@code spring.application.name} is not set.
      */
-    private static final String DEFAULT_APPLICATION_NAME = "application";
+    private static final String DEFAULT_APPLICATION_NAME = "unknown_dubbo_service";
 
     private final DubboConfigurationProperties dubboConfigProperties;
 
-    private final ModuleModel moduleModel;
-
-    OpenTelemetryAutoConfiguration(DubboConfigurationProperties dubboConfigProperties, ModuleModel moduleModel) {
+    OpenTelemetryAutoConfiguration(DubboConfigurationProperties dubboConfigProperties) {
         this.dubboConfigProperties = dubboConfigProperties;
-        this.moduleModel = moduleModel;
     }
 
     @Bean
@@ -87,14 +84,14 @@ public class OpenTelemetryAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     io.opentelemetry.sdk.trace.SdkTracerProvider otelSdkTracerProvider(
+            Environment environment,
             ObjectProvider<io.opentelemetry.sdk.trace.SpanProcessor> spanProcessors,
             io.opentelemetry.sdk.trace.samplers.Sampler sampler) {
-        String applicationName = moduleModel
-                .getApplicationModel()
-                .getApplicationConfigManager()
-                .getApplication()
-                .map(ApplicationConfig::getName)
-                .orElse(DEFAULT_APPLICATION_NAME);
+        String applicationName = dubboConfigProperties.getApplication().getName();
+        if (StringUtils.isBlank(applicationName)) {
+            applicationName = environment.getProperty("spring.application.name", DEFAULT_APPLICATION_NAME);
+        }
+
         // Due to https://github.com/micrometer-metrics/tracing/issues/343
         String RESOURCE_ATTRIBUTES_CLASS_NAME = "io.opentelemetry.semconv.ResourceAttributes";
         boolean isLowVersion = !ClassUtils.isPresent(
