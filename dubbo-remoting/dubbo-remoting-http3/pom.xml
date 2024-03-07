@@ -27,5 +27,10 @@
       <artifactId>netty-incubator-codec-http3</artifactId>
       <version>0.0.25.Final</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-remoting-http12</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
   </dependencies>
 </project>

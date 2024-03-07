@@ -16,6 +16,31 @@
  */
 package org.apache.dubbo.remoting.http3.netty4;
 
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
-public class NettyHttp3FrameHandler extends ChannelInboundHandlerAdapter {}
+/*import io.netty.handler.codec.http2.Http2ResetFrame;
+
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
+import org.apache.dubbo.remoting.http12.h2.Http2TransportListener;
+import org.apache.dubbo.remoting.http12.netty4.h2.NettyHttp2FrameHandler;*/
+
+public class NettyHttp3FrameHandler /*extends NettyHttp2FrameHandler*/ {
+//    public NettyHttp3FrameHandler(H2StreamChannel h2StreamChannel, Http2TransportListener transportListener) {
+//        super(h2StreamChannel, transportListener);
+//    }
+
+//    @Override
+//    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+//        // todo: cancel
+//        // reset frame
+//        /*if (evt instanceof Http2ResetFrame) {
+//            long errorCode = ((Http2ResetFrame) evt).errorCode();
+//            transportListener.cancelByRemote(errorCode);
+//        } else {
+//            super.userEventTriggered(ctx, evt);
+//        }*/
+//    }
+}

@@ -17,25 +17,33 @@
 package org.apache.dubbo.remoting.http3.netty4;
 
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.incubator.codec.http3.Http3DataFrame;
 import io.netty.incubator.codec.http3.Http3HeadersFrame;
-import io.netty.incubator.codec.http3.Http3RequestStreamInboundHandler;
-import io.netty.util.ReferenceCountUtil;
 
-public class NettyHttp3FrameCodec extends Http3RequestStreamInboundHandler {
+import org.apache.dubbo.remoting.http12.h2.Http2Header;
+import org.apache.dubbo.remoting.http12.h2.Http2InputMessage;
+
+public class NettyHttp3FrameCodec extends ChannelInboundHandlerAdapter {
 
     @Override
-    protected void channelRead(ChannelHandlerContext ctx, Http3HeadersFrame frame) throws Exception {
-        System.out.println("channelRead headers");
-        ReferenceCountUtil.release(frame);
+    public final void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        if (msg instanceof Http3HeadersFrame) {
+            Http2Header header = onHttp3HeadersFrame((Http3HeadersFrame) msg);
+            super.channelRead(ctx, header);
+        } else if (msg instanceof Http3DataFrame) {
+            Http2InputMessage inputMessage = onHttp3DataFrame((Http3DataFrame) msg);
+            super.channelRead(ctx, inputMessage);
+        } else {
+            super.channelRead(ctx, msg);
+        }
     }
 
-    @Override
-    protected void channelRead(ChannelHandlerContext ctx, Http3DataFrame frame) throws Exception {
-        System.out.println("channelRead data");
-        ReferenceCountUtil.release(frame);
+    private Http2Header onHttp3HeadersFrame(Http3HeadersFrame frame) {
+        return null;
     }
 
-    @Override
-    protected void channelInputClosed(ChannelHandlerContext ctx) throws Exception {}
+    private Http2InputMessage onHttp3DataFrame(Http3DataFrame frame) {
+        return null;
+    }
 }

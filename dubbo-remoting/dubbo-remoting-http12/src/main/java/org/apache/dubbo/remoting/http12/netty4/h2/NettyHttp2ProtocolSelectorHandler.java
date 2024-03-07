@@ -37,11 +37,11 @@ import io.netty.handler.codec.http2.Http2StreamChannel;
 
 public class NettyHttp2ProtocolSelectorHandler extends SimpleChannelInboundHandler<HttpMetadata> {
 
-    private final URL url;
+    protected final URL url;
 
-    private final FrameworkModel frameworkModel;
+    protected final FrameworkModel frameworkModel;
 
-    private final Http2ServerTransportListenerFactory defaultHttp2ServerTransportListenerFactory;
+    protected final Http2ServerTransportListenerFactory defaultHttp2ServerTransportListenerFactory;
 
     public NettyHttp2ProtocolSelectorHandler(
             URL url,

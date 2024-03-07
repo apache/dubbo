@@ -34,6 +34,7 @@ import org.apache.dubbo.remoting.http12.netty4.h2.NettyHttp2FrameCodec;
 import org.apache.dubbo.remoting.http12.netty4.h2.NettyHttp2ProtocolSelectorHandler;
 import org.apache.dubbo.remoting.http3.netty4.NettyHttp3FrameCodec;
 import org.apache.dubbo.remoting.http3.netty4.NettyHttp3FrameHandler;
+import org.apache.dubbo.remoting.http3.netty4.NettyHttp3ProtocolSelectorHandler;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
@@ -236,7 +237,8 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                                     @Override
                                     protected void initChannel(QuicStreamChannel ch) {
                                         ch.pipeline().addLast(new NettyHttp3FrameCodec());
-                                        ch.pipeline().addLast(new NettyHttp3FrameHandler());
+                                        ch.pipeline().addLast(new NettyHttp3ProtocolSelectorHandler(
+                                                /*url, frameworkModel, GenericHttp2ServerTransportListenerFactory.INSTANCE*/));
                                     }
                                 }));
                     }

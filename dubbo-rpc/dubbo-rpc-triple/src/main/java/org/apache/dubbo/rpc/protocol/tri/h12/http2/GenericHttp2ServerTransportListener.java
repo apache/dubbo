@@ -63,7 +63,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     private final StreamingDecoder streamingDecoder;
     private final Http2ServerChannelObserver serverChannelObserver;
 
-    private ServerCallListener serverCallListener;
+    protected ServerCallListener serverCallListener;
 
     public GenericHttp2ServerTransportListener(
             H2StreamChannel h2StreamChannel, URL url, FrameworkModel frameworkModel) {
