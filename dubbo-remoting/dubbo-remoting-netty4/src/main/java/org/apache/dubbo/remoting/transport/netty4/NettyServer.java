@@ -153,13 +153,17 @@ public class NettyServer extends AbstractServer {
     }
 
     protected EventLoopGroup createBossGroup() {
-        return NettyEventLoopFactory.eventLoopGroup(1, EVENT_LOOP_BOSS_POOL_NAME);
+        return NettyEventLoopFactory.eventLoopGroup(true,1, EVENT_LOOP_BOSS_POOL_NAME);
     }
 
     protected EventLoopGroup createWorkerGroup() {
-        return NettyEventLoopFactory.eventLoopGroup(
-                getUrl().getPositiveParameter(IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS),
-                EVENT_LOOP_WORKER_POOL_NAME);
+//        return NettyEventLoopFactory.eventLoopGroup(
+//                getUrl().getPositiveParameter(IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS),
+//                EVENT_LOOP_WORKER_POOL_NAME);
+
+        return NettyEventLoopFactory.eventLoopGroup(true,
+            0,
+            EVENT_LOOP_WORKER_POOL_NAME);
     }
 
     protected NettyServerHandler createNettyServerHandler() {

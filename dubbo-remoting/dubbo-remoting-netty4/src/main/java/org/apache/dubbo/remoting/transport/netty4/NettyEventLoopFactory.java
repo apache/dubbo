@@ -57,7 +57,7 @@ public class NettyEventLoopFactory {
     public static EventLoopGroup eventLoopGroup(boolean useVirtualThread,int threads, String threadFactoryName) {
         ThreadFactory threadFactory;
         if (useVirtualThread) {
-            threadFactory = VirtualThreadPool.getVirtualThreadFactory(threadFactoryName,-1);
+            threadFactory = VirtualThreadPool.getVirtualThreadFactory(threadFactoryName,threads>0?1:-1);
             return shouldEpoll()
                 ? new EpollEventLoopGroup(threadFactory)
                 : new NioEventLoopGroup(threadFactory);
