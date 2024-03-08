@@ -14,33 +14,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client;
+package org.apache.dubbo.registry.xds;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.registry.client.ReflectionBasedServiceDiscovery;
+import org.apache.dubbo.rpc.cluster.xds.PilotExchanger;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_INITIALIZE_XDS;
 
-public class XdsServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
+public class XdsServiceDiscovery extends ReflectionBasedServiceDiscovery {
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(XdsServiceDiscovery.class);
 
-    private static final ErrorTypeAwareLogger logger =
-            LoggerFactory.getErrorTypeAwareLogger(XdsServiceDiscoveryFactory.class);
+    private PilotExchanger exchanger;
 
-    @Override
-    protected XdsServiceDiscovery createDiscovery(URL registryURL) {
-        XdsServiceDiscovery xdsServiceDiscovery = new XdsServiceDiscovery(ApplicationModel.defaultModel(), registryURL);
+    public XdsServiceDiscovery(ApplicationModel applicationModel, URL registryURL) {
+        super(applicationModel, registryURL);
+        doInitialize(registryURL);
+    }
+
+    public void doInitialize(URL registryURL) {
         try {
-            xdsServiceDiscovery.doInitialize(registryURL);
-        } catch (Exception e) {
-            logger.error(
-                    REGISTRY_ERROR_INITIALIZE_XDS,
-                    "",
-                    "",
-                    "Error occurred when initialize xDS service discovery impl.",
-                    e);
+            exchanger = PilotExchanger.initialize(registryURL);
+        } catch (Throwable t) {
+            logger.error(REGISTRY_ERROR_INITIALIZE_XDS, "", "", t.getMessage(), t);
         }
-        return xdsServiceDiscovery;
+    }
+
+    public void doDestroy() {
+        try {
+            if (exchanger == null) {
+                return;
+            }
+            exchanger.destroy();
+        } catch (Throwable t) {
+            logger.error(REGISTRY_ERROR_INITIALIZE_XDS, "", "", t.getMessage(), t);
+        }
     }
 }

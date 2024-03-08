@@ -382,6 +382,11 @@
         <artifactId>dubbo-registry-zookeeper</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.apache.dubbo</groupId>
+        <artifactId>dubbo-registry-xds</artifactId>
+        <version>${project.version}</version>
+      </dependency>
 
       <!-- remoting -->
       <dependency>

@@ -44,7 +44,7 @@ public class IstioConstant {
     /**
      * k8s jwt token
      */
-    public static final String KUBERNETES_SA_PATH = "E:/k8s/token";
+    public static final String KUBERNETES_SA_PATH = "";
 
     public static final String KUBERNETES_CA_PATH = "E:/k8s/ca.crt";
 

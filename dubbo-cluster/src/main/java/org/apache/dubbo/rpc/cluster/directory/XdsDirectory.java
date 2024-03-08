@@ -52,11 +52,6 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
 
     PilotExchanger pilotExchanger = PilotExchanger.getInstance();
 
-    private Set<String> subscribeApplications;
-
-    protected RouterChain<T> routerChain;
-
-    protected List<Invoker<T>> invokers;
     private Protocol protocol;
 
     private final Map<String, XdsVirtualHost> xdsVirtualHostMap = new ConcurrentHashMap<>();
@@ -67,12 +62,12 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
         super(directory.getConsumerUrl(), true);
         this.serviceType = directory.getInterface();
         this.url = directory.getConsumerUrl();
-        this.applicationName = url.getParameter("providedBy");
-        this.protocolName = url.getProtocol();
+        this.applicationName = url.getParameter("provided-by");
+        this.protocolName = url.getParameter("protocol", "dubbo");
         this.protocol = directory.getProtocol();
-        this.routerChain = directory.getRouterChain();
+        super.routerChain = directory.getRouterChain();
 
-        // 订阅资源
+        // subscribe resource
         pilotExchanger.subscribeRds(this.applicationName, this);
     }
 
@@ -105,7 +100,7 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
 
     @Override
     public List<Invoker<T>> getAllInvokers() {
-        return this.invokers;
+        return super.getInvokers();
     }
 
     public void onRdsChange(String applicationName, XdsVirtualHost xdsVirtualHost) {
@@ -153,7 +148,7 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
         }
     }
 
-    public void onCdsChange(String clusterName, XdsCluster<T> xdsCluster) {
+    public void onEdsChange(String clusterName, XdsCluster<T> xdsCluster) {
         xdsClusterMap.put(clusterName, xdsCluster);
         String lbPolicy = xdsCluster.getLbPolicy();
         List<XdsEndpoint> xdsEndpoints = xdsCluster.getXdsEndpoints();
@@ -162,15 +157,17 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
             String ip = e.getAddress();
             int port = e.getPortValue();
             URL url = new URL(this.protocolName, ip, port);
-            // 设置clusterName 属性，说明该 invoker 属于哪个 cluster
-            url.addParameter("clusterID", clusterName);
-            // 设置负载均衡策略
-            url.addParameter("loadbalance", lbPolicy);
+            // set cluster name
+            url = url.addParameter("clusterID", clusterName);
+            // set load balance policy
+            url = url.addParameter("loadbalance", lbPolicy);
             //  cluster to invoker
             Invoker<T> invoker = this.protocol.refer(this.serviceType, url);
             invokers.add(invoker);
         });
-        this.invokers.addAll(invokers);
+        // TODO: Consider cases where some clients are not available
+        super.getInvokers().addAll(invokers);
+        // super.setInvokers(invokers);
         xdsCluster.setInvokers(invokers);
     }
 

@@ -23,74 +23,25 @@
     <version>${revision}</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
-  <artifactId>dubbo-registry-api</artifactId>
+  <artifactId>dubbo-registry-xds</artifactId>
   <packaging>jar</packaging>
   <name>${project.artifactId}</name>
-  <description>The registry module of dubbo project</description>
+  <description>The xds registry module of dubbo project</description>
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>
   </properties>
   <dependencies>
-
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-registry-api</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-common</artifactId>
       <version>${project.parent.version}</version>
+      <optional>true</optional>
     </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-metadata-api</artifactId>
-      <version>${project.parent.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.curator</groupId>
-      <artifactId>curator-framework</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.curator</groupId>
-      <artifactId>curator-recipes</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.zookeeper</groupId>
-      <artifactId>zookeeper</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-metrics-api</artifactId>
-      <version>${project.parent.version}</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-metrics-default</artifactId>
-      <version>${project.parent.version}</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-metrics-metadata</artifactId>
-      <version>${project.parent.version}</version>
-      <scope>compile</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-metrics-registry</artifactId>
-      <version>${project.parent.version}</version>
-      <scope>compile</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-native</artifactId>
-      <version>${project.parent.version}</version>
-    </dependency>
-
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j-impl</artifactId>
@@ -102,4 +53,5 @@
       <version>${project.parent.version}</version>
     </dependency>
   </dependencies>
+
 </project>

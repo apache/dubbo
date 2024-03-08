@@ -53,6 +53,7 @@ import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.Constants;
 import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
+import org.apache.dubbo.rpc.cluster.xds.PilotExchanger;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -530,6 +531,13 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
         url = getRegistryUrl(url);
         Registry registry = getRegistry(url);
+        if (url.toString().startsWith("xds")) {
+            // TODO: The PilotExchanger requests xds resources asynchronously,
+            //  and the xdsDirectory call filter chain may have an exception with invoker null,
+            //  which needs to be synchronized later.
+            url = url.addParameter("xds", true);
+            PilotExchanger.initialize(url);
+        }
         if (RegistryService.class.equals(type)) {
             return proxyFactory.getInvoker((T) registry, type, url);
         }

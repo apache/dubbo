@@ -36,8 +36,6 @@ import java.util.function.Consumer;
 
 public class PilotExchanger {
 
-    // protected final XdsChannel xdsChannel;
-
     protected final AdsObserver adsObserver;
 
     protected final LdsProtocol ldsProtocol;
@@ -63,17 +61,16 @@ public class PilotExchanger {
     private final Map<String, Set<XdsDirectory>> cdsListeners = new ConcurrentHashMap<>();
 
     protected PilotExchanger(URL url) {
-        // xdsChannel = new XdsChannel(url);
         int pollingTimeout = url.getParameter("pollingTimeout", 10);
         this.applicationModel = url.getOrDefaultApplicationModel();
         adsObserver = new AdsObserver(url, NodeBuilder.build());
 
-        // rds 资源回调函数，将 RdsProtocol 的资源存放起来
+        // rds resources callback
         Consumer<List<XdsRouteConfiguration>> rdsCallback = (xdsRouteConfigurations) -> {
             xdsRouteConfigurations.forEach(xdsRouteConfiguration -> {
                 xdsRouteConfiguration.getVirtualHosts().forEach((serviceName, xdsVirtualHost) -> {
                     this.xdsVirtualHostMap.put(serviceName, xdsVirtualHost);
-                    // 回调更新
+                    // when resource update, notify subscribers
                     if (rdsListeners.containsKey(serviceName)) {
                         for (XdsDirectory listener : rdsListeners.get(serviceName)) {
                             listener.onRdsChange(serviceName, xdsVirtualHost);
@@ -83,13 +80,13 @@ public class PilotExchanger {
             });
         };
 
-        // eds 资源回调函数
+        // eds resources callback
         Consumer<List<XdsCluster>> edsCallback = (xdsClusters) -> {
             xdsClusters.forEach(xdsCluster -> {
                 this.xdsClusterMap.put(xdsCluster.getName(), xdsCluster);
                 if (cdsListeners.containsKey(xdsCluster.getName())) {
                     for (XdsDirectory listener : cdsListeners.get(xdsCluster.getName())) {
-                        listener.onCdsChange(xdsCluster.getName(), xdsCluster);
+                        listener.onEdsChange(xdsCluster.getName(), xdsCluster);
                     }
                 }
             });
@@ -100,12 +97,12 @@ public class PilotExchanger {
         this.ldsProtocol = new LdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout);
         this.cdsProtocol = new CdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout);
 
-        // lds 回调函数，在回调函数中监听所有的 rds 资源
+        // lds resources callback，listen to all rds resources in the callback function
         Consumer<Set<String>> ldsCallback = rdsProtocol::subscribeResource;
         ldsProtocol.setUpdateCallback(ldsCallback);
         ldsProtocol.subscribeListeners();
 
-        // cds 回调函数，在回调函数中监听所有的 eds 资源
+        // cds resources callback，listen to all cds resources in the callback function
         Consumer<Set<String>> cdsCallback = edsProtocol::subscribeResource;
         cdsProtocol.setUpdateCallback(cdsCallback);
         cdsProtocol.subscribeClusters();
@@ -135,7 +132,7 @@ public class PilotExchanger {
         cdsListeners.computeIfAbsent(clusterName, key -> new ConcurrentHashSet<>());
         cdsListeners.get(clusterName).add(listener);
         if (xdsClusterMap.containsKey(clusterName)) {
-            listener.onCdsChange(clusterName, xdsClusterMap.get(clusterName));
+            listener.onEdsChange(clusterName, xdsClusterMap.get(clusterName));
         }
     }
 
@@ -163,7 +160,6 @@ public class PilotExchanger {
     }
 
     public void destroy() {
-        // xdsChannel.destroy();
         this.adsObserver.destroy();
     }
 }

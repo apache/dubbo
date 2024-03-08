@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.cluster.router.RouterSnapshotSwitcher;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
+import org.apache.dubbo.rpc.cluster.xds.router.XdsRouter;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
@@ -69,6 +70,8 @@ public class RouterChain<T> {
         List<StateRouter<T>> stateRouters =
                 moduleModel.getExtensionLoader(StateRouterFactory.class).getActivateExtension(url, ROUTER_KEY).stream()
                         .map(factory -> factory.getRouter(interfaceClass, url))
+                        // filter XdsRouter if xds is not used
+                        .filter(router -> (!(router instanceof XdsRouter) || (url.getParameter("xds", false))))
                         .collect(Collectors.toList());
 
         boolean shouldFailFast = Boolean.parseBoolean(

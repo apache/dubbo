@@ -132,8 +132,8 @@ public class IstioEnv implements XdsEnv {
                         e);
             }
         }
-
-        return null;
+        // TODO：Subsequent implementation in the security section
+        return "null";
     }
 
     public String getCsrHost() {

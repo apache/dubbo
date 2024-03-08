@@ -31,6 +31,7 @@ import org.apache.dubbo.rpc.cluster.xds.resource.XdsRoute;
 import org.apache.dubbo.rpc.cluster.xds.resource.XdsVirtualHost;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,10 +42,6 @@ import java.util.stream.Collectors;
 public class XdsRouter<T> extends AbstractStateRouter<T> {
 
     private final PilotExchanger pilotExchanger = PilotExchanger.getInstance();
-
-    private volatile BitList<Invoker<T>> currentInvokeList;
-
-    private Set<String> subscribeApplications;
 
     private Map<String, XdsVirtualHost> xdsVirtualHostMap = new ConcurrentHashMap<>();
 
@@ -85,7 +82,7 @@ public class XdsRouter<T> extends AbstractStateRouter<T> {
             if (xdsRoute.getRouteMatch().isMatch(path)) {
                 cluster = xdsRoute.getRouteAction().getCluster();
 
-                // 如果是权重cluster，则进行权重分配
+                // if weighted cluster
                 if (cluster == null) {
                     cluster = computeWeightCluster(xdsRoute.getRouteAction().getClusterWeights());
                 }
@@ -116,19 +113,5 @@ public class XdsRouter<T> extends AbstractStateRouter<T> {
                 .filter(inv -> inv.getUrl().getParameter("clusterID").equals(clusterName))
                 .collect(Collectors.toList());
         return new BitList<>(filterInvokers);
-
-        // XdsCluster<T> xdsCluster = pilotExchanger.getXdsClusterMap().get(clusterName);
-        //
-        // List<XdsEndpoint> endpoints = xdsCluster.getXdsEndpoints();
-        // List<Invoker<T>> filterInvokers = invokers.stream()
-        //     .filter(inv -> {
-        //         String host = inv.getUrl().getHost();
-        //         int port = inv.getUrl().getPort();
-        //         Optional<XdsEndpoint> any = endpoints.stream()
-        //             .filter(end -> host.equals(end.getAddress()) && port == end.getPortValue())
-        //             .findAny();
-        //         return any.isPresent();
-        //     })
-        //     .collect(Collectors.toList());
     }
 }
