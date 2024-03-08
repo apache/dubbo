@@ -45,7 +45,8 @@ public final class DefaultRequestRouter implements RequestRouter {
         HttpRequest request = httpMessageAdapterFactory.adaptRequest(metadata, httpChannel);
         HttpResponse response = httpMessageAdapterFactory.adaptResponse(request, metadata);
 
-        for (RequestHandlerMapping mapping : requestHandlerMappings) {
+        for (int i = 0, size = requestHandlerMappings.size(); i < size; i++) {
+            RequestHandlerMapping mapping = requestHandlerMappings.get(i);
             RequestHandler handler = mapping.getRequestHandler(url, request, response);
             if (handler == null) {
                 continue;
