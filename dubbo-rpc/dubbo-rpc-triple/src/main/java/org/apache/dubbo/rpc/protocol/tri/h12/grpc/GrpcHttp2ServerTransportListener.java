@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorUtils;
 import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext;
+import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.h12.HttpMessageListener;
@@ -119,6 +120,11 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
                             timeoutString,
                             getContext().getServiceDescriptor().getInterfaceName(),
                             getContext().getMethodName()));
+        }
+        String consumerAppKey =
+                getHttpMetadata().headers().getFirst(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader());
+        if (null != consumerAppKey) {
+            invocation.put(TripleHeaderEnum.CONSUMER_APP_NAME_KEY, consumerAppKey);
         }
         return invocation;
     }
