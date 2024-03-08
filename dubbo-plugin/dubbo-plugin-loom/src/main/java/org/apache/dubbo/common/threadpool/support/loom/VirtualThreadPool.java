@@ -21,6 +21,7 @@ import org.apache.dubbo.common.threadpool.ThreadPool;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREAD_NAME;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
@@ -37,5 +38,12 @@ public class VirtualThreadPool implements ThreadPool {
                 url.getParameter(THREAD_NAME_KEY, (String) url.getAttribute(THREAD_NAME_KEY, DEFAULT_THREAD_NAME));
         return Executors.newThreadPerTaskExecutor(
                 Thread.ofVirtual().name(name, 1).factory());
+    }
+
+    public static ThreadFactory getVirtualThreadFactory(String threadName, int start) {
+        if (start<0) {
+            return Thread.ofVirtual().name(threadName).factory();
+        }
+        return Thread.ofVirtual().name(threadName,start).factory();
     }
 }

@@ -73,7 +73,15 @@ public class NettyClient extends AbstractClient {
      * netty client bootstrap
      */
     private static final GlobalResourceInitializer<EventLoopGroup> EVENT_LOOP_GROUP = new GlobalResourceInitializer<>(
-            () -> eventLoopGroup(Constants.DEFAULT_IO_THREADS, "NettyClientWorker"),
+        /**
+         * The virtual thread pool size is 0, which means that the thread pool will be created
+         * when the first NettyClient is created.
+         * @param isVirtualThread
+         * @param threadPoolSize
+         * @param name
+         * @return
+         */
+            () -> eventLoopGroup(true,1, "NettyClientWorker"),
             EventExecutorGroup::shutdownGracefully);
 
     private Bootstrap bootstrap;
