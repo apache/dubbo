@@ -36,6 +36,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.env.Environment;
 
 import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_PREFIX;
 
@@ -63,7 +64,7 @@ public class BraveAutoConfiguration {
     /**
      * Default value for application name if {@code spring.application.name} is not set.
      */
-    private static final String DEFAULT_APPLICATION_NAME = "dubbo-application";
+    private static final String DEFAULT_APPLICATION_NAME = "unknown_dubbo_service";
 
     private final DubboConfigurationProperties dubboConfigProperties;
 
@@ -87,14 +88,15 @@ public class BraveAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public brave.Tracing braveTracing(
+            Environment environment,
             List<brave.handler.SpanHandler> spanHandlers,
             List<brave.TracingCustomizer> tracingCustomizers,
             brave.propagation.CurrentTraceContext currentTraceContext,
             brave.propagation.Propagation.Factory propagationFactory,
             brave.sampler.Sampler sampler) {
         String applicationName = dubboConfigProperties.getApplication().getName();
-        if (StringUtils.isEmpty(applicationName)) {
-            applicationName = DEFAULT_APPLICATION_NAME;
+        if (StringUtils.isBlank(applicationName)) {
+            applicationName = environment.getProperty("spring.application.name", DEFAULT_APPLICATION_NAME);
         }
         brave.Tracing.Builder builder = brave.Tracing.newBuilder()
                 .currentTraceContext(currentTraceContext)

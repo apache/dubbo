@@ -534,6 +534,9 @@ public class ServiceAnnotationPostProcessor
             addPropertyReference(builder, "executor", executorBeanName);
         }
 
+        // service bean definition should not be lazy
+        builder.setLazyInit(false);
+
         return builder.getBeanDefinition();
     }
 

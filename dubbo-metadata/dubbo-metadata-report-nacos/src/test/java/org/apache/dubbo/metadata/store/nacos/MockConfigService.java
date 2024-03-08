@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata.store.nacos;
 
 import com.alibaba.nacos.api.config.ConfigService;
+import com.alibaba.nacos.api.config.filter.IConfigFilter;
 import com.alibaba.nacos.api.config.listener.Listener;
 import com.alibaba.nacos.api.exception.NacosException;
 
@@ -69,4 +70,7 @@ public class MockConfigService implements ConfigService {
 
     @Override
     public void shutDown() {}
+
+    @Override
+    public void addConfigFilter(IConfigFilter iConfigFilter) {}
 }
