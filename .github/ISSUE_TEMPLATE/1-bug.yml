@@ -18,7 +18,7 @@
 name: Bug Report
 description: File a bug report
 title: "[Bug] "
-labels: ["status/need-triage"]
+labels: ["type/need-triage", "component/need-triage"]
 projects: ["apache/337"]
 body:
 - type: markdown

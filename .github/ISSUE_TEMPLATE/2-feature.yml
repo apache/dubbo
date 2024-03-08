@@ -18,7 +18,7 @@
 name: Feature Request
 description: Create a Feature Request for Dubbo
 title: "[Feature] "
-labels: ["status/need-triage"]
+labels: ["type/need-triage", "component/need-triage"]
 projects: ["apache/337"]
 body:
 - type: markdown
