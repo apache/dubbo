@@ -1,46 +1,62 @@
 package org.apache.dubbo.remoting.http3.netty4;
 
+import io.netty.incubator.codec.quic.QuicStreamChannel;
+
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2OutputMessage;
+import org.apache.dubbo.remoting.http12.netty4.NettyHttpChannelFutureListener;
 
 import java.net.SocketAddress;
 import java.util.concurrent.CompletableFuture;
 
 public class NettyH3StreamChannel implements H2StreamChannel {
+    private final QuicStreamChannel quicStreamChannel;
+
+    public NettyH3StreamChannel(QuicStreamChannel quicStreamChannel) {
+        this.quicStreamChannel = quicStreamChannel;
+    }
+
     @Override
     public CompletableFuture<Void> writeHeader(HttpMetadata httpMetadata) {
-        return null;
+        NettyHttpChannelFutureListener nettyHttpChannelFutureListener = new NettyHttpChannelFutureListener();
+        quicStreamChannel.write(httpMetadata).addListener(nettyHttpChannelFutureListener);
+        return nettyHttpChannelFutureListener;
     }
 
     @Override
     public CompletableFuture<Void> writeMessage(HttpOutputMessage httpOutputMessage) {
-        return null;
+        NettyHttpChannelFutureListener nettyHttpChannelFutureListener = new NettyHttpChannelFutureListener();
+        quicStreamChannel.write(httpOutputMessage).addListener(nettyHttpChannelFutureListener);
+        return nettyHttpChannelFutureListener;
     }
 
     @Override
     public SocketAddress remoteAddress() {
-        return null;
+        return quicStreamChannel.remoteAddress();
     }
 
     @Override
     public SocketAddress localAddress() {
-        return null;
+        return quicStreamChannel.localAddress();
     }
 
     @Override
     public void flush() {
-
+        quicStreamChannel.flush();
     }
 
     @Override
     public CompletableFuture<Void> writeResetFrame(long errorCode) {
+        // todo
         return null;
     }
 
     @Override
     public Http2OutputMessage newOutputMessage(boolean endStream) {
+        // todo
+        // ignore endStream. it will be handled by QUIC
         return null;
     }
 }

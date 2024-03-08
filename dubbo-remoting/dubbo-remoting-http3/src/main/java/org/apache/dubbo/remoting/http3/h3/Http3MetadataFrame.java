@@ -1,24 +1,28 @@
 package org.apache.dubbo.remoting.http3.h3;
 
-public class Http3MetadataFrame {}
-
-/*import org.apache.dubbo.remoting.http12.HttpHeaders;
+import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
 
 public class Http3MetadataFrame implements Http2Header {
+    private final HttpHeaders httpHeaders;
+
+    public Http3MetadataFrame(HttpHeaders httpHeaders) {
+        this.httpHeaders = httpHeaders;
+    }
+
     @Override
     public HttpHeaders headers() {
-        return null;
+        return httpHeaders;
     }
 
     @Override
     public int id() {
-        // todo: 怎么把quic stream id传给它
-        return 0;
+        return -1;
     }
 
     @Override
     public boolean isEndStream() {
+        // always return false. endStream will be triggered by a user event
         return false;
     }
-}*/
+}

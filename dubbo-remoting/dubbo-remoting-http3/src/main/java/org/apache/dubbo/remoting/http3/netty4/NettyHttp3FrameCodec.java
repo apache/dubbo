@@ -16,13 +16,21 @@
  */
 package org.apache.dubbo.remoting.http3.netty4;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.incubator.codec.http3.Http3DataFrame;
+import io.netty.incubator.codec.http3.Http3Headers;
 import io.netty.incubator.codec.http3.Http3HeadersFrame;
 
+import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessage;
+import org.apache.dubbo.remoting.http3.h3.Http3InputMessageFrame;
+import org.apache.dubbo.remoting.http3.h3.Http3MetadataFrame;
+
+import java.util.Map;
 
 public class NettyHttp3FrameCodec extends ChannelInboundHandlerAdapter {
 
@@ -40,10 +48,16 @@ public class NettyHttp3FrameCodec extends ChannelInboundHandlerAdapter {
     }
 
     private Http2Header onHttp3HeadersFrame(Http3HeadersFrame frame) {
-        return null;
+        Http3Headers headers = frame.headers();
+        HttpHeaders head = new HttpHeaders();
+        for (Map.Entry<CharSequence, CharSequence> header: headers) {
+            head.set(header.getKey().toString(), header.getValue().toString());
+        }
+        return new Http3MetadataFrame(head);
     }
 
     private Http2InputMessage onHttp3DataFrame(Http3DataFrame frame) {
-        return null;
+        ByteBuf content = frame.content();
+        return new Http3InputMessageFrame(new ByteBufInputStream(content, true));
     }
 }

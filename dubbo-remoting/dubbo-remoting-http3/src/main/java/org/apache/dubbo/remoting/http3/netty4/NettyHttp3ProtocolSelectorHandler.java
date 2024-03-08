@@ -7,6 +7,8 @@ import io.netty.channel.ChannelPipeline;
 
 import io.netty.channel.SimpleChannelInboundHandler;
 
+import io.netty.incubator.codec.quic.QuicStreamChannel;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
@@ -43,7 +45,7 @@ public class NettyHttp3ProtocolSelectorHandler extends SimpleChannelInboundHandl
             throw new UnsupportedMediaTypeException(contentType);
         }
 
-        H2StreamChannel h2StreamChannel = new NettyH3StreamChannel();
+        H2StreamChannel h2StreamChannel = new NettyH3StreamChannel((QuicStreamChannel) ctx.channel());
         ChannelPipeline pipeline = ctx.pipeline();
         pipeline.addLast(new NettyHttp3FrameHandler(factory.newInstance(h2StreamChannel, url, frameworkModel)));
         pipeline.remove(this);
