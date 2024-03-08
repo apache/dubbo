@@ -88,7 +88,7 @@ public class DefaultHttp11ServerTransportListener
                 return new AutoCompleteUnaryServerCallListener(invocation, invoker, serverChannelObserver);
             case SERVER_STREAM:
                 serverChannelObserver = new Http1ServerStreamChannelObserver(httpChannel);
-                serverChannelObserver.setHeadersCustomizer((headers) ->
+                serverChannelObserver.setHeadersCustomizer(headers ->
                         headers.set(HttpHeaderNames.CONTENT_TYPE.getName(), MediaType.TEXT_EVENT_STREAM.getName()));
                 return new AutoCompleteServerStreamServerCallListener(invocation, invoker, serverChannelObserver);
             default:
