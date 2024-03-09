@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.client.ReflectionBasedServiceDiscovery;
 import org.apache.dubbo.rpc.cluster.xds.PilotExchanger;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_INITIALIZE_XDS;
 
 public class XdsServiceDiscovery extends ReflectionBasedServiceDiscovery {

@@ -31,10 +31,8 @@ import org.apache.dubbo.rpc.cluster.xds.resource.XdsRoute;
 import org.apache.dubbo.rpc.cluster.xds.resource.XdsVirtualHost;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;

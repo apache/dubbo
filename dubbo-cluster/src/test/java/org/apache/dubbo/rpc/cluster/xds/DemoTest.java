@@ -23,29 +23,23 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
-
 import org.apache.dubbo.rpc.cluster.Directory;
-
 import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.SingleRouterChain;
-
 import org.apache.dubbo.rpc.cluster.directory.XdsDirectory;
 import org.apache.dubbo.rpc.cluster.xds.resource.XdsCluster;
 import org.apache.dubbo.rpc.cluster.xds.resource.XdsVirtualHost;
 import org.apache.dubbo.rpc.cluster.xds.router.XdsRouter;
-
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
-import static org.mockito.Mockito.doReturn;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.mockito.Mockito;
+
 import static org.mockito.Mockito.when;
 
 public class DemoTest {
@@ -66,12 +60,14 @@ public class DemoTest {
         Thread.sleep(7000);
 
         Directory directory = Mockito.mock(Directory.class);
-        when(directory.getConsumerUrl()).thenReturn(URL.valueOf("dubbo://0.0.0.0:15010/DemoService?provided-by=dubbo-samples-xds-provider"));
+        when(directory.getConsumerUrl())
+                .thenReturn(URL.valueOf("dubbo://0.0.0.0:15010/DemoService?provided-by=dubbo-samples-xds-provider"));
         when(directory.getInterface()).thenReturn(DemoService.class);
         // doReturn(DemoService.class).when(directory.getInterface());
         when(directory.getProtocol()).thenReturn(protocol);
 
-        SingleRouterChain singleRouterChain = new SingleRouterChain<>(Collections.emptyList(), Arrays.asList(new XdsRouter<>(url)), false, null);
+        SingleRouterChain singleRouterChain =
+                new SingleRouterChain<>(Collections.emptyList(), Arrays.asList(new XdsRouter<>(url)), false, null);
         RouterChain routerChain = new RouterChain<>(new SingleRouterChain[] {singleRouterChain, singleRouterChain});
         // doReturn(routerChain).when(directory.getRouterChain());
         when(directory.getRouterChain()).thenReturn(routerChain);
@@ -107,7 +103,7 @@ public class DemoTest {
 
     @AfterAll
     public static void after() {
-//        ProtocolUtils.closeAll();
+        //        ProtocolUtils.closeAll();
         ApplicationModel.defaultModel()
                 .getDefaultModule()
                 .getServiceRepository()
