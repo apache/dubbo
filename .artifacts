@@ -74,6 +74,7 @@ dubbo-registry-multicast
 dubbo-registry-multiple
 dubbo-registry-nacos
 dubbo-registry-zookeeper
+dubbo-registry-xds
 dubbo-remoting
 dubbo-remoting-api
 dubbo-remoting-http
