@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.InvokeMode;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
@@ -98,6 +99,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         } else {
             currentClient = exchangeClients.get(index.getAndIncrement() % exchangeClients.size());
         }
+        RpcContext.getServiceContext().setLocalAddress(currentClient.getLocalAddress());
         try {
             boolean isOneway = RpcUtils.isOneway(getUrl(), invocation);
 
