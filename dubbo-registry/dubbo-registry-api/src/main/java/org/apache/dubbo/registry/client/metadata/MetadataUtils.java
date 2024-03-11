@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.serialization.PreferSerializationProvider;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
@@ -52,6 +53,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAI
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_LOAD_METADATA;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URLS_PROPERTY_NAME;
+import static org.apache.dubbo.remoting.Constants.PREFER_SERIALIZATION_KEY;
+import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
 
 public class MetadataUtils {
     public static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetadataUtils.class);
@@ -145,6 +148,18 @@ public class MetadataUtils {
         Protocol protocol = applicationModel.getExtensionLoader(Protocol.class).getExtension(url.getProtocol(), false);
 
         url = url.setServiceModel(consumerModel);
+
+        String preferSerialization = url.getParameter(PREFER_SERIALIZATION_KEY);
+        String serialization = url.getParameter(SERIALIZATION_KEY);
+        if (StringUtils.isBlank(preferSerialization)) {
+            preferSerialization = serialization != null
+                    ? serialization
+                    : applicationModel
+                            .getBeanFactory()
+                            .getBean(PreferSerializationProvider.class)
+                            .getPreferSerialization();
+            url = url.addParameter(PREFER_SERIALIZATION_KEY, preferSerialization);
+        }
 
         Invoker<MetadataService> invoker = protocol.refer(MetadataService.class, url);
 
