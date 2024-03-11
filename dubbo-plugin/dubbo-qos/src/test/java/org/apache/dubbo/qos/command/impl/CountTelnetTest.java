@@ -70,12 +70,14 @@ class CountTelnetTest {
     public void tearDown() {
         FrameworkModel.destroyAll();
         mockChannel.close();
+        RpcStatus.removeStatus(url);
         reset(mockInvoker, mockCommandContext);
     }
 
     @Test
     void test() throws Exception {
         String methodName = "sayHello";
+        RpcStatus.removeStatus(url, methodName);
         String[] args = new String[] {"org.apache.dubbo.qos.legacy.service.DemoService", "sayHello", "1"};
 
         ExtensionLoader.getExtensionLoader(Protocol.class)
@@ -97,6 +99,7 @@ class CountTelnetTest {
     @Test
     void testCountByServiceKey() throws Exception {
         String methodName = "sayHello";
+        RpcStatus.removeStatus(url, methodName);
         String[] args = new String[] {"g/demo:1.0.0", "sayHello", "1"};
 
         ExtensionLoader.getExtensionLoader(Protocol.class)
