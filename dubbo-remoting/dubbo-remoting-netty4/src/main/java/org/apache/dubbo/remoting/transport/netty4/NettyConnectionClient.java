@@ -349,29 +349,20 @@ public class NettyConnectionClient extends AbstractConnectionClient {
             final NettyConnectionClient connectionClient = NettyConnectionClient.this;
             if (connectionClient.isClosed() || connectionClient.getCounter() == 0) {
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(String.format(
-                            "%s aborted to reconnect. %s",
-                            connectionClient, future.cause().getMessage()));
+                    LOGGER.debug(String.format("%s aborted to reconnect. %s", connectionClient, future.cause().getMessage()));
                 }
                 return;
             }
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(String.format(
-                        "%s is reconnecting, attempt=%d cause=%s",
-                        connectionClient, 0, future.cause().getMessage()));
+                LOGGER.debug(String.format("%s is reconnecting, attempt=%d cause=%s", connectionClient, 0, future.cause().getMessage()));
             }
-            executor.submit(
-                () -> {
-                    try {
-                        connectionClient.doConnect();
-                    } catch (RemotingException e) {
-                        LOGGER.error(
-                                TRANSPORT_FAILED_RECONNECT,
-                                "",
-                                "",
-                                "Failed to connect to server: " + getConnectAddress());
-                    }
-                });
+            executor.submit(() -> {
+                try {
+                    connectionClient.doConnect();
+                } catch (RemotingException e) {
+                    LOGGER.error(TRANSPORT_FAILED_RECONNECT, "", "", "Failed to connect to server: " + getConnectAddress());
+                }
+            });
         }
     }
 }
