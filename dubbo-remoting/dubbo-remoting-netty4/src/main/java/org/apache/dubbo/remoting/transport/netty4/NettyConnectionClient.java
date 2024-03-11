@@ -42,7 +42,6 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoop;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.timeout.IdleStateHandler;
@@ -361,21 +360,17 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                         "%s is reconnecting, attempt=%d cause=%s",
                         connectionClient, 0, future.cause().getMessage()));
             }
-            final EventLoop loop = future.channel().eventLoop();
-            loop.schedule(
-                    () -> {
-                        try {
-                            connectionClient.doConnect();
-                        } catch (RemotingException e) {
-                            LOGGER.error(
-                                    TRANSPORT_FAILED_RECONNECT,
-                                    "",
-                                    "",
-                                    "Failed to connect to server: " + getConnectAddress());
-                        }
-                    },
-                    1L,
-                    TimeUnit.SECONDS);
+            executor.submit(() -> {
+                try {
+                    connectionClient.doConnect();
+                } catch (RemotingException e) {
+                    LOGGER.error(
+                            TRANSPORT_FAILED_RECONNECT,
+                            "",
+                            "",
+                            "Failed to connect to server: " + connectionClient.getConnectAddress());
+                }
+            });
         }
     }
 }
