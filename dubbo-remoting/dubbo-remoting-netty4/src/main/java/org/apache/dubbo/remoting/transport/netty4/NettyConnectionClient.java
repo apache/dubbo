@@ -352,7 +352,6 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                     LOGGER.debug(String.format(
                             "%s aborted to reconnect. %s",
                             connectionClient, future.cause().getMessage()));
-                    LOGGER.debug(String.format("%s aborted to reconnect. %s", connectionClient, future.cause().getMessage()));
                 }
                 return;
             }
@@ -360,7 +359,6 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                 LOGGER.debug(String.format(
                         "%s is reconnecting, attempt=%d cause=%s",
                         connectionClient, 0, future.cause().getMessage()));
-                LOGGER.debug(String.format("%s is reconnecting, attempt=%d cause=%s", connectionClient, 0, future.cause().getMessage()));
             }
             executor.submit(() -> {
                 try {
