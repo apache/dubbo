@@ -369,7 +369,7 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                                 TRANSPORT_FAILED_RECONNECT,
                                 "",
                                 "",
-                                "Failed to connect to server: " + connectionClient.getConnectAddress());
+                                "Failed to connect to server: " + getConnectAddress());
                     }
                 });
         }
