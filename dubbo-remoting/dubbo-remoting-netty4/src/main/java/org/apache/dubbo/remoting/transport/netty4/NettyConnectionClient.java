@@ -360,17 +360,18 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                         "%s is reconnecting, attempt=%d cause=%s",
                         connectionClient, 0, future.cause().getMessage()));
             }
-            executor.submit(() -> {
-                try {
-                    connectionClient.doConnect();
-                } catch (RemotingException e) {
-                    LOGGER.error(
-                            TRANSPORT_FAILED_RECONNECT,
-                            "",
-                            "",
-                            "Failed to connect to server: " + connectionClient.getConnectAddress());
-                }
-            });
+            executor.submit(
+                () -> {
+                    try {
+                        connectionClient.doConnect();
+                    } catch (RemotingException e) {
+                        LOGGER.error(
+                                TRANSPORT_FAILED_RECONNECT,
+                                "",
+                                "",
+                                "Failed to connect to server: " + connectionClient.getConnectAddress());
+                    }
+                });
         }
     }
 }
