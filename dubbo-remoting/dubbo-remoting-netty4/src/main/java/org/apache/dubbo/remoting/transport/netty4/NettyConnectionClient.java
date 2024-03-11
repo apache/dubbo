@@ -364,8 +364,8 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                 try {
                     connectionClient.doConnect();
                 } catch (RemotingException e) {
-                    LOGGER.error(TRANSPORT_FAILED_RECONNECT, "", "",
-                            "Failed to connect to server: " + getConnectAddress());
+                    LOGGER.error(
+                            TRANSPORT_FAILED_RECONNECT, "", "", "Failed to connect to server: " + getConnectAddress());
                 }
             });
         }
