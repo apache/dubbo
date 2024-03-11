@@ -40,7 +40,7 @@ public class NettyConnectionHandler extends ChannelInboundHandlerAdapter impleme
             LoggerFactory.getErrorTypeAwareLogger(NettyConnectionHandler.class);
 
     private static final AttributeKey<Boolean> GO_AWAY_KEY = AttributeKey.valueOf("dubbo_channel_goaway");
-    private final NettyConnectionClient connectionClient;
+    protected final NettyConnectionClient connectionClient;
 
     public NettyConnectionHandler(NettyConnectionClient connectionClient) {
         this.connectionClient = connectionClient;

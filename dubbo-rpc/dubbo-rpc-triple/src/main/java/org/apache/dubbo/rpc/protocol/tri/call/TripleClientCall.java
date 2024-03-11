@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.call;
 
+import io.netty.incubator.codec.quic.QuicChannel;
+
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
@@ -29,6 +31,7 @@ import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 import org.apache.dubbo.rpc.protocol.tri.stream.TripleClientStream;
+import org.apache.dubbo.rpc.protocol.tri.stream.TripleHttp3ClientStream;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
 import java.util.Map;
@@ -242,8 +245,9 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     public StreamObserver<Object> start(RequestMetadata metadata, ClientCall.Listener responseListener) {
         this.requestMetadata = metadata;
         this.listener = responseListener;
-        this.stream = new TripleClientStream(
-                frameworkModel, executor, (Channel) connectionClient.getChannel(true), this, writeQueue);
+        // todo: factory
+        this.stream = new TripleHttp3ClientStream(
+                frameworkModel, executor, (QuicChannel) connectionClient.getChannel(true), this, writeQueue);
         return new ClientCallToObserverAdapter<>(this);
     }
 

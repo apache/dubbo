@@ -141,6 +141,11 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     }
 
     @Override
+    public void configHttp3ClientPipeline(URL url, ChannelOperator operator) {
+        // do nothing yet
+    }
+
+    @Override
     public void configServerProtocolHandler(URL url, ChannelOperator operator) {
         String httpVersion = operator.detectResult().getAttribute(TripleProtocolDetector.HTTP_VERSION);
         List<ChannelHandler> channelHandlerPretenders = new ArrayList<>();

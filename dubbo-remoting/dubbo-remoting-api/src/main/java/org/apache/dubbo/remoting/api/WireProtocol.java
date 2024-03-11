@@ -35,5 +35,7 @@ public interface WireProtocol {
 
     void configClientPipeline(URL url, ChannelOperator operator, ContextOperator contextOperator);
 
+    default void configHttp3ClientPipeline(URL url, ChannelOperator operator) {}
+
     void close();
 }
