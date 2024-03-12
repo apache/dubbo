@@ -1,1 +1,2 @@
 misc=org.apache.dubbo.rpc.protocol.tri.rest.argument.MiscArgumentResolver
+default-fallback=org.apache.dubbo.rpc.protocol.tri.rest.support.constructless.FallbackArgumentResolver

@@ -1,0 +1,1 @@
+default=org.apache.dubbo.rpc.protocol.tri.rest.support.constructless.DefaultRequestMappingResolver
