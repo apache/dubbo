@@ -5,9 +5,15 @@ import org.apache.dubbo.remoting.http12.h2.Http2Header;
 
 public class Http3MetadataFrame implements Http2Header {
     private final HttpHeaders httpHeaders;
+    private final long streamId;
 
     public Http3MetadataFrame(HttpHeaders httpHeaders) {
+        this(httpHeaders, -1);
+    }
+
+    public Http3MetadataFrame(HttpHeaders httpHeaders, long streamId) {
         this.httpHeaders = httpHeaders;
+        this.streamId = streamId;
     }
 
     @Override
@@ -17,12 +23,12 @@ public class Http3MetadataFrame implements Http2Header {
 
     @Override
     public int id() {
-        return -1;
+        return (int)streamId;
     }
 
     @Override
     public boolean isEndStream() {
-        // always return false. endStream will be triggered by a user event
+        // always return false. endStream will be represented by a DATA frame
         return false;
     }
 }

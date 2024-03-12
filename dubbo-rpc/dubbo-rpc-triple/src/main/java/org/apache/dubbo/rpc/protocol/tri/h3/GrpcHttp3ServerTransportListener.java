@@ -16,8 +16,8 @@ public class GrpcHttp3ServerTransportListener extends GrpcHttp2ServerTransportLi
         super(h2StreamChannel, url, frameworkModel);
     }
 
-    @Override
+    /*@Override
     public void onDataCompletion() {
         serverCallListener.onComplete();
-    }
+    }*/
 }

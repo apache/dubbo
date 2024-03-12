@@ -20,11 +20,12 @@ import io.netty.channel.ChannelHandlerContext;
 
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessage;
+import org.apache.dubbo.remoting.http3.h3.Http3InputMessageFrame;
+import org.apache.dubbo.remoting.http3.h3.Http3MetadataFrame;
 import org.apache.dubbo.remoting.http3.h3.Http3TransportListener;
 
 public class NettyHttp3FrameHandler extends NettyHttp3StreamInboundHandler {
     private final Http3TransportListener transportListener;
-    private State state = State.NONE;
 
     public NettyHttp3FrameHandler(Http3TransportListener transportListener) {
         this.transportListener = transportListener;
@@ -32,43 +33,19 @@ public class NettyHttp3FrameHandler extends NettyHttp3StreamInboundHandler {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        if (msg instanceof Http2Header) {
-            state = State.HEADER;
-            transportListener.onMetadata((Http2Header) msg);
-        } else if (msg instanceof Http2InputMessage) {
-            state = State.DATA;
-            transportListener.onData((Http2InputMessage) msg);
+        if (msg instanceof Http3MetadataFrame) {
+            transportListener.onMetadata((Http3MetadataFrame) msg);
+        } else if (msg instanceof Http3InputMessageFrame) {
+            transportListener.onData((Http3InputMessageFrame) msg);
         } else {
-            state = State.OTHER;
             super.channelRead(ctx, msg);
         }
     }
 
-    @Override
+    /*@Override
     protected void channelEndStream(ChannelHandlerContext ctx) throws Exception {
-        if (state != State.NONE) {
-            transportListener.onDataCompletion();
-        }
-    }
+        transportListener.onDataCompletion();
+    }*/
 
     // todo: userEventTriggered cancel
-
-    private enum State {
-        /**
-         * Received no frame yet
-         */
-        NONE,
-        /**
-         * The last frame received is HEADERS
-         */
-        HEADER,
-        /**
-         * The last frame received is DATA
-         */
-        DATA,
-        /**
-         * The last frame received is another type
-         */
-        OTHER
-    }
 }

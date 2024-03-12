@@ -24,6 +24,8 @@ import io.netty.incubator.codec.http3.Http3DataFrame;
 import io.netty.incubator.codec.http3.Http3Headers;
 import io.netty.incubator.codec.http3.Http3HeadersFrame;
 
+import io.netty.incubator.codec.quic.QuicStreamChannel;
+
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessage;
@@ -37,28 +39,29 @@ public class NettyHttp3FrameCodec extends ChannelInboundHandlerAdapter {
 
     @Override
     public final void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        QuicStreamChannel ch = (QuicStreamChannel) ctx.channel();
         if (msg instanceof Http3HeadersFrame) {
-            Http2Header header = onHttp3HeadersFrame((Http3HeadersFrame) msg);
+            Http2Header header = onHttp3HeadersFrame(ch, (Http3HeadersFrame) msg);
             super.channelRead(ctx, header);
         } else if (msg instanceof Http3DataFrame) {
-            Http2InputMessage inputMessage = onHttp3DataFrame((Http3DataFrame) msg);
+            Http2InputMessage inputMessage = onHttp3DataFrame(ch, (Http3DataFrame) msg);
             super.channelRead(ctx, inputMessage);
         } else {
             super.channelRead(ctx, msg);
         }
     }
 
-    private Http2Header onHttp3HeadersFrame(Http3HeadersFrame frame) {
+    private Http2Header onHttp3HeadersFrame(QuicStreamChannel ch, Http3HeadersFrame frame) {
         Http3Headers headers = frame.headers();
         HttpHeaders head = new HttpHeaders();
         for (Map.Entry<CharSequence, CharSequence> header: headers) {
             head.set(header.getKey().toString(), header.getValue().toString());
         }
-        return new Http3MetadataFrame(head);
+        return new Http3MetadataFrame(head, ch.streamId());
     }
 
-    private Http2InputMessage onHttp3DataFrame(Http3DataFrame frame) {
+    private Http2InputMessage onHttp3DataFrame(QuicStreamChannel ch, Http3DataFrame frame) {
         ByteBuf content = frame.content();
-        return new Http3InputMessageFrame(new ByteBufInputStream(content, true));
+        return new Http3InputMessageFrame(new ByteBufInputStream(content, true), ch.streamId());
     }
 }
