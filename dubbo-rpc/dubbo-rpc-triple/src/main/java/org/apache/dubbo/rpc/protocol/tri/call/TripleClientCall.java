@@ -31,10 +31,13 @@ import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 import org.apache.dubbo.rpc.protocol.tri.stream.TripleClientStream;
+import org.apache.dubbo.rpc.protocol.tri.stream.TripleClientStreamFactory;
+import org.apache.dubbo.rpc.protocol.tri.stream.TripleHttp12ClientStreamFactory;
 import org.apache.dubbo.rpc.protocol.tri.stream.TripleHttp3ClientStream;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executor;
 
 import io.netty.channel.Channel;
@@ -245,10 +248,22 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     public StreamObserver<Object> start(RequestMetadata metadata, ClientCall.Listener responseListener) {
         this.requestMetadata = metadata;
         this.listener = responseListener;
-        // todo: factory
-        this.stream = new TripleHttp3ClientStream(
-                frameworkModel, executor, (QuicChannel) connectionClient.getChannel(true), this, writeQueue);
+        TripleClientStreamFactory clientStreamFactory = determineTripleClientStreamFactory(connectionClient);
+        this.stream = clientStreamFactory.create(frameworkModel, executor,
+                (Channel) connectionClient.getChannel(true), this, writeQueue);
         return new ClientCallToObserverAdapter<>(this);
+    }
+
+    private TripleClientStreamFactory determineTripleClientStreamFactory(AbstractConnectionClient connectionClient) {
+        Set<TripleClientStreamFactory> factories = frameworkModel
+                .getExtensionLoader(TripleClientStreamFactory.class)
+                .getSupportedExtensionInstances();
+        for (TripleClientStreamFactory factory: factories) {
+            if (factory.supportConnectionType(connectionClient)) {
+                return factory;
+            }
+        }
+        return new TripleHttp12ClientStreamFactory();
     }
 
     @Override

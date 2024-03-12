@@ -143,4 +143,8 @@ public abstract class AbstractConnectionClient extends AbstractClient {
     public long getCounter() {
         return COUNTER_UPDATER.get(this);
     }
+
+    public String getConnectionType() {
+        return "http12";
+    }
 }

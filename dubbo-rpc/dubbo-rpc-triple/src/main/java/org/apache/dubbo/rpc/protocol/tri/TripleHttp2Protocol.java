@@ -16,6 +16,17 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.ChannelOutboundHandler;
+
+import io.netty.channel.ChannelOutboundHandlerAdapter;
+
+import io.netty.channel.ChannelPromise;
+
+import io.netty.channel.socket.DatagramPacket;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
@@ -48,6 +59,7 @@ import org.apache.dubbo.rpc.protocol.tri.transport.TripleTailHandler;
 
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -138,11 +150,6 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
         handlers.add(new ChannelHandlerPretender(new TripleGoAwayHandler()));
         handlers.add(new ChannelHandlerPretender(new TripleTailHandler()));
         operator.configChannelHandler(handlers);
-    }
-
-    @Override
-    public void configHttp3ClientPipeline(URL url, ChannelOperator operator) {
-        // do nothing yet
     }
 
     @Override

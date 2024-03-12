@@ -30,6 +30,7 @@ import org.apache.dubbo.remoting.http12.h2.Http2InputMessage;
 import org.apache.dubbo.remoting.http3.h3.Http3InputMessageFrame;
 import org.apache.dubbo.remoting.http3.h3.Http3MetadataFrame;
 
+import java.util.Arrays;
 import java.util.Map;
 
 public class NettyHttp3FrameCodec extends ChannelInboundHandlerAdapter {

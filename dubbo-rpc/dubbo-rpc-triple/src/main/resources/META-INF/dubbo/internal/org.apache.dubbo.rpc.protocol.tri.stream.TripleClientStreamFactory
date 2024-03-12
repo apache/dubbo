@@ -1,0 +1,2 @@
+http12=org.apache.dubbo.rpc.protocol.tri.stream.TripleHttp12ClientStreamFactory
+http3=org.apache.dubbo.rpc.protocol.tri.stream.TripleHttp3ClientStreamFactory

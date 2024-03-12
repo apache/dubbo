@@ -1,10 +1,15 @@
 package org.apache.dubbo.remoting.transport.netty4;
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.ChannelPromise;
 import io.netty.channel.EventLoop;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.DatagramPacket;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.incubator.codec.http3.Http3;
@@ -24,7 +29,9 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 
-import java.net.InetSocketAddress;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -40,6 +47,11 @@ public class NettyHttp3ConnectionClient extends NettyConnectionClient {
 
     protected NettyHttp3ConnectionClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
+    }
+
+    @Override
+    public String getConnectionType() {
+        return "http3";
     }
 
     @Override
@@ -79,9 +91,6 @@ public class NettyHttp3ConnectionClient extends NettyConnectionClient {
 
                             ChannelPipeline pipeline = ch.pipeline();
                             pipeline.addLast(codec);
-
-                            NettyConfigOperator operator = new NettyConfigOperator(nettyChannel, getChannelHandler());
-                            protocol.configHttp3ClientPipeline(getUrl(), operator);
                         }
                     })
                     .bind(0).sync().channel();
