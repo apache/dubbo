@@ -16,6 +16,6 @@ public class Http3EndStreamQueueCommand extends Http3StreamQueueCommand {
 
     @Override
     public void doSend(ChannelHandlerContext ctx, ChannelPromise promise) {
-        // Do nothing
+        ((QuicStreamChannel)ctx.channel()).shutdownOutput();
     }
 }

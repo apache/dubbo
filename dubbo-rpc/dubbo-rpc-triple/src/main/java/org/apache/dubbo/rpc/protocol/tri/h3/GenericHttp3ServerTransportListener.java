@@ -8,12 +8,12 @@ import org.apache.dubbo.rpc.protocol.tri.h12.http2.GenericHttp2ServerTransportLi
 
 public class GenericHttp3ServerTransportListener extends GenericHttp2ServerTransportListener
     implements Http3TransportListener {
-
     public GenericHttp3ServerTransportListener(
             H2StreamChannel h2StreamChannel,
             URL url,
             FrameworkModel frameworkModel) {
-        super(h2StreamChannel, url, frameworkModel);
+        super(h2StreamChannel, url, frameworkModel, new Http3ServerCallToObserverAdapter(
+                frameworkModel, h2StreamChannel));
     }
 
     @Override

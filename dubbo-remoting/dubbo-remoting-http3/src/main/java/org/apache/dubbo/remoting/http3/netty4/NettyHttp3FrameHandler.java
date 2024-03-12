@@ -24,6 +24,7 @@ import org.apache.dubbo.remoting.http3.h3.Http3TransportListener;
 
 public class NettyHttp3FrameHandler extends NettyHttp3StreamInboundHandler {
     private final Http3TransportListener transportListener;
+    private State state = State.NONE;
 
     public NettyHttp3FrameHandler(Http3TransportListener transportListener) {
         this.transportListener = transportListener;
@@ -32,18 +33,42 @@ public class NettyHttp3FrameHandler extends NettyHttp3StreamInboundHandler {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof Http2Header) {
+            state = State.HEADER;
             transportListener.onMetadata((Http2Header) msg);
         } else if (msg instanceof Http2InputMessage) {
+            state = State.DATA;
             transportListener.onData((Http2InputMessage) msg);
         } else {
+            state = State.OTHER;
             super.channelRead(ctx, msg);
         }
     }
 
     @Override
     protected void channelEndStream(ChannelHandlerContext ctx) throws Exception {
-        transportListener.onDataCompletion();
+        if (state != State.NONE) {
+            transportListener.onDataCompletion();
+        }
     }
 
     // todo: userEventTriggered cancel
+
+    private enum State {
+        /**
+         * Received no frame yet
+         */
+        NONE,
+        /**
+         * The last frame received is HEADERS
+         */
+        HEADER,
+        /**
+         * The last frame received is DATA
+         */
+        DATA,
+        /**
+         * The last frame received is another type
+         */
+        OTHER
+    }
 }

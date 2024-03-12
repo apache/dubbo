@@ -1,5 +1,7 @@
 package org.apache.dubbo.remoting.http3.netty4;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufOutputStream;
 import io.netty.incubator.codec.quic.QuicStreamChannel;
 
 import org.apache.dubbo.remoting.http12.HttpMetadata;
@@ -7,7 +9,9 @@ import org.apache.dubbo.remoting.http12.HttpOutputMessage;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2OutputMessage;
 import org.apache.dubbo.remoting.http12.netty4.NettyHttpChannelFutureListener;
+import org.apache.dubbo.remoting.http3.h3.Http3OutputMessageFrame;
 
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.concurrent.CompletableFuture;
 
@@ -34,12 +38,14 @@ public class NettyH3StreamChannel implements H2StreamChannel {
 
     @Override
     public SocketAddress remoteAddress() {
-        return quicStreamChannel.remoteAddress();
+        // todo
+        return new InetSocketAddress(Long.toString(quicStreamChannel.remoteAddress().streamId()), 0);
     }
 
     @Override
     public SocketAddress localAddress() {
-        return quicStreamChannel.localAddress();
+        // todo
+        return new InetSocketAddress(Long.toString(quicStreamChannel.localAddress().streamId()), 0);
     }
 
     @Override
@@ -55,8 +61,8 @@ public class NettyH3StreamChannel implements H2StreamChannel {
 
     @Override
     public Http2OutputMessage newOutputMessage(boolean endStream) {
-        // todo
-        // ignore endStream. it will be handled by QUIC
-        return null;
+        ByteBuf buffer = quicStreamChannel.alloc().buffer();
+        ByteBufOutputStream outputStream = new ByteBufOutputStream(buffer);
+        return new Http3OutputMessageFrame(outputStream, endStream);
     }
 }

@@ -60,18 +60,25 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
             new Http2InputMessageFrame(new ByteArrayInputStream(new byte[0]), true);
 
     private final ExecutorSupport executorSupport;
-    private final StreamingDecoder streamingDecoder;
+    protected final StreamingDecoder streamingDecoder;
     private final Http2ServerChannelObserver serverChannelObserver;
 
     protected ServerCallListener serverCallListener;
 
     public GenericHttp2ServerTransportListener(
             H2StreamChannel h2StreamChannel, URL url, FrameworkModel frameworkModel) {
+        this(h2StreamChannel, url, frameworkModel, new Http2ServerCallToObserverAdapter(
+                frameworkModel, h2StreamChannel));
+    }
+
+    protected GenericHttp2ServerTransportListener(
+            H2StreamChannel h2StreamChannel, URL url, FrameworkModel frameworkModel,
+            Http2ServerChannelObserver serverChannelObserver) {
         super(frameworkModel, url, h2StreamChannel);
         executorSupport = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel())
                 .getExecutorSupport(url);
         streamingDecoder = newStreamingDecoder();
-        serverChannelObserver = new Http2ServerCallToObserverAdapter(frameworkModel, h2StreamChannel);
+        this.serverChannelObserver = serverChannelObserver;
         serverChannelObserver.setResponseEncoder(JsonCodec.INSTANCE);
         serverChannelObserver.setStreamingDecoder(streamingDecoder);
     }

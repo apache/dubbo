@@ -35,7 +35,7 @@ public class Http2ServerStreamObserver extends Http2ServerChannelObserver
 
     private final FrameworkModel frameworkModel;
 
-    private Map<String, Object> attachments;
+    protected Map<String, Object> attachments;
 
     public Http2ServerStreamObserver(FrameworkModel frameworkModel, H2StreamChannel h2StreamChannel) {
         super(h2StreamChannel);
