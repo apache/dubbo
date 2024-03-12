@@ -190,6 +190,10 @@ public class NettyHttpResponse implements HttpResponse {
             outputHeaders.put(name, values);
         }
 
+        if (values.contains(value)) {
+            return;
+        }
+
         values.add(value);
     }
 
