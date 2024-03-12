@@ -33,7 +33,6 @@
     <module>dubbo-registry-zookeeper</module>
     <module>dubbo-registry-nacos</module>
     <module>dubbo-registry-multiple</module>
-    <module>dubbo-registry-xds</module>
   </modules>
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>

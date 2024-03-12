@@ -344,7 +344,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-registry-xds</artifactId>
+      <artifactId>dubbo-xds</artifactId>
       <version>${project.version}</version>
       <scope>compile</scope>
       <optional>true</optional>
@@ -568,7 +568,7 @@
                   <include>org.apache.dubbo:dubbo-registry-multiple</include>
                   <include>org.apache.dubbo:dubbo-registry-nacos</include>
                   <include>org.apache.dubbo:dubbo-registry-zookeeper</include>
-                  <include>org.apache.dubbo:dubbo-registry-xds</include>
+                  <include>org.apache.dubbo:dubbo-xds</include>
                   <include>org.apache.dubbo:dubbo-remoting-api</include>
                   <include>org.apache.dubbo:dubbo-remoting-http</include>
                   <include>org.apache.dubbo:dubbo-remoting-http12</include>
@@ -1039,7 +1039,7 @@
                 </transformer>
 
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                  <resource>META-INF/dubbo/internal/org.apache.dubbo.rpc.cluster.xds.bootstrap.XdsCertificateSigner</resource>
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.xds.bootstrap.XdsCertificateSigner</resource>
                 </transformer>
               </transformers>
               <filters>

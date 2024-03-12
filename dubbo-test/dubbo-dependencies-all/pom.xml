@@ -300,7 +300,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-registry-xds</artifactId>
+      <artifactId>dubbo-xds</artifactId>
       <version>${project.version}</version>
     </dependency>
 

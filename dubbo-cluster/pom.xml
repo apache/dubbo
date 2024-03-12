@@ -47,18 +47,6 @@
       <version>${project.parent.version}</version>
       <scope>test</scope>
     </dependency>
-    <!--    <dependency>-->
-    <!--      <groupId>org.apache.dubbo</groupId>-->
-    <!--      <artifactId>dubbo-rpc-dubbo</artifactId>-->
-    <!--      <version>${project.parent.version}</version>-->
-    <!--      <scope>test</scope>-->
-    <!--    </dependency>-->
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-remoting-netty4</artifactId>
-      <version>${project.parent.version}</version>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>org.apache.curator</groupId>
       <artifactId>curator-framework</artifactId>
@@ -109,46 +97,6 @@
       <artifactId>log4j-slf4j-impl</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>io.grpc</groupId>
-      <artifactId>grpc-api</artifactId>
-      <version>1.61.0</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.grpc</groupId>
-      <artifactId>grpc-protobuf</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>io.grpc</groupId>
-      <artifactId>grpc-stub</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>io.grpc</groupId>
-      <artifactId>grpc-netty-shaded</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>io.envoyproxy.controlplane</groupId>
-      <artifactId>api</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.google.protobuf</groupId>
-      <artifactId>protobuf-java</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.google.protobuf</groupId>
-      <artifactId>protobuf-java-util</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.bouncycastle</groupId>
-      <artifactId>bcpkix-jdk15on</artifactId>
-    </dependency>
-
   </dependencies>
 
   <profiles>
