@@ -15,23 +15,19 @@
 # limitations under the License.
 #
 
-name: Feature Request
-description: Create a Feature Request for Dubbo
-title: "[Feature] "
-labels: ["type/need-triage", "component/need-triage"]
-projects: ["apache/337"]
+title: "[General][Java SDK (Component)] xxx"
 body:
 - type: markdown
   attributes:
     value: |
       <img src="https://dubbo.apache.org/imgs/nav_logo2.png" alt="Dubbo logo" height="90px" align="right" />
 
-      Thank you for finding the time to propose new feature!
+      Thank you for finding the time to share your idea! We really appreciate the community efforts to improve Dubbo.
 
-      We really appreciate the community efforts to improve Dubbo.
+      If you need to report a security issue, please visit [our security policy](https://github.com/apache/dubbo/security/policy).
 
       **Dubbo is open for world wide collaboration, please make sure that all the content you provide is in English.**
-      Remember that non-English issues is quite not friendly for everyone, and might unable to get the response!
+      Remember that non-English idea is quite not friendly for everyone, and might unable to get the response!
 
 - type: checkboxes
   attributes:
@@ -39,18 +35,6 @@ body:
     options:
       - label: >
           I am sure that all the content I provide is in English.
-        required: true
-
-- type: checkboxes
-  attributes:
-    label: Search before asking
-    description: >
-      Please make sure to search in the [issues](https://github.com/apache/dubbo/issues?q=is%3Aissue) first to see
-      whether the same feature was requested already.
-    options:
-      - label: >
-          I had searched in the [issues](https://github.com/apache/dubbo/issues?q=is%3Aissue) and found no similar
-          feature requirement.
         required: true
 
 - type: dropdown
@@ -66,30 +50,28 @@ body:
       - "Java Integration Cases (apache/dubbo-integration-cases)"
       - "Java SPI Extensions (apache/dubbo-spi-extensions)"
       - "Java Benchmark (apache/dubbo-benchmark)"
+      - "Go SDK (apache/dubbo-go)"
+      - "Go Samples (apache/dubbo-go-samples)"
+      - "Rust SDK (apache/dubbo-rust)"
+      - "Node.js SDK (apache/dubbo-js)"
+      - "Python SDK (apache/dubbo-python)"
+      - "Kubernetes Integration (apache/dubbo-kubernetes)"
+      - "Pixiu Gateway (apache/dubbo-go-pixiu)"
+      - "Pixiu Gateway Samples (apache/dubbo-go-pixiu-samples)"
+      - "Admin (apache/dubbo-admin)"
+      - "Website (apache/dubbo-website)"
+      - "Awesome (apache/dubbo-awesome)"
+      - "Initializer (apache/dubbo-intializer)"
+      - "Others (apache/dubbo-xxx)"
   validations:
     required: true
 
 - type: textarea
   attributes:
-    label: Descriptions
-    description: A short description of your feature
+    label: Details
+    description: Anything you want to ask?
   validations:
     required: true
-
-- type: textarea
-  attributes:
-    label: Related issues
-    description: Is there currently another issue associated with this?
-
-- type: checkboxes
-  attributes:
-    label: Are you willing to submit a pull request to fix on your own?
-    description: >
-      This is absolutely not required, but we are happy to guide you in the contribution process
-      especially if you already have a good understanding of how to implement the feature.
-      Dubbo is a totally community-driven project and we love to bring new contributors in.
-    options:
-      - label: Yes I am willing to submit a pull request on my own!
 
 - type: checkboxes
   attributes:
