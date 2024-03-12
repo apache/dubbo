@@ -52,7 +52,7 @@ class CountTelnetTest {
     private CommandContext mockCommandContext;
 
     private CountDownLatch latch;
-    private final URL url = URL.valueOf("dubbo://127.0.0.1:20884/demo");
+    private final URL url = URL.valueOf("dubbo://127.0.0.1:20884/demo?group=g&version=1.0.0");
 
     @BeforeEach
     public void setUp() {
@@ -70,13 +70,37 @@ class CountTelnetTest {
     public void tearDown() {
         FrameworkModel.destroyAll();
         mockChannel.close();
+        RpcStatus.removeStatus(url);
         reset(mockInvoker, mockCommandContext);
     }
 
     @Test
     void test() throws Exception {
         String methodName = "sayHello";
+        RpcStatus.removeStatus(url, methodName);
         String[] args = new String[] {"org.apache.dubbo.qos.legacy.service.DemoService", "sayHello", "1"};
+
+        ExtensionLoader.getExtensionLoader(Protocol.class)
+                .getExtension(DubboProtocol.NAME)
+                .export(mockInvoker);
+        RpcStatus.beginCount(url, methodName);
+        RpcStatus.endCount(url, methodName, 10L, true);
+        count.execute(mockCommandContext, args);
+        latch.await();
+
+        StringBuilder sb = new StringBuilder();
+        for (Object o : mockChannel.getReceivedObjects()) {
+            sb.append(o.toString());
+        }
+
+        assertThat(sb.toString(), containsString(buildTable(methodName, 10, 10, "1", "0", "0")));
+    }
+
+    @Test
+    void testCountByServiceKey() throws Exception {
+        String methodName = "sayHello";
+        RpcStatus.removeStatus(url, methodName);
+        String[] args = new String[] {"g/demo:1.0.0", "sayHello", "1"};
 
         ExtensionLoader.getExtensionLoader(Protocol.class)
                 .getExtension(DubboProtocol.NAME)
