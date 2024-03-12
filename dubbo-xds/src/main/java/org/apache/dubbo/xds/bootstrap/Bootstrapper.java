@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.xds.bootstrap;
 
+import org.apache.dubbo.xds.XdsInitializationException;
+
 import javax.annotation.Nullable;
 
 import java.util.List;
@@ -23,8 +25,6 @@ import java.util.Map;
 
 import io.envoyproxy.envoy.config.core.v3.Node;
 import io.grpc.ChannelCredentials;
-
-import org.apache.dubbo.xds.XdsInitializationException;
 
 public abstract class Bootstrapper {
 

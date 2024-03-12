@@ -20,6 +20,9 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.URLAddress;
+import org.apache.dubbo.xds.bootstrap.Bootstrapper;
+import org.apache.dubbo.xds.bootstrap.BootstrapperImpl;
+import org.apache.dubbo.xds.bootstrap.XdsCertificateSigner;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -38,10 +41,6 @@ import io.grpc.netty.shaded.io.netty.channel.unix.DomainSocketAddress;
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
 import io.grpc.netty.shaded.io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.grpc.stub.StreamObserver;
-
-import org.apache.dubbo.xds.bootstrap.Bootstrapper;
-import org.apache.dubbo.xds.bootstrap.BootstrapperImpl;
-import org.apache.dubbo.xds.bootstrap.XdsCertificateSigner;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_CREATE_CHANNEL_XDS;
 

@@ -18,6 +18,13 @@ package org.apache.dubbo.xds.protocol.impl;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.xds.AdsObserver;
+import org.apache.dubbo.xds.protocol.AbstractProtocol;
+import org.apache.dubbo.xds.resource.XdsRoute;
+import org.apache.dubbo.xds.resource.XdsRouteAction;
+import org.apache.dubbo.xds.resource.XdsRouteConfiguration;
+import org.apache.dubbo.xds.resource.XdsRouteMatch;
+import org.apache.dubbo.xds.resource.XdsVirtualHost;
 
 import java.util.HashMap;
 import java.util.List;
@@ -35,14 +42,6 @@ import io.envoyproxy.envoy.config.route.v3.RouteConfiguration;
 import io.envoyproxy.envoy.config.route.v3.RouteMatch;
 import io.envoyproxy.envoy.config.route.v3.VirtualHost;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
-
-import org.apache.dubbo.xds.AdsObserver;
-import org.apache.dubbo.xds.protocol.AbstractProtocol;
-import org.apache.dubbo.xds.resource.XdsRoute;
-import org.apache.dubbo.xds.resource.XdsRouteAction;
-import org.apache.dubbo.xds.resource.XdsRouteConfiguration;
-import org.apache.dubbo.xds.resource.XdsRouteMatch;
-import org.apache.dubbo.xds.resource.XdsVirtualHost;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
 

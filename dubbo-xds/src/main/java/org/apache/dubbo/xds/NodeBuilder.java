@@ -17,10 +17,9 @@
 package org.apache.dubbo.xds;
 
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.xds.istio.IstioEnv;
 
 import io.envoyproxy.envoy.config.core.v3.Node;
-
-import org.apache.dubbo.xds.istio.IstioEnv;
 
 public class NodeBuilder {
 

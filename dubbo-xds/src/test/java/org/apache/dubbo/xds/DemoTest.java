@@ -27,19 +27,17 @@ import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.SingleRouterChain;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
-
 import org.apache.dubbo.xds.directory.XdsDirectory;
 import org.apache.dubbo.xds.resource.XdsCluster;
 import org.apache.dubbo.xds.resource.XdsVirtualHost;
 import org.apache.dubbo.xds.router.XdsRouter;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 public class DemoTest {

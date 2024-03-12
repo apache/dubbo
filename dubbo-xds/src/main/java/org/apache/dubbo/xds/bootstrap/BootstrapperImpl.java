@@ -18,6 +18,7 @@ package org.apache.dubbo.xds.bootstrap;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.xds.XdsInitializationException;
 
 import javax.annotation.Nullable;
 
@@ -34,8 +35,6 @@ import io.envoyproxy.envoy.config.core.v3.Node;
 import io.grpc.ChannelCredentials;
 import io.grpc.internal.JsonParser;
 import io.grpc.internal.JsonUtil;
-
-import org.apache.dubbo.xds.XdsInitializationException;
 
 public class BootstrapperImpl extends Bootstrapper {
 

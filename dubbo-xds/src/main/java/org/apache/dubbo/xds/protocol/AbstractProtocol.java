@@ -20,6 +20,8 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.xds.AdsObserver;
+import org.apache.dubbo.xds.XdsListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,9 +40,6 @@ import java.util.stream.Collectors;
 import io.envoyproxy.envoy.config.core.v3.Node;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryRequest;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
-
-import org.apache.dubbo.xds.AdsObserver;
-import org.apache.dubbo.xds.XdsListener;
 
 public abstract class AbstractProtocol<T> implements XdsProtocol, XdsListener {
 

@@ -18,6 +18,10 @@ package org.apache.dubbo.xds.protocol.impl;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.xds.AdsObserver;
+import org.apache.dubbo.xds.protocol.AbstractProtocol;
+import org.apache.dubbo.xds.resource.XdsCluster;
+import org.apache.dubbo.xds.resource.XdsEndpoint;
 
 import java.util.HashMap;
 import java.util.List;
@@ -33,11 +37,6 @@ import io.envoyproxy.envoy.config.core.v3.Node;
 import io.envoyproxy.envoy.config.endpoint.v3.ClusterLoadAssignment;
 import io.envoyproxy.envoy.config.endpoint.v3.LbEndpoint;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
-
-import org.apache.dubbo.xds.AdsObserver;
-import org.apache.dubbo.xds.protocol.AbstractProtocol;
-import org.apache.dubbo.xds.resource.XdsCluster;
-import org.apache.dubbo.xds.resource.XdsEndpoint;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
 

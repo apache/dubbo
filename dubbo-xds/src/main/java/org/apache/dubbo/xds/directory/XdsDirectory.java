@@ -68,7 +68,7 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
         super.routerChain = directory.getRouterChain();
 
         // subscribe resource
-        for(String applicationName : applicationNames) {
+        for (String applicationName : applicationNames) {
             pilotExchanger.subscribeRds(applicationName, this);
         }
     }
