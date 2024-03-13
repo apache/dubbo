@@ -278,14 +278,6 @@
 
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-proxy-bytebuddy</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-rest-jaxrs</artifactId>
       <version>${project.version}</version>
       <scope>compile</scope>
@@ -555,7 +547,6 @@
                   <include>org.apache.dubbo:dubbo-security</include>
                   <include>org.apache.dubbo:dubbo-reactive</include>
                   <include>org.apache.dubbo:dubbo-spring-security</include>
-                  <include>org.apache.dubbo:dubbo-plugin-proxy-bytebuddy</include>
                   <include>org.apache.dubbo:dubbo-registry-api</include>
                   <include>org.apache.dubbo:dubbo-registry-multicast</include>
                   <include>org.apache.dubbo:dubbo-registry-multiple</include>
