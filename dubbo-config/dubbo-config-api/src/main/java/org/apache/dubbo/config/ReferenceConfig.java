@@ -657,7 +657,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         if (urls.size() == 1) {
             URL curUrl = urls.get(0);
 
-            if (curUrl.getParameter("registry").startsWith("xds")) {
+            if (curUrl.getParameter("registry", "null").startsWith("xds")) {
                 // TODO: The PilotExchanger requests xds resources asynchronously,
                 //  and the xdsDirectory call filter chain may have an exception with invoker null,
                 //  which needs to be synchronized later.
