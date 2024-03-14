@@ -134,15 +134,6 @@
       <optional>true</optional>
     </dependency>
 
-    <!-- kubernetes -->
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-kubernetes</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
     <!-- metadata -->
     <dependency>
       <groupId>org.apache.dubbo</groupId>
@@ -418,15 +409,6 @@
       <optional>true</optional>
     </dependency>
 
-    <!-- xds -->
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-xds</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
     <!-- Transitive dependencies -->
     <dependency>
       <groupId>io.netty</groupId>
@@ -534,8 +516,6 @@
                   <include>org.apache.dubbo:dubbo-serialization-hessian2</include>
                   <include>org.apache.dubbo:dubbo-serialization-fastjson2</include>
                   <include>org.apache.dubbo:dubbo-serialization-jdk</include>
-                  <include>org.apache.dubbo:dubbo-kubernetes</include>
-                  <include>org.apache.dubbo:dubbo-xds</include>
                   <include>io.netty:*</include>
                 </includes>
               </artifactSet>
