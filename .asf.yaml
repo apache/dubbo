@@ -55,3 +55,5 @@ github:
     - http
     - grpc
     - web
+  collaborators:
+    - oxsean
