@@ -37,44 +37,57 @@ public class ServiceInstanceConsumerHostPortCustomizer implements ServiceInstanc
 
     @Override
     public void customize(ServiceInstance serviceInstance, ApplicationModel applicationModel) {
+        if (!applicationModel.getCurrentConfig().getRegisterConsumer()) {
+            return;
+        }
         // serviceInstance default host is null and port is 0
         if (serviceInstance.getHost() != null && serviceInstance.getPort() != 0) {
             return;
         }
         String preferredProtocol = applicationModel.getCurrentConfig().getProtocol();
-        if (preferredProtocol != null) {
-            Protocol protocol = applicationModel
-                    .getFrameworkModel()
-                    .getExtensionLoader(Protocol.class)
-                    .getExtension(preferredProtocol, false);
-            List<ProtocolServer> protocolServerList = protocol.getServers();
-            if (CollectionUtils.isNotEmpty(protocolServerList)) {
-                for (ProtocolServer protocolServer : protocolServerList) {
-                    if (protocolServer.getUrl() == null) {
-                        continue;
-                    }
-                    String host = protocolServer.getUrl().getHost();
-                    int port = protocolServer.getUrl().getPort();
-                    // if not match continue
-                    if (host == null || port == 0) {
-                        continue;
-                    }
-                    if (serviceInstance instanceof DefaultServiceInstance) {
-                        DefaultServiceInstance instance = (DefaultServiceInstance) serviceInstance;
-                        instance.setHost(host);
-                        instance.setPort(port);
-                        break;
+        try {
+            if (preferredProtocol != null) {
+                Protocol protocol = applicationModel
+                        .getFrameworkModel()
+                        .getExtensionLoader(Protocol.class)
+                        .getExtension(preferredProtocol, false);
+                List<ProtocolServer> protocolServerList = protocol.getServers();
+                if (CollectionUtils.isNotEmpty(protocolServerList)) {
+                    for (ProtocolServer protocolServer : protocolServerList) {
+                        if (protocolServer.getUrl() == null) {
+                            continue;
+                        }
+                        String host = protocolServer.getUrl().getHost();
+                        int port = protocolServer.getUrl().getPort();
+                        // if not match continue
+                        if (host == null || port == 0) {
+                            continue;
+                        }
+                        if (serviceInstance instanceof DefaultServiceInstance) {
+                            DefaultServiceInstance instance = (DefaultServiceInstance) serviceInstance;
+                            instance.setHost(host);
+                            instance.setPort(port);
+                            break;
+                        }
                     }
                 }
             }
-        }
-        if (serviceInstance.getHost() == null || serviceInstance.getPort() == 0) {
-            logger.warn(
+            if (serviceInstance.getHost() == null || serviceInstance.getPort() == 0) {
+                logger.warn(
+                        PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER,
+                        "typo in preferred protocol",
+                        "",
+                        "Can't find an protocolServer using the default preferredProtocol \"" + preferredProtocol
+                                + "\", "
+                                + "Failed to fill host and port to serviceInstance when only consumers are present.");
+            }
+        } catch (Exception e) {
+            logger.error(
                     PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER,
                     "typo in preferred protocol",
                     "",
-                    "Can't find an protocolServer using the default preferredProtocol \"" + preferredProtocol + "\", "
-                            + "Failed to fill host and port to serviceInstance when only consumers are present.");
+                    "Error to fill consumer host and port.",
+                    e);
         }
     }
 
