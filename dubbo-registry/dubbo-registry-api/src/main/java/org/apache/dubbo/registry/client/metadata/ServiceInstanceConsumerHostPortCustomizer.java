@@ -37,7 +37,8 @@ public class ServiceInstanceConsumerHostPortCustomizer implements ServiceInstanc
 
     @Override
     public void customize(ServiceInstance serviceInstance, ApplicationModel applicationModel) {
-        if (!applicationModel.getCurrentConfig().getRegisterConsumer()) {
+        Boolean registerConsumer = applicationModel.getCurrentConfig().getRegisterConsumer();
+        if (registerConsumer == null || !registerConsumer) {
             return;
         }
         // serviceInstance default host is null and port is 0
